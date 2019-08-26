@@ -1,0 +1,67 @@
+name: apache.access
+version: master
+testing:
+  files:
+    - testfile.log
+
+# TODO: What should we call this?
+
+
+datasource:
+  apache.access:
+    vars:
+      - name: paths
+        default:
+          - /var/log/apache2/access.log*
+          - /var/log/apache2/other_vhosts_access.log*
+        os.darwin:
+          - /usr/local/var/log/apache2/access_log*
+        os.windows:
+          - "C:/tools/Apache/httpd-2.*/Apache24/logs/access.log*"
+          - "C:/Program Files/Apache Software Foundation/Apache2.*/logs/access.log*"
+    
+        # TODO: Configure input for the module. This can be overwritten by central management.
+        input:
+
+ingest_pipeline: ingest/default.json
+input: config/access.yml
+
+# This becomes a requirement of the module
+elasticsearch:
+  requires.processors:
+    - name: user_agent
+      plugin: ingest-user-agent
+    - name: geoip
+      plugin: ingest-geoip
+
+
+# From PH
+configs:
+  include:
+    - package: common/logs.yml:configs
+  # Note I need to play with the syntax here, but I think that would work.
+  # it will be up to the building to create the right input but we could use some helpers
+  # methods to fix that.
+  transport:
+    type: nested
+    default: file
+    validations:
+      enum: ["file", "tcp"]
+      required: true
+  transport.type:
+    type: string
+    default: "file"
+    enum: ["file", "tcp"]
+  transport.file:
+    paths:
+      type: Array<PATH>
+      default: ["%base_path/access.log"]
+      validations:
+        presence: true
+  transport.tcp:
+    port:
+      type: range # We can have Port type which has the default validations.
+      default: 8000
+      validations:
+        min: 0
+        max: 65568
