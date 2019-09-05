@@ -1,0 +1,35 @@
+name: apache.access
+version: master
+testing:
+  files:
+    - testfile.log
+
+# TODO: What should we call this?
+
+
+datasource:
+  apache.access:
+    vars:
+      - name: paths
+        default:
+          - /var/log/apache2/access.log*
+          - /var/log/apache2/other_vhosts_access.log*
+        os.darwin:
+          - /usr/local/var/log/apache2/access_log*
+        os.windows:
+          - "C:/tools/Apache/httpd-2.*/Apache24/logs/access.log*"
+          - "C:/Program Files/Apache Software Foundation/Apache2.*/logs/access.log*"
+    
+        # TODO: Configure input for the module. This can be overwritten by central management.
+        input:
+
+# This becomes a requirement of the module
+service:
+  elasticsearch:
+    processors:
+      - name: user_agent
+        plugin: ingest-user-agent
+      - name: geoip
+        plugin: ingest-geoip
+    version.min: 6.3
+    version.max: 6.7
