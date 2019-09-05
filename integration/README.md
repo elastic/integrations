@@ -109,6 +109,13 @@ This yaml file should contain all the configuration on how a dataset can be test
 
 All the data used for testing. For example example logs and the generated output of it.
 
+### dataset/fields/fields.yml
+
+The fields.yml contains the content to generate the Elasticsearch index template and the Kibana index pattern. This happens in the integrations manager.
+
+On thing that is important is that all fields.yml used, start with the global full path. At the moment we have some fields.yml in the datasets which are relative to the module they are in. We need to change those.
+The idea is that the order of the fields.yml does not matter when combining them all into 1 file.
+
 ## Reusable content
 
 Any dataset can be reused by just referencing it in the manifest. But some of these reused assets don't need packaging on it's own. These go into integrations directory list `filebeat` or `ecs` as datasets where `package: false` is set. This allows to reuse all these assets without also getting a package for it. It would be possible to store these assets outside the "integration" directory for better separation. But implementation of the collection script has shown, that the script stays much simpler like this.

@@ -93,7 +93,6 @@ func packageIntegration(p string) error {
 		return nil
 	}
 
-
 	// Create package directory
 	packagePath := "build/packages/" + p + "-" + m.Version
 	err = os.MkdirAll(packagePath, 0755)
@@ -150,26 +149,6 @@ func packageIntegration(p string) error {
 // Clean removes the build directory
 func Clean() error {
 	return os.RemoveAll("build")
-}
-
-// ZIP creates zip files for all packages
-func Zip() error {
-
-	path := "./build/packages/"
-	os.Chdir(path)
-	packages, err := filepath.Glob("*")
-	if err != nil {
-		return err
-	}
-
-	for _, p := range packages {
-		err = sh.RunV("zip", "-r", p+".zip", p)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func copyDataset(dataset, dest string) error {
@@ -262,7 +241,7 @@ func copyFile(src, dest string) error {
 type Manifest struct {
 	Version  string
 	DataSets []map[string]string `yaml:datasets`
-	Package *bool
+	Package  *bool
 }
 
 var (
