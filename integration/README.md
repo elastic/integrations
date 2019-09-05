@@ -23,6 +23,12 @@ As today with modules, the base structure for the implementation is split up int
 {integration-name}/dataset/{dataset-name}/{package-structure}
 ```
 
+An example of the above for an apache.access log ingest pipeline is:
+
+```
+apache/dataset/access/elasticsearch/ingest-pipeline/default.json
+```
+
 On the top level of each integration, it contains the `manifest.yml`, `LICENSE.txt` file and the `changelog.yml`.
 
 ## Assets
