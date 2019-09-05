@@ -57,28 +57,28 @@ Every integration should keep a changelog so if a user upgrades, we can show the
 
 The changelog is in a structure format, so it can be read out and visualised in the package manager.
 
+More details about the changelog can be found here: https://github.com/elastic/integrations-registry/blob/master/ASSETS.md#changelogyml
+
 ```
 # The changelog.yml contains all the changes made to the integration and it's datasets.
 # If a dataset is adjusted, it should also be added to this changelog.
 # The changelog is in a structure format so the order does not matter and it can be used
 # for visualisation in the UI.
 
-  # Description of the change
-- description: Added dataset foo
-
-  # The versions here should follow semver
-  version: 1.2.3
-
-  # The options here are:
-  # - breaking change
-  # - bugfix
-  # - Added
-  # - Deprecated
-  # - Known Issue
-  type: bugfix
-
-  # Link to a Github issue or a PR
-  link: http://github.com/elastic/integrations
+- version: 1.0.4
+  changes:
+    - description: >
+        Unexpected breaking change had to be introduced. This should not happen in a minor.
+      type: breaking-change
+      link: https://github.com/elastic/beats/issues/13504
+- version: 1.0.3
+  changes:
+    - description: Fix broken template
+      type: bugfix
+      link: https://github.com/elastic/beats/issues/13507
+    - description: It is a known issue that the dashboard does not load properly
+      type: known-issue
+      link: https://github.com/elastic/beats/issues/13506
 ```
 
 ### testing.yml
