@@ -4,11 +4,11 @@
 
 This describes how integrations are built and then packaged for the [integrations registry](https://github.com/elastic/integrations-registry). The format described in this document is focused allowing build and test integrations which then are packaged with tools. 
 
-The format of a package for the registry can be found here: https://github.com/elastic/integrations-registry#package-structure But for the development of a package, this is not enough as we also need testing of datasets which needs additional meta data. The proposed structure allows to tests metricsets / filsets in a similar way as we do today. With `mage package` all assets are packaged together to conform to the package structure.
+The format of a package for the registry can be found [here](https://github.com/elastic/integrations-registry#package-structure). But for the development of a package, this is not enough as we also need testing of datasets which needs additional meta data. The proposed structure allows to tests metricsets / filsets in a similar way as we do today. With `mage package` all assets are packaged together to conform to the package structure.
 
 # Definitions
 
-**Integration package**: An integration package is a packaged version of an integration. This is what is served by the integrations registry. An example on what such a package looks like can be found here. It’s important to state that the shipped package does not look identical to the format here which is optimised for development and testing.
+**Integration package**: An integration package is a packaged version of an integration. This is what is served by the integrations registry. An example on what such a package looks like can be found [here](https://github.com/elastic/integrations-registry#package-structure). It’s important to state that the shipped package does not look identical to the format here which is optimised for development and testing.
 
 **Integration**: Integration definition with manifest and several datasets with the assets for the Elastic Stack.
 
@@ -124,6 +124,8 @@ Any dataset can be reused by just referencing it in the manifest. But some of th
 ## Versioning
 
 The version of a package is taken from the manifest file. If the CoreDNS package contains `version: 1.2.3` it will build the package `coredns-1.2.3`. For now, no exact version of a dataset is specified. If a dataset is updated, next time packaging is called for an integration, it will pull in the newest assets. So if there is a breaking change in a dataset, it's up the integration package dev to decide if this is needed. To reduce errors we could introduce exact specification of a dataset version. This would mean in case a dataset version is updated, all datasets which reference it must be updated too. As everything is in one repository, this shouldn't be too much hassle but would make it more explicit.
+
+It is expected that [semantic versioning](https://semver.org) is used.
 
 ### Backports
 
