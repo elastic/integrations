@@ -100,7 +100,7 @@ func packageIntegration(p string) error {
 		return err
 	}
 
-	localDatasets, err := filepath.Glob(path + "/dataset/*")
+	localDatasets, err := filepath.Glob(path + "/asset/*")
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func packageIntegration(p string) error {
 		if len(parts) != 2 {
 			return fmt.Errorf("Definition of the dataset dependencies wrong. Make sure it is {integration}:{dataset}: %s", ds)
 		}
-		path := "integration/" + parts[0] + "/dataset/" + parts[1]
+		path := "integration/" + parts[0] + "/asset/" + parts[1]
 
 		_, err := os.Stat(path)
 		if err != nil {
@@ -296,7 +296,7 @@ func AddLicenseHeaders() error {
 
 func LintJSON() error {
 
-	files, err := filepath.Glob("integration/*/dataset/*/*/*/*.json")
+	files, err := filepath.Glob("integration/*/asset/*/*/*/*.json")
 	if err != nil {
 		return err
 	}
