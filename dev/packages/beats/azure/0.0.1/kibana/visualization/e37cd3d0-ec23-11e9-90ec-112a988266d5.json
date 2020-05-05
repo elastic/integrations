@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": "stream.dataset :\"azure.activitylogs\" and event.category : \"ServiceHealth\" "
+                }
+            }
+        },
+        "title": "Service Health Count [Logs Azure]",
+        "uiStateJSON": {},
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {
+                        "customLabel": "Incidents"
+                    },
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "filters": [
+                            {
+                                "input": {
+                                    "language": "kuery",
+                                    "query": "event.outcome : \"Active\""
+                                },
+                                "label": "Active"
+                            },
+                            {
+                                "input": {
+                                    "language": "kuery",
+                                    "query": "event.outcome : \"Resolved\""
+                                },
+                                "label": "Resolved"
+                            }
+                        ]
+                    },
+                    "schema": "group",
+                    "type": "filters"
+                }
+            ],
+            "params": {
+                "addLegend": false,
+                "addTooltip": true,
+                "dimensions": {
+                    "bucket": {
+                        "accessor": 0,
+                        "format": {
+                            "id": "string",
+                            "params": {}
+                        },
+                        "type": "vis_dimension"
+                    },
+                    "metrics": [
+                        {
+                            "accessor": 1,
+                            "format": {
+                                "id": "number",
+                                "params": {}
+                            },
+                            "type": "vis_dimension"
+                        }
+                    ]
+                },
+                "metric": {
+                    "colorSchema": "Green to Red",
+                    "colorsRange": [
+                        {
+                            "from": 0,
+                            "to": 10000,
+                            "type": "range"
+                        }
+                    ],
+                    "invertColors": false,
+                    "labels": {
+                        "show": true
+                    },
+                    "metricColorMode": "None",
+                    "percentageMode": false,
+                    "style": {
+                        "bgColor": false,
+                        "bgFill": "#000",
+                        "fontSize": 60,
+                        "labelColor": false,
+                        "subText": ""
+                    },
+                    "useRanges": false
+                },
+                "type": "metric"
+            },
+            "title": "Service Health Count [Logs Azure]",
+            "type": "metric"
+        }
+    },
+    "id": "e37cd3d0-ec23-11e9-90ec-112a988266d5",
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "visualization"
+}
