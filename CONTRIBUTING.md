@@ -45,25 +45,11 @@ modules, hence no modules are required to exist anymore.
 
 Link: https://github.com/elastic/package-registry/blob/master/ASSETS.md
 
-### Reference packages
+### Reference package: mysql
 
-The following packages can be considered as reference points for all integrations.
+Link: https://github.com/elastic/package-registry/tree/master/dev/packages/alpha/mysql/0.0.2
 
-#### Integration: reference
-
-Link: https://github.com/elastic/package-registry/tree/master/dev/packages/example/reference-1.0.0
-
-The directory contains mandatory manifest files defining the integration and its datasets. All manifests have fields
-annotated with comments to better understand their goals.
-
-_Keep in mind that this package doesn't contain all file resources (images, screenshots, icons) referenced in manifests.
-Let's assume that they're also there._
-
-#### Integration: mysql
-
-Link: https://github.com/mtojek/package-registry/tree/package-mysql-0.0.2/dev/packages/alpha/mysql-0.0.2
-
-The MySQL integration was the first integration built using the [import-beats](https://github.com/elastic/package-registry/tree/master/dev/import-beats) script.
+The MySQL integration was the first integration built using the [import-beats](https://github.com/elastic/integrations/tree/master/dev/import-beats) script.
 The script imported filesets and metricsets from both MySQL modules, and converted them to a package.
 
 The MySQL integration contains all parts that should be present (or are required) in the integration package.
@@ -79,9 +65,9 @@ existing modules.
 ### Import from existing modules
 
 The import procedure heavily uses on the _import-beats_ script. If you are interested how does it work internally,
-feel free to review the script's [README](https://github.com/elastic/package-registry/blob/master/dev/import-beats/README.md).
+feel free to review the script's [README](https://github.com/elastic/integrations/tree/master/dev/import-beats/README.md).
 
-1. Create an issue in the [package-registry](https://github.com/elastic/package-registry) to track ongoing progress with
+1. Create an issue in the [integrations](https://github.com/elastic/integrations) to track ongoing progress with
     the integration (especially manual changes).
 
     Focus on the one particular product (e.g. MySQL, ActiveMQ) you would like to integrate with.
@@ -96,8 +82,8 @@ feel free to review the script's [README](https://github.com/elastic/package-reg
         * https://github.com/elastic/kibana
 
        Make sure you don't have any manual changes applied as they will reflect on the integration.
-    2. Clone/refresh the Elastic Package Registry (EPR) to always use the latest version of the script:
-        * https://github.com/elastic/package-registry
+    2. Clone/refresh the Elastic Integrations to always use the latest version of the script:
+        * https://github.com/elastic/integrations
     3. Make sure you've the `mage` tool installed:
         ```bash
        $ go get -u -d github.com/magefile/mage
@@ -109,8 +95,8 @@ feel free to review the script's [README](https://github.com/elastic/package-reg
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
     _Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
-    `docker-compose -f snapshot.yml -f local.yml up --force-recreate elasticsearch kibana`.
-4. Create a new branch for the integration in `package-registry` repository (diverge from master).
+    `docker-compose -f snapshot.yml -f local.yml up --force-recreate`.
+4. Create a new branch for the integration in `integrations` repository (diverge from master).
 5. Run the command: `mage ImportBeats` to start the import process.
 
     The outcome of running the `import-beats` script is directory with refreshed and updated integrations.
@@ -120,7 +106,7 @@ feel free to review the script's [README](https://github.com/elastic/package-reg
 
     Generated packages are stored by default in the `dev/packages/beats` directory. Generally, the import process
     updates all of the integrations, so don't be surprised if you notice updates to multiple integrations, including
-    the one you're currently working on (e.g. `dev/packages/beats/foobarbaz-0.0.1`). You can either commit this changes
+    the one you're currently working on (e.g. `dev/packages/beats/foobarbaz/0.0.1`). You can either commit this changes
     or leave them for later.
 
     If you want to select a subgroup of packages, set the environment variable `PACKAGES` (comma-delimited list):
@@ -129,8 +115,8 @@ feel free to review the script's [README](https://github.com/elastic/package-reg
    $ PACKAGES=aws,cisco mage ImportBeats
     ```
 
-6. Copy the package output for your integration (e.g. `dev/packages/beats/foobarbaz-0.0.1`) to the _alpha_ directory and
-    raise the version manually: `dev/packages/alpha/foobarbaz-0.0.2`.
+6. Copy the package output for your integration (e.g. `dev/packages/beats/foobarbaz/0.0.1`) to the _alpha_ directory and
+    raise the version manually: `dev/packages/alpha/foobarbaz/0.0.2`.
 
 ### Fine-tune the integration
 
@@ -261,7 +247,7 @@ what's been already fixed, as the script has overridden part of it).
 11. Update docs template with sample events.
 
     The events collected by the agent slightly differ from original, Metricbeat's and Filebeat's, ones. Adjust the event
-    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/package-registry/tree/master/dev/import-beats-resources/mysql/docs))
+    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/dev/import-beats-resources/mysql/docs/README.md))
     or copy them once managed to run whole setup with real agent.
 
 12. Kibana: use `stream.dataset` field instead of `event.dataset`.
@@ -274,22 +260,21 @@ what's been already fixed, as the script has overridden part of it).
 
 ### Run the whole setup
 
-1. Build docker image with EPR:
-
-    ```bash
-   $ docker build --rm -t docker.elastic.co/package-registry/package-registry:master .
+1. Build `public` directory with package data:
+   ```bash
+   $ mage build
    ```
 
-
 2. Start testing environment:
-    ```bash
+   ```bash
    $ cd testing/environments
    $ docker-compose -f snapshot.yml -f local.yml up
    ```
 
-
-   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry.
-
+   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. The Package Registry
+   has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
+   adjustments in packages will be propagated to the registry.
+   
 3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql
 
     ```json
