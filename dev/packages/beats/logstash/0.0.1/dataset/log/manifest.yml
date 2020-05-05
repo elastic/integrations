@@ -1,0 +1,28 @@
+title: logstash log logs
+release: experimental
+type: logs
+streams:
+- input: logs
+  vars:
+  - name: format
+    type: text
+    title: Format
+    multi: false
+    required: true
+    show_user: true
+    default: plain
+  - name: paths
+    type: text
+    title: Paths
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - /var/log/logstash/logstash-{{.format}}*.log
+    os:
+      windows:
+        default:
+        - c:/programdata/logstash/logs/logstash-{{.format}}*.log
+  template_path: log.yml.hbs
+  title: logstash log logs (log)
+  description: Collect logstash log logs using log input
