@@ -1,0 +1,92 @@
+- name: destination
+  title: Destination
+  group: 2
+  type: group
+  fields:
+  - name: ip
+    level: core
+    type: ip
+    description: IP address of the destination (IPv4 or IPv6).
+  - name: port
+    level: core
+    type: long
+    format: string
+    description: Port of the destination.
+- name: http
+  title: HTTP
+  group: 2
+  type: group
+  fields:
+  - name: response.status_code
+    level: extended
+    type: long
+    format: string
+    description: HTTP response status code.
+- name: process
+  title: Process
+  group: 2
+  type: group
+  fields:
+  - name: name
+    level: extended
+    type: keyword
+    description: |-
+      Process name.
+      Sometimes called program name or similar.
+    ignore_above: 1024
+    multi_fields:
+    - name: text
+      type: text
+      norms: false
+      default_field: false
+  - name: pid
+    level: core
+    type: long
+    format: string
+    description: Process id.
+- name: source
+  title: Source
+  group: 2
+  type: group
+  fields:
+  - name: address
+    level: extended
+    type: keyword
+    description: |-
+      Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
+      Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
+    ignore_above: 1024
+  - name: geo.city_name
+    level: core
+    type: keyword
+    description: City name.
+    ignore_above: 1024
+  - name: geo.continent_name
+    level: core
+    type: keyword
+    description: Name of the continent.
+    ignore_above: 1024
+  - name: geo.country_iso_code
+    level: core
+    type: keyword
+    description: Country ISO code.
+    ignore_above: 1024
+  - name: geo.location
+    level: core
+    type: geo_point
+    description: Longitude and latitude.
+  - name: geo.region_iso_code
+    level: core
+    type: keyword
+    description: Region ISO code.
+    ignore_above: 1024
+  - name: geo.region_name
+    level: core
+    type: keyword
+    description: Region name.
+    ignore_above: 1024
+  - name: port
+    level: core
+    type: long
+    format: string
+    description: Port of the source.
