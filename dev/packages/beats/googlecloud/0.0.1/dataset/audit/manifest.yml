@@ -1,0 +1,35 @@
+title: Google Cloud audit logs
+release: experimental
+type: logs
+streams:
+- input: google-pubsub
+  vars:
+  - name: topic
+    type: text
+    title: Topic
+    multi: false
+    required: true
+    show_user: true
+    default: stackdriver-audit
+  - name: subscription_name
+    type: text
+    title: Subscription Name
+    multi: false
+    required: true
+    show_user: true
+    default: filebeat-googlecloud-audit
+  template_path: google-pubsub.yml.hbs
+  title: Google Cloud audit logs (google-pubsub)
+  description: Collect Google Cloud audit logs using google-pubsub input
+- input: logs
+  vars:
+  - name: keep_original_message
+    type: bool
+    title: Keep Original Message
+    multi: false
+    required: true
+    show_user: true
+    default: false
+  template_path: log.yml.hbs
+  title: Google Cloud audit logs (log)
+  description: Collect Google Cloud audit logs using log input

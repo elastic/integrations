@@ -1,0 +1,33 @@
+title: elasticsearch slowlog logs
+release: experimental
+type: logs
+streams:
+- input: logs
+  vars:
+  - name: paths
+    type: text
+    title: Paths
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - /var/log/elasticsearch/*_index_search_slowlog.log
+    - /var/log/elasticsearch/*_index_indexing_slowlog.log
+    - /var/log/elasticsearch/*_index_search_slowlog.json
+    - /var/log/elasticsearch/*_index_indexing_slowlog.json
+    os:
+      darwin:
+        default:
+        - /usr/local/var/lib/elasticsearch/*_index_search_slowlog.log
+        - /usr/local/var/lib/elasticsearch/*_index_indexing_slowlog.log
+        - /usr/local/var/lib/elasticsearch/*_index_search_slowlog.json
+        - /usr/local/var/lib/elasticsearch/*_index_indexing_slowlog.json
+      windows:
+        default:
+        - c:/ProgramData/Elastic/Elasticsearch/logs/*_index_search_slowlog.log
+        - c:/ProgramData/Elastic/Elasticsearch/logs/*_index_indexing_slowlog.log
+        - c:/ProgramData/Elastic/Elasticsearch/logs/*_index_search_slowlog.json
+        - c:/ProgramData/Elastic/Elasticsearch/logs/*_index_indexing_slowlog.json
+  template_path: log.yml.hbs
+  title: elasticsearch slowlog logs (log)
+  description: Collect elasticsearch slowlog logs using log input
