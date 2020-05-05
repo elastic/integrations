@@ -102,16 +102,29 @@ func loadEcsFields(ecsDir string) ([]fieldDefinition, error) {
 	return fs[0].Fields, nil
 }
 
-func loadModuleFields(modulePath string) ([]fieldDefinition, error) {
+func loadModuleFields(modulePath string) ([]fieldDefinition, string, error) {
 	path := filepath.Join(modulePath, "_meta", "fields.yml")
 	fs, err := loadFieldsFile(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "loading module fields file failed")
+		return nil, "", errors.Wrapf(err, "loading module fields file failed")
 	}
 	if len(fs) != 1 {
-		return nil, errors.Wrapf(err, "expected single root field")
+		return nil, "", errors.Wrapf(err, "expected single root field")
 	}
-	return fs, nil
+
+	title := fs[0].Title
+
+	var unwrapped []fieldDefinition
+	unwrapped = append(unwrapped, fs[0].Fields...)
+
+	fieldsEpr := filepath.Join(modulePath, "_meta", "fields.epr.yml")
+	efs, err := loadFieldsFile(fieldsEpr)
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "loading fields.epr.yml file failed")
+	}
+
+	unwrapped = append(unwrapped, efs...)
+	return unwrapped, title, nil
 }
 
 func loadDatasetFields(modulePath, moduleName, datasetName string) ([]fieldDefinition, error) {
