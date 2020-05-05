@@ -1,3 +1,3 @@
-# Integrations (EXPERIMENTAL USE)
+# EXPERIMENTAL: This is only for experimental use
 
-Repository containing metadata and implementations for integrations.
+# Elastic Integrations
