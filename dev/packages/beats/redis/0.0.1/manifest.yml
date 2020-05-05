@@ -1,0 +1,79 @@
+format_version: 1.0.0
+name: redis
+title: Redis
+version: 0.0.1
+license: basic
+description: Redis Integration
+type: integration
+categories:
+- logs
+- metrics
+release: experimental
+removable: true
+requirement:
+  kibana:
+    versions: '>=7.3.0 <8.0.0'
+  elasticsearch:
+    versions: '>7.0.1'
+screenshots:
+- src: /img/kibana-redis.png
+  title: kibana redis
+  size: 1124x1079
+  type: image/png
+- src: /img/metricbeat_redis_key_dashboard.png
+  title: metricbeat redis key dashboard
+  size: 1855x949
+  type: image/png
+icons:
+- src: /img/logo_redis.svg
+  title: logo redis
+  size: 32x32
+  type: image/svg+xml
+datasources:
+- name: redis
+  title: Redis logs and metrics
+  description: Collect logs and metrics from Redis instances
+  inputs:
+  - type: logs
+    title: Collect logs from Redis instances
+    description: Collecting Redis log and slowlog logs
+  - type: redis/metrics
+    vars:
+    - name: hosts
+      type: text
+      title: Hosts
+      multi: true
+      required: true
+      show_user: true
+      default:
+      - 127.0.0.1:6379
+    - name: idle_timeout
+      type: text
+      title: Idle Timeout
+      multi: false
+      required: true
+      show_user: true
+      default: 20s
+    - name: maxconn
+      type: integer
+      title: Maxconn
+      multi: false
+      required: true
+      show_user: true
+      default: 10
+    - name: network
+      type: text
+      title: Network
+      multi: false
+      required: true
+      show_user: true
+      default: tcp
+    - name: password
+      type: password
+      title: Password
+      multi: false
+      required: false
+      show_user: true
+      default: ""
+    title: Collect metrics from Redis instances
+    description: Collecting Redis info, key and keyspace metrics
