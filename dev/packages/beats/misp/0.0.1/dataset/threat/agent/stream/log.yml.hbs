@@ -1,0 +1,16 @@
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+processors:
+  - script:
+      lang: javascript
+      id: misp_script
+      file: ${path.home}/module/misp/threat/config/pipeline.js
+  - timestamp:
+      field: json.timestamp
+      layouts:
+        - UNIX
+  - drop_fields:
+      fields: [json]

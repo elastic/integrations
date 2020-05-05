@@ -1,0 +1,25 @@
+title: MySQL slowlog logs
+release: experimental
+type: logs
+streams:
+- input: logs
+  vars:
+  - name: paths
+    type: text
+    title: Paths
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - /var/log/mysql/mysql-slow.log*
+    - /var/lib/mysql/{{.builtin.hostname}}-slow.log
+    os:
+      darwin:
+        default:
+        - /usr/local/var/mysql/{{.builtin.hostname}}-slow.log*
+      windows:
+        default:
+        - c:/programdata/MySQL/MySQL Server*/mysql-slow.log*
+  template_path: log.yml.hbs
+  title: MySQL slowlog logs (log)
+  description: Collect MySQL slowlog logs using log input
