@@ -1,0 +1,34 @@
+{{#if application_id}}application_id: {{application_id}}{{/if}}
+tenant_id:
+{{#each tenants}}
+ - {{id}}
+{{/each}}
+{{#if certificate}}certificate: {{certificate}}{{/if}}
+{{#if key}}key: {{key}}{{/if}}
+{{#if key_passphrase}}key_passphrase: {{key_passphrase}}{{/if}}
+{{#if client_secret}}client_secret: {{client_secret}}{{/if}}
+{{#if eq "string" (printf "%T" .content_type)}}
+content_type: {{content_type}}
+{{else}}
+content_type:
+{{#each content_type}}
+ - {{this}}
+{{/each}}
+{{/if}}
+{{#if api}}
+api:
+{{#each api as |v k|}}
+ - {{k}}: {{v}}{{/each}}
+{{/if}}
+processors:
+  - script:
+      lang: javascript
+      id: o365audit_script
+      file: ${path.home}/module/o365/audit/config/pipeline.js
+      params:
+        debug: false
+        tenants:
+          {{#each tenants}}
+          - id: "{{id}}"
+            name: "{{name}}"
+          {{/each}}
