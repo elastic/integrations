@@ -73,8 +73,8 @@ func renderExportedFields(packageDataset string, datasets datasetContentArray) (
 
 func collectFields(content fieldsContent) ([]fieldsTableRecord, error) {
 	var records []fieldsTableRecord
-	for fileName, fieldsFile := range content.files {
-		r, err := collectFieldsFromFile(fileName, fieldsFile)
+	for _, fieldsFile := range content.files {
+		r, err := collectFieldsFromFile(fieldsFile)
 		if err != nil {
 			return nil, errors.Wrapf(err, "collecting fields from file failed")
 		}
@@ -99,13 +99,10 @@ func uniqueTableRecords(records []fieldsTableRecord) []fieldsTableRecord {
 	return unique
 }
 
-func collectFieldsFromFile(fileName string, fieldDefinitions []fieldDefinition) ([]fieldsTableRecord, error) {
+func collectFieldsFromFile(fieldDefinitions []fieldDefinition) ([]fieldsTableRecord, error) {
 	var records []fieldsTableRecord
 
 	root := fieldDefinitions
-	if isPackageFields(fileName) {
-		root = fieldDefinitions[0].Fields
-	}
 
 	var err error
 	for _, f := range root {

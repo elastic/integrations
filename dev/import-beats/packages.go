@@ -146,7 +146,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		manifest.Categories = append(manifest.Categories, beatType)
 
 		// fields
-		moduleFields, err := loadModuleFields(modulePath)
+		moduleFields, maybeTitle, err := loadModuleFields(modulePath)
 		if err != nil {
 			return err
 		}
@@ -156,7 +156,6 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		}
 
 		// title
-		maybeTitle := moduleFields[0].Title
 		if maybeTitle != "" {
 			manifest.Title = &maybeTitle
 			manifest.Description = maybeTitle + " Integration"
@@ -319,14 +318,7 @@ func (r *packageRepository) save(outputDir string) error {
 					fieldsFilePath := filepath.Join(datasetFieldsPath, fieldsFileName)
 					var fieldsFile []byte
 
-					var root fieldDefinitionArray
-					if isPackageFields(fieldsFileName) { // remove the wrapping layer
-						root = definitions[0].Fields
-					} else {
-						root = definitions
-					}
-
-					stripped := root.stripped()
+					stripped := definitions.stripped()
 					fieldsFile, err := yaml.Marshal(&stripped)
 					if err != nil {
 						return errors.Wrapf(err, "marshalling fields file failed (path: %s)", fieldsFilePath)
