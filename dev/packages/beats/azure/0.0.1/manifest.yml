@@ -1,0 +1,85 @@
+format_version: 1.0.0
+name: azure
+title: azure
+version: 0.0.1
+license: basic
+description: azure Integration
+type: integration
+categories:
+- logs
+- metrics
+release: experimental
+removable: true
+requirement:
+  kibana:
+    versions: '>=7.7.0 <8.0.0'
+  elasticsearch:
+    versions: '>7.0.1'
+screenshots:
+- src: /img/filebeat-azure-overview.png
+  title: filebeat azure overview
+  size: 5002x2666
+  type: image/png
+- src: /img/metricbeat-azure-vm-overview.png
+  title: metricbeat azure vm overview
+  size: 5006x2672
+  type: image/png
+- src: /img/metricbeat-azure-vm-guestmetrics-overview.png
+  title: metricbeat azure vm guestmetrics overview
+  size: 5006x2672
+  type: image/png
+- src: /img/metricbeat-azure-vmss-overview.png
+  title: metricbeat azure vmss overview
+  size: 5000x2668
+  type: image/png
+- src: /img/metricbeat-azure-storage-overview.png
+  title: metricbeat azure storage overview
+  size: 5008x2662
+  type: image/png
+icons:
+- src: /img/logo_azure.svg
+  title: logo azure
+  size: 32x32
+  type: image/svg+xml
+datasources:
+- name: azure
+  title: azure logs and metrics
+  description: Collect logs and metrics from azure instances
+  inputs:
+  - type: logs
+    title: Collect logs from azure instances
+    description: Collecting azure activitylogs, auditlogs and signinlogs logs
+  - type: azure/metrics
+    vars:
+    - name: client_id
+      type: text
+      title: Client Id
+      multi: false
+      required: true
+      show_user: true
+      default: ${AZURE_CLIENT_ID:""}
+    - name: client_secret
+      type: text
+      title: Client Secret
+      multi: false
+      required: true
+      show_user: true
+      default: ${AZURE_CLIENT_SECRET:""}
+    - name: subscription_id
+      type: text
+      title: Subscription Id
+      multi: false
+      required: true
+      show_user: true
+      default: ${AZURE_SUBSCRIPTION_ID:""}
+    - name: tenant_id
+      type: text
+      title: Tenant Id
+      multi: false
+      required: true
+      show_user: true
+      default: ${AZURE_TENANT_ID:""}
+    title: Collect metrics from azure instances
+    description: Collecting azure compute_vm, compute_vm_scaleset, container_instance,
+      container_registry, container_service, database_account, monitor and storage
+      metrics

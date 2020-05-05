@@ -1,0 +1,41 @@
+title: aws cloudwatch metrics
+release: experimental
+type: metrics
+streams:
+- input: aws/metrics
+  vars:
+  - name: credential_profile_name
+    type: text
+    title: Credential Profile Name
+    multi: false
+    required: true
+    show_user: true
+    default: test-mb
+  - name: metrics
+    type: yaml
+    title: Metrics
+    multi: false
+    required: true
+    show_user: true
+    default: |
+      - dimensions:
+        - name: InstanceId
+          value: i-0686946e22cf9494a
+        name:
+        - CPUUtilization
+        namespace: AWS/EC2
+      - namespace: AWS/EBS
+      - namespace: AWS/ELB
+        tags:
+        - key: Organization
+          value: Engineering
+        tags.resource_type_filter: elasticloadbalancing
+  - name: period
+    type: text
+    title: Period
+    multi: false
+    required: true
+    show_user: true
+    default: 300s
+  title: aws cloudwatch metrics
+  description: Collect aws cloudwatch metrics

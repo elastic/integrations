@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "columns": [
+            "agent.hostname",
+            "process.executable",
+            "user.name",
+            "certificate.common_name"
+        ],
+        "description": "",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "query",
+                            "negate": false,
+                            "type": "custom",
+                            "value": "{\"match_phrase_prefix\":{\"stream.dataset\":{\"query\":\"santa.\"}}}"
+                        },
+                        "query": {
+                            "match_phrase_prefix": {
+                                "stream.dataset": {
+                                    "query": "santa."
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "log",
+                                "type": "phrase"
+                            },
+                            "type": "phrase",
+                            "value": "log"
+                        },
+                        "query": {
+                            "match": {
+                                "stream.dataset": {
+                                    "query": "log",
+                                    "type": "phrase"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "highlightAll": true,
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                },
+                "version": true
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "title": "Santa Logs Search [Logs Santa] ECS",
+        "version": 1
+    },
+    "id": "6d56a010-ff6a-11e8-93c5-d5ecd1b3e307-ecs",
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search"
+}
