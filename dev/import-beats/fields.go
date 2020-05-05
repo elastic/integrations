@@ -111,6 +111,14 @@ func loadModuleFields(modulePath string) ([]fieldDefinition, error) {
 	if len(fs) != 1 {
 		return nil, errors.Wrapf(err, "expected single root field")
 	}
+
+	fieldsEpr := filepath.Join(modulePath, "_meta", "fields.epr.yml")
+	efs, err := loadFieldsFile(fieldsEpr)
+	if err != nil {
+		return nil, errors.Wrapf(err, "loading fields.epr.yml file failed")
+	}
+
+	fs = append(fs, efs...)
 	return fs, nil
 }
 
