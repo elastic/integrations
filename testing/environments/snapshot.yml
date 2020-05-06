@@ -24,7 +24,7 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      integrations-registry:
+      package-registry:
         condition: service_healthy
     healthcheck:
       test: "curl -f http://localhost:5601/login | grep kbn-injected-metadata 2>&1 >/dev/null"
@@ -33,7 +33,7 @@ services:
     volumes:
       - ./kibana.config.yml:/usr/share/kibana/config/kibana.yml
 
-  integrations-registry:
+  package-registry:
     image: docker.elastic.co/package-registry/package-registry:master
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
@@ -41,13 +41,3 @@ services:
       interval: 1s
     volumes:
       - ../../public:/go/src/github.com/elastic/package-registry/public
-
-  elastic-agent:
-    image: docker.elastic.co/observability-ci/elastic-agent:8.0.0
-    depends_on:
-      kibana:
-        condition: service_healthy
-    environment:
-    - "FLEET_ENROLL=1"
-    - "FLEET_SETUP=1"
-    - "KIBANA_HOST=http://kibana:5601"

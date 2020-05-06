@@ -4,8 +4,14 @@ Firstly, refresh docker images:
 $ docker-compose -f snapshot.yml pull
 ```
 
-Run docker containers:
+Run docker containers (Elasticsearch, Kibana, Package Registry):
 
 ```bash
 $ docker-compose -f snapshot.yml -f local.yml up --force-recreate
+```
+
+... or with Elastic Agent:
+
+```bash
+$ docker-compose -f snapshot.yml -f local.yml -f agent.yml up --force-recreate
 ```

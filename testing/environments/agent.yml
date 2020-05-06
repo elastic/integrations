@@ -1,0 +1,13 @@
+# This should start the environment with the latest snapshots.
+
+version: '2.3'
+services:
+  elastic-agent:
+    image: docker.elastic.co/observability-ci/elastic-agent:8.0.0
+    depends_on:
+      kibana:
+        condition: service_healthy
+    environment:
+    - "FLEET_ENROLL=1"
+    - "FLEET_SETUP=1"
+    - "KIBANA_HOST=http://kibana:5601"
