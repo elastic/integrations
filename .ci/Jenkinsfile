@@ -5,12 +5,11 @@
 pipeline {
   agent { label 'ubuntu && immutable' }
   environment {
-    BASE_DIR="src/github.com/elastic/package-registry"
+    BASE_DIR="src/github.com/elastic/integrations"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PIPELINE_LOG_LEVEL='INFO'
     DOCKER_REGISTRY = 'docker.elastic.co'
     DOCKER_REGISTRY_SECRET = 'secret/observability-team/ci/docker-registry/prod'
-    DOCKER_IMG = "${env.DOCKER_REGISTRY}/package-registry/package-registry"
   }
   options {
     timeout(time: 1, unit: 'HOURS')
@@ -95,10 +94,17 @@ pipeline {
 
 def insideGo(Closure body){
   def goAgent = docker.build("go-agent", ".ci/jenkins-go-agent")
-  goAgent.inside(){
-    env.HOME="${WORKSPACE}/${BASE_DIR}"
-    sh(label: 'Go version', script: 'go version')
-    sh(label: 'Install Mage', script: 'mage -version')
-    body()
+  goAgent.inside("-v ${env.WORKSPACE}/src:/go/src"){
+    withEnv([
+      "HOME=${env.WORKSPACE}/${BASE_DIR}",
+      "GOPATH=/go",
+    ]) {
+      sh(label: 'Go version', script: 'go version')
+      sh(label: 'Install Mage', script: '''
+        go get -u github.com/magefile/mage 
+        mage -version
+      ''')
+      body()
+    }
   }
 }
