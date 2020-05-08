@@ -37,13 +37,7 @@ var (
 )
 
 func Build() error {
-
-	err := os.RemoveAll(publicDir)
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(publicDir, 0755)
+	err := BuildPublicDirectory()
 	if err != nil {
 		return err
 	}
@@ -56,6 +50,24 @@ func Build() error {
 	}
 
 	err = BuildRootFile()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func BuildPublicDirectory() error {
+	err := os.MkdirAll(publicDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(filepath.Join(publicDir, "epr"))
+	if err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(filepath.Join(publicDir, "package"))
 	if err != nil {
 		return err
 	}
