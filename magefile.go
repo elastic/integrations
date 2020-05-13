@@ -34,7 +34,7 @@ var (
 	buildDir       = "./build"
 	storageDir     = "./dev/packages/storage"
 	storageRepoDir = filepath.Join(buildDir, "package-storage")
-	packagePaths   = []string{"./dev/packages/storage/", "./dev/packages/beats/"}
+	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/"}
 	tarGz          = true
 )
 
@@ -110,13 +110,7 @@ func fetchPackageStorage() error {
 	if err != nil {
 		return err
 	}
-
-	err = os.Rename(filepath.Join(storageRepoDir, "packages"), storageDir)
-	if err != nil {
-		return err
-	}
-
-	return os.RemoveAll(storageRepoDir)
+	return nil
 }
 
 func ImportBeats() error {
