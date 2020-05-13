@@ -32,7 +32,6 @@ var (
 
 	publicDir      = "./public"
 	buildDir       = "./build"
-	storageDir     = "./dev/packages/storage"
 	storageRepoDir = filepath.Join(buildDir, "package-storage")
 	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/"}
 	tarGz          = true
@@ -82,12 +81,7 @@ func BuildPublicDirectory() error {
 }
 
 func fetchPackageStorage() error {
-	err := os.RemoveAll(storageDir)
-	if err != nil {
-		return err
-	}
-
-	err = os.RemoveAll(storageRepoDir)
+	err := os.RemoveAll(storageRepoDir)
 	if err != nil {
 		return err
 	}
