@@ -1,0 +1,44 @@
+title: AWS CloudWatch metrics
+release: beta
+type: metrics
+streams:
+- input: aws/metrics
+  vars:
+  - name: period
+    type: text
+    title: Period
+    multi: false
+    required: true
+    show_user: true
+    default: 300s
+  - name: regions
+    type: text
+    title: Regions
+    multi: true
+    required: false
+    show_user: true
+    default:
+      - us-east-1
+  - name: metrics
+    type: yaml
+    title: Metrics
+    multi: false
+    required: true
+    show_user: true
+    default: |
+      - namespace: AWS/EC2
+        tags.resource_type_filter: "ec2"
+        name:
+          - CPUUtilization
+          - DiskWriteOps
+        statistic:
+          - Average
+          - Maximum
+        # dimensions:
+         # - name: InstanceId
+            # value: i-123456
+        # tags:
+          # - key: created-by
+            # value: foo
+  title: AWS CloudWatch metrics
+  description: Collect AWS CloudWatch metrics

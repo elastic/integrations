@@ -43,7 +43,7 @@ func Build() error {
 		return err
 	}
 
-	err = fetchPackageStorage()
+	err = fetchPatchStorage()
 	if err != nil {
 		return err
 	}
@@ -80,10 +80,10 @@ func BuildPublicDirectory() error {
 	return nil
 }
 
-func fetchPackageStorage() error {
-	err := os.RemoveAll(storageRepoDir)
-	if err != nil {
-		return err
+func fetchPatchStorage() error {
+	_, err := os.Stat(storageRepoDir)
+	if err == nil {
+		return nil // package storage has been already fetched
 	}
 
 	err = sh.Run("git", "clone", "https://github.com/elastic/package-storage.git", storageRepoDir)
@@ -96,15 +96,11 @@ func fetchPackageStorage() error {
 		packageStorageRevision = "master"
 	}
 
-	err = sh.Run("git",
+	return sh.Run("git",
 		"--git-dir", filepath.Join(storageRepoDir, ".git"),
 		"--work-tree", storageRepoDir,
 		"checkout",
 		packageStorageRevision)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func ImportBeats() error {
