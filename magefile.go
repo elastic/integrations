@@ -30,14 +30,20 @@ var (
 	// GoLicenserImportPath controls the import path used to install go-licenser.
 	GoLicenserImportPath = "github.com/elastic/go-licenser"
 
-	publicDir    = "./public"
-	buildDir     = "./build"
-	packagePaths = []string{"./dev/packages/alpha/", "./dev/packages/example/", "./dev/packages/beats/"}
-	tarGz        = true
+	publicDir      = "./public"
+	buildDir       = "./build"
+	storageRepoDir = filepath.Join(buildDir, "package-storage")
+	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/"}
+	tarGz          = true
 )
 
 func Build() error {
 	err := BuildPublicDirectory()
+	if err != nil {
+		return err
+	}
+
+	err = fetchPatchStorage()
 	if err != nil {
 		return err
 	}
@@ -72,6 +78,29 @@ func BuildPublicDirectory() error {
 		return err
 	}
 	return nil
+}
+
+func fetchPatchStorage() error {
+	_, err := os.Stat(storageRepoDir)
+	if err == nil {
+		return nil // package storage has been already fetched
+	}
+
+	err = sh.Run("git", "clone", "https://github.com/elastic/package-storage.git", storageRepoDir)
+	if err != nil {
+		return err
+	}
+
+	packageStorageRevision := os.Getenv("PACKAGE_STORAGE_REVISION")
+	if packageStorageRevision == "" {
+		packageStorageRevision = "master"
+	}
+
+	return sh.Run("git",
+		"--git-dir", filepath.Join(storageRepoDir, ".git"),
+		"--work-tree", storageRepoDir,
+		"checkout",
+		packageStorageRevision)
 }
 
 func ImportBeats() error {
@@ -216,12 +245,7 @@ func Clean() error {
 		return err
 	}
 
-	err = os.RemoveAll(publicDir)
-	if err != nil {
-		return err
-	}
-
-	return os.Remove("package-registry")
+	return os.RemoveAll(publicDir)
 }
 
 func Vendor() error {
