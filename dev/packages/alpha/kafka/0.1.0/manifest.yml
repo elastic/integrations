@@ -1,0 +1,67 @@
+format_version: 1.0.0
+name: kafka
+title: Kafka
+version: 0.1.0
+license: basic
+description: Kafka Integration
+type: integration
+categories:
+- logs
+- metrics
+release: beta
+removable: true
+requirement:
+  kibana:
+    versions: '>=7.3.0 <8.0.0'
+  elasticsearch:
+    versions: '>7.0.1'
+screenshots:
+- src: /img/filebeat-kafka-logs-overview.png
+  title: filebeat kafka logs overview
+  size: 1363x657
+  type: image/png
+- src: /img/metricbeat_kafka_dashboard.png
+  title: metricbeat kafka dashboard
+  size: 1726x711
+  type: image/png
+icons:
+- src: /img/logo_kafka.svg
+  title: logo kafka
+  size: 32x32
+  type: image/svg+xml
+datasources:
+- name: kafka
+  title: Kafka logs and metrics
+  description: Collect logs and metrics from Kafka brokers
+  inputs:
+  - type: logs
+    title: Collect logs from Kafka brokers
+    description: Collecting Kafka log logs
+  - type: kafka/metrics
+    title: Collect metrics from Kafka brokers
+    description: Collecting Kafka broker, consumergroup and partition metrics
+    vars:
+      - name: hosts
+        type: text
+        title: Kafka address
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - 'localhost:9092'
+      - name: period
+        type: text
+        title: Period
+        required: true
+        show_user: true
+        default: 10s
+      - name: ssl.certificate_authorities
+        type: text
+        multi: true
+        show_user: true
+      - name: ssl.certificate
+        type: text
+        show_user: true
+      - name: ssl.key
+        type: text
+        show_user: true
