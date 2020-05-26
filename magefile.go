@@ -43,7 +43,7 @@ func Build() error {
 		return err
 	}
 
-	err = fetchPatchStorage()
+	err = fetchPackageStorage()
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func BuildPublicDirectory() error {
 	return nil
 }
 
-func fetchPatchStorage() error {
+func fetchPackageStorage() error {
 	_, err := os.Stat(storageRepoDir)
 	if err == nil {
 		return nil // package storage has been already fetched
