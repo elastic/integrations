@@ -111,7 +111,7 @@ func toDatasourceDescriptionForTwoTypes(moduleTitle, firstPackageType, secondPac
 }
 
 func toDatasourceInputTitle(moduleTitle, packageType string) string {
-	return fmt.Sprintf("Collect %s from %s instances", packageType, moduleTitle)
+	return fmt.Sprintf("Collect %s %s", moduleTitle, packageType)
 }
 
 func toDatasourceInputDescription(moduleTitle, packageType string, datasets []string) string {
@@ -120,8 +120,6 @@ func toDatasourceInputDescription(moduleTitle, packageType string, datasets []st
 
 	var description strings.Builder
 	description.WriteString("Collecting ")
-	description.WriteString(moduleTitle)
-	description.WriteString(" ")
 
 	if len(firstPart) > 0 {
 		fp := strings.Join(firstPart, ", ")
@@ -132,5 +130,8 @@ func toDatasourceInputDescription(moduleTitle, packageType string, datasets []st
 	description.WriteString(secondPart[0])
 	description.WriteString(" ")
 	description.WriteString(packageType)
+	description.WriteString(" from ")
+	description.WriteString(moduleTitle)
+	description.WriteString(" instances")
 	return description.String()
 }
