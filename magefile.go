@@ -33,7 +33,7 @@ var (
 	publicDir      = "./public"
 	buildDir       = "./build"
 	storageRepoDir = filepath.Join(buildDir, "package-storage")
-	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/"}
+	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/", "./dev/packages/alpha/"}
 	tarGz          = true
 )
 
