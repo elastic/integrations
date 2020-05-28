@@ -22,18 +22,23 @@ type datasourceContent struct {
 type datasourceInput struct {
 	datasetNames []string
 	packageType  string
+	inputType    string
 	vars         []util.Variable
 }
 
 func (ds datasourceContent) toMetadataDatasources() []util.Datasource {
+	var inputTypes []string
 	var packageTypes []string
-	for _, input := range ds.inputs {
+	for k, input := range ds.inputs {
+		inputTypes = append(inputTypes, k)
 		packageTypes = append(packageTypes, input.packageType)
 	}
+
+	packageTypes = uniqueStringValues(packageTypes)
 	sort.Strings(packageTypes)
 
 	var title, description string
-	if len(ds.inputs) == 2 {
+	if len(packageTypes) == 2 {
 		title = toDatasourceTitleForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
 		description = toDatasourceDescriptionForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
 	} else {
@@ -46,9 +51,9 @@ func (ds datasourceContent) toMetadataDatasources() []util.Datasource {
 		for inputType, input := range ds.inputs {
 			if input.packageType == packageType {
 				inputs = append(inputs, util.Input{
-					Type:        inputType,
-					Title:       toDatasourceInputTitle(ds.moduleTitle, packageType),
-					Description: toDatasourceInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames),
+					Type:        input.inputType,
+					Title:       toDatasourceInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
+					Description: toDatasourceInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
 					Vars:        input.vars,
 				})
 			}
@@ -69,8 +74,8 @@ type updateDatasourcesParameters struct {
 	moduleTitle string
 	packageType string
 
-	datasetNames []string
-	inputVars    map[string][]util.Variable
+	datasets  datasetContentArray
+	inputVars map[string][]util.Variable
 }
 
 func updateDatasource(dsc datasourceContent, params updateDatasourcesParameters) (datasourceContent, error) {
@@ -81,16 +86,24 @@ func updateDatasource(dsc datasourceContent, params updateDatasourcesParameters)
 		dsc.inputs = map[string]datasourceInput{}
 	}
 
-	inputType := params.packageType
-	if inputType == "metrics" {
-		inputType = fmt.Sprintf("%s/%s", dsc.moduleName, inputType)
+	for _, dataset := range params.datasets {
+		for _, stream := range dataset.manifest.Streams {
+			inputType := stream.Input
+
+			v, ok := dsc.inputs[inputType]
+			if !ok {
+				v = datasourceInput{
+					packageType: params.packageType,
+					inputType:   inputType,
+					vars:        params.inputVars[inputType],
+				}
+			}
+
+			v.datasetNames = append(v.datasetNames, dataset.name)
+			dsc.inputs[inputType] = v
+		}
 	}
 
-	dsc.inputs[inputType] = datasourceInput{
-		datasetNames: params.datasetNames,
-		packageType:  params.packageType,
-		vars:         params.inputVars[inputType],
-	}
 	return dsc, nil
 }
 
@@ -110,16 +123,14 @@ func toDatasourceDescriptionForTwoTypes(moduleTitle, firstPackageType, secondPac
 	return fmt.Sprintf("Collect %s and %s from %s instances", firstPackageType, secondPackageType, moduleTitle)
 }
 
-func toDatasourceInputTitle(moduleTitle, packageType string) string {
-	return fmt.Sprintf("Collect %s from %s instances", packageType, moduleTitle)
-}
+func toDatasourceInputTitle(moduleTitle, packageType string, datasets []string, inputType string) string {
+	datasets = adjustDatasetNamesForInputDescription(datasets)
 
-func toDatasourceInputDescription(moduleTitle, packageType string, datasets []string) string {
 	firstPart := datasets[:len(datasets)-1]
 	secondPart := datasets[len(datasets)-1:]
 
 	var description strings.Builder
-	description.WriteString("Collecting ")
+	description.WriteString("Collect ")
 	description.WriteString(moduleTitle)
 	description.WriteString(" ")
 
@@ -132,5 +143,49 @@ func toDatasourceInputDescription(moduleTitle, packageType string, datasets []st
 	description.WriteString(secondPart[0])
 	description.WriteString(" ")
 	description.WriteString(packageType)
+
+	if packageType == "logs" && inputType != "logs" {
+		description.WriteString(fmt.Sprintf(" (input: %s)", inputType))
+	}
 	return description.String()
+}
+
+func toDatasourceInputDescription(moduleTitle, packageType string, datasets []string, inputType string) string {
+	datasets = adjustDatasetNamesForInputDescription(datasets)
+
+	firstPart := datasets[:len(datasets)-1]
+	secondPart := datasets[len(datasets)-1:]
+
+	var description strings.Builder
+	description.WriteString("Collecting ")
+
+	if len(firstPart) > 0 {
+		fp := strings.Join(firstPart, ", ")
+		description.WriteString(fp)
+		description.WriteString(" and ")
+	}
+
+	description.WriteString(secondPart[0])
+	description.WriteString(" ")
+	description.WriteString(packageType)
+	description.WriteString(" from ")
+	description.WriteString(moduleTitle)
+	description.WriteString(" instances")
+
+	if packageType == "logs" && inputType != "logs" {
+		description.WriteString(fmt.Sprintf(" (input: %s)", inputType))
+	}
+	return description.String()
+}
+
+func adjustDatasetNamesForInputDescription(names []string) []string {
+	var adjusted []string
+	for _, name := range names {
+		if name == "log" {
+			adjusted = append(adjusted, "application")
+			continue
+		}
+		adjusted = append(adjusted, name)
+	}
+	return adjusted
 }

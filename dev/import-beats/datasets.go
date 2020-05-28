@@ -45,7 +45,7 @@ type datasetManifestSinglePipeline struct {
 	IngestPipeline string `yaml:"ingest_pipeline"`
 }
 
-func createDatasets(beatType, modulePath, moduleName, moduleTitle, moduleRelease string, moduleFields []fieldDefinition,
+func createDatasets(beatType, modulePath, moduleName, moduleTitle string, moduleFields []fieldDefinition,
 	filteredEcsModuleFieldNames []string, ecsFields fieldDefinitionArray) (datasetContentArray, error) {
 	datasetDirs, err := ioutil.ReadDir(modulePath)
 	if err != nil {
