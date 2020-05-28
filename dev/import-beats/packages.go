@@ -208,7 +208,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 			moduleTitle = *manifest.Title
 		}
 
-		datasets, err := createDatasets(beatType, modulePath, moduleName, moduleTitle, manifest.Release, moduleFields, filteredEcsModuleFieldNames, r.ecsFields)
+		datasets, err := createDatasets(beatType, modulePath, moduleName, moduleTitle, moduleFields, filteredEcsModuleFieldNames, r.ecsFields)
 		if err != nil {
 			return err
 		}
