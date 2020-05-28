@@ -190,7 +190,8 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 			}
 
 			for k, v := range objects {
-				kibana.files[objectType][k] = v
+				kk := string(replaceBlacklistedWords([]byte(k)))
+				kibana.files[objectType][kk] = v
 			}
 		}
 	}
