@@ -27,8 +27,8 @@ var (
 	// GoLicenserImportPath controls the import path used to install go-licenser.
 	GoLicenserImportPath = "github.com/elastic/go-licenser"
 
-	publicDir      = "./public"
 	buildDir       = "./build"
+	publicDir      = filepath.Join(buildDir, "public")
 	storageRepoDir = filepath.Join(buildDir, "package-storage")
 	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/", "./dev/packages/alpha/"}
 )
@@ -184,12 +184,7 @@ func FindFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 }
 
 func Clean() error {
-	err := os.RemoveAll(buildDir)
-	if err != nil {
-		return err
-	}
-
-	return os.RemoveAll(publicDir)
+	return os.RemoveAll(buildDir)
 }
 
 func Vendor() error {
