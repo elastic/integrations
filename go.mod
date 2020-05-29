@@ -9,3 +9,5 @@ require (
 	github.com/pkg/errors v0.9.1
 	gopkg.in/yaml.v2 v2.2.8
 )
+
+replace github.com/elastic/package-registry => github.com/mtojek/package-registry v0.2.1-0.20200529130826-38512a9ce2d7

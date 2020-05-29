@@ -27,11 +27,11 @@ var (
 	// GoLicenserImportPath controls the import path used to install go-licenser.
 	GoLicenserImportPath = "github.com/elastic/go-licenser"
 
-	buildDir       = "./build"
-	publicDir      = filepath.Join(buildDir, "public")
-	storageRepoDir = filepath.Join(buildDir, "package-storage")
+	buildDir           = "./build"
+	publicDir          = filepath.Join(buildDir, "public")
+	storageRepoDir     = filepath.Join(buildDir, "package-storage")
 	storagePackagesDir = filepath.Join(buildDir, "package-storage-packages")
-	packagePaths   = []string{storagePackagesDir, "./packages"}
+	packagePaths       = []string{storagePackagesDir, "./packages"}
 )
 
 func Build() error {
@@ -98,13 +98,13 @@ func fetchPackageStorage() error {
 	}
 
 	err = sh.Run("rsync", "-a",
-		filepath.Join(storageRepoDir, "packages", "base") + "/",
+		filepath.Join(storageRepoDir, "packages", "base")+"/",
 		filepath.Join(storagePackagesDir, "base"))
 	if err != nil {
 		return err
 	}
 	return sh.Run("rsync", "-a",
-		filepath.Join(storageRepoDir, "packages", "endpoint") + "/",
+		filepath.Join(storageRepoDir, "packages", "endpoint")+"/",
 		filepath.Join(storagePackagesDir, "endpoint"))
 }
 
