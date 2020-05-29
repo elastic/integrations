@@ -106,7 +106,7 @@ feel free to review the script's [README](https://github.com/elastic/integration
 
     Generated packages are stored by default in the `packages` directory. Generally, the import process
     updates all of the integrations, so don't be surprised if you notice updates to multiple integrations, including
-    the one you're currently working on (e.g. `packages/foobarbaz/0.0.1`). You can either commit this changes
+    the one you're currently working on (e.g. `packages/foobarbaz`). You can either commit this changes
     or leave them for later.
 
     If you want to select a subgroup of packages, set the environment variable `PACKAGES` (comma-delimited list):
@@ -114,9 +114,6 @@ feel free to review the script's [README](https://github.com/elastic/integration
     ```bash
    $ PACKAGES=aws,cisco mage ImportBeats
     ```
-
-6. Copy the package output for your integration (e.g. `packages/foobarbaz/0.0.1`) to the _alpha_ directory and
-    raise the version manually: `dev/packages/alpha/foobarbaz/0.0.2`.
 
 ### Fine-tune the integration
 
