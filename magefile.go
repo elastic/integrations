@@ -30,7 +30,8 @@ var (
 	buildDir       = "./build"
 	publicDir      = filepath.Join(buildDir, "public")
 	storageRepoDir = filepath.Join(buildDir, "package-storage")
-	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/", "./dev/packages/alpha/"}
+	storagePackagesDir = filepath.Join(buildDir, "package-storage-packages")
+	packagePaths   = []string{storagePackagesDir, "./packages"}
 )
 
 func Build() error {
@@ -67,7 +68,7 @@ func BuildPublicDirectory() error {
 }
 
 func fetchPackageStorage() error {
-	_, err := os.Stat(storageRepoDir)
+	_, err := os.Stat(storagePackagesDir)
 	if err == nil {
 		return nil // package storage has been already fetched
 	}
@@ -82,11 +83,29 @@ func fetchPackageStorage() error {
 		packageStorageRevision = "master"
 	}
 
-	return sh.Run("git",
+	err = sh.Run("git",
 		"--git-dir", filepath.Join(storageRepoDir, ".git"),
 		"--work-tree", storageRepoDir,
 		"checkout",
 		packageStorageRevision)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(storagePackagesDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	err = sh.Run("rsync", "-a",
+		filepath.Join(storageRepoDir, "packages", "base") + "/",
+		filepath.Join(storagePackagesDir, "base"))
+	if err != nil {
+		return err
+	}
+	return sh.Run("rsync", "-a",
+		filepath.Join(storageRepoDir, "packages", "endpoint") + "/",
+		filepath.Join(storagePackagesDir, "endpoint"))
 }
 
 func ImportBeats() error {
