@@ -1,8 +1,7 @@
 {
     "attributes": {
         "columns": [
-            "log.level",
-            "message"
+            "_source"
         ],
         "description": "",
         "hits": 0,
@@ -20,12 +19,12 @@
                             "key": "query",
                             "negate": false,
                             "type": "custom",
-                            "value": "{\"match_phrase_prefix\":{\"stream.dataset\":{\"query\":\"mysql.\"}}}"
+                            "value": "{\"query\":{\"prefix\":{\"stream.dataset\":\"mysql.\"}}}"
                         },
                         "query": {
-                            "match_phrase_prefix": {
-                                "stream.dataset": {
-                                    "query": "mysql."
+                            "query": {
+                                "prefix": {
+                                    "stream.dataset": "mysql."
                                 }
                             }
                         }
@@ -41,16 +40,16 @@
                             "key": "fileset.name",
                             "negate": false,
                             "params": {
-                                "query": "error",
+                                "query": "slowlog",
                                 "type": "phrase"
                             },
                             "type": "phrase",
-                            "value": "error"
+                            "value": "slowlog"
                         },
                         "query": {
                             "match": {
                                 "fileset.name": {
-                                    "query": "error",
+                                    "query": "slowlog",
                                     "type": "phrase"
                                 }
                             }
@@ -85,10 +84,13 @@
                 "desc"
             ]
         ],
-        "title": "Error logs [Logs MySQL] ECS",
+        "title": "Slow logs [Logs MySQL] ECS",
         "version": 1
     },
-    "id": "Logs-MySQL-error-log-ecs",
+    "id": "Logs-MySQL-Slow-log-ecs",
+    "migrationVersion": {
+        "search": "7.4.0"
+    },
     "references": [
         {
             "id": "logs-*",
