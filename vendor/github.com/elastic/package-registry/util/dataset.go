@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	handlebars "github.com/aymerick/raymond"
 	"github.com/pkg/errors"
 	yamlv2 "gopkg.in/yaml.v2"
 
@@ -121,7 +122,7 @@ func NewDataset(basePath string, p *Package) (*DataSet, error) {
 		}
 	}
 
-	if !IsValidRelase(d.Release) {
+	if !IsValidRelease(d.Release) {
 		return nil, fmt.Errorf("invalid release: %s", d.Release)
 	}
 
@@ -195,8 +196,13 @@ func validateIngestPipelineFile(pipelinePath string) error {
 	if err != nil {
 		return errors.Wrapf(err, "reading ingest pipeline file failed (path: %s)", pipelinePath)
 	}
-	ext := filepath.Ext(pipelinePath)
 
+	_, err = handlebars.Parse(string(f))
+	if err != nil {
+		return errors.Wrapf(err, "parsing handlebars syntax failed (path: %s)", pipelinePath)
+	}
+
+	ext := filepath.Ext(pipelinePath)
 	var m map[string]interface{}
 	switch ext {
 	case ".json":
