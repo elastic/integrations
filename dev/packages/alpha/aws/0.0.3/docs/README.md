@@ -300,6 +300,73 @@ for sending server access logs to S3 bucket.
 An example event for `billing` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.billing-default-000001",
+  "_id": "IMxJXHIBpGMSUzkZo-s0",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:17:06.212Z",
+    "cloud": {
+      "provider": "aws",
+      "region": "us-east-1",
+      "account": {
+        "id": "428152502467",
+        "name": "elastic-beats"
+      }
+    },
+    "event": {
+      "dataset": "aws.billing",
+      "module": "aws",
+      "duration": 1938760247
+    },
+    "metricset": {
+      "name": "billing",
+      "period": 43200000
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "billing": {
+        "metrics": {
+          "EstimatedCharges": {
+            "max": 1625.41
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/Billing"
+      },
+      "dimensions": {
+        "Currency": "USD"
+      }
+    },
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "type": "metrics",
+      "dataset": "aws.billing",
+      "namespace": "default"
+    },
+    "agent": {
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:17:06.212Z"
+    ]
+  },
+  "sort": [
+    1590686226212
+  ]
+}
 ```
 
 The fields reported are:
@@ -327,6 +394,78 @@ The fields reported are:
 An example event for `cloudwatch` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.cloudwatch-metrics-default-000001",
+  "_id": "-sxJXHIBpGMSUzkZxex8",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:17:02.812Z",
+    "event": {
+      "duration": 14119105951,
+      "dataset": "aws.cloudwatch",
+      "module": "aws"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "agent": {
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "stream": {
+      "dataset": "aws.cloudwatch-metrics",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "cloud": {
+      "provider": "aws",
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      }
+    },
+    "aws": {
+      "dimensions": {
+        "InstanceId": "i-0830bfecfa7173cbe"
+      },
+      "ec2": {
+        "metrics": {
+          "DiskWriteOps": {
+            "avg": 0,
+            "max": 0
+          },
+          "CPUUtilization": {
+            "avg": 0.7661943132361363,
+            "max": 0.833333333333333
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/EC2"
+      }
+    },
+    "metricset": {
+      "period": 300000,
+      "name": "cloudwatch"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:17:02.812Z"
+    ]
+  },
+  "sort": [
+    1590686222812
+  ]
+}
 ```
 
 The fields reported are:
@@ -354,6 +493,84 @@ The fields reported are:
 An example event for `dynamodb` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.dynamodb-default-000001",
+  "_id": "YMxJXHIBpGMSUzkZzO0_",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:17:08.666Z",
+    "agent": {
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "event": {
+      "dataset": "aws.dynamodb",
+      "module": "aws",
+      "duration": 10266182336
+    },
+    "stream": {
+      "type": "metrics",
+      "dataset": "aws.dynamodb",
+      "namespace": "default"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "cloud": {
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws",
+      "region": "eu-central-1"
+    },
+    "aws": {
+      "dimensions": {
+        "TableName": "TryDaxTable3"
+      },
+      "dynamodb": {
+        "metrics": {
+          "ProvisionedWriteCapacityUnits": {
+            "avg": 1
+          },
+          "ProvisionedReadCapacityUnits": {
+            "avg": 1
+          },
+          "ConsumedWriteCapacityUnits": {
+            "avg": 0,
+            "sum": 0
+          },
+          "ConsumedReadCapacityUnits": {
+            "avg": 0,
+            "sum": 0
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/DynamoDB"
+      }
+    },
+    "metricset": {
+      "name": "dynamodb",
+      "period": 300000
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:17:08.666Z"
+    ]
+  },
+  "sort": [
+    1590686228666
+  ]
+}
 ```
 
 The fields reported are:
@@ -407,6 +624,96 @@ The fields reported are:
 An example event for `ebs` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.ebs-default-000001",
+  "_id": "_89uXHIBpGMSUzkZoRoL",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:57:22.450Z",
+    "service": {
+      "type": "aws"
+    },
+    "aws": {
+      "ebs": {
+        "metrics": {
+          "VolumeReadOps": {
+            "avg": 0
+          },
+          "VolumeQueueLength": {
+            "avg": 0.0000666666666666667
+          },
+          "VolumeWriteOps": {
+            "avg": 29
+          },
+          "VolumeTotalWriteTime": {
+            "sum": 0.02
+          },
+          "BurstBalance": {
+            "avg": 100
+          },
+          "VolumeWriteBytes": {
+            "avg": 14406.620689655172
+          },
+          "VolumeIdleTime": {
+            "sum": 299.98
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/EBS"
+      },
+      "dimensions": {
+        "VolumeId": "vol-03370a204cc8b0a2f"
+      }
+    },
+    "agent": {
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "cloud": {
+      "provider": "aws",
+      "region": "eu-central-1",
+      "account": {
+        "id": "428152502467",
+        "name": "elastic-beats"
+      }
+    },
+    "event": {
+      "dataset": "aws.ebs",
+      "module": "aws",
+      "duration": 10488314037
+    },
+    "metricset": {
+      "period": 300000,
+      "name": "ebs"
+    },
+    "stream": {
+      "namespace": "default",
+      "type": "metrics",
+      "dataset": "aws.ebs"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:57:22.450Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.ebs@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688642450
+  ]
+}
 ```
 
 The fields reported are:
@@ -444,6 +751,140 @@ The fields reported are:
 An example event for `ec2` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.ec2-metrics-default-000001",
+  "_id": "b89uXHIBpGMSUzkZHxPP",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:56:37.255Z",
+    "aws": {
+      "ec2": {
+        "network": {
+          "in": {
+            "packets": 448.4,
+            "bytes_per_sec": 103.10266666666666,
+            "packets_per_sec": 1.4946666666666666,
+            "bytes": 30930.8
+          },
+          "out": {
+            "packets": 233.6,
+            "bytes_per_sec": 51.754666666666665,
+            "packets_per_sec": 0.7786666666666666,
+            "bytes": 15526.4
+          }
+        },
+        "status": {
+          "check_failed": 0,
+          "check_failed_instance": 0,
+          "check_failed_system": 0
+        },
+        "cpu": {
+          "credit_usage": 0.004566,
+          "credit_balance": 144,
+          "surplus_credit_balance": 0,
+          "surplus_credits_charged": 0,
+          "total": {
+            "pct": 0.0999999999997574
+          }
+        },
+        "diskio": {
+          "read": {
+            "bytes_per_sec": 0,
+            "count_per_sec": 0,
+            "bytes": 0,
+            "count": 0
+          },
+          "write": {
+            "count": 0,
+            "bytes_per_sec": 0,
+            "count_per_sec": 0,
+            "bytes": 0
+          }
+        },
+        "instance": {
+          "core": {
+            "count": 1
+          },
+          "threads_per_core": 1,
+          "public": {
+            "ip": "3.122.204.80",
+            "dns_name": ""
+          },
+          "private": {
+            "ip": "10.0.0.122",
+            "dns_name": "ip-10-0-0-122.eu-central-1.compute.internal"
+          },
+          "image": {
+            "id": "ami-0b418580298265d5c"
+          },
+          "state": {
+            "name": "running",
+            "code": 16
+          },
+          "monitoring": {
+            "state": "disabled"
+          }
+        }
+      }
+    },
+    "agent": {
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "module": "aws",
+      "duration": 23217499283,
+      "dataset": "aws.ec2"
+    },
+    "metricset": {
+      "period": 300000,
+      "name": "ec2"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "namespace": "default",
+      "type": "metrics",
+      "dataset": "aws.ec2-metrics"
+    },
+    "cloud": {
+      "provider": "aws",
+      "region": "eu-central-1",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "instance": {
+        "id": "i-04c1a32c2aace6b40"
+      },
+      "machine": {
+        "type": "t2.micro"
+      },
+      "availability_zone": "eu-central-1a"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:56:37.255Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.ec2@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688597255
+  ]
+}
 ```
 
 The fields reported are:
@@ -504,6 +945,93 @@ The fields reported are:
 An example event for `elb` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.elb-metrics-default-000001",
+  "_id": "i89vXHIBpGMSUzkZuSyO",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:30.211Z",
+    "agent": {
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "cloud": {
+      "provider": "aws",
+      "region": "eu-central-1",
+      "account": {
+        "id": "428152502467",
+        "name": "elastic-beats"
+      }
+    },
+    "aws": {
+      "elb": {
+        "metrics": {
+          "EstimatedALBNewConnectionCount": {
+            "avg": 32
+          },
+          "EstimatedALBConsumedLCUs": {
+            "avg": 0.00035000000000000005
+          },
+          "EstimatedProcessedBytes": {
+            "avg": 967
+          },
+          "EstimatedALBActiveConnectionCount": {
+            "avg": 5
+          },
+          "HealthyHostCount": {
+            "max": 2
+          },
+          "UnHealthyHostCount": {
+            "max": 0
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/ELB"
+      },
+      "dimensions": {
+        "LoadBalancerName": "filebeat-aws-elb-test-elb"
+      }
+    },
+    "metricset": {
+      "name": "elb",
+      "period": 60000
+    },
+    "event": {
+      "dataset": "aws.elb",
+      "module": "aws",
+      "duration": 15044430616
+    },
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "type": "metrics",
+      "dataset": "aws.elb-metrics",
+      "namespace": "default"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:30.211Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.elb@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688710211
+  ]
+}
 ```
 
 The fields reported are:
@@ -583,6 +1111,83 @@ The fields reported are:
 An example event for `lambda` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.lambda-default-000001",
+  "_id": "YMxJXHIBpGMSUzkZzO0_",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:17:08.666Z",
+    "agent": {
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "event": {
+      "dataset": "aws.dynamodb",
+      "module": "aws",
+      "duration": 10266182336
+    },
+    "stream": {
+      "type": "metrics",
+      "dataset": "aws.lambda",
+      "namespace": "default"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "cloud": {
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws",
+      "region": "eu-central-1"
+    },
+    "aws": {
+      "cloudwatch": {
+        "namespace": "AWS/Lambda"
+      },
+      "dimensions": {
+        "FunctionName": "ec2-owner-tagger-serverless",
+        "Resource": "ec2-owner-tagger-serverless"
+      },
+      "lambda": {
+        "metrics": {
+          "Duration": {
+            "avg": 8218.073333333334
+          },
+          "Errors": {
+            "avg": 1
+          },
+          "Invocations": {
+            "avg": 1
+          },
+          "Throttles": {
+            "avg": 0
+          }
+        }
+      }
+    },
+    "metricset": {
+      "name": "dynamodb",
+      "period": 300000
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:17:08.666Z"
+    ]
+  },
+  "sort": [
+    1590686228666
+  ]
+}
 ```
 
 The fields reported are:
@@ -622,6 +1227,114 @@ The fields reported are:
 An example event for `natgateway` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.natgateway-default-000001",
+  "_id": "Ds9vXHIBpGMSUzkZmyod",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "dataset": "aws.natgateway",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "cloudwatch": {
+        "namespace": "AWS/NATGateway"
+      },
+      "dimensions": {
+        "NatGatewayId": "nat-0a5cb7b9807908cc0"
+      },
+      "natgateway": {
+        "metrics": {
+          "ActiveConnectionCount": {
+              "max": 0
+          },
+          "BytesInFromDestination": {
+              "sum": 0
+          },
+          "BytesInFromSource": {
+              "sum": 0
+          },
+          "BytesOutToDestination": {
+              "sum": 0
+          },
+          "BytesOutToSource": {
+              "sum": 0
+          },
+          "ConnectionAttemptCount": {
+              "sum": 0
+          },
+          "ConnectionEstablishedCount": {
+              "sum": 0
+          },
+          "ErrorPortAllocation": {
+              "sum": 0
+          },
+          "PacketsDropCount": {
+              "sum": 0
+          },
+          "PacketsInFromDestination": {
+              "sum": 0
+          },
+          "PacketsInFromSource": {
+              "sum": 0
+          },
+          "PacketsOutToDestination": {
+              "sum": 0
+          },
+          "PacketsOutToSource": {
+              "sum": 0
+          }
+        }
+      }
+    },
+    "event": {
+      "dataset": "aws.natgateway",
+      "module": "aws",
+      "duration": 10418157072
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "natgateway"
+    },
+    "cloud": {
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws"
+    },
+    "agent": {
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:27.154Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.natgateway@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688707154
+  ]
+}
 ```
 
 The fields reported are:
@@ -662,6 +1375,119 @@ The fields reported are:
 An example event for `rds` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.rds-default-000001",
+  "_id": "k89vXHIBpGMSUzkZuSyO",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:34.537Z",
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "aws": {
+      "rds": {
+        "latency": {
+          "dml": 0,
+          "insert": 0,
+          "update": 0,
+          "commit": 0,
+          "ddl": 0,
+          "delete": 0,
+          "select": 0.21927814569536422
+        },
+        "queries": 6.197934021992669,
+        "aurora_bin_log_replica_lag": 0,
+        "transactions": {
+          "blocked": 0,
+          "active": 0
+        },
+        "deadlocks": 0,
+        "login_failures": 0,
+        "throughput": {
+          "network": 1.399813358218904,
+          "insert": 0,
+          "ddl": 0,
+          "select": 2.5165408396246853,
+          "delete": 0,
+          "commit": 0,
+          "network_transmit": 0.699906679109452,
+          "update": 0,
+          "dml": 0,
+          "network_receive": 0.699906679109452
+        },
+        "cpu": {
+          "total": {
+            "pct": 0.03
+          }
+        },
+        "db_instance": {
+          "arn": "arn:aws:rds:eu-west-1:428152502467:db:database-1-instance-1-eu-west-1a",
+          "class": "db.r5.large",
+          "identifier": "database-1-instance-1-eu-west-1a",
+          "status": "available"
+        },
+        "cache_hit_ratio.result_set": 0,
+        "aurora_replica.lag.ms": 19.576,
+        "free_local_storage.bytes": 32431271936,
+        "cache_hit_ratio.buffer": 100,
+        "disk_usage": {
+          "bin_log.bytes": 0
+        },
+        "db_instance.identifier": "database-1-instance-1-eu-west-1a",
+        "freeable_memory.bytes": 4436537344,
+        "engine_uptime.sec": 10463030,
+        "database_connections": 0
+      }
+    },
+    "cloud": {
+      "provider": "aws",
+      "region": "eu-west-1",
+      "account": {
+        "id": "428152502467",
+        "name": "elastic-beats"
+      },
+      "availability_zone": "eu-west-1a"
+    },
+    "event": {
+      "dataset": "aws.rds",
+      "module": "aws",
+      "duration": 10777919184
+    },
+    "metricset": {
+      "name": "rds",
+      "period": 60000
+    },
+    "stream": {
+      "namespace": "default",
+      "type": "metrics",
+      "dataset": "aws.rds"
+    },
+    "agent": {
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:34.537Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.rds@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688714537
+  ]
+}
 ```
 
 The fields reported are:
@@ -762,6 +1588,78 @@ The fields reported are:
 An example event for `s3_daily_storage` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.s3_daily_storage-default-000001",
+  "_id": "Ds9vXHIBpGMSUzkZmyod",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "dataset": "aws.s3_daily_storage",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "s3": {
+        "bucket": {
+          "name": "test-s3-ks-2"
+        }
+      },
+      "s3_daily_storage": {
+        "bucket": {
+          "size": {
+            "bytes": 207372
+          }
+        },
+        "number_of_objects": 128
+      }
+    },
+    "event": {
+      "dataset": "aws.s3_daily_storage",
+      "module": "aws",
+      "duration": 10418157072
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "s3_daily_storage"
+    },
+    "cloud": {
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws"
+    },
+    "agent": {
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:27.154Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.s3_daily_storage@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688707154
+  ]
+}
 ```
 
 The fields reported are:
@@ -790,6 +1688,91 @@ The fields reported are:
 An example event for `s3_request` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.s3_request-default-000001",
+  "_id": "Ds9vXHIBpGMSUzkZmyod",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "dataset": "aws.s3_request",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "s3": {
+        "bucket": {
+          "name": "test-s3-ks-2"
+        }
+      },
+      "s3_request": {
+        "downloaded": {
+          "bytes": 534
+        },
+        "errors": {
+          "4xx": 0,
+          "5xx": 0
+        },
+        "latency": {
+          "first_byte.ms": 214,
+          "total_request.ms": 533
+        },
+        "requests": {
+          "list": 2,
+          "put": 10,
+          "total": 12
+        },
+        "uploaded": {
+          "bytes": 13572
+        }
+      }
+    },
+    "event": {
+      "dataset": "aws.s3_request",
+      "module": "aws",
+      "duration": 10418157072
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "s3_request"
+    },
+    "cloud": {
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws"
+    },
+    "agent": {
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:27.154Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.s3_request@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688707154
+  ]
+}
 ```
 
 The fields reported are:
@@ -832,6 +1815,87 @@ The fields reported are:
 An example event for `sns` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.sns-default-000001",
+  "_id": "Ds9vXHIBpGMSUzkZmyod",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "dataset": "aws.sns",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "cloudwatch": {
+        "namespace": "AWS/SNS"
+      },
+      "dimensions": {
+        "TopicName": "test-sns-ks"
+      },
+      "sns": {
+        "metrics": {
+          "NumberOfMessagesPublished": {
+            "sum": 1
+          },
+          "NumberOfNotificationsFailed": {
+            "sum": 1
+          },
+          "PublishSize": {
+            "avg": 5
+          }
+        }
+      },
+      "tags": {
+        "created-by": "ks"
+      }
+    },
+    "event": {
+      "dataset": "aws.sns",
+      "module": "aws",
+      "duration": 10418157072
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "sns"
+    },
+    "cloud": {
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws"
+    },
+    "agent": {
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:27.154Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.sns@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688707154
+  ]
+}
 ```
 
 The fields reported are:
@@ -869,6 +1933,83 @@ The fields reported are:
 An example event for `sqs` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.sqs-default-000001",
+  "_id": "Ds9vXHIBpGMSUzkZmyod",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "dataset": "aws.sqs",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "sqs": {
+        "empty_receives": 0,
+        "messages": {
+          "delayed": 0,
+          "deleted": 0,
+          "not_visible": 0,
+          "received": 0,
+          "sent": 0,
+          "visible": 2
+        },
+        "oldest_message_age": {
+          "sec": 78494
+        },
+        "queue": {
+          "name": "test-s3-notification"
+        },
+        "sent_message_size": {}
+      }
+    },
+    "event": {
+      "dataset": "aws.sqs",
+      "module": "aws",
+      "duration": 10418157072
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "sqs"
+    },
+    "cloud": {
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws"
+    },
+    "agent": {
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:27.154Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.sqs@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688707154
+  ]
+}
 ```
 
 The fields reported are:
@@ -905,6 +2046,93 @@ The fields reported are:
 An example event for `transitgateway` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.transitgateway-default-000001",
+  "_id": "WNToXHIBpGMSUzkZaeVh",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T20:10:20.953Z",
+    "cloud": {
+      "provider": "aws",
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      }
+    },
+    "aws": {
+      "transitgateway": {
+        "metrics": {
+          "PacketsIn": {
+            "sum": 0
+          },
+          "BytesIn": {
+            "sum": 0
+          },
+          "BytesOut": {
+            "sum": 0
+          },
+          "PacketsOut": {
+            "sum": 0
+          },
+          "PacketDropCountBlackhole": {
+            "sum": 0
+          },
+          "PacketDropCountNoRoute": {
+            "sum": 0
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/TransitGateway"
+      },
+      "dimensions": {
+        "TransitGateway": "tgw-0630672a32f12808a"
+      }
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "agent": {
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+    },
+    "event": {
+      "dataset": "aws.transitgateway",
+      "module": "aws",
+      "duration": 12762825681
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "transitgateway"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "namespace": "default",
+      "type": "metrics",
+      "dataset": "aws.transitgateway"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T20:10:20.953Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.transitgateway@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590696620953
+  ]
+}
 ```
 
 The fields reported are:
@@ -937,6 +2165,81 @@ The fields reported are:
 An example event for `usage` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.usage-default-000001",
+  "_id": "YM9vXHIBpGMSUzkZiSlC",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:30.929Z",
+    "aws": {
+      "usage": {
+        "metrics": {
+          "CallCount": {
+            "sum": 1
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/Usage"
+      },
+      "dimensions": {
+        "Type": "API",
+        "Resource": "GetMetricData",
+        "Service": "CloudWatch",
+        "Class": "None"
+      }
+    },
+    "event": {
+      "duration": 1191329839,
+      "dataset": "aws.usage",
+      "module": "aws"
+    },
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "type": "metrics",
+      "dataset": "aws.usage",
+      "namespace": "default"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "cloud": {
+      "provider": "aws",
+      "region": "eu-north-1",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      }
+    },
+    "metricset": {
+      "name": "usage",
+      "period": 60000
+    },
+    "agent": {
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:30.929Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.usage@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688710929
+  ]
+}
 ```
 
 The fields reported are:
@@ -965,6 +2268,81 @@ The fields reported are:
 An example event for `vpn` looks as following:
 
 ```$json
+{
+  "_index": "metrics-aws.vpn-default-000001",
+  "_id": "Ds9vXHIBpGMSUzkZmyod",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "service": {
+      "type": "aws"
+    },
+    "stream": {
+      "dataset": "aws.vpn",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "aws": {
+      "vpn": {
+        "metrics": {
+          "TunnelState": {
+            "avg": 0
+          },
+          "TunnelDataIn": {
+            "sum": 0
+          },
+          "TunnelDataOut": {
+            "sum": 0
+          }
+        }
+      },
+      "cloudwatch": {
+        "namespace": "AWS/VPN"
+      }
+    },
+    "event": {
+      "dataset": "aws.vpn",
+      "module": "aws",
+      "duration": 10418157072
+    },
+    "metricset": {
+      "period": 60000,
+      "name": "vpn"
+    },
+    "cloud": {
+      "region": "us-west-2",
+      "account": {
+        "name": "elastic-beats",
+        "id": "428152502467"
+      },
+      "provider": "aws"
+    },
+    "agent": {
+      "version": "8.0.0",
+      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+      "name": "MacBook-Elastic.local",
+      "type": "metricbeat"
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-05-28T17:58:27.154Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@aws.vpn@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1590688707154
+  ]
+}
 ```
 
 The fields reported are:
