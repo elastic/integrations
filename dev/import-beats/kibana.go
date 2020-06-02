@@ -355,7 +355,7 @@ func stripReferencesToEventModuleInFilter(object mapStr, filterKey, moduleName s
 				return nil, errors.Wrapf(err, "setting meta.type failed")
 			}
 
-			_, err = filterObject.put("meta.value", fmt.Sprintf("{\"match_phrase_prefix\":{\"stream.dataset\":{\"query\":\"%s.\"}}}", moduleName))
+			_, err = filterObject.put("meta.value", fmt.Sprintf("{\"prefix\":{\"stream.dataset\":\"%s.\"}}", moduleName))
 			if err != nil {
 				return nil, errors.Wrapf(err, "setting meta.value failed")
 			}
@@ -366,10 +366,8 @@ func stripReferencesToEventModuleInFilter(object mapStr, filterKey, moduleName s
 			}
 
 			q := map[string]interface{}{
-				"match_phrase_prefix": map[string]interface{}{
-					"stream.dataset": map[string]interface{}{
-						"query": moduleName + ".",
-					},
+				"prefix": map[string]interface{}{
+					"stream.dataset": moduleName + ".",
 				},
 			}
 			_, err = filterObject.put("query", q)

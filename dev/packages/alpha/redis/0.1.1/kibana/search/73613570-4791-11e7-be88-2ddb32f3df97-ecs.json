@@ -1,7 +1,9 @@
 {
     "attributes": {
         "columns": [
+            "host.name",
             "log.level",
+            "redis.log.role",
             "message"
         ],
         "description": "",
@@ -20,13 +22,11 @@
                             "key": "query",
                             "negate": false,
                             "type": "custom",
-                            "value": "{\"match_phrase_prefix\":{\"stream.dataset\":{\"query\":\"mysql.\"}}}"
+                            "value": "{\"prefix\":{\"stream.dataset\":\"redis.\"}}"
                         },
                         "query": {
-                            "match_phrase_prefix": {
-                                "stream.dataset": {
-                                    "query": "mysql."
-                                }
+                            "prefix": {
+                                "stream.dataset": "redis."
                             }
                         }
                     },
@@ -41,35 +41,22 @@
                             "key": "fileset.name",
                             "negate": false,
                             "params": {
-                                "query": "error",
+                                "query": "log",
                                 "type": "phrase"
                             },
                             "type": "phrase",
-                            "value": "error"
+                            "value": "log"
                         },
                         "query": {
                             "match": {
                                 "fileset.name": {
-                                    "query": "error",
+                                    "query": "log",
                                     "type": "phrase"
                                 }
                             }
                         }
                     }
                 ],
-                "highlight": {
-                    "fields": {
-                        "*": {}
-                    },
-                    "fragment_size": 2147483647,
-                    "post_tags": [
-                        "@/kibana-highlighted-field@"
-                    ],
-                    "pre_tags": [
-                        "@kibana-highlighted-field@"
-                    ],
-                    "require_field_match": false
-                },
                 "highlightAll": true,
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
@@ -85,10 +72,13 @@
                 "desc"
             ]
         ],
-        "title": "Error logs [Logs MySQL] ECS",
+        "title": "Logs [Logs Redis] ECS",
         "version": 1
     },
-    "id": "Logs-MySQL-error-log-ecs",
+    "id": "73613570-4791-11e7-be88-2ddb32f3df97-ecs",
+    "migrationVersion": {
+        "search": "7.4.0"
+    },
     "references": [
         {
             "id": "logs-*",
