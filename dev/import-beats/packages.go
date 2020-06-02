@@ -267,7 +267,7 @@ func (r *packageRepository) save(outputDir string) error {
 
 		log.Printf("%s/%s write package content\n", packageName, manifest.Version)
 
-		packagePath := filepath.Join(outputDir, packageName, manifest.Version)
+		packagePath := filepath.Join(outputDir, packageName)
 		err := os.MkdirAll(packagePath, 0755)
 		if err != nil {
 			return errors.Wrapf(err, "cannot make directory for module: '%s'", packagePath)
