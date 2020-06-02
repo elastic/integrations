@@ -30,7 +30,7 @@ type DataSet struct {
 	Release        string   `config:"release" json:"release"`
 	Type           string   `config:"type" json:"type" validate:"required"`
 	IngestPipeline string   `config:"ingest_pipeline,omitempty" config:"ingest_pipeline" json:"ingest_pipeline,omitempty" yaml:"ingest_pipeline,omitempty"`
-	Streams        []Stream `config:"streams" json:"streams,omitempty" yaml:"streams,omitempty" validate:"required"`
+	Streams        []Stream `config:"streams" json:"streams,omitempty" yaml:"streams,omitempty" `
 	Package        string   `json:"package,omitempty" yaml:"package,omitempty"`
 
 	// Generated fields
