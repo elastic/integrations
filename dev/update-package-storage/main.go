@@ -49,12 +49,11 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	}
 
 	err = checkoutMasterBranch(err, options)
-
-	// detect version
+	version, err := detectPackageVersion(err, options, packageName)
 	// copy to package/version
 	// add to index
 	// check index
-	// checkout branch
+	// checkout new branch
 
 	// commit
 	// push

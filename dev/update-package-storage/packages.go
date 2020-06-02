@@ -5,9 +5,14 @@
 package main
 
 import (
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path/filepath"
 )
+
+type manifest struct {
+	Version string `yaml:"version"`
+}
 
 func listPackages(err error, options updateOptions) ([]string, error) {
 	if err != nil {
@@ -33,4 +38,24 @@ func reviewPackages(err error, options updateOptions, packageNames []string, han
 		err = handlePackageChanges(err, options, packageName)
 	}
 	return err
+}
+
+func detectPackageVersion(err error, options updateOptions, packageName string) (string, error) {
+	if err != nil {
+		return "", err
+	}
+
+	body, err := ioutil.ReadFile(filepath.Join(options.packageStorageDir, packageName, "manifest.yml"))
+	m, err := unmarshalManifestFile(err, body)
+	return m.Version, nil
+}
+
+func unmarshalManifestFile(err error, body []byte) (*manifest, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	var m manifest
+	err = yaml.Unmarshal(body, &m)
+	return &m, nil
 }
