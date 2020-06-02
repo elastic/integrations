@@ -47,7 +47,7 @@ Link: https://github.com/elastic/package-registry/blob/master/ASSETS.md
 
 ### Reference package: mysql
 
-Link: https://github.com/elastic/package-registry/tree/master/dev/packages/alpha/mysql/0.0.2
+Link: https://github.com/elastic/package-registry/tree/master/packages/mysql
 
 The MySQL integration was the first integration built using the [import-beats](https://github.com/elastic/integrations/tree/master/dev/import-beats) script.
 The script imported filesets and metricsets from both MySQL modules, and converted them to a package.
@@ -104,9 +104,9 @@ feel free to review the script's [README](https://github.com/elastic/integration
     It will take a while to finish, but the console output should be updated frequently to track the progress.
     The command must end up with the exit code 0. Kindly please to open an issue if it doesn't.
 
-    Generated packages are stored by default in the `dev/packages/beats` directory. Generally, the import process
+    Generated packages are stored by default in the `packages` directory. Generally, the import process
     updates all of the integrations, so don't be surprised if you notice updates to multiple integrations, including
-    the one you're currently working on (e.g. `dev/packages/beats/foobarbaz/0.0.1`). You can either commit this changes
+    the one you're currently working on (e.g. `packages/foobarbaz`). You can either commit this changes
     or leave them for later.
 
     If you want to select a subgroup of packages, set the environment variable `PACKAGES` (comma-delimited list):
@@ -114,9 +114,6 @@ feel free to review the script's [README](https://github.com/elastic/integration
     ```bash
    $ PACKAGES=aws,cisco mage ImportBeats
     ```
-
-6. Copy the package output for your integration (e.g. `dev/packages/beats/foobarbaz/0.0.1`) to the _alpha_ directory and
-    raise the version manually: `dev/packages/alpha/foobarbaz/0.0.2`.
 
 ### Fine-tune the integration
 

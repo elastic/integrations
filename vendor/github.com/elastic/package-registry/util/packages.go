@@ -5,8 +5,10 @@
 package util
 
 import (
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var packageList []Package
@@ -38,24 +40,29 @@ func GetPackages(packagesBasePath string) ([]Package, error) {
 
 // getPackagePaths returns list of available packages, one for each version.
 func getPackagePaths(packagesPath string) ([]string, error) {
+	log.Printf("List packages in %s", packagesPath)
 
-	allPaths, err := filepath.Glob(packagesPath + "/*/*")
-	if err != nil {
-		return nil, err
-	}
+	var foundPaths []string
+	return foundPaths, filepath.Walk(packagesPath, func(path string, info os.FileInfo, err error) error {
+		relativePath, err := filepath.Rel(packagesPath, path)
+		if err != nil {
+			return err
+		}
 
-	var packagePaths []string
-	for _, path := range allPaths {
+		dirs := strings.Split(relativePath, string(filepath.Separator))
+		if len(dirs) < 2 {
+			return nil // need to go to the package version level
+		}
+
 		p, err := os.Stat(path)
 		if err != nil {
-			return nil, err
-		}
-		if !p.IsDir() {
-			continue
+			return err
 		}
 
-		packagePaths = append(packagePaths, path)
-	}
-
-	return packagePaths, nil
+		if p.IsDir() {
+			log.Printf("%-20s\t%10s\t%s", dirs[0], dirs[1], path)
+			foundPaths = append(foundPaths, path)
+		}
+		return filepath.SkipDir // don't need to go deeper
+	})
 }

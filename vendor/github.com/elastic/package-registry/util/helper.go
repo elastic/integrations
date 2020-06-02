@@ -19,7 +19,7 @@ var ReleaseTypes = map[string]interface{}{
 	ReleaseGa:           nil,
 }
 
-func IsValidRelase(release string) bool {
+func IsValidRelease(release string) bool {
 	_, exists := ReleaseTypes[release]
 	return exists
 }

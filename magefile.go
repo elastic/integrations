@@ -7,12 +7,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/magefile/mage/mg"
@@ -30,11 +27,11 @@ var (
 	// GoLicenserImportPath controls the import path used to install go-licenser.
 	GoLicenserImportPath = "github.com/elastic/go-licenser"
 
-	publicDir      = "./public"
-	buildDir       = "./build"
-	storageRepoDir = filepath.Join(buildDir, "package-storage")
-	packagePaths   = []string{filepath.Join(storageRepoDir, "packages"), "./dev/packages/beats/", "./dev/packages/alpha/"}
-	tarGz          = true
+	buildDir           = "./build"
+	publicDir          = filepath.Join(buildDir, "public")
+	storageRepoDir     = filepath.Join(buildDir, "package-storage")
+	storagePackagesDir = filepath.Join(buildDir, "package-storage-packages")
+	packagePaths       = []string{storagePackagesDir, "./packages"}
 )
 
 func Build() error {
@@ -49,26 +46,16 @@ func Build() error {
 	}
 
 	for _, p := range packagePaths {
-		err := sh.Run("go", "run", "github.com/elastic/package-registry/dev/generator/", "-sourceDir="+p, "-publicDir="+publicDir, "-tarGz="+strconv.FormatBool(tarGz))
+		err := sh.Run("go", "run", "github.com/elastic/package-registry/dev/generator/", "-sourceDir="+p, "-publicDir="+publicDir)
 		if err != nil {
 			return err
 		}
-	}
-
-	err = BuildRootFile()
-	if err != nil {
-		return err
 	}
 	return nil
 }
 
 func BuildPublicDirectory() error {
 	err := os.MkdirAll(publicDir, 0755)
-	if err != nil {
-		return err
-	}
-
-	err = os.RemoveAll(filepath.Join(publicDir, "epr"))
 	if err != nil {
 		return err
 	}
@@ -81,7 +68,7 @@ func BuildPublicDirectory() error {
 }
 
 func fetchPackageStorage() error {
-	_, err := os.Stat(storageRepoDir)
+	_, err := os.Stat(storagePackagesDir)
 	if err == nil {
 		return nil // package storage has been already fetched
 	}
@@ -96,11 +83,29 @@ func fetchPackageStorage() error {
 		packageStorageRevision = "master"
 	}
 
-	return sh.Run("git",
+	err = sh.Run("git",
 		"--git-dir", filepath.Join(storageRepoDir, ".git"),
 		"--work-tree", storageRepoDir,
 		"checkout",
 		packageStorageRevision)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(storagePackagesDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	err = sh.Run("rsync", "-a",
+		filepath.Join(storageRepoDir, "packages", "base")+"/",
+		filepath.Join(storagePackagesDir, "base"))
+	if err != nil {
+		return err
+	}
+	return sh.Run("rsync", "-a",
+		filepath.Join(storageRepoDir, "packages", "endpoint")+"/",
+		filepath.Join(storagePackagesDir, "endpoint"))
 }
 
 func ImportBeats() error {
@@ -115,33 +120,8 @@ func ImportBeats() error {
 	return sh.Run("go", args...)
 }
 
-// Creates the `index.json` file
-// For now only containing the version.
-func BuildRootFile() error {
-	rootData := map[string]string{
-		"version":      "0.3.0",
-		"service.name": "package-registry",
-	}
-
-	return writeJsonFile(rootData, publicDir+"/index.json")
-}
-
-func writeJsonFile(v interface{}, path string) error {
-	data, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(path, data, 0644)
-}
-
 func Check() error {
 	Format()
-
-	// Setup the variables for the tests and not create tarGz files
-	publicDir = "./testdata/public"
-	packagePaths = []string{"testdata/package"}
-	tarGz = false
 
 	err := Build()
 	if err != nil {
@@ -153,29 +133,12 @@ func Check() error {
 		return err
 	}
 
-	err = PrepareTest()
-	if err != nil {
-		return err
-	}
-
 	// Check if no changes are shown
 	err = sh.RunV("git", "update-index", "--refresh")
 	if err != nil {
 		return err
 	}
 	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
-}
-
-func PrepareTest() error {
-	return sh.RunV("go", "get", "-v", "-u", "github.com/jstemmer/go-junit-report")
-}
-
-func Test() error {
-	err := PrepareTest()
-	if err != nil {
-		return err
-	}
-	return sh.RunV("go", "test", "./...", "-v", "2>&1", "|", "go-junit-report", ">", "junit-report.xml")
 }
 
 // Format adds license headers, formats .go files with goimports, and formats
@@ -240,12 +203,7 @@ func FindFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 }
 
 func Clean() error {
-	err := os.RemoveAll(buildDir)
-	if err != nil {
-		return err
-	}
-
-	return os.RemoveAll(publicDir)
+	return os.RemoveAll(buildDir)
 }
 
 func Vendor() error {

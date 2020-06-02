@@ -63,27 +63,6 @@ pipeline {
         }
       }
     }
-    /**
-     Execute unit tests.
-     */
-    stage('Test') {
-      steps {
-        deleteDir()
-        unstash 'source'
-        dir("${BASE_DIR}"){
-          insideGo(){
-            sh(label: 'Runs the (unit) tests',script: 'mage -debug test ')
-          }
-        }
-      }
-      post {
-        always {
-          junit(allowEmptyResults: true,
-            keepLongStdio: true,
-            testResults: "${BASE_DIR}/**/junit-*.xml")
-        }
-      }
-    }
   }
   post {
     cleanup {

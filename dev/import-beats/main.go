@@ -91,7 +91,7 @@ func main() {
 	flag.StringVar(&options.euiDir, "euiDir", "../eui", "Path to the Elastic UI framework repository")
 	flag.StringVar(&options.ecsDir, "ecsDir", "../ecs", "Path to the Elastic Common Schema repository")
 	flag.StringVar(&options.packages, "packages", "", "Packages selected for the import")
-	flag.StringVar(&options.outputDir, "outputDir", "dev/packages/beats", "Path to the output directory")
+	flag.StringVar(&options.outputDir, "outputDir", "packages", "Path to the output directory")
 	flag.Parse()
 
 	err := options.validate()

@@ -12,9 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 
 	ucfg "github.com/elastic/go-ucfg"
 	"github.com/elastic/go-ucfg/yaml"
@@ -148,7 +147,7 @@ func NewPackage(basePath string) (*Package, error) {
 		p.Release = DefaultRelease
 	}
 
-	if !IsValidRelase(p.Release) {
+	if !IsValidRelease(p.Release) {
 		return nil, fmt.Errorf("invalid release: %s", p.Release)
 	}
 
@@ -177,6 +176,24 @@ func NewPackage(basePath string) (*Package, error) {
 	p.Path = p.GetUrlPath()
 
 	return p, nil
+}
+
+func NewPackageWithResources(path string) (*Package, error) {
+	aPackage, err := NewPackage(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "building package from path '%s' failed", path)
+	}
+
+	err = aPackage.LoadAssets(aPackage.GetPath())
+	if err != nil {
+		return nil, errors.Wrapf(err, "loading package assets failed (path '%s')", path)
+	}
+
+	err = aPackage.LoadDataSets(aPackage.GetPath())
+	if err != nil {
+		return nil, errors.Wrapf(err, "loading package datasets failed (path '%s')", path)
+	}
+	return aPackage, nil
 }
 
 func (p *Package) HasCategory(category string) bool {
