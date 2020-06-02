@@ -120,6 +120,15 @@ func ImportBeats() error {
 	return sh.Run("go", args...)
 }
 
+func UpdatePackageStorage() error {
+	args := []string{"run", "./dev/update-package-storage/"}
+	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
+		args = append(args, "-skipPullRequest")
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
 func Check() error {
 	Format()
 
