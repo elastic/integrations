@@ -5,9 +5,13 @@
 package main
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+
+	"github.com/magefile/mage/sh"
+
+	"gopkg.in/yaml.v2"
 )
 
 type manifest struct {
@@ -20,7 +24,7 @@ func listPackages(err error, options updateOptions) ([]string, error) {
 	}
 
 	var folders []string
-	fileInfos, err := ioutil.ReadDir(filepath.Join(options.packageStorageDir, "packages"))
+	fileInfos, err := ioutil.ReadDir(options.packagesSourceDir)
 	for _, fileInfo := range fileInfos {
 		if fileInfo.IsDir() {
 			folders = append(folders, fileInfo.Name())
@@ -45,17 +49,60 @@ func detectPackageVersion(err error, options updateOptions, packageName string) 
 		return "", err
 	}
 
-	body, err := ioutil.ReadFile(filepath.Join(options.packageStorageDir, packageName, "manifest.yml"))
-	m, err := unmarshalManifestFile(err, body)
+	m, err := loadManifestFile(packageName, options)
+	if err != nil {
+		return "", err
+	}
 	return m.Version, nil
 }
 
-func unmarshalManifestFile(err error, body []byte) (*manifest, error) {
+func loadManifestFile(packageName string, options updateOptions) (*manifest, error) {
+	body, err := ioutil.ReadFile(filepath.Join(options.packagesSourceDir, packageName, "manifest.yml"))
 	if err != nil {
 		return nil, err
 	}
 
 	var m manifest
 	err = yaml.Unmarshal(body, &m)
-	return &m, nil
+	return &m, err
+}
+func copyIntegrationToPackageStorage(err error, options updateOptions, packageName, packageVersion string) error {
+	if err != nil {
+		return err
+	}
+
+	sourcePath := filepath.Join(options.packagesSourceDir, packageName)
+	destinationPath := filepath.Join(options.packageStorageDir, "packages", packageName, packageVersion)
+	err = os.RemoveAll(destinationPath)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(destinationPath, 0755)
+	if err != nil {
+		return err
+	}
+
+	return filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		relativePath, err := filepath.Rel(sourcePath, path)
+		if err != nil {
+			return err
+		}
+
+		if relativePath == "." {
+			return nil
+		}
+
+		if info.IsDir() {
+			return os.MkdirAll(filepath.Join(destinationPath, relativePath), 0755)
+		}
+
+		return sh.Copy(
+			filepath.Join(destinationPath, relativePath),
+			filepath.Join(sourcePath, relativePath))
+	})
 }

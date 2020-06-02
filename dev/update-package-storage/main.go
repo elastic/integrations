@@ -13,6 +13,7 @@ import (
 )
 
 type updateOptions struct {
+	packagesSourceDir string
 	packageStorageDir string
 	skipPullRequest   bool
 }
@@ -27,6 +28,7 @@ func (uo *updateOptions) validate() error {
 
 func main() {
 	var options updateOptions
+	flag.StringVar(&options.packagesSourceDir, "sourceDir", "./packages", "Path to the packages directory")
 	flag.StringVar(&options.packageStorageDir, "packageStorageDir", "../package-storage", "Path to the package-storage repository")
 	flag.BoolVar(&options.skipPullRequest, "skipPullRequest", false, "Skip opening pull requests")
 	flag.Parse()
@@ -48,17 +50,19 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 		return err
 	}
 
+	packageVersion, err := detectPackageVersion(err, options, packageName)
 	err = checkoutMasterBranch(err, options)
-	version, err := detectPackageVersion(err, options, packageName)
-	// copy to package/version
-	// add to index
-	// check index
-	// checkout new branch
+	err = copyIntegrationToPackageStorage(err, options, packageName, packageVersion)
+	err = addToIndex(err, options, packageName, packageVersion)
+	empty, err := checkIfEmptyIndex(err, options)
+	if empty {
+		return nil
+	}
 
-	// commit
-	// push
+	branchName, err := createBranch(err, options, packageName, packageVersion)
+	err = commitChanges(err, options, packageName, packageVersion)
+	err = pushChanges(err, options, branchName)
 
-	// pull request
-
-	return nil
+	// TODO Create a pull-request using Github API
+	return err
 }
