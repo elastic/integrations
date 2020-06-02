@@ -125,6 +125,9 @@ func UpdatePackageStorage() error {
 	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
 		args = append(args, "-skipPullRequest")
 	}
+	if os.Getenv("PACKAGES_SOURCE_DIR") != "" {
+		args = append(args, "-packagesSourceDir", os.Getenv("PACKAGES_SOURCE_DIR"))
+	}
 	args = append(args, "*.go")
 	return sh.Run("go", args...)
 }
