@@ -4,10 +4,8 @@ go 1.12
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/package-registry v0.4.1-0.20200526094653-49b85e100a7b
+	github.com/elastic/package-registry v0.4.1-0.20200602132425-ee7b284560a0
 	github.com/magefile/mage v1.9.0
 	github.com/pkg/errors v0.9.1
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 )
-
-replace github.com/elastic/package-registry => github.com/mtojek/package-registry v0.2.1-0.20200529130826-38512a9ce2d7
