@@ -176,6 +176,13 @@ what's been already fixed, as the script has overridden part of it).
     It may happen that the ingest pipeline uses fields abstracted from ECS, but not mentioned in `fields.yml`.
     Integrations should contain these fields and also have them documented.
 
+    The fields for an integration package are divided into the following three files:
+
+    - ecs.yml: ECS compliant fields that are used by this particular dataset.
+    - package-fields.yml: Package level fields that are used by this particular dataset, which does not exist under `<integration-package-name>.<dataset-name>`.
+    - fields.yml: Dataset level fields that are specific to this particular dataset, and non ECS compliant.
+
+
     See the PR https://github.com/elastic/beats/pull/17895 to understand how to add them to Beats (e.g. `event.code`,
     `event.provider`) using the `fields.epr.yml` file.
 
