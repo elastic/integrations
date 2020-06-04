@@ -52,6 +52,11 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 
 	packageVersion, err := detectPackageVersion(err, options, packageName)
 	err = checkoutMasterBranch(err, options)
+	released, err := checkIfPackageReleased(err, options, packageName, packageVersion)
+	if released {
+		return nil
+	}
+
 	err = copyIntegrationToPackageStorage(err, options, packageName, packageVersion)
 	err = addToIndex(err, options, packageName, packageVersion)
 	empty, err := checkIfEmptyIndex(err, options)

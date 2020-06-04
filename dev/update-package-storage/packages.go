@@ -66,6 +66,22 @@ func loadManifestFile(packageName string, options updateOptions) (*manifest, err
 	err = yaml.Unmarshal(body, &m)
 	return &m, err
 }
+
+func checkIfPackageReleased(err error, options updateOptions, packageName, packageVersion string) (bool, error) {
+	if err != nil {
+		return false, err
+	}
+
+	destinationPath := filepath.Join(options.packageStorageDir, "packages", packageName, packageVersion)
+	_, err = os.Stat(destinationPath)
+	if os.IsNotExist(err) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func copyIntegrationToPackageStorage(err error, options updateOptions, packageName, packageVersion string) error {
 	if err != nil {
 		return err
@@ -73,11 +89,6 @@ func copyIntegrationToPackageStorage(err error, options updateOptions, packageNa
 
 	sourcePath := filepath.Join(options.packagesSourceDir, packageName)
 	destinationPath := filepath.Join(options.packageStorageDir, "packages", packageName, packageVersion)
-	err = os.RemoveAll(destinationPath)
-	if err != nil {
-		return err
-	}
-
 	err = os.MkdirAll(destinationPath, 0755)
 	if err != nil {
 		return err
