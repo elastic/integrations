@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -56,16 +57,15 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	if released {
 		return nil
 	}
-
+	lastRelease, err := detectLastReleasedPackageVersion(err, options, packageName)
+	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, packageVersion)
+	err = addToIndex(err, options, packageName, packageVersion)
+	branchName, err := createBranch(err, options, packageName, packageVersion)
+	err = commitChanges(err, options, "Copy contents of last package revision")
 	err = copyIntegrationToPackageStorage(err, options, packageName, packageVersion)
 	err = addToIndex(err, options, packageName, packageVersion)
-	empty, err := checkIfEmptyIndex(err, options)
-	if empty {
-		return nil
-	}
+	err = commitChanges(err, options, fmt.Sprintf(`Update "%s" integration (version: %s)`, packageName, packageVersion))
 
-	branchName, err := createBranch(err, options, packageName, packageVersion)
-	err = commitChanges(err, options, packageName, packageVersion)
 	err = pushChanges(err, options, branchName)
 
 	// TODO Create a pull-request using Github API
