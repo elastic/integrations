@@ -41,15 +41,6 @@ func addToIndex(err error, options updateOptions, packageName, packageVersion st
 	return runGitCommand(options, "add", "--all", filepath.Join("packages", packageName, packageVersion))
 }
 
-func checkIfEmptyIndex(err error, options updateOptions) (bool, error) {
-	if err != nil {
-		return false, err
-	}
-
-	exitCode := runGitCommand(options, "diff", "--cached", "--exit-code")
-	return sh.ExitStatus(exitCode) != 1, nil
-}
-
 func createBranch(err error, options updateOptions, packageName, packageVersion string) (string, error) {
 	if err != nil {
 		return "", err
@@ -60,12 +51,12 @@ func createBranch(err error, options updateOptions, packageName, packageVersion 
 	return branchName, err
 }
 
-func commitChanges(err error, options updateOptions, packageName, packageVersion string) error {
+func commitChanges(err error, options updateOptions, message string) error {
 	if err != nil {
 		return err
 	}
 
-	return runGitCommand(options, "commit", "-m", fmt.Sprintf(`Update "%s" integration (version: %s)`, packageName, packageVersion))
+	return runGitCommand(options, "commit", "-m", message)
 }
 
 func pushChanges(err error, options updateOptions, branchName string) error {
