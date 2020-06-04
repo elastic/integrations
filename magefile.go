@@ -226,12 +226,12 @@ func Vendor() error {
 		return err
 	}
 
-	sh.RunV("go", "mod", "vendor")
+	err = sh.RunV("go", "mod", "vendor")
 	if err != nil {
 		return err
 	}
 
-	sh.RunV("go", "mod", "verify")
+	err = sh.RunV("go", "mod", "verify")
 	if err != nil {
 		return err
 	}
