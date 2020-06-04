@@ -100,6 +100,8 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 		if len(datasetFields) > 0 {
 			fieldsFiles["fields.yml"] = datasetFields
 		}
+		fieldsFiles["base-fields.yml"] = baseFields
+
 		fields := fieldsContent{
 			files: fieldsFiles,
 		}
