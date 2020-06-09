@@ -36,17 +36,17 @@ func createAgentContentForMetrics(moduleName, datasetName string, streams []util
 	for _, aVar := range vars {
 		variableName := aVar.Name
 
-		if !isAgentConfigOptionRequired(variableName) {
+		if !aVar.Required {
 			buffer.WriteString(fmt.Sprintf("{{#if %s}}\n", variableName))
 		}
 
-		if isArrayConfigOption(variableName) {
+		if aVar.Multi {
 			buffer.WriteString(fmt.Sprintf("%s:\n{{#each %s}}\n  - {{this}}\n{{/each}}\n", variableName, variableName))
 		} else {
 			buffer.WriteString(fmt.Sprintf("%s: {{%s}}\n", variableName, variableName))
 		}
 
-		if !isAgentConfigOptionRequired(variableName) {
+		if !aVar.Required {
 			buffer.WriteString("{{/if}}\n")
 		}
 	}
@@ -67,12 +67,4 @@ func extractVarsFromStream(streams []util.Stream, inputName string) []util.Varia
 		}
 	}
 	return []util.Variable{}
-}
-
-func isAgentConfigOptionRequired(optionName string) bool {
-	return optionName == "hosts" || optionName == "period"
-}
-
-func isArrayConfigOption(optionName string) bool {
-	return optionName == "hosts"
 }
