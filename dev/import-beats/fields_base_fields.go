@@ -9,19 +9,19 @@ var baseFields = createBaseFields()
 func createBaseFields() []fieldDefinition {
 	return []fieldDefinition{
 		{
-			Name:        "stream.type",
+			Name:        "dataset.type",
 			Type:        "constant_keyword",
-			Description: "Stream type.",
+			Description: "Dataset type.",
 		},
 		{
-			Name:        "stream.dataset",
+			Name:        "dataset.name",
 			Type:        "constant_keyword",
-			Description: "Stream dataset.",
+			Description: "Dataset name.",
 		},
 		{
-			Name:        "stream.namespace",
+			Name:        "dataset.namespace",
 			Type:        "constant_keyword",
-			Description: "Stream namespace.",
+			Description: "Dataset namespace.",
 		},
 		{
 			Name:        "@timestamp",
