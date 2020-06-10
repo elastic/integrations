@@ -44,6 +44,9 @@ func main() {
 	err = rebaseUpstreamMaster(err, options)
 	packageNames, err := listPackages(err, options)
 	err = reviewPackages(err, options, packageNames, handlePackageChanges)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "reviewing packages failed"))
+	}
 }
 
 func handlePackageChanges(err error, options updateOptions, packageName string) error {
@@ -65,9 +68,9 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	err = copyIntegrationToPackageStorage(err, options, packageName, packageVersion)
 	err = addToIndex(err, options, packageName, packageVersion)
 	err = commitChanges(err, options, fmt.Sprintf(`Update "%s" integration (version: %s)`, packageName, packageVersion))
-
 	err = pushChanges(err, options, branchName)
-
-	// TODO Create a pull-request using Github API
+	username, err := getUsername(err, options)
+	lastCommit, err := getLastCommit(err, options)
+	err = openPullRequest(err, options, packageName, packageVersion, username, branchName, lastCommit)
 	return err
 }

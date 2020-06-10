@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
+
 	"github.com/blang/semver"
 	"github.com/magefile/mage/sh"
 	"gopkg.in/yaml.v2"
@@ -51,15 +53,16 @@ func detectPackageVersion(err error, options updateOptions, packageName string) 
 
 	m, err := loadManifestFile(packageName, options)
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "loading manifest file failed (packageName: %s)", packageName)
 	}
 	return m.Version, nil
 }
 
 func loadManifestFile(packageName string, options updateOptions) (*manifest, error) {
-	body, err := ioutil.ReadFile(filepath.Join(options.packagesSourceDir, packageName, "manifest.yml"))
+	path := filepath.Join(options.packagesSourceDir, packageName, "manifest.yml")
+	body, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "reading manifest file failed (path: %s)", path)
 	}
 
 	var m manifest
@@ -88,12 +91,13 @@ func detectLastReleasedPackageVersion(err error, options updateOptions, packageN
 		if fileInfo.IsDir() {
 			v, err := semver.Parse(fileInfo.Name())
 			if err != nil {
-				return "", err
+				return "", errors.Wrapf(err, "parsing semver failed (filename: %s)", fileInfo.Name())
 			}
 
 			ok, err := checkIfPackageManifestExists(filepath.Join(packagePath, fileInfo.Name()))
 			if err != nil {
-				return "", err
+				return "", errors.Wrapf(err, "checking if package manifest exists failed (packagePath: %s, filename: %s)",
+					packagePath, fileInfo.Name())
 			}
 
 			if ok {
@@ -111,11 +115,12 @@ func detectLastReleasedPackageVersion(err error, options updateOptions, packageN
 }
 
 func checkIfPackageManifestExists(packagePath string) (bool, error) {
-	_, err := os.Stat(filepath.Join(packagePath, "manifest.yml"))
+	path := filepath.Join(packagePath, "manifest.yml")
+	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false, nil
 	} else if err != nil {
-		return false, err
+		return false, errors.Wrapf(err, "stat file failed (path: %s)", path)
 	}
 	return true, nil
 }
@@ -147,7 +152,7 @@ func copyIntegrationToPackageStorage(err error, options updateOptions, packageNa
 func copyPackageContents(sourcePath, destinationPath string) error {
 	err := os.MkdirAll(destinationPath, 0755)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "creating directories failed (path: %s)", destinationPath)
 	}
 
 	return filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {

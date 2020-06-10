@@ -37,7 +37,6 @@ func addToIndex(err error, options updateOptions, packageName, packageVersion st
 	if err != nil {
 		return err
 	}
-
 	return runGitCommand(options, "add", "--all", filepath.Join("packages", packageName, packageVersion))
 }
 
@@ -55,23 +54,42 @@ func commitChanges(err error, options updateOptions, message string) error {
 	if err != nil {
 		return err
 	}
-
 	return runGitCommand(options, "commit", "-m", message)
+}
+
+func getLastCommit(err error, options updateOptions) (string, error) {
+	if err != nil {
+		return "", err
+	}
+	return outputGitCommand(options, "rev-parse", "HEAD")
+}
+
+func getUsername(err error, options updateOptions) (string, error) {
+	if err != nil {
+		return "", err
+	}
+	return outputGitCommand(options, "config", "user.name")
 }
 
 func pushChanges(err error, options updateOptions, branchName string) error {
 	if err != nil {
 		return err
 	}
-
 	return runGitCommand(options, "push", "origin", branchName)
 }
 
 func runGitCommand(options updateOptions, args ...string) error {
+	return sh.Run("git", append(buildRequiredGitCommandArgs(options), args...)...)
+}
+
+func outputGitCommand(options updateOptions, args ...string) (string, error) {
+	return sh.Output("git", append(buildRequiredGitCommandArgs(options), args...)...)
+}
+
+func buildRequiredGitCommandArgs(options updateOptions) []string {
 	var commandArgs []string
 	commandArgs = append(commandArgs,
 		"--git-dir", filepath.Join(options.packageStorageDir, ".git"),
 		"--work-tree", options.packageStorageDir)
-	commandArgs = append(commandArgs, args...)
-	return sh.Run("git", commandArgs...)
+	return commandArgs
 }
