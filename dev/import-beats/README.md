@@ -44,6 +44,10 @@ https://github.com/elastic/beats
 https://github.com/elastic/ecs
 https://github.com/elastic/eui
 https://github.com/elastic/kibana
+
+These projects are expected to be found at the same level with `integrations` repository like:
+`beats        ecs          eui       integrations     kibana`
+
 2. Make sure you've the `mage` tool installed.
 3. Start Kibana server (make sure the endpoint is accessible: http://localhost:5601/)
 4. Run the importing procedure with the following command:
