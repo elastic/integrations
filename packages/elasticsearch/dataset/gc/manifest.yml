@@ -1,0 +1,27 @@
+title: Elasticsearch gc logs
+release: experimental
+type: logs
+streams:
+- input: logs
+  vars:
+  - name: paths
+    type: text
+    title: Paths
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - /var/log/elasticsearch/gc.log.[0-9]*
+    - /var/log/elasticsearch/gc.log
+    os:
+      darwin:
+        default:
+        - /usr/local/var/lib/elasticsearch/gc.log.[0-9]*
+        - /usr/local/var/lib/elasticsearch/gc.log
+      windows:
+        default:
+        - c:/ProgramData/Elastic/Elasticsearch/logs/gc.log.*
+        - c:/ProgramData/Elastic/Elasticsearch/logs/gc.log
+  template_path: log.yml.hbs
+  title: Elasticsearch gc logs (log)
+  description: Collect Elasticsearch gc logs using log input
