@@ -24,6 +24,13 @@ const (
 	DirIngestPipeline = "ingest-pipeline"
 )
 
+var validTypes = map[string]string{
+	"logs":    "Logs",
+	"metrics": "Metrics",
+	// TODO: Remove as soon as endpoint package does not use it anymore
+	"events": "Events",
+}
+
 type DataSet struct {
 	ID             string   `config:"id" json:"id,omitempty" yaml:"id,omitempty"`
 	Title          string   `config:"title" json:"title" validate:"required"`
@@ -140,6 +147,10 @@ func (d *DataSet) Validate() error {
 		return fmt.Errorf("dataset name is not allowed to contain `-`: %s", d.ID)
 	}
 
+	if !d.validType() {
+		return fmt.Errorf("type is not valid: %s", d.Type)
+	}
+
 	if d.IngestPipeline == "" {
 		// Check that no ingest pipeline exists in the directory except default
 		for _, path := range paths {
@@ -189,6 +200,11 @@ func (d *DataSet) Validate() error {
 		}
 	}
 	return nil
+}
+
+func (d *DataSet) validType() bool {
+	_, exists := validTypes[d.Type]
+	return exists
 }
 
 func validateIngestPipelineFile(pipelinePath string) error {

@@ -59,7 +59,6 @@ type Datasource struct {
 	Name        string  `config:"name" json:"name" validate:"required"`
 	Title       string  `config:"title" json:"title" validate:"required"`
 	Description string  `config:"description" json:"description" validate:"required"`
-	Solution    string  `config:"solution" json:"solution,omitempty" yaml:"solution,omitempty"`
 	Inputs      []Input `config:"inputs" json:"inputs"`
 	Multiple    *bool   `config:"multiple" json:"multiple,omitempty" yaml:"multiple,omitempty"`
 }
@@ -189,7 +188,7 @@ func NewPackageWithResources(path string) (*Package, error) {
 		return nil, errors.Wrapf(err, "loading package assets failed (path '%s')", path)
 	}
 
-	err = aPackage.LoadDataSets(aPackage.GetPath())
+	err = aPackage.LoadDataSets()
 	if err != nil {
 		return nil, errors.Wrapf(err, "loading package datasets failed (path '%s')", path)
 	}
@@ -317,7 +316,7 @@ func (p *Package) Validate() error {
 		}
 	}
 
-	return nil
+	return p.ValidateDatasets()
 }
 
 // GetDatasetPaths returns a list with the dataset paths inside this package
@@ -347,7 +346,7 @@ func (p *Package) GetDatasetPaths() ([]string, error) {
 	return paths, nil
 }
 
-func (p *Package) LoadDataSets(packagePath string) error {
+func (p *Package) LoadDataSets() error {
 
 	datasetPaths, err := p.GetDatasetPaths()
 	if err != nil {
@@ -393,6 +392,28 @@ func (p *Package) LoadDataSets(packagePath string) error {
 		p.DataSets = append(p.DataSets, d)
 	}
 
+	return nil
+}
+
+// ValidateDatasets loads all datasets and with it validates them
+func (p *Package) ValidateDatasets() error {
+
+	datasetPaths, err := p.GetDatasetPaths()
+	if err != nil {
+		return err
+	}
+
+	datasetsBasePath := filepath.Join(p.BasePath, "dataset")
+
+	for _, datasetPath := range datasetPaths {
+
+		datasetBasePath := filepath.Join(datasetsBasePath, datasetPath)
+
+		_, err := NewDataset(datasetBasePath, p)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

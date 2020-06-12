@@ -32,6 +32,7 @@ func GetPackages(packagesBasePath string) ([]Package, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		packageList = append(packageList, *p)
 	}
 
