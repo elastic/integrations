@@ -398,6 +398,11 @@ func ImportBeats() error {
 }
 
 func UpdatePackageStorage() error {
+	err := Build()
+	if err != nil {
+		return err
+	}
+
 	args := []string{"run", "./dev/update-package-storage/"}
 	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
 		args = append(args, "-skipPullRequest")
