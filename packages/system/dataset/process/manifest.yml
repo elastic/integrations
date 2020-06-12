@@ -4,23 +4,6 @@ type: metrics
 streams:
 - input: system/metrics
   vars:
-  - name: core.metrics
-    type: text
-    title: Core Metrics
-    multi: true
-    required: true
-    show_user: true
-    default:
-    - percentages
-  - name: cpu.metrics
-    type: text
-    title: Cpu Metrics
-    multi: true
-    required: true
-    show_user: true
-    default:
-    - percentages
-    - normalized_percentages
   - name: period
     type: text
     title: Period
@@ -35,6 +18,8 @@ streams:
     required: true
     show_user: true
     default: 5
+    description: >
+      Include the top N processes by CPU usage.
   - name: process.include_top_n.by_memory
     type: integer
     title: Process Include Top N By Memory
@@ -42,12 +27,51 @@ streams:
     required: true
     show_user: true
     default: 5
+    description: >
+      Include the top N processes by memory usage.
+  - name: process.cmdline.cache.enabled
+    type: boolean
+    title: Enable cmdline cache
+    multi: false
+    required: false
+    show_user: true
+    default: true
+    description: >
+      If false, cmdline of a process is not cached.
+  - name: process.cgroups.enabled
+    type: boolean
+    title: Enable cgroup reporting
+    multi: false
+    required: false
+    show_user: true
+    default: true
+    description: >
+      Enable collection of cgroup metrics from processes on Linux.
+  - name: process.env.whitelist
+    type: keyword
+    title: Env whitelist
+    multi: true
+    required: false
+    show_user: true
+    description: >
+      A list of regular expressions used to whitelist environment variables reported with the process metricset's events. Defaults to empty.
+  - name: process.include_cpu_ticks
+    type: boolean
+    title: Include CPU Ticks
+    multi: false
+    required: false
+    show_user: true
+    default: false
+    description: >
+      Include the cumulative CPU tick values with the process metrics.
   - name: processes
     type: text
     title: Processes
     multi: true
     required: true
     show_user: true
+    description: >
+      A glob to match reported processes. By default all processes are reported.
     default:
     - .*
   title: System process metrics
