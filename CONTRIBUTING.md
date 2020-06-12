@@ -95,7 +95,7 @@ feel free to review the script's [README](https://github.com/elastic/integration
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
     _Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
-    `docker-compose -f snapshot.yml -f local.yml up --force-recreate`.
+    `docker-compose -f snapshot.yml up --force-recreate`.
 4. Create a new branch for the integration in `integrations` repository (diverge from master).
 5. Run the command: `mage ImportBeats` to start the import process.
 
@@ -272,7 +272,7 @@ what's been already fixed, as the script has overridden part of it).
 2. Start testing environment:
    ```bash
    $ cd testing/environments
-   $ docker-compose -f snapshot.yml -f local.yml up
+   $ docker-compose -f snapshot.yml up
    ```
 
    The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. The Package Registry
