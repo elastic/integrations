@@ -279,7 +279,7 @@ what's been already fixed, as the script has overridden part of it).
    has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
    adjustments in packages will be propagated to the registry.
    
-3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql
+3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use experimental=true parameter if the package is in experimental version)
 
     ```json
     [
