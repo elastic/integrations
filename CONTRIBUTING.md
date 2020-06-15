@@ -161,7 +161,7 @@ what's been already fixed, as the script has overridden part of it).
     in the `dev/import-beats-resources/<integration-name>/docs/README.md`.
 
     Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`). 
-    If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb-logs"}}` and `{{fields "elb-metrics"}}` are used to separate them.
+    If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
 
 5. Review fields file and exported fields in docs.
 
