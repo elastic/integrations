@@ -395,7 +395,7 @@ An example event for `cloudwatch` looks as following:
 
 ```$json
 {
-  "_index": "metrics-aws.cloudwatch-metrics-default-000001",
+  "_index": "metrics-aws.cloudwatch_metrics-default-000001",
   "_id": "-sxJXHIBpGMSUzkZxex8",
   "_version": 1,
   "_score": null,
@@ -417,7 +417,7 @@ An example event for `cloudwatch` looks as following:
       "version": "8.0.0"
     },
     "stream": {
-      "dataset": "aws.cloudwatch-metrics",
+      "dataset": "aws.cloudwatch_metrics",
       "namespace": "default",
       "type": "metrics"
     },
@@ -752,7 +752,7 @@ An example event for `ec2` looks as following:
 
 ```$json
 {
-  "_index": "metrics-aws.ec2-metrics-default-000001",
+  "_index": "metrics-aws.ec2_metrics-default-000001",
   "_id": "b89uXHIBpGMSUzkZHxPP",
   "_version": 1,
   "_score": null,
@@ -853,7 +853,7 @@ An example event for `ec2` looks as following:
     "stream": {
       "namespace": "default",
       "type": "metrics",
-      "dataset": "aws.ec2-metrics"
+      "dataset": "aws.ec2_metrics"
     },
     "cloud": {
       "provider": "aws",
@@ -946,7 +946,7 @@ An example event for `elb` looks as following:
 
 ```$json
 {
-  "_index": "metrics-aws.elb-metrics-default-000001",
+  "_index": "metrics-aws.elb_metrics-default-000001",
   "_id": "i89vXHIBpGMSUzkZuSyO",
   "_version": 1,
   "_score": null,
@@ -1014,7 +1014,7 @@ An example event for `elb` looks as following:
     },
     "stream": {
       "type": "metrics",
-      "dataset": "aws.elb-metrics",
+      "dataset": "aws.elb_metrics",
       "namespace": "default"
     }
   },
