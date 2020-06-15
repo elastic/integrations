@@ -21,6 +21,11 @@ import (
 	"github.com/elastic/package-registry/util"
 )
 
+const packageRegistryConfigYML = `public_dir: "./public"
+cache_time.search: 10m
+cache_time.categories: 10m
+cache_time.catch_all: 10m`
+
 var (
 	// GoImportsImportPath controls the import path used to install goimports.
 	GoImportsImportPath = "golang.org/x/tools/cmd/goimports"
@@ -66,6 +71,11 @@ func Build() error {
 	}
 
 	err = buildPackages()
+	if err != nil {
+		return err
+	}
+
+	err = dryRunPackageRegistry()
 	if err != nil {
 		return err
 	}
@@ -145,7 +155,7 @@ func buildPackages() error {
 			return err
 		}
 
-		err = processPackage(dstDir)
+		err = encodeDashboards(dstDir)
 		if err != nil {
 			return err
 		}
@@ -198,18 +208,7 @@ func copyPackageFromSource(src, dst string) error {
 	return nil
 }
 
-func processPackage(dstDir string) error {
-	p, err := util.NewPackage(dstDir)
-	if err != nil {
-		return err
-	}
-
-	err = p.Validate()
-	if err != nil {
-		return errors.Wrapf(err, "package validation failed (path: %s", p.GetPath())
-	}
-
-	// Encode dashboards
+func encodeDashboards(dstDir string) error {
 	savedObjects, err := filepath.Glob(filepath.Join(dstDir, "kibana", "*", "*"))
 	if err != nil {
 		return err
@@ -273,6 +272,26 @@ func encodedSavedObject(data []byte) ([]byte, bool, error) {
 		changed = true
 	}
 	return []byte(savedObject.StringToPrint()), changed, nil
+}
+
+func dryRunPackageRegistry() error {
+	configPath := filepath.Join(buildDir, "config.yml")
+	err := ioutil.WriteFile(configPath, []byte(packageRegistryConfigYML), 0666)
+	if err != nil {
+		return errors.Wrapf(err, "writing config file for package-registry failed (path: %s)", configPath)
+	}
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "reading current directory failed")
+	}
+	defer os.Chdir(currentDir)
+
+	err = os.Chdir(buildDir)
+	if err != nil {
+		return errors.Wrapf(err, "can't change directory to %s", buildDir)
+	}
+	return sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
 }
 
 func ImportBeats() error {
