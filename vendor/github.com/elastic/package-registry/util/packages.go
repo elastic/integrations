@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var packageList []Package
@@ -30,9 +32,13 @@ func GetPackages(packagesBasePath string) ([]Package, error) {
 	for _, path := range packagePaths {
 		p, err := NewPackage(path)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "loading package failed (path: %s)", path)
 		}
 
+		err = p.Validate()
+		if err != nil {
+			return nil, errors.Wrapf(err, "validating package failed (path: %s)", path)
+		}
 		packageList = append(packageList, *p)
 	}
 
