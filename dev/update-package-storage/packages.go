@@ -13,7 +13,6 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/magefile/mage/sh"
-	"gopkg.in/yaml.v2"
 )
 
 type manifest struct {
@@ -46,30 +45,6 @@ func reviewPackages(err error, options updateOptions, packageNames []string, han
 	return err
 }
 
-func detectPackageVersion(err error, options updateOptions, packageName string) (string, error) {
-	if err != nil {
-		return "", err
-	}
-
-	m, err := loadManifestFile(packageName, options)
-	if err != nil {
-		return "", errors.Wrapf(err, "loading manifest file failed (packageName: %s)", packageName)
-	}
-	return m.Version, nil
-}
-
-func loadManifestFile(packageName string, options updateOptions) (*manifest, error) {
-	path := filepath.Join(options.packagesSourceDir, packageName, "manifest.yml")
-	body, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, errors.Wrapf(err, "reading manifest file failed (path: %s)", path)
-	}
-
-	var m manifest
-	err = yaml.Unmarshal(body, &m)
-	return &m, err
-}
-
 func checkIfPackageReleased(err error, options updateOptions, packageName, packageVersion string) (bool, error) {
 	if err != nil {
 		return false, err
@@ -79,14 +54,29 @@ func checkIfPackageReleased(err error, options updateOptions, packageName, packa
 	return checkIfPackageManifestExists(packagePath)
 }
 
-func detectLastReleasedPackageVersion(err error, options updateOptions, packageName string) (string, error) {
+func detectGreatestBuiltPackageVersion(err error, options updateOptions, packageName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	packagePath := filepath.Join(options.packagesSourceDir, packageName)
+	return detectGreatestPackageVersion(packagePath)
+}
 
-	var versions []semver.Version
+func detectGreatestReleasedPackageVersion(err error, options updateOptions, packageName string) (string, error) {
+	if err != nil {
+		return "", err
+	}
 	packagePath := filepath.Join(options.packageStorageDir, "packages", packageName)
+	return detectGreatestPackageVersion(packagePath)
+}
+
+func detectGreatestPackageVersion(packagePath string) (string, error) {
+	var versions []semver.Version
 	fileInfos, err := ioutil.ReadDir(packagePath)
+	if err != nil {
+		return "", errors.Wrapf(err, "reading directory failed (path: %s)", packagePath)
+	}
+
 	for _, fileInfo := range fileInfos {
 		if fileInfo.IsDir() {
 			v, err := semver.Parse(fileInfo.Name())
@@ -144,7 +134,7 @@ func copyIntegrationToPackageStorage(err error, options updateOptions, packageNa
 		return err
 	}
 
-	sourcePath := filepath.Join(options.packagesSourceDir, packageName)
+	sourcePath := filepath.Join(options.packagesSourceDir, packageName, packageVersion)
 	destinationPath := filepath.Join(options.packageStorageDir, "packages", packageName, packageVersion)
 	return copyPackageContents(sourcePath, destinationPath)
 }
