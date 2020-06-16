@@ -7,13 +7,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+	"github.com/pkg/errors"
+
+	"github.com/elastic/package-registry/util"
 )
 
 var (
@@ -32,10 +37,25 @@ var (
 	storageRepoDir     = filepath.Join(buildDir, "package-storage")
 	storagePackagesDir = filepath.Join(buildDir, "package-storage-packages")
 	packagePaths       = []string{storagePackagesDir, "./packages"}
+
+	fieldsToEncode = []string{
+		"attributes.kibanaSavedObjectMeta.searchSourceJSON",
+		"attributes.layerListJSON",
+		"attributes.mapStateJSON",
+		"attributes.optionsJSON",
+		"attributes.panelsJSON",
+		"attributes.uiStateJSON",
+		"attributes.visState",
+	}
 )
 
+type fieldEntry struct {
+	name  string
+	aType string
+}
+
 func Build() error {
-	err := BuildPublicDirectory()
+	err := buildPublicDirectory()
 	if err != nil {
 		return err
 	}
@@ -45,16 +65,19 @@ func Build() error {
 		return err
 	}
 
-	for _, p := range packagePaths {
-		err := sh.Run("go", "run", "github.com/elastic/package-registry/dev/generator/", "-sourceDir="+p, "-publicDir="+publicDir)
-		if err != nil {
-			return err
-		}
+	err = buildPackages()
+	if err != nil {
+		return err
+	}
+
+	err = dryRunPackageRegistry()
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-func BuildPublicDirectory() error {
+func buildPublicDirectory() error {
 	err := os.MkdirAll(publicDir, 0755)
 	if err != nil {
 		return err
@@ -106,6 +129,163 @@ func fetchPackageStorage() error {
 	return sh.Run("rsync", "-a",
 		filepath.Join(storageRepoDir, "packages", "endpoint")+"/",
 		filepath.Join(storagePackagesDir, "endpoint"))
+}
+
+func buildPackages() error {
+	packagePaths, err := findPackages()
+	if err != nil {
+		return err
+	}
+
+	for _, packagePath := range packagePaths {
+		srcDir := packagePath + "/"
+		p, err := util.NewPackage(srcDir)
+		if err != nil {
+			return err
+		}
+		dstDir := filepath.Join(publicDir, "package", p.Name, p.Version)
+
+		err = copyPackageFromSource(srcDir, dstDir)
+		if err != nil {
+			return err
+		}
+
+		err = encodeDashboards(dstDir)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func findPackages() ([]string, error) {
+	var matches []string
+	for _, sourceDir := range packagePaths {
+		err := filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			f, err := os.Stat(path)
+			if err != nil {
+				return err
+			}
+
+			if !f.IsDir() {
+				return nil // skip as the path is not a directory
+			}
+
+			manifestPath := filepath.Join(path, "manifest.yml")
+			_, err = os.Stat(manifestPath)
+			if os.IsNotExist(err) {
+				return nil
+			}
+			matches = append(matches, path)
+			return filepath.SkipDir
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return matches, nil
+}
+
+func copyPackageFromSource(src, dst string) error {
+	err := os.MkdirAll(dst, 0755)
+	if err != nil {
+		return err
+	}
+	err = sh.RunV("rsync", "-a", src, dst)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func encodeDashboards(dstDir string) error {
+	savedObjects, err := filepath.Glob(filepath.Join(dstDir, "kibana", "*", "*"))
+	if err != nil {
+		return err
+	}
+	for _, file := range savedObjects {
+
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		output, changed, err := encodedSavedObject(data)
+		if err != nil {
+			return err
+		}
+
+		if changed {
+			err = ioutil.WriteFile(file, output, 0644)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// encodeSavedObject encodes all the fields inside a saved object
+// which are stored in encoded JSON in Kibana.
+// The reason is that for versioning it is much nicer to have the full
+// json so only on packaging this is changed.
+func encodedSavedObject(data []byte) ([]byte, bool, error) {
+	savedObject := MapStr{}
+	err := json.Unmarshal(data, &savedObject)
+	if err != nil {
+		return nil, false, errors.Wrapf(err, "unmarshalling saved object failed")
+	}
+
+	var changed bool
+	for _, v := range fieldsToEncode {
+		out, err := savedObject.GetValue(v)
+		// This means the key did not exists, no conversion needed.
+		if err != nil {
+			continue
+		}
+
+		// It may happen that some objects existing in example directory might be already encoded.
+		// In this case skip encoding the field and move to the next one.
+		_, isString := out.(string)
+		if isString {
+			continue
+		}
+
+		// Marshal the value to encode it properly.
+		r, err := json.Marshal(&out)
+		if err != nil {
+			return nil, false, err
+		}
+		_, err = savedObject.Put(v, string(r))
+		if err != nil {
+			return nil, false, errors.Wrapf(err, "can't put value to the saved object")
+		}
+		changed = true
+	}
+	return []byte(savedObject.StringToPrint()), changed, nil
+}
+
+func dryRunPackageRegistry() error {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "reading current directory failed")
+	}
+	defer os.Chdir(currentDir)
+
+	err = os.Chdir(buildDir)
+	if err != nil {
+		return errors.Wrapf(err, "can't change directory to %s", buildDir)
+	}
+
+	err = sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
+	if err != nil {
+		return errors.Wrap(err, "package-registry dry-run failed")
+	}
+	return nil
 }
 
 func ImportBeats() error {
