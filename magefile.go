@@ -21,11 +21,6 @@ import (
 	"github.com/elastic/package-registry/util"
 )
 
-const packageRegistryConfigYML = `public_dir: "./public"
-cache_time.search: 10m
-cache_time.categories: 10m
-cache_time.catch_all: 10m`
-
 var (
 	// GoImportsImportPath controls the import path used to install goimports.
 	GoImportsImportPath = "golang.org/x/tools/cmd/goimports"
@@ -275,23 +270,11 @@ func encodedSavedObject(data []byte) ([]byte, bool, error) {
 }
 
 func dryRunPackageRegistry() error {
-	configPath := filepath.Join(buildDir, "config.yml")
-	err := ioutil.WriteFile(configPath, []byte(packageRegistryConfigYML), 0666)
+	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
 	if err != nil {
-		return errors.Wrapf(err, "writing config file for package-registry failed (path: %s)", configPath)
+		return errors.Wrap(err, "package-registry dry-run failed")
 	}
-
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return errors.Wrap(err, "reading current directory failed")
-	}
-	defer os.Chdir(currentDir)
-
-	err = os.Chdir(buildDir)
-	if err != nil {
-		return errors.Wrapf(err, "can't change directory to %s", buildDir)
-	}
-	return sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
+	return nil
 }
 
 func ImportBeats() error {
