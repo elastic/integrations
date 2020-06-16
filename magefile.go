@@ -270,7 +270,18 @@ func encodedSavedObject(data []byte) ([]byte, bool, error) {
 }
 
 func dryRunPackageRegistry() error {
-	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "reading current directory failed")
+	}
+	defer os.Chdir(currentDir)
+
+	err = os.Chdir(buildDir)
+	if err != nil {
+		return errors.Wrapf(err, "can't change directory to %s", buildDir)
+	}
+
+	err = sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
 	if err != nil {
 		return errors.Wrap(err, "package-registry dry-run failed")
 	}
