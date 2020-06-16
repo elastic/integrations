@@ -315,7 +315,30 @@ func (p *Package) Validate() error {
 		}
 	}
 
+	err = p.validateVersionConsistency()
+	if err != nil {
+		return errors.Wrap(err, "version in manifest file is not consistent with path")
+	}
+
 	return p.ValidateDatasets()
+}
+
+func (p *Package) validateVersionConsistency() error {
+	versionPackage, err := semver.Parse(p.Version)
+	if err != nil {
+		return errors.Wrap(err, "invalid version defined in manifest")
+	}
+
+	baseDir := filepath.Base(p.BasePath)
+	versionDir, err := semver.Parse(baseDir)
+	if err != nil {
+		return nil // package content is not rooted in version directory
+	}
+
+	if !versionPackage.EQ(versionDir) {
+		return fmt.Errorf("inconsistent versions (path: %s, manifest: %s)", versionDir.String(), p.versionSemVer.String())
+	}
+	return nil
 }
 
 // GetDatasetPaths returns a list with the dataset paths inside this package
