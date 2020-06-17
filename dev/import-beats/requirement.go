@@ -22,7 +22,7 @@ func createRequirement(kibanaContent kibanaContent, datasetContent []datasetCont
 		return util.Requirement{}, errors.Wrapf(err, "finding required Kibana version failed")
 	}
 	return util.Requirement{
-		Kibana:        kibanaRequirement,
+		Kibana: kibanaRequirement,
 	}, nil
 }
 
