@@ -22,20 +22,8 @@ func createRequirement(kibanaContent kibanaContent, datasetContent []datasetCont
 		return util.Requirement{}, errors.Wrapf(err, "finding required Kibana version failed")
 	}
 	return util.Requirement{
-		Elasticsearch: findRequiredElasticsearchVersion(datasetContent),
 		Kibana:        kibanaRequirement,
 	}, nil
-}
-
-func findRequiredElasticsearchVersion(datasetContent []datasetContent) util.ProductRequirement {
-	for _, dc := range datasetContent {
-		if len(dc.elasticsearch.ingestPipelines) > 0 {
-			return util.ProductRequirement{
-				Versions: ">7.0.1",
-			}
-		}
-	}
-	return util.ProductRequirement{}
 }
 
 func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequirement, error) {
@@ -96,6 +84,6 @@ func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequire
 	}
 
 	return util.ProductRequirement{
-		Versions: fmt.Sprintf(">=%s <8.0.0", currentVersion),
+		Versions: fmt.Sprintf("~%s", currentVersion),
 	}, nil
 }
