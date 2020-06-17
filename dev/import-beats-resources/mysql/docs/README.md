@@ -1,6 +1,6 @@
 # MySQL Integration
 
-This integration periodically fetches logs and metrics from [https://www.mysql.com/](MySQL) servers.
+This integration periodically fetches logs and metrics from [MySQL](https://www.mysql.com/) servers.
 
 ## Compatibility
 
@@ -27,7 +27,7 @@ The `slowlog` dataset collects the MySQL slow logs.
 
 ### galera_status
 
-The `galera_status` dataset periodically fetches metrics from [http://galeracluster.com/](Galera)-MySQL cluster servers.
+The `galera_status` dataset periodically fetches metrics from [Galera](http://galeracluster.com/)-MySQL cluster servers.
 
 An example event for `galera_status` looks as following:
 
