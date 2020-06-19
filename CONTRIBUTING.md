@@ -279,7 +279,9 @@ what's been already fixed, as the script has overridden part of it).
    has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
    adjustments in packages will be propagated to the registry.
    
-3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use `experimental=true` parameter if the package is in experimental version)
+3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
+   `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
+   package's `manifest.yml`, if appropriate.)
 
     ```json
     [
@@ -307,6 +309,12 @@ what's been already fixed, as the script has overridden part of it).
     ```bash
    $ cd $GOPATH/src/github.com/elastic/beats/x-pack/elastic-agent
    $ PLATFORMS=darwin mage package
+    ```
+
+   If your are building on a Mac and you get the following error, you may ignore it. The package has built successfully anyway.
+
+    ```
+    xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instanceError: running "xcodebuild build -project beats-preference-pane.xcodeproj -alltargets -configuration Release CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO" failed with exit code 1
     ```
 
    Unpack the distribution you'd like to use (e.g. tar.gz):
