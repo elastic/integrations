@@ -18,11 +18,6 @@ spec:
       serviceAccountName: agent-ingest-management
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
-#      volumes:
-#        - name: agent-config
-#          configMap:
-#            defaultMode: 0666
-#            name: agent-ingest-management-config-nodescope
       containers:
         - name: agent-ingest-management-nodescope
           image: docker.elastic.co/beats/elastic-agent:8.0.0-SNAPSHOT
@@ -30,7 +25,7 @@ spec:
             - name: FLEET_ENROLL
               value: "1"
             - name: FLEET_ENROLLMENT_TOKEN
-              value: "RUN3X3gzSUJkVGdCSFg2WDhLUjk6SjBMTF83Zk1SQnF0c0pGcHFGcUN0dw=="
+              value: "QzNkTDRISUJGUDVFaEZrTEtKSGY6ZG11RFpiSXdRbUt0TWtqX1NNd0M5Zw=="
             - name: KIBANA_HOST
               value: "http://kibana:5601"
             - name: NODE_NAME
@@ -45,10 +40,6 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
-#          volumeMounts:
-#            - mountPath: /usr/share/elastic-agent/elastic-agent.yml
-#              name: agent-config
-#              subPath: elastic-agent.yml
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -83,13 +74,6 @@ spec:
         app: agent-ingest-management-clusterscope
     spec:
       serviceAccountName: agent-ingest-management
-#      hostNetwork: true
-#      dnsPolicy: ClusterFirstWithHostNet
-#      volumes:
-#        - name: agent-config
-#          configMap:
-#            defaultMode: 0666
-#            name: agent-ingest-management-config-nodescope
       containers:
         - name: agent-ingest-management-clusterscope
           image: docker.elastic.co/beats/elastic-agent:8.0.0-SNAPSHOT
@@ -97,7 +81,7 @@ spec:
             - name: FLEET_ENROLL
               value: "1"
             - name: FLEET_ENROLLMENT_TOKEN
-              value: "VlN3X3gzSUJkVGdCSFg2WEtKX1Y6YjMyT0JfblZUZVdaQ3BkS0RYUzFDUQ=="
+              value: "MG5kTTRISUJGUDVFaEZrTE81TUQ6TTBCRnIxdWJSV2VVUG1UYll6anlxdw=="
             - name: KIBANA_HOST
               value: "http://kibana:5601"
             - name: NODE_NAME
@@ -112,10 +96,6 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
-#          volumeMounts:
-#            - mountPath: /usr/share/elastic-agent/elastic-agent.yml
-#              name: agent-config
-#              subPath: elastic-agent.yml
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -175,6 +155,11 @@ rules:
       - ""
     resources:
       - nodes/stats
+    verbs:
+      - get
+  # required for apiserver
+  - nonResourceURLs:
+      - "/metrics"
     verbs:
       - get
 ---
