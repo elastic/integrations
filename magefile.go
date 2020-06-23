@@ -22,21 +22,13 @@ import (
 )
 
 var (
-	// GoImportsImportPath controls the import path used to install goimports.
-	GoImportsImportPath = "golang.org/x/tools/cmd/goimports"
-
 	// GoImportsLocalPrefix is a string prefix matching imports that should be
 	// grouped after third-party packages.
 	GoImportsLocalPrefix = "github.com/elastic"
 
-	// GoLicenserImportPath controls the import path used to install go-licenser.
-	GoLicenserImportPath = "github.com/elastic/go-licenser"
-
 	buildDir             = "./build"
 	integrationsDir      = "./packages"
 	integrationsBuildDir = filepath.Join(buildDir, "integrations")
-	storageRepoDir       = filepath.Join(buildDir, "package-storage")
-	storagePackagesDir   = filepath.Join(buildDir, "package-storage-packages")
 
 	fieldsToEncode = []string{
 		"attributes.kibanaSavedObjectMeta.searchSourceJSON",
@@ -55,12 +47,7 @@ type fieldEntry struct {
 }
 
 func Build() error {
-	err := buildPublicDirectory()
-	if err != nil {
-		return err
-	}
-
-	err = fetchPackageStorage()
+	err := prepareBuildDirectory()
 	if err != nil {
 		return err
 	}
@@ -77,7 +64,7 @@ func Build() error {
 	return nil
 }
 
-func buildPublicDirectory() error {
+func prepareBuildDirectory() error {
 	err := os.MkdirAll(integrationsBuildDir, 0755)
 	if err != nil {
 		return err
@@ -95,47 +82,6 @@ func buildPublicDirectory() error {
 		}
 	}
 	return nil
-}
-
-func fetchPackageStorage() error {
-	_, err := os.Stat(storagePackagesDir)
-	if err == nil {
-		return nil // package storage has been already fetched
-	}
-
-	err = sh.Run("git", "clone", "--depth=1", "https://github.com/elastic/package-storage.git", storageRepoDir)
-	if err != nil {
-		return err
-	}
-
-	packageStorageRevision := os.Getenv("PACKAGE_STORAGE_REVISION")
-	if packageStorageRevision == "" {
-		packageStorageRevision = "master"
-	}
-
-	err = sh.Run("git",
-		"--git-dir", filepath.Join(storageRepoDir, ".git"),
-		"--work-tree", storageRepoDir,
-		"checkout",
-		packageStorageRevision)
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(storagePackagesDir, 0755)
-	if err != nil {
-		return err
-	}
-
-	err = sh.Run("rsync", "-a",
-		filepath.Join(storageRepoDir, "packages", "base")+"/",
-		filepath.Join(storagePackagesDir, "base"))
-	if err != nil {
-		return err
-	}
-	return sh.Run("rsync", "-a",
-		filepath.Join(storageRepoDir, "packages", "endpoint")+"/",
-		filepath.Join(storagePackagesDir, "endpoint"))
 }
 
 func buildIntegrations() error {
