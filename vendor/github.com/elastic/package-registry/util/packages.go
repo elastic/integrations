@@ -19,12 +19,12 @@ var packageList []Package
 // The list is stored in memory and on the second request directly
 // served from memory. This assumes chnages to packages only happen on restart.
 // Caching the packages request many file reads every time this method is called.
-func GetPackages(packagesBasePath string) ([]Package, error) {
+func GetPackages(packagesBasePaths []string) ([]Package, error) {
 	if packageList != nil {
 		return packageList, nil
 	}
 
-	packagePaths, err := getPackagePaths(packagesBasePath)
+	packagePaths, err := getPackagePaths(packagesBasePaths)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +35,6 @@ func GetPackages(packagesBasePath string) ([]Package, error) {
 			return nil, errors.Wrapf(err, "loading package failed (path: %s)", path)
 		}
 
-		err = p.Validate()
-		if err != nil {
-			return nil, errors.Wrapf(err, "validating package failed (path: %s)", path)
-		}
 		packageList = append(packageList, *p)
 	}
 
@@ -46,30 +42,35 @@ func GetPackages(packagesBasePath string) ([]Package, error) {
 }
 
 // getPackagePaths returns list of available packages, one for each version.
-func getPackagePaths(packagesPath string) ([]string, error) {
-	log.Printf("List packages in %s", packagesPath)
-
+func getPackagePaths(allPaths []string) ([]string, error) {
 	var foundPaths []string
-	return foundPaths, filepath.Walk(packagesPath, func(path string, info os.FileInfo, err error) error {
-		relativePath, err := filepath.Rel(packagesPath, path)
+	for _, packagesPath := range allPaths {
+		log.Printf("Packages in %s:", packagesPath)
+		err := filepath.Walk(packagesPath, func(path string, info os.FileInfo, err error) error {
+			relativePath, err := filepath.Rel(packagesPath, path)
+			if err != nil {
+				return err
+			}
+
+			dirs := strings.Split(relativePath, string(filepath.Separator))
+			if len(dirs) < 2 {
+				return nil // need to go to the package version level
+			}
+
+			p, err := os.Stat(path)
+			if err != nil {
+				return err
+			}
+
+			if p.IsDir() {
+				log.Printf("%-20s\t%10s\t%s", dirs[0], dirs[1], path)
+				foundPaths = append(foundPaths, path)
+			}
+			return filepath.SkipDir // don't need to go deeper
+		})
 		if err != nil {
-			return err
+			return nil, errors.Wrapf(err, "listing packages failed (path: %s)", packagesPath)
 		}
-
-		dirs := strings.Split(relativePath, string(filepath.Separator))
-		if len(dirs) < 2 {
-			return nil // need to go to the package version level
-		}
-
-		p, err := os.Stat(path)
-		if err != nil {
-			return err
-		}
-
-		if p.IsDir() {
-			log.Printf("%-20s\t%10s\t%s", dirs[0], dirs[1], path)
-			foundPaths = append(foundPaths, path)
-		}
-		return filepath.SkipDir // don't need to go deeper
-	})
+	}
+	return foundPaths, nil
 }
