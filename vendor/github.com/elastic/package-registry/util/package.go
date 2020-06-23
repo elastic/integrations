@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 
 	ucfg "github.com/elastic/go-ucfg"
@@ -28,31 +28,36 @@ var CategoryTitles = map[string]string{
 }
 
 type Package struct {
+	BasePackage   `config:",inline" json:",inline" yaml:",inline"`
 	FormatVersion string `config:"format_version" json:"format_version" yaml:"format_version"`
 
-	Name          string  `config:"name" json:"name"`
-	Title         *string `config:"title,omitempty" json:"title,omitempty" yaml:"title,omitempty"`
-	Version       string  `config:"version" json:"version"`
 	Readme        *string `config:"readme,omitempty" json:"readme,omitempty" yaml:"readme,omitempty"`
 	License       string  `config:"license,omitempty" json:"license,omitempty" yaml:"license,omitempty"`
-	versionSemVer semver.Version
-	Description   string       `config:"description" json:"description"`
-	Type          string       `config:"type" json:"type"`
+	versionSemVer *semver.Version
 	Categories    []string     `config:"categories" json:"categories"`
 	Release       string       `config:"release,omitempty" json:"release,omitempty"`
 	Removable     bool         `config:"removable" json:"removable"`
 	Requirement   Requirement  `config:"requirement" json:"requirement"`
 	Screenshots   []Image      `config:"screenshots,omitempty" json:"screenshots,omitempty" yaml:"screenshots,omitempty"`
-	Icons         []Image      `config:"icons,omitempty" json:"icons,omitempty" yaml:"icons,omitempty"`
 	Assets        []string     `config:"assets,omitempty" json:"assets,omitempty" yaml:"assets,omitempty"`
-	Internal      bool         `config:"internal,omitempty" json:"internal,omitempty" yaml:"internal,omitempty"`
 	DataSets      []*DataSet   `config:"datasets,omitempty" json:"datasets,omitempty" yaml:"datasets,omitempty"`
 	Datasources   []Datasource `config:"datasources,omitempty" json:"datasources,omitempty" yaml:"datasources,omitempty"`
-	Download      string       `json:"download" yaml:"download,omitempty"`
-	Path          string       `json:"path" yaml:"path,omitempty"`
 
 	// Local path to the package dir
 	BasePath string `json:"-" yaml:"-"`
+}
+
+// BasePackage is used for the output of the package info in the /search endpoint
+type BasePackage struct {
+	Name        string  `config:"name" json:"name"`
+	Title       *string `config:"title,omitempty" json:"title,omitempty" yaml:"title,omitempty"`
+	Version     string  `config:"version" json:"version"`
+	Description string  `config:"description" json:"description"`
+	Type        string  `config:"type" json:"type"`
+	Download    string  `json:"download" yaml:"download,omitempty"`
+	Path        string  `json:"path" yaml:"path,omitempty"`
+	Icons       []Image `config:"icons,omitempty" json:"icons,omitempty" yaml:"icons,omitempty"`
+	Internal    bool    `config:"internal,omitempty" json:"internal,omitempty" yaml:"internal,omitempty"`
 }
 
 type Datasource struct {
@@ -64,13 +69,12 @@ type Datasource struct {
 }
 
 type Requirement struct {
-	Kibana        ProductRequirement `config:"kibana" json:"kibana,omitempty" yaml:"kibana"`
-	Elasticsearch ProductRequirement `config:"elasticsearch" json:"elasticsearch,omitempty" yaml:"elasticsearch"`
+	Kibana ProductRequirement `config:"kibana" json:"kibana,omitempty" yaml:"kibana"`
 }
 
 type ProductRequirement struct {
 	Versions    string `config:"versions,omitempty" json:"versions,omitempty" yaml:"versions,omitempty"`
-	semVerRange semver.Range
+	semVerRange *semver.Constraints
 }
 
 type Version struct {
@@ -120,7 +124,7 @@ func NewPackage(basePath string) (*Package, error) {
 
 	// If not license is set, basic is assumed
 	if p.License == "" {
-		p.License = "basic"
+		p.License = DefaultLicense
 	}
 
 	if p.Icons != nil {
@@ -136,7 +140,7 @@ func NewPackage(basePath string) (*Package, error) {
 	}
 
 	if p.Requirement.Kibana.Versions != "" {
-		p.Requirement.Kibana.semVerRange, err = semver.ParseRange(p.Requirement.Kibana.Versions)
+		p.Requirement.Kibana.semVerRange, err = semver.NewConstraint(p.Requirement.Kibana.Versions)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid Kibana versions range: %s", p.Requirement.Kibana.Versions)
 		}
@@ -150,7 +154,7 @@ func NewPackage(basePath string) (*Package, error) {
 		return nil, fmt.Errorf("invalid release: %s", p.Release)
 	}
 
-	p.versionSemVer, err = semver.Parse(p.Version)
+	p.versionSemVer, err = semver.StrictNewVersion(p.Version)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +217,7 @@ func (p *Package) HasKibanaVersion(version *semver.Version) bool {
 	}
 
 	if version != nil {
-		if !p.Requirement.Kibana.semVerRange(*version) {
+		if !p.Requirement.Kibana.semVerRange.Check(version) {
 			return false
 		}
 	}
@@ -221,7 +225,7 @@ func (p *Package) HasKibanaVersion(version *semver.Version) bool {
 }
 
 func (p *Package) IsNewer(pp Package) bool {
-	return p.versionSemVer.GT(pp.versionSemVer)
+	return p.versionSemVer.GreaterThan(pp.versionSemVer)
 }
 
 // LoadAssets (re)loads all the assets of the package
@@ -277,14 +281,21 @@ func collectAssets(pattern string) ([]string, error) {
 	return nil, nil
 }
 
+// Validate is called during Unpack of the manifest.
+// The validation here is only related to the fields directly specified in the manifest itself.
 func (p *Package) Validate() error {
 	if p.FormatVersion == "" {
 		return fmt.Errorf("no format_version set: %v", p)
 	}
 
-	_, err := semver.New(p.FormatVersion)
+	_, err := semver.StrictNewVersion(p.FormatVersion)
 	if err != nil {
 		return fmt.Errorf("invalid package version: %s, %s", p.FormatVersion, err)
+	}
+
+	_, err = semver.StrictNewVersion(p.Version)
+	if err != nil {
+		return err
 	}
 
 	if p.Title == nil || *p.Title == "" {
@@ -295,15 +306,8 @@ func (p *Package) Validate() error {
 		return fmt.Errorf("no description set")
 	}
 
-	if p.Requirement.Elasticsearch.Versions != "" {
-		_, err := semver.ParseRange(p.Requirement.Elasticsearch.Versions)
-		if err != nil {
-			return fmt.Errorf("invalid Elasticsearch versions: %s, %s", p.Requirement.Elasticsearch.Versions, err)
-		}
-	}
-
 	if p.Requirement.Kibana.Versions != "" {
-		_, err := semver.ParseRange(p.Requirement.Kibana.Versions)
+		_, err := semver.NewConstraint(p.Requirement.Kibana.Versions)
 		if err != nil {
 			return fmt.Errorf("invalid Kibana versions: %s, %s", p.Requirement.Kibana.Versions, err)
 		}
@@ -324,19 +328,23 @@ func (p *Package) Validate() error {
 }
 
 func (p *Package) validateVersionConsistency() error {
-	versionPackage, err := semver.Parse(p.Version)
+	versionPackage, err := semver.NewVersion(p.Version)
 	if err != nil {
 		return errors.Wrap(err, "invalid version defined in manifest")
 	}
 
 	baseDir := filepath.Base(p.BasePath)
-	versionDir, err := semver.Parse(baseDir)
+	versionDir, err := semver.NewVersion(baseDir)
 	if err != nil {
 		return nil // package content is not rooted in version directory
 	}
 
-	if !versionPackage.EQ(versionDir) {
-		return fmt.Errorf("inconsistent versions (path: %s, manifest: %s)", versionDir.String(), p.versionSemVer.String())
+	if !versionPackage.Equal(versionDir) {
+		manifestVer := "unknown"
+		if p.versionSemVer != nil {
+			manifestVer = p.versionSemVer.String()
+		}
+		return fmt.Errorf("inconsistent versions (path: %s, manifest: %s)", versionDir.String(), manifestVer)
 	}
 	return nil
 }
