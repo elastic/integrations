@@ -32,11 +32,11 @@ var (
 	// GoLicenserImportPath controls the import path used to install go-licenser.
 	GoLicenserImportPath = "github.com/elastic/go-licenser"
 
-	buildDir           = "./build"
-	publicDir          = filepath.Join(buildDir, "public")
-	storageRepoDir     = filepath.Join(buildDir, "package-storage")
-	storagePackagesDir = filepath.Join(buildDir, "package-storage-packages")
-	packagePaths       = []string{storagePackagesDir, "./packages"}
+	buildDir             = "./build"
+	integrationsDir      = "./packages"
+	integrationsBuildDir = filepath.Join(buildDir, "integrations")
+	storageRepoDir       = filepath.Join(buildDir, "package-storage")
+	storagePackagesDir   = filepath.Join(buildDir, "package-storage-packages")
 
 	fieldsToEncode = []string{
 		"attributes.kibanaSavedObjectMeta.searchSourceJSON",
@@ -65,7 +65,7 @@ func Build() error {
 		return err
 	}
 
-	err = buildPackages()
+	err = buildIntegrations()
 	if err != nil {
 		return err
 	}
@@ -78,14 +78,21 @@ func Build() error {
 }
 
 func buildPublicDirectory() error {
-	err := os.MkdirAll(publicDir, 0755)
+	err := os.MkdirAll(integrationsBuildDir, 0755)
 	if err != nil {
 		return err
 	}
 
-	err = os.RemoveAll(filepath.Join(publicDir, "package"))
+	contents, err := ioutil.ReadDir(integrationsBuildDir)
 	if err != nil {
 		return err
+	}
+
+	for _, c := range contents {
+		err = os.RemoveAll(filepath.Join(integrationsBuildDir, c.Name()))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -96,7 +103,7 @@ func fetchPackageStorage() error {
 		return nil // package storage has been already fetched
 	}
 
-	err = sh.Run("git", "clone", "https://github.com/elastic/package-storage.git", storageRepoDir)
+	err = sh.Run("git", "clone", "--depth=1", "https://github.com/elastic/package-storage.git", storageRepoDir)
 	if err != nil {
 		return err
 	}
@@ -131,8 +138,8 @@ func fetchPackageStorage() error {
 		filepath.Join(storagePackagesDir, "endpoint"))
 }
 
-func buildPackages() error {
-	packagePaths, err := findPackages()
+func buildIntegrations() error {
+	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
 	}
@@ -143,7 +150,7 @@ func buildPackages() error {
 		if err != nil {
 			return err
 		}
-		dstDir := filepath.Join(publicDir, "package", p.Name, p.Version)
+		dstDir := filepath.Join(integrationsBuildDir, p.Name, p.Version)
 
 		err = copyPackageFromSource(srcDir, dstDir)
 		if err != nil {
@@ -158,34 +165,33 @@ func buildPackages() error {
 	return nil
 }
 
-func findPackages() ([]string, error) {
+func findIntegrations() ([]string, error) {
 	var matches []string
-	for _, sourceDir := range packagePaths {
-		err := filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
 
-			f, err := os.Stat(path)
-			if err != nil {
-				return err
-			}
-
-			if !f.IsDir() {
-				return nil // skip as the path is not a directory
-			}
-
-			manifestPath := filepath.Join(path, "manifest.yml")
-			_, err = os.Stat(manifestPath)
-			if os.IsNotExist(err) {
-				return nil
-			}
-			matches = append(matches, path)
-			return filepath.SkipDir
-		})
+	err := filepath.Walk(integrationsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return nil, err
+			return err
 		}
+
+		f, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !f.IsDir() {
+			return nil // skip as the path is not a directory
+		}
+
+		manifestPath := filepath.Join(path, "manifest.yml")
+		_, err = os.Stat(manifestPath)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		matches = append(matches, path)
+		return filepath.SkipDir
+	})
+	if err != nil {
+		return nil, err
 	}
 	return matches, nil
 }
@@ -270,18 +276,7 @@ func encodedSavedObject(data []byte) ([]byte, bool, error) {
 }
 
 func dryRunPackageRegistry() error {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return errors.Wrap(err, "reading current directory failed")
-	}
-	defer os.Chdir(currentDir)
-
-	err = os.Chdir(buildDir)
-	if err != nil {
-		return errors.Wrapf(err, "can't change directory to %s", buildDir)
-	}
-
-	err = sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
+	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
 	if err != nil {
 		return errors.Wrap(err, "package-registry dry-run failed")
 	}
