@@ -11,6 +11,7 @@ const (
 
 	// Default release if no release is configured
 	DefaultRelease = ReleaseExperimental
+	DefaultLicense = "basic"
 )
 
 var ReleaseTypes = map[string]interface{}{

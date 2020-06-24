@@ -297,13 +297,70 @@ func requireField(allFields []MapStr, searchedName, expectedType string, validat
 
 	f, err := findField(allFields, searchedName)
 	if err != nil {
-		return errors.Wrapf(err, "finding field failed (searchedName: %s)", searchedName)
+		f, err = findFieldSplit(allFields, searchedName)
+		if err != nil {
+			return errors.Wrapf(err, "finding field failed (searchedName: %s)", searchedName)
+		}
 	}
 
 	if f.aType != expectedType {
 		return fmt.Errorf("wrong field type for '%s' (expected: %s, got: %s)", searchedName, expectedType, f.aType)
 	}
 	return nil
+}
+
+func findFieldSplit(allFields []MapStr, searchedName string) (*fieldEntry, error) {
+	levels := strings.Split(searchedName, ".")
+	curFields := allFields
+	var err error
+	for _, part := range levels[:len(levels)-1] {
+		curFields, err = getFieldsArray(curFields, part)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to find fields array")
+		}
+	}
+	return findField(curFields, levels[len(levels)-1])
+}
+
+func createMapStr(in interface{}) (MapStr, error) {
+	m := make(MapStr)
+	v, ok := in.(map[interface{}]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unable to convert %v to known type", in)
+	}
+	for k, val := range v {
+		m[fmt.Sprintf("%v", k)] = fmt.Sprintf("%v", val)
+	}
+	return m, nil
+}
+
+func getFieldsArray(allFields []MapStr, searchedName string) ([]MapStr, error) {
+	for _, fields := range allFields {
+		name, err := fields.GetValue("name")
+		if err != nil {
+			return nil, errors.Wrapf(err, "cannot get value (key: name)")
+		}
+		if name == searchedName {
+			value, err := fields.GetValue("fields")
+			if err != nil {
+				return nil, errors.Wrapf(err, "cannot get fields")
+			}
+
+			if inArray, ok := value.([]interface{}); ok {
+				m := make([]MapStr, 0, len(inArray))
+				for _, in := range inArray {
+					mapStr, err := createMapStr(in)
+					if err != nil {
+						return nil, errors.Wrapf(err, "cannot create MapStr")
+					}
+					m = append(m, mapStr)
+				}
+				return m, nil
+			}
+			return nil, fmt.Errorf("fields was not []MapStr")
+		}
+	}
+	return nil, fmt.Errorf("field '%s' not found", searchedName)
 }
 
 func findField(allFields []MapStr, searchedName string) (*fieldEntry, error) {
