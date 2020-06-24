@@ -10,17 +10,19 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/elastic/package-registry/devmode"
+
 	"github.com/pkg/errors"
 )
 
 var packageList []Package
 
 // GetPackages returns a slice with all existing packages.
-// The list is stored in memory and on the second request directly
-// served from memory. This assumes chnages to packages only happen on restart.
+// The list is stored in memory and on the second request directly served from memory.
+// This assumes changes to packages only happen on restart (unless development mode is enabled).
 // Caching the packages request many file reads every time this method is called.
 func GetPackages(packagesBasePaths []string) ([]Package, error) {
-	if packageList != nil {
+	if !devmode.Enabled() && packageList != nil {
 		return packageList, nil
 	}
 

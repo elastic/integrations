@@ -22,9 +22,34 @@ import (
 const defaultType = "integration"
 
 var CategoryTitles = map[string]string{
-	"logs":     "Logs",
-	"metrics":  "Metrics",
-	"security": "Security",
+	"aws":               "AWS",
+	"azure":             "Azure",
+	"cloud":             "Cloud",
+	"config_management": "Config management",
+	"containers":        "Containers",
+	"crm":               "CRM",
+	"custom":            "Custom",
+	"datastore":         "Datastore",
+	"elastic_stack":     "Elastic Stack",
+	"google_loud":       "Google Cloud",
+	"kubernetes":        "Kubernetes",
+	"languages":         "Languages",
+	"message_queue":     "Message Queue",
+	"monitoring":        "Monitoring",
+	"network":           "Network",
+	"notification":      "Notification",
+	"os_system":         "OS & System",
+	"productivity":      "Productivity",
+	"security":          "Security",
+	"support":           "Support",
+	"ticketing":         "Ticketing",
+	"version_control":   "Version Control",
+	"web":               "Web",
+
+	// Old categories, to be removed
+	"logs":    "Logs",
+	"metrics": "Metrics",
+	//"security": "Security",
 }
 
 type Package struct {
@@ -42,6 +67,7 @@ type Package struct {
 	Assets        []string     `config:"assets,omitempty" json:"assets,omitempty" yaml:"assets,omitempty"`
 	DataSets      []*DataSet   `config:"datasets,omitempty" json:"datasets,omitempty" yaml:"datasets,omitempty"`
 	Datasources   []Datasource `config:"datasources,omitempty" json:"datasources,omitempty" yaml:"datasources,omitempty"`
+	Owner         *Owner       `config:"owner,omitempty" json:"owner,omitempty" yaml:"owner,omitempty"`
 
 	// Local path to the package dir
 	BasePath string `json:"-" yaml:"-"`
@@ -49,15 +75,16 @@ type Package struct {
 
 // BasePackage is used for the output of the package info in the /search endpoint
 type BasePackage struct {
-	Name        string  `config:"name" json:"name"`
-	Title       *string `config:"title,omitempty" json:"title,omitempty" yaml:"title,omitempty"`
-	Version     string  `config:"version" json:"version"`
-	Description string  `config:"description" json:"description"`
-	Type        string  `config:"type" json:"type"`
-	Download    string  `json:"download" yaml:"download,omitempty"`
-	Path        string  `json:"path" yaml:"path,omitempty"`
-	Icons       []Image `config:"icons,omitempty" json:"icons,omitempty" yaml:"icons,omitempty"`
-	Internal    bool    `config:"internal,omitempty" json:"internal,omitempty" yaml:"internal,omitempty"`
+	Name        string     `config:"name" json:"name"`
+	Title       *string    `config:"title,omitempty" json:"title,omitempty" yaml:"title,omitempty"`
+	Version     string     `config:"version" json:"version"`
+	Description string     `config:"description" json:"description"`
+	Type        string     `config:"type" json:"type"`
+	Download    string     `json:"download" yaml:"download,omitempty"`
+	Downloads   []Download `config:"downloads,omitempty" json:"downloads,omitempty" yaml:"downloads,omitempty"`
+	Path        string     `json:"path" yaml:"path,omitempty"`
+	Icons       []Image    `config:"icons,omitempty" json:"icons,omitempty" yaml:"icons,omitempty"`
+	Internal    bool       `config:"internal,omitempty" json:"internal,omitempty" yaml:"internal,omitempty"`
 }
 
 type Datasource struct {
@@ -82,6 +109,10 @@ type Version struct {
 	Max string `config:"max,omitempty" json:"max,omitempty"`
 }
 
+type Owner struct {
+	Github string `config:"github,omitempty" json:"github,omitempty"`
+}
+
 type Image struct {
 	Src   string `config:"src" json:"src" validate:"required"`
 	Title string `config:"title" json:"title,omitempty"`
@@ -91,6 +122,22 @@ type Image struct {
 
 func (i Image) getPath(p *Package) string {
 	return path.Join("/package", p.Name, p.Version, i.Src)
+}
+
+type Download struct {
+	Path string `config:"path" json:"path" validate:"required"`
+	Type string `config:"type" json:"type" validate:"required"`
+}
+
+func NewDownload(p Package, t string) Download {
+	return Download{
+		Path: getDownloadPath(p, t),
+		Type: t,
+	}
+}
+
+func getDownloadPath(p Package, t string) string {
+	return path.Join("/epr", p.Name, p.Name+"-"+p.Version+".tar.gz")
 }
 
 // NewPackage creates a new package instances based on the given base path.
@@ -139,6 +186,8 @@ func NewPackage(basePath string) (*Package, error) {
 		}
 	}
 
+	p.Downloads = []Download{NewDownload(*p, "tar")}
+
 	if p.Requirement.Kibana.Versions != "" {
 		p.Requirement.Kibana.semVerRange, err = semver.NewConstraint(p.Requirement.Kibana.Versions)
 		if err != nil {
@@ -152,11 +201,6 @@ func NewPackage(basePath string) (*Package, error) {
 
 	if !IsValidRelease(p.Release) {
 		return nil, fmt.Errorf("invalid release: %s", p.Release)
-	}
-
-	p.versionSemVer, err = semver.StrictNewVersion(p.Version)
-	if err != nil {
-		return nil, err
 	}
 
 	readmePath := filepath.Join(p.BasePath, "docs", "README.md")
@@ -224,8 +268,8 @@ func (p *Package) HasKibanaVersion(version *semver.Version) bool {
 	return true
 }
 
-func (p *Package) IsNewer(pp Package) bool {
-	return p.versionSemVer.GreaterThan(pp.versionSemVer)
+func (p *Package) IsNewerOrEqual(pp Package) bool {
+	return !p.versionSemVer.LessThan(pp.versionSemVer)
 }
 
 // LoadAssets (re)loads all the assets of the package
@@ -319,6 +363,11 @@ func (p *Package) Validate() error {
 		}
 	}
 
+	p.versionSemVer, err = semver.StrictNewVersion(p.Version)
+	if err != nil {
+		return errors.Wrap(err, "invalid package version")
+	}
+
 	err = p.validateVersionConsistency()
 	if err != nil {
 		return errors.Wrap(err, "version in manifest file is not consistent with path")
@@ -336,15 +385,13 @@ func (p *Package) validateVersionConsistency() error {
 	baseDir := filepath.Base(p.BasePath)
 	versionDir, err := semver.NewVersion(baseDir)
 	if err != nil {
+		// TODO: There should be a flag passed to the registry to accept these kind of packages
+		// as otherwise these could hide some errors in the structure of the package-storage
 		return nil // package content is not rooted in version directory
 	}
 
 	if !versionPackage.Equal(versionDir) {
-		manifestVer := "unknown"
-		if p.versionSemVer != nil {
-			manifestVer = p.versionSemVer.String()
-		}
-		return fmt.Errorf("inconsistent versions (path: %s, manifest: %s)", versionDir.String(), manifestVer)
+		return fmt.Errorf("inconsistent versions (path: %s, manifest: %s)", versionDir.String(), p.versionSemVer.String())
 	}
 	return nil
 }
