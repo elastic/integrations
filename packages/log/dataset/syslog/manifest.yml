@@ -1,0 +1,61 @@
+title: Syslog logs
+
+release: ga
+type: logs
+
+streams:
+- input: logs
+  title: Syslog log files (log)
+  description: Collect syslog log files from the local file system
+  template_path: logs.yml.hbs
+  vars:
+  - name: paths
+    type: text
+    title: Paths
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - /var/log/messages*
+    - /var/log/syslog*
+    os:
+      darwin:
+        default:
+        - /var/log/system.log*
+      windows:
+        default: []
+
+- input: syslog
+  title: Syslog server
+  description: Collect logs by running a syslog server
+  template_path: server.yml.hbs
+  vars:
+  - name: syslog_protocol
+    # XXX: is it possible to define an enum of ok values. Allowed values would be udp, tcp, unix
+    type: text  
+    multi: false
+    required: false
+    show_user: true
+    default: udp
+  - name: syslog_host
+    type: text
+    title: Host to listen on
+    multi: false
+    required: false
+    show_user: true
+    default: ""
+  - name: syslog_port
+    type: integer
+    title: Syslog Port
+    multi: false
+    required: false
+    show_user: true
+    default: 514
+  - name: syslog_socket
+    type: text
+    title: Syslog unix socket path
+    multi: false
+    required: false
+    show_user: true
+    default: /dev/log
+
