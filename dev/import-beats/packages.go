@@ -38,9 +38,11 @@ func newPackageContent(name string) packageContent {
 	return packageContent{
 		manifest: util.Package{
 			FormatVersion: "1.0.0",
-			Name:          name,
-			Version:       "0.0.1", // TODO
-			Type:          "integration",
+			BasePackage: util.BasePackage{
+				Name:          name,
+				Version:       "0.0.1", // TODO
+				Type:          "integration",
+			},
 			License:       "basic",
 			Removable:     determineIfPackageIsRemovable(name),
 			Release:       "experimental",
