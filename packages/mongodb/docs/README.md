@@ -541,3 +541,4 @@ The fields reported are:
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+
