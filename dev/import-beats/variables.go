@@ -19,19 +19,6 @@ type manifestWithVars struct {
 	Vars []util.Variable `yaml:"var"`
 }
 
-type varWithDefault struct {
-	Default interface{} `yaml:"default"`
-}
-
-type manifestWithVarsOsFlattened struct {
-	Vars []variableWithOsFlattened `yaml:"var"`
-}
-
-type variableWithOsFlattened struct {
-	OsDarwin  interface{} `yaml:"os.darwin,omitempty"`
-	OsWindows interface{} `yaml:"os.windows,omitempty"`
-}
-
 var ignoredConfigOptions = []string{
 	"module",
 	"metricsets",
@@ -45,12 +32,7 @@ func createLogStreamVariables(manifestFile []byte) ([]util.Variable, error) {
 		return nil, errors.Wrap(err, "unmarshalling manifest file failed")
 	}
 
-	var mwvos manifestWithVarsOsFlattened
-	err = yaml.Unmarshal(manifestFile, &mwvos)
-	if err != nil {
-		return nil, errors.Wrap(err, "unmarshalling flattened OS failed")
-	}
-	adjusted, err := adjustVariablesFormat(mwvos, mwv)
+	adjusted, err := adjustVariablesFormat(mwv)
 	if err != nil {
 		return nil, errors.Wrap(err, "adjusting log stream variables failed")
 	}
@@ -123,12 +105,11 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, datasetNa
 }
 
 // adjustVariablesFormat method adjusts the format of variables defined in manifest:
-// - ensure that all variable values are wrapped with a "default" field, even if they are defined for particular
-//   operating systems (prefix: os.)
+// - ensure that all variable values are wrapped with a "default" field
 // - add field "multi: true" if value is an array
-func adjustVariablesFormat(mwvos manifestWithVarsOsFlattened, mwvs manifestWithVars) (manifestWithVars, error) {
+func adjustVariablesFormat(mwvs manifestWithVars) (manifestWithVars, error) {
 	var withDefaults manifestWithVars
-	for i, aVar := range mwvs.Vars {
+	for _, aVar := range mwvs.Vars {
 		var isArray bool
 		variableType := determineInputVariableType(aVar.Name, aVar.Default)
 		if variableType == "yaml" {
@@ -147,34 +128,9 @@ func adjustVariablesFormat(mwvos manifestWithVarsOsFlattened, mwvs manifestWithV
 		aVarWithDefaults.Required = determineInputVariableIsRequired(aVar.Default)
 		aVarWithDefaults.ShowUser = true
 		aVarWithDefaults.Multi = isArray
-		aVarWithDefaults.Os = unwrapOsVars(mwvos.Vars[i])
-
-		if aVarWithDefaults.Os != nil {
-			if aVarWithDefaults.Os.Darwin != nil {
-				aVarWithDefaults.Os.Darwin = varWithDefault{
-					Default: aVarWithDefaults.Os.Darwin,
-				}
-			}
-
-			if aVarWithDefaults.Os.Windows != nil {
-				aVarWithDefaults.Os.Windows = varWithDefault{
-					Default: aVarWithDefaults.Os.Windows,
-				}
-			}
-		}
 		withDefaults.Vars = append(withDefaults.Vars, aVarWithDefaults)
 	}
 	return withDefaults, nil
-}
-
-func unwrapOsVars(flattened variableWithOsFlattened) *util.Os {
-	var anOs *util.Os
-	if flattened.OsDarwin != nil || flattened.OsWindows != nil {
-		anOs = new(util.Os)
-		anOs.Darwin = flattened.OsDarwin
-		anOs.Windows = flattened.OsWindows
-	}
-	return anOs
 }
 
 // shouldConfigOptionBeIgnored method checks if the configuration option name should be skipped (not used, duplicate, etc.)
