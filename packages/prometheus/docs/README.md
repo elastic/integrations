@@ -51,10 +51,8 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| prometheus. |  | keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
 
 
 
@@ -132,7 +130,6 @@ The fields reported are:
 | dataset.type | Dataset type. | constant_keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
 
 
 
@@ -182,5 +179,4 @@ The fields reported are:
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
 | prometheus.query.* | Prometheus value resulted from PromQL | object |
