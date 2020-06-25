@@ -95,7 +95,7 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 			fieldsFiles["ecs.yml"] = ecsFields
 		}
 		if len(moduleFields) > 0 && len(moduleFields[0].Fields) > 0 {
-				fieldsFiles["package-fields.yml"] = moduleFields
+			fieldsFiles["package-fields.yml"] = moduleFields
 		}
 		if len(datasetFields) > 0 {
 			fieldsFiles["fields.yml"] = datasetFields
