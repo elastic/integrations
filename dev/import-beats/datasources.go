@@ -181,6 +181,7 @@ func toDatasourceInputDescription(moduleTitle, packageType string, datasets []st
 func adjustDatasetNamesForInputDescription(names []string) []string {
 	var adjusted []string
 	for _, name := range names {
+		// TODO: need to investigate
 		if name == "log" {
 			adjusted = append(adjusted, "application")
 			continue

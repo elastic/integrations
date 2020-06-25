@@ -90,6 +90,7 @@ func inputTypesForListNode(listNode *parse.ListNode) []string {
 }
 
 func (scp *streamConfigParsed) configForInput(inputType string) []byte {
+	// TODO: need to investigate
 	if inputType == "log" {
 		inputType = "file"
 	}
