@@ -43,19 +43,7 @@ An example event for `collector` looks as following:
 
 The fields reported are:
 
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
-| prometheus. |  | keyword |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
-
+{{fields "collector"}}
 
 
 ### Remote Write Metrics
@@ -122,18 +110,7 @@ An example event for `remote_write` looks as following:
 
 The fields reported are:
 
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
-
+{{fields "remote_write"}}
 
 
 ### Query Metrics
@@ -173,14 +150,4 @@ An example event for `query` looks as following:
 
 The fields reported are:
 
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
+{{fields "query"}}
