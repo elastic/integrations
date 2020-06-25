@@ -14,8 +14,8 @@ on Kubernetes in order to activate the Kubernetes' integration for Metrics.
  running for the whole time in the background. Then the `/etc/build` directory of minikube VM (host for k8s cluster)
  will be mounted within the Registry's Pod serving the packages to the outside world.
  5. Deploy the stack with `kubectl apply -f snapshot.yml`. This will bing up Elasticsearch, Kibana and Package Registry.
- Verify that the services are running properly by finding their exposed endpoints. Run `minikube service kibana --url` 
- and `minikube service registry --url` 
+ Verify that the services are running properly by finding their exposed endpoints. Run `minikube -n kube-system  service kibana --url` 
+ and `minikube -n kube-system service registry --url` 
  (these commands return the endpoint which is a combination of the minikube VM's ip and the k8s exposed port) 
  to find the endpoint and check their health.
  6. Login to Kibana using the proper endpoint and `elastic:changeme` credentials. Verify that Kibana is ready to enroll Agent.
