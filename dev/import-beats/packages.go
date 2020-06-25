@@ -38,12 +38,14 @@ func newPackageContent(name string) packageContent {
 	return packageContent{
 		manifest: util.Package{
 			FormatVersion: "1.0.0",
-			Name:          name,
-			Version:       "0.0.1", // TODO
-			Type:          "integration",
-			License:       "basic",
-			Removable:     determineIfPackageIsRemovable(name),
-			Release:       "experimental",
+			BasePackage: util.BasePackage{
+				Name:    name,
+				Version: "0.0.1", // TODO
+				Type:    "integration",
+			},
+			License:   "basic",
+			Removable: determineIfPackageIsRemovable(name),
+			Release:   "experimental",
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
