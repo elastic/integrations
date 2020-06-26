@@ -391,7 +391,15 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    Bad candidate: *Collect application logs (log input)*
 
-   Good candidate: *Collect application logs*, *Collect standard logs for the application*
+   Good candidates: *Collect application logs*, *Collect standard logs for the application*
+
+4. Letter casing is important for screenshot descriptions.
+
+   These descriptions are visualized in the Kibana UI. It would be better experience to have them clean and consistent.
+
+   Bad candidate: *filebeat running on ec2 machine*
+
+   Good candidates: *Filebeat running on AWS EC2 machine*
 
 #### CI
 
