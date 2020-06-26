@@ -153,6 +153,8 @@ data:
     xpack.ingestManager.fleet.elasticsearch.host: "http://elasticsearch:9200"
     xpack.ingestManager.fleet.kibana.host: "http:/kibana:5601"
     xpack.ingestManager.fleet.tlsCheckDisabled: true
+
+    xpack.encryptedSavedObjects.encryptionKey: "12345678901234567890123456789012"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -175,7 +177,11 @@ spec:
       volumes:
         - name: registry-storage
           hostPath:
-            path: /etc/build/public
+            path: /etc/build/integrations
+        - name: registry-yaml-config
+          configMap:
+            defaultMode: 420
+            name: registry-yaml-storage
       containers:
         - name: registry-ingest-management
           image: docker.elastic.co/package-registry/package-registry:master
@@ -185,8 +191,11 @@ spec:
             requests:
               cpu: 100m
           volumeMounts:
-            - mountPath: /registry/public
+            - mountPath: /registry/packages/integrations
               name: registry-storage
+            - mountPath: /registry/config.yml
+              name: registry-yaml-config
+              subPath: config.yml
           ports:
             - containerPort: 8080
               name: registry
@@ -210,3 +219,16 @@ spec:
       targetPort: 8080
       protocol: TCP
       nodePort: 30568
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-yaml-storage
+  namespace: kube-system
+data:
+  config.yml: |-
+    package_paths:
+      - /registry/packages/integrations
+      - /registry/packages/package-storage
+    dev_mode: true
+---
