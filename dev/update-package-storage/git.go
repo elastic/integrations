@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/magefile/mage/sh"
@@ -68,7 +69,17 @@ func getUsername(err error, options updateOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return outputGitCommand(options, "config", "user.name")
+	remoteURL, err := outputGitCommand(options, "remote", "get-url", "origin")
+	if err != nil {
+		return "", err
+	}
+	re := regexp.MustCompile(`github.com[:/](.+)/package-storage`)
+	matches := re.FindStringSubmatch(remoteURL)
+	if len(matches) < 2 {
+		return "", fmt.Errorf("No remote user found in %s", remoteURL)
+	}
+
+	return matches[1], nil
 }
 
 func pushChanges(err error, options updateOptions, branchName string) error {

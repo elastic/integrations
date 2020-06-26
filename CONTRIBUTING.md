@@ -95,7 +95,7 @@ feel free to review the script's [README](https://github.com/elastic/integration
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
     _Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
-    `docker-compose -f snapshot.yml -f local.yml up --force-recreate`.
+    `docker-compose -f snapshot.yml up --force-recreate`.
 4. Create a new branch for the integration in `integrations` repository (diverge from master).
 5. Run the command: `mage ImportBeats` to start the import process.
 
@@ -161,7 +161,7 @@ what's been already fixed, as the script has overridden part of it).
     in the `dev/import-beats-resources/<integration-name>/docs/README.md`.
 
     Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`). 
-    If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb-logs"}}` and `{{fields "elb-metrics"}}` are used to separate them.
+    If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
 
 5. Review fields file and exported fields in docs.
 
@@ -272,14 +272,16 @@ what's been already fixed, as the script has overridden part of it).
 2. Start testing environment:
    ```bash
    $ cd testing/environments
-   $ docker-compose -f snapshot.yml -f local.yml up
+   $ docker-compose -f snapshot.yml up
    ```
 
    The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. The Package Registry
    has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
    adjustments in packages will be propagated to the registry.
    
-3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql
+3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
+   `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
+   package's `manifest.yml`, if appropriate.)
 
     ```json
     [
@@ -307,6 +309,12 @@ what's been already fixed, as the script has overridden part of it).
     ```bash
    $ cd $GOPATH/src/github.com/elastic/beats/x-pack/elastic-agent
    $ PLATFORMS=darwin mage package
+    ```
+
+   If your are building on a Mac and you get the following error, you may ignore it. The package has built successfully anyway.
+
+    ```
+    xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instanceError: running "xcodebuild build -project beats-preference-pane.xcodeproj -alltargets -configuration Release CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO" failed with exit code 1
     ```
 
    Unpack the distribution you'd like to use (e.g. tar.gz):

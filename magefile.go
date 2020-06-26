@@ -7,46 +7,76 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+	"github.com/pkg/errors"
+
+	"github.com/elastic/package-registry/util"
 )
 
 var (
-	// GoImportsImportPath controls the import path used to install goimports.
-	GoImportsImportPath = "golang.org/x/tools/cmd/goimports"
-
 	// GoImportsLocalPrefix is a string prefix matching imports that should be
 	// grouped after third-party packages.
 	GoImportsLocalPrefix = "github.com/elastic"
 
-	// GoLicenserImportPath controls the import path used to install go-licenser.
-	GoLicenserImportPath = "github.com/elastic/go-licenser"
+	buildDir             = "./build"
+	integrationsDir      = "./packages"
+	integrationsBuildDir = filepath.Join(buildDir, "integrations")
 
-	buildDir           = "./build"
-	publicDir          = filepath.Join(buildDir, "public")
-	storageRepoDir     = filepath.Join(buildDir, "package-storage")
-	storagePackagesDir = filepath.Join(buildDir, "package-storage-packages")
-	packagePaths       = []string{storagePackagesDir, "./packages"}
+	fieldsToEncode = []string{
+		"attributes.kibanaSavedObjectMeta.searchSourceJSON",
+		"attributes.layerListJSON",
+		"attributes.mapStateJSON",
+		"attributes.optionsJSON",
+		"attributes.panelsJSON",
+		"attributes.uiStateJSON",
+		"attributes.visState",
+	}
 )
 
+type fieldEntry struct {
+	name  string
+	aType string
+}
+
 func Build() error {
-	err := BuildPublicDirectory()
+	err := prepareBuildDirectory()
 	if err != nil {
 		return err
 	}
 
-	err = fetchPackageStorage()
+	err = buildIntegrations()
 	if err != nil {
 		return err
 	}
 
-	for _, p := range packagePaths {
-		err := sh.Run("go", "run", "github.com/elastic/package-registry/dev/generator/", "-sourceDir="+p, "-publicDir="+publicDir)
+	err = dryRunPackageRegistry()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func prepareBuildDirectory() error {
+	err := os.MkdirAll(integrationsBuildDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	contents, err := ioutil.ReadDir(integrationsBuildDir)
+	if err != nil {
+		return err
+	}
+
+	for _, c := range contents {
+		err = os.RemoveAll(filepath.Join(integrationsBuildDir, c.Name()))
 		if err != nil {
 			return err
 		}
@@ -54,58 +84,149 @@ func Build() error {
 	return nil
 }
 
-func BuildPublicDirectory() error {
-	err := os.MkdirAll(publicDir, 0755)
+func buildIntegrations() error {
+	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
 	}
 
-	err = os.RemoveAll(filepath.Join(publicDir, "package"))
-	if err != nil {
-		return err
+	for _, packagePath := range packagePaths {
+		srcDir := packagePath + "/"
+		p, err := util.NewPackage(srcDir)
+		if err != nil {
+			return err
+		}
+		dstDir := filepath.Join(integrationsBuildDir, p.Name, p.Version)
+
+		err = copyPackageFromSource(srcDir, dstDir)
+		if err != nil {
+			return err
+		}
+
+		err = encodeDashboards(dstDir)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func fetchPackageStorage() error {
-	_, err := os.Stat(storagePackagesDir)
-	if err == nil {
-		return nil // package storage has been already fetched
-	}
+func findIntegrations() ([]string, error) {
+	var matches []string
 
-	err = sh.Run("git", "clone", "https://github.com/elastic/package-storage.git", storageRepoDir)
+	err := filepath.Walk(integrationsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !f.IsDir() {
+			return nil // skip as the path is not a directory
+		}
+
+		manifestPath := filepath.Join(path, "manifest.yml")
+		_, err = os.Stat(manifestPath)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		matches = append(matches, path)
+		return filepath.SkipDir
+	})
+	if err != nil {
+		return nil, err
+	}
+	return matches, nil
+}
+
+func copyPackageFromSource(src, dst string) error {
+	err := os.MkdirAll(dst, 0755)
+	if err != nil {
+		return err
+	}
+	err = sh.RunV("rsync", "-a", src, dst)
 	if err != nil {
 		return err
 	}
 
-	packageStorageRevision := os.Getenv("PACKAGE_STORAGE_REVISION")
-	if packageStorageRevision == "" {
-		packageStorageRevision = "master"
-	}
+	return nil
+}
 
-	err = sh.Run("git",
-		"--git-dir", filepath.Join(storageRepoDir, ".git"),
-		"--work-tree", storageRepoDir,
-		"checkout",
-		packageStorageRevision)
+func encodeDashboards(dstDir string) error {
+	savedObjects, err := filepath.Glob(filepath.Join(dstDir, "kibana", "*", "*"))
 	if err != nil {
 		return err
 	}
+	for _, file := range savedObjects {
 
-	err = os.MkdirAll(storagePackagesDir, 0755)
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		output, changed, err := encodedSavedObject(data)
+		if err != nil {
+			return err
+		}
+
+		if changed {
+			err = ioutil.WriteFile(file, output, 0644)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// encodeSavedObject encodes all the fields inside a saved object
+// which are stored in encoded JSON in Kibana.
+// The reason is that for versioning it is much nicer to have the full
+// json so only on packaging this is changed.
+func encodedSavedObject(data []byte) ([]byte, bool, error) {
+	savedObject := MapStr{}
+	err := json.Unmarshal(data, &savedObject)
 	if err != nil {
-		return err
+		return nil, false, errors.Wrapf(err, "unmarshalling saved object failed")
 	}
 
-	err = sh.Run("rsync", "-a",
-		filepath.Join(storageRepoDir, "packages", "base")+"/",
-		filepath.Join(storagePackagesDir, "base"))
-	if err != nil {
-		return err
+	var changed bool
+	for _, v := range fieldsToEncode {
+		out, err := savedObject.GetValue(v)
+		// This means the key did not exists, no conversion needed.
+		if err != nil {
+			continue
+		}
+
+		// It may happen that some objects existing in example directory might be already encoded.
+		// In this case skip encoding the field and move to the next one.
+		_, isString := out.(string)
+		if isString {
+			continue
+		}
+
+		// Marshal the value to encode it properly.
+		r, err := json.Marshal(&out)
+		if err != nil {
+			return nil, false, err
+		}
+		_, err = savedObject.Put(v, string(r))
+		if err != nil {
+			return nil, false, errors.Wrapf(err, "can't put value to the saved object")
+		}
+		changed = true
 	}
-	return sh.Run("rsync", "-a",
-		filepath.Join(storageRepoDir, "packages", "endpoint")+"/",
-		filepath.Join(storagePackagesDir, "endpoint"))
+	return []byte(savedObject.StringToPrint()), changed, nil
+}
+
+func dryRunPackageRegistry() error {
+	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
+	if err != nil {
+		return errors.Wrap(err, "package-registry dry-run failed")
+	}
+	return nil
 }
 
 func ImportBeats() error {
@@ -121,6 +242,11 @@ func ImportBeats() error {
 }
 
 func UpdatePackageStorage() error {
+	err := Build()
+	if err != nil {
+		return err
+	}
+
 	args := []string{"run", "./dev/update-package-storage/"}
 	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
 		args = append(args, "-skipPullRequest")

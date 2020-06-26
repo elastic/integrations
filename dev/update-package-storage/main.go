@@ -29,7 +29,7 @@ func (uo *updateOptions) validate() error {
 
 func main() {
 	var options updateOptions
-	flag.StringVar(&options.packagesSourceDir, "sourceDir", "./packages", "Path to the packages directory")
+	flag.StringVar(&options.packagesSourceDir, "sourceDir", "./build/public/package", "Path to the packages directory")
 	flag.StringVar(&options.packageStorageDir, "packageStorageDir", "../package-storage", "Path to the package-storage repository")
 	flag.BoolVar(&options.skipPullRequest, "skipPullRequest", false, "Skip opening pull requests")
 	flag.Parse()
@@ -54,13 +54,13 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 		return err
 	}
 
-	packageVersion, err := detectPackageVersion(err, options, packageName)
+	packageVersion, err := detectGreatestBuiltPackageVersion(err, options, packageName)
 	err = checkoutMasterBranch(err, options)
 	released, err := checkIfPackageReleased(err, options, packageName, packageVersion)
 	if released {
 		return nil
 	}
-	lastRelease, err := detectLastReleasedPackageVersion(err, options, packageName)
+	lastRelease, err := detectGreatestReleasedPackageVersion(err, options, packageName)
 	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, packageVersion)
 	err = addToIndex(err, options, packageName, packageVersion)
 	branchName, err := createBranch(err, options, packageName, packageVersion)

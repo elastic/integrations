@@ -38,12 +38,14 @@ func newPackageContent(name string) packageContent {
 	return packageContent{
 		manifest: util.Package{
 			FormatVersion: "1.0.0",
-			Name:          name,
-			Version:       "0.0.1", // TODO
-			Type:          "integration",
-			License:       "basic",
-			Removable:     determineIfPackageIsRemovable(name),
-			Release:       "experimental",
+			BasePackage: util.BasePackage{
+				Name:    name,
+				Version: "0.0.1", // TODO
+				Type:    "integration",
+			},
+			License:   "basic",
+			Removable: determineIfPackageIsRemovable(name),
+			Release:   "experimental",
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
@@ -61,8 +63,8 @@ func (pc *packageContent) addDatasets(ds []datasetContent) {
 		for i, v := range pc.datasets {
 			if v.name == dc.name {
 				if v.beatType != dc.beatType {
-					pc.datasets[i].name = fmt.Sprintf("%s-%s", pc.datasets[i].name, pc.datasets[i].beatType)
-					dc.name = fmt.Sprintf("%s-%s", dc.name, dc.beatType)
+					pc.datasets[i].name = fmt.Sprintf("%s_%s", pc.datasets[i].name, pc.datasets[i].beatType)
+					dc.name = fmt.Sprintf("%s_%s", dc.name, dc.beatType)
 					pc.datasets = append(pc.datasets, dc)
 				} else {
 					log.Printf("Resolve naming conflict (packageName: %s, beatType: %s)", dc.name, dc.beatType)
