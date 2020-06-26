@@ -349,7 +349,7 @@ The section offers a set of tips for developers to improve integrations that the
 recommendations and tricks. Please consider this section as a live document that may evolve in the future, depending
 on the business or technical requirements for the entire platform (Elastic Package Registry, Elastic Agent and Kibana).
 
-### New integration
+### New integrations
 
 #### Manifest files
 
