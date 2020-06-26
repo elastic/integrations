@@ -278,7 +278,7 @@ what's been already fixed, as the script has overridden part of it).
    The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. The Package Registry
    has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
    adjustments in packages will be propagated to the registry.
-   
+
 3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
    `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
    package's `manifest.yml`, if appropriate.)
@@ -342,3 +342,68 @@ what's been already fixed, as the script has overridden part of it).
     Click out the configuration in the Kibana UI, deploy it and wait for the agent to pick out the updated configuration.
 
 8. Navigate with Kibana UI to freshly installed dashboards, verify the metrics/logs flow.
+
+## Tips for building integrations
+
+The section offers a set of tips for developers to improve integrations that they're working on. It combines hints, guidelines,
+recommendations and tricks. Please consider this section as a live document that may evolve in the future, depending
+on the business or technical requirements for the entire platform (Elastic Package Registry, Elastic Agent and Kibana).
+
+### New integrations
+
+#### Manifest files
+
+1. Set the initial version to `0.1.0`.
+
+   Tagging the integration with a lower version, like `0.0.1`, means that it's at very early stage and most likely
+   it doesn't work at all. It might be partially developed.
+
+2. Set the initial release to `beta`.
+
+   If you working on the new integration that will be release in the next release cycle, you can tag it with `beta`.
+   Otherwise, feel free to stick with the `experimental` tag.
+
+### All integrations
+
+#### Code reviewers
+
+1. Ping "Team:Integrations".
+
+   Use the team label to notify relevant team members about the incoming pull request.
+
+#### Manifest files
+
+1. Descriptions of configuration options should be as short as possible.
+
+   Remember to keep only the meaningful information about the configuration option.
+
+   Good candidates: references to the product configuration, accepted string values, explanation.
+
+   Bad candidates: *Collect metrics from A, B, C, D,... X, Y, Z datasets.*
+
+2. Descriptions should be human readable.
+
+   Try to rephrase sentences like: *Collect foo_Bar3 metrics*, into *Collect Foo Bar metrics*.
+
+3. Description should be easy to understand.
+
+   Simplify sentences, don't provide information about the input if not required.
+
+   Bad candidate: *Collect application logs (log input)*
+
+   Good candidates: *Collect application logs*, *Collect standard logs for the application*
+
+4. Letter casing is important for screenshot descriptions.
+
+   These descriptions are visualized in the Kibana UI. It would be better experience to have them clean and consistent.
+
+   Bad candidate: *filebeat running on ec2 machine*
+
+   Good candidates: *Filebeat running on AWS EC2 machine*
+
+#### CI
+
+1. Run `mage check` locally.
+
+   Before pushing commits to the repository, verify if the change complete with `mage check`. This command target is
+   used by the CI while validating your code changes.
