@@ -76,12 +76,6 @@ type Variable struct {
 	Required    bool        `config:"required" json:"required" yaml:"required"`
 	ShowUser    bool        `config:"show_user" json:"show_user" yaml:"show_user"`
 	Default     interface{} `config:"default" json:"default,omitempty" yaml:"default,omitempty"`
-	Os          *Os         `config:"os" json:"os,omitempty" yaml:"os,omitempty"`
-}
-
-type Os struct {
-	Darwin  interface{} `config:"darwin" json:"darwin,omitempty" yaml:"darwin,omitempty"`
-	Windows interface{} `config:"windows" json:"windows,omitempty" yaml:"windows,omitempty"`
 }
 
 type fieldEntry struct {

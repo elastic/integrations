@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/elastic/package-registry/devmode"
-
 	"github.com/pkg/errors"
 )
 
@@ -22,25 +20,34 @@ var packageList []Package
 // This assumes changes to packages only happen on restart (unless development mode is enabled).
 // Caching the packages request many file reads every time this method is called.
 func GetPackages(packagesBasePaths []string) ([]Package, error) {
-	if !devmode.Enabled() && packageList != nil {
+	if packageList != nil {
 		return packageList, nil
 	}
 
+	var err error
+	packageList, err = getPackagesFromFilesystem(packagesBasePaths)
+	if err != nil {
+		return nil, errors.Wrapf(err, "reading packages from filesystem failed")
+	}
+	return packageList, nil
+}
+
+func getPackagesFromFilesystem(packagesBasePaths []string) ([]Package, error) {
 	packagePaths, err := getPackagePaths(packagesBasePaths)
 	if err != nil {
 		return nil, err
 	}
 
+	var pList []Package
 	for _, path := range packagePaths {
 		p, err := NewPackage(path)
 		if err != nil {
 			return nil, errors.Wrapf(err, "loading package failed (path: %s)", path)
 		}
 
-		packageList = append(packageList, *p)
+		pList = append(pList, *p)
 	}
-
-	return packageList, nil
+	return pList, nil
 }
 
 // getPackagePaths returns list of available packages, one for each version.
@@ -59,12 +66,7 @@ func getPackagePaths(allPaths []string) ([]string, error) {
 				return nil // need to go to the package version level
 			}
 
-			p, err := os.Stat(path)
-			if err != nil {
-				return err
-			}
-
-			if p.IsDir() {
+			if info.IsDir() {
 				log.Printf("%-20s\t%10s\t%s", dirs[0], dirs[1], path)
 				foundPaths = append(foundPaths, path)
 			}
