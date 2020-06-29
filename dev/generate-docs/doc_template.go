@@ -16,11 +16,11 @@ import (
 
 const (
 	readmeFilename    = "README.md"
-	resourcesDocsPath = "./dev/import-beats-resources/%s/docs/README.md"
+	resourcesDocsPath = "./dev/import-beats-resources/%s/docs"
 )
 
 func renderReadme(options generateOptions, packageName string) error {
-	templatePath := fmt.Sprintf(resourcesDocsPath, packageName)
+	templatePath := filepath.Join(fmt.Sprintf(resourcesDocsPath, packageName), readmeFilename)
 
 	_, err := os.Stat(templatePath)
 	if os.IsNotExist(err) {
