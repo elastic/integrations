@@ -49,6 +49,8 @@ Access logs collects the Apache access logs.
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
+
 ### Error Logs
 
 Error logs collects the Apache error logs.
@@ -84,6 +86,7 @@ Error logs collects the Apache error logs.
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+
 
 
 ## Metrics
@@ -234,4 +237,5 @@ An example event for status looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+
 

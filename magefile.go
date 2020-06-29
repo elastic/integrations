@@ -258,6 +258,15 @@ func UpdatePackageStorage() error {
 	return sh.Run("go", args...)
 }
 
+func GenerateDocs() error {
+	args := []string{"run", "./dev/generate-docs/"}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
 func Check() error {
 	Format()
 
@@ -265,6 +274,12 @@ func Check() error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: Enable GenerateDocs in "Check" when all integrations are passing.
+	/*err = GenerateDocs()
+	if err != nil {
+		return err
+	}*/
 
 	err = Vendor()
 	if err != nil {

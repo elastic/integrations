@@ -31,7 +31,7 @@ from log groups to Amazon S3 bucket which has SQS notification setup already.
 With this dataset, EC2 logs will be parsed into fields like  `ip_address`
 and `process.name`. For logs from other services, please use `cloudwatch` dataset.
 
-{{fields "ec2-logs"}}
+{{fields "ec2_logs"}}
 
 ### elb
 
