@@ -23,8 +23,6 @@ import (
 
 var ignoredModules = map[string]bool{"apache2": true}
 
-var removablePackages = map[string]bool{"system": false}
-
 type packageContent struct {
 	manifest   util.Package
 	datasets   datasetContentArray
@@ -43,19 +41,13 @@ func newPackageContent(name string) packageContent {
 				Version: "0.0.1", // TODO
 				Type:    "integration",
 			},
-			License:   "basic",
-			Removable: determineIfPackageIsRemovable(name),
-			Release:   "experimental",
+			License: "basic",
+			Release: "experimental",
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
 		},
 	}
-}
-
-func determineIfPackageIsRemovable(name string) bool {
-	_, ok := removablePackages[name]
-	return !ok
 }
 
 func (pc *packageContent) addDatasets(ds []datasetContent) {
