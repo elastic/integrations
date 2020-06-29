@@ -1,3 +1,7 @@
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License;
+// you may not use this file except in compliance with the Elastic License.
+
 package main
 
 import (
@@ -11,7 +15,7 @@ import (
 
 const (
 	resourcesDocsPath = "./dev/import-beats-resources/%s/docs/README.md"
-	readmeFilename = "README.md"
+	readmeFilename    = "README.md"
 )
 
 func renderReadme(options generateOptions, packageName string) error {
