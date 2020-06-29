@@ -81,8 +81,7 @@ When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
 > ⚠️
 Depending on your scale this method may not be suitable. We recommend using the
-<<metricbeat-metricset-prometheus-remote_write,remote_write>> metricset for this,
-and make Prometheus push metrics to Metricbeat.
+remote_write dataset for this, and make Prometheus push metrics to Agent.
 
 This module can scrape all metrics stored in a Prometheus server, by using the
 [federation API](https://prometheus.io/docs/prometheus/latest/federation/). By pointing this
