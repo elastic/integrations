@@ -16,18 +16,17 @@ To scrape metrics from a Prometheus exporter, configure the `hosts` field to it.
 to retrieve the metrics from (`/metrics` by default) can be configured with `metrics_path`.
 
 ```$yml
-- module: prometheus
-  period: 10s
-  hosts: ["node:9100"]
-  metrics_path: /metrics
+period: 10s
+hosts: ["node:9100"]
+metrics_path: /metrics
 
-  #username: "user"
-  #password: "secret"
+#username: "user"
+#password: "secret"
 
-  # This can be used for service account based authorization:
-  #bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-  #ssl.certificate_authorities:
-  #  - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+# This can be used for service account based authorization:
+#bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+#ssl.certificate_authorities:
+#  - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
 ```
 
 
@@ -35,12 +34,10 @@ to retrieve the metrics from (`/metrics` by default) can be configured with `met
 
 
 ```$yml
-metricbeat.modules:
-- module: prometheus
-  period: 10s
-  hosts: ["localhost:9090"]
-  use_types: true
-  rate_counters: false
+period: 10s
+hosts: ["localhost:9090"]
+use_types: true
+rate_counters: true
 ```
 
 `use_types` paramater (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
@@ -160,8 +157,6 @@ This module can scrape all metrics stored in a Prometheus server, by using the
 config to the Prometheus server:
 
 ```$yml
-metricbeat.modules:
-- module: prometheus
   period: 10s
   hosts: ["localhost:9090"]
   metrics_path: '/federate'
@@ -175,11 +170,9 @@ metricbeat.modules:
 In order to filter out/in metrics one can make use of `metrics_filters.include` `metrics_filters.exclude` settings:
 
 ```$yml
-- module: prometheus
-  period: 10s
-  hosts: ["localhost:9090"]
-  metrics_path: /metrics
-  metrics_filters:
+hosts: ["localhost:9090"]
+metrics_path: /metrics
+metrics_filters:
     include: ["node_filesystem_*"]
     exclude: ["node_filesystem_device_*"]
 ```
@@ -193,11 +186,9 @@ To keep only specific metrics, anchor the start and the end of the regexp of eac
 - the dollar sign $ matches the end of a text.
 
 ```$yml
-- module: prometheus
-  period: 10s
-  hosts: ["localhost:9090"]
-  metrics_path: /metrics
-  metrics_filters:
+hosts: ["localhost:9090"]
+metrics_path: /metrics
+metrics_filters:
     include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
 
@@ -279,22 +270,18 @@ Metrics sent to the http endpoint will be put by default under the `prometheus.m
 A basic configuration would look like:
 
 ```$yml
-- module: prometheus
-  metricsets: ["remote_write"]
-  host: "localhost"
-  port: "9201"
+host: "localhost"
+port: "9201"
 ```
 
 
 Also consider using secure settings for the server, configuring the module with TLS/SSL as shown:
 
 ```$yml
-- module: prometheus
-  metricsets: ["remote_write"]
-  host: "localhost"
-  ssl.certificate: "/etc/pki/server/cert.pem"
-  ssl.key: "/etc/pki/server/cert.key"
-  port: "9201"
+host: "localhost"
+ssl.certificate: "/etc/pki/server/cert.pem"
+ssl.key: "/etc/pki/server/cert.key"
+port: "9201"
 ```
 
 and on Prometheus side:
@@ -313,55 +300,96 @@ An example event for `remote_write` looks as following:
 
 ```$json
 {
-    "@timestamp": "2020-02-28T13:55:37.221Z",
-    "@metadata": {
-        "beat": "metricbeat",
-        "type": "_doc",
-        "version": "8.0.0"
+  "_index": ".ds-metrics-prometheus.remote_write-default-000001",
+  "_id": "dJf5AHMBA2PIMpu1O4DQ",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T16:46:40.018Z",
+    "ecs": {
+      "version": "1.5.0"
     },
-    "service": {
-        "type": "prometheus"
+    "host": {
+      "architecture": "x86_64",
+      "os": {
+        "name": "Mac OS X",
+        "kernel": "18.7.0",
+        "build": "18G95",
+        "platform": "darwin",
+        "version": "10.14.6",
+        "family": "darwin"
+      },
+      "id": "883134FF-0EC4-5E1B-9F9E-FD06FB681D84",
+      "ip": [
+        "fe80::aede:48ff:fe00:1122",
+        "fe80::cce:4e5b:69eb:892b",
+        "2a02:587:a035:997d:14bc:cf14:23aa:e402",
+        "2a02:587:a035:997d:e85f:6b25:8c74:f991",
+        "192.168.1.7",
+        "fe80::24b8:6bff:fe93:e156",
+        "fe80::cc22:c485:38b6:5929",
+        "192.168.64.1"
+      ],
+      "mac": [
+        "ac:de:48:00:11:22",
+        "a6:83:e7:8c:c8:7b",
+        "a4:83:e7:8c:c8:7b",
+        "06:83:e7:8c:c8:7b",
+        "26:b8:6b:93:e1:56",
+        "ca:00:5c:62:81:01",
+        "ca:00:5c:62:81:00",
+        "ca:00:5c:62:81:05",
+        "ca:00:5c:62:81:04",
+        "ca:00:5c:62:81:01",
+        "0a:00:27:00:00:00",
+        "3a:76:9f:5d:69:a5",
+        "ae:de:48:00:33:64"
+      ],
+      "hostname": "Christoss-MBP",
+      "name": "Christoss-MBP"
     },
     "agent": {
-        "version": "8.0.0",
-        "type": "metricbeat",
-        "ephemeral_id": "ead09243-0aa0-4fd2-8732-1e09a6d36338",
-        "hostname": "host1",
-        "id": "bd12ee45-881f-48e4-af20-13b139548607"
-    },
-    "ecs": {
-        "version": "1.4.0"
-    },
-    "host": {},
-    "event": {
-        "dataset": "prometheus.remote_write",
-        "module": "prometheus"
+      "version": "8.0.0",
+      "ephemeral_id": "cb348102-0121-4c5b-8fcd-10ea27d25f77",
+      "id": "3bdc7670-9ced-4c70-bba9-00d7e183ae4b",
+      "name": "Christoss-MBP",
+      "type": "metricbeat"
     },
     "metricset": {
-        "name": "remote_write"
+      "name": "remote_write"
     },
     "prometheus": {
-        "metrics": {
-            "container_tasks_state": 0
-        },
-        "labels": {
-            "name": "nodeexporter",
-            "id": "/docker/1d6ec1931c9b527d4fe8e28d9c798f6ec612f48af51949f3219b5ca77e120b10",
-            "container_label_com_docker_compose_oneoff": "False",
-            "instance": "cadvisor:8080",
-            "container_label_com_docker_compose_service": "nodeexporter",
-            "state": "iowaiting",
-            "monitor": "docker-host-alpha",
-            "container_label_com_docker_compose_project": "dockprom",
-            "job": "cadvisor",
-            "image": "prom/node-exporter:v0.18.1",
-            "container_label_maintainer": "The Prometheus Authors <prometheus-developers@googlegroups.com>",
-            "container_label_com_docker_compose_config_hash": "2cc2fedf6da5ff0996a209d9801fb74962a8f4c21e44be03ed82659817d9e7f9",
-            "container_label_com_docker_compose_version": "1.24.1",
-            "container_label_com_docker_compose_container_number": "1",
-            "container_label_org_label_schema_group": "monitoring"
-        }
+      "metrics": {
+        "container_fs_reads_bytes_total": 1196032,
+        "container_fs_reads_total": 27
+      },
+      "labels": {
+        "instance": "cadvisor:8080",
+        "job": "cadvisor",
+        "id": "/systemreserved/acpid"
+      }
+    },
+    "service": {
+      "type": "prometheus"
+    },
+    "event": {
+      "dataset": "prometheus.remote_write",
+      "module": "prometheus"
+    },
+    "dataset": {
+      "type": "metrics",
+      "name": "prometheus.remote_write",
+      "namespace": "default"
     }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T16:46:40.018Z"
+    ]
+  },
+  "sort": [
+    1593449200018
+  ]
 }
 ```
 
