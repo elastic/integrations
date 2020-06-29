@@ -1,7 +1,6 @@
 # MongoDB Integration
 
-This integration is used to fetches logs and metrics from 
-[MongoDB](https://www.mongodb.com/).
+This integration is used to fetch logs and metrics from [MongoDB](https://www.mongodb.com/).
 
 ## Compatibility
 
