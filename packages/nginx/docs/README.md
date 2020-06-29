@@ -30,15 +30,17 @@ Access logs collects the nginx access logs.
 
 | Field | Description | Type |
 |---|---|---|
-| dataset.type | Dataset type. | constant_keyword |
+| @timestamp | Event timestamp. | date |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
-| @timestamp | Event timestamp. | date |
+| dataset.type | Dataset type. | constant_keyword |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| nginx.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -51,8 +53,6 @@ Access logs collects the nginx access logs.
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-| nginx.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
-| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
@@ -66,16 +66,16 @@ Error logs collects the nginx error logs.
 
 | Field | Description | Type |
 |---|---|---|
-| dataset.type | Dataset type. | constant_keyword |
+| @timestamp | Event timestamp. | date |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
-| @timestamp | Event timestamp. | date |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| dataset.type | Dataset type. | constant_keyword |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| nginx.error.connection_id | Connection identifier. | long |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
-| nginx.error.connection_id | Connection identifier. | long |
-| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 
 
 
@@ -87,15 +87,27 @@ Error logs collects the ingress controller logs.
 
 | Field | Description | Type |
 |---|---|---|
-| dataset.type | Dataset type. | constant_keyword |
+| @timestamp | Event timestamp. | date |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
-| @timestamp | Event timestamp. | date |
+| dataset.type | Dataset type. | constant_keyword |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| nginx.ingress_controller.http.request.id | The randomly generated ID of the request | text |
+| nginx.ingress_controller.http.request.length | The request length (including request line, header, and request body) | long |
+| nginx.ingress_controller.http.request.time | Time elapsed since the first bytes were read from the client | double |
+| nginx.ingress_controller.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
+| nginx.ingress_controller.upstream.alternative_name | The name of the alternative upstream. | text |
+| nginx.ingress_controller.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
+| nginx.ingress_controller.upstream.name | The name of the upstream. | text |
+| nginx.ingress_controller.upstream.port | The port of the upstream server. | long |
+| nginx.ingress_controller.upstream.response.length | The length of the response obtained from the upstream server | long |
+| nginx.ingress_controller.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
+| nginx.ingress_controller.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -108,18 +120,6 @@ Error logs collects the ingress controller logs.
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-| nginx.ingress_controller.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
-| nginx.ingress_controller.http.request.length | The request length (including request line, header, and request body) | long |
-| nginx.ingress_controller.http.request.time | Time elapsed since the first bytes were read from the client | double |
-| nginx.ingress_controller.upstream.name | The name of the upstream. | text |
-| nginx.ingress_controller.upstream.alternative_name | The name of the alternative upstream. | text |
-| nginx.ingress_controller.upstream.response.length | The length of the response obtained from the upstream server | long |
-| nginx.ingress_controller.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
-| nginx.ingress_controller.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
-| nginx.ingress_controller.http.request.id | The randomly generated ID of the request | text |
-| nginx.ingress_controller.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
-| nginx.ingress_controller.upstream.port | The port of the upstream server. | long |
-| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 
 
 
@@ -186,19 +186,19 @@ An example event for stubstatus looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| dataset.type | Dataset type. | constant_keyword |
+| @timestamp | Event timestamp. | date |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
-| @timestamp | Event timestamp. | date |
-| nginx.stubstatus.hostname | Nginx hostname. | keyword |
-| nginx.stubstatus.active | The current number of active client connections including Waiting connections. | long |
+| dataset.type | Dataset type. | constant_keyword |
 | nginx.stubstatus.accepts | The total number of accepted client connections. | long |
-| nginx.stubstatus.handled | The total number of handled client connections. | long |
-| nginx.stubstatus.dropped | The total number of dropped client connections. | long |
-| nginx.stubstatus.requests | The total number of client requests. | long |
+| nginx.stubstatus.active | The current number of active client connections including Waiting connections. | long |
 | nginx.stubstatus.current | The current number of client requests. | long |
+| nginx.stubstatus.dropped | The total number of dropped client connections. | long |
+| nginx.stubstatus.handled | The total number of handled client connections. | long |
+| nginx.stubstatus.hostname | Nginx hostname. | keyword |
 | nginx.stubstatus.reading | The current number of connections where Nginx is reading the request header. | long |
-| nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long |
+| nginx.stubstatus.requests | The total number of client requests. | long |
 | nginx.stubstatus.waiting | The current number of idle client connections waiting for a request. | long |
+| nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long |
 
 

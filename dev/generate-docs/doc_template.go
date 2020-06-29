@@ -23,7 +23,7 @@ func renderReadme(options generateOptions, packageName string) error {
 			return renderSampleEvent(options, packageName, datasetName)
 		},
 		"fields": func(datasetName string) (string, error) {
-			return renderFields(options, packageName, datasetName)
+			return renderExportedFields(options, packageName, datasetName)
 		},
 	}).ParseFiles(templatePath)
 	if err != nil {

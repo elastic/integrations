@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -25,7 +26,7 @@ type fieldsTableRecord struct {
 	aType       string
 }
 
-func renderFields(options generateOptions, packageName, datasetName string) (string, error) {
+func renderExportedFields(options generateOptions, packageName, datasetName string) (string, error) {
 	datasetPath := filepath.Join(options.packagesSourceDir, packageName, "dataset", datasetName)
 	fieldFiles, err := listFieldFields(datasetPath)
 	if err != nil {
@@ -107,6 +108,10 @@ func collectFieldsFromDefinitions(fieldDefinitions []fieldDefinition) ([]fieldsT
 			return nil, errors.Wrapf(err, "visiting fields failed")
 		}
 	}
+
+	sort.Slice(records, func(i, j int) bool {
+		return sort.StringsAreSorted([]string{records[i].name, records[j].name})
+	})
 	return uniqueTableRecords(records), nil
 }
 
