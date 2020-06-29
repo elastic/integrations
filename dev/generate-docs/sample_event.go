@@ -13,7 +13,7 @@ import (
 const sampleEventFile = "sample_event.json"
 
 func renderSampleEvent(options generateOptions, packageName, datasetName string) (string, error) {
-	eventPath := filepath.Join(options.packagesSourceDir, packageName, datasetName, sampleEventFile)
+	eventPath := filepath.Join(options.packagesSourceDir, packageName, "dataset", datasetName, sampleEventFile)
 
 	body, err := ioutil.ReadFile(eventPath)
 	if err != nil {

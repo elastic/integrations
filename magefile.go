@@ -275,7 +275,7 @@ func Check() error {
 		return err
 	}
 
-	err := GenerateDocs()
+	err = GenerateDocs()
 	if err != nil {
 		return err
 	}

@@ -1,11 +1,16 @@
 package main
 
 import (
-	"github.com/pkg/errors"
 	"io/ioutil"
+
+	"github.com/pkg/errors"
 )
 
 func listPackages(options generateOptions) ([]string, error) {
+	if len(options.selectedPackages()) > 0 {
+		return options.selectedPackages(), nil
+	}
+
 	var folders []string
 	fileInfos, err := ioutil.ReadDir(options.packagesSourceDir)
 	if err != nil {
