@@ -83,7 +83,8 @@ func main() {
 	var options importerOptions
 
 	flag.StringVar(&options.beatsDir, "beatsDir", "../beats", "Path to the beats repository")
-	flag.StringVar(&options.kibanaDir, "kibanaDir", "../kibana", "Path to the kibana repository")
+	flag.StringVar(&options.kibanaDir, "kibanaDir", "../../../../../elastic/kibana", "Path to the kibana repository")
+	//flag.StringVar(&options.kibanaDir, "kibanaDir", "../kibana", "Path to the kibana repository")
 	flag.StringVar(&options.kibanaHostPort, "kibanaHostPort", "http://localhost:5601", "Kibana host and port")
 	flag.StringVar(&options.kibanaUsername, "kibanaUsername", "elastic", "Kibana username")
 	flag.StringVar(&options.kibanaPassword, "kibanaPassword", "changeme", "Kibana password")

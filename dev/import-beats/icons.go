@@ -19,7 +19,8 @@ import (
 
 const (
 	tutorialsPath   = "src/plugins/home/server/tutorials"
-	kibanaLogosPath = "src/legacy/core_plugins/kibana/public/home/tutorial_resources/logos"
+	kibanaLogosPath = "src/plugins/home/public/assets/logos"
+		//"src/legacy/core_plugins/kibana/public/home/tutorial_resources/logos"
 )
 
 var (
