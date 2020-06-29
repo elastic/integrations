@@ -54,26 +54,98 @@ When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
 ```$json
 {
+  "_index": ".ds-metrics-prometheus.collector-default-000001",
+  "_id": "JlK9AHMBeyDc0b9rCwVA",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T15:40:55.028Z",
     "prometheus": {
-        "labels": {
-            "instance": "172.27.0.2:9090",
-            "job": "prometheus"
-        },
-        "prometheus_target_interval_length_seconds_count": {
-            "counter": 1,
-            "rate": 0
-        },
-        "prometheus_target_interval_length_seconds_sum": {
-            "counter": 15.000401344,
-            "rate": 0
-        }
-        "prometheus_tsdb_compaction_chunk_range_seconds_bucket": {
-            "histogram": {
-                "values": [50, 300, 1000, 4000, 16000],
-                "counts": [10, 2, 34, 7]
-            }
-        }
+      "labels": {
+        "slice": "inner_eval",
+        "instance": "localhost:9090",
+        "job": "prometheus"
+      },
+      "prometheus_engine_query_duration_seconds_sum": {
+        "counter": 0.002697546,
+        "rate": 0.00006945900000000001
+      },
+      "prometheus_engine_query_duration_seconds_count": {
+        "rate": 1,
+        "counter": 37
+      }
     },
+    "dataset": {
+      "type": "metrics",
+      "name": "prometheus.collector",
+      "namespace": "default"
+    },
+    "agent": {
+      "ephemeral_id": "98420e91-ee6d-4883-8ad3-02fa8d47f5c1",
+      "id": "9fc3e975-6789-4738-a11a-ba7108b0a92c",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "module": "prometheus",
+      "duration": 15397122,
+      "dataset": "prometheus.collector"
+    },
+    "metricset": {
+      "period": 10000,
+      "name": "collector"
+    },
+    "service": {
+      "address": "localhost:9090",
+      "type": "prometheus"
+    },
+    "stream": {
+      "namespace": "default",
+      "type": "metrics",
+      "dataset": "prometheus.collector"
+    },
+    "host": {
+      "name": "minikube",
+      "hostname": "minikube",
+      "architecture": "x86_64",
+      "os": {
+        "name": "CentOS Linux",
+        "kernel": "4.19.81",
+        "codename": "Core",
+        "platform": "centos",
+        "version": "7 (Core)",
+        "family": "redhat"
+      },
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "containerized": false,
+      "ip": [
+        "192.168.64.10",
+        "fe80::a883:2fff:fe7f:6b12",
+        "172.17.0.1"
+      ],
+      "mac": [
+        "aa:83:2f:7f:6b:12",
+        "02:42:14:e3:dc:1d"
+      ]
+    }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T15:40:55.028Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@prometheus.collector@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1593445255028
+  ]
 }
 ```
 
@@ -172,9 +244,6 @@ The fields reported are:
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | prometheus. |  | keyword |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
 
 
 
@@ -320,30 +389,22 @@ The Prometheus `query` dataset to query from [querying API of Prometheus](https:
 
 The following configuration performs an instant query for `up` metric at a single point in time:
 ```$yml
-- module: prometheus
-  period: 10s
-  hosts: ["localhost:9090"]
-  metricsets: ["query"]
-  queries:
-  - name: 'up'
-    path: '/api/v1/query'
-    params:
-      query: "up"
+queries:
+- name: 'up'
+  path: '/api/v1/query'
+  params:
+    query: "up"
 ```
 
 
 More complex PromQL expressions can also be used like the following one which calculates the per-second rate of HTTP
 requests as measured over the last 5 minutes.
 ```$yml
-- module: prometheus
-  period: 10s
-  hosts: ["localhost:9090"]
-  metricsets: ["query"]
-  queries:
-  - name: "rate_http_requests_total"
-    path: "/api/v1/query"
-    params:
-      query: "rate(prometheus_http_requests_total[5m])"
+queries:
+- name: "rate_http_requests_total"
+  path: "/api/v1/query"
+  params:
+    query: "rate(prometheus_http_requests_total[5m])"
 ```
 
 #### Range queries
@@ -351,18 +412,14 @@ requests as measured over the last 5 minutes.
 
 The following example evaluates the expression `up` over a 30-second range with a query resolution of 15 seconds:
 ```$yml
-- module: prometheus
-  period: 10s
-  metricsets: ["query"]
-  hosts: ["node:9100"]
-  queries:
-  - name: "up_master"
-    path: "/api/v1/query_range"
-    params:
-      query: "up{node='master01'}"
-      start: "2019-12-20T23:30:30.000Z"
-      end: "2019-12-21T23:31:00.000Z"
-      step: 15s
+queries:
+- name: "up_master"
+  path: "/api/v1/query_range"
+  params:
+    query: "up{node='master01'}"
+    start: "2019-12-20T23:30:30.000Z"
+    end: "2019-12-21T23:31:00.000Z"
+    step: 15s
 ```
 
 
@@ -370,30 +427,89 @@ An example event for `query` looks as following:
 
 ```$json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+  "_index": ".ds-metrics-prometheus.query-default-000001",
+  "_id": "IlG5AHMBeyDc0b9rYc28",
+  "_version": 1,
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T15:36:54.000Z",
+    "host": {
+      "os": {
+        "kernel": "4.19.81",
+        "codename": "Core",
+        "platform": "centos",
+        "version": "7 (Core)",
+        "family": "redhat",
+        "name": "CentOS Linux"
+      },
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "containerized": false,
+      "ip": [
+        "192.168.64.10",
+        "fe80::b8dd:15ff:feb0:528d",
+        "172.18.0.1",
+      ],
+      "mac": [
+        "aa:83:2f:7f:6b:12",
+        "02:42:14:e3:dc:1d",
+      ],
+      "hostname": "minikube",
+      "architecture": "x86_64",
+      "name": "minikube"
+    },
+    "agent": {
+      "type": "metricbeat",
+      "version": "8.0.0",
+      "ephemeral_id": "98420e91-ee6d-4883-8ad3-02fa8d47f5c1",
+      "id": "9fc3e975-6789-4738-a11a-ba7108b0a92c",
+      "name": "minikube"
+    },
     "event": {
-        "dataset": "prometheus.query",
-        "duration": 115000,
-        "module": "prometheus"
+      "module": "prometheus",
+      "duration": 2123733,
+      "dataset": "prometheus.query"
     },
     "metricset": {
-        "name": "query",
-        "period": 10000
+      "name": "query",
+      "period": 10000
     },
-    "prometheus": {
-        "labels": {
-            "__name__": "go_threads",
-            "instance": "localhost:9090",
-            "job": "prometheus"
-        },
-        "query": {
-            "go_threads": 18
-        }
+    "dataset": {
+      "type": "metrics",
+      "name": "prometheus.query",
+      "namespace": "default"
+    },
+    "stream": {
+      "dataset": "prometheus.query",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
     },
     "service": {
-        "address": "localhost:32769",
-        "type": "prometheus"
+      "address": "localhost:9090",
+      "type": "prometheus"
+    },
+    "prometheus": {
+      "labels": {},
+      "query": {
+        "prometheus_http_requests_total_rate": 0.3818181818181818
+      }
     }
+  },
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T15:36:54.000Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@prometheus.query@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1593445014000
+  ]
 }
 ```
 
