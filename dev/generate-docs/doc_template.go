@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -14,15 +15,23 @@ import (
 )
 
 const (
-	resourcesDocsPath = "./dev/import-beats-resources/%s/docs/README.md"
 	readmeFilename    = "README.md"
+	resourcesDocsPath = "./dev/import-beats-resources/%s/docs/README.md"
 )
 
 func renderReadme(options generateOptions, packageName string) error {
 	templatePath := fmt.Sprintf(resourcesDocsPath, packageName)
 
+	_, err := os.Stat(templatePath)
+	if os.IsNotExist(err) {
+		log.Printf(`Template file "%s" does not exist. The README.md file will not be rendered.`, templatePath)
+		return nil
+	} else if err != nil {
+		return errors.Wrapf(err, "stat file failed (path: %s)", templatePath)
+	}
+
 	t := template.New(readmeFilename)
-	t, err := t.Funcs(template.FuncMap{
+	t, err = t.Funcs(template.FuncMap{
 		"event": func(datasetName string) (string, error) {
 			return renderSampleEvent(options, packageName, datasetName)
 		},
