@@ -50,10 +50,13 @@ The `log` dataset collects the MongoDB logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| log.file.path | Full path to the log file this event came from, including the file name. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | mongodb.log.component | Functional categorization of message | keyword |
 | mongodb.log.context | Context of message | keyword |
+
 
 
 ## Metrics
@@ -69,10 +72,120 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 * [top action](https://docs.mongodb.com/manual/reference/privilege-actions/#top) on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `collstats` looks as following:
+An example event for collstats looks as following:
 
-```$json
+```$json{
+  "_id": "6hT0AXMB-2lnjH4qREj1",
+  "_index": ".ds-metrics-mongodb.collstats-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "agent": {
+      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+      "name": "KaiyanMacBookPro",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "mongodb.collstats",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "mongodb.collstats",
+      "duration": 3378520,
+      "module": "mongodb"
+    },
+    "metricset": {
+      "name": "collstats",
+      "period": 10000
+    },
+    "mongodb": {
+      "collstats": {
+        "collection": "startup_log",
+        "commands": {
+          "count": 0,
+          "time": {
+            "us": 0
+          }
+        },
+        "db": "local",
+        "getmore": {
+          "count": 0,
+          "time": {
+            "us": 0
+          }
+        },
+        "insert": {
+          "count": 0,
+          "time": {
+            "us": 0
+          }
+        },
+        "lock": {
+          "read": {
+            "count": 74,
+            "time": {
+              "us": 443
+            }
+          },
+          "write": {
+            "count": 1,
+            "time": {
+              "us": 8
+            }
+          }
+        },
+        "name": "local.startup_log",
+        "queries": {
+          "count": 0,
+          "time": {
+            "us": 0
+          }
+        },
+        "remove": {
+          "count": 0,
+          "time": {
+            "us": 0
+          }
+        },
+        "total": {
+          "count": 75,
+          "time": {
+            "us": 451
+          }
+        },
+        "update": {
+          "count": 0,
+          "time": {
+            "us": 0
+          }
+        }
+      }
+    },
+    "service": {
+      "address": "localhost:27017",
+      "type": "mongodb"
+    },
+    "stream": {
+      "dataset": "mongodb.collstats",
+      "namespace": "default",
+      "type": "metrics"
+    }
+  },
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T21:20:51.459Z"
+    ]
+  }
+}
 ```
+
 
 The fields reported are:
 
@@ -105,6 +218,8 @@ The fields reported are:
 | mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long |
 | mongodb.collstats.update.count | Number of document update events. | long |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long |
+| service.address | Address of the machine where the service is running. | ip |
+
 
 
 ### dbstats
@@ -119,10 +234,80 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 * for each of the databases, also need [dbStats](https://docs.mongodb.com/manual/reference/privilege-actions/#dbStats)
 action on the [database resource](https://docs.mongodb.com/manual/reference/resource-document/#database-and-or-collection-resource)
 
-An example event for `dbstats` looks as following:
+An example event for dbstats looks as following:
 
-```$json
+```$json{
+  "_id": "6hT0AXMB-2lnjH4qREj0",
+  "_index": ".ds-metrics-mongodb.dbstats-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "agent": {
+      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+      "name": "KaiyanMacBookPro",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "mongodb.dbstats",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "mongodb.dbstats",
+      "duration": 3378520,
+      "module": "mongodb"
+    },
+    "metricset": {
+      "name": "dbstats",
+      "period": 10000
+    },
+    "mongodb": {
+      "dbstats": {
+        "avg_obj_size": {
+          "bytes": 59
+        },
+        "collections": 1,
+        "data_size": {
+          "bytes": 59
+        },
+        "db": "admin",
+        "file_size": {},
+        "index_size": {
+          "bytes": 20480
+        },
+        "indexes": 1,
+        "ns_size_mb": {},
+        "num_extents": 0,
+        "objects": 1,
+        "storage_size": {
+          "bytes": 20480
+        }
+      }
+    },
+    "service": {
+      "address": "localhost:27017",
+      "type": "mongodb"
+    },
+    "stream": {
+      "dataset": "mongodb.dbstats",
+      "namespace": "default",
+      "type": "metrics"
+    }
+  },
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T21:20:51.459Z"
+    ]
+  }
+}
 ```
+
 
 The fields reported are:
 
@@ -149,6 +334,8 @@ The fields reported are:
 | mongodb.dbstats.num_extents |  | long |
 | mongodb.dbstats.objects |  | long |
 | mongodb.dbstats.storage_size.bytes |  | long |
+| service.address | Address of the machine where the service is running. | ip |
+
 
 
 ### metrics
@@ -158,10 +345,272 @@ It requires the following privileges, which is covered by the clusterMonitor rol
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
 action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `metrics` looks as following:
+An example event for metrics looks as following:
 
-```$json
+```$json{
+  "_id": "6RT0AXMB-2lnjH4qREj0",
+  "_index": ".ds-metrics-mongodb.metrics-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "agent": {
+      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+      "name": "KaiyanMacBookPro",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "mongodb.metrics",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "mongodb.metrics",
+      "duration": 3039885,
+      "module": "mongodb"
+    },
+    "metricset": {
+      "name": "metrics",
+      "period": 10000
+    },
+    "mongodb": {
+      "metrics": {
+        "commands": {
+          "aggregate": {
+            "failed": 0,
+            "total": 0
+          },
+          "build_info": {
+            "failed": 0,
+            "total": 6
+          },
+          "coll_stats": {
+            "failed": 0,
+            "total": 0
+          },
+          "connection_pool_stats": {
+            "failed": 0,
+            "total": 0
+          },
+          "count": {
+            "failed": 0,
+            "total": 0
+          },
+          "db_stats": {
+            "failed": 0,
+            "total": 2044
+          },
+          "distinct": {
+            "failed": 0,
+            "total": 0
+          },
+          "find": {
+            "failed": 0,
+            "total": 94
+          },
+          "get_cmd_line_opts": {
+            "failed": 0,
+            "total": 2
+          },
+          "get_last_error": {
+            "failed": 0,
+            "total": 0
+          },
+          "get_log": {
+            "failed": 0,
+            "total": 2
+          },
+          "get_more": {
+            "failed": 0,
+            "total": 0
+          },
+          "get_parameter": {
+            "failed": 0,
+            "total": 0
+          },
+          "host_info": {
+            "failed": 0,
+            "total": 0
+          },
+          "insert": {
+            "failed": 0,
+            "total": 7
+          },
+          "is_master": {
+            "failed": 0,
+            "total": 2332
+          },
+          "is_self": {
+            "failed": 0,
+            "total": 0
+          },
+          "last_collections": {
+            "failed": 0,
+            "total": 458
+          },
+          "last_commands": {
+            "failed": 0,
+            "total": 0
+          },
+          "list_databased": {
+            "failed": 0,
+            "total": 466
+          },
+          "list_indexes": {
+            "failed": 0,
+            "total": 174
+          },
+          "ping": {
+            "failed": 0,
+            "total": 2290
+          },
+          "profile": {
+            "failed": 0,
+            "total": 0
+          },
+          "replset_get_rbid": {
+            "failed": 0,
+            "total": 0
+          },
+          "replset_get_status": {
+            "failed": 2,
+            "total": 2
+          },
+          "replset_heartbeat": {
+            "failed": 0,
+            "total": 0
+          },
+          "replset_update_position": {
+            "failed": 0,
+            "total": 0
+          },
+          "server_status": {
+            "failed": 0,
+            "total": 916
+          },
+          "update": {
+            "failed": 0,
+            "total": 5
+          },
+          "whatsmyuri": {
+            "failed": 0,
+            "total": 2
+          }
+        },
+        "cursor": {
+          "open": {
+            "no_timeout": 0,
+            "pinned": 0,
+            "total": 0
+          },
+          "timed_out": 0
+        },
+        "document": {
+          "deleted": 15,
+          "inserted": 19,
+          "returned": 465,
+          "updated": 2
+        },
+        "get_last_error": {
+          "write_timeouts": 0,
+          "write_wait": {
+            "count": 0,
+            "ms": 0
+          }
+        },
+        "operation": {
+          "scan_and_order": 0,
+          "write_conflicts": 0
+        },
+        "query_executor": {
+          "scanned_documents": {
+            "count": 24
+          },
+          "scanned_indexes": {
+            "count": 2
+          }
+        },
+        "replication": {
+          "apply": {
+            "attempts_to_become_secondary": 0,
+            "batches": {
+              "count": 0,
+              "time": {
+                "ms": 0
+              }
+            },
+            "ops": 0
+          },
+          "buffer": {
+            "count": 0,
+            "max_size": {
+              "bytes": 0
+            },
+            "size": {
+              "bytes": 0
+            }
+          },
+          "executor": {
+            "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
+            "queues": {
+              "in_progress": {
+                "network": 0
+              },
+              "sleepers": 0
+            },
+            "shutting_down": false,
+            "unsignaled_events": 0
+          },
+          "initial_sync": {
+            "completed": 0,
+            "failed_attempts": 0,
+            "failures": 0
+          },
+          "network": {
+            "bytes": 0,
+            "getmores": {
+              "count": 0,
+              "time": {
+                "ms": 0
+              }
+            },
+            "ops": 0,
+            "reders_created": 0
+          }
+        },
+        "ttl": {
+          "deleted_documents": {
+            "count": 3
+          },
+          "passes": {
+            "count": 433
+          }
+        }
+      }
+    },
+    "service": {
+      "address": "localhost:27017",
+      "type": "mongodb"
+    },
+    "stream": {
+      "dataset": "mongodb.metrics",
+      "namespace": "default",
+      "type": "metrics"
+    }
+  },
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T21:20:51.459Z"
+    ]
+  }
+}
 ```
+
 
 The fields reported are:
 
@@ -292,6 +741,8 @@ The fields reported are:
 | mongodb.metrics.storage.free_list.search.scanned | The number of available record allocations mongod has searched. | long |
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long |
+| service.address | Address of the machine where the service is running. | ip |
+
 
 
 ### replstatus
@@ -302,10 +753,63 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 * [collStats](https://docs.mongodb.com/manual/reference/privilege-actions/#collStats) action on the [local.oplog.rs](https://docs.mongodb.com/manual/reference/local-database/#local.oplog.rs) collection resource
 * [replSetGetStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#replSetGetStatus) action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `replstatus` looks as following:
+An example event for replstatus looks as following:
 
-```$json
+```$json{
+  "_id": "3BT0AXMB-2lnjH4qREj0",
+  "_index": ".ds-metrics-mongodb.replstatus-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T21:20:51.457Z",
+    "agent": {
+      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+      "name": "KaiyanMacBookPro",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "mongodb.replstatus",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "error": {
+      "message": "error getting replication info: collection oplog.rs was not found"
+    },
+    "event": {
+      "dataset": "mongodb.replstatus",
+      "duration": 1962467,
+      "module": "mongodb"
+    },
+    "metricset": {
+      "name": "replstatus",
+      "period": 10000
+    },
+    "service": {
+      "address": "localhost:27017",
+      "type": "mongodb"
+    },
+    "stream": {
+      "dataset": "mongodb.replstatus",
+      "namespace": "default",
+      "type": "metrics"
+    }
+  },
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T21:20:51.457Z"
+    ]
+  },
+  "sort": [
+    1593465651457
+  ]
+}
 ```
+
 
 The fields reported are:
 
@@ -350,6 +854,8 @@ The fields reported are:
 | mongodb.replstatus.optimes.last_committed | Information, from the viewpoint of this member, regarding the most recent operation that has been written to a majority of replica set members. | long |
 | mongodb.replstatus.server_date | Reflects the current time according to the server that processed the replSetGetStatus command. | date |
 | mongodb.replstatus.set_name | The name of the replica set. | keyword |
+| service.address | Address of the machine where the service is running. | ip |
+
 
 
 ### status
@@ -359,10 +865,241 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
 action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `status` looks as following:
+An example event for status looks as following:
 
-```$json
+```$json{
+  "_id": "ZxTzAXMB-2lnjH4qgUKh",
+  "_index": ".ds-metrics-mongodb.status-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-29T21:20:01.455Z",
+    "agent": {
+      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+      "name": "KaiyanMacBookPro",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "mongodb.status",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "mongodb.status",
+      "duration": 3581045,
+      "module": "mongodb"
+    },
+    "metricset": {
+      "name": "status",
+      "period": 10000
+    },
+    "mongodb": {
+      "status": {
+        "asserts": {
+          "msg": 0,
+          "regular": 0,
+          "rollovers": 0,
+          "user": 9,
+          "warning": 0
+        },
+        "connections": {
+          "available": 3271,
+          "current": 5,
+          "total_created": 2266
+        },
+        "extra_info": {
+          "heap_usage": {},
+          "page_faults": 0
+        },
+        "global_lock": {
+          "active_clients": {
+            "readers": 1,
+            "total": 1,
+            "writers": 0
+          },
+          "current_queue": {
+            "readers": 0,
+            "total": 0,
+            "writers": 0
+          },
+          "total_time": {
+            "us": 26003338000
+          }
+        },
+        "local_time": "2020-06-29T21:20:01.457Z",
+        "locks": {
+          "collection": {
+            "acquire": {
+              "count": {
+                "W": 3,
+                "r": 8221,
+                "w": 450
+              }
+            },
+            "deadlock": {},
+            "wait": {}
+          },
+          "database": {
+            "acquire": {
+              "count": {
+                "W": 5,
+                "r": 5238,
+                "w": 453
+              }
+            },
+            "deadlock": {},
+            "wait": {}
+          },
+          "global": {
+            "acquire": {
+              "count": {
+                "W": 4,
+                "r": 56961,
+                "w": 458
+              }
+            },
+            "deadlock": {},
+            "wait": {}
+          }
+        },
+        "memory": {
+          "bits": 64,
+          "mapped": {},
+          "mapped_with_journal": {},
+          "resident": {
+            "mb": 44
+          },
+          "virtual": {
+            "mb": 6971
+          }
+        },
+        "network": {
+          "in": {
+            "bytes": 687306
+          },
+          "out": {
+            "bytes": 32519464
+          },
+          "requests": 11607
+        },
+        "ops": {
+          "counters": {
+            "command": 11314,
+            "delete": 3,
+            "getmore": 452,
+            "insert": 19,
+            "query": 94,
+            "update": 5
+          },
+          "latencies": {
+            "commands": {
+              "count": 11138,
+              "latency": 2055949
+            },
+            "reads": {
+              "count": 458,
+              "latency": 14259
+            },
+            "writes": {
+              "count": 9,
+              "latency": 103455
+            }
+          },
+          "replicated": {
+            "command": 0,
+            "delete": 0,
+            "getmore": 0,
+            "insert": 0,
+            "query": 0,
+            "update": 0
+          }
+        },
+        "storage_engine": {
+          "name": "wiredTiger"
+        },
+        "uptime": {
+          "ms": 26003340
+        },
+        "wired_tiger": {
+          "cache": {
+            "dirty": {
+              "bytes": 0
+            },
+            "maximum": {
+              "bytes": 16642998272
+            },
+            "pages": {
+              "evicted": 0,
+              "read": 14,
+              "write": 111
+            },
+            "used": {
+              "bytes": 89236
+            }
+          },
+          "concurrent_transactions": {
+            "read": {
+              "available": 128,
+              "out": 0,
+              "total_tickets": 128
+            },
+            "write": {
+              "available": 128,
+              "out": 0,
+              "total_tickets": 128
+            }
+          },
+          "log": {
+            "flushes": 152183,
+            "max_file_size": {
+              "bytes": 104857600
+            },
+            "scans": 6,
+            "size": {
+              "bytes": 33554432
+            },
+            "syncs": 67,
+            "write": {
+              "bytes": 46976
+            },
+            "writes": 140
+          }
+        }
+      }
+    },
+    "process": {
+      "name": "mongod"
+    },
+    "service": {
+      "address": "localhost:27017",
+      "type": "mongodb",
+      "version": "4.2.0"
+    },
+    "stream": {
+      "dataset": "mongodb.status",
+      "namespace": "default",
+      "type": "metrics"
+    }
+  },
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-06-29T21:20:01.455Z"
+    ],
+    "mongodb.status.local_time": [
+      "2020-06-29T21:20:01.457Z"
+    ]
+  },
+  "sort": [
+    1593465601455
+  ]
+}
 ```
+
 
 The fields reported are:
 
@@ -539,5 +1276,7 @@ The fields reported are:
 | mongodb.status.wired_tiger.log.writes | Number of write operations. | long |
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| service.address | Address of the machine where the service is running. | ip |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+
 

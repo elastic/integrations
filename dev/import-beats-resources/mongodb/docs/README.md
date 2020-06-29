@@ -57,10 +57,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 * [top action](https://docs.mongodb.com/manual/reference/privilege-actions/#top) on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `collstats` looks as following:
-
-```$json
-```
+{{event "collstats"}}
 
 The fields reported are:
 
@@ -78,10 +75,7 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 * for each of the databases, also need [dbStats](https://docs.mongodb.com/manual/reference/privilege-actions/#dbStats)
 action on the [database resource](https://docs.mongodb.com/manual/reference/resource-document/#database-and-or-collection-resource)
 
-An example event for `dbstats` looks as following:
-
-```$json
-```
+{{event "dbstats"}}
 
 The fields reported are:
 
@@ -94,10 +88,7 @@ It requires the following privileges, which is covered by the clusterMonitor rol
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
 action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `metrics` looks as following:
-
-```$json
-```
+{{event "metrics"}}
 
 The fields reported are:
 
@@ -111,10 +102,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 * [collStats](https://docs.mongodb.com/manual/reference/privilege-actions/#collStats) action on the [local.oplog.rs](https://docs.mongodb.com/manual/reference/local-database/#local.oplog.rs) collection resource
 * [replSetGetStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#replSetGetStatus) action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `replstatus` looks as following:
-
-```$json
-```
+{{event "replstatus"}}
 
 The fields reported are:
 
@@ -127,10 +115,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
 action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for `status` looks as following:
-
-```$json
-```
+{{event "status"}}
 
 The fields reported are:
 
