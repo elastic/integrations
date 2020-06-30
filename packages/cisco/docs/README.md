@@ -55,7 +55,6 @@ The `asa` dataset collects the Cisco firewall logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 
 
-
 ### FTD
 
 The `ftd` dataset collects the Firepower Threat Defense logs.
@@ -101,7 +100,6 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 
 
-
 ### IOS
 
 The `ios` dataset collects the Cisco IOS router and switch logs.
@@ -128,4 +126,3 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | event.type | Event severity (e.g. info, error) | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example:   application: foo-bar   env: production | object |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
-

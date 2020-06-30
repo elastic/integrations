@@ -24,7 +24,7 @@ func renderReadme(options generateOptions, packageName string) error {
 
 	_, err := os.Stat(templatePath)
 	if os.IsNotExist(err) {
-		log.Printf(`Template file "%s" does not exist. The README.md file will not be rendered.`, templatePath)
+		log.Printf(`Notice: the template file "%s" does not exist. The README.md file will not be rendered.`, templatePath)
 		return nil
 	} else if err != nil {
 		return errors.Wrapf(err, "stat file failed (path: %s)", templatePath)
