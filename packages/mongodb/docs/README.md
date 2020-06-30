@@ -58,7 +58,6 @@ The `log` dataset collects the MongoDB logs.
 | mongodb.log.context | Context of message | keyword |
 
 
-
 ## Metrics
 
 ### collstats
@@ -72,9 +71,10 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 * [top action](https://docs.mongodb.com/manual/reference/privilege-actions/#top) on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for collstats looks as following:
+An example event for `collstats` looks as following:
 
-```$json{
+```$json
+{
   "_id": "6hT0AXMB-2lnjH4qREj1",
   "_index": ".ds-metrics-mongodb.collstats-default-000001",
   "_score": null,
@@ -186,7 +186,6 @@ An example event for collstats looks as following:
 }
 ```
 
-
 The fields reported are:
 
 **Exported fields**
@@ -221,7 +220,6 @@ The fields reported are:
 | service.address | Address of the machine where the service is running. | ip |
 
 
-
 ### dbstats
 
 The `dbstats` dataset collects storage statistics for a given database. 
@@ -234,9 +232,10 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 * for each of the databases, also need [dbStats](https://docs.mongodb.com/manual/reference/privilege-actions/#dbStats)
 action on the [database resource](https://docs.mongodb.com/manual/reference/resource-document/#database-and-or-collection-resource)
 
-An example event for dbstats looks as following:
+An example event for `dbstats` looks as following:
 
-```$json{
+```$json
+{
   "_id": "6hT0AXMB-2lnjH4qREj0",
   "_index": ".ds-metrics-mongodb.dbstats-default-000001",
   "_score": null,
@@ -308,7 +307,6 @@ An example event for dbstats looks as following:
 }
 ```
 
-
 The fields reported are:
 
 **Exported fields**
@@ -337,7 +335,6 @@ The fields reported are:
 | service.address | Address of the machine where the service is running. | ip |
 
 
-
 ### metrics
 
 It requires the following privileges, which is covered by the clusterMonitor role:
@@ -345,9 +342,10 @@ It requires the following privileges, which is covered by the clusterMonitor rol
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
 action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for metrics looks as following:
+An example event for `metrics` looks as following:
 
-```$json{
+```$json
+{
   "_id": "6RT0AXMB-2lnjH4qREj0",
   "_index": ".ds-metrics-mongodb.metrics-default-000001",
   "_score": null,
@@ -611,7 +609,6 @@ An example event for metrics looks as following:
 }
 ```
 
-
 The fields reported are:
 
 **Exported fields**
@@ -744,7 +741,6 @@ The fields reported are:
 | service.address | Address of the machine where the service is running. | ip |
 
 
-
 ### replstatus
 The `replstatus` dataset collects status of the replica set.
 It requires the following privileges, which is covered by the [clusterMonitor](https://docs.mongodb.com/manual/reference/built-in-roles/#clusterMonitor) role:
@@ -753,9 +749,10 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 * [collStats](https://docs.mongodb.com/manual/reference/privilege-actions/#collStats) action on the [local.oplog.rs](https://docs.mongodb.com/manual/reference/local-database/#local.oplog.rs) collection resource
 * [replSetGetStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#replSetGetStatus) action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for replstatus looks as following:
+An example event for `replstatus` looks as following:
 
-```$json{
+```$json
+{
   "_id": "3BT0AXMB-2lnjH4qREj0",
   "_index": ".ds-metrics-mongodb.replstatus-default-000001",
   "_score": null,
@@ -810,7 +807,6 @@ An example event for replstatus looks as following:
 }
 ```
 
-
 The fields reported are:
 
 **Exported fields**
@@ -857,7 +853,6 @@ The fields reported are:
 | service.address | Address of the machine where the service is running. | ip |
 
 
-
 ### status
 
 It requires the following privileges, which is covered by the [clusterMonitor](https://docs.mongodb.com/manual/reference/built-in-roles/#clusterMonitor) role:
@@ -865,9 +860,10 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
 action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-document/#cluster-resource)
 
-An example event for status looks as following:
+An example event for `status` looks as following:
 
-```$json{
+```$json
+{
   "_id": "ZxTzAXMB-2lnjH4qgUKh",
   "_index": ".ds-metrics-mongodb.status-default-000001",
   "_score": null,
@@ -1100,7 +1096,6 @@ An example event for status looks as following:
 }
 ```
 
-
 The fields reported are:
 
 **Exported fields**
@@ -1278,5 +1273,4 @@ The fields reported are:
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | service.address | Address of the machine where the service is running. | ip |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
-
 
