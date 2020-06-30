@@ -1,14 +1,14 @@
 # System Integration
 
-The System module allows you to monitor your servers. Because the System module
+The System integrations allows you to monitor your servers. Because the System integration
 always applies to the local server, the `hosts` config option is not needed.
 
-The default metricsets are `cpu`, `load`, `memory`, `network`, `process`, and
-`process_summary`. To disable a default metricset, comment it out in the
-`modules.d/system.yml` configuration file. If _all_ metricsets are commented out
-and the System module is enabled, {beatname_uc} uses the default metricsets.
+The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
+`process_summary`. To disable a default dataset, comment it out in the
+`modules.d/system.yml` configuration file. If _all_ datasets are commented out
+and the System module is enabled, {beatname_uc} uses the default datasets.
 
-Note that certain metricsets may access `/proc` to gather process information,
+Note that certain datasets may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace[AppArmor
@@ -17,16 +17,16 @@ directly.
 
 ## Compatibility
 
-The System metricsets collect different kinds of metric data, which may require dedicated permissions
+The System datasets collect different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
 
 ## Metrics
 
 ### Core
 
-The System `core` metricset provides usage statistics for each CPU core.
+The System `core` dataset provides usage statistics for each CPU core.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -36,12 +36,11 @@ This metricset is available on:
 
 {{fields "core"}}
 
-
 ### CPU
 
-The System `cpu` metricset provides CPU statistics.
+The System `cpu` dataset provides CPU statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -51,12 +50,12 @@ This metricset is available on:
 
 {{fields "cpu"}}
 
-### diskio
+### Disk IO
 
-The System `diskio` metricset provides disk IO metrics collected from the
+The System `diskio` dataset provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 - macOS (requires 10.10+)
@@ -65,24 +64,24 @@ This metricset is available on:
 
 {{fields "diskio"}}
 
-### entropy
+### Entropy
 
-This is the entropy metricset of the module system. 
+This is the entropy dataset of the module system. 
 It collects the amount of available entropy in bits. On kernel versions greater than 2.6, 
 entropy will be out of a total pool size of 4096.
 
-This Metricset is available on:
+This dataset is available on:
 
 - linux
 
 {{fields "entropy"}}
 
-### filesystem
+### Filesystem
 
-The System `filesystem` metricset provides file system statistics. For each file
+The System `filesystem` dataset provides file system statistics. For each file
 system, one document is provided.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -92,11 +91,11 @@ This metricset is available on:
 
 {{fields "filesystem"}}
 
-### fsstat
+### Fsstat
 
-The System `fsstat` metricset provides overall file system statistics.
+The System `fsstat` dataset provides overall file system statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -106,11 +105,11 @@ This metricset is available on:
 
 {{fields "fsstat"}}
 
-### load
+### Load
 
-The System `load` metricset provides load statistics.
+The System `load` dataset provides load statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -119,11 +118,11 @@ This metricset is available on:
 
 {{fields "load"}}
 
-### memory
+### Memory
 
-The System `memory` metricset provides memory statistics.
+The System `memory` dataset provides memory statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -133,12 +132,12 @@ This metricset is available on:
 
 {{fields "memory"}}
 
-### network
+### Network
 
-The System `network` metricset provides network IO metrics collected from the
+The System `network` dataset provides network IO metrics collected from the
 operating system. One event is created for each network interface.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -147,23 +146,23 @@ This metricset is available on:
 
 {{fields "network"}}
 
-### network_summary
+### Network summary
 
-The System `network_summary` metricset provides network IO metrics collected from the
+The System `network_summary` dataset provides network IO metrics collected from the
 operating system. These events are global and sorted by protocol.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
 {{fields "network_summary"}}
 
-### process
+### Process
 
-The System `process` metricset provides process statistics. One document is
+The System `process` dataset provides process statistics. One document is
 provided for each process.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -172,12 +171,12 @@ This metricset is available on:
 
 {{fields "process"}}
 
-### process_summary
+### Process summary
 
-The `process_summary` metricset collects high level statistics about the running
+The `process_summary` dataset collects high level statistics about the running
 processes.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -186,47 +185,47 @@ This metricset is available on:
 
 {{fields "process_summary"}}
 
-### raid
+### RAID
 
-This is the raid metricset of the module system. It collects stats about the raid.
+This is the raid dataset of the module system. It collects stats about the raid.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
 {{fields "raid"}}
 
-### service
+### Service
 
-The `service` metricset reports on the status of systemd services.
+The `service` dataset reports on the status of systemd services.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
 {{fields "service"}}
 
-### socket
+### Socket
 
-This metricset is available on Linux only and requires kernel 2.6.14 or newer.
+This dataset is available on Linux only and requires kernel 2.6.14 or newer.
 
-The system `socket` metricset reports an event for each new TCP socket that it
+The system `socket` dataset reports an event for each new TCP socket that it
 sees. It does this by polling the kernel periodically to get a dump of all
 sockets. You set the polling interval by configuring the `period` option.
-Specifying a short polling interval with this metricset is important to avoid
+Specifying a short polling interval with this dataset is important to avoid
 missing short-lived connections.
 
 {{fields "socket"}}
 
-### socket_summary
+### Socket summary
 
-The System `socket_summary` metricset provides the summary of open network
+The System `socket_summary` dataset provides the summary of open network
 sockets in the host system.
 
 It collects a summary of metrics with the count of existing TCP and UDP
 connections and the count of listening ports.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -235,11 +234,11 @@ This metricset is available on:
 
 {{fields "socket_summary"}}
 
-### uptime
+### Uptime
 
-The System `uptime` metricset provides the uptime of the host operating system.
+The System `uptime` dataset provides the uptime of the host operating system.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 - macOS
@@ -249,11 +248,11 @@ This metricset is available on:
 
 {{fields "uptime"}}
 
-### users
+### Users
 
-The system/users metricset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the metricset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
+The system/users dataset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the dataset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 

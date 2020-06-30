@@ -60,7 +60,6 @@ func renderExportedFields(options generateOptions, packageName, datasetName stri
 		description := strings.TrimSpace(strings.ReplaceAll(c.description, "\n", " "))
 		builder.WriteString(fmt.Sprintf("| %s | %s | %s |\n", c.name, description, c.aType))
 	}
-	builder.WriteString("\n")
 	return builder.String(), nil
 }
 
