@@ -31,11 +31,13 @@ var validTypes = map[string]string{
 	"events": "Events",
 }
 
-type DataSet struct {
-	ID             string   `config:"id" json:"id,omitempty" yaml:"id,omitempty"`
+type Dataset struct {
+	// Name and type of the dataset. This is linked to dataset.name and dataset.type fields.
+	Type string `config:"type" json:"type" validate:"required"`
+	Name string `config:"name" json:"name,omitempty" yaml:"name,omitempty"`
+
 	Title          string   `config:"title" json:"title" validate:"required"`
 	Release        string   `config:"release" json:"release"`
-	Type           string   `config:"type" json:"type" validate:"required"`
 	IngestPipeline string   `config:"ingest_pipeline,omitempty" config:"ingest_pipeline" json:"ingest_pipeline,omitempty" yaml:"ingest_pipeline,omitempty"`
 	Streams        []Stream `config:"streams" json:"streams,omitempty" yaml:"streams,omitempty" `
 	Package        string   `json:"package,omitempty" yaml:"package,omitempty"`
@@ -60,11 +62,10 @@ type Stream struct {
 	Vars    []Variable `config:"vars" json:"vars,omitempty" yaml:"vars,omitempty"`
 	Dataset string     `config:"dataset" json:"dataset,omitempty" yaml:"dataset,omitempty"`
 	// TODO: This might cause issues when consuming the json as the key contains . (had been an issue in the past if I remember correctly)
-	TemplatePath    string `config:"template_path" json:"template_path,omitempty" yaml:"template_path,omitempty"`
-	TemplateContent string `json:"template,omitempty" yaml:"template,omitempty"` // This is always generated in the json output
-	Title           string `config:"title" json:"title,omitempty" yaml:"title,omitempty"`
-	Description     string `config:"description" json:"description,omitempty" yaml:"description,omitempty"`
-	Enabled         *bool  `config:"enabled" json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	TemplatePath string `config:"template_path" json:"template_path,omitempty" yaml:"template_path,omitempty"`
+	Title        string `config:"title" json:"title,omitempty" yaml:"title,omitempty"`
+	Description  string `config:"description" json:"description,omitempty" yaml:"description,omitempty"`
+	Enabled      *bool  `config:"enabled" json:"enabled,omitempty" yaml:"enabled,omitempty"`
 }
 
 type Variable struct {
@@ -83,7 +84,7 @@ type fieldEntry struct {
 	aType string
 }
 
-func NewDataset(basePath string, p *Package) (*DataSet, error) {
+func NewDataset(basePath string, p *Package) (*Dataset, error) {
 	// Check if manifest exists
 	manifestPath := filepath.Join(basePath, "manifest.yml")
 	_, err := os.Stat(manifestPath)
@@ -97,7 +98,7 @@ func NewDataset(basePath string, p *Package) (*DataSet, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating new manifest config %s", manifestPath)
 	}
-	var d = &DataSet{
+	var d = &Dataset{
 		Package: p.Name,
 		// This is the name of the directory of the dataset
 		Path:     datasetPath,
@@ -111,8 +112,8 @@ func NewDataset(basePath string, p *Package) (*DataSet, error) {
 	}
 
 	// if id is not set, {package}.{datasetPath} is the default
-	if d.ID == "" {
-		d.ID = p.Name + "." + datasetPath
+	if d.Name == "" {
+		d.Name = p.Name + "." + datasetPath
 	}
 
 	if d.Release == "" {
@@ -124,6 +125,10 @@ func NewDataset(basePath string, p *Package) (*DataSet, error) {
 	for i, _ := range d.Streams {
 		if d.Streams[i].Enabled == nil {
 			d.Streams[i].Enabled = &trueValue
+			// TODO: validate that the template path actually exists
+			if d.Streams[i].TemplatePath == "" {
+				d.Streams[i].TemplatePath = "stream.yml.hbs"
+			}
 		}
 	}
 
@@ -133,15 +138,15 @@ func NewDataset(basePath string, p *Package) (*DataSet, error) {
 	return d, nil
 }
 
-func (d *DataSet) Validate() error {
+func (d *Dataset) Validate() error {
 	pipelineDir := filepath.Join(d.BasePath, "elasticsearch", DirIngestPipeline)
 	paths, err := filepath.Glob(filepath.Join(pipelineDir, "*"))
 	if err != nil {
 		return err
 	}
 
-	if strings.Contains(d.ID, "-") {
-		return fmt.Errorf("dataset name is not allowed to contain `-`: %s", d.ID)
+	if strings.Contains(d.Name, "-") {
+		return fmt.Errorf("dataset name is not allowed to contain `-`: %s", d.Name)
 	}
 
 	if !d.validType() {
@@ -159,7 +164,7 @@ func (d *DataSet) Validate() error {
 	}
 
 	if d.IngestPipeline == "" && len(paths) > 0 {
-		return fmt.Errorf("unused pipelines in the package (dataSetID: %s): %s", d.ID, strings.Join(paths, ","))
+		return fmt.Errorf("unused pipelines in the package (dataSetID: %s): %s", d.Name, strings.Join(paths, ","))
 	}
 
 	// In case an ingest pipeline is set, check if it is around
@@ -204,7 +209,7 @@ func (d *DataSet) Validate() error {
 	return nil
 }
 
-func (d *DataSet) validType() bool {
+func (d *Dataset) validType() bool {
 	_, exists := validTypes[d.Type]
 	return exists
 }
@@ -234,7 +239,7 @@ func validateIngestPipelineFile(pipelinePath string) error {
 }
 
 // validateRequiredFields method loads fields from all files and checks if required fields are present.
-func (d *DataSet) validateRequiredFields() error {
+func (d *Dataset) validateRequiredFields() error {
 	fieldsDirPath := filepath.Join(d.BasePath, "fields")
 
 	// Collect fields from all files

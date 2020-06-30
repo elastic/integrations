@@ -20,7 +20,7 @@ type datasetContent struct {
 	name     string
 	beatType string
 
-	manifest util.DataSet
+	manifest util.Dataset
 
 	agent         agentContent
 	elasticsearch elasticsearchContent
@@ -119,7 +119,7 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 		}
 
 		// manifest
-		manifest := util.DataSet{
+		manifest := util.Dataset{
 			Title:   fmt.Sprintf("%s %s %s", moduleTitle, datasetName, beatType),
 			Release: "experimental",
 			Type:    beatType,

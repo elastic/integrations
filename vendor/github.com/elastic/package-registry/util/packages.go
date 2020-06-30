@@ -13,13 +13,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-var packageList []Package
+var packageList Packages
+
+type Packages []Package
 
 // GetPackages returns a slice with all existing packages.
 // The list is stored in memory and on the second request directly served from memory.
 // This assumes changes to packages only happen on restart (unless development mode is enabled).
 // Caching the packages request many file reads every time this method is called.
-func GetPackages(packagesBasePaths []string) ([]Package, error) {
+func GetPackages(packagesBasePaths []string) (Packages, error) {
 	if packageList != nil {
 		return packageList, nil
 	}
@@ -32,13 +34,13 @@ func GetPackages(packagesBasePaths []string) ([]Package, error) {
 	return packageList, nil
 }
 
-func getPackagesFromFilesystem(packagesBasePaths []string) ([]Package, error) {
+func getPackagesFromFilesystem(packagesBasePaths []string) (Packages, error) {
 	packagePaths, err := getPackagePaths(packagesBasePaths)
 	if err != nil {
 		return nil, err
 	}
 
-	var pList []Package
+	var pList Packages
 	for _, path := range packagePaths {
 		p, err := NewPackage(path)
 		if err != nil {
