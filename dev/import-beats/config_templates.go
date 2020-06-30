@@ -26,7 +26,7 @@ type configTemplateInput struct {
 	vars         []util.Variable
 }
 
-func (ds configTemplateContent) toMetadataConfigTemplates() []util.Datasource {
+func (ds configTemplateContent) toMetadataConfigTemplates() []util.ConfigTemplate {
 	var inputTypes []string
 	var packageTypes []string
 	for k, input := range ds.inputs {
@@ -39,11 +39,11 @@ func (ds configTemplateContent) toMetadataConfigTemplates() []util.Datasource {
 
 	var title, description string
 	if len(packageTypes) == 2 {
-		title = toDatasourceTitleForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
-		description = toDatasourceDescriptionForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
+		title = toConfigTemplateTitleForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
+		description = toConfigTemplateDescriptionForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
 	} else {
-		title = toDatasourceTitle(ds.moduleTitle, packageTypes[0])
-		description = toDatasourceDescription(ds.moduleTitle, packageTypes[0])
+		title = toConfigTemplateTitle(ds.moduleTitle, packageTypes[0])
+		description = toConfigTemplateDescription(ds.moduleTitle, packageTypes[0])
 	}
 
 	var inputs []util.Input
@@ -52,14 +52,14 @@ func (ds configTemplateContent) toMetadataConfigTemplates() []util.Datasource {
 			if input.packageType == packageType {
 				inputs = append(inputs, util.Input{
 					Type:        input.inputType,
-					Title:       toDatasourceInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
-					Description: toDatasourceInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
+					Title:       toConfigTemplateInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
+					Description: toConfigTemplateInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
 					Vars:        input.vars,
 				})
 			}
 		}
 	}
-	return []util.Datasource{
+	return []util.ConfigTemplate{
 		{
 			Name:        ds.moduleName,
 			Title:       title,
@@ -78,7 +78,7 @@ type updateConfigTemplateParameters struct {
 	inputVars map[string][]util.Variable
 }
 
-func updateDatasource(dsc configTemplateContent, params updateConfigTemplateParameters) (configTemplateContent, error) {
+func updateConfigTemplate(dsc configTemplateContent, params updateConfigTemplateParameters) (configTemplateContent, error) {
 	dsc.moduleName = params.moduleName
 	dsc.moduleTitle = params.moduleTitle
 
@@ -107,23 +107,23 @@ func updateDatasource(dsc configTemplateContent, params updateConfigTemplatePara
 	return dsc, nil
 }
 
-func toDatasourceTitle(moduleTitle, packageType string) string {
+func toConfigTemplateTitle(moduleTitle, packageType string) string {
 	return fmt.Sprintf("%s %s", moduleTitle, packageType)
 }
 
-func toDatasourceDescription(moduleTitle, packageType string) string {
+func toConfigTemplateDescription(moduleTitle, packageType string) string {
 	return fmt.Sprintf("Collect %s from %s instances", packageType, moduleTitle)
 }
 
-func toDatasourceTitleForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
+func toConfigTemplateTitleForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
 	return fmt.Sprintf("%s %s and %s", moduleTitle, firstPackageType, secondPackageType)
 }
 
-func toDatasourceDescriptionForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
+func toConfigTemplateDescriptionForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
 	return fmt.Sprintf("Collect %s and %s from %s instances", firstPackageType, secondPackageType, moduleTitle)
 }
 
-func toDatasourceInputTitle(moduleTitle, packageType string, datasets []string, inputType string) string {
+func toConfigTemplateInputTitle(moduleTitle, packageType string, datasets []string, inputType string) string {
 	datasets = adjustDatasetNamesForInputDescription(datasets)
 
 	firstPart := datasets[:len(datasets)-1]
@@ -150,7 +150,7 @@ func toDatasourceInputTitle(moduleTitle, packageType string, datasets []string, 
 	return description.String()
 }
 
-func toDatasourceInputDescription(moduleTitle, packageType string, datasets []string, inputType string) string {
+func toConfigTemplateInputDescription(moduleTitle, packageType string, datasets []string, inputType string) string {
 	datasets = adjustDatasetNamesForInputDescription(datasets)
 
 	firstPart := datasets[:len(datasets)-1]
