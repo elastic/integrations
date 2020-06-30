@@ -30,7 +30,7 @@ func renderSampleEvent(options generateOptions, packageName, datasetName string)
 	}
 
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("An example event for %s looks as following:\n\n", datasetName))
+	builder.WriteString(fmt.Sprintf("An example event for `%s` looks as following:\n\n", datasetName))
 	builder.WriteString("```$json")
 	builder.Write(formatted)
 	builder.WriteString("\n```\n")
