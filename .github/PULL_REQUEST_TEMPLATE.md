@@ -14,12 +14,6 @@ Explain here the changes you made on the PR.
 
 ## Checklist
 
-<!-- Mandatory
-Add a checklist of things that are required to be reviewed in order to have the PR approved
-
-List here all the items you have verified BEFORE sending this PR. Please DO NOT remove any item, striking through those that do not apply. (Just in case, strikethrough uses two tildes. ~~Scratch this.~~)
--->
-
 - [ ] I have reviewed [tips for building integrations](https://github.com/mtojek/integrations/blob/tips-for-devs/CONTRIBUTING.md#tips-for-building-integrations) and this pull request is aligned with them.
 - [ ] I have verified that all datasets collect metrics or logs.
 
@@ -44,7 +38,7 @@ Link related issues below. Insert the issue link or reference after the word "Cl
 - Closes #123
 - Relates #123
 - Requires #123
-- Superseds #123
+- Supersedes #123
 -->
 -
 
