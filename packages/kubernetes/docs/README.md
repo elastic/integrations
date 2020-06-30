@@ -110,12 +110,67 @@ An example event for `apiserver` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.apiserver-default-000001",
   "_id": "XVh163IBolOt49UrV2yq",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.apiserver-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:30:34.616Z",
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.apiserver",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.apiserver",
+      "duration": 114780772,
+      "module": "kubernetes"
+    },
+    "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
+      "mac": [
+        "02:42:ac:11:00:0b"
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "apiserver": {
+        "request": {
+          "client": "metrics-server/v0.0.0 (linux/amd64) kubernetes/$Format",
+          "code": "200",
+          "component": "apiserver",
+          "content_type": "application/vnd.kubernetes.protobuf",
+          "count": 3,
+          "resource": "nodes",
+          "scope": "cluster",
+          "verb": "LIST",
+          "version": "v1"
+        }
+      }
+    },
     "metricset": {
       "name": "apiserver",
       "period": 30000
@@ -124,68 +179,13 @@ An example event for `apiserver` looks as following:
       "address": "10.96.0.1:443",
       "type": "kubernetes"
     },
-    "event": {
-      "dataset": "kubernetes.apiserver",
-      "module": "kubernetes",
-      "duration": 114780772
-    },
-    "kubernetes": {
-      "apiserver": {
-        "request": {
-          "client": "metrics-server/v0.0.0 (linux/amd64) kubernetes/$Format",
-          "version": "v1",
-          "count": 3,
-          "scope": "cluster",
-          "content_type": "application/vnd.kubernetes.protobuf",
-          "code": "200",
-          "verb": "LIST",
-          "component": "apiserver",
-          "resource": "nodes"
-        }
-      }
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "agent": {
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat"
-    },
-    "dataset": {
-      "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.apiserver"
-    },
     "stream": {
       "dataset": "kubernetes.apiserver",
       "namespace": "default",
       "type": "metrics"
-    },
-    "host": {
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false,
-      "ip": [
-        "172.17.0.11"
-      ],
-      "mac": [
-        "02:42:ac:11:00:0b"
-      ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "os": {
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)"
-      }
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:30:34.616Z"
@@ -196,8 +196,6 @@ An example event for `apiserver` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -261,103 +259,36 @@ An example event for `container` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.container-default-000001",
   "_id": "y1h363IBolOt49UrGcjO",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.container-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:32:29.748Z",
-    "kubernetes": {
-      "namespace": "kube-system",
-      "node": {
-        "name": "minikube"
-      },
-      "pod": {
-        "name": "metricbeat-g9fc6"
-      },
-      "container": {
-        "rootfs": {
-          "used": {
-            "bytes": 61440
-          },
-          "inodes": {
-            "used": 17
-          },
-          "available": {
-            "bytes": 6724222976
-          },
-          "capacity": {
-            "bytes": 17361141760
-          }
-        },
-        "logs": {
-          "used": {
-            "bytes": 1617920
-          },
-          "inodes": {
-            "count": 9768928,
-            "used": 223910,
-            "free": 9545018
-          },
-          "available": {
-            "bytes": 6724222976
-          },
-          "capacity": {
-            "bytes": 17361141760
-          }
-        },
-        "start_time": "2020-06-25T07:19:37Z",
-        "name": "metricbeat",
-        "cpu": {
-          "usage": {
-            "node": {
-              "pct": 0.00015289625
-            },
-            "limit": {
-              "pct": 0.00015289625
-            },
-            "nanocores": 611585,
-            "core": {
-              "ns": 12206519774
-            }
-          }
-        },
-        "memory": {
-          "pagefaults": 10164,
-          "majorpagefaults": 528,
-          "available": {
-            "bytes": 188600320
-          },
-          "usage": {
-            "limit": {
-              "pct": 0.005608354460473573
-            },
-            "bytes": 94306304,
-            "node": {
-              "pct": 0.005608354460473573
-            }
-          },
-          "workingset": {
-            "bytes": 21114880
-          },
-          "rss": {
-            "bytes": 18386944
-          }
-        }
-      }
+    "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
     "dataset": {
+      "name": "kubernetes.container",
       "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.container"
+      "type": "metrics"
     },
-    "stream": {
-      "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.container"
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.container",
+      "duration": 11091346,
+      "module": "kubernetes"
     },
     "host": {
+      "architecture": "x86_64",
       "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -388,43 +319,110 @@ An example event for `container` looks as following:
         "56:34:ba:de:57:20",
         "aa:78:91:29:81:f7"
       ],
-      "hostname": "minikube",
-      "architecture": "x86_64",
+      "name": "minikube",
       "os": {
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
         "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
         "platform": "centos",
         "version": "7 (Core)"
-      },
-      "name": "minikube",
-      "id": "b0e83d397c054b8a99a431072fe4617b"
+      }
     },
-    "agent": {
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
-      "name": "minikube"
+    "kubernetes": {
+      "container": {
+        "cpu": {
+          "usage": {
+            "core": {
+              "ns": 12206519774
+            },
+            "limit": {
+              "pct": 0.00015289625
+            },
+            "nanocores": 611585,
+            "node": {
+              "pct": 0.00015289625
+            }
+          }
+        },
+        "logs": {
+          "available": {
+            "bytes": 6724222976
+          },
+          "capacity": {
+            "bytes": 17361141760
+          },
+          "inodes": {
+            "count": 9768928,
+            "free": 9545018,
+            "used": 223910
+          },
+          "used": {
+            "bytes": 1617920
+          }
+        },
+        "memory": {
+          "available": {
+            "bytes": 188600320
+          },
+          "majorpagefaults": 528,
+          "pagefaults": 10164,
+          "rss": {
+            "bytes": 18386944
+          },
+          "usage": {
+            "bytes": 94306304,
+            "limit": {
+              "pct": 0.005608354460473573
+            },
+            "node": {
+              "pct": 0.005608354460473573
+            }
+          },
+          "workingset": {
+            "bytes": 21114880
+          }
+        },
+        "name": "metricbeat",
+        "rootfs": {
+          "available": {
+            "bytes": 6724222976
+          },
+          "capacity": {
+            "bytes": 17361141760
+          },
+          "inodes": {
+            "used": 17
+          },
+          "used": {
+            "bytes": 61440
+          }
+        },
+        "start_time": "2020-06-25T07:19:37Z"
+      },
+      "namespace": "kube-system",
+      "node": {
+        "name": "minikube"
+      },
+      "pod": {
+        "name": "metricbeat-g9fc6"
+      }
     },
     "metricset": {
-      "period": 10000,
-      "name": "container"
+      "name": "container",
+      "period": 10000
     },
     "service": {
       "address": "minikube:10250",
       "type": "kubernetes"
     },
-    "event": {
+    "stream": {
       "dataset": "kubernetes.container",
-      "module": "kubernetes",
-      "duration": 11091346
-    },
-    "ecs": {
-      "version": "1.5.0"
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:32:29.748Z"
@@ -438,8 +436,6 @@ An example event for `container` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -483,48 +479,36 @@ An example event for `controllermanager` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.controllermanager-default-000001",
   "_id": "qFh463IBolOt49UrBPYP",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.controllermanager-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:33:29.643Z",
-    "kubernetes": {
-      "controllermanager": {
-        "workqueue": {
-          "unfinished": {
-            "sec": 0
-          },
-          "adds": {
-            "count": 0
-          },
-          "depth": {
-            "count": 0
-          },
-          "longestrunning": {
-            "sec": 0
-          },
-          "retries": {
-            "count": 0
-          }
-        },
-        "name": "certificate"
-      }
-    },
-    "event": {
-      "dataset": "kubernetes.controllermanager",
-      "module": "kubernetes",
-      "duration": 8893806
+    "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
     "dataset": {
+      "name": "kubernetes.controllermanager",
       "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.controllermanager"
+      "type": "metrics"
     },
     "ecs": {
       "version": "1.5.0"
     },
+    "event": {
+      "dataset": "kubernetes.controllermanager",
+      "duration": 8893806,
+      "module": "kubernetes"
+    },
     "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -555,41 +539,53 @@ An example event for `controllermanager` looks as following:
         "56:34:ba:de:57:20",
         "aa:78:91:29:81:f7"
       ],
-      "hostname": "minikube",
-      "architecture": "x86_64",
+      "name": "minikube",
       "os": {
         "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
         "family": "redhat",
+        "kernel": "4.19.81",
         "name": "CentOS Linux",
-        "kernel": "4.19.81"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false,
-      "name": "minikube"
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
-    "agent": {
-      "version": "8.0.0",
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
-      "name": "minikube",
-      "type": "metricbeat"
+    "kubernetes": {
+      "controllermanager": {
+        "name": "certificate",
+        "workqueue": {
+          "adds": {
+            "count": 0
+          },
+          "depth": {
+            "count": 0
+          },
+          "longestrunning": {
+            "sec": 0
+          },
+          "retries": {
+            "count": 0
+          },
+          "unfinished": {
+            "sec": 0
+          }
+        }
+      }
     },
     "metricset": {
-      "period": 10000,
-      "name": "controllermanager"
+      "name": "controllermanager",
+      "period": 10000
     },
     "service": {
       "address": "localhost:10252",
       "type": "kubernetes"
     },
     "stream": {
+      "dataset": "kubernetes.controllermanager",
       "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.controllermanager"
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:33:29.643Z"
@@ -600,8 +596,6 @@ An example event for `controllermanager` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -654,26 +648,22 @@ An example event for `event` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.event-default-000001",
   "_id": "EVh163IBolOt49UrPGji",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.event-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:30:27.575Z",
-    "metricset": {
-      "name": "event"
-    },
-    "stream": {
-      "dataset": "kubernetes.event",
-      "namespace": "default",
-      "type": "metrics"
-    },
     "agent": {
-      "type": "metricbeat",
-      "version": "8.0.0",
       "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
       "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc"
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.event",
+      "namespace": "default",
+      "type": "metrics"
     },
     "ecs": {
       "version": "1.5.0"
@@ -682,82 +672,86 @@ An example event for `event` looks as following:
       "dataset": "kubernetes.event",
       "module": "kubernetes"
     },
-    "service": {
-      "type": "kubernetes"
-    },
-    "kubernetes": {
-      "event": {
-        "metadata": {
-          "uid": "604e39e0-862f-4615-9cec-8cb62299dea3",
-          "resource_version": "485630",
-          "timestamp": {
-            "created": "2020-06-25T07:20:25.000Z"
-          },
-          "name": "monitor.161bb862545e3099",
-          "namespace": "beats",
-          "self_link": "/api/v1/namespaces/beats/events/monitor.161bb862545e3099",
-          "generate_name": ""
-        },
-        "timestamp": {
-          "first_occurrence": "2020-06-25T07:20:25.000Z",
-          "last_occurrence": "2020-06-25T12:30:27.000Z"
-        },
-        "message": "Failed to find referenced backend beats/monitor: Elasticsearch.elasticsearch.k8s.elastic.co \"monitor\" not found",
-        "reason": "AssociationError",
-        "type": "Warning",
-        "count": 1861,
-        "source": {
-          "host": "",
-          "component": "kibana-association-controller"
-        },
-        "involved_object": {
-          "api_version": "kibana.k8s.elastic.co/v1",
-          "resource_version": "101842",
-          "name": "monitor",
-          "kind": "Kibana",
-          "uid": "45a19de5-5eef-4090-a2d3-dbceb0a28af8"
-        }
-      }
-    },
-    "dataset": {
-      "name": "kubernetes.event",
-      "namespace": "default",
-      "type": "metrics"
-    },
     "host": {
-      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "architecture": "x86_64",
       "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
       ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
       "os": {
-        "platform": "centos",
-        "version": "7 (Core)",
+        "codename": "Core",
         "family": "redhat",
-        "name": "CentOS Linux",
         "kernel": "4.19.81",
-        "codename": "Core"
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
       }
+    },
+    "kubernetes": {
+      "event": {
+        "count": 1861,
+        "involved_object": {
+          "api_version": "kibana.k8s.elastic.co/v1",
+          "kind": "Kibana",
+          "name": "monitor",
+          "resource_version": "101842",
+          "uid": "45a19de5-5eef-4090-a2d3-dbceb0a28af8"
+        },
+        "message": "Failed to find referenced backend beats/monitor: Elasticsearch.elasticsearch.k8s.elastic.co \"monitor\" not found",
+        "metadata": {
+          "generate_name": "",
+          "name": "monitor.161bb862545e3099",
+          "namespace": "beats",
+          "resource_version": "485630",
+          "self_link": "/api/v1/namespaces/beats/events/monitor.161bb862545e3099",
+          "timestamp": {
+            "created": "2020-06-25T07:20:25.000Z"
+          },
+          "uid": "604e39e0-862f-4615-9cec-8cb62299dea3"
+        },
+        "reason": "AssociationError",
+        "source": {
+          "component": "kibana-association-controller",
+          "host": ""
+        },
+        "timestamp": {
+          "first_occurrence": "2020-06-25T07:20:25.000Z",
+          "last_occurrence": "2020-06-25T12:30:27.000Z"
+        },
+        "type": "Warning"
+      }
+    },
+    "metricset": {
+      "name": "event"
+    },
+    "service": {
+      "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.event",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
+    "@timestamp": [
+      "2020-06-25T12:30:27.575Z"
+    ],
+    "kubernetes.event.metadata.timestamp.created": [
+      "2020-06-25T07:20:25.000Z"
+    ],
     "kubernetes.event.timestamp.first_occurrence": [
       "2020-06-25T07:20:25.000Z"
     ],
     "kubernetes.event.timestamp.last_occurrence": [
       "2020-06-25T12:30:27.000Z"
-    ],
-    "kubernetes.event.metadata.timestamp.created": [
-      "2020-06-25T07:20:25.000Z"
-    ],
-    "@timestamp": [
-      "2020-06-25T12:30:27.575Z"
     ]
   },
   "sort": [
@@ -765,8 +759,6 @@ An example event for `event` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -807,23 +799,36 @@ An example event for `node` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.node-default-000001",
   "_id": "Gll563IBolOt49UrFS2Q",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.node-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:34:39.723Z",
+    "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.node",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
     "event": {
       "dataset": "kubernetes.node",
-      "module": "kubernetes",
-      "duration": 13042307
-    },
-    "service": {
-      "type": "kubernetes",
-      "address": "minikube:10250"
+      "duration": 13042307,
+      "module": "kubernetes"
     },
     "host": {
+      "architecture": "x86_64",
       "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -855,48 +860,66 @@ An example event for `node` looks as following:
         "aa:78:91:29:81:f7"
       ],
       "name": "minikube",
-      "hostname": "minikube",
-      "architecture": "x86_64",
       "os": {
         "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
         "family": "redhat",
+        "kernel": "4.19.81",
         "name": "CentOS Linux",
-        "kernel": "4.19.81"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b"
-    },
-    "metricset": {
-      "name": "node",
-      "period": 10000
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
     "kubernetes": {
       "labels": {
+        "beta_kubernetes_io/arch": "amd64",
         "beta_kubernetes_io/os": "linux",
         "kubernetes_io/arch": "amd64",
         "kubernetes_io/hostname": "minikube",
         "kubernetes_io/os": "linux",
-        "node-role_kubernetes_io/master": "",
-        "beta_kubernetes_io/arch": "amd64"
+        "node-role_kubernetes_io/master": ""
       },
       "node": {
+        "cpu": {
+          "usage": {
+            "core": {
+              "ns": 6136184971873
+            },
+            "nanocores": 455263291
+          }
+        },
+        "fs": {
+          "available": {
+            "bytes": 6655090688
+          },
+          "capacity": {
+            "bytes": 17361141760
+          },
+          "inodes": {
+            "count": 9768928,
+            "free": 9544777,
+            "used": 224151
+          },
+          "used": {
+            "bytes": 9689358336
+          }
+        },
         "memory": {
           "available": {
             "bytes": 12746428416
+          },
+          "majorpagefaults": 0,
+          "pagefaults": 31680,
+          "rss": {
+            "bytes": 3252125696
           },
           "usage": {
             "bytes": 5670916096
           },
           "workingset": {
             "bytes": 4068896768
-          },
-          "rss": {
-            "bytes": 3252125696
-          },
-          "pagefaults": 31680,
-          "majorpagefaults": 0
+          }
         },
+        "name": "minikube",
         "network": {
           "rx": {
             "bytes": 107077476,
@@ -907,68 +930,37 @@ An example event for `node` looks as following:
             "errors": 0
           }
         },
-        "fs": {
-          "available": {
-            "bytes": 6655090688
-          },
-          "capacity": {
-            "bytes": 17361141760
-          },
-          "used": {
-            "bytes": 9689358336
-          },
-          "inodes": {
-            "count": 9768928,
-            "used": 224151,
-            "free": 9544777
-          }
-        },
         "runtime": {
           "imagefs": {
+            "available": {
+              "bytes": 6655090688
+            },
             "capacity": {
               "bytes": 17361141760
             },
             "used": {
               "bytes": 8719928568
-            },
-            "available": {
-              "bytes": 6655090688
             }
           }
         },
-        "start_time": "2020-06-25T07:18:38Z",
-        "name": "minikube",
-        "cpu": {
-          "usage": {
-            "core": {
-              "ns": 6136184971873
-            },
-            "nanocores": 455263291
-          }
-        }
+        "start_time": "2020-06-25T07:18:38Z"
       }
     },
-    "dataset": {
-      "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.node"
+    "metricset": {
+      "name": "node",
+      "period": 10000
+    },
+    "service": {
+      "address": "minikube:10250",
+      "type": "kubernetes"
     },
     "stream": {
+      "dataset": "kubernetes.node",
       "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.node"
-    },
-    "agent": {
-      "name": "minikube",
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a"
-    },
-    "ecs": {
-      "version": "1.5.0"
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:34:39.723Z"
@@ -982,8 +974,6 @@ An example event for `node` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -1026,106 +1016,36 @@ An example event for `pod` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.pod-default-000001",
   "_id": "4Vl563IBolOt49UrYz6x",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.pod-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:34:59.729Z",
-    "kubernetes": {
-      "pod": {
-        "memory": {
-          "rss": {
-            "bytes": 7823360
-          },
-          "page_faults": 5742,
-          "major_page_faults": 0,
-          "usage": {
-            "limit": {
-              "pct": 0.0008033509820466402
-            },
-            "bytes": 13508608,
-            "node": {
-              "pct": 0.0008033509820466402
-            }
-          },
-          "available": {
-            "bytes": 0
-          },
-          "working_set": {
-            "bytes": 8556544
-          }
-        },
-        "network": {
-          "rx": {
-            "bytes": 25671624,
-            "errors": 0
-          },
-          "tx": {
-            "errors": 0,
-            "bytes": 1092900259
-          }
-        },
-        "start_time": "2020-06-18T11:12:58Z",
-        "name": "kube-state-metrics-57cd6fdf9-hd959",
-        "uid": "a7c61334-dd52-4a12-bed5-4daee4c74139",
-        "cpu": {
-          "usage": {
-            "nanocores": 2811918,
-            "node": {
-              "pct": 0.0007029795
-            },
-            "limit": {
-              "pct": 0.0007029795
-            }
-          }
-        }
-      },
-      "namespace": "kube-system",
-      "node": {
-        "name": "minikube"
-      }
+    "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
-    "event": {
-      "duration": 20735189,
-      "dataset": "kubernetes.pod",
-      "module": "kubernetes"
-    },
-    "stream": {
-      "dataset": "kubernetes.pod",
+    "dataset": {
+      "name": "kubernetes.pod",
       "namespace": "default",
       "type": "metrics"
     },
     "ecs": {
       "version": "1.5.0"
     },
-    "metricset": {
-      "period": 10000,
-      "name": "pod"
-    },
-    "service": {
-      "type": "kubernetes",
-      "address": "minikube:10250"
-    },
-    "dataset": {
-      "type": "metrics",
-      "name": "kubernetes.pod",
-      "namespace": "default"
+    "event": {
+      "dataset": "kubernetes.pod",
+      "duration": 20735189,
+      "module": "kubernetes"
     },
     "host": {
-      "name": "minikube",
-      "hostname": "minikube",
       "architecture": "x86_64",
-      "os": {
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
       "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -1155,22 +1075,92 @@ An example event for `pod` looks as following:
         "22:f2:2a:96:1e:7b",
         "56:34:ba:de:57:20",
         "aa:78:91:29:81:f7"
-      ]
+      ],
+      "name": "minikube",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
-    "agent": {
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
-      "name": "minikube"
+    "kubernetes": {
+      "namespace": "kube-system",
+      "node": {
+        "name": "minikube"
+      },
+      "pod": {
+        "cpu": {
+          "usage": {
+            "limit": {
+              "pct": 0.0007029795
+            },
+            "nanocores": 2811918,
+            "node": {
+              "pct": 0.0007029795
+            }
+          }
+        },
+        "memory": {
+          "available": {
+            "bytes": 0
+          },
+          "major_page_faults": 0,
+          "page_faults": 5742,
+          "rss": {
+            "bytes": 7823360
+          },
+          "usage": {
+            "bytes": 13508608,
+            "limit": {
+              "pct": 0.0008033509820466402
+            },
+            "node": {
+              "pct": 0.0008033509820466402
+            }
+          },
+          "working_set": {
+            "bytes": 8556544
+          }
+        },
+        "name": "kube-state-metrics-57cd6fdf9-hd959",
+        "network": {
+          "rx": {
+            "bytes": 25671624,
+            "errors": 0
+          },
+          "tx": {
+            "bytes": 1092900259,
+            "errors": 0
+          }
+        },
+        "start_time": "2020-06-18T11:12:58Z",
+        "uid": "a7c61334-dd52-4a12-bed5-4daee4c74139"
+      }
+    },
+    "metricset": {
+      "name": "pod",
+      "period": 10000
+    },
+    "service": {
+      "address": "minikube:10250",
+      "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.pod",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
-    "kubernetes.pod.start_time": [
-      "2020-06-18T11:12:58.000Z"
-    ],
     "@timestamp": [
       "2020-06-25T12:34:59.729Z"
+    ],
+    "kubernetes.pod.start_time": [
+      "2020-06-18T11:12:58.000Z"
     ]
   },
   "sort": [
@@ -1178,8 +1168,6 @@ An example event for `pod` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -1216,30 +1204,36 @@ An example event for `proxy` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.proxy-default-000001",
   "_id": "Z1l563IBolOt49Ur2FXO",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.proxy-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:35:29.639Z",
     "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
       "name": "minikube",
       "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a"
+      "version": "8.0.0"
     },
     "dataset": {
+      "name": "kubernetes.proxy",
       "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.proxy"
+      "type": "metrics"
     },
-    "stream": {
-      "type": "metrics",
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
       "dataset": "kubernetes.proxy",
-      "namespace": "default"
+      "duration": 2031254,
+      "module": "kubernetes"
     },
     "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -1256,7 +1250,6 @@ An example event for `proxy` looks as following:
         "fe80::5434:baff:fede:5720",
         "fe80::a878:91ff:fe29:81f7"
       ],
-      "name": "minikube",
       "mac": [
         "aa:83:2f:7f:6b:12",
         "02:42:d4:8c:94:93",
@@ -1271,144 +1264,26 @@ An example event for `proxy` looks as following:
         "56:34:ba:de:57:20",
         "aa:78:91:29:81:f7"
       ],
-      "hostname": "minikube",
-      "architecture": "x86_64",
+      "name": "minikube",
       "os": {
         "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
         "family": "redhat",
+        "kernel": "4.19.81",
         "name": "CentOS Linux",
-        "kernel": "4.19.81"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
     "kubernetes": {
       "proxy": {
-        "sync": {
-          "rules": {
-            "duration": {
-              "us": {
-                "sum": 763620.9329999998,
-                "count": 18,
-                "bucket": {
-                  "1000": 0,
-                  "2000": 0,
-                  "4000": 0,
-                  "8000": 0,
-                  "16000": 0,
-                  "32000": 10,
-                  "64000": 16,
-                  "128000": 17,
-                  "256000": 18,
-                  "512000": 18,
-                  "1024000": 18,
-                  "2048000": 18,
-                  "4096000": 18,
-                  "8192000": 18,
-                  "16384000": 18,
-                  "+Inf": 18
-                }
-              }
-            }
-          },
-          "networkprogramming": {
-            "duration": {
-              "us": {
-                "count": 19,
-                "bucket": {
-                  "0": 0,
-                  "250000": 4,
-                  "500000": 8,
-                  "1000000": 11,
-                  "2000000": 11,
-                  "3000000": 11,
-                  "4000000": 11,
-                  "5000000": 11,
-                  "6000000": 11,
-                  "7000000": 11,
-                  "8000000": 11,
-                  "9000000": 11,
-                  "10000000": 11,
-                  "11000000": 11,
-                  "12000000": 11,
-                  "13000000": 11,
-                  "14000000": 11,
-                  "15000000": 11,
-                  "16000000": 11,
-                  "17000000": 11,
-                  "18000000": 11,
-                  "19000000": 11,
-                  "20000000": 11,
-                  "21000000": 11,
-                  "22000000": 11,
-                  "23000000": 11,
-                  "24000000": 11,
-                  "25000000": 11,
-                  "26000000": 11,
-                  "27000000": 11,
-                  "28000000": 11,
-                  "29000000": 11,
-                  "30000000": 11,
-                  "31000000": 11,
-                  "32000000": 11,
-                  "33000000": 11,
-                  "34000000": 11,
-                  "35000000": 11,
-                  "36000000": 11,
-                  "37000000": 11,
-                  "38000000": 11,
-                  "39000000": 11,
-                  "40000000": 11,
-                  "41000000": 11,
-                  "42000000": 11,
-                  "43000000": 11,
-                  "44000000": 11,
-                  "45000000": 11,
-                  "46000000": 11,
-                  "47000000": 11,
-                  "48000000": 11,
-                  "49000000": 11,
-                  "50000000": 11,
-                  "51000000": 11,
-                  "52000000": 11,
-                  "53000000": 11,
-                  "54000000": 11,
-                  "55000000": 11,
-                  "56000000": 11,
-                  "57000000": 11,
-                  "58000000": 11,
-                  "59000000": 11,
-                  "60000000": 11,
-                  "65000000": 11,
-                  "70000000": 11,
-                  "75000000": 11,
-                  "80000000": 11,
-                  "85000000": 11,
-                  "90000000": 11,
-                  "95000000": 11,
-                  "100000000": 11,
-                  "105000000": 11,
-                  "110000000": 11,
-                  "115000000": 11,
-                  "120000000": 11,
-                  "150000000": 11,
-                  "180000000": 11,
-                  "210000000": 11,
-                  "240000000": 11,
-                  "270000000": 11,
-                  "300000000": 11,
-                  "+Inf": 19
-                },
-                "sum": 5571080914163.27
-              }
-            }
-          }
-        },
         "process": {
           "cpu": {
             "sec": 8
+          },
+          "fds": {
+            "open": {
+              "count": 17
+            }
           },
           "memory": {
             "resident": {
@@ -1420,22 +1295,129 @@ An example event for `proxy` looks as following:
           },
           "started": {
             "sec": 1593069580.69
+          }
+        },
+        "sync": {
+          "networkprogramming": {
+            "duration": {
+              "us": {
+                "bucket": {
+                  "+Inf": 19,
+                  "0": 0,
+                  "1000000": 11,
+                  "10000000": 11,
+                  "100000000": 11,
+                  "105000000": 11,
+                  "11000000": 11,
+                  "110000000": 11,
+                  "115000000": 11,
+                  "12000000": 11,
+                  "120000000": 11,
+                  "13000000": 11,
+                  "14000000": 11,
+                  "15000000": 11,
+                  "150000000": 11,
+                  "16000000": 11,
+                  "17000000": 11,
+                  "18000000": 11,
+                  "180000000": 11,
+                  "19000000": 11,
+                  "2000000": 11,
+                  "20000000": 11,
+                  "21000000": 11,
+                  "210000000": 11,
+                  "22000000": 11,
+                  "23000000": 11,
+                  "24000000": 11,
+                  "240000000": 11,
+                  "250000": 4,
+                  "25000000": 11,
+                  "26000000": 11,
+                  "27000000": 11,
+                  "270000000": 11,
+                  "28000000": 11,
+                  "29000000": 11,
+                  "3000000": 11,
+                  "30000000": 11,
+                  "300000000": 11,
+                  "31000000": 11,
+                  "32000000": 11,
+                  "33000000": 11,
+                  "34000000": 11,
+                  "35000000": 11,
+                  "36000000": 11,
+                  "37000000": 11,
+                  "38000000": 11,
+                  "39000000": 11,
+                  "4000000": 11,
+                  "40000000": 11,
+                  "41000000": 11,
+                  "42000000": 11,
+                  "43000000": 11,
+                  "44000000": 11,
+                  "45000000": 11,
+                  "46000000": 11,
+                  "47000000": 11,
+                  "48000000": 11,
+                  "49000000": 11,
+                  "500000": 8,
+                  "5000000": 11,
+                  "50000000": 11,
+                  "51000000": 11,
+                  "52000000": 11,
+                  "53000000": 11,
+                  "54000000": 11,
+                  "55000000": 11,
+                  "56000000": 11,
+                  "57000000": 11,
+                  "58000000": 11,
+                  "59000000": 11,
+                  "6000000": 11,
+                  "60000000": 11,
+                  "65000000": 11,
+                  "7000000": 11,
+                  "70000000": 11,
+                  "75000000": 11,
+                  "8000000": 11,
+                  "80000000": 11,
+                  "85000000": 11,
+                  "9000000": 11,
+                  "90000000": 11,
+                  "95000000": 11
+                },
+                "count": 19,
+                "sum": 5571080914163.27
+              }
+            }
           },
-          "fds": {
-            "open": {
-              "count": 17
+          "rules": {
+            "duration": {
+              "us": {
+                "bucket": {
+                  "+Inf": 18,
+                  "1000": 0,
+                  "1024000": 18,
+                  "128000": 17,
+                  "16000": 0,
+                  "16384000": 18,
+                  "2000": 0,
+                  "2048000": 18,
+                  "256000": 18,
+                  "32000": 10,
+                  "4000": 0,
+                  "4096000": 18,
+                  "512000": 18,
+                  "64000": 16,
+                  "8000": 0,
+                  "8192000": 18
+                },
+                "count": 18,
+                "sum": 763620.9329999998
+              }
             }
           }
         }
       }
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "module": "kubernetes",
-      "duration": 2031254,
-      "dataset": "kubernetes.proxy"
     },
     "metricset": {
       "name": "proxy",
@@ -1444,8 +1426,14 @@ An example event for `proxy` looks as following:
     "service": {
       "address": "localhost:10249",
       "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.proxy",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:35:29.639Z"
@@ -1456,8 +1444,6 @@ An example event for `proxy` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -1504,43 +1490,36 @@ An example event for `scheduler` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.scheduler-default-000001",
   "_id": "01l663IBolOt49UrTW36",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.scheduler-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:35:59.624Z",
     "agent": {
-      "version": "8.0.0",
       "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
       "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
       "name": "minikube",
-      "type": "metricbeat"
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
     "dataset": {
       "name": "kubernetes.scheduler",
       "namespace": "default",
       "type": "metrics"
     },
-    "stream": {
-      "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.scheduler"
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.scheduler",
+      "duration": 7245648,
+      "module": "kubernetes"
     },
     "host": {
-      "hostname": "minikube",
       "architecture": "x86_64",
-      "os": {
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux"
-      },
-      "name": "minikube",
-      "id": "b0e83d397c054b8a99a431072fe4617b",
       "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -1570,15 +1549,24 @@ An example event for `scheduler` looks as following:
         "22:f2:2a:96:1e:7b",
         "56:34:ba:de:57:20",
         "aa:78:91:29:81:f7"
-      ]
+      ],
+      "name": "minikube",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "duration": 7245648,
-      "dataset": "kubernetes.scheduler",
-      "module": "kubernetes"
+    "kubernetes": {
+      "scheduler": {
+        "leader": {
+          "is_master": true
+        },
+        "name": "kube-scheduler"
+      }
     },
     "metricset": {
       "name": "scheduler",
@@ -1588,15 +1576,13 @@ An example event for `scheduler` looks as following:
       "address": "localhost:10251",
       "type": "kubernetes"
     },
-    "kubernetes": {
-      "scheduler": {
-        "name": "kube-scheduler",
-        "leader": {
-          "is_master": true
-        }
-      }
+    "stream": {
+      "dataset": "kubernetes.scheduler",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:35:59.624Z"
@@ -1607,8 +1593,6 @@ An example event for `scheduler` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -1661,80 +1645,11 @@ An example event for `state_container` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_container-default-000001",
   "_id": "P1l663IBolOt49Ur1YbF",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_container-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:36:34.469Z",
-    "host": {
-      "ip": [
-        "172.17.0.11"
-      ],
-      "mac": [
-        "02:42:ac:11:00:0b"
-      ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "os": {
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false
-    },
-    "event": {
-      "dataset": "kubernetes.container",
-      "module": "kubernetes",
-      "duration": 8554499
-    },
-    "kubernetes": {
-      "node": {
-        "name": "minikube"
-      },
-      "labels": {
-        "component": "kube-scheduler",
-        "tier": "control-plane"
-      },
-      "container": {
-        "image": "k8s.gcr.io/kube-scheduler:v1.17.0",
-        "name": "kube-scheduler",
-        "cpu": {
-          "request": {
-            "cores": 0.1
-          }
-        },
-        "status": {
-          "phase": "running",
-          "ready": true,
-          "restarts": 10
-        },
-        "id": "docker://b00b185f2b304a7ece804d1af28eb232f825255f716bcc85ef5bd20d5a4f45d4"
-      },
-      "pod": {
-        "name": "kube-scheduler-minikube",
-        "uid": "9cdbd5ea-7638-4e86-a706-a5b222d86f26"
-      },
-      "namespace": "kube-system"
-    },
-    "dataset": {
-      "name": "kubernetes.state_container",
-      "namespace": "default",
-      "type": "metrics"
-    },
-    "stream": {
-      "type": "metrics",
-      "dataset": "kubernetes.state_container",
-      "namespace": "default"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
     "agent": {
       "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
       "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
@@ -1743,18 +1658,87 @@ An example event for `state_container` looks as following:
       "version": "8.0.0"
     },
     "container": {
-      "runtime": "docker",
-      "id": "b00b185f2b304a7ece804d1af28eb232f825255f716bcc85ef5bd20d5a4f45d4"
+      "id": "b00b185f2b304a7ece804d1af28eb232f825255f716bcc85ef5bd20d5a4f45d4",
+      "runtime": "docker"
+    },
+    "dataset": {
+      "name": "kubernetes.state_container",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.container",
+      "duration": 8554499,
+      "module": "kubernetes"
+    },
+    "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
+      "mac": [
+        "02:42:ac:11:00:0b"
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "container": {
+        "cpu": {
+          "request": {
+            "cores": 0.1
+          }
+        },
+        "id": "docker://b00b185f2b304a7ece804d1af28eb232f825255f716bcc85ef5bd20d5a4f45d4",
+        "image": "k8s.gcr.io/kube-scheduler:v1.17.0",
+        "name": "kube-scheduler",
+        "status": {
+          "phase": "running",
+          "ready": true,
+          "restarts": 10
+        }
+      },
+      "labels": {
+        "component": "kube-scheduler",
+        "tier": "control-plane"
+      },
+      "namespace": "kube-system",
+      "node": {
+        "name": "minikube"
+      },
+      "pod": {
+        "name": "kube-scheduler-minikube",
+        "uid": "9cdbd5ea-7638-4e86-a706-a5b222d86f26"
+      }
+    },
+    "metricset": {
+      "name": "state_container",
+      "period": 10000
     },
     "service": {
       "address": "kube-state-metrics:8080",
       "type": "kubernetes"
     },
-    "metricset": {
-      "name": "state_container",
-      "period": 10000
+    "stream": {
+      "dataset": "kubernetes.state_container",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:36:34.469Z"
@@ -1765,8 +1749,6 @@ An example event for `state_container` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -1798,12 +1780,71 @@ An example event for `state_cronjob` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_cronjob-default-000001",
   "_id": "qFqA63IBolOt49Urybs0",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_cronjob-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:43:04.384Z",
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.state_cronjob",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.cronjob",
+      "duration": 9482053,
+      "module": "kubernetes"
+    },
+    "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
+      "mac": [
+        "02:42:ac:11:00:0b"
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "cronjob": {
+        "active": {
+          "count": 0
+        },
+        "created": {
+          "sec": 1593088862
+        },
+        "is_suspended": false,
+        "last_schedule": {
+          "sec": 1593088920
+        },
+        "name": "hello",
+        "next_schedule": {
+          "sec": 1593088980
+        }
+      },
+      "namespace": "default"
+    },
     "metricset": {
       "name": "state_cronjob",
       "period": 10000
@@ -1812,72 +1853,13 @@ An example event for `state_cronjob` looks as following:
       "address": "kube-state-metrics:8080",
       "type": "kubernetes"
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "host": {
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false,
-      "ip": [
-        "172.17.0.11"
-      ],
-      "mac": [
-        "02:42:ac:11:00:0b"
-      ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
-      "os": {
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)"
-      }
-    },
-    "event": {
-      "dataset": "kubernetes.cronjob",
-      "module": "kubernetes",
-      "duration": 9482053
-    },
-    "kubernetes": {
-      "namespace": "default",
-      "cronjob": {
-        "active": {
-          "count": 0
-        },
-        "is_suspended": false,
-        "name": "hello",
-        "next_schedule": {
-          "sec": 1593088980
-        },
-        "last_schedule": {
-          "sec": 1593088920
-        },
-        "created": {
-          "sec": 1593088862
-        }
-      }
-    },
-    "dataset": {
-      "type": "metrics",
-      "name": "kubernetes.state_cronjob",
-      "namespace": "default"
-    },
     "stream": {
+      "dataset": "kubernetes.state_cronjob",
       "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.state_cronjob"
-    },
-    "agent": {
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat",
-      "version": "8.0.0"
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:43:04.384Z"
@@ -1888,8 +1870,6 @@ An example event for `state_cronjob` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -1919,83 +1899,83 @@ An example event for `state_deployment` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_deployment-default-000001",
   "_id": "H1l763IBolOt49UrSp72",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_deployment-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:37:04.455Z",
-    "service": {
-      "address": "kube-state-metrics:8080",
-      "type": "kubernetes"
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
-    "event": {
-      "module": "kubernetes",
-      "duration": 8648138,
-      "dataset": "kubernetes.deployment"
+    "dataset": {
+      "name": "kubernetes.state_deployment",
+      "namespace": "default",
+      "type": "metrics"
     },
     "ecs": {
       "version": "1.5.0"
     },
-    "metricset": {
-      "name": "state_deployment",
-      "period": 10000
+    "event": {
+      "dataset": "kubernetes.deployment",
+      "duration": 8648138,
+      "module": "kubernetes"
+    },
+    "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
+      "mac": [
+        "02:42:ac:11:00:0b"
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
     "kubernetes": {
       "deployment": {
         "name": "metricbeat",
+        "paused": false,
         "replicas": {
-          "unavailable": 0,
+          "available": 1,
           "desired": 1,
-          "updated": 1,
-          "available": 1
-        },
-        "paused": false
+          "unavailable": 0,
+          "updated": 1
+        }
       },
       "labels": {
         "k8s-app": "metricbeat"
       },
       "namespace": "kube-system"
     },
-    "dataset": {
-      "type": "metrics",
-      "name": "kubernetes.state_deployment",
-      "namespace": "default"
+    "metricset": {
+      "name": "state_deployment",
+      "period": 10000
+    },
+    "service": {
+      "address": "kube-state-metrics:8080",
+      "type": "kubernetes"
     },
     "stream": {
-      "type": "metrics",
       "dataset": "kubernetes.state_deployment",
-      "namespace": "default"
-    },
-    "host": {
-      "mac": [
-        "02:42:ac:11:00:0b"
-      ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
-      "os": {
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat"
-      },
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false,
-      "ip": [
-        "172.17.0.11"
-      ]
-    },
-    "agent": {
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat"
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:37:04.455Z"
@@ -2006,8 +1986,6 @@ An example event for `state_deployment` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2033,68 +2011,62 @@ An example event for `state_node` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_node-default-000001",
   "_id": "c1l763IBolOt49Ur58c8",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_node-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:37:44.457Z",
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.state_node",
+      "namespace": "default",
+      "type": "metrics"
+    },
     "ecs": {
       "version": "1.5.0"
     },
+    "event": {
+      "dataset": "kubernetes.node",
+      "duration": 8194220,
+      "module": "kubernetes"
+    },
     "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
       "mac": [
         "02:42:ac:11:00:0b"
       ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
       "os": {
-        "kernel": "4.19.81",
         "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
         "family": "redhat",
-        "name": "CentOS Linux"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "containerized": false,
-      "ip": [
-        "172.17.0.11"
-      ]
-    },
-    "dataset": {
-      "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.state_node"
-    },
-    "stream": {
-      "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.state_node"
-    },
-    "metricset": {
-      "name": "state_node",
-      "period": 10000
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
     "kubernetes": {
+      "labels": {
+        "beta_kubernetes_io/arch": "amd64",
+        "beta_kubernetes_io/os": "linux",
+        "kubernetes_io/arch": "amd64",
+        "kubernetes_io/hostname": "minikube",
+        "kubernetes_io/os": "linux",
+        "node-role_kubernetes_io/master": ""
+      },
       "node": {
-        "pod": {
-          "capacity": {
-            "total": 110
-          },
-          "allocatable": {
-            "total": 110
-          }
-        },
-        "memory": {
-          "capacity": {
-            "bytes": 16815325184
-          },
-          "allocatable": {
-            "bytes": 16815325184
-          }
-        },
         "cpu": {
           "allocatable": {
             "cores": 4
@@ -2103,38 +2075,44 @@ An example event for `state_node` looks as following:
             "cores": 4
           }
         },
+        "memory": {
+          "allocatable": {
+            "bytes": 16815325184
+          },
+          "capacity": {
+            "bytes": 16815325184
+          }
+        },
         "name": "minikube",
+        "pod": {
+          "allocatable": {
+            "total": 110
+          },
+          "capacity": {
+            "total": 110
+          }
+        },
         "status": {
           "ready": "true",
           "unschedulable": false
         }
-      },
-      "labels": {
-        "kubernetes_io/arch": "amd64",
-        "kubernetes_io/hostname": "minikube",
-        "kubernetes_io/os": "linux",
-        "node-role_kubernetes_io/master": "",
-        "beta_kubernetes_io/arch": "amd64",
-        "beta_kubernetes_io/os": "linux"
       }
     },
-    "agent": {
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat",
-      "version": "8.0.0"
+    "metricset": {
+      "name": "state_node",
+      "period": 10000
     },
     "service": {
-      "type": "kubernetes",
-      "address": "kube-state-metrics:8080"
+      "address": "kube-state-metrics:8080",
+      "type": "kubernetes"
     },
-    "event": {
-      "dataset": "kubernetes.node",
-      "module": "kubernetes",
-      "duration": 8194220
+    "stream": {
+      "dataset": "kubernetes.state_node",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:37:44.457Z"
@@ -2145,8 +2123,6 @@ An example event for `state_node` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2175,80 +2151,80 @@ An example event for `state_persistentvolume` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_persistentvolume-default-000001",
   "_id": "8lqB63IBolOt49UrjOyD",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_persistentvolume-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:43:54.412Z",
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "module": "kubernetes",
-      "duration": 12149615,
-      "dataset": "kubernetes.persistentvolume"
-    },
     "agent": {
-      "version": "8.0.0",
       "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
       "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat"
-    },
-    "kubernetes": {
-      "persistentvolume": {
-        "capacity": {
-          "bytes": 10737418240
-        },
-        "phase": "Bound",
-        "storage_class": "manual",
-        "name": "task-pv-volume"
-      },
-      "labels": {
-        "type": "local"
-      }
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
     "dataset": {
       "name": "kubernetes.state_persistentvolume",
       "namespace": "default",
       "type": "metrics"
     },
-    "stream": {
-      "type": "metrics",
-      "dataset": "kubernetes.state_persistentvolume",
-      "namespace": "default"
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.persistentvolume",
+      "duration": 12149615,
+      "module": "kubernetes"
     },
     "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
       ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "os": {
         "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
         "family": "redhat",
+        "kernel": "4.19.81",
         "name": "CentOS Linux",
-        "kernel": "4.19.81"
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "labels": {
+        "type": "local"
       },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "containerized": false
+      "persistentvolume": {
+        "capacity": {
+          "bytes": 10737418240
+        },
+        "name": "task-pv-volume",
+        "phase": "Bound",
+        "storage_class": "manual"
+      }
     },
     "metricset": {
-      "period": 10000,
-      "name": "state_persistentvolume"
+      "name": "state_persistentvolume",
+      "period": 10000
     },
     "service": {
       "address": "kube-state-metrics:8080",
       "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.state_persistentvolume",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:43:54.412Z"
@@ -2259,8 +2235,6 @@ An example event for `state_persistentvolume` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2285,16 +2259,64 @@ An example event for `state_persistentvolumeclaim` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_persistentvolumeclaim-default-000001",
   "_id": "6FuC63IBolOt49UrTxrR",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_persistentvolumeclaim-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:44:44.418Z",
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.state_persistentvolumeclaim",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
     "event": {
       "dataset": "kubernetes.persistentvolumeclaim",
-      "module": "kubernetes",
-      "duration": 5698588
+      "duration": 5698588,
+      "module": "kubernetes"
+    },
+    "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
+      "mac": [
+        "02:42:ac:11:00:0b"
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "namespace": "default",
+      "persistentvolumeclaim": {
+        "access_mode": "ReadWriteOnce",
+        "name": "task-pv-claim",
+        "phase": "Bound",
+        "request_storage": {
+          "bytes": 3221225472
+        },
+        "storage_class": "manual",
+        "volume_name": "task-pv-volume"
+      }
     },
     "metricset": {
       "name": "state_persistentvolumeclaim",
@@ -2304,61 +2326,13 @@ An example event for `state_persistentvolumeclaim` looks as following:
       "address": "kube-state-metrics:8080",
       "type": "kubernetes"
     },
-    "kubernetes": {
-      "namespace": "default",
-      "persistentvolumeclaim": {
-        "phase": "Bound",
-        "storage_class": "manual",
-        "volume_name": "task-pv-volume",
-        "name": "task-pv-claim",
-        "request_storage": {
-          "bytes": 3221225472
-        },
-        "access_mode": "ReadWriteOnce"
-      }
-    },
-    "dataset": {
-      "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.state_persistentvolumeclaim"
-    },
-    "agent": {
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee"
-    },
     "stream": {
-      "type": "metrics",
       "dataset": "kubernetes.state_persistentvolumeclaim",
-      "namespace": "default"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "host": {
-      "os": {
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "containerized": false,
-      "ip": [
-        "172.17.0.11"
-      ],
-      "mac": [
-        "02:42:ac:11:00:0b"
-      ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64"
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:44:44.418Z"
@@ -2369,8 +2343,6 @@ An example event for `state_persistentvolumeclaim` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2397,89 +2369,89 @@ An example event for `state_pod` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_pod-default-000001",
   "_id": "YVl863IBolOt49UrqueH",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_pod-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:38:34.469Z",
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
     "dataset": {
       "name": "kubernetes.state_pod",
       "namespace": "default",
       "type": "metrics"
     },
-    "stream": {
-      "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.state_pod"
-    },
     "ecs": {
       "version": "1.5.0"
     },
+    "event": {
+      "dataset": "kubernetes.pod",
+      "duration": 10777415,
+      "module": "kubernetes"
+    },
     "host": {
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "architecture": "x86_64",
       "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
       ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "os": {
-        "kernel": "4.19.81",
         "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
         "family": "redhat",
-        "name": "CentOS Linux"
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
       }
     },
-    "event": {
-      "duration": 10777415,
-      "dataset": "kubernetes.pod",
-      "module": "kubernetes"
-    },
-    "service": {
-      "type": "kubernetes",
-      "address": "kube-state-metrics:8080"
-    },
     "kubernetes": {
-      "pod": {
-        "name": "filebeat-dqzzz",
-        "status": {
-          "ready": "true",
-          "scheduled": "true",
-          "phase": "running"
-        },
-        "host_ip": "192.168.64.10",
-        "ip": "192.168.64.10",
-        "uid": "a5f1d3c9-40b6-4182-823b-dd5ff9832279"
+      "labels": {
+        "controller-revision-hash": "85649b9ddb",
+        "k8s-app": "filebeat",
+        "pod-template-generation": "1"
       },
       "namespace": "kube-system",
       "node": {
         "name": "minikube"
       },
-      "labels": {
-        "controller-revision-hash": "85649b9ddb",
-        "k8s-app": "filebeat",
-        "pod-template-generation": "1"
+      "pod": {
+        "host_ip": "192.168.64.10",
+        "ip": "192.168.64.10",
+        "name": "filebeat-dqzzz",
+        "status": {
+          "phase": "running",
+          "ready": "true",
+          "scheduled": "true"
+        },
+        "uid": "a5f1d3c9-40b6-4182-823b-dd5ff9832279"
       }
     },
-    "agent": {
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487"
-    },
     "metricset": {
-      "period": 10000,
-      "name": "state_pod"
+      "name": "state_pod",
+      "period": 10000
+    },
+    "service": {
+      "address": "kube-state-metrics:8080",
+      "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.state_pod",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:38:34.469Z"
@@ -2490,8 +2462,6 @@ An example event for `state_pod` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2517,57 +2487,11 @@ An example event for `state_replicaset` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_replicaset-default-000001",
   "_id": "U1l863IBolOt49Ur-Pu2",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_replicaset-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:38:54.482Z",
-    "service": {
-      "address": "kube-state-metrics:8080",
-      "type": "kubernetes"
-    },
-    "metricset": {
-      "period": 10000,
-      "name": "state_replicaset"
-    },
-    "dataset": {
-      "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.state_replicaset"
-    },
-    "stream": {
-      "type": "metrics",
-      "dataset": "kubernetes.state_replicaset",
-      "namespace": "default"
-    },
-    "event": {
-      "module": "kubernetes",
-      "duration": 5456128,
-      "dataset": "kubernetes.replicaset"
-    },
-    "kubernetes": {
-      "namespace": "kube-system",
-      "replicaset": {
-        "name": "nginx-ingress-controller-6fc5bcc8c9",
-        "replicas": {
-          "labeled": 1,
-          "ready": 1,
-          "available": 1,
-          "observed": 1,
-          "desired": 1
-        }
-      },
-      "deployment": {
-        "name": "nginx-ingress-controller"
-      },
-      "labels": {
-        "app_kubernetes_io/part-of": "kube-system",
-        "pod-template-hash": "6fc5bcc8c9",
-        "addonmanager_kubernetes_io/mode": "Reconcile",
-        "app_kubernetes_io/name": "nginx-ingress-controller"
-      }
-    },
     "agent": {
       "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
       "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
@@ -2575,31 +2499,77 @@ An example event for `state_replicaset` looks as following:
       "type": "metricbeat",
       "version": "8.0.0"
     },
+    "dataset": {
+      "name": "kubernetes.state_replicaset",
+      "namespace": "default",
+      "type": "metrics"
+    },
     "ecs": {
       "version": "1.5.0"
     },
+    "event": {
+      "dataset": "kubernetes.replicaset",
+      "duration": 5456128,
+      "module": "kubernetes"
+    },
     "host": {
+      "architecture": "x86_64",
       "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
       ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
       "os": {
-        "platform": "centos",
-        "version": "7 (Core)",
+        "codename": "Core",
         "family": "redhat",
-        "name": "CentOS Linux",
         "kernel": "4.19.81",
-        "codename": "Core"
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "deployment": {
+        "name": "nginx-ingress-controller"
       },
-      "id": "b0e83d397c054b8a99a431072fe4617b"
+      "labels": {
+        "addonmanager_kubernetes_io/mode": "Reconcile",
+        "app_kubernetes_io/name": "nginx-ingress-controller",
+        "app_kubernetes_io/part-of": "kube-system",
+        "pod-template-hash": "6fc5bcc8c9"
+      },
+      "namespace": "kube-system",
+      "replicaset": {
+        "name": "nginx-ingress-controller-6fc5bcc8c9",
+        "replicas": {
+          "available": 1,
+          "desired": 1,
+          "labeled": 1,
+          "observed": 1,
+          "ready": 1
+        }
+      }
+    },
+    "metricset": {
+      "name": "state_replicaset",
+      "period": 10000
+    },
+    "service": {
+      "address": "kube-state-metrics:8080",
+      "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.state_replicaset",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:38:54.482Z"
@@ -2610,8 +2580,6 @@ An example event for `state_replicaset` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2630,83 +2598,83 @@ The fields reported are:
 
 ### state_resourcequota
 
-This is the `state_resourcequota` dataset of the Kubernetes package. It collects 
-ResourceQuota related metrics from `kube_state_metrics`.
+This is the `state_resourcequota` dataset of the Kubernetes package. It collects ResourceQuota related metrics
+from `kube_state_metrics`.
 
 An example event for `state_resourcequota` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_resourcequota-default-000001",
   "_id": "4FuC63IBolOt49UrnSHz",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_resourcequota-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:45:04.416Z",
-    "metricset": {
-      "name": "state_resourcequota",
-      "period": 10000
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
     },
     "dataset": {
-      "type": "metrics",
       "name": "kubernetes.state_resourcequota",
-      "namespace": "default"
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.resourcequota",
+      "duration": 6324269,
+      "module": "kubernetes"
     },
     "host": {
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "architecture": "x86_64",
-      "os": {
-        "codename": "Core",
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
       "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
-      ]
-    },
-    "service": {
-      "address": "kube-state-metrics:8080",
-      "type": "kubernetes"
-    },
-    "event": {
-      "dataset": "kubernetes.resourcequota",
-      "module": "kubernetes",
-      "duration": 6324269
-    },
-    "agent": {
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      ],
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487"
-    },
-    "ecs": {
-      "version": "1.5.0"
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
     "kubernetes": {
       "namespace": "quota-object-example",
       "resourcequota": {
         "name": "object-quota-demo",
+        "quota": 1,
         "resource": "persistentvolumeclaims",
-        "type": "hard",
-        "quota": 1
+        "type": "hard"
       }
     },
+    "metricset": {
+      "name": "state_resourcequota",
+      "period": 10000
+    },
+    "service": {
+      "address": "kube-state-metrics:8080",
+      "type": "kubernetes"
+    },
     "stream": {
-      "type": "metrics",
       "dataset": "kubernetes.state_resourcequota",
-      "namespace": "default"
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:45:04.416Z"
@@ -2717,8 +2685,6 @@ An example event for `state_resourcequota` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2744,75 +2710,74 @@ An example event for `state_service` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_service-default-000001",
   "_id": "Elp963IBolOt49UrbRPd",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_service-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:39:24.389Z",
-    "kubernetes": {
-      "labels": {
-        "kubernetes_io_minikube_addons_endpoint": "metrics-server",
-        "kubernetes_io_name": "Metrics-server",
-        "addonmanager_kubernetes_io_mode": "Reconcile",
-        "kubernetes_io_minikube_addons": "metrics-server"
-      },
-      "service": {
-        "name": "metrics-server",
-        "created": "2020-06-10T09:02:27.000Z",
-        "cluster_ip": "10.96.124.248",
-        "type": "ClusterIP"
-      },
-      "namespace": "kube-system"
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.state_service",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
     },
     "event": {
       "dataset": "kubernetes.service",
-      "module": "kubernetes",
-      "duration": 10966648
-    },
-    "metricset": {
-      "name": "state_service",
-      "period": 10000
+      "duration": 10966648,
+      "module": "kubernetes"
     },
     "host": {
-      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "architecture": "x86_64",
       "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
       ],
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "architecture": "x86_64",
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "os": {
-        "platform": "centos",
-        "version": "7 (Core)",
+        "codename": "Core",
         "family": "redhat",
-        "name": "CentOS Linux",
         "kernel": "4.19.81",
-        "codename": "Core"
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
       }
     },
-    "agent": {
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee"
+    "kubernetes": {
+      "labels": {
+        "addonmanager_kubernetes_io_mode": "Reconcile",
+        "kubernetes_io_minikube_addons": "metrics-server",
+        "kubernetes_io_minikube_addons_endpoint": "metrics-server",
+        "kubernetes_io_name": "Metrics-server"
+      },
+      "namespace": "kube-system",
+      "service": {
+        "cluster_ip": "10.96.124.248",
+        "created": "2020-06-10T09:02:27.000Z",
+        "name": "metrics-server",
+        "type": "ClusterIP"
+      }
     },
-    "ecs": {
-      "version": "1.5.0"
+    "metricset": {
+      "name": "state_service",
+      "period": 10000
     },
     "service": {
       "address": "kube-state-metrics:8080",
       "type": "kubernetes"
-    },
-    "dataset": {
-      "name": "kubernetes.state_service",
-      "namespace": "default",
-      "type": "metrics"
     },
     "stream": {
       "dataset": "kubernetes.state_service",
@@ -2820,6 +2785,7 @@ An example event for `state_service` looks as following:
       "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:39:24.389Z"
@@ -2833,8 +2799,6 @@ An example event for `state_service` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2855,6 +2819,119 @@ The fields reported are:
 | kubernetes.service.type | Service type | keyword |
 
 
+### state_statefulset
+
+This is the `state_statefulset` dataset of the Kubernetes package.
+
+An example event for `state_statefulset` looks as following:
+
+```$json
+{
+  "_id": "Elp963IBolOt49UrbRPd",
+  "_index": ".ds-metrics-kubernetes.state_statefulset-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-06-25T12:39:24.389Z",
+    "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.state_statefulset",
+      "namespace": "default",
+      "type": "metrics"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.statefulset",
+      "duration": 10966648,
+      "module": "kubernetes"
+    },
+    "host": {
+      "architecture": "x86_64",
+      "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
+      "ip": [
+        "172.17.0.11"
+      ],
+      "mac": [
+        "02:42:ac:11:00:0b"
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
+    },
+    "kubernetes": {
+      "namespace": "default",
+      "statefulset": {
+        "created": 1511989697,
+        "generation": {
+          "desired": 4,
+          "observed": 2
+        },
+        "name": "mysql",
+        "replicas": {
+          "desired": 5,
+          "observed": 2
+        }
+      }
+    },
+    "metricset": {
+      "name": "state_statefulset",
+      "period": 10000
+    },
+    "service": {
+      "address": "kube-state-metrics:8080",
+      "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.state_statefulset",
+      "namespace": "default",
+      "type": "metrics"
+    }
+  },
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-06-25T12:39:24.389Z"
+    ],
+    "kubernetes.statefulset.created": [
+      "2020-06-10T09:02:27.000Z"
+    ]
+  },
+  "sort": [
+    1593088764389
+  ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
+| kubernetes.statefulset.created | The creation timestamp (epoch) for StatefulSet | long |
+| kubernetes.statefulset.generation.desired | The desired generation per StatefulSet | long |
+| kubernetes.statefulset.generation.observed | The observed generation per StatefulSet | long |
+| kubernetes.statefulset.replicas.desired | The number of desired replicas per StatefulSet | long |
+| kubernetes.statefulset.replicas.observed | The number of observed replicas per StatefulSet | long |
+
+
 ### state_storageclass
 
 This is the `state_storageclass` dataset of the Kubernetes package. It collects 
@@ -2864,66 +2941,63 @@ An example event for `state_storageclass` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.state_storageclass-default-000001",
   "_id": "KFp963IBolOt49UruyX3",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.state_storageclass-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:39:44.399Z",
     "agent": {
+      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
+      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
       "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-      "id": "a6147a6e-6626-4a84-9907-f372f6c61eee"
-    },
-    "kubernetes": {
-      "storageclass": {
-        "provisioner": "k8s.io/minikube-hostpath",
-        "reclaim_policy": "Delete",
-        "volume_binding_mode": "Immediate",
-        "name": "standard",
-        "created": "2020-06-10T09:02:27.000Z"
-      },
-      "labels": {
-        "addonmanager_kubernetes_io_mode": "EnsureExists"
-      }
+      "version": "8.0.0"
     },
     "dataset": {
       "name": "kubernetes.state_storageclass",
       "namespace": "default",
       "type": "metrics"
     },
-    "stream": {
-      "dataset": "kubernetes.state_storageclass",
-      "namespace": "default",
-      "type": "metrics"
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "kubernetes.storageclass",
+      "duration": 5713503,
+      "module": "kubernetes"
     },
     "host": {
-      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "architecture": "x86_64",
-      "os": {
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
-      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
       "containerized": false,
+      "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "172.17.0.11"
       ],
       "mac": [
         "02:42:ac:11:00:0b"
-      ]
+      ],
+      "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
-    "event": {
-      "module": "kubernetes",
-      "duration": 5713503,
-      "dataset": "kubernetes.storageclass"
+    "kubernetes": {
+      "labels": {
+        "addonmanager_kubernetes_io_mode": "EnsureExists"
+      },
+      "storageclass": {
+        "created": "2020-06-10T09:02:27.000Z",
+        "name": "standard",
+        "provisioner": "k8s.io/minikube-hostpath",
+        "reclaim_policy": "Delete",
+        "volume_binding_mode": "Immediate"
+      }
     },
     "metricset": {
       "name": "state_storageclass",
@@ -2933,10 +3007,13 @@ An example event for `state_storageclass` looks as following:
       "address": "kube-state-metrics:8080",
       "type": "kubernetes"
     },
-    "ecs": {
-      "version": "1.5.0"
+    "stream": {
+      "dataset": "kubernetes.state_storageclass",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:39:44.399Z"
@@ -2950,8 +3027,6 @@ An example event for `state_storageclass` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -2977,62 +3052,36 @@ An example event for `system` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.system-default-000001",
   "_id": "sVp963IBolOt49Ur9yyT",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.system-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:39:59.647Z",
+    "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
     "dataset": {
-      "namespace": "default",
-      "type": "metrics",
-      "name": "kubernetes.system"
-    },
-    "service": {
-      "address": "minikube:10250",
-      "type": "kubernetes"
-    },
-    "event": {
-      "duration": 20012905,
-      "dataset": "kubernetes.system",
-      "module": "kubernetes"
-    },
-    "stream": {
-      "dataset": "kubernetes.system",
+      "name": "kubernetes.system",
       "namespace": "default",
       "type": "metrics"
     },
     "ecs": {
       "version": "1.5.0"
     },
+    "event": {
+      "dataset": "kubernetes.system",
+      "duration": 20012905,
+      "module": "kubernetes"
+    },
     "host": {
-      "mac": [
-        "aa:83:2f:7f:6b:12",
-        "02:42:d4:8c:94:93",
-        "2a:59:80:9e:fc:d6",
-        "da:3a:d9:e9:70:52",
-        "8a:0a:b6:18:ba:76",
-        "f6:47:fa:80:e8:8b",
-        "9e:c3:ff:95:e4:8e",
-        "6e:1c:29:50:d4:0c",
-        "b6:f3:11:60:14:ed",
-        "22:f2:2a:96:1e:7b",
-        "56:34:ba:de:57:20",
-        "aa:78:91:29:81:f7"
-      ],
-      "hostname": "minikube",
-      "name": "minikube",
       "architecture": "x86_64",
-      "os": {
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core",
-        "platform": "centos"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
       "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -3048,14 +3097,30 @@ An example event for `system` looks as following:
         "fe80::20f2:2aff:fe96:1e7b",
         "fe80::5434:baff:fede:5720",
         "fe80::a878:91ff:fe29:81f7"
-      ]
-    },
-    "agent": {
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      ],
+      "mac": [
+        "aa:83:2f:7f:6b:12",
+        "02:42:d4:8c:94:93",
+        "2a:59:80:9e:fc:d6",
+        "da:3a:d9:e9:70:52",
+        "8a:0a:b6:18:ba:76",
+        "f6:47:fa:80:e8:8b",
+        "9e:c3:ff:95:e4:8e",
+        "6e:1c:29:50:d4:0c",
+        "b6:f3:11:60:14:ed",
+        "22:f2:2a:96:1e:7b",
+        "56:34:ba:de:57:20",
+        "aa:78:91:29:81:f7"
+      ],
       "name": "minikube",
-      "type": "metricbeat",
-      "version": "8.0.0"
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
     "kubernetes": {
       "node": {
@@ -3065,23 +3130,23 @@ An example event for `system` looks as following:
         "container": "runtime",
         "cpu": {
           "usage": {
-            "nanocores": 35779815,
             "core": {
               "ns": 530899961233
-            }
+            },
+            "nanocores": 35779815
           }
         },
         "memory": {
-          "pagefaults": 12944019,
           "majorpagefaults": 99,
+          "pagefaults": 12944019,
+          "rss": {
+            "bytes": 125259776
+          },
           "usage": {
             "bytes": 198279168
           },
           "workingset": {
             "bytes": 178794496
-          },
-          "rss": {
-            "bytes": 125259776
           }
         },
         "start_time": "2020-06-25T07:19:32Z"
@@ -3090,14 +3155,24 @@ An example event for `system` looks as following:
     "metricset": {
       "name": "system",
       "period": 10000
+    },
+    "service": {
+      "address": "minikube:10250",
+      "type": "kubernetes"
+    },
+    "stream": {
+      "dataset": "kubernetes.system",
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
-    "kubernetes.system.start_time": [
-      "2020-06-25T07:19:32.000Z"
-    ],
     "@timestamp": [
       "2020-06-25T12:39:59.647Z"
+    ],
+    "kubernetes.system.start_time": [
+      "2020-06-25T07:19:32.000Z"
     ]
   },
   "sort": [
@@ -3105,8 +3180,6 @@ An example event for `system` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 
@@ -3136,73 +3209,36 @@ An example event for `volume` looks as following:
 
 ```$json
 {
-  "_index": ".ds-metrics-kubernetes.volume-default-000001",
   "_id": "b1p-63IBolOt49UrRT-d",
-  "_version": 1,
+  "_index": ".ds-metrics-kubernetes.volume-default-000001",
   "_score": null,
   "_source": {
     "@timestamp": "2020-06-25T12:40:19.649Z",
+    "agent": {
+      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
+      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
+      "name": "minikube",
+      "type": "metricbeat",
+      "version": "8.0.0"
+    },
+    "dataset": {
+      "name": "kubernetes.volume",
+      "namespace": "default",
+      "type": "metrics"
+    },
     "ecs": {
       "version": "1.5.0"
     },
-    "metricset": {
-      "name": "volume",
-      "period": 10000
-    },
-    "service": {
-      "type": "kubernetes",
-      "address": "minikube:10250"
-    },
-    "kubernetes": {
-      "pod": {
-        "name": "metricbeat-g9fc6"
-      },
-      "volume": {
-        "name": "config",
-        "fs": {
-          "inodes": {
-            "used": 5,
-            "free": 9549949,
-            "count": 9768928
-          },
-          "available": {
-            "bytes": 7719858176
-          },
-          "capacity": {
-            "bytes": 17361141760
-          },
-          "used": {
-            "bytes": 12288
-          }
-        }
-      },
-      "namespace": "kube-system",
-      "node": {
-        "name": "minikube"
-      }
-    },
-    "dataset": {
-      "type": "metrics",
-      "name": "kubernetes.volume",
-      "namespace": "default"
-    },
-    "stream": {
-      "namespace": "default",
-      "type": "metrics",
-      "dataset": "kubernetes.volume"
+    "event": {
+      "dataset": "kubernetes.volume",
+      "duration": 12481688,
+      "module": "kubernetes"
     },
     "host": {
       "architecture": "x86_64",
-      "os": {
-        "platform": "centos",
-        "version": "7 (Core)",
-        "family": "redhat",
-        "name": "CentOS Linux",
-        "kernel": "4.19.81",
-        "codename": "Core"
-      },
-      "id": "b0e83d397c054b8a99a431072fe4617b",
       "containerized": false,
+      "hostname": "minikube",
+      "id": "b0e83d397c054b8a99a431072fe4617b",
       "ip": [
         "192.168.64.10",
         "fe80::a883:2fff:fe7f:6b12",
@@ -3219,7 +3255,6 @@ An example event for `volume` looks as following:
         "fe80::5434:baff:fede:5720",
         "fe80::a878:91ff:fe29:81f7"
       ],
-      "name": "minikube",
       "mac": [
         "aa:83:2f:7f:6b:12",
         "02:42:d4:8c:94:93",
@@ -3234,21 +3269,59 @@ An example event for `volume` looks as following:
         "56:34:ba:de:57:20",
         "aa:78:91:29:81:f7"
       ],
-      "hostname": "minikube"
+      "name": "minikube",
+      "os": {
+        "codename": "Core",
+        "family": "redhat",
+        "kernel": "4.19.81",
+        "name": "CentOS Linux",
+        "platform": "centos",
+        "version": "7 (Core)"
+      }
     },
-    "agent": {
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
-      "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
-      "name": "minikube"
+    "kubernetes": {
+      "namespace": "kube-system",
+      "node": {
+        "name": "minikube"
+      },
+      "pod": {
+        "name": "metricbeat-g9fc6"
+      },
+      "volume": {
+        "fs": {
+          "available": {
+            "bytes": 7719858176
+          },
+          "capacity": {
+            "bytes": 17361141760
+          },
+          "inodes": {
+            "count": 9768928,
+            "free": 9549949,
+            "used": 5
+          },
+          "used": {
+            "bytes": 12288
+          }
+        },
+        "name": "config"
+      }
     },
-    "event": {
+    "metricset": {
+      "name": "volume",
+      "period": 10000
+    },
+    "service": {
+      "address": "minikube:10250",
+      "type": "kubernetes"
+    },
+    "stream": {
       "dataset": "kubernetes.volume",
-      "module": "kubernetes",
-      "duration": 12481688
+      "namespace": "default",
+      "type": "metrics"
     }
   },
+  "_version": 1,
   "fields": {
     "@timestamp": [
       "2020-06-25T12:40:19.649Z"
@@ -3259,8 +3332,6 @@ An example event for `volume` looks as following:
   ]
 }
 ```
-
-The fields reported are:
 
 **Exported fields**
 

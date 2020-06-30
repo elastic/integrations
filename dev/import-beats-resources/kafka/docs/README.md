@@ -6,7 +6,7 @@ This integration collects logs and metrics from [https://kafka.apache.org](Kafka
 
 The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
 
-The `broker`, `consumergroup` and `partition` metricsets are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, and 2.2.2.
+The `broker`, `consumergroup`, `partition` and `producer` metricsets are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, and 2.2.2.
 
 The `broker` metricset requires Jolokia to fetch JMX metrics. Refer to the Metricbeat documentation about Jolokia for more information.
 
@@ -16,32 +16,26 @@ The `broker` metricset requires Jolokia to fetch JMX metrics. Refer to the Metri
 
 The `log` dataset collects and parses logs from Kafka servers.
 
-The fields reported are:
-
 {{fields "log"}}
 
 ## Metrics
 
 ### broker
 
-<!-- TODO example event -->
+The `broker` dataset collects JMX metrics from Kafka brokers using Jolokia.
 
-The fields reported are:
+{{event "broker"}}
 
 {{fields "broker"}}
 
 ### consumergroup
 
-<!-- TODO example event -->
-
-The fields reported are:
+{{event "consumergroup"}}
 
 {{fields "consumergroup"}}
 
 ### partition
 
-<!-- TODO example event -->
-
-The fields reported are:
+{{event "partition"}}
 
 {{fields "partition"}}

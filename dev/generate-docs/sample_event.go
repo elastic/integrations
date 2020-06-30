@@ -30,10 +30,11 @@ func renderSampleEvent(options generateOptions, packageName, datasetName string)
 	}
 
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("An example event for `%s` looks as following:\n\n", datasetName))
-	builder.WriteString("```$json")
+	builder.WriteString(fmt.Sprintf("An example event for `%s` looks as following:\n\n",
+		stripDatasetFolderSuffix(datasetName)))
+	builder.WriteString("```$json\n")
 	builder.Write(formatted)
-	builder.WriteString("\n```\n")
+	builder.WriteString("\n```")
 	return builder.String(), nil
 }
 
@@ -49,4 +50,10 @@ func formatSampleEvent(body []byte) ([]byte, error) {
 		return nil, errors.Wrap(err, "marshaling sample event file failed")
 	}
 	return body, nil
+}
+
+func stripDatasetFolderSuffix(datasetName string) string {
+	datasetName = strings.ReplaceAll(datasetName, "_metrics", "")
+	datasetName = strings.ReplaceAll(datasetName, "_logs", "")
+	return datasetName
 }

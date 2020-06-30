@@ -275,11 +275,10 @@ func Check() error {
 		return err
 	}
 
-	// TODO: Enable GenerateDocs in "Check" when all integrations are passing.
-	/*err = GenerateDocs()
+	err = GenerateDocs()
 	if err != nil {
 		return err
-	}*/
+	}
 
 	err = Vendor()
 	if err != nil {

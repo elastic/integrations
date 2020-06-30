@@ -1,14 +1,14 @@
 # System Integration
 
-The System module allows you to monitor your servers. Because the System module
+The System integrations allows you to monitor your servers. Because the System integration
 always applies to the local server, the `hosts` config option is not needed.
 
-The default metricsets are `cpu`, `load`, `memory`, `network`, `process`, and
-`process_summary`. To disable a default metricset, comment it out in the
-`modules.d/system.yml` configuration file. If _all_ metricsets are commented out
-and the System module is enabled, {beatname_uc} uses the default metricsets.
+The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
+`process_summary`. To disable a default dataset, comment it out in the
+`modules.d/system.yml` configuration file. If _all_ datasets are commented out
+and the System module is enabled, {beatname_uc} uses the default datasets.
 
-Note that certain metricsets may access `/proc` to gather process information,
+Note that certain datasets may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace[AppArmor
@@ -17,16 +17,16 @@ directly.
 
 ## Compatibility
 
-The System metricsets collect different kinds of metric data, which may require dedicated permissions
+The System datasets collect different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
 
 ## Metrics
 
 ### Core
 
-The System `core` metricset provides usage statistics for each CPU core.
+The System `core` dataset provides usage statistics for each CPU core.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -38,6 +38,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.core.id | CPU Core number. | long |
 | system.core.idle.pct | The percentage of CPU time spent idle. | scaled_float |
 | system.core.idle.ticks | The amount of CPU time spent idle. | long |
@@ -57,12 +61,11 @@ This metricset is available on:
 | system.core.user.ticks | The amount of CPU time spent in user space. | long |
 
 
-
 ### CPU
 
-The System `cpu` metricset provides CPU statistics.
+The System `cpu` dataset provides CPU statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -74,6 +77,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.cpu.cores | The number of CPU cores present on the host. The non-normalized percentages will have a maximum value of `100% * cores`. The normalized percentages already take this value into account and have a maximum value of 100%. | long |
 | system.cpu.idle.norm.pct | The percentage of CPU time spent idle. | scaled_float |
 | system.cpu.idle.pct | The percentage of CPU time spent idle. | scaled_float |
@@ -103,12 +110,12 @@ This metricset is available on:
 | system.cpu.user.ticks | The amount of CPU time spent in user space. | long |
 
 
-### Diskio
+### Disk IO
 
-The System `diskio` metricset provides disk IO metrics collected from the
+The System `diskio` dataset provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 - macOS (requires 10.10+)
@@ -119,6 +126,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.diskio.io.time | The total number of of milliseconds spent doing I/Os. | long |
 | system.diskio.iostat.await | The average time spent for requests issued to the device to be served. | float |
 | system.diskio.iostat.busy | Percentage of CPU time during which I/O requests were issued to the device (bandwidth utilization for the device). Device saturation occurs when this value is close to 100%. | float |
@@ -145,11 +156,11 @@ This metricset is available on:
 
 ### Entropy
 
-This is the entropy metricset of the module system. 
+This is the entropy dataset of the module system. 
 It collects the amount of available entropy in bits. On kernel versions greater than 2.6, 
 entropy will be out of a total pool size of 4096.
 
-This Metricset is available on:
+This dataset is available on:
 
 - linux
 
@@ -157,16 +168,20 @@ This Metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.entropy.available_bits | The available bits of entropy | long |
 | system.entropy.pct | The percentage of available entropy, relative to the pool size of 4096 | scaled_float |
 
 
 ### Filesystem
 
-The System `filesystem` metricset provides file system statistics. For each file
+The System `filesystem` dataset provides file system statistics. For each file
 system, one document is provided.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -178,6 +193,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.filesystem.available | The disk space available to an unprivileged user in bytes. | long |
 | system.filesystem.device_name | The disk name. For example: `/dev/disk1` | keyword |
 | system.filesystem.files | The total number of file nodes in the file system. | long |
@@ -192,9 +211,9 @@ This metricset is available on:
 
 ### Fsstat
 
-The System `fsstat` metricset provides overall file system statistics.
+The System `fsstat` dataset provides overall file system statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -206,6 +225,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.fsstat.count | Number of file systems found. | long |
 | system.fsstat.total_files | Total number of files. | long |
 | system.fsstat.total_size.free | Total free space. | long |
@@ -215,9 +238,9 @@ This metricset is available on:
 
 ### Load
 
-The System `load` metricset provides load statistics.
+The System `load` dataset provides load statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -228,6 +251,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.load.1 | Load average for the last minute. | scaled_float |
 | system.load.15 | Load average for the last 15 minutes. | scaled_float |
 | system.load.5 | Load average for the last 5 minutes. | scaled_float |
@@ -239,9 +266,9 @@ This metricset is available on:
 
 ### Memory
 
-The System `memory` metricset provides memory statistics.
+The System `memory` dataset provides memory statistics.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -253,6 +280,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.memory.actual.free | Actual free memory in bytes. It is calculated based on the OS. On Linux this value will be MemAvailable from /proc/meminfo,  or calculated from free memory plus caches and buffers if /proc/meminfo is not available. On OSX it is a sum of free memory and the inactive memory. On Windows, it is equal to `system.memory.free`. | long |
 | system.memory.actual.used.bytes | Actual used memory in bytes. It represents the difference between the total and the available memory. The available memory depends on the OS. For more details, please check `system.actual.free`. | long |
 | system.memory.actual.used.pct | The percentage of actual used memory. | scaled_float |
@@ -288,10 +319,10 @@ This metricset is available on:
 
 ### Network
 
-The System `network` metricset provides network IO metrics collected from the
+The System `network` dataset provides network IO metrics collected from the
 operating system. One event is created for each network interface.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -302,6 +333,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.network.in.bytes | The number of bytes received. | long |
 | system.network.in.dropped | The number of incoming packets that were dropped. | long |
 | system.network.in.errors | The number of errors while receiving. | long |
@@ -313,12 +348,12 @@ This metricset is available on:
 | system.network.out.packets | The number of packets sent. | long |
 
 
-### Network_summary
+### Network summary
 
-The System `network_summary` metricset provides network IO metrics collected from the
+The System `network_summary` dataset provides network IO metrics collected from the
 operating system. These events are global and sorted by protocol.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
@@ -326,6 +361,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.network_summary.icmp.* | ICMP counters | object |
 | system.network_summary.ip.* | IP counters | object |
 | system.network_summary.tcp.* | TCP counters | object |
@@ -335,10 +374,10 @@ This metricset is available on:
 
 ### Process
 
-The System `process` metricset provides process statistics. One document is
+The System `process` dataset provides process statistics. One document is
 provided for each process.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -349,6 +388,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pgid | Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
@@ -430,12 +473,12 @@ This metricset is available on:
 | user.name | Short name or login of the user. | keyword |
 
 
-### Process_summary
+### Process summary
 
-The `process_summary` metricset collects high level statistics about the running
+The `process_summary` dataset collects high level statistics about the running
 processes.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -446,6 +489,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.process.summary.dead | Number of dead processes on this host. It's very unlikely that it will appear but in some special situations it may happen. | long |
 | system.process.summary.idle | Number of idle processes on this host. | long |
 | system.process.summary.running | Number of running processes on this host. | long |
@@ -456,11 +503,11 @@ This metricset is available on:
 | system.process.summary.zombie | Number of zombie processes on this host. | long |
 
 
-### raid
+### RAID
 
-This is the raid metricset of the module system. It collects stats about the raid.
+This is the raid dataset of the module system. It collects stats about the raid.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
@@ -468,6 +515,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.raid.blocks.synced | Number of blocks on the device that are in sync, in 1024-byte blocks. | long |
 | system.raid.blocks.total | Number of blocks the device holds, in 1024-byte blocks. | long |
 | system.raid.disks.active | Number of active disks. | long |
@@ -483,9 +534,9 @@ This metricset is available on:
 
 ### Service
 
-The `service` metricset reports on the status of systemd services.
+The `service` dataset reports on the status of systemd services.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
@@ -493,6 +544,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.service.exec_code | The SIGCHLD code from the service's main process | keyword |
 | system.service.load_state | The load state of the service | keyword |
 | system.service.name | The name of the service | keyword |
@@ -510,18 +565,22 @@ This metricset is available on:
 
 ### Socket
 
-This metricset is available on Linux only and requires kernel 2.6.14 or newer.
+This dataset is available on Linux only and requires kernel 2.6.14 or newer.
 
-The system `socket` metricset reports an event for each new TCP socket that it
+The system `socket` dataset reports an event for each new TCP socket that it
 sees. It does this by polling the kernel periodically to get a dump of all
 sockets. You set the polling interval by configuring the `period` option.
-Specifying a short polling interval with this metricset is important to avoid
+Specifying a short polling interval with this dataset is important to avoid
 missing short-lived connections.
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
@@ -539,15 +598,15 @@ missing short-lived connections.
 | user.id | Unique identifier of the user. | keyword |
 
 
-### Socket_summary
+### Socket summary
 
-The System `socket_summary` metricset provides the summary of open network
+The System `socket_summary` dataset provides the summary of open network
 sockets in the host system.
 
 It collects a summary of metrics with the count of existing TCP and UDP
 connections and the count of listening ports.
 
-This metricset is available on:
+This dataset is available on:
 
 - FreeBSD
 - Linux
@@ -558,6 +617,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.socket.summary.all.count | All open connections | integer |
 | system.socket.summary.all.listening | All listening ports | integer |
 | system.socket.summary.tcp.all.close_wait | Number of TCP connections in _close_wait_ state | integer |
@@ -579,9 +642,9 @@ This metricset is available on:
 
 ### Uptime
 
-The System `uptime` metricset provides the uptime of the host operating system.
+The System `uptime` dataset provides the uptime of the host operating system.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 - macOS
@@ -593,14 +656,18 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long |
 
 
 ### Users
 
-The system/users metricset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the metricset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
+The system/users dataset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the dataset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
 
-This metricset is available on:
+This dataset is available on:
 
 - Linux
 
@@ -608,6 +675,10 @@ This metricset is available on:
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | system.users.id | The ID of the session | keyword |
 | system.users.leader | The root PID of the session | long |
 | system.users.path | The DBus object path of the session | keyword |
