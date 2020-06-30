@@ -6,7 +6,6 @@ package util
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -56,17 +55,17 @@ type Package struct {
 	BasePackage   `config:",inline" json:",inline" yaml:",inline"`
 	FormatVersion string `config:"format_version" json:"format_version" yaml:"format_version"`
 
-	Readme        *string `config:"readme,omitempty" json:"readme,omitempty" yaml:"readme,omitempty"`
-	License       string  `config:"license,omitempty" json:"license,omitempty" yaml:"license,omitempty"`
-	versionSemVer *semver.Version
-	Categories    []string     `config:"categories" json:"categories"`
-	Release       string       `config:"release,omitempty" json:"release,omitempty"`
-	Requirement   Requirement  `config:"requirement" json:"requirement"`
-	Screenshots   []Image      `config:"screenshots,omitempty" json:"screenshots,omitempty" yaml:"screenshots,omitempty"`
-	Assets        []string     `config:"assets,omitempty" json:"assets,omitempty" yaml:"assets,omitempty"`
-	DataSets      []*DataSet   `config:"datasets,omitempty" json:"datasets,omitempty" yaml:"datasets,omitempty"`
-	Datasources   []Datasource `config:"datasources,omitempty" json:"datasources,omitempty" yaml:"datasources,omitempty"`
-	Owner         *Owner       `config:"owner,omitempty" json:"owner,omitempty" yaml:"owner,omitempty"`
+	Readme          *string `config:"readme,omitempty" json:"readme,omitempty" yaml:"readme,omitempty"`
+	License         string  `config:"license,omitempty" json:"license,omitempty" yaml:"license,omitempty"`
+	versionSemVer   *semver.Version
+	Categories      []string         `config:"categories" json:"categories"`
+	Release         string           `config:"release,omitempty" json:"release,omitempty"`
+	Requirement     Requirement      `config:"requirement" json:"requirement"`
+	Screenshots     []Image          `config:"screenshots,omitempty" json:"screenshots,omitempty" yaml:"screenshots,omitempty"`
+	Assets          []string         `config:"assets,omitempty" json:"assets,omitempty" yaml:"assets,omitempty"`
+	ConfigTemplates []ConfigTemplate `config:"config_templates,omitempty" json:"config_templates,omitempty" yaml:"config_templates,omitempty"`
+	Datasets        []*Dataset       `config:"datasets,omitempty" json:"datasets,omitempty" yaml:"datasets,omitempty"`
+	Owner           *Owner           `config:"owner,omitempty" json:"owner,omitempty" yaml:"owner,omitempty"`
 
 	// Local path to the package dir
 	BasePath string `json:"-" yaml:"-"`
@@ -86,7 +85,7 @@ type BasePackage struct {
 	Internal    bool       `config:"internal,omitempty" json:"internal,omitempty" yaml:"internal,omitempty"`
 }
 
-type Datasource struct {
+type ConfigTemplate struct {
 	Name        string  `config:"name" json:"name" validate:"required"`
 	Title       string  `config:"title" json:"title" validate:"required"`
 	Description string  `config:"description" json:"description" validate:"required"`
@@ -158,9 +157,9 @@ func NewPackage(basePath string) (*Package, error) {
 
 	// Default for the multiple flags is true.
 	trueValue := true
-	for i, _ := range p.Datasources {
-		if p.Datasources[i].Multiple == nil {
-			p.Datasources[i].Multiple = &trueValue
+	for i, _ := range p.ConfigTemplates {
+		if p.ConfigTemplates[i].Multiple == nil {
+			p.ConfigTemplates[i].Multiple = &trueValue
 		}
 	}
 	if p.Type == "" {
@@ -224,21 +223,21 @@ func NewPackage(basePath string) (*Package, error) {
 }
 
 func NewPackageWithResources(path string) (*Package, error) {
-	aPackage, err := NewPackage(path)
+	p, err := NewPackage(path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "building package from path '%s' failed", path)
 	}
 
-	err = aPackage.LoadAssets()
+	err = p.LoadAssets()
 	if err != nil {
 		return nil, errors.Wrapf(err, "loading package assets failed (path '%s')", path)
 	}
 
-	err = aPackage.LoadDataSets()
+	err = p.LoadDataSets()
 	if err != nil {
 		return nil, errors.Wrapf(err, "loading package datasets failed (path '%s')", path)
 	}
-	return aPackage, nil
+	return p, nil
 }
 
 func (p *Package) HasCategory(category string) bool {
@@ -439,32 +438,9 @@ func (p *Package) LoadDataSets() error {
 			return err
 		}
 
-		// Iterate through all datasources and inputs to find the matching streams and add them to the output.
-		for dK, datasource := range p.Datasources {
-			for iK, _ := range datasource.Inputs {
-				for _, stream := range d.Streams {
-					if stream.Input == p.Datasources[dK].Inputs[iK].Type {
-						if stream.TemplatePath == "" {
-							stream.TemplatePath = "stream.yml.hbs"
-						}
-						stream.Dataset = d.ID
-						streamTemplate := filepath.Join(datasetBasePath, "agent", "stream", stream.TemplatePath)
+		// TODO: Validate that each input specified in a stream also is defined in the package
 
-						streamTemplateData, err := ioutil.ReadFile(streamTemplate)
-						if err != nil {
-							return err
-						}
-
-						stream.TemplateContent = string(streamTemplateData)
-
-						// Add template to stream
-						p.Datasources[dK].Inputs[iK].Streams = append(p.Datasources[dK].Inputs[iK].Streams, stream)
-					}
-				}
-			}
-		}
-
-		p.DataSets = append(p.DataSets, d)
+		p.Datasets = append(p.Datasets, d)
 	}
 
 	return nil
