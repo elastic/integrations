@@ -417,7 +417,7 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    Bad candidate: 
    ```yaml
-- name: mypackage.mydataset
-  type: group
-  release: experimental
-```
+   - name: mypackage.mydataset
+     type: group
+     release: experimental
+   ```
