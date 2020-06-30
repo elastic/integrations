@@ -23,6 +23,8 @@ func parseStreamConfig(content []byte) (*streamConfigParsed, error) {
 	mapOfParsed, err := parse.Parse("input-config", string(content), "", "", map[string]interface{}{
 		"eq":     func() {},
 		"printf": func() {},
+		"tojson": func() {},
+		"inList": func() {},
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "parsing template failed")
