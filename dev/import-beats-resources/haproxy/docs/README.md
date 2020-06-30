@@ -1,18 +1,18 @@
-# MySQL Integration
+# HAProxy Integration
 
-This integration periodically fetches logs and metrics from [HAProxy](https://www.haproxy.com/) servers.
+This integration periodically fetches logs and metrics from [HAProxy](https://www.haproxy.org/) servers.
 
 ## Compatibility
 
 The `log` dataset was tested with logs from HAProxy 1.8, 1.9 and 2.0 running on a Debian. It is not available on Windows.
 
-The `info` and `stats` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
+The `info` and `stat` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
 
 ## Logs
 
 ### log
 
-The `log` dataset collects the MySQL error logs.
+The `log` dataset collects the HAProxy application logs.
 
 {{fields "log"}}
 
@@ -20,7 +20,7 @@ The `log` dataset collects the MySQL error logs.
 
 ### info
 
-The `info` dataset periodically fetches metrics from [Galera](http://galeracluster.com/)-MySQL cluster servers.
+The HAProxy `info` metricset collects general information about HAProxy processes.
 
 An example event for `info` looks as following:
 
@@ -142,11 +142,13 @@ The fields reported are:
 
 {{fields "info"}}
 
-### stats
+### stat
 
-The MySQL `stats` dataset collects data from MySQL by running a `SHOW GLOBAL stats;` SQL query. This query returns a large number of metrics.
+The HAProxy `stat` metricset collects stat fields from HAProxy processes.
 
-An example event for `stats` looks as following:
+See section "9.1. CSV format" of the official [HAProxy Management Guide](http://www.haproxy.org/download/2.0/doc/management.txt) for a full list of stat fields.
+
+An example event for `stat` looks as following:
 
 ```$json
 {
@@ -236,4 +238,4 @@ An example event for `stats` looks as following:
 
 The fields reported are:
 
-{{fields "stats"}}
+{{fields "stat"}}
