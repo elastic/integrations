@@ -16,12 +16,14 @@ The `broker` metricset requires Jolokia to fetch JMX metrics. Refer to the Metri
 
 The `log` dataset collects and parses logs from Kafka servers.
 
-The fields reported are:
-
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | kafka.log.class | Java class the log is coming from. | keyword |
 | kafka.log.component | Component the log is coming from. | keyword |
 | kafka.log.trace.class | Java class the trace is coming from. | keyword |
@@ -36,14 +38,25 @@ The fields reported are:
 
 The `broker` dataset collects JMX metrics from Kafka brokers using Jolokia.
 
-An example event of the `broker` dataset looks as following:
+An example event for `broker` looks as following:
 
 ```$json
 {
   "@timestamp": "2020-05-15T15:12:12.270Z",
-  "service": {
-    "address": "localhost:8778",
-    "type": "kafka"
+  "agent": {
+    "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
+    "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
+    "name": "kafka-01",
+    "type": "metricbeat",
+    "version": "8.0.0"
+  },
+  "ecs": {
+    "version": "1.5.0"
+  },
+  "event": {
+    "dataset": "kafka.broker",
+    "duration": 4572918,
+    "module": "kafka"
   },
   "kafka": {
     "broker": {
@@ -57,41 +70,30 @@ An example event of the `broker` dataset looks as following:
       }
     }
   },
-  "event": {
-    "dataset": "kafka.broker",
-    "module": "kafka",
-    "duration": 4572918
-  },
   "metricset": {
-    "period": 10000,
-    "name": "broker"
+    "name": "broker",
+    "period": 10000
+  },
+  "service": {
+    "address": "localhost:8778",
+    "type": "kafka"
   },
   "stream": {
-    "type": "metrics",
     "dataset": "kafka.broker",
-    "namespace": "default"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "agent": {
-    "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
-    "name": "kafka-01",
-    "type": "metricbeat",
-    "version": "8.0.0",
-    "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef"
+    "namespace": "default",
+    "type": "metrics"
   }
 }
 ```
-
-
-
-The fields reported are:
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
 | kafka.broker.log.flush_rate | The log flush rate | float |
@@ -124,62 +126,62 @@ The fields reported are:
 
 ### consumergroup
 
-An example event of the `consumergroup` dataset looks as following:
+An example event for `consumergroup` looks as following:
 
 ```$json
 {
   "@timestamp": "2020-05-15T15:18:13.919Z",
   "agent": {
+    "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
+    "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
     "name": "kafka-01",
     "type": "metricbeat",
-    "version": "8.0.0",
-    "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
-    "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c"
+    "version": "8.0.0"
   },
   "ecs": {
     "version": "1.5.0"
   },
+  "event": {
+    "dataset": "kafka.consumergroup",
+    "duration": 8821045,
+    "module": "kafka"
+  },
   "kafka": {
+    "broker": {
+      "address": "kafka-01:9092",
+      "id": 0
+    },
     "consumergroup": {
-      "topic": "messages",
+      "broker": {
+        "address": "kafka-01:9092",
+        "id": 0
+      },
+      "client": {
+        "host": "127.0.0.1",
+        "id": "consumer-console-consumer-99447-1",
+        "member_id": "consumer-console-consumer-99447-1-208fdf91-2f28-4336-a2ff-5e5f4b8b71e4"
+      },
+      "consumer_lag": 112,
       "error": {
         "code": 0
       },
-      "broker": {
-        "id": 0,
-        "address": "kafka-01:9092"
-      },
       "id": "console-consumer-99447",
+      "meta": "",
       "offset": -1,
-      "consumer_lag": 112,
-      "client": {
-        "member_id": "consumer-console-consumer-99447-1-208fdf91-2f28-4336-a2ff-5e5f4b8b71e4",
-        "id": "consumer-console-consumer-99447-1",
-        "host": "127.0.0.1"
-      },
       "partition": 0,
-      "meta": ""
-    },
-    "broker": {
-      "id": 0,
-      "address": "kafka-01:9092"
-    },
-    "topic": {
-      "name": "messages"
+      "topic": "messages"
     },
     "partition": {
       "id": 0,
       "topic_id": "0-messages"
+    },
+    "topic": {
+      "name": "messages"
     }
   },
-  "event": {
-    "dataset": "kafka.consumergroup",
-    "module": "kafka",
-    "duration": 8821045
-  },
   "metricset": {
-    "period": 10000,
-    "name": "consumergroup"
+    "name": "consumergroup",
+    "period": 10000
   },
   "service": {
     "address": "localhost:9092",
@@ -193,12 +195,14 @@ An example event of the `consumergroup` dataset looks as following:
 }
 ```
 
-The fields reported are:
-
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
 | kafka.consumergroup.broker.address | Broker address | keyword |
@@ -222,11 +226,58 @@ The fields reported are:
 
 ### partition
 
-An example event of the `partition` dataset looks as following:
+An example event for `partition` looks as following:
 
 ```$json
 {
   "@timestamp": "2020-05-15T15:19:44.240Z",
+  "agent": {
+    "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
+    "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
+    "name": "kafka-01",
+    "type": "metricbeat",
+    "version": "8.0.0"
+  },
+  "ecs": {
+    "version": "1.5.0"
+  },
+  "event": {
+    "dataset": "kafka.partition",
+    "duration": 11263377,
+    "module": "kafka"
+  },
+  "kafka": {
+    "broker": {
+      "address": "kafka-01:9092",
+      "id": 0
+    },
+    "partition": {
+      "broker": {
+        "address": "kafka-01:9092",
+        "id": 0
+      },
+      "id": 0,
+      "offset": {
+        "newest": 111,
+        "oldest": 0
+      },
+      "partition": {
+        "id": 0,
+        "insync_replica": true,
+        "is_leader": true,
+        "leader": 0,
+        "replica": 0
+      },
+      "topic": {
+        "name": "messages"
+      },
+      "topic_broker_id": "0-messages-0",
+      "topic_id": "0-messages"
+    },
+    "topic": {
+      "name": "messages"
+    }
+  },
   "metricset": {
     "name": "partition",
     "period": 10000
@@ -235,68 +286,22 @@ An example event of the `partition` dataset looks as following:
     "address": "localhost:9092",
     "type": "kafka"
   },
-  "kafka": {
-    "partition": {
-      "offset": {
-        "oldest": 0,
-        "newest": 111
-      },
-      "id": 0,
-      "topic_id": "0-messages",
-      "topic_broker_id": "0-messages-0",
-      "topic": {
-        "name": "messages"
-      },
-      "broker": {
-        "id": 0,
-        "address": "kafka-01:9092"
-      },
-      "partition": {
-        "is_leader": true,
-        "insync_replica": true,
-        "id": 0,
-        "leader": 0,
-        "replica": 0
-      }
-    },
-    "broker": {
-      "address": "kafka-01:9092",
-      "id": 0
-    },
-    "topic": {
-      "name": "messages"
-    }
-  },
   "stream": {
-    "type": "metrics",
     "dataset": "kafka.partition",
-    "namespace": "default"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "agent": {
-    "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
-    "id": "5aba67f2-2050-4d19-8953-ba20f0a5483c",
-    "name": "kafka-01",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "event": {
-    "dataset": "kafka.partition",
-    "module": "kafka",
-    "duration": 11263377
+    "namespace": "default",
+    "type": "metrics"
   }
 }
 ```
-
-
-The fields reported are:
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
 | kafka.partition.broker.address | Broker address | keyword |
