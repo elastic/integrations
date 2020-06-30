@@ -44,6 +44,7 @@ type kibanaMigrator struct {
 
 type kibanaDocuments struct {
 	Objects []mapStr `json:"objects"`
+	Version string   `json:"version"`
 }
 
 func newKibanaMigrator(hostPort string, username string, password string, skipKibana bool) *kibanaMigrator {
