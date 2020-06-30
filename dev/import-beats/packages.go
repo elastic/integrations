@@ -29,7 +29,7 @@ type packageContent struct {
 	images     []imageContent
 	kibana     kibanaContent
 	docs       []docContent
-	datasource datasourceContent
+	datasource configTemplateContent
 }
 
 func newPackageContent(name string) packageContent {
@@ -213,7 +213,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		aPackage.addDatasets(datasets)
 
 		// datasources
-		aPackage.datasource, err = updateDatasource(aPackage.datasource, updateDatasourcesParameters{
+		aPackage.datasource, err = updateDatasource(aPackage.datasource, updateConfigTemplateParameters{
 			moduleName:  moduleName,
 			moduleTitle: moduleTitle,
 			packageType: beatType,
@@ -223,7 +223,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		if err != nil {
 			return err
 		}
-		manifest.Datasources = aPackage.datasource.toMetadataDatasources()
+		manifest.Datasources = aPackage.datasource.toMetadataConfigTemplates()
 
 		// kibana
 		kibana, err := createKibanaContent(r.kibanaMigrator, modulePath, moduleName, datasets.names())

@@ -12,21 +12,21 @@ import (
 	"github.com/elastic/package-registry/util"
 )
 
-type datasourceContent struct {
+type configTemplateContent struct {
 	moduleName  string
 	moduleTitle string
 
-	inputs map[string]datasourceInput // map[inputType]..
+	inputs map[string]configTemplateInput // map[inputType]..
 }
 
-type datasourceInput struct {
+type configTemplateInput struct {
 	datasetNames []string
 	packageType  string
 	inputType    string
 	vars         []util.Variable
 }
 
-func (ds datasourceContent) toMetadataDatasources() []util.Datasource {
+func (ds configTemplateContent) toMetadataConfigTemplates() []util.Datasource {
 	var inputTypes []string
 	var packageTypes []string
 	for k, input := range ds.inputs {
@@ -69,7 +69,7 @@ func (ds datasourceContent) toMetadataDatasources() []util.Datasource {
 	}
 }
 
-type updateDatasourcesParameters struct {
+type updateConfigTemplateParameters struct {
 	moduleName  string
 	moduleTitle string
 	packageType string
@@ -78,12 +78,12 @@ type updateDatasourcesParameters struct {
 	inputVars map[string][]util.Variable
 }
 
-func updateDatasource(dsc datasourceContent, params updateDatasourcesParameters) (datasourceContent, error) {
+func updateDatasource(dsc configTemplateContent, params updateConfigTemplateParameters) (configTemplateContent, error) {
 	dsc.moduleName = params.moduleName
 	dsc.moduleTitle = params.moduleTitle
 
 	if dsc.inputs == nil {
-		dsc.inputs = map[string]datasourceInput{}
+		dsc.inputs = map[string]configTemplateInput{}
 	}
 
 	for _, dataset := range params.datasets {
@@ -92,7 +92,7 @@ func updateDatasource(dsc datasourceContent, params updateDatasourcesParameters)
 
 			v, ok := dsc.inputs[inputType]
 			if !ok {
-				v = datasourceInput{
+				v = configTemplateInput{
 					packageType: params.packageType,
 					inputType:   inputType,
 					vars:        params.inputVars[inputType],
