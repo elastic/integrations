@@ -407,3 +407,17 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    Before pushing commits to the repository, verify if the change complete with `mage check`. This command target is
    used by the CI while validating your code changes.
+
+#### Fields
+
+1. Remove empty fields files.
+
+   If you notice that fields file (e.g. `package-fields.yml`) doesn't contain any field definitions or it defines root only,
+   feel free to remove it.
+
+   Bad candidate: 
+   ```yaml
+- name: mypackage.mydataset
+  type: group
+  release: experimental
+```
