@@ -14,7 +14,7 @@ Explain here the changes you made on the PR.
 
 ## Checklist
 
-- [ ] I have reviewed [tips for building integrations](https://github.com/elastic/integrations/blob/tips-for-devs/CONTRIBUTING.md#tips-for-building-integrations) and this pull request is aligned with them.
+- [ ] I have reviewed [tips for building integrations](https://github.com/elastic/integrations/blob/master/CONTRIBUTING.md#tips-for-building-integrations) and this pull request is aligned with them.
 - [ ] I have verified that all datasets collect metrics or logs.
 
 ## Author's Checklist
