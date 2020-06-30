@@ -57,7 +57,6 @@ Access logs collects the nginx access logs.
 | user_agent.version | Version of the user agent. | keyword |
 
 
-
 ### Error Logs
 
 Error logs collects the nginx error logs.
@@ -76,7 +75,6 @@ Error logs collects the nginx error logs.
 | nginx.error.connection_id | Connection identifier. | long |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
-
 
 
 ### Ingress Controller Logs
@@ -120,7 +118,6 @@ Error logs collects the ingress controller logs.
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-
 
 
 ## Metrics
@@ -181,7 +178,6 @@ An example event for `stubstatus` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -200,5 +196,4 @@ An example event for `stubstatus` looks as following:
 | nginx.stubstatus.requests | The total number of client requests. | long |
 | nginx.stubstatus.waiting | The current number of idle client connections waiting for a request. | long |
 | nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long |
-
 

@@ -34,7 +34,7 @@ func renderSampleEvent(options generateOptions, packageName, datasetName string)
 		stripDatasetFolderSuffix(datasetName)))
 	builder.WriteString("```$json")
 	builder.Write(formatted)
-	builder.WriteString("\n```\n")
+	builder.WriteString("\n```")
 	return builder.String(), nil
 }
 
