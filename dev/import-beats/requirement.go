@@ -17,6 +17,8 @@ import (
 var zeroVersion = semver.MustParse("0.0.0")
 
 func createRequirement(kibanaContent kibanaContent, datasetContent []datasetContent) (util.Requirement, error) {
+	// TODO: Update requirement
+	// Proposal: Have ^7.9 as default instead of reading it from module?
 	kibanaRequirement, err := findRequiredKibanaVersion(kibanaContent)
 	if err != nil {
 		return util.Requirement{}, errors.Wrapf(err, "finding required Kibana version failed")
