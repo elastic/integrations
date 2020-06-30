@@ -49,6 +49,7 @@ The Windows `perfmon` dataset provides performance counter values.
 | dataset.type | Dataset type. | constant_keyword |
 | windows.perfmon.instance | Instance value. | keyword |
 | windows.perfmon.metrics.*.* | Metric values returned. | object |
+| windows.perfmon.object | Object value. | keyword |
 
 
 
