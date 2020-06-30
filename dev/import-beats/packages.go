@@ -223,7 +223,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		if err != nil {
 			return err
 		}
-		manifest.Datasources = aPackage.datasource.toMetadataConfigTemplates()
+		manifest.ConfigTemplates = aPackage.datasource.toMetadataConfigTemplates()
 
 		// kibana
 		kibana, err := createKibanaContent(r.kibanaMigrator, modulePath, moduleName, datasets.names())
