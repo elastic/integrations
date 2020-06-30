@@ -32,7 +32,6 @@ The `log` dataset collects and parses logs from Kafka servers.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 
 
-
 ## Metrics
 
 ### broker
@@ -41,7 +40,8 @@ The `broker` dataset collects JMX metrics from Kafka brokers using Jolokia.
 
 An example event for `broker` looks as following:
 
-```$json{
+```$json
+{
   "@timestamp": "2020-05-15T15:12:12.270Z",
   "agent": {
     "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
@@ -86,7 +86,6 @@ An example event for `broker` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -125,12 +124,12 @@ An example event for `broker` looks as following:
 | kafka.topic.name | Topic name | keyword |
 
 
-
 ### consumergroup
 
 An example event for `consumergroup` looks as following:
 
-```$json{
+```$json
+{
   "@timestamp": "2020-05-15T15:18:13.919Z",
   "agent": {
     "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
@@ -196,7 +195,6 @@ An example event for `consumergroup` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -226,12 +224,12 @@ An example event for `consumergroup` looks as following:
 | kafka.topic.name | Topic name | keyword |
 
 
-
 ### partition
 
 An example event for `partition` looks as following:
 
-```$json{
+```$json
+{
   "@timestamp": "2020-05-15T15:19:44.240Z",
   "agent": {
     "ephemeral_id": "178ff0e9-e3dd-4bdf-8e3d-8f67a6bd72ef",
@@ -296,7 +294,6 @@ An example event for `partition` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -325,4 +322,3 @@ An example event for `partition` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
-

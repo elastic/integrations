@@ -69,7 +69,6 @@ events for the account. If user creates a trail, it delivers those events as log
 | user_agent.original | Unparsed user_agent string. | keyword |
 
 
-
 ### cloudwatch
 
 The `cloudwatch` dataset collects CloudWatch logs. Users can use Amazon 
@@ -86,7 +85,6 @@ setup already.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-
 
 
 ### ec2
@@ -106,7 +104,6 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | process.name | Process name. | keyword |
-
 
 
 ### elb
@@ -183,7 +180,6 @@ For network load balancer, please follow [enable access log for network load bal
 | user_agent.original | Unparsed user_agent string. | keyword |
 
 
-
 ### s3access
 
 The `s3access` dataset collects server access logs from AWS S3. Server access 
@@ -258,7 +254,6 @@ for sending server access logs to S3 bucket.
 | user_agent.version | Version of the user agent. | keyword |
 
 
-
 ### vpcflow
 
 **Exported fields**
@@ -321,14 +316,14 @@ for sending server access logs to S3 bucket.
 | source.port | Port of the source. | long |
 
 
-
 ## Metrics
 
 ### billing
 
 An example event for `billing` looks as following:
 
-```$json{
+```$json
+{
   "_id": "IMxJXHIBpGMSUzkZo-s0",
   "_index": "metrics-aws.billing-default-000001",
   "_score": null,
@@ -397,7 +392,6 @@ An example event for `billing` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -420,12 +414,12 @@ An example event for `billing` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### cloudwatch
 
 An example event for `cloudwatch` looks as following:
 
-```$json{
+```$json
+{
   "_id": "-sxJXHIBpGMSUzkZxex8",
   "_index": "metrics-aws.cloudwatch_metrics-default-000001",
   "_score": null,
@@ -499,7 +493,6 @@ An example event for `cloudwatch` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -522,12 +515,12 @@ An example event for `cloudwatch` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### dynamodb
 
 An example event for `dynamodb` looks as following:
 
-```$json{
+```$json
+{
   "_id": "YMxJXHIBpGMSUzkZzO0_",
   "_index": "metrics-aws.dynamodb-default-000001",
   "_score": null,
@@ -607,7 +600,6 @@ An example event for `dynamodb` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -656,12 +648,12 @@ An example event for `dynamodb` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### ebs
 
 An example event for `ebs` looks as following:
 
-```$json{
+```$json
+{
   "_id": "_89uXHIBpGMSUzkZoRoL",
   "_index": "metrics-aws.ebs-default-000001",
   "_score": null,
@@ -753,7 +745,6 @@ An example event for `ebs` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -786,12 +777,12 @@ An example event for `ebs` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### ec2
 
 An example event for `ec2` looks as following:
 
-```$json{
+```$json
+{
   "_id": "b89uXHIBpGMSUzkZHxPP",
   "_index": "metrics-aws.ec2_metrics-default-000001",
   "_score": null,
@@ -927,7 +918,6 @@ An example event for `ec2` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -983,12 +973,12 @@ An example event for `ec2` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### elb
 
 An example event for `elb` looks as following:
 
-```$json{
+```$json
+{
   "_id": "i89vXHIBpGMSUzkZuSyO",
   "_index": "metrics-aws.elb_metrics-default-000001",
   "_score": null,
@@ -1077,7 +1067,6 @@ An example event for `elb` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1152,12 +1141,12 @@ An example event for `elb` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### lambda
 
 An example event for `lambda` looks as following:
 
-```$json{
+```$json
+{
   "_id": "YMxJXHIBpGMSUzkZzO0_",
   "_index": "metrics-aws.lambda-default-000001",
   "_score": null,
@@ -1236,7 +1225,6 @@ An example event for `lambda` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1271,12 +1259,12 @@ An example event for `lambda` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### natgateway
 
 An example event for `natgateway` looks as following:
 
-```$json{
+```$json
+{
   "_id": "Ds9vXHIBpGMSUzkZmyod",
   "_index": "metrics-aws.natgateway-default-000001",
   "_score": null,
@@ -1386,7 +1374,6 @@ An example event for `natgateway` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1422,12 +1409,12 @@ An example event for `natgateway` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### rds
 
 An example event for `rds` looks as following:
 
-```$json{
+```$json
+{
   "_id": "k89vXHIBpGMSUzkZuSyO",
   "_index": "metrics-aws.rds-default-000001",
   "_score": null,
@@ -1542,7 +1529,6 @@ An example event for `rds` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1638,12 +1624,12 @@ An example event for `rds` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### s3_daily_storage
 
 An example event for `s3_daily_storage` looks as following:
 
-```$json{
+```$json
+{
   "_id": "Ds9vXHIBpGMSUzkZmyod",
   "_index": "metrics-aws.s3_daily_storage-default-000001",
   "_score": null,
@@ -1717,7 +1703,6 @@ An example event for `s3_daily_storage` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1741,12 +1726,12 @@ An example event for `s3_daily_storage` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### s3_request
 
 An example event for `s3_request` looks as following:
 
-```$json{
+```$json
+{
   "_id": "Ds9vXHIBpGMSUzkZmyod",
   "_index": "metrics-aws.s3_request-default-000001",
   "_score": null,
@@ -1833,7 +1818,6 @@ An example event for `s3_request` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1871,12 +1855,12 @@ An example event for `s3_request` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### sns
 
 An example event for `sns` looks as following:
 
-```$json{
+```$json
+{
   "_id": "Ds9vXHIBpGMSUzkZmyod",
   "_index": "metrics-aws.sns-default-000001",
   "_score": null,
@@ -1959,7 +1943,6 @@ An example event for `sns` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1992,12 +1975,12 @@ An example event for `sns` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### sqs
 
 An example event for `sqs` looks as following:
 
-```$json{
+```$json
+{
   "_id": "Ds9vXHIBpGMSUzkZmyod",
   "_index": "metrics-aws.sqs-default-000001",
   "_score": null,
@@ -2076,7 +2059,6 @@ An example event for `sqs` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -2108,12 +2090,12 @@ An example event for `sqs` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### transitgateway
 
 An example event for `transitgateway` looks as following:
 
-```$json{
+```$json
+{
   "_id": "WNToXHIBpGMSUzkZaeVh",
   "_index": "metrics-aws.transitgateway-default-000001",
   "_score": null,
@@ -2202,7 +2184,6 @@ An example event for `transitgateway` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -2230,12 +2211,12 @@ An example event for `transitgateway` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### usage
 
 An example event for `usage` looks as following:
 
-```$json{
+```$json
+{
   "_id": "YM9vXHIBpGMSUzkZiSlC",
   "_index": "metrics-aws.usage-default-000001",
   "_score": null,
@@ -2312,7 +2293,6 @@ An example event for `usage` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -2336,12 +2316,12 @@ An example event for `usage` looks as following:
 | dataset.type | Dataset type. | constant_keyword |
 
 
-
 ### vpn
 
 An example event for `vpn` looks as following:
 
-```$json{
+```$json
+{
   "_id": "Ds9vXHIBpGMSUzkZmyod",
   "_index": "metrics-aws.vpn-default-000001",
   "_score": null,
@@ -2418,7 +2398,6 @@ An example event for `vpn` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -2441,5 +2420,4 @@ An example event for `vpn` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-
 
