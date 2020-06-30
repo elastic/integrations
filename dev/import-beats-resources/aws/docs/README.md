@@ -31,7 +31,7 @@ from log groups to Amazon S3 bucket which has SQS notification setup already.
 With this dataset, EC2 logs will be parsed into fields like  `ip_address`
 and `process.name`. For logs from other services, please use `cloudwatch` dataset.
 
-{{fields "ec2-logs"}}
+{{fields "ec2_logs"}}
 
 ### elb
 
@@ -66,181 +66,100 @@ for sending server access logs to S3 bucket.
 
 {{fields "vpcflow"}}
 
-
 ## Metrics
 
 ### billing
 
-An example event for `billing` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "billing"}}
 
 {{fields "billing"}}
 
 ### cloudwatch
 
-An example event for `cloudwatch` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "cloudwatch_metrics"}}
 
 {{fields "cloudwatch_metrics"}}
 
 ### dynamodb
 
-An example event for `dynamodb` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "dynamodb"}}
 
 {{fields "dynamodb"}}
 
 ### ebs
 
-An example event for `ebs` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "ebs"}}
 
 {{fields "ebs"}}
 
 ### ec2
 
-An example event for `ec2` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "ec2_metrics"}}
 
 {{fields "ec2_metrics"}}
 
 ### elb
 
-An example event for `elb` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "elb_metrics"}}
 
 {{fields "elb_metrics"}}
 
 ### lambda
 
-An example event for `lambda` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "lambda"}}
 
 {{fields "lambda"}}
 
 ### natgateway
 
-An example event for `natgateway` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "natgateway"}}
 
 {{fields "natgateway"}}
 
 ### rds
 
-An example event for `rds` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "rds"}}
 
 {{fields "rds"}}
 
 ### s3_daily_storage
 
-An example event for `s3_daily_storage` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "s3_daily_storage"}}
 
 {{fields "s3_daily_storage"}}
 
 ### s3_request
 
-An example event for `s3_request` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "s3_request"}}
 
 {{fields "s3_request"}}
 
 ### sns
 
-An example event for `sns` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "sns"}}
 
 {{fields "sns"}}
 
 ### sqs
 
-An example event for `sqs` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "sqs"}}
 
 {{fields "sqs"}}
 
 ### transitgateway
 
-An example event for `transitgateway` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "transitgateway"}}
 
 {{fields "transitgateway"}}
 
 ### usage
 
-An example event for `usage` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "usage"}}
 
 {{fields "usage"}}
 
 ### vpn
 
-An example event for `vpn` looks as following:
-
-```$json
-```
-
-The fields reported are:
+{{event "vpn"}}
 
 {{fields "vpn"}}

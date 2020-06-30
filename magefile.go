@@ -258,10 +258,24 @@ func UpdatePackageStorage() error {
 	return sh.Run("go", args...)
 }
 
+func GenerateDocs() error {
+	args := []string{"run", "./dev/generate-docs/"}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
 func Check() error {
 	Format()
 
 	err := Build()
+	if err != nil {
+		return err
+	}
+
+	err = GenerateDocs()
 	if err != nil {
 		return err
 	}

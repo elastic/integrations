@@ -20,7 +20,7 @@ type datasetContent struct {
 	name     string
 	beatType string
 
-	manifest util.DataSet
+	manifest util.Dataset
 
 	agent         agentContent
 	elasticsearch elasticsearchContent
@@ -94,7 +94,7 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 		if len(ecsFields) > 0 {
 			fieldsFiles["ecs.yml"] = ecsFields
 		}
-		if len(moduleFields) > 0 {
+		if len(moduleFields) > 0 && len(moduleFields[0].Fields) > 0 {
 			fieldsFiles["package-fields.yml"] = moduleFields
 		}
 		if len(datasetFields) > 0 {
@@ -119,7 +119,7 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 		}
 
 		// manifest
-		manifest := util.DataSet{
+		manifest := util.Dataset{
 			Title:   fmt.Sprintf("%s %s %s", moduleTitle, datasetName, beatType),
 			Release: "experimental",
 			Type:    beatType,
