@@ -212,7 +212,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		}
 		aPackage.addDatasets(datasets)
 
-		// datasources
+		// configTemplates
 		aPackage.configTemplate, err = updateConfigTemplate(aPackage.configTemplate, updateConfigTemplateParameters{
 			moduleName:  moduleName,
 			moduleTitle: moduleTitle,
