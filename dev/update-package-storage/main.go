@@ -40,8 +40,8 @@ func main() {
 	}
 
 	err = fetchUpstream(err, options)
-	err = checkoutMasterBranch(err, options)
-	err = rebaseUpstreamMaster(err, options)
+	err = checkoutProductionBranch(err, options)
+	err = rebaseUpstreamProduction(err, options)
 	packageNames, err := listPackages(err, options)
 	err = reviewPackages(err, options, packageNames, handlePackageChanges)
 	if err != nil {
@@ -55,7 +55,7 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	}
 
 	packageVersion, err := detectGreatestBuiltPackageVersion(err, options, packageName)
-	err = checkoutMasterBranch(err, options)
+	err = checkoutProductionBranch(err, options)
 	released, err := checkIfPackageReleased(err, options, packageName, packageVersion)
 	if released {
 		return nil
