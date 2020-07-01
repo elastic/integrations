@@ -24,14 +24,14 @@ func checkoutMasterBranch(err error, options updateOptions) error {
 	if err != nil {
 		return err
 	}
-	return runGitCommand(options, "checkout", "master")
+	return runGitCommand(options, "checkout", "production")
 }
 
 func rebaseUpstreamMaster(err error, options updateOptions) error {
 	if err != nil {
 		return err
 	}
-	return runGitCommand(options, "rebase", "upstream/master")
+	return runGitCommand(options, "rebase", "upstream/production")
 }
 
 func addToIndex(err error, options updateOptions, packageName, packageVersion string) error {
