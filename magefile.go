@@ -61,7 +61,8 @@ func Build() error {
 	if err != nil {
 		return err
 	}
-	return nil
+
+	return buildImportBeats()
 }
 
 func prepareBuildDirectory() error {
@@ -229,6 +230,14 @@ func dryRunPackageRegistry() error {
 	return nil
 }
 
+func buildImportBeats() error {
+	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/import-beats")
+	if err != nil {
+		return errors.Wrap(err, "building import-beats failed")
+	}
+	return nil
+}
+
 func ImportBeats() error {
 	args := []string{"run", "./dev/import-beats/"}
 	if os.Getenv("SKIP_KIBANA") == "true" {
@@ -275,11 +284,10 @@ func Check() error {
 		return err
 	}
 
-	// TODO: Enable GenerateDocs in "Check" when all integrations are passing.
-	/*err = GenerateDocs()
+	err = GenerateDocs()
 	if err != nil {
 		return err
-	}*/
+	}
 
 	err = Vendor()
 	if err != nil {
