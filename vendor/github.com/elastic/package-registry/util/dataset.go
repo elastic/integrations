@@ -27,8 +27,6 @@ const (
 var validTypes = map[string]string{
 	"logs":    "Logs",
 	"metrics": "Metrics",
-	// TODO: Remove as soon as endpoint package does not use it anymore
-	"events": "Events",
 }
 
 type Dataset struct {
@@ -36,11 +34,12 @@ type Dataset struct {
 	Type string `config:"type" json:"type" validate:"required"`
 	Name string `config:"name" json:"name,omitempty" yaml:"name,omitempty"`
 
-	Title          string   `config:"title" json:"title" validate:"required"`
-	Release        string   `config:"release" json:"release"`
-	IngestPipeline string   `config:"ingest_pipeline,omitempty" config:"ingest_pipeline" json:"ingest_pipeline,omitempty" yaml:"ingest_pipeline,omitempty"`
-	Streams        []Stream `config:"streams" json:"streams,omitempty" yaml:"streams,omitempty" `
-	Package        string   `json:"package,omitempty" yaml:"package,omitempty"`
+	Title          string         `config:"title" json:"title" validate:"required"`
+	Release        string         `config:"release" json:"release"`
+	IngestPipeline string         `config:"ingest_pipeline,omitempty" config:"ingest_pipeline" json:"ingest_pipeline,omitempty" yaml:"ingest_pipeline,omitempty"`
+	Streams        []Stream       `config:"streams" json:"streams,omitempty" yaml:"streams,omitempty" `
+	Package        string         `json:"package,omitempty" yaml:"package,omitempty"`
+	Elasticsearch  *Elasticsearch `config:"elasticsearch,omitempty" json:"elasticsearch,omitempty" yaml:"elasticsearch,omitempty"`
 
 	// Generated fields
 	Path string `json:"path,omitempty" yaml:"path,omitempty"`
@@ -79,6 +78,11 @@ type Variable struct {
 	Default     interface{} `config:"default" json:"default,omitempty" yaml:"default,omitempty"`
 }
 
+type Elasticsearch struct {
+	IndexTemplateSettings map[string]interface{} `config:"index_template.settings" json:"index_template.settings,omitempty" yaml:"index_template.settings,omitempty"`
+	IndexTemplateMappings map[string]interface{} `config:"index_template.mappings" json:"index_template.mappings,omitempty" yaml:"index_template.mappings,omitempty"`
+}
+
 type fieldEntry struct {
 	name  string
 	aType string
@@ -106,7 +110,7 @@ func NewDataset(basePath string, p *Package) (*Dataset, error) {
 	}
 
 	// go-ucfg automatically calls the `Validate` method on the Dataset object here
-	err = manifest.Unpack(d)
+	err = manifest.Unpack(d, ucfg.PathSep("."))
 	if err != nil {
 		return nil, errors.Wrapf(err, "error building dataset (path: %s) in package: %s", datasetPath, p.Name)
 	}
