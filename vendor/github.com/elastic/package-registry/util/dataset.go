@@ -21,7 +21,11 @@ import (
 )
 
 const (
-	DirIngestPipeline = "ingest-pipeline"
+	DirIngestPipeline = "ingest_pipeline"
+
+	DefaultPipelineName     = "default"
+	DefaultPipelineNameJSON = "default.json"
+	DefaultPipelineNameYAML = "default.yml"
 )
 
 var validTypes = map[string]string{
@@ -34,8 +38,10 @@ type Dataset struct {
 	Type string `config:"type" json:"type" validate:"required"`
 	Name string `config:"name" json:"name,omitempty" yaml:"name,omitempty"`
 
-	Title          string         `config:"title" json:"title" validate:"required"`
-	Release        string         `config:"release" json:"release"`
+	Title   string `config:"title" json:"title" validate:"required"`
+	Release string `config:"release" json:"release"`
+
+	// Deprecated: Replaced by elasticsearch.ingest_pipeline.name
 	IngestPipeline string         `config:"ingest_pipeline,omitempty" config:"ingest_pipeline" json:"ingest_pipeline,omitempty" yaml:"ingest_pipeline,omitempty"`
 	Streams        []Stream       `config:"streams" json:"streams,omitempty" yaml:"streams,omitempty" `
 	Package        string         `json:"package,omitempty" yaml:"package,omitempty"`
@@ -81,6 +87,7 @@ type Variable struct {
 type Elasticsearch struct {
 	IndexTemplateSettings map[string]interface{} `config:"index_template.settings" json:"index_template.settings,omitempty" yaml:"index_template.settings,omitempty"`
 	IndexTemplateMappings map[string]interface{} `config:"index_template.mappings" json:"index_template.mappings,omitempty" yaml:"index_template.mappings,omitempty"`
+	IngestPipelineName    string                 `config:"ingest_pipeline.name,omitempty" json:"ingest_pipeline.name,omitempty" yaml:"ingest_pipeline.name,omitempty"`
 }
 
 type fieldEntry struct {
@@ -157,11 +164,22 @@ func (d *Dataset) Validate() error {
 		return fmt.Errorf("type is not valid: %s", d.Type)
 	}
 
-	if d.IngestPipeline == "" {
+	if d.Elasticsearch != nil && d.Elasticsearch.IngestPipelineName == "" {
 		// Check that no ingest pipeline exists in the directory except default
 		for _, path := range paths {
-			if filepath.Base(path) == "default.json" || filepath.Base(path) == "default.yml" {
-				d.IngestPipeline = "default"
+			if filepath.Base(path) == DefaultPipelineNameJSON || filepath.Base(path) == DefaultPipelineNameYAML {
+				d.Elasticsearch.IngestPipelineName = DefaultPipelineName
+				// TODO: remove because of legacy
+				d.IngestPipeline = DefaultPipelineName
+				break
+			}
+		}
+		// TODO: Remove, only here for legacy
+	} else if d.IngestPipeline == "" {
+		// Check that no ingest pipeline exists in the directory except default
+		for _, path := range paths {
+			if filepath.Base(path) == DefaultPipelineNameJSON || filepath.Base(path) == DefaultPipelineNameYAML {
+				d.IngestPipeline = DefaultPipelineName
 				break
 			}
 		}
