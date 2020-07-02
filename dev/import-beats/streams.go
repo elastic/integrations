@@ -92,7 +92,7 @@ func createLogStreams(modulePath, moduleTitle, datasetName string) ([]util.Strea
 		for _, inputType := range root.inputTypes() {
 			aType := inputType
 			if inputType == "log" {
-				aType = "logs"
+				aType = "logfile"
 			}
 			targetFileName := inputType + ".yml.hbs"
 

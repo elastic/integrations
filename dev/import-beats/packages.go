@@ -137,7 +137,6 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 
 		aPackage := r.packages[moduleName]
 		manifest := aPackage.manifest
-		manifest.Categories = append(manifest.Categories, beatType)
 
 		// fields
 		moduleFields, maybeTitle, err := loadModuleFields(modulePath)
