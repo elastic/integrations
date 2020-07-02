@@ -374,6 +374,10 @@ on the business or technical requirements for the entire platform (Elastic Packa
      kibana.version: '^7.9.0'
    ```
 
+5. Set the proper package owner (either Github team or personal account)
+
+   Good candidates for a team: `elastic/integrations-platforms`, `elastic/integrations-services`
+
 ### All integrations
 
 #### Code reviewers
