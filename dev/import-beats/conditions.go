@@ -16,20 +16,20 @@ import (
 
 var zeroVersion = semver.MustParse("0.0.0")
 
-func createRequirement(kibanaContent kibanaContent, datasetContent []datasetContent) (util.Requirement, error) {
+func createConditions(kibanaContent kibanaContent, datasetContent []datasetContent) (*util.Conditions, error) {
 	kibanaRequirement, err := findRequiredKibanaVersion(kibanaContent)
 	if err != nil {
-		return util.Requirement{}, errors.Wrapf(err, "finding required Kibana version failed")
+		return nil, errors.Wrapf(err, "finding required Kibana version failed")
 	}
-	return util.Requirement{
-		Kibana: kibanaRequirement,
+	return &util.Conditions{
+		KibanaVersion: kibanaRequirement,
 	}, nil
 }
 
-func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequirement, error) {
+func findRequiredKibanaVersion(kibanaContent kibanaContent) (string, error) {
 	dashboards, ok := kibanaContent.files["dashboard"]
 	if !ok {
-		return util.ProductRequirement{}, nil // no dashboards available, no version requirement
+		return "", nil // no dashboards available, no version requirement
 	}
 
 	currentVersion := zeroVersion
@@ -38,7 +38,7 @@ func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequire
 		var dashboard mapStr
 		err := json.Unmarshal(dashboardFile, &dashboard)
 		if err != nil {
-			return util.ProductRequirement{}, errors.Wrap(err, "unmarshalling dashboard filed")
+			return "", errors.Wrap(err, "unmarshalling dashboard filed")
 		}
 
 		panels, err := dashboard.getValue("attributes.panelsJSON")
@@ -46,7 +46,7 @@ func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequire
 			continue // panelsJSON is missing, skip this dashboard
 		}
 		if err != nil {
-			return util.ProductRequirement{}, errors.Wrap(err, "retrieving key 'attributes.panelsJSON' failed")
+			return "", errors.Wrap(err, "retrieving key 'attributes.panelsJSON' failed")
 		}
 
 		panelsValue := panels.([]interface{})
@@ -57,7 +57,7 @@ func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequire
 		for _, panel := range panelsValue {
 			panelValue, err := toMapStr(panel)
 			if err != nil {
-				return util.ProductRequirement{}, errors.Wrap(err, "converting to mapstr failed")
+				return "", errors.Wrap(err, "converting to mapstr failed")
 			}
 
 			version, err := panelValue.getValue("version")
@@ -65,12 +65,12 @@ func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequire
 				continue // no version tag, skip this panel
 			}
 			if err != nil {
-				return util.ProductRequirement{}, errors.Wrap(err, "retrieving key 'version' failed")
+				return "", errors.Wrap(err, "retrieving key 'version' failed")
 			}
 			versionValue := version.(string)
 			parsed, err := semver.Parse(versionValue)
 			if err != nil {
-				return util.ProductRequirement{}, errors.Wrapf(err, "parsing version failed (value: %s)", versionValue)
+				return "", errors.Wrapf(err, "parsing version failed (value: %s)", versionValue)
 			}
 
 			if currentVersion.LT(parsed) {
@@ -80,10 +80,7 @@ func findRequiredKibanaVersion(kibanaContent kibanaContent) (util.ProductRequire
 	}
 
 	if currentVersion.EQ(zeroVersion) {
-		return util.ProductRequirement{}, nil // no version requirement found, even if all files were visited.
+		return "", nil // no version requirement found, even if all files were visited.
 	}
-
-	return util.ProductRequirement{
-		Versions: fmt.Sprintf("~%s", currentVersion),
-	}, nil
+	return fmt.Sprintf("~%s", currentVersion), nil
 }

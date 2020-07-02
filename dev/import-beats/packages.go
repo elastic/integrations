@@ -137,7 +137,6 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 
 		aPackage := r.packages[moduleName]
 		manifest := aPackage.manifest
-		manifest.Categories = append(manifest.Categories, beatType)
 
 		// fields
 		moduleFields, maybeTitle, err := loadModuleFields(modulePath)
@@ -231,7 +230,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 			return err
 		}
 		aPackage.addKibanaContent(kibana)
-		manifest.Requirement, err = createRequirement(aPackage.kibana, aPackage.datasets)
+		manifest.Conditions, err = createConditions(aPackage.kibana, aPackage.datasets)
 		if err != nil {
 			return err
 		}
