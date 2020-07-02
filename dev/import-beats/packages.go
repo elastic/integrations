@@ -43,6 +43,9 @@ func newPackageContent(name string) packageContent {
 			},
 			License: "basic",
 			Release: "experimental",
+			Owner: &util.Owner{
+				Github: "elastic/integrations",
+			},
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
