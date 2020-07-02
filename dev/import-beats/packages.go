@@ -230,10 +230,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 			return err
 		}
 		aPackage.addKibanaContent(kibana)
-		manifest.Conditions, err = createConditions(aPackage.kibana, aPackage.datasets)
-		if err != nil {
-			return err
-		}
+		manifest.Conditions = createConditions()
 
 		aPackage.manifest = manifest
 		r.packages[moduleDir.Name()] = aPackage
