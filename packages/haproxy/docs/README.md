@@ -200,60 +200,60 @@ The fields reported are:
 | haproxy.info.busy_polling | Number of busy polling. | long |
 | haproxy.info.bytes.out.rate | Average bytes output rate. | long |
 | haproxy.info.bytes.out.total | Number of bytes sent out. | long |
-| haproxy.info.compress.bps.in |  | long |
-| haproxy.info.compress.bps.out |  | long |
-| haproxy.info.compress.bps.rate_limit |  | long |
+| haproxy.info.compress.bps.in | Incoming compressed data in bits per second. | long |
+| haproxy.info.compress.bps.out | Outgoing compressed data in bits per second. | long |
+| haproxy.info.compress.bps.rate_limit | Rate limit of compressed data in bits per second. | long |
 | haproxy.info.connection.current | Current connections. | long |
 | haproxy.info.connection.hard_max |  | long |
 | haproxy.info.connection.max | Maximum connections. | long |
-| haproxy.info.connection.rate.limit |  | long |
-| haproxy.info.connection.rate.max |  | long |
-| haproxy.info.connection.rate.value |  | long |
+| haproxy.info.connection.rate.limit | Rate limit of connections. | long |
+| haproxy.info.connection.rate.max | Maximum rate of connections. | long |
+| haproxy.info.connection.rate.value | Number of connections in the last second. | long |
 | haproxy.info.connection.ssl.current | Current SSL connections. | long |
 | haproxy.info.connection.ssl.max | Maximum SSL connections. | long |
 | haproxy.info.connection.ssl.total | Total SSL connections. | long |
 | haproxy.info.connection.total | Total connections. | long |
 | haproxy.info.dropped_logs | Number of dropped logs. | long |
 | haproxy.info.failed_resolutions | Number of failed resolutions. | long |
-| haproxy.info.idle.pct |  | scaled_float |
+| haproxy.info.idle.pct | Percentage of idle time. | scaled_float |
 | haproxy.info.jobs | Number of all jobs. | long |
 | haproxy.info.listeners | Number of listeners. | long |
 | haproxy.info.memory.max.bytes | Maximum amount of memory usage in bytes (the 'Memmax_MB' value converted to bytes). | long |
 | haproxy.info.peers.active | Number of active peers. | long |
 | haproxy.info.peers.connected | Number of connected peers. | long |
-| haproxy.info.pipes.free |  | integer |
-| haproxy.info.pipes.max |  | integer |
-| haproxy.info.pipes.used |  | integer |
+| haproxy.info.pipes.free | Number of free pipes. | integer |
+| haproxy.info.pipes.max | Maximum number of used pipes. | integer |
+| haproxy.info.pipes.used | Number of used pipes during kernel-based tcp splicing. | integer |
 | haproxy.info.pool.allocated | Size of the allocated pool. | long |
 | haproxy.info.pool.failed | Number of failed connections to pool members. | long |
 | haproxy.info.pool.used | Number of members used from the allocated pool. | long |
 | haproxy.info.process_num | Process number. | long |
 | haproxy.info.processes | Number of processes. | long |
-| haproxy.info.requests.max |  | long |
-| haproxy.info.requests.total |  | long |
+| haproxy.info.requests.max | Maximum number of requests. | long |
+| haproxy.info.requests.total | Total number of requests. | long |
 | haproxy.info.run_queue |  | long |
-| haproxy.info.session.rate.limit |  | integer |
-| haproxy.info.session.rate.max |  | integer |
-| haproxy.info.session.rate.value |  | integer |
-| haproxy.info.sockets.max |  | long |
-| haproxy.info.ssl.backend.key_rate.max | MaxConnRate | integer |
-| haproxy.info.ssl.backend.key_rate.value |  | integer |
-| haproxy.info.ssl.cache_misses |  | long |
-| haproxy.info.ssl.cached_lookups |  | long |
-| haproxy.info.ssl.frontend.key_rate.max |  | integer |
-| haproxy.info.ssl.frontend.key_rate.value |  | integer |
-| haproxy.info.ssl.frontend.session_reuse.pct |  | scaled_float |
-| haproxy.info.ssl.rate.limit |  | integer |
-| haproxy.info.ssl.rate.max |  | integer |
-| haproxy.info.ssl.rate.value |  | integer |
+| haproxy.info.session.rate.limit | Rate limit of sessions. | integer |
+| haproxy.info.session.rate.max | Maximum rate of sessions. | integer |
+| haproxy.info.session.rate.value | Rate of session per seconds. | integer |
+| haproxy.info.sockets.max | Maximum number of sockets. | long |
+| haproxy.info.ssl.backend.key_rate.max | Maximum key rate of SSL backend sessions. | integer |
+| haproxy.info.ssl.backend.key_rate.value | Key rate of SSL backend sessions. | integer |
+| haproxy.info.ssl.cache_misses | Number of SSL cache misses. | long |
+| haproxy.info.ssl.cached_lookups | Number of SSL cache lookups. | long |
+| haproxy.info.ssl.frontend.key_rate.max | Maximum key rate of SSL frontend. | integer |
+| haproxy.info.ssl.frontend.key_rate.value | Key rate of SSL frontend. | integer |
+| haproxy.info.ssl.frontend.session_reuse.pct | Rate of reuse of SSL frontend sessions. | scaled_float |
+| haproxy.info.ssl.rate.limit | Rate limit of SSL requests. | integer |
+| haproxy.info.ssl.rate.max | Maximum rate of SSL requests. | integer |
+| haproxy.info.ssl.rate.value | Rate of SSL requests. | integer |
 | haproxy.info.stopping | Number of stopping jobs. | long |
 | haproxy.info.tasks |  | long |
 | haproxy.info.threads | Number of threads. | long |
 | haproxy.info.ulimit_n | Maximum number of open files for the process. | long |
 | haproxy.info.unstoppable_jobs | Number of unstoppable jobs. | long |
 | haproxy.info.uptime.sec | Current uptime in seconds. | long |
-| haproxy.info.zlib_mem_usage.max |  | integer |
-| haproxy.info.zlib_mem_usage.value |  | integer |
+| haproxy.info.zlib_mem_usage.max | Maximum memory usage of zlib. | integer |
+| haproxy.info.zlib_mem_usage.value | Memory usage of zlib. | integer |
 | process.pid | Process id. | long |
 
 
