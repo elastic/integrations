@@ -50,12 +50,8 @@ func (ds configTemplateContent) toMetadataConfigTemplates() []util.ConfigTemplat
 	for _, packageType := range packageTypes {
 		for inputType, input := range ds.inputs {
 			if input.packageType == packageType {
-				aType := input.inputType
-				if aType == "logfile" {
-					aType = "logs"
-				}
 				inputs = append(inputs, util.Input{
-					Type:        aType,
+					Type:        input.inputType,
 					Title:       toConfigTemplateInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
 					Description: toConfigTemplateInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
 					Vars:        input.vars,
