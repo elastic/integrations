@@ -144,7 +144,7 @@ func toConfigTemplateInputTitle(moduleTitle, packageType string, datasets []stri
 	description.WriteString(" ")
 	description.WriteString(packageType)
 
-	if packageType == "logs" && inputType != "logs" {
+	if packageType == "logs" && inputType != "logfile" {
 		description.WriteString(fmt.Sprintf(" (input: %s)", inputType))
 	}
 	return description.String()
@@ -172,7 +172,7 @@ func toConfigTemplateInputDescription(moduleTitle, packageType string, datasets 
 	description.WriteString(moduleTitle)
 	description.WriteString(" instances")
 
-	if packageType == "logs" && inputType != "logs" {
+	if packageType == "logs" && inputType != "logfile" {
 		description.WriteString(fmt.Sprintf(" (input: %s)", inputType))
 	}
 	return description.String()

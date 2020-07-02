@@ -118,11 +118,16 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 			return nil, errors.Wrapf(err, "creating streams failed (datasetPath: %s)", datasetPath)
 		}
 
+		aType := beatType
+		if aType == "logs" {
+			aType = "logfile"
+		}
+
 		// manifest
 		manifest := util.Dataset{
 			Title:   fmt.Sprintf("%s %s %s", moduleTitle, datasetName, beatType),
 			Release: "experimental",
-			Type:    beatType,
+			Type:    aType,
 			Streams: streams,
 		}
 

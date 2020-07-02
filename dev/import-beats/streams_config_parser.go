@@ -92,7 +92,7 @@ func inputTypesForListNode(listNode *parse.ListNode) []string {
 }
 
 func (scp *streamConfigParsed) configForInput(inputType string) []byte {
-	if inputType == "log" {
+	if inputType == "logfile" {
 		inputType = "file"
 	}
 
@@ -293,7 +293,7 @@ func (scp *streamConfigParsed) filterVarsForInput(inputType string, vars []util.
 }
 
 func (scp *streamConfigParsed) variableNamesForInput(inputType string) []string {
-	if inputType == "log" {
+	if inputType == "logfile" {
 		inputType = "file"
 	}
 
