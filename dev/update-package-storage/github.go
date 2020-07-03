@@ -79,7 +79,7 @@ func buildPullRequestRequestBody(title, username, branchName, description string
 	requestBody := map[string]interface{}{
 		"title":                 title,
 		"head":                  fmt.Sprintf("%s:%s", username, branchName),
-		"base":                  "master",
+		"base":                  "production",
 		"body":                  description,
 		"maintainer_can_modify": true,
 	}
