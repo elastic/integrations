@@ -15,8 +15,7 @@ categories:
 - web
 release: beta
 conditions:
-  kibana:
-    versions: ~7.3.0
+  kibana.version: ^7.9.0
 screenshots:
 - src: /img/kibana-haproxy-overview.png
   title: Kibana HAProxy overview
@@ -27,12 +26,12 @@ config_templates:
   title: HAProxy logs and metrics
   description: Collect logs and metrics from HAProxy instances
   inputs:
-  - type: syslog
-    title: 'Collect HAProxy application logs over syslog'
-    description: 'Collecting application logs from HAProxy instances over syslog'
   - type: logs
     title: Collect HAProxy application logs
     description: Collecting application logs from HAProxy instances from log files
+  - type: syslog
+    title: Collect HAProxy application logs over syslog
+    description: Collecting application logs from HAProxy instances over syslog
   - type: haproxy/metrics
     vars:
     - name: hosts
@@ -43,13 +42,6 @@ config_templates:
       show_user: true
       default:
       - tcp://127.0.0.1:14567
-    - name: password
-      type: password
-      title: Password
-      multi: false
-      required: false
-      show_user: false
-      default: admin
     - name: username
       type: text
       title: Username
@@ -57,5 +49,15 @@ config_templates:
       required: false
       show_user: false
       default: admin
+    - name: password
+      type: password
+      title: Password
+      multi: false
+      required: false
+      show_user: false
+      default: admin
     title: Collect HAProxy info and stat metrics
     description: Collecting info and stat metrics from HAProxy instances
+owner:
+  github: elastic/integrations
+requirement: {}
