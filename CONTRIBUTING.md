@@ -367,6 +367,17 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/e93e801a6dfbfa6f83c8b69f6e9405603151f937/util/package.go#L27-L51
 
+4. Make sure that the version condition for kibana is set to `^7.9.0`.
+
+   ```yaml
+   conditions:
+     kibana.version: '^7.9.0'
+   ```
+
+5. Set the proper package owner (either Github team or personal account)
+
+   Good candidates for a team: `elastic/integrations-platforms`, `elastic/integrations-services`
+
 ### All integrations
 
 #### Code reviewers

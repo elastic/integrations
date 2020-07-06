@@ -43,6 +43,9 @@ func newPackageContent(name string) packageContent {
 			},
 			License: "basic",
 			Release: "experimental",
+			Owner: &util.Owner{
+				Github: "elastic/integrations",
+			},
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
@@ -230,10 +233,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 			return err
 		}
 		aPackage.addKibanaContent(kibana)
-		manifest.Conditions, err = createConditions(aPackage.kibana, aPackage.datasets)
-		if err != nil {
-			return err
-		}
+		manifest.Conditions = createConditions()
 
 		aPackage.manifest = manifest
 		r.packages[moduleDir.Name()] = aPackage
