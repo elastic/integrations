@@ -363,6 +363,21 @@ on the business or technical requirements for the entire platform (Elastic Packa
    If you working on the new integration that will be release in the next release cycle, you can tag it with `beta`.
    Otherwise, feel free to stick with the `experimental` tag.
 
+3. Select one or two categories for the integration.
+
+   The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/e93e801a6dfbfa6f83c8b69f6e9405603151f937/util/package.go#L27-L51
+
+4. Make sure that the version condition for kibana is set to `^7.9.0`.
+
+   ```yaml
+   conditions:
+     kibana.version: '^7.9.0'
+   ```
+
+5. Set the proper package owner (either Github team or personal account)
+
+   Good candidates for a team: `elastic/integrations-platforms`, `elastic/integrations-services`
+
 ### All integrations
 
 #### Code reviewers
@@ -407,3 +422,17 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    Before pushing commits to the repository, verify if the change complete with `mage check`. This command target is
    used by the CI while validating your code changes.
+
+#### Fields
+
+1. Remove empty fields files.
+
+   If you notice that fields file (e.g. `package-fields.yml`) doesn't contain any field definitions or it defines root only,
+   feel free to remove it.
+
+   Bad candidate: 
+   ```yaml
+   - name: mypackage.mydataset
+     type: group
+     release: experimental
+   ```

@@ -61,7 +61,8 @@ func Build() error {
 	if err != nil {
 		return err
 	}
-	return nil
+
+	return buildImportBeats()
 }
 
 func prepareBuildDirectory() error {
@@ -229,6 +230,14 @@ func dryRunPackageRegistry() error {
 	return nil
 }
 
+func buildImportBeats() error {
+	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/import-beats")
+	if err != nil {
+		return errors.Wrap(err, "building import-beats failed")
+	}
+	return nil
+}
+
 func ImportBeats() error {
 	args := []string{"run", "./dev/import-beats/"}
 	if os.Getenv("SKIP_KIBANA") == "true" {
@@ -258,10 +267,24 @@ func UpdatePackageStorage() error {
 	return sh.Run("go", args...)
 }
 
+func GenerateDocs() error {
+	args := []string{"run", "./dev/generate-docs/"}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
 func Check() error {
 	Format()
 
 	err := Build()
+	if err != nil {
+		return err
+	}
+
+	err = GenerateDocs()
 	if err != nil {
 		return err
 	}

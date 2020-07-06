@@ -31,27 +31,34 @@
         type: date
         description: The date and time when the temporary security credentials were
           issued.
+      - name: session_issuer
+        type: group
+        fields:
+          - name: type
+            type: keyword
+            description: >-
+              The source of the temporary security credentials, such
+              as Root, IAMUser, or Role.
+          - name: principal_id
+            type: keyword
+            description: >-
+              The internal ID of the entity that was used to get
+              credentials.
+          - name: arn
+            type: keyword
+            description: >-
+              The ARN of the source (account, IAM user, or role) that
+              was used to get temporary security credentials.
+          - name: account_id
+            type: keyword
+            description: >-
+              The account that owns the entity that was used to get
+              credentials.
     - name: invoked_by
       type: keyword
       description: The name of the AWS service that made the request, such as Amazon
         EC2 Auto Scaling or AWS Elastic Beanstalk.
-    - name: session_issuer
-      type: group
-      fields:
-      - name: type
-        type: keyword
-        description: The source of the temporary security credentials, such as Root,
-          IAMUser, or Role.
-      - name: principal_id
-        type: keyword
-        description: The internal ID of the entity that was used to get credentials.
-      - name: arn
-        type: keyword
-        description: The ARN of the source (account, IAM user, or role) that was used
-          to get temporary security credentials.
-      - name: account_id
-        type: keyword
-        description: The account that owns the entity that was used to get credentials.
+
   - name: error_code
     type: keyword
     description: The AWS service error if the request returns an error.
@@ -178,3 +185,45 @@
 - name: event.type
   type: keyword
   description: Event severity (e.g. info, error)
+- name: source.as.number
+  type: long
+  description: >-
+    Unique number allocated to the autonomous system. The autonomous
+    system number (ASN) uniquely identifies each network on the
+    Internet.
+- name: source.as.organization.name
+  type: keyword
+  ignore_above: 1024
+  multi_fields:
+    - name: text
+      type: text
+      norms: false
+      default_field: false
+  description: Organization name.
+- name: source.geo.city_name
+  type: keyword
+  ignore_above: 1024
+  description: City name.
+- name: source.geo.continent_name
+  type: keyword
+  ignore_above: 1024
+  description: Name of the continent.
+- name: source.geo.country_iso_code
+  type: keyword
+  ignore_above: 1024
+  description: Country ISO code.
+- name: source.geo.country_name
+  type: keyword
+  ignore_above: 1024
+  description: Country name.
+- name: source.geo.location
+  type: geo_point
+  description: Longitude and latitude.
+- name: source.geo.region_iso_code
+  type: keyword
+  ignore_above: 1024
+  description: Region ISO code.
+- name: source.geo.region_name
+  type: keyword
+  ignore_above: 1024
+  description: Region name.

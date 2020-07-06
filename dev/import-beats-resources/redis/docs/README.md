@@ -31,13 +31,7 @@ The `slowlog` dataset collects the Redis slow logs.
 The `info` dataset collects information and statistics from Redis by running the `INFO` command and parsing the returned
 result.
 
-An example event for `info` looks as following:
-
-```$json
-TODO
-```
-
-The fields reported are:
+{{event "info"}}
 
 {{fields "info"}}
 
@@ -54,13 +48,7 @@ Patterns are configured as a list containing these fields:
 * `limit` (optional): safeguard when using patterns with wildcards to avoid collecting too many keys (Default: 0, no limit)
 * `keyspace` (optional): Identifier of the database to use to look for the keys (Default: 0)
 
-An example event for `key` looks as following:
-
-```$json
-TODO
-```
-
-The fields reported are:
+{{event "key"}}
 
 {{fields "key"}}
 
@@ -69,12 +57,6 @@ The fields reported are:
 The `keyspace` dataset collects information about the Redis keyspaces. For each keyspace, an event is sent to
 Elasticsearch. The keyspace information is fetched from the `INFO` command.
 
-An example event for `keyspace` looks as following:
-
-```$json
-TODO
-```
-
-The fields reported are:
+{{event "keyspace"}}
 
 {{fields "keyspace"}}

@@ -23,15 +23,13 @@ import (
 
 var ignoredModules = map[string]bool{"apache2": true}
 
-var removablePackages = map[string]bool{"system": false}
-
 type packageContent struct {
-	manifest   util.Package
-	datasets   datasetContentArray
-	images     []imageContent
-	kibana     kibanaContent
-	docs       []docContent
-	datasource datasourceContent
+	manifest       util.Package
+	datasets       datasetContentArray
+	images         []imageContent
+	kibana         kibanaContent
+	docs           []docContent
+	configTemplate configTemplateContent
 }
 
 func newPackageContent(name string) packageContent {
@@ -43,19 +41,16 @@ func newPackageContent(name string) packageContent {
 				Version: "0.0.1", // TODO
 				Type:    "integration",
 			},
-			License:   "basic",
-			Removable: determineIfPackageIsRemovable(name),
-			Release:   "experimental",
+			License: "basic",
+			Release: "experimental",
+			Owner: &util.Owner{
+				Github: "elastic/integrations",
+			},
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
 		},
 	}
-}
-
-func determineIfPackageIsRemovable(name string) bool {
-	_, ok := removablePackages[name]
-	return !ok
 }
 
 func (pc *packageContent) addDatasets(ds []datasetContent) {
@@ -145,7 +140,6 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 
 		aPackage := r.packages[moduleName]
 		manifest := aPackage.manifest
-		manifest.Categories = append(manifest.Categories, beatType)
 
 		// fields
 		moduleFields, maybeTitle, err := loadModuleFields(modulePath)
@@ -220,8 +214,8 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		}
 		aPackage.addDatasets(datasets)
 
-		// datasources
-		aPackage.datasource, err = updateDatasource(aPackage.datasource, updateDatasourcesParameters{
+		// configTemplates
+		aPackage.configTemplate, err = updateConfigTemplate(aPackage.configTemplate, updateConfigTemplateParameters{
 			moduleName:  moduleName,
 			moduleTitle: moduleTitle,
 			packageType: beatType,
@@ -231,7 +225,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		if err != nil {
 			return err
 		}
-		manifest.Datasources = aPackage.datasource.toMetadataDatasources()
+		manifest.ConfigTemplates = aPackage.configTemplate.toMetadataConfigTemplates()
 
 		// kibana
 		kibana, err := createKibanaContent(r.kibanaMigrator, modulePath, moduleName, datasets.names())
@@ -239,10 +233,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 			return err
 		}
 		aPackage.addKibanaContent(kibana)
-		manifest.Requirement, err = createRequirement(aPackage.kibana, aPackage.datasets)
-		if err != nil {
-			return err
-		}
+		manifest.Conditions = createConditions()
 
 		aPackage.manifest = manifest
 		r.packages[moduleDir.Name()] = aPackage

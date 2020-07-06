@@ -6,15 +6,10 @@ license: basic
 description: Kafka Integration
 type: integration
 categories:
-- logs
-- metrics
+- message_queue
 release: beta
-removable: true
-requirement:
-  kibana:
-    versions: '>=7.3.0 <8.0.0'
-  elasticsearch:
-    versions: '>7.0.1'
+conditions:
+  kibana.version: '^7.9.0'
 screenshots:
 - src: /img/filebeat-kafka-logs-overview.png
   title: filebeat kafka logs overview
@@ -29,12 +24,12 @@ icons:
   title: logo kafka
   size: 32x32
   type: image/svg+xml
-datasources:
+config_templates:
 - name: kafka
   title: Kafka logs and metrics
   description: Collect logs and metrics from Kafka brokers
   inputs:
-  - type: logs
+  - type: logfile
     title: Collect logs from Kafka brokers
     description: Collecting Kafka log logs
   - type: kafka/metrics
@@ -65,3 +60,5 @@ datasources:
       - name: ssl.key
         type: text
         show_user: true
+owner:
+  github: elastic/integrations-services
