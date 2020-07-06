@@ -126,37 +126,7 @@ To keep only specific metrics, anchor the start and the end of the regexp of eac
 Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
 
-
-An example event for `collector` looks as following:
-
-```$json
-{
-    "@timestamp": "2019-03-01T08:05:34.853Z",
-    "event": {
-        "dataset": "prometheus.collector",
-        "duration": 115000,
-        "module": "prometheus"
-    },
-    "metricset": {
-        "name": "collector",
-        "period": 10000
-    },
-    "prometheus": {
-        "labels": {
-            "job": "prometheus",
-            "listener_name": "http"
-        },
-        "metrics": {
-            "net_conntrack_listener_conn_accepted_total": 3,
-            "net_conntrack_listener_conn_closed_total": 0
-        }
-    },
-    "service": {
-        "address": "127.0.0.1:55555",
-        "type": "prometheus"
-    }
-}
-```
+{{event "collector"}}
 
 The fields reported are:
 
@@ -221,64 +191,7 @@ remote_write:
         #insecure_skip_verify: true
 ```
 
-An example event for `remote_write` looks as following:
-
-```$json
-{
-  "_index": ".ds-metrics-prometheus.remote_write-default-000001",
-  "_id": "dJf5AHMBA2PIMpu1O4DQ",
-  "_version": 1,
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T16:46:40.018Z",
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "host": {},
-    "agent": {
-      "version": "8.0.0",
-      "ephemeral_id": "cb348102-0121-4c5b-8fcd-10ea27d25f77",
-      "id": "3bdc7670-9ced-4c70-bba9-00d7e183ae4b",
-      "name": "Christoss-MBP",
-      "type": "metricbeat"
-    },
-    "metricset": {
-      "name": "remote_write"
-    },
-    "prometheus": {
-      "metrics": {
-        "container_fs_reads_bytes_total": 1196032,
-        "container_fs_reads_total": 27
-      },
-      "labels": {
-        "instance": "cadvisor:8080",
-        "job": "cadvisor",
-        "id": "/systemreserved/acpid"
-      }
-    },
-    "service": {
-      "type": "prometheus"
-    },
-    "event": {
-      "dataset": "prometheus.remote_write",
-      "module": "prometheus"
-    },
-    "dataset": {
-      "type": "metrics",
-      "name": "prometheus.remote_write",
-      "namespace": "default"
-    }
-  },
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T16:46:40.018Z"
-    ]
-  },
-  "sort": [
-    1593449200018
-  ]
-}
-```
+{{event "remote_write"}}
 
 The fields reported are:
 
@@ -326,73 +239,7 @@ queries:
     step: 15s
 ```
 
-
-An example event for `query` looks as following:
-
-```$json
-{
-  "_index": ".ds-metrics-prometheus.query-default-000001",
-  "_id": "IlG5AHMBeyDc0b9rYc28",
-  "_version": 1,
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T15:36:54.000Z",
-    "host": {},
-    "agent": {
-      "type": "metricbeat",
-      "version": "8.0.0",
-      "ephemeral_id": "98420e91-ee6d-4883-8ad3-02fa8d47f5c1",
-      "id": "9fc3e975-6789-4738-a11a-ba7108b0a92c",
-      "name": "minikube"
-    },
-    "event": {
-      "module": "prometheus",
-      "duration": 2123733,
-      "dataset": "prometheus.query"
-    },
-    "metricset": {
-      "name": "query",
-      "period": 10000
-    },
-    "dataset": {
-      "type": "metrics",
-      "name": "prometheus.query",
-      "namespace": "default"
-    },
-    "stream": {
-      "dataset": "prometheus.query",
-      "namespace": "default",
-      "type": "metrics"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "service": {
-      "address": "localhost:9090",
-      "type": "prometheus"
-    },
-    "prometheus": {
-      "labels": {},
-      "query": {
-        "prometheus_http_requests_total_rate": 0.3818181818181818
-      }
-    }
-  },
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T15:36:54.000Z"
-    ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@prometheus.query@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1593445014000
-  ]
-}
-```
+{{event "query"}}
 
 The fields reported are:
 
