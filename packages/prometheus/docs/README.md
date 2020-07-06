@@ -130,30 +130,60 @@ An example event for `collector` looks as following:
 
 ```$json
 {
-  "@timestamp": "2019-03-01T08:05:34.853Z",
-  "event": {
-    "dataset": "prometheus.collector",
-    "duration": 115000,
-    "module": "prometheus"
-  },
-  "metricset": {
-    "name": "collector",
-    "period": 10000
-  },
-  "prometheus": {
-    "labels": {
-      "job": "prometheus",
-      "listener_name": "http"
+  "_id": "xhalI3MBp-HYgBGo7zEW",
+  "_index": ".ds-metrics-prometheus.collector-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-07-06T10:22:23.034Z",
+    "agent": {},
+    "dataset": {
+      "name": "prometheus.collector",
+      "namespace": "default",
+      "type": "metrics"
     },
-    "metrics": {
-      "net_conntrack_listener_conn_accepted_total": 3,
-      "net_conntrack_listener_conn_closed_total": 0
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "event": {
+      "dataset": "prometheus.collector",
+      "duration": 13290705,
+      "module": "prometheus"
+    },
+    "host": {},
+    "metricset": {
+      "name": "collector",
+      "period": 10000
+    },
+    "prometheus": {
+      "labels": {
+        "consumer": "ee9cb2",
+        "instance": "localhost:9090",
+        "job": "prometheus",
+        "type": "series"
+      },
+      "metrics": {
+        "prometheus_wal_watcher_records_read_total": 74
+      }
+    },
+    "service": {
+      "address": "localhost:9090",
+      "type": "prometheus"
     }
   },
-  "service": {
-    "address": "127.0.0.1:55555",
-    "type": "prometheus"
-  }
+  "_version": 1,
+  "fields": {
+    "@timestamp": [
+      "2020-07-06T10:22:23.034Z"
+    ]
+  },
+  "highlight": {
+    "event.dataset": [
+      "@kibana-highlighted-field@prometheus.collector@/kibana-highlighted-field@"
+    ]
+  },
+  "sort": [
+    1594030943034
+  ]
 }
 ```
 
