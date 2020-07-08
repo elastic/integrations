@@ -1,0 +1,141 @@
+name: okta
+title: Okta
+version: 0.0.1
+description: Okta Integration
+type: integration
+format_version: 1.0.0
+license: basic
+categories:
+- logs
+release: beta
+requirement:
+  kibana:
+    versions: ~8.0.0-SNAPSHOT
+screenshots:
+- src: /img/filebeat-okta-dashboard.png
+  title: filebeat okta dashboard
+  size: 1024x662
+  type: image/png
+datasources:
+- name: okta
+  title: Okta logs
+  description: Collect logs from Okta instances
+  inputs:
+  - type: httpjson
+    vars:
+    - name: api_key
+      type: text
+      title: Api Key
+      multi: false
+      required: true
+      show_user: true
+    - name: authentication_scheme
+      type: text
+      title: Authentication Scheme
+      multi: false
+      required: true
+      show_user: false
+      default: SSWS
+    - name: http_client_timeout
+      type: text
+      title: Http Client Timeout
+      multi: false
+      required: false
+      show_user: false
+      default: 30s
+    - name: http_method
+      type: text
+      title: Http Method
+      multi: false
+      required: false
+      show_user: false
+    - name: http_headers
+      type: text
+      title: Http Headers
+      multi: false
+      required: false
+      show_user: false
+    - name: http_request_body
+      type: text
+      title: Http Request Body
+      multi: false
+      required: false
+      show_user: false
+    - name: interval
+      type: text
+      title: Interval
+      multi: false
+      required: false
+      show_user: false
+      default: 60s
+    - name: json_objects_array
+      type: text
+      title: Json Objects Array
+      multi: false
+      required: false
+      show_user: false
+    - name: keep_original_message
+      type: bool
+      title: Keep Original Message
+      multi: false
+      required: false
+      show_user: false
+      default: true
+    - name: no_http_body
+      type: bool
+      title: No Http Body
+      multi: false
+      required: false
+      show_user: false
+      default: true
+    - name: pagination
+      type: yaml
+      title: Pagination
+      multi: false
+      required: false
+      show_user: false
+      default: |
+        header:
+          field_name: Link
+          regex_pattern: <([^>]+)>; *rel="next"(?:,|$)
+    - name: rate_limit
+      type: yaml
+      title: Rate Limit
+      multi: false
+      required: false
+      show_user: false
+      default: |
+        limit: X-Rate-Limit-Limit
+        remaining: X-Rate-Limit-Remaining
+        reset: X-Rate-Limit-Reset
+    - name: ssl
+      type: text
+      title: Ssl
+      multi: false
+      required: false
+      show_user: false
+    - name: tags
+      type: text
+      title: Tags
+      multi: true
+      required: false
+      show_user: false
+      default: []
+    - name: url
+      type: text
+      title: Url
+      multi: false
+      required: true
+      show_user: true
+    title: 'Collect Okta system logs (input: httpjson)'
+    description: 'Collecting system logs from Okta instances (input: httpjson)'
+  - type: logs
+    title: Collect Okta system logs
+    description: Collecting system logs from Okta instances
+    vars:
+    - name: paths
+      type: text
+      title: File paths
+      multi: true
+      required: true
+      show_user: true
