@@ -197,6 +197,10 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| prometheus.*.counter | Prometheus counter metric | object |
+| prometheus.*.histogram | Prometheus histogram metric | object |
+| prometheus.*.rate | Prometheus rated counter metric | object |
+| prometheus.*.value | Prometheus gauge metric | object |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
 
