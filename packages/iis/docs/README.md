@@ -15,8 +15,6 @@ The `iis` integration datasets are:
 ### webserver
 The `webserver` dataset allows users to retrieve aggregated metrics for the entire webserver.
 
-Example event:
-
 An example event for `webserver` looks as following:
 
 ```$json
@@ -128,8 +126,6 @@ The fields reported are:
 ### website
 This dataset will collect metrics of specific sites, users can configure which websites they want to monitor, else, all are considered.
 
-Example event:
-
 An example event for `website` looks as following:
 
 ```$json
@@ -197,8 +193,6 @@ The fields reported are:
 
 ### application_pool
 This dataset will collect metrics of specific application pools, users can configure which websites they want to monitor, else, all are considered.
-
-Example event:
 
 An example event for `application_pool` looks as following:
 
@@ -272,8 +266,6 @@ The IIS module has been tested with logs from version 7.5 and version 10.
 
 ### access
 This dataset will collect and parse access IIS logs.
-
-Example event:
 
 An example event for `access` looks as following:
 
@@ -410,8 +402,6 @@ The fields reported are:
 
 ### error
 This dataset will collect and parse error IIS logs.
-
-Example event:
 
 An example event for `error` looks as following:
 
