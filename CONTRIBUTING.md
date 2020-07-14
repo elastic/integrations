@@ -367,11 +367,11 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/e93e801a6dfbfa6f83c8b69f6e9405603151f937/util/package.go#L27-L51
 
-4. Make sure that the version condition for kibana is set to `^7.9.0`.
+4. Make sure that the version condition for kibana is set to `>=7.9.0`. This is necessary because Kibana `master` will always send the next major version (at the time of this writing `8.0.0`), and using `^7.9.0` will prevent a package to be shown to Kibana `master`. This is extremely inconvenient for testing and development.
 
    ```yaml
    conditions:
-     kibana.version: '^7.9.0'
+     kibana.version: '>=7.9.0'
    ```
 
 5. Set the proper package owner (either Github team or personal account)
