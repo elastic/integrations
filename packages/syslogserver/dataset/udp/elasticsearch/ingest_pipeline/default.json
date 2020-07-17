@@ -1,0 +1,60 @@
+{
+  "description": "Transform events from syslog input into ECS",
+  "processors": [
+    {
+      "rename": {
+        "field": "process.program",
+        "target_field": "process.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "syslog.priority",
+        "target_field": "log.syslog.priority",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "syslog.facility",
+        "target_field": "log.syslog.facility.code",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "syslog.facility_label",
+        "target_field": "log.syslog.facility.name",
+        "ignore_missing": true
+      }
+    },
+    {
+      "set": {
+        "field": "log.syslog.severity.code",
+        "value": "{{event.severity}}",
+        "ignore_failure": true
+      }
+    },
+    {
+      "rename": {
+        "target_field": "log.syslog.severity.name",
+        "field": "syslog.severity_label",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "field": "syslog",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "log.source.address",
+        "target_field": "source.address",
+        "ignore_missing": true
+      }
+    }
+  ]
+}
