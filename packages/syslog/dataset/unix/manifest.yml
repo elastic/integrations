@@ -1,15 +1,58 @@
 title: Syslog Unix Socket Server
 release: experimental
 type: logs
-- input: syslog
-  title: Syslog server
-  description: Run Syslog unix socket server
+streams:
+- input: log/syslog
+  enabled: false
+  title: Unix socket (streaming) Syslog server
+  description: Run Syslog server accepting log messages from other services using unix streaming sockets.
   template_path: stream.yml.hbs
   vars:
-  - name: syslog_path
+  - title: Path to create unix socket on
+    name: syslog_path
     type: text
-    title: Path to create unix socket on
     multi: false
     required: true
     show_user: true
     default:
+  - title: Onwer group
+    name: group
+    type: text
+    multi: false
+    required: false
+    show_user: false
+    default:
+  - title: Socket File Permissions
+    name: permissions
+    type: text
+    required: true
+    show_user: false
+    default: '0755'
+  - title: Max Message Size
+    name: max_message_size
+    type: text
+    multi: false
+    required: false
+    show_user: false
+    default: 10KiB
+  - title: Line Delimiter
+    name: line_delimiter
+    type: text
+    multi: false
+    required: true
+    show_user: false
+    default: "\\n"
+  - title: Max Active Connections
+    name: max_active_connections
+    type: integer
+    multi: false
+    required: false
+    show_user: false
+    default:
+  - title: Inactivity timeout
+    name: inactivity_timeout
+    type: text
+    multi: false
+    required: false
+    show_user: false
+    default: 300s

@@ -1,22 +1,52 @@
 title: Syslog TCP Server
 release: experimental
 type: logs
-- input: syslog
-  title: Syslog server
-  description: Run Syslog TCP server
+streams:
+- input: log/syslog
+  title: TCP Syslog server
+  enabled: false
+  description: Run Syslog TCP server for accepting log messages from other services.
   template_path: stream.yml.hbs
   vars:
   - name: syslog_host
     type: text
     title: Host to listen on
     multi: false
-    required: true
+    required: false
     show_user: true
     default:
   - name: syslog_port
-    type: integer
     title: Syslog Port
+    type: integer
     multi: false
     required: true
     show_user: true
     default: 9000
+  - title: Line Delimiter
+    name: line_delimiter
+    type: text
+    multi: false
+    required: true
+    show_user: false
+    default: "\\n"
+  - title: Max Message Size
+    name: max_message_size
+    type: text
+    multi: false
+    required: false
+    show_user: false
+    default: 10KiB
+  - title: Max Active Connections
+    name: max_active_connections
+    type: integer
+    multi: false
+    required: false
+    show_user: false
+    default:
+  - title: Inactivity timeout
+    name: inactivity_timeout
+    type: text
+    multi: false
+    required: false
+    show_user: false
+    default: 300s
