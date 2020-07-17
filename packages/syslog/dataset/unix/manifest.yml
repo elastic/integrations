@@ -11,6 +11,8 @@ streams:
   - title: Path to create unix socket on
     name: syslog_path
     type: text
+    description: >
+      The path to the Unix socket that will receive event streams.
     multi: false
     required: true
     show_user: true
@@ -18,6 +20,10 @@ streams:
   - title: Onwer group
     name: group
     type: text
+    description: >
+      The group ownership of the Unix socket that will be created by Filebeat.
+      The default is the primary group name for the user Filebeat is running as.
+      This option is ignored on Windows.
     multi: false
     required: false
     show_user: false
@@ -25,6 +31,10 @@ streams:
   - title: Socket File Permissions
     name: permissions
     type: text
+    description: >
+      The file mode of the Unix socket that will be created by Filebeat. This is
+      expected to be a file mode as an octal string. The default value is the system
+      default (generally `0755`).
     required: true
     show_user: false
     default: '0755'
@@ -32,12 +42,17 @@ streams:
     name: max_message_size
     type: text
     multi: false
+    description: >
+      The maximum size of the log message. The default is `10KiB`.
     required: false
     show_user: false
     default: 10KiB
   - title: Line Delimiter
     name: line_delimiter
     type: text
+    description: >
+      Specify the characters used to split the incoming events. The default is '\n'.
+      The input first splits the events before parsing the syslog message.
     multi: false
     required: true
     show_user: false
@@ -45,6 +60,8 @@ streams:
   - title: Max Active Connections
     name: max_active_connections
     type: integer
+    description: >
+      The maximum number of concurrent connections the server accepts.
     multi: false
     required: false
     show_user: false
@@ -52,6 +69,8 @@ streams:
   - title: Inactivity timeout
     name: inactivity_timeout
     type: text
+    description: >
+      The number of seconds of inactivity before a remote connection is closed. The default is `300s`.
     multi: false
     required: false
     show_user: false
