@@ -302,6 +302,19 @@ func Check() error {
 	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
 }
 
+func Reload() error {
+	err := Build()
+	if err != nil {
+		return err
+	}
+
+	err = sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "build", "package-registry")
+	if err != nil {
+		return err
+	}
+	return sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "up", "-d", "package-registry")
+}
+
 // Format adds license headers, formats .go files with goimports, and formats
 // .py files with autopep8.
 func Format() {
