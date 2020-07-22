@@ -275,9 +275,8 @@ what's been already fixed, as the script has overridden part of it).
    $ docker-compose -f snapshot.yml up
    ```
 
-   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. The Package Registry
-   has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
-   adjustments in packages will be propagated to the registry.
+   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. After every time you
+   rebuild and reload packages (`mage Reload`), all adjustments in packages will be propagated to the registry.
 
 3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
    `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
@@ -379,6 +378,14 @@ on the business or technical requirements for the entire platform (Elastic Packa
    Good candidates for a team: `elastic/integrations-platforms`, `elastic/integrations-services`
 
 ### All integrations
+
+#### Development
+
+1. When you're developing integrations and you'd like to propagate your changes to the package registry,
+   use `mage Reload` to rebuild and reload the package registry.
+   
+   Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
+   mounted volumes.
 
 #### Code reviewers
 
