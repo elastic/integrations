@@ -1,6 +1,6 @@
 # Nginx Integration
 
-This integration periodically fetches metrics from [https://nginx.org/](Nginx) servers. It can parse access and error
+This integration periodically fetches metrics from [Nginx](https://nginx.org/) servers. It can parse access and error
 logs created by the HTTP server. 
 
 ## Compatibility
