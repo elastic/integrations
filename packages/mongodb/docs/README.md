@@ -217,7 +217,7 @@ The fields reported are:
 | mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long |
 | mongodb.collstats.update.count | Number of document update events. | long |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### dbstats
@@ -332,7 +332,7 @@ The fields reported are:
 | mongodb.dbstats.num_extents |  | long |
 | mongodb.dbstats.objects |  | long |
 | mongodb.dbstats.storage_size.bytes |  | long |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### metrics
@@ -738,7 +738,7 @@ The fields reported are:
 | mongodb.metrics.storage.free_list.search.scanned | The number of available record allocations mongod has searched. | long |
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### replstatus
@@ -850,7 +850,7 @@ The fields reported are:
 | mongodb.replstatus.optimes.last_committed | Information, from the viewpoint of this member, regarding the most recent operation that has been written to a majority of replica set members. | long |
 | mongodb.replstatus.server_date | Reflects the current time according to the server that processed the replSetGetStatus command. | date |
 | mongodb.replstatus.set_name | The name of the replica set. | keyword |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### status
@@ -1271,6 +1271,6 @@ The fields reported are:
 | mongodb.status.wired_tiger.log.writes | Number of write operations. | long |
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 
