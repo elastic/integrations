@@ -44,7 +44,7 @@ func rebaseUpstreamReleaseBranch(err error, options updateOptions, branchName st
 	if err != nil {
 		return err
 	}
-	return runGitCommand(options, "rebase", "upstream/" + branchName)
+	return runGitCommand(options, "rebase", "upstream/"+branchName)
 }
 
 func addToIndex(err error, options updateOptions, packageName, packageVersion string) error {
