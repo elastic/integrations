@@ -13,6 +13,19 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
+func syncBranches(err error, options updateOptions) error {
+	if err != nil {
+		return err
+	}
+
+	err = fetchUpstream(err, options)
+	for _, branchName := range releaseBranches {
+		err = checkoutReleaseBranch(err, options, branchName)
+		err = rebaseUpstreamReleaseBranch(err, options, branchName)
+	}
+	return err
+}
+
 func fetchUpstream(err error, options updateOptions) error {
 	if err != nil {
 		return err
@@ -20,18 +33,18 @@ func fetchUpstream(err error, options updateOptions) error {
 	return runGitCommand(options, "fetch", "upstream")
 }
 
-func checkoutProductionBranch(err error, options updateOptions) error {
+func checkoutReleaseBranch(err error, options updateOptions, branchName string) error {
 	if err != nil {
 		return err
 	}
-	return runGitCommand(options, "checkout", "production")
+	return runGitCommand(options, "checkout", branchName)
 }
 
-func rebaseUpstreamProduction(err error, options updateOptions) error {
+func rebaseUpstreamReleaseBranch(err error, options updateOptions, branchName string) error {
 	if err != nil {
 		return err
 	}
-	return runGitCommand(options, "rebase", "upstream/production")
+	return runGitCommand(options, "rebase", "upstream/" + branchName)
 }
 
 func addToIndex(err error, options updateOptions, packageName, packageVersion string) error {
