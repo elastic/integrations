@@ -9,15 +9,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
-
 	"github.com/blang/semver"
 	"github.com/magefile/mage/sh"
+	"github.com/pkg/errors"
 )
-
-type manifest struct {
-	Version string `yaml:"version"`
-}
 
 func listPackages(err error, options updateOptions) ([]string, error) {
 	if err != nil {
@@ -50,8 +45,16 @@ func checkIfPackageReleased(err error, options updateOptions, packageName, packa
 		return false, err
 	}
 
+	var released bool
 	packagePath := filepath.Join(options.packageStorageDir, "packages", packageName, packageVersion)
-	return checkIfPackageManifestExists(packagePath)
+	for _, releaseBranch := range releaseBranches {
+		err = checkoutReleaseBranch(err, options, releaseBranch)
+		released, err = checkIfPackageManifestExists(packagePath)
+		if released {
+			return released, err
+		}
+	}
+	return released, err
 }
 
 func detectGreatestBuiltPackageVersion(err error, options updateOptions, packageName string) (string, error) {
@@ -62,17 +65,37 @@ func detectGreatestBuiltPackageVersion(err error, options updateOptions, package
 	return detectGreatestPackageVersion(packagePath)
 }
 
-func detectGreatestReleasedPackageVersion(err error, options updateOptions, packageName string) (string, error) {
+func detectGreatestReleasedPackageVersion(err error, options updateOptions, packageName string) (string, string, error) {
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	packagePath := filepath.Join(options.packageStorageDir, "packages", packageName)
-	return detectGreatestPackageVersion(packagePath)
+
+	greatestVersion := "0.0.0"
+	semverGreatestVersion := semver.MustParse(greatestVersion)
+	var stage string
+
+	var pv string
+	for _, releaseBranch := range releaseBranches {
+		err = checkoutReleaseBranch(err, options, releaseBranch)
+		pv, err = detectGreatestPackageVersion(packagePath)
+
+		semverPackageVersion := semver.MustParse(pv)
+		if semverGreatestVersion.LT(semverPackageVersion) {
+			semverGreatestVersion = semverPackageVersion
+			greatestVersion = pv
+			stage = releaseBranch
+		}
+	}
+	return greatestVersion, stage, err
 }
 
 func detectGreatestPackageVersion(packagePath string) (string, error) {
 	var versions []semver.Version
 	fileInfos, err := ioutil.ReadDir(packagePath)
+	if os.IsNotExist(err) {
+		return "0.0.0", nil // no release here
+	}
 	if err != nil {
 		return "", errors.Wrapf(err, "reading directory failed (path: %s)", packagePath)
 	}
@@ -95,9 +118,8 @@ func detectGreatestPackageVersion(packagePath string) (string, error) {
 			}
 		}
 	}
-
 	if len(versions) == 0 {
-		return "0", nil
+		return "0.0.0", nil
 	}
 
 	semver.Sort(versions)
@@ -115,18 +137,27 @@ func checkIfPackageManifestExists(packagePath string) (bool, error) {
 	return true, nil
 }
 
-func copyLastPackageRevisionToPackageStorage(err error, options updateOptions, packageName, sourcePackageVersion, destinationPackageVersion string) error {
+func copyLastPackageRevisionToPackageStorage(err error, options updateOptions, packageName, sourcePackageVersion, releaseBranch, destinationPackageVersion string) error {
 	if err != nil {
 		return err
 	}
 
-	if sourcePackageVersion == "0" {
+	if sourcePackageVersion == "0.0.0" {
 		return nil // this is the package first revision
 	}
 
 	sourcePath := filepath.Join(options.packageStorageDir, "packages", packageName, sourcePackageVersion)
 	destinationPath := filepath.Join(options.packageStorageDir, "packages", packageName, destinationPackageVersion)
-	return copyPackageContents(sourcePath, destinationPath)
+	err = checkoutReleaseBranch(err, options, releaseBranch)
+	if err != nil {
+		return err
+	}
+	err = copyPackageContents(sourcePath, destinationPath)
+	if err != nil {
+		return err
+	}
+
+	return checkoutReleaseBranch(err, options, "snapshot")
 }
 
 func copyIntegrationToPackageStorage(err error, options updateOptions, packageName, packageVersion string) error {

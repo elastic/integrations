@@ -19,6 +19,8 @@ type updateOptions struct {
 	skipPullRequest   bool
 }
 
+var releaseBranches = []string{"production", "staging", "snapshot"}
+
 func (uo *updateOptions) validate() error {
 	_, err := os.Stat(uo.packageStorageDir)
 	if err != nil {
@@ -29,7 +31,7 @@ func (uo *updateOptions) validate() error {
 
 func main() {
 	var options updateOptions
-	flag.StringVar(&options.packagesSourceDir, "sourceDir", "./build/public/package", "Path to the packages directory")
+	flag.StringVar(&options.packagesSourceDir, "sourceDir", "./build/integrations", "Path to the packages directory")
 	flag.StringVar(&options.packageStorageDir, "packageStorageDir", "../package-storage", "Path to the package-storage repository")
 	flag.BoolVar(&options.skipPullRequest, "skipPullRequest", false, "Skip opening pull requests")
 	flag.Parse()
@@ -39,9 +41,7 @@ func main() {
 		log.Fatal(errors.Wrap(err, "command options validation failed"))
 	}
 
-	err = fetchUpstream(err, options)
-	err = checkoutProductionBranch(err, options)
-	err = rebaseUpstreamProduction(err, options)
+	err = syncBranches(err, options)
 	packageNames, err := listPackages(err, options)
 	err = reviewPackages(err, options, packageNames, handlePackageChanges)
 	if err != nil {
@@ -55,13 +55,12 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	}
 
 	packageVersion, err := detectGreatestBuiltPackageVersion(err, options, packageName)
-	err = checkoutProductionBranch(err, options)
 	released, err := checkIfPackageReleased(err, options, packageName, packageVersion)
 	if released {
 		return nil
 	}
-	lastRelease, err := detectGreatestReleasedPackageVersion(err, options, packageName)
-	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, packageVersion)
+	lastRelease, stage, err := detectGreatestReleasedPackageVersion(err, options, packageName)
+	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, stage, packageVersion)
 	err = addToIndex(err, options, packageName, packageVersion)
 	branchName, err := createBranch(err, options, packageName, packageVersion)
 	err = commitChanges(err, options, "Copy contents of last package revision")
