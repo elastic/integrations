@@ -11,8 +11,7 @@ and the System module is enabled, fleet uses the default datasets.
 Note that certain datasets may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
-[AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), 
-even though the System module doesn't use `ptrace` directly.
+[AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
 
 ## Compatibility
 
@@ -813,3 +812,4 @@ This dataset is available on:
 | system.users.service | A session associated with the service | keyword |
 | system.users.state | The current state of the session | keyword |
 | system.users.type | The type of the user session | keyword |
+
