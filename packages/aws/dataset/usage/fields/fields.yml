@@ -1,14 +1,31 @@
-- name: aws.usage
+- name: aws
   type: group
-  release: beta
   fields:
-  - name: metrics
-    type: group
-    fields:
-    - name: CallCount.sum
-      type: long
-      description: The number of specified API operations performed in your account.
-    - name: ResourceCount.sum
-      type: long
-      description: The number of the specified resources running in your account.
-        The resources are defined by the dimensions associated with the metric.
+    - name: dimensions
+      type: group
+      fields:
+        - name: Service
+          type: keyword
+          description: The name of the AWS service containing the resource.
+        - name: Class
+          type: keyword
+          description: The class of resource being tracked.
+        - name: Type
+          type: keyword
+          description: The type of resource being tracked.
+        - name: Resource
+          type: keyword
+          description: The name of the API operation.
+    - name: usage
+      type: group
+      fields:
+        - name: metrics
+          type: group
+          fields:
+          - name: CallCount.sum
+            type: long
+            description: The number of specified API operations performed in your account.
+          - name: ResourceCount.sum
+            type: long
+            description: The number of the specified resources running in your account.
+              The resources are defined by the dimensions associated with the metric.
