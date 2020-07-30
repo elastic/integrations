@@ -409,6 +409,8 @@ An example event for `billing` looks as following:
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.billing.metrics.EstimatedCharges.max | Maximum estimated charges for AWS acccount. | long |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.Currency | Currency name. | keyword |
+| aws.dimensions.ServiceName | AWS service name. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.* | Tag key value pairs from aws resources. | object |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -761,6 +763,7 @@ An example event for `ebs` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.VolumeId | Amazon EBS volume ID | keyword |
 | aws.ebs.metrics.BurstBalance.avg | Used with General Purpose SSD (gp2), Throughput Optimized HDD (st1), and Cold HDD (sc1) volumes only. Provides information about the percentage of I/O credits (for gp2) or throughput credits (for st1 and sc1) remaining in the burst bucket. | double |
 | aws.ebs.metrics.VolumeConsumedReadWriteOps.avg | The total amount of read and write operations (normalized to 256K capacity units) consumed in a specified period of time. Used with Provisioned IOPS SSD volumes only. | double |
 | aws.ebs.metrics.VolumeIdleTime.sum | The total number of seconds in a specified period of time when no read or write operations were submitted. | double |
@@ -934,6 +937,10 @@ An example event for `ec2` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
+| aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |
+| aws.dimensions.InstanceId | Amazon EC2 instance ID | keyword |
+| aws.dimensions.InstanceType | This dimension filters the data you request for all instances running with this specified instance type. | keyword |
 | aws.ec2.cpu.credit_balance | The number of earned CPU credits that an instance has accrued since it was launched or started. | long |
 | aws.ec2.cpu.credit_usage | The number of CPU credits spent by the instance for CPU utilization. | long |
 | aws.ec2.cpu.surplus_credit_balance | The number of surplus credits that have been spent by an unlimited instance when its CPUCreditBalance value is zero. | long |
@@ -1103,6 +1110,10 @@ An example event for `elb` looks as following:
 | aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long |
 | aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |
+| aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |
+| aws.dimensions.LoadBalancerName | Filters the metric data by the specified load balancer. | keyword |
+| aws.dimensions.TargetGroup | Filters the metric data by target group. | keyword |
 | aws.elb.metrics.BackendConnectionErrors.sum | The number of connections that were not successfully established between the load balancer and the registered instances. | long |
 | aws.elb.metrics.EstimatedALBActiveConnectionCount.avg | The estimated number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | double |
 | aws.elb.metrics.EstimatedALBConsumedLCUs.avg | The estimated number of load balancer capacity units (LCU) used by an Application Load Balancer. | double |
@@ -1241,6 +1252,9 @@ An example event for `lambda` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.ExecutedVersion | Use the ExecutedVersion dimension to compare error rates for two versions of a function that are both targets of a weighted alias. | keyword |
+| aws.dimensions.FunctionName | Lambda function name. | keyword |
+| aws.dimensions.Resource | Resource name. | keyword |
 | aws.lambda.metrics.ConcurrentExecutions.avg | The number of function instances that are processing events. | double |
 | aws.lambda.metrics.DeadLetterErrors.avg | For asynchronous invocation, the number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |
 | aws.lambda.metrics.DestinationDeliveryFailures.avg | For asynchronous invocation, the number of times Lambda attempts to send an event to a destination but fails. | double |
@@ -1390,6 +1404,7 @@ An example event for `natgateway` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.NatGatewayId | Filter the metric data by the NAT gateway ID. | keyword |
 | aws.natgateway.metrics.ActiveConnectionCount.max | The total number of concurrent active TCP connections through the NAT gateway. | long |
 | aws.natgateway.metrics.BytesInFromDestination.sum | The number of bytes received by the NAT gateway from the destination. | long |
 | aws.natgateway.metrics.BytesInFromSource.sum | The number of bytes received by the NAT gateway from clients in your VPC. | long |
@@ -1545,6 +1560,13 @@ An example event for `rds` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.DBClusterIdentifier | This dimension filters the data that you request for a specific Amazon Aurora DB cluster. | keyword |
+| aws.dimensions.DBClusterIdentifier,Role | This dimension filters the data that you request for a specific Aurora DB cluster, aggregating the metric by instance role (WRITER/READER). | keyword |
+| aws.dimensions.DBInstanceIdentifier | This dimension filters the data that you request for a specific DB instance. | keyword |
+| aws.dimensions.DatabaseClass | This dimension filters the data that you request for all instances in a database class. | keyword |
+| aws.dimensions.DbClusterIdentifier, EngineName | This dimension filters the data that you request for a specific Aurora DB cluster, aggregating the metric by engine name. | keyword |
+| aws.dimensions.EngineName | This dimension filters the data that you request for the identified engine name only. | keyword |
+| aws.dimensions.SourceRegion | This dimension filters the data that you request for the specified region only. | keyword |
 | aws.rds.aurora_bin_log_replica_lag | The amount of time a replica DB cluster running on Aurora with MySQL compatibility lags behind the source DB cluster. | long |
 | aws.rds.aurora_global_db.data_transfer.bytes | In an Aurora Global Database, the amount of redo log data transferred from the master AWS Region to a secondary AWS Region. | long |
 | aws.rds.aurora_global_db.replicated_write_io.bytes | In an Aurora Global Database, the number of write I/O operations replicated from the primary AWS Region to the cluster volume in a secondary AWS Region. | long |
@@ -1719,6 +1741,9 @@ An example event for `s3_daily_storage` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.BucketName | This dimension filters the data you request for the identified bucket only. | keyword |
+| aws.dimensions.FilterId | This dimension filters metrics configurations that you specify for request metrics on a bucket, for example, a prefix or a tag. | keyword |
+| aws.dimensions.StorageType | This dimension filters the data that you have stored in a bucket by types of storage. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.s3_daily_storage.bucket.size.bytes | The amount of data in bytes stored in a bucket. | long |
 | aws.s3_daily_storage.number_of_objects | The total number of objects stored in a bucket for all storage classes. | long |
@@ -1834,6 +1859,9 @@ An example event for `s3_request` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.BucketName | This dimension filters the data you request for the identified bucket only. | keyword |
+| aws.dimensions.FilterId | This dimension filters metrics configurations that you specify for request metrics on a bucket, for example, a prefix or a tag. | keyword |
+| aws.dimensions.StorageType | This dimension filters the data that you have stored in a bucket by types of storage. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.s3_request.downloaded.bytes | The number bytes downloaded for requests made to an Amazon S3 bucket, where the response includes a body. | long |
 | aws.s3_request.errors.4xx | The number of HTTP 4xx client error status code requests made to an Amazon S3 bucket with a value of either 0 or 1. | long |
@@ -1959,6 +1987,12 @@ An example event for `sns` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.Application | Filters on application objects, which represent an app and device registered with one of the supported push notification services, such as APNs and FCM. | keyword |
+| aws.dimensions.Application,Platform | Filters on application and platform objects, where the platform objects are for the supported push notification services, such as APNs and FCM. | keyword |
+| aws.dimensions.Country | Filters on the destination country or region of an SMS message. | keyword |
+| aws.dimensions.Platform | Filters on platform objects for the push notification services, such as APNs and FCM. | keyword |
+| aws.dimensions.SMSType | Filters on the message type of SMS message. | keyword |
+| aws.dimensions.TopicName | Filters on Amazon SNS topic names. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.sns.metrics.NumberOfMessagesPublished.sum | The number of messages published to your Amazon SNS topics. | long |
 | aws.sns.metrics.NumberOfNotificationsDelivered.sum | The number of messages successfully delivered from your Amazon SNS topics to subscribing endpoints. | long |
@@ -2075,6 +2109,7 @@ An example event for `sqs` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.QueueName | SQS queue name | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.sqs.empty_receives | The number of ReceiveMessage API calls that did not return a message. | long |
 | aws.sqs.messages.delayed | TThe number of messages in the queue that are delayed and not available for reading immediately. | long |
@@ -2200,6 +2235,8 @@ An example event for `transitgateway` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |
+| aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.* | Tag key value pairs from aws resources. | object |
 | aws.transitgateway.metrics.BytesIn.sum | The number of bytes received by the transit gateway. | long |
@@ -2309,6 +2346,10 @@ An example event for `usage` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.Class | The class of resource being tracked. | keyword |
+| aws.dimensions.Resource | The name of the API operation. | keyword |
+| aws.dimensions.Service | The name of the AWS service containing the resource. | keyword |
+| aws.dimensions.Type | The type of resource being tracked. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.* | Tag key value pairs from aws resources. | object |
 | aws.usage.metrics.CallCount.sum | The number of specified API operations performed in your account. | long |
@@ -2414,6 +2455,8 @@ An example event for `vpn` looks as following:
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.TunnelIpAddress | Filters the metric data by the IP address of the tunnel for the virtual private gateway. | keyword |
+| aws.dimensions.VpnId | Filters the metric data by the Site-to-Site VPN connection ID. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.* | Tag key value pairs from aws resources. | object |
 | aws.vpn.metrics.TunnelDataIn.sum | The bytes received through the VPN tunnel. | double |
