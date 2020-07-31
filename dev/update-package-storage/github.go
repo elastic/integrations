@@ -18,6 +18,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+const pullRequestsPerPage = 30
+
+type pullRequest struct {
+	Title string `json:"title"`
+}
+
 func openPullRequest(err error, options updateOptions, packageName, packageVersion, username, branchName, commitHash string) error {
 	if err != nil {
 		return err
@@ -92,7 +98,7 @@ func buildPullRequestRequestBody(title, username, branchName, description string
 }
 
 func buildPullRequestTitle(packageName, packageVersion string) string {
-	return fmt.Sprintf(`Update "%s" integration to version %s`, packageName, packageVersion)
+	return fmt.Sprintf(`[snapshot] Update "%s" integration to version %s`, packageName, packageVersion)
 }
 
 func buildPullRequestDiffURL(username, commitHash string) string {
@@ -102,4 +108,68 @@ func buildPullRequestDiffURL(username, commitHash string) string {
 func buildPullRequestDescription(packageName, packageVersion, diffURL string) string {
 	return fmt.Sprintf("This PR updates `%s` integration to version %s.\n\nChanges: %s", packageName,
 		packageVersion, diffURL)
+}
+
+func checkIfPullRequestAlreadyOpen(err error, packageName, packageVersion string) (bool, error) {
+	if err != nil {
+		return false, err
+	}
+
+	authToken, err := getAuthToken()
+	if err != nil {
+		return false, errors.Wrap(err, "fetching auth token failed")
+	}
+
+	next := true
+	i := 1
+	var records []pullRequest
+	for next {
+		request, err := http.NewRequest("GET",
+			fmt.Sprintf("https://api.github.com/repos/elastic/package-storage/pulls?state=open&base=snapshot&per_page=%d&page=%d", pullRequestsPerPage, i),
+			nil)
+		if err != nil {
+			return false, errors.Wrap(err, "creating new HTTP request failed")
+		}
+
+		request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
+		request.Header.Add("Content-Type", "application/json")
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			return false, errors.Wrap(err, "making HTTP call failed")
+		}
+
+		if response.StatusCode < 200 || response.StatusCode > 299 {
+			k, _ := ioutil.ReadAll(response.Body)
+			log.Fatal(string(k))
+			return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+		}
+
+		var data []pullRequest
+		defer response.Body.Close()
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return false, errors.Wrap(err, "can't read response body")
+		}
+
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			return false, errors.Wrap(err, "unmarshalling response failed")
+		}
+
+		records = append(records, data...)
+
+		if len(data) < pullRequestsPerPage {
+			next = false
+		}
+
+		i++
+	}
+
+	expectedTitle := buildPullRequestTitle(packageName, packageVersion)
+	for _, k := range records {
+		if k.Title == expectedTitle {
+			return true, nil
+		}
+	}
+	return false, nil
 }
