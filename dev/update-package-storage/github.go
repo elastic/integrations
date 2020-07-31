@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,6 +20,10 @@ import (
 )
 
 const pullRequestsPerPage = 30
+
+type searchIssuesResponse struct {
+	Items []pullRequest `json:"items"`
+}
 
 type pullRequest struct {
 	Title string `json:"title"`
@@ -120,53 +125,40 @@ func checkIfPullRequestAlreadyOpen(err error, packageName, packageVersion string
 		return false, errors.Wrap(err, "fetching auth token failed")
 	}
 
-	next := true
-	i := 1
-	var records []pullRequest
-	for next {
-		request, err := http.NewRequest("GET",
-			fmt.Sprintf("https://api.github.com/repos/elastic/package-storage/pulls?state=open&base=snapshot&per_page=%d&page=%d", pullRequestsPerPage, i),
-			nil)
-		if err != nil {
-			return false, errors.Wrap(err, "creating new HTTP request failed")
-		}
+	expectedTitle := buildPullRequestTitle(packageName, packageVersion)
+	q := url.QueryEscape(fmt.Sprintf(`repo:elastic/package-storage is:pr is:open in:title "%s"`, expectedTitle))
 
-		request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
-		request.Header.Add("Content-Type", "application/json")
-		response, err := http.DefaultClient.Do(request)
-		if err != nil {
-			return false, errors.Wrap(err, "making HTTP call failed")
-		}
-
-		if response.StatusCode < 200 || response.StatusCode > 299 {
-			k, _ := ioutil.ReadAll(response.Body)
-			log.Fatal(string(k))
-			return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
-		}
-
-		var data []pullRequest
-		defer response.Body.Close()
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return false, errors.Wrap(err, "can't read response body")
-		}
-
-		err = json.Unmarshal(body, &data)
-		if err != nil {
-			return false, errors.Wrap(err, "unmarshalling response failed")
-		}
-
-		records = append(records, data...)
-
-		if len(data) < pullRequestsPerPage {
-			next = false
-		}
-
-		i++
+	request, err := http.NewRequest("GET", "https://api.github.com/search/issues?q="+q, nil)
+	if err != nil {
+		return false, errors.Wrap(err, "creating new HTTP request failed")
 	}
 
-	expectedTitle := buildPullRequestTitle(packageName, packageVersion)
-	for _, k := range records {
+	request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
+	request.Header.Add("Content-Type", "application/json")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return false, errors.Wrap(err, "making HTTP call failed")
+	}
+
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		k, _ := ioutil.ReadAll(response.Body)
+		log.Fatal(string(k))
+		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+	}
+
+	var data searchIssuesResponse
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "can't read response body")
+	}
+
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return false, errors.Wrap(err, "unmarshalling response failed")
+	}
+
+	for _, k := range data.Items {
 		if k.Title == expectedTitle {
 			return true, nil
 		}
