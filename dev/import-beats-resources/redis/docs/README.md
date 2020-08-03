@@ -1,6 +1,6 @@
 # Redis Integration
 
-This integration periodically fetches logs and metrics from [https://redis.io/](Redis) servers.
+This integration periodically fetches logs and metrics from [Redis](https://redis.io/) servers.
 
 ## Compatibility
 
