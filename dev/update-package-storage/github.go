@@ -126,7 +126,7 @@ func checkIfPullRequestAlreadyOpen(err error, packageName, packageVersion string
 	}
 
 	expectedTitle := buildPullRequestTitle(packageName, packageVersion)
-	q := url.QueryEscape(fmt.Sprintf(`repo:elastic/package-storage is:pr is:open in:title "%s"`, expectedTitle))
+	q := url.QueryEscape(fmt.Sprintf(`repo:elastic/package-storage base:snapshot is:pr is:open in:title "%s"`, expectedTitle))
 
 	request, err := http.NewRequest("GET", "https://api.github.com/search/issues?q="+q, nil)
 	if err != nil {
