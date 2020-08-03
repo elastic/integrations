@@ -4,7 +4,7 @@
 
 // +build tools
 
-package integrations
+package main
 
 import (
 	_ "github.com/elastic/elastic-package"
