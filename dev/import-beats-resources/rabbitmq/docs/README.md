@@ -1,6 +1,6 @@
 # RabbitMQ Integration
 
-This integration uses [http://www.rabbitmq.com/management.html](HTTP API) created by the management plugin to collect metrics.
+This integration uses [HTTP API](http://www.rabbitmq.com/management.html) created by the management plugin to collect metrics.
 
 The default data streams are `connection`, `node`, `queue`, `exchange` and standard logs.
 
