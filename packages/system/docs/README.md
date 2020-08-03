@@ -6,14 +6,12 @@ always applies to the local server, the `hosts` config option is not needed.
 The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
 `process_summary`. To disable a default dataset, comment it out in the
 `modules.d/system.yml` configuration file. If _all_ datasets are commented out
-and the System module is enabled, {beatname_uc} uses the default datasets.
+and the System module is enabled, fleet uses the default datasets.
 
 Note that certain datasets may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
-https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace[AppArmor
-and other LSM software], even though the System module doesn't use `ptrace`
-directly.
+[AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
 
 ## Compatibility
 
@@ -814,3 +812,4 @@ This dataset is available on:
 | system.users.service | A session associated with the service | keyword |
 | system.users.state | The current state of the session | keyword |
 | system.users.type | The type of the user session | keyword |
+
