@@ -153,8 +153,7 @@ func checkIfPullRequestAlreadyOpen(err error, packageName, packageVersion string
 		return false, errors.Wrap(err, "can't read response body")
 	}
 
-	err = json.Unmarshal(body, &data)
-	if err != nil {
+	if err := json.Unmarshal(body, &data); err != nil {
 		return false, errors.Wrap(err, "unmarshalling response failed")
 	}
 
