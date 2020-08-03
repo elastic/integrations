@@ -120,6 +120,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | iis.webserver.*.* | webserver | object |
 
 
@@ -188,6 +191,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | iis.website.name | website name | keyword |
 
 
@@ -255,6 +261,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | iis.application_pool.name | application pool name | keyword |
 
 
@@ -368,6 +377,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.port | Port of the destination. | long |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
@@ -477,6 +489,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.port | Port of the destination. | long |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
