@@ -1,6 +1,6 @@
 # Kafka integration
 
-This integration collects logs and metrics from [https://kafka.apache.org](Kafka) servers.
+This integration collects logs and metrics from [Kafka](https://kafka.apache.org) servers.
 
 ## Compatibility
 
