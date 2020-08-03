@@ -11,12 +11,23 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
 )
+
+const pullRequestsPerPage = 30
+
+type searchIssuesResponse struct {
+	Items []pullRequest `json:"items"`
+}
+
+type pullRequest struct {
+	Title string `json:"title"`
+}
 
 func openPullRequest(err error, options updateOptions, packageName, packageVersion, username, branchName, commitHash string) error {
 	if err != nil {
@@ -92,7 +103,7 @@ func buildPullRequestRequestBody(title, username, branchName, description string
 }
 
 func buildPullRequestTitle(packageName, packageVersion string) string {
-	return fmt.Sprintf(`Update "%s" integration to version %s`, packageName, packageVersion)
+	return fmt.Sprintf(`[snapshot] Update "%s" integration to version %s`, packageName, packageVersion)
 }
 
 func buildPullRequestDiffURL(username, commitHash string) string {
@@ -102,4 +113,54 @@ func buildPullRequestDiffURL(username, commitHash string) string {
 func buildPullRequestDescription(packageName, packageVersion, diffURL string) string {
 	return fmt.Sprintf("This PR updates `%s` integration to version %s.\n\nChanges: %s", packageName,
 		packageVersion, diffURL)
+}
+
+func checkIfPullRequestAlreadyOpen(err error, packageName, packageVersion string) (bool, error) {
+	if err != nil {
+		return false, err
+	}
+
+	authToken, err := getAuthToken()
+	if err != nil {
+		return false, errors.Wrap(err, "fetching auth token failed")
+	}
+
+	expectedTitle := buildPullRequestTitle(packageName, packageVersion)
+	q := url.QueryEscape(fmt.Sprintf(`repo:elastic/package-storage base:snapshot is:pr is:open in:title "%s"`, expectedTitle))
+
+	request, err := http.NewRequest("GET", "https://api.github.com/search/issues?q="+q, nil)
+	if err != nil {
+		return false, errors.Wrap(err, "creating new HTTP request failed")
+	}
+
+	request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
+	request.Header.Add("Content-Type", "application/json")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return false, errors.Wrap(err, "making HTTP call failed")
+	}
+
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		k, _ := ioutil.ReadAll(response.Body)
+		log.Fatal(string(k))
+		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+	}
+
+	var data searchIssuesResponse
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "can't read response body")
+	}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return false, errors.Wrap(err, "unmarshalling response failed")
+	}
+
+	for _, k := range data.Items {
+		if k.Title == expectedTitle {
+			return true, nil
+		}
+	}
+	return false, nil
 }

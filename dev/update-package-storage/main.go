@@ -59,6 +59,10 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	if released {
 		return nil
 	}
+	opened, err := checkIfPullRequestAlreadyOpen(err, packageName, packageVersion)
+	if opened {
+		return nil
+	}
 	lastRelease, stage, err := detectGreatestReleasedPackageVersion(err, options, packageName)
 	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, stage, packageVersion)
 	if lastRelease != "0.0.0" {
