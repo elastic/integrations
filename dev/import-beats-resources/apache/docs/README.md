@@ -1,6 +1,6 @@
 # Apache Integration
 
-This integration periodically fetches metrics from [https://httpd.apache.org/](Apache) servers. It can parse access and error
+This integration periodically fetches metrics from [Apache](https://httpd.apache.org/) servers. It can parse access and error
 logs created by the Apache server.
 
 ## Compatibility
