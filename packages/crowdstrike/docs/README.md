@@ -116,6 +116,9 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. | keyword |
