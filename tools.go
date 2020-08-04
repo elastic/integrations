@@ -2,18 +2,11 @@
 // or more contributor license agreements. Licensed under the Elastic License;
 // you may not use this file except in compliance with the Elastic License.
 
+// +build tools
+
 package main
 
 import (
-	"github.com/blang/semver"
-
-	"github.com/elastic/package-registry/util"
+	_ "github.com/elastic/elastic-package"
+	_ "github.com/elastic/package-registry"
 )
-
-var zeroVersion = semver.MustParse("0.0.0")
-
-func createConditions() *util.Conditions {
-	return &util.Conditions{
-		KibanaVersion: "^7.9.0",
-	}
-}

@@ -59,11 +59,19 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	if released {
 		return nil
 	}
+	opened, err := checkIfPullRequestAlreadyOpen(err, packageName, packageVersion)
+	if opened {
+		return nil
+	}
 	lastRelease, stage, err := detectGreatestReleasedPackageVersion(err, options, packageName)
 	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, stage, packageVersion)
-	err = addToIndex(err, options, packageName, packageVersion)
+	if lastRelease != "0.0.0" {
+		err = addToIndex(err, options, packageName, packageVersion)
+	}
 	branchName, err := createBranch(err, options, packageName, packageVersion)
-	err = commitChanges(err, options, "Copy contents of last package revision")
+	if lastRelease != "0.0.0" {
+		err = commitChanges(err, options, "Copy contents of last package revision")
+	}
 	err = copyIntegrationToPackageStorage(err, options, packageName, packageVersion)
 	err = addToIndex(err, options, packageName, packageVersion)
 	err = commitChanges(err, options, fmt.Sprintf(`Update "%s" integration (version: %s)`, packageName, packageVersion))
