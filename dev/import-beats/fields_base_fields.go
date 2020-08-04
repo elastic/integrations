@@ -9,6 +9,22 @@ var baseFields = createBaseFields()
 func createBaseFields() []fieldDefinition {
 	return []fieldDefinition{
 		{
+			Name:        "datastream.type",
+			Type:        "constant_keyword",
+			Description: "Datastream type.",
+		},
+		{
+			Name:        "datastream.dataset",
+			Type:        "constant_keyword",
+			Description: "Datastream dataset name.",
+		},
+		{
+			Name:        "datastream.namespace",
+			Type:        "constant_keyword",
+			Description: "Datastream namespace.",
+		},
+		// TODO: This should be removed as soon as it is not a requirement anymore by the validation
+		{
 			Name:        "dataset.type",
 			Type:        "constant_keyword",
 			Description: "Dataset type.",
