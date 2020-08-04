@@ -197,6 +197,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | prometheus.*.counter | Prometheus counter metric | object |
 | prometheus.*.histogram | Prometheus histogram metric | object |
 | prometheus.*.rate | Prometheus rated counter metric | object |
@@ -333,6 +336,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
 
@@ -456,5 +462,8 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.query.* | Prometheus value resulted from PromQL | object |

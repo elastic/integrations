@@ -40,9 +40,9 @@ func newPackageContent(name string) packageContent {
 				Name:    name,
 				Version: "0.0.1", // TODO
 				Type:    "integration",
+				Release: "experimental",
 			},
 			License: "basic",
-			Release: "experimental",
 			Owner: &util.Owner{
 				Github: "elastic/integrations",
 			},
