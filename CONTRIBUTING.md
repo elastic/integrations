@@ -97,7 +97,7 @@ feel free to review the script's [README](https://github.com/elastic/integration
     _Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
     `docker-compose -f snapshot.yml up --force-recreate`.
 4. Create a new branch for the integration in `integrations` repository (diverge from master).
-5. Run the command: `mage ImportBeats` to start the import process.
+5. Run the command: `mage ImportBeats` to start the import process (note that the import script assumes the projects checked out in step 2 are at `../{project-name}`).
 
     The outcome of running the `import-beats` script is directory with refreshed and updated integrations.
 
@@ -275,9 +275,8 @@ what's been already fixed, as the script has overridden part of it).
    $ docker-compose -f snapshot.yml up
    ```
 
-   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. The Package Registry
-   has a volume mounted with the `public` directory. After every time you rebuild packages (`mage build`), all
-   adjustments in packages will be propagated to the registry.
+   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. After every time you
+   rebuild and reload packages (`mage Reload`), all adjustments in packages will be propagated to the registry.
 
 3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
    `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
@@ -367,11 +366,11 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
    The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/e93e801a6dfbfa6f83c8b69f6e9405603151f937/util/package.go#L27-L51
 
-4. Make sure that the version condition for kibana is set to `>=7.9.0`. This is necessary because Kibana `master` will always send the next major version (at the time of this writing `8.0.0`), and using `^7.9.0` will prevent a package to be shown to Kibana `master`. This is extremely inconvenient for testing and development.
+4. Make sure that the version condition for Kibana is set to `^7.9.0` and not `>=7.9.0`. Otherwise the package is also in 8.0.0 but we do not know today if it will actually be compatible with >= 8.0.0.
 
    ```yaml
    conditions:
-     kibana.version: '>=7.9.0'
+     kibana.version: '^7.9.0'
    ```
 
 5. Set the proper package owner (either Github team or personal account)
@@ -379,6 +378,14 @@ on the business or technical requirements for the entire platform (Elastic Packa
    Good candidates for a team: `elastic/integrations-platforms`, `elastic/integrations-services`
 
 ### All integrations
+
+#### Development
+
+1. When you're developing integrations and you'd like to propagate your changes to the package registry,
+   use `mage Reload` to rebuild and reload the package registry.
+   
+   Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
+   mounted volumes.
 
 #### Code reviewers
 

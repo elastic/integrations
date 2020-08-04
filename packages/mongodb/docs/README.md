@@ -50,6 +50,9 @@ The `log` dataset collects the MongoDB logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | log.file.path | Full path to the log file this event came from, including the file name. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -196,6 +199,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | mongodb.collstats.collection | Collection name. | keyword |
 | mongodb.collstats.commands.count | Number of database commands executed. | long |
 | mongodb.collstats.commands.time.us | Time executing database commands in microseconds. | long |
@@ -217,7 +223,7 @@ The fields reported are:
 | mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long |
 | mongodb.collstats.update.count | Number of document update events. | long |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### dbstats
@@ -317,6 +323,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | mongodb.dbstats.avg_obj_size.bytes |  | long |
 | mongodb.dbstats.collections |  | integer |
 | mongodb.dbstats.data_file_version.major |  | long |
@@ -332,7 +341,7 @@ The fields reported are:
 | mongodb.dbstats.num_extents |  | long |
 | mongodb.dbstats.objects |  | long |
 | mongodb.dbstats.storage_size.bytes |  | long |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### metrics
@@ -619,6 +628,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | mongodb.metrics.commands.aggregate.failed |  | long |
 | mongodb.metrics.commands.aggregate.total |  | long |
 | mongodb.metrics.commands.build_info.failed |  | long |
@@ -738,7 +750,7 @@ The fields reported are:
 | mongodb.metrics.storage.free_list.search.scanned | The number of available record allocations mongod has searched. | long |
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### replstatus
@@ -817,6 +829,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | mongodb.replstatus.headroom.max | Difference between primary's oplog window and the replication lag of the fastest secondary | long |
 | mongodb.replstatus.headroom.min | Difference between primary's oplog window and the replication lag of the slowest secondary | long |
 | mongodb.replstatus.lag.max | Difference between optime of primary and slowest secondary | long |
@@ -850,7 +865,7 @@ The fields reported are:
 | mongodb.replstatus.optimes.last_committed | Information, from the viewpoint of this member, regarding the most recent operation that has been written to a majority of replica set members. | long |
 | mongodb.replstatus.server_date | Reflects the current time according to the server that processed the replSetGetStatus command. | date |
 | mongodb.replstatus.set_name | The name of the replica set. | keyword |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 
 
 ### status
@@ -1106,6 +1121,9 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | mongodb.status.asserts.msg | Number of msg assertions produced by the server. | long |
 | mongodb.status.asserts.regular | Number of regular assertions produced by the server. | long |
 | mongodb.status.asserts.rollovers | Number of rollovers assertions produced by the server. | long |
@@ -1271,6 +1289,6 @@ The fields reported are:
 | mongodb.status.wired_tiger.log.writes | Number of write operations. | long |
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
-| service.address | Address of the machine where the service is running. | ip |
+| service.address | Address of the machine where the service is running. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 

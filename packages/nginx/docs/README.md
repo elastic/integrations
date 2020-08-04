@@ -1,6 +1,6 @@
 # Nginx Integration
 
-This integration periodically fetches metrics from [https://nginx.org/](Nginx) servers. It can parse access and error
+This integration periodically fetches metrics from [Nginx](https://nginx.org/) servers. It can parse access and error
 logs created by the HTTP server. 
 
 ## Compatibility
@@ -34,6 +34,9 @@ Access logs collects the nginx access logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -69,6 +72,9 @@ Error logs collects the nginx error logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
@@ -89,6 +95,9 @@ Error logs collects the ingress controller logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -187,6 +196,9 @@ An example event for `stubstatus` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | nginx.stubstatus.accepts | The total number of accepted client connections. | long |
 | nginx.stubstatus.active | The current number of active client connections including Waiting connections. | long |
 | nginx.stubstatus.current | The current number of client requests. | long |

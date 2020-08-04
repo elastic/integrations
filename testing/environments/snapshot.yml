@@ -3,7 +3,7 @@
 version: '2.3'
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0-SNAPSHOT
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.0-SNAPSHOT
     healthcheck:
       test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://127.0.0.1:9200/"]
       retries: 300
@@ -22,7 +22,7 @@ services:
       - "127.0.0.1:9200:9200"
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.0.0-SNAPSHOT
+    image: docker.elastic.co/kibana/kibana:7.9.0-SNAPSHOT
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -38,13 +38,13 @@ services:
       - "127.0.0.1:5601:5601"
 
   package-registry:
-    image: docker.elastic.co/package-registry/package-registry:41c150c8020efc53ab16e3bba774c62a419b51ea
+    build:
+      context: ../..
+      dockerfile: testing/environments/Dockerfile.package-registry
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8080"]
       retries: 300
       interval: 1s
-    volumes:
-      - ./package-registry.config.yml:/registry/config.yml
-      - ../../build/integrations:/registry/packages/integrations
+    restart: always
     ports:
       - "127.0.0.1:8080:8080"
