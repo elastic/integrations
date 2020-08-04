@@ -24,6 +24,9 @@ The `log` dataset collects and parses logs from Kafka servers.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | kafka.log.class | Java class the log is coming from. | keyword |
 | kafka.log.component | Component the log is coming from. | keyword |
 | kafka.log.trace.class | Java class the trace is coming from. | keyword |
@@ -94,6 +97,9 @@ An example event for `broker` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
 | kafka.broker.log.flush_rate | The log flush rate | float |
@@ -203,6 +209,9 @@ An example event for `consumergroup` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
 | kafka.consumergroup.broker.address | Broker address | keyword |
@@ -302,6 +311,9 @@ An example event for `partition` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
+| datastream.namespace | Datastream namespace. | constant_keyword |
+| datastream.type | Datastream type. | constant_keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
 | kafka.partition.broker.address | Broker address | keyword |

@@ -28,7 +28,7 @@ Application logs collects standard RabbitMQ logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | rabbitmq.log.pid | The Erlang process id | keyword |
@@ -109,7 +109,7 @@ An example event for `connection` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | rabbitmq.connection.channel_max | The maximum number of channels allowed on the connection. | long |
@@ -190,7 +190,7 @@ An example event for `exchange` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | rabbitmq.exchange.auto_delete | Whether the queue will be deleted automatically when no longer used. | boolean |
@@ -270,7 +270,7 @@ An example event for `node` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | rabbitmq.node.disk.free.bytes | Disk free space in bytes. | long |
@@ -405,7 +405,7 @@ An example event for `queue` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | rabbitmq.queue.arguments.max_priority | Maximum number of priority levels for the queue to support. | long |

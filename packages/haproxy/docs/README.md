@@ -22,7 +22,7 @@ The `log` dataset collects the HAProxy application logs.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
@@ -200,7 +200,7 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | haproxy.info.busy_polling | Number of busy polling. | long |
@@ -367,7 +367,7 @@ The fields reported are:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | haproxy.stat.agent.check.description | Human readable version of check. | keyword |

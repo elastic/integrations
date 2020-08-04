@@ -22,7 +22,7 @@ The Windows `service` dataset provides service details.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | windows.service.display_name | The display name of the service. | keyword |
@@ -50,7 +50,7 @@ The Windows `perfmon` dataset provides performance counter values.
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
+| datastream.dataset | Datastream dataset. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
 | windows.perfmon.instance | Instance value. | keyword |
