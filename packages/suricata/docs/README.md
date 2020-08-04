@@ -53,6 +53,9 @@ with other versions of Suricata.
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
+| input.type | Filebeat input type used to collect the log. | keyword |
+| log.file.path | The file from which the line was read. This field contains the absolute path to the file. For example: `/var/log/system.log`. | keyword |
+| log.offset | The file offset the reported line starts at. | long |
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
