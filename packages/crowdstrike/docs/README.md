@@ -23,6 +23,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | agent.id | Unique identifier of this agent. | keyword |
 | agent.name | Custom name of the agent. | keyword |
 | agent.type | Type of the agent. | keyword |
+| container.id | Unique container id. | keyword |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
 | crowdstrike.event.CommandLine | Executable path with command line arguments. | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
@@ -152,6 +153,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | rule.ruleset | Rule ruleset | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | threat.tactic.name | Threat tactic. | keyword |
 | threat.technique.name | Threat technique name. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
