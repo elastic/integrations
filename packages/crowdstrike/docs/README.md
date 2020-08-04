@@ -19,7 +19,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Date/time when the event originated. | date |
+| @timestamp | Event timestamp. | date |
 | agent.id | Unique identifier of this agent. | keyword |
 | agent.name | Custom name of the agent. | keyword |
 | agent.type | Type of the agent. | keyword |
@@ -113,9 +113,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
 | crowdstrike.metadata.version | Schema version | keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | datastream.dataset | Datastream dataset name. | constant_keyword |
 | datastream.namespace | Datastream namespace. | constant_keyword |
 | datastream.type | Datastream type. | constant_keyword |
@@ -137,6 +134,10 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
 | host.name | Name of the host. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Path to the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | message | Log message optimized for viewing in a log viewer. | text |
 | network.direction | Direction of the network traffic. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
