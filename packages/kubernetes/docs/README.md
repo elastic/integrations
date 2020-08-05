@@ -202,12 +202,12 @@ An example event for `apiserver` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.apiserver.audit.event.count | Number of audit events | long |
 | kubernetes.apiserver.audit.rejected.count | Number of audit rejected events | long |
 | kubernetes.apiserver.client.request.count | Number of requests as client | long |
@@ -445,12 +445,12 @@ An example event for `container` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |
 | kubernetes.container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float |
 | kubernetes.container.cpu.usage.nanocores | CPU used nanocores | long |
@@ -608,12 +608,12 @@ An example event for `controllermanager` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.controllermanager.client.request.count | Number of requests as client | long |
 | kubernetes.controllermanager.code | HTTP code | keyword |
 | kubernetes.controllermanager.handler | Request handler | keyword |
@@ -774,12 +774,12 @@ An example event for `event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.event.count | Count field records the number of times the particular event has occurred | long |
 | kubernetes.event.involved_object.api_version | API version of the object | keyword |
 | kubernetes.event.involved_object.kind | API kind of the object | keyword |
@@ -992,12 +992,12 @@ An example event for `node` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.node.cpu.usage.core.ns | Node CPU Core usage nanoseconds | long |
 | kubernetes.node.cpu.usage.nanocores | CPU used nanocores | long |
 | kubernetes.node.fs.available.bytes | Filesystem total available in bytes | long |
@@ -1189,12 +1189,12 @@ An example event for `pod` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float |
 | kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long |
 | kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float |
@@ -1468,12 +1468,12 @@ An example event for `proxy` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.proxy.client.request.count | Number of requests as client | long |
 | kubernetes.proxy.code | HTTP code | keyword |
 | kubernetes.proxy.handler | Request handler | keyword |
@@ -1620,12 +1620,12 @@ An example event for `scheduler` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.scheduler.client.request.count | Number of requests as client | long |
 | kubernetes.scheduler.code | HTTP code | keyword |
 | kubernetes.scheduler.handler | Request handler | keyword |
@@ -1779,12 +1779,12 @@ An example event for `state_container` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.container.cpu.limit.cores | Container CPU cores limit | float |
 | kubernetes.container.cpu.limit.nanocores | Container CPU nanocores limit | long |
 | kubernetes.container.cpu.request.cores | Container CPU requested cores | float |
@@ -1903,12 +1903,12 @@ An example event for `state_cronjob` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.cronjob.active.count | Number of active pods for the cronjob | long |
 | kubernetes.cronjob.concurrency | Concurrency policy | keyword |
 | kubernetes.cronjob.created.sec | Epoch seconds since the cronjob was created | double |
@@ -2022,12 +2022,12 @@ An example event for `state_deployment` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.deployment.paused | Kubernetes deployment paused status | boolean |
 | kubernetes.deployment.replicas.available | Deployment available replicas | integer |
 | kubernetes.deployment.replicas.desired | Deployment number of desired replicas (spec) | integer |
@@ -2162,12 +2162,12 @@ An example event for `state_node` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |
 | kubernetes.node.memory.allocatable.bytes | Node allocatable memory in bytes | long |
@@ -2277,12 +2277,12 @@ An example event for `state_persistentvolume` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.persistentvolume.capacity.bytes | Volume capacity | long |
 | kubernetes.persistentvolume.name | Volume name. | keyword |
 | kubernetes.persistentvolume.phase | Volume phase according to kubernetes | keyword |
@@ -2388,12 +2388,12 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |
 | kubernetes.persistentvolumeclaim.name | PVC name. | keyword |
 | kubernetes.persistentvolumeclaim.phase | PVC phase. | keyword |
@@ -2510,12 +2510,12 @@ An example event for `state_pod` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.pod.host_ip | Kubernetes pod host IP | ip |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |
@@ -2631,12 +2631,12 @@ An example event for `state_replicaset` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.replicaset.replicas.available | The number of replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.desired | The number of replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.labeled | The number of fully labeled replicas per ReplicaSet | long |
@@ -2739,12 +2739,12 @@ An example event for `state_resourcequota` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.resourcequota.created.sec | Epoch seconds since the ResourceQuota was created | double |
 | kubernetes.resourcequota.name | ResourceQuota name | keyword |
 | kubernetes.resourcequota.quota | Quota informed (hard or used) for the resource | double |
@@ -2856,12 +2856,12 @@ An example event for `state_service` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.service.cluster_ip | Internal IP for the service. | ip |
 | kubernetes.service.created | Service creation date | date |
 | kubernetes.service.external_ip | Service external IP | keyword |
@@ -2976,12 +2976,12 @@ An example event for `state_statefulset` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.statefulset.created | The creation timestamp (epoch) for StatefulSet | long |
 | kubernetes.statefulset.generation.desired | The desired generation per StatefulSet | long |
 | kubernetes.statefulset.generation.observed | The observed generation per StatefulSet | long |
@@ -3090,12 +3090,12 @@ An example event for `state_storageclass` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.storageclass.created | Storage class creation date | date |
 | kubernetes.storageclass.name | Storage class name. | keyword |
 | kubernetes.storageclass.provisioner | Volume provisioner for the storage class. | keyword |
@@ -3246,12 +3246,12 @@ An example event for `system` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.system.container | Container name | keyword |
 | kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |
 | kubernetes.system.cpu.usage.nanocores | CPU used nanocores | long |
@@ -3401,12 +3401,12 @@ An example event for `volume` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long |
 | kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long |
 | kubernetes.volume.fs.inodes.count | Total inodes | long |

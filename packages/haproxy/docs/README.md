@@ -19,12 +19,12 @@ The `log` dataset collects the HAProxy application logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | haproxy.backend_name | Name of the backend (or listener) which was selected to manage the connection to the server. | keyword |
@@ -197,12 +197,12 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | haproxy.info.busy_polling | Number of busy polling. | long |
 | haproxy.info.bytes.out.rate | Average bytes output rate. | long |
 | haproxy.info.bytes.out.total | Number of bytes sent out. | long |
@@ -364,12 +364,12 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | haproxy.stat.agent.check.description | Human readable version of check. | keyword |
 | haproxy.stat.agent.check.fall | Fall value of server. | integer |
 | haproxy.stat.agent.check.health | Health parameter of server. Between 0 and `agent.check.rise`+`agent.check.fall`-1. | integer |
