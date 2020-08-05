@@ -113,9 +113,9 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
 | crowdstrike.metadata.version | Schema version | keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. | keyword |
