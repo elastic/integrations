@@ -65,8 +65,6 @@ func openPullRequest(err error, options updateOptions, packageName, packageVersi
 	}
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		k, _ := ioutil.ReadAll(response.Body)
-		log.Fatal(string(k))
 		return fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
 	}
 	return nil
