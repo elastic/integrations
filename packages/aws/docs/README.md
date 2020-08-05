@@ -54,9 +54,6 @@ events for the account. If user creates a trail, it delivers those events as log
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | event.action | The action captured by the event. | keyword |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
@@ -97,9 +94,6 @@ setup already.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### ec2
@@ -118,9 +112,6 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | process.name | Process name. | keyword |
 
 
@@ -171,9 +162,6 @@ For network load balancer, please follow [enable access log for network load bal
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | Destination domain. | keyword |
 | event.category | Event category (e.g. database) | keyword |
@@ -247,9 +235,6 @@ for sending server access logs to S3 bucket.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | event.action | The action captured by the event. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
@@ -303,9 +288,6 @@ for sending server access logs to S3 bucket.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -441,9 +423,6 @@ An example event for `billing` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### cloudwatch
@@ -545,9 +524,6 @@ An example event for `cloudwatch` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### dynamodb
@@ -681,9 +657,6 @@ An example event for `dynamodb` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### ebs
@@ -814,9 +787,6 @@ An example event for `ebs` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### ec2
@@ -1017,9 +987,6 @@ An example event for `ec2` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### elb
@@ -1192,9 +1159,6 @@ An example event for `elb` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### lambda
@@ -1316,9 +1280,6 @@ An example event for `lambda` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### natgateway
@@ -1470,9 +1431,6 @@ An example event for `natgateway` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### rds
@@ -1695,9 +1653,6 @@ An example event for `rds` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### s3_daily_storage
@@ -1803,9 +1758,6 @@ An example event for `s3_daily_storage` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### s3_request
@@ -1938,9 +1890,6 @@ An example event for `s3_request` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### sns
@@ -2067,9 +2016,6 @@ An example event for `sns` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### sqs
@@ -2186,9 +2132,6 @@ An example event for `sqs` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### transitgateway
@@ -2312,9 +2255,6 @@ An example event for `transitgateway` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### usage
@@ -2424,9 +2364,6 @@ An example event for `usage` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
 
 ### vpn
@@ -2535,7 +2472,4 @@ An example event for `vpn` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 
