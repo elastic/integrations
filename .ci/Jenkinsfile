@@ -54,9 +54,10 @@ pipeline {
       steps {
         githubPrCheckApproved()
         cleanup()
-        gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'snapshot', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
+        gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
           sh(label: 'Add upstream to tracked repositories', script: 'git remote add upstream https://github.com/elastic/package-storage')
+          sh(label: 'Fetch upstream', script: 'git fetch upstream')
           sh(label: 'Track snapshot', script: 'git checkout -b snapshot -t upstream/snapshot')
           sh(label: 'Track staging', script: 'git checkout -b staging -t upstream/staging')
           sh(label: 'Track production', script: 'git checkout -b production -t upstream/production')
