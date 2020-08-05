@@ -64,7 +64,9 @@ pipeline {
         }
         withMageEnv(){
           dir("${BASE_DIR}"){
-            sh(label: 'Updates Package Storage', script: 'mage -debug UpdatePackageStorage')
+            withCredentials([string(credentialsId: "${JOB_GIT_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
+              sh(label: 'Updates Package Storage', script: 'mage -debug UpdatePackageStorage')
+            }
           }
         }
       }
