@@ -20,408 +20,408 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| checkpoint.checkpoint.action_reason | Connection drop reason. | integer |
-| checkpoint.checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
-| checkpoint.checkpoint.additional_ip | DNS host name. | keyword |
-| checkpoint.checkpoint.additional_rdata | List of additional resource records. | keyword |
-| checkpoint.checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
-| checkpoint.checkpoint.allocated_ports | Amount of allocated ports. | integer |
-| checkpoint.checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
-| checkpoint.checkpoint.answer_rdata | List of answer resource records to the questioned domains. | keyword |
-| checkpoint.checkpoint.anti_virus_type | Anti virus type. | keyword |
-| checkpoint.checkpoint.app_desc | Application description. | keyword |
-| checkpoint.checkpoint.app_id | Application ID. | integer |
-| checkpoint.checkpoint.app_package | Unique identifier of the application on the protected mobile device. | keyword |
-| checkpoint.checkpoint.app_properties | List of all found categories. | keyword |
-| checkpoint.checkpoint.app_repackaged | Indicates whether the original application was repackage not by the official developer. | keyword |
-| checkpoint.checkpoint.app_sid_id | Unique SHA identifier of a mobile application. | keyword |
-| checkpoint.checkpoint.app_sig_id | IOC indicator description. | keyword |
-| checkpoint.checkpoint.app_version | Version of the application downloaded on the protected mobile device. | keyword |
-| checkpoint.checkpoint.appi_name | Name of application downloaded on the protected mobile device. | keyword |
-| checkpoint.checkpoint.arrival_time | Email arrival timestamp. | keyword |
-| checkpoint.checkpoint.attachments_num | Number of attachments in the mail. | integer |
-| checkpoint.checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
-| checkpoint.checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
-| checkpoint.checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
-| checkpoint.checkpoint.authority_rdata | List of authoritative servers. | keyword |
-| checkpoint.checkpoint.authorization | Authorization HTTP header value. | keyword |
-| checkpoint.checkpoint.bcc | List of BCC addresses. | keyword |
-| checkpoint.checkpoint.blade_name | Blade name. | keyword |
-| checkpoint.checkpoint.broker_publisher | IP address of the broker publisher who shared the session information. | ip |
-| checkpoint.checkpoint.browse_time | Application session browse time. | keyword |
-| checkpoint.checkpoint.c_bytes | Boolean value indicates whether bytes sent from the client side are used. | integer |
-| checkpoint.checkpoint.calc_desc | Log description. | keyword |
-| checkpoint.checkpoint.capacity | Capacity of the ports. | integer |
-| checkpoint.checkpoint.capture_uuid | UUID generated for the capture. Used when enabling the capture when logging. | keyword |
-| checkpoint.checkpoint.cc | The Carbon Copy address of the email. | keyword |
-| checkpoint.checkpoint.certificate_resource | HTTPS resource Possible values: SNI or domain name (DN). | keyword |
-| checkpoint.checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
-| checkpoint.checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
-| checkpoint.checkpoint.chunk_type | Chunck of the sctp stream. | keyword |
-| checkpoint.checkpoint.client_name | Client Application or Software Blade that detected the event. | keyword |
-| checkpoint.checkpoint.client_type | Endpoint Connect. | keyword |
-| checkpoint.checkpoint.client_type_os | Client OS detected in the HTTP request. | keyword |
-| checkpoint.checkpoint.client_version | Build version of SandBlast Agent client installed on the computer. | keyword |
-| checkpoint.checkpoint.cluster_info | Cluster information. Possible options: Failover reason/cluster state changes/CP cluster or 3rd party. | keyword |
-| checkpoint.checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
-| checkpoint.checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
-| checkpoint.checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
-| checkpoint.checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
-| checkpoint.checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
-| checkpoint.checkpoint.content_disposition | Indicates how the content is expected to be displayed inline in the browser. | keyword |
-| checkpoint.checkpoint.content_length | Indicates the size of the entity-body of the HTTP header. | keyword |
-| checkpoint.checkpoint.content_risk | File risk. | integer |
-| checkpoint.checkpoint.content_type | Mail content type. Possible values: application/msword, text/html, image/gif etc. | keyword |
-| checkpoint.checkpoint.context_num | Serial number of the log for a specific connection. | integer |
-| checkpoint.checkpoint.cookieI | Initiator cookie. | keyword |
-| checkpoint.checkpoint.cookieR | Responder cookie. | keyword |
-| checkpoint.checkpoint.cp_message | Used to log a general message. | integer |
-| checkpoint.checkpoint.cvpn_category | Mobile Access application type. | keyword |
-| checkpoint.checkpoint.cvpn_resource | Mobile Access application. | keyword |
-| checkpoint.checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
-| checkpoint.checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
-| checkpoint.checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
-| checkpoint.checkpoint.desc | Override application description. | keyword |
-| checkpoint.checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
-| checkpoint.checkpoint.destination_object | Matched object name on destination column. | keyword |
-| checkpoint.checkpoint.detected_on | System and applications version the file was emulated on. | keyword |
-| checkpoint.checkpoint.developer_certificate_name | Name of the developer's certificate that was used to sign the mobile application. | keyword |
-| checkpoint.checkpoint.diameter_app_ID | The ID of diameter application. | integer |
-| checkpoint.checkpoint.diameter_cmd_code | Diameter not allowed application command id. | integer |
-| checkpoint.checkpoint.diameter_msg_type | Diameter message type. | keyword |
-| checkpoint.checkpoint.dlp_action_reason | Action chosen reason. | keyword |
-| checkpoint.checkpoint.dlp_additional_action | Watermark/None. | keyword |
-| checkpoint.checkpoint.dlp_categories | Data type category. | keyword |
-| checkpoint.checkpoint.dlp_data_type_name | Matched data type. | keyword |
-| checkpoint.checkpoint.dlp_data_type_uid | Unique ID of the matched data type. | keyword |
-| checkpoint.checkpoint.dlp_fingerprint_files_number | Number of successfully scanned files in repository. | integer |
-| checkpoint.checkpoint.dlp_fingerprint_long_status | Scan status - long format. | keyword |
-| checkpoint.checkpoint.dlp_fingerprint_short_status | Scan status - short format. | keyword |
-| checkpoint.checkpoint.dlp_incident_uid | Unique ID of the matched rule. | keyword |
-| checkpoint.checkpoint.dlp_recipients | Mail recipients. | keyword |
-| checkpoint.checkpoint.dlp_related_incident_uid | Other ID related to this one. | keyword |
-| checkpoint.checkpoint.dlp_relevant_data_types | In case of Compound/Group: the inner data types that were matched. | keyword |
-| checkpoint.checkpoint.dlp_repository_directories_number | Number of directories in repository. | integer |
-| checkpoint.checkpoint.dlp_repository_files_number | Number of files in repository. | integer |
-| checkpoint.checkpoint.dlp_repository_id | ID of scanned repository. | keyword |
-| checkpoint.checkpoint.dlp_repository_not_scanned_directories_percentage | Percentage of directories the Security Gateway was unable to read. | integer |
-| checkpoint.checkpoint.dlp_repository_reached_directories_number | Number of scanned directories in repository. | integer |
-| checkpoint.checkpoint.dlp_repository_root_path | Repository path. | keyword |
-| checkpoint.checkpoint.dlp_repository_scan_progress | Scan percentage. | integer |
-| checkpoint.checkpoint.dlp_repository_scanned_directories_number | Amount of directories scanned. | integer |
-| checkpoint.checkpoint.dlp_repository_scanned_files_number | Number of scanned files in repository. | integer |
-| checkpoint.checkpoint.dlp_repository_scanned_total_size | Size scanned. | integer |
-| checkpoint.checkpoint.dlp_repository_skipped_files_number | Skipped number of files because of configuration. | integer |
-| checkpoint.checkpoint.dlp_repository_total_size | Repository size. | integer |
-| checkpoint.checkpoint.dlp_repository_unreachable_directories_number | Number of directories the Security Gateway was unable to read. | integer |
-| checkpoint.checkpoint.dlp_rule_name | Matched rule name. | keyword |
-| checkpoint.checkpoint.dlp_subject | Mail subject. | keyword |
-| checkpoint.checkpoint.dlp_template_score | Template data type match score. | keyword |
-| checkpoint.checkpoint.dlp_transint | HTTP/SMTP/FTP. | keyword |
-| checkpoint.checkpoint.dlp_violation_description | Violation descriptions described in the rulebase. | keyword |
-| checkpoint.checkpoint.dlp_watermark_profile | Watermark which was applied. | keyword |
-| checkpoint.checkpoint.dlp_word_list | Phrases matched by data type. | keyword |
-| checkpoint.checkpoint.dns_query | DNS query. | keyword |
-| checkpoint.checkpoint.drop_reason | Drop reason description. | keyword |
-| checkpoint.checkpoint.dropped_file_hash | List of file hashes dropped from the original file. | keyword |
-| checkpoint.checkpoint.dropped_file_name | List of names dropped from the original file. | keyword |
-| checkpoint.checkpoint.dropped_file_type | List of file types dropped from the original file. | keyword |
-| checkpoint.checkpoint.dropped_file_verdict | List of file verdics dropped from the original file. | keyword |
-| checkpoint.checkpoint.dropped_incoming | Number of incoming bytes dropped when using UP-limit feature. | integer |
-| checkpoint.checkpoint.dropped_outgoing | Number of outgoing bytes dropped when using UP-limit feature. | integer |
-| checkpoint.checkpoint.dropped_total | Amount of dropped packets (both incoming and outgoing). | integer |
-| checkpoint.checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
-| checkpoint.checkpoint.dst_country | Destination country. | keyword |
-| checkpoint.checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
-| checkpoint.checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
-| checkpoint.checkpoint.dstkeyid | Responder Spi ID. | keyword |
-| checkpoint.checkpoint.duplicate | Log marked as duplicated, when mail is split and the Security Gateway sees it twice. | keyword |
-| checkpoint.checkpoint.duration | Scan duration. | keyword |
-| checkpoint.checkpoint.elapsed | Time passed since start time. | keyword |
-| checkpoint.checkpoint.email_content | Mail contents. Possible options: attachments/links & attachments/links/text only. | keyword |
-| checkpoint.checkpoint.email_control | Engine name. | keyword |
-| checkpoint.checkpoint.email_control_analysis | Message classification, received from spam vendor engine. | keyword |
-| checkpoint.checkpoint.email_headers | String containing all the email headers. | keyword |
-| checkpoint.checkpoint.email_id | Email number in smtp connection. | keyword |
-| checkpoint.checkpoint.email_message_id | Email session id (uniqe ID of the mail). | keyword |
-| checkpoint.checkpoint.email_queue_id | Postfix email queue id. | keyword |
-| checkpoint.checkpoint.email_queue_name | Postfix email queue name. | keyword |
-| checkpoint.checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | integer |
-| checkpoint.checkpoint.email_session_id | Connection uuid. | keyword |
-| checkpoint.checkpoint.email_spam_category | Email categories. Possible values: spam/not spam/phishing. | keyword |
-| checkpoint.checkpoint.email_status | Describes the email's state. Possible options: delivered, deferred, skipped, bounced, hold, new, scan_started, scan_ended | keyword |
-| checkpoint.checkpoint.email_subject | Original email subject. | keyword |
-| checkpoint.checkpoint.emulated_on | Images the files were emulated on. | keyword |
-| checkpoint.checkpoint.encryption_failure | Message indicating why the encryption failed. | keyword |
-| checkpoint.checkpoint.end_time | TCP connection end time. | keyword |
-| checkpoint.checkpoint.end_user_firewall_type | End user firewall type. | keyword |
-| checkpoint.checkpoint.esod_access_status | Access denied. | keyword |
-| checkpoint.checkpoint.esod_associated_policies | Associated policies. | keyword |
-| checkpoint.checkpoint.esod_noncompliance_reason | Non-compliance reason. | keyword |
-| checkpoint.checkpoint.esod_rule_action | Unknown rule action. | keyword |
-| checkpoint.checkpoint.esod_rule_name | Unknown rule name. | keyword |
-| checkpoint.checkpoint.esod_rule_type | Unknown rule type. | keyword |
-| checkpoint.checkpoint.esod_scan_status | Scan failed. | keyword |
-| checkpoint.checkpoint.event_count | Number of events associated with the log. | long |
-| checkpoint.checkpoint.expire_time | Connection closing time. | keyword |
-| checkpoint.checkpoint.extension_version | Build version of the SandBlast Agent browser extension. | keyword |
-| checkpoint.checkpoint.extracted_file_hash | Archive hash in case of extracted files. | keyword |
-| checkpoint.checkpoint.extracted_file_names | Names of extracted files in case of an archive. | keyword |
-| checkpoint.checkpoint.extracted_file_type | Types of extracted files in case of an archive. | keyword |
-| checkpoint.checkpoint.extracted_file_uid | UID of extracted files in case of an archive. | keyword |
-| checkpoint.checkpoint.extracted_file_verdict | Verdict of extracted files in case of an archive. | keyword |
-| checkpoint.checkpoint.failure_impact | The impact of update service failure. | keyword |
-| checkpoint.checkpoint.failure_reason | MTA failure description. | keyword |
-| checkpoint.checkpoint.file_direction | File direction. Possible options: upload/download. | keyword |
-| checkpoint.checkpoint.file_name | Malicious file name. | keyword |
-| checkpoint.checkpoint.files_names | List of files requested by FTP. | keyword |
-| checkpoint.checkpoint.first_hit_time | First hit time in current interval. | integer |
-| checkpoint.checkpoint.fs-proto | The file share protocol used in mobile acess file share application. | keyword |
-| checkpoint.checkpoint.ftp_user | FTP username. | keyword |
-| checkpoint.checkpoint.fw_message | Used for various firewall errors. | keyword |
-| checkpoint.checkpoint.fw_subproduct | Can be vpn/non vpn. | keyword |
-| checkpoint.checkpoint.hide_ip | Source IP which will be used after CGNAT. | ip |
-| checkpoint.checkpoint.hit | Number of hits on a rule. | integer |
-| checkpoint.checkpoint.host_time | Local time on the endpoint computer. | keyword |
-| checkpoint.checkpoint.http_host | Domain name of the server that the HTTP request is sent to. | keyword |
-| checkpoint.checkpoint.http_location | Response header, indicates the URL to redirect a page to. | keyword |
-| checkpoint.checkpoint.http_server | Server HTTP header value, contains information about the software used by the origin server, which handles the request. | keyword |
-| checkpoint.checkpoint.https_inspection_action | HTTPS inspection action (Inspect/Bypass/Error). | keyword |
-| checkpoint.checkpoint.https_inspection_rule_id | ID of the matched rule. | keyword |
-| checkpoint.checkpoint.https_inspection_rule_name | Name of the matched rule. | keyword |
-| checkpoint.checkpoint.https_validation | Precise error, describing HTTPS inspection failure. | keyword |
-| checkpoint.checkpoint.icap_more_info | Free text for verdict. | integer |
-| checkpoint.checkpoint.icap_server_name | Server name. | keyword |
-| checkpoint.checkpoint.icap_server_service | Service name, as given in the ICAP URI | keyword |
-| checkpoint.checkpoint.icap_service_id | Service ID, can work with multiple servers, treated as services. | integer |
-| checkpoint.checkpoint.icmp | Number of packets, received by the client. | keyword |
-| checkpoint.checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | integer |
-| checkpoint.checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | integer |
-| checkpoint.checkpoint.id | Override application ID. | integer |
-| checkpoint.checkpoint.ike | IKEMode (PHASE1, PHASE2, etc..). | keyword |
-| checkpoint.checkpoint.ike_ids | All QM ids. | keyword |
-| checkpoint.checkpoint.impacted_files | In case of an infection on an endpoint computer, the list of files that the malware impacted. | keyword |
-| checkpoint.checkpoint.incident_extension | Matched data type. | keyword |
-| checkpoint.checkpoint.indicator_description | IOC indicator description. | keyword |
-| checkpoint.checkpoint.indicator_name | IOC indicator name. | keyword |
-| checkpoint.checkpoint.indicator_reference | IOC indicator reference. | keyword |
-| checkpoint.checkpoint.indicator_uuid | IOC indicator uuid. | keyword |
-| checkpoint.checkpoint.info | Special log message. | keyword |
-| checkpoint.checkpoint.information | Policy installation status for a specific blade. | keyword |
-| checkpoint.checkpoint.inspection_category | Inspection category: protocol anomaly, signature etc. | keyword |
-| checkpoint.checkpoint.inspection_item | Blade element performed inspection. | keyword |
-| checkpoint.checkpoint.inspection_profile | Profile which the activated protection belongs to. | keyword |
-| checkpoint.checkpoint.inspection_settings_log | Indicats that the log was released by inspection settings. | keyword |
-| checkpoint.checkpoint.installed_products | List of installed Endpoint Software Blades. | keyword |
-| checkpoint.checkpoint.int_end | Subscriber end int which will be used for NAT. | integer |
-| checkpoint.checkpoint.int_start | Subscriber start int which will be used for NAT. | integer |
-| checkpoint.checkpoint.interface_name | Designated interface for mirror And decrypt. | keyword |
-| checkpoint.checkpoint.internal_error | Internal error, for troubleshooting | keyword |
-| checkpoint.checkpoint.invalid_file_size | File_size field is valid only if this field is set to 0. | integer |
-| checkpoint.checkpoint.ip_option | IP option that was dropped. | integer |
-| checkpoint.checkpoint.isp_link | Name of ISP link. | keyword |
-| checkpoint.checkpoint.last_hit_time | Last hit time in current interval. | integer |
-| checkpoint.checkpoint.last_rematch_time | Connection rematched time. | keyword |
-| checkpoint.checkpoint.layer_name | Layer name. | keyword |
-| checkpoint.checkpoint.layer_uuid | Layer UUID. | keyword |
-| checkpoint.checkpoint.limit_applied | Indicates whether the session was actually date limited. | integer |
-| checkpoint.checkpoint.limit_requested | Indicates whether data limit was requested for the session. | integer |
-| checkpoint.checkpoint.link_probing_status_update | IP address response status. | keyword |
-| checkpoint.checkpoint.links_num | Number of links in the mail. | integer |
-| checkpoint.checkpoint.log_delay | Time left before deleting template. | integer |
-| checkpoint.checkpoint.log_id | Unique identity for logs. | integer |
-| checkpoint.checkpoint.logid | System messages | keyword |
-| checkpoint.checkpoint.long_desc | More information on the process (usually describing error reason in failure). | keyword |
-| checkpoint.checkpoint.machine | L2TP machine which triggered the log and the log refers to it. | keyword |
-| checkpoint.checkpoint.malware_family | Additional information on protection. | keyword |
-| checkpoint.checkpoint.match_fk | Rule number. | integer |
-| checkpoint.checkpoint.match_id | Private key of the rule | integer |
-| checkpoint.checkpoint.matched_file | Unique ID of the matched data type. | keyword |
-| checkpoint.checkpoint.matched_file_percentage | Fingerprint: match percentage of the traffic. | integer |
-| checkpoint.checkpoint.matched_file_text_segments | Fingerprint: number of text segments matched by this traffic. | integer |
-| checkpoint.checkpoint.media_type | Media used (audio, video, etc.) | keyword |
-| checkpoint.checkpoint.message | ISP link has failed. | keyword |
-| checkpoint.checkpoint.message_info | Used for information messages, for example:NAT connection has ended. | keyword |
-| checkpoint.checkpoint.message_size | Mail/post size. | integer |
-| checkpoint.checkpoint.method | HTTP method. | keyword |
-| checkpoint.checkpoint.methods | IPSEc methods. | keyword |
-| checkpoint.checkpoint.mime_from | Sender's address. | keyword |
-| checkpoint.checkpoint.mime_to | List of receiver address. | keyword |
-| checkpoint.checkpoint.mirror_and_decrypt_type | Information about decrypt and forward. Possible values: Mirror only, Decrypt and mirror, Partial mirroring (HTTPS inspection Bypass). | keyword |
-| checkpoint.checkpoint.mitre_collection | The adversary is trying to collect data of interest to achieve his goal. | keyword |
-| checkpoint.checkpoint.mitre_command_and_control | The adversary is trying to communicate with compromised systems in order to control them. | keyword |
-| checkpoint.checkpoint.mitre_credential_access | The adversary is trying to steal account names and passwords. | keyword |
-| checkpoint.checkpoint.mitre_defense_evasion | The adversary is trying to avoid being detected. | keyword |
-| checkpoint.checkpoint.mitre_discovery | The adversary is trying to expose information about your environment. | keyword |
-| checkpoint.checkpoint.mitre_execution | The adversary is trying to run malicious code. | keyword |
-| checkpoint.checkpoint.mitre_exfiltration | The adversary is trying to steal data. | keyword |
-| checkpoint.checkpoint.mitre_impact | The adversary is trying to manipulate, interrupt, or destroy your systems and data. | keyword |
-| checkpoint.checkpoint.mitre_initial_access | The adversary is trying to break into your network. | keyword |
-| checkpoint.checkpoint.mitre_lateral_movement | The adversary is trying to explore your environment. | keyword |
-| checkpoint.checkpoint.mitre_persistence | The adversary is trying to maintain his foothold. | keyword |
-| checkpoint.checkpoint.mitre_privilege_escalation | The adversary is trying to gain higher-level permissions. | keyword |
-| checkpoint.checkpoint.monitor_reason | Aggregated logs of monitored packets. | keyword |
-| checkpoint.checkpoint.msgid | Message ID. | keyword |
-| checkpoint.checkpoint.name | Application name. | keyword |
-| checkpoint.checkpoint.nat46 | NAT 46 status, in most cases "enabled". | keyword |
-| checkpoint.checkpoint.nat_addtnl_rulenum | When matching 2 automatic rules , second rule match will be shown otherwise field will be 0. | integer |
-| checkpoint.checkpoint.nat_exhausted_pool | 4-tuple of an exhausted pool. | keyword |
-| checkpoint.checkpoint.nat_rulenum | NAT rulebase first matched rule. | integer |
-| checkpoint.checkpoint.needs_browse_time | Browse time required for the connection. | integer |
-| checkpoint.checkpoint.next_hop_ip | Next hop IP address. | keyword |
-| checkpoint.checkpoint.next_scheduled_scan_date | Next scan scheduled time according to time object. | keyword |
-| checkpoint.checkpoint.number_of_errors | Number of files that were not  scanned due to an error. | integer |
-| checkpoint.checkpoint.objecttable | Table of affected objects. | keyword |
-| checkpoint.checkpoint.objecttype | The type of the affected object. | keyword |
-| checkpoint.checkpoint.observable_comment | IOC observable signature description. | keyword |
-| checkpoint.checkpoint.observable_id | IOC observable signature id. | keyword |
-| checkpoint.checkpoint.observable_name | IOC observable signature name. | keyword |
-| checkpoint.checkpoint.operation | Operation made by Threat Extraction. | keyword |
-| checkpoint.checkpoint.operation_number | The operation nuber. | keyword |
-| checkpoint.checkpoint.origin_sic_name | Machine SIC. | keyword |
-| checkpoint.checkpoint.original_queue_id | Original postfix email queue id. | keyword |
-| checkpoint.checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
-| checkpoint.checkpoint.packet_amount | Amount of packets dropped. | integer |
-| checkpoint.checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
-| checkpoint.checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
-| checkpoint.checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
-| checkpoint.checkpoint.parent_file_uid | Archive's UID in case of extracted files. | keyword |
-| checkpoint.checkpoint.parent_process_username | Owner username of the parent process of the process that triggered the attack. | keyword |
-| checkpoint.checkpoint.parent_rule | Parent rule number, in case of inline layer. | integer |
-| checkpoint.checkpoint.peer_gateway | Main IP of the peer Security Gateway. | ip |
-| checkpoint.checkpoint.peer_ip | IP address which the client connects to. | keyword |
-| checkpoint.checkpoint.peer_ip_probing_status_update | IP address response status. | keyword |
-| checkpoint.checkpoint.performance_impact | Protection performance impact. | integer |
-| checkpoint.checkpoint.policy_mgmt | Name of the Management Server that manages this Security Gateway. | keyword |
-| checkpoint.checkpoint.policy_name | Name of the last policy that this Security Gateway fetched. | keyword |
-| checkpoint.checkpoint.ports_usage | Percentage of allocated ports. | integer |
-| checkpoint.checkpoint.ppp | Authentication status. | keyword |
-| checkpoint.checkpoint.precise_error | HTTP parser error. | keyword |
-| checkpoint.checkpoint.process_username | Owner username of the process that triggered the attack. | keyword |
-| checkpoint.checkpoint.properties | Application categories. | keyword |
-| checkpoint.checkpoint.protection_id | Protection malware id. | keyword |
-| checkpoint.checkpoint.protection_name | Specific signature name of the attack. | keyword |
-| checkpoint.checkpoint.protection_type | Type of protection used to detect the attack. | keyword |
-| checkpoint.checkpoint.protocol | Protocol detected on the connection. | keyword |
-| checkpoint.checkpoint.proxy_machine_name | Machine name connected to proxy IP. | integer |
-| checkpoint.checkpoint.proxy_src_ip | Sender source IP (even when using proxy). | ip |
-| checkpoint.checkpoint.proxy_user_dn | User distinguished name connected to proxy IP. | keyword |
-| checkpoint.checkpoint.proxy_user_name | User name connected to proxy IP. | keyword |
-| checkpoint.checkpoint.query | DNS query. | keyword |
-| checkpoint.checkpoint.question_rdata | List of question records domains. | keyword |
-| checkpoint.checkpoint.referrer | Referrer HTTP request header, previous web page address. | keyword |
-| checkpoint.checkpoint.referrer_parent_uid | Log UUID of the referring application. | keyword |
-| checkpoint.checkpoint.referrer_self_uid | UUID of the current log. | keyword |
-| checkpoint.checkpoint.registered_ip-phones | Registered IP-Phones. | keyword |
-| checkpoint.checkpoint.reject_category | Authentication failure reason. | keyword |
-| checkpoint.checkpoint.reject_id | A reject ID that corresponds to the one presented in the Mobile Access error page. | keyword |
-| checkpoint.checkpoint.rematch_info | Information sent when old connections cannot be matched during policy installation. | keyword |
-| checkpoint.checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
-| checkpoint.checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
-| checkpoint.checkpoint.risk | Risk level we got from the engine. | keyword |
-| checkpoint.checkpoint.rpc_prog | Log for new RPC state - prog values. | integer |
-| checkpoint.checkpoint.rule | Matched rule number. | integer |
-| checkpoint.checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
-| checkpoint.checkpoint.rulebase_id | Layer number. | integer |
-| checkpoint.checkpoint.scan_direction | Scan direction. | keyword |
-| checkpoint.checkpoint.scan_hosts_day | Number of unique hosts during the last day. | integer |
-| checkpoint.checkpoint.scan_hosts_hour | Number of unique hosts during the last hour. | integer |
-| checkpoint.checkpoint.scan_hosts_week | Number of unique hosts during the last week. | integer |
-| checkpoint.checkpoint.scan_id | Sequential number of scan. | keyword |
-| checkpoint.checkpoint.scan_mail | Number of emails that were scanned by "AB malicious activity" engine. | integer |
-| checkpoint.checkpoint.scan_results | "Infected"/description of a failure. | keyword |
-| checkpoint.checkpoint.scheme | Describes the scheme used for the log. | keyword |
-| checkpoint.checkpoint.scope | IP related to the attack. | keyword |
-| checkpoint.checkpoint.scrub_activity | The result of the extraction | keyword |
-| checkpoint.checkpoint.scrub_download_time | File download time from resource. | keyword |
-| checkpoint.checkpoint.scrub_time | Extraction process duration. | keyword |
-| checkpoint.checkpoint.scrub_total_time | Threat extraction total file handling time. | keyword |
-| checkpoint.checkpoint.scrubbed_content | Active content that was found. | keyword |
-| checkpoint.checkpoint.sctp_association_state | The bad state you were trying to update to. | keyword |
-| checkpoint.checkpoint.sctp_error | Error information, what caused sctp to fail on out_of_state. | keyword |
-| checkpoint.checkpoint.scv_message_info | Drop reason. | keyword |
-| checkpoint.checkpoint.scv_user | Username whose packets are dropped on SCV. | keyword |
-| checkpoint.checkpoint.securexl_message | Two options for a SecureXL message: 1. Missed accounting records after heavy load on logging system. 2. FW log message regarding a packet drop. | keyword |
-| checkpoint.checkpoint.session_id | Log uuid. | keyword |
-| checkpoint.checkpoint.session_uid | HTTP session-id. | keyword |
-| checkpoint.checkpoint.short_desc | Short description of the process that was executed. | keyword |
-| checkpoint.checkpoint.sig_id | Application's signature ID which how it was detected by. | keyword |
-| checkpoint.checkpoint.similar_communication | Network action found similar to the malicious file. | keyword |
-| checkpoint.checkpoint.similar_hashes | Hashes found similar to the malicious file. | keyword |
-| checkpoint.checkpoint.similar_strings | Strings found similar to the malicious file. | keyword |
-| checkpoint.checkpoint.similiar_iocs | Other IoCs similar to the ones found, related to the malicious file. | keyword |
-| checkpoint.checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
-| checkpoint.checkpoint.site_name | Site name. | keyword |
-| checkpoint.checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
-| checkpoint.checkpoint.source_object | Matched object name on source column. | integer |
-| checkpoint.checkpoint.source_os | OS which generated the attack. | keyword |
-| checkpoint.checkpoint.special_properties | If this field is set to '1' the log will not be shown (in use for monitoring scan progress). | integer |
-| checkpoint.checkpoint.specific_data_type_name | Compound/Group scenario, data type that was matched. | keyword |
-| checkpoint.checkpoint.speed | Current scan speed. | integer |
-| checkpoint.checkpoint.spyware_name | Spyware name. | keyword |
-| checkpoint.checkpoint.spyware_type | Spyware type. | keyword |
-| checkpoint.checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
-| checkpoint.checkpoint.src_phone_number | Source IP-Phone. | keyword |
-| checkpoint.checkpoint.src_user_dn | User distinguished name connected to source IP. | keyword |
-| checkpoint.checkpoint.src_user_name | User name connected to source IP | keyword |
-| checkpoint.checkpoint.srckeyid | Initiator Spi ID. | keyword |
-| checkpoint.checkpoint.status | Ok/Warning/Error. | keyword |
-| checkpoint.checkpoint.status_update | Last time log was updated. | keyword |
-| checkpoint.checkpoint.sub_policy_name | Layer name. | keyword |
-| checkpoint.checkpoint.sub_policy_uid | Layer uid. | keyword |
-| checkpoint.checkpoint.subscriber | Source IP before CGNAT. | ip |
-| checkpoint.checkpoint.summary | Summary message of a non-compliant DNS traffic drops or detects. | keyword |
-| checkpoint.checkpoint.suppressed_logs | Aggregated connections for five minutes on the same source, destination and port. | integer |
-| checkpoint.checkpoint.sync | Sync status and the reason (stable, at risk). | keyword |
-| checkpoint.checkpoint.sys_message | System messages | keyword |
-| checkpoint.checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
-| checkpoint.checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
-| checkpoint.checkpoint.tcp_packet_out_of_state | State violation. | keyword |
-| checkpoint.checkpoint.tcp_state | Log reinting a tcp state change. | keyword |
-| checkpoint.checkpoint.te_verdict_determined_by | Emulators determined file verdict. | keyword |
-| checkpoint.checkpoint.ticket_id | Unique ID per file. | keyword |
-| checkpoint.checkpoint.tls_server_host_name | SNI/CN from encrypted TLS connection used by URLF for categorization. | keyword |
-| checkpoint.checkpoint.top_archive_file_name | In case of archive file: the file that was sent/received. | keyword |
-| checkpoint.checkpoint.total_attachments | The number of attachments in an email. | integer |
-| checkpoint.checkpoint.triggered_by | The name of the mechanism that triggered the Software Blade to enforce a protection. | keyword |
-| checkpoint.checkpoint.trusted_domain | In case of phishing event, the domain, which the attacker was impersonating. | keyword |
-| checkpoint.checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
-| checkpoint.checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
-| checkpoint.checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
-| checkpoint.checkpoint.url | Translated URL. | keyword |
-| checkpoint.checkpoint.user | Source user name. | keyword |
-| checkpoint.checkpoint.user_agent | String identifying requesting software user agent. | keyword |
-| checkpoint.checkpoint.vendor_list | The vendor name that provided the verdict for a malicious URL. | keyword |
-| checkpoint.checkpoint.verdict | TE engine verdict Possible values: Malicious/Benign/Error. | keyword |
-| checkpoint.checkpoint.via | Via header is added by proxies for tracking purposes to avoid sending reqests in loop. | keyword |
-| checkpoint.checkpoint.voip_attach_action_info | Attachment action Info. | keyword |
-| checkpoint.checkpoint.voip_attach_sz | Attachment size. | integer |
-| checkpoint.checkpoint.voip_call_dir | Call direction: in/out. | keyword |
-| checkpoint.checkpoint.voip_call_id | Call-ID. | keyword |
-| checkpoint.checkpoint.voip_call_state | Call state. Possible values: in/out. | keyword |
-| checkpoint.checkpoint.voip_call_term_time | Call termination time stamp. | keyword |
-| checkpoint.checkpoint.voip_config | Configuration. | keyword |
-| checkpoint.checkpoint.voip_duration | Call duration (seconds). | keyword |
-| checkpoint.checkpoint.voip_est_codec | Estimated codec. | keyword |
-| checkpoint.checkpoint.voip_exp | Expiration. | integer |
-| checkpoint.checkpoint.voip_from_user_type | Source IP-Phone type. | keyword |
-| checkpoint.checkpoint.voip_log_type | VoIP log types. Possible values: reject, call, registration. | keyword |
-| checkpoint.checkpoint.voip_media_codec | Estimated codec. | keyword |
-| checkpoint.checkpoint.voip_media_ipp | Media IP protocol. | keyword |
-| checkpoint.checkpoint.voip_media_port | Media int. | keyword |
-| checkpoint.checkpoint.voip_method | Registration request. | keyword |
-| checkpoint.checkpoint.voip_reason_info | Information. | keyword |
-| checkpoint.checkpoint.voip_reg_int | Registration port. | integer |
-| checkpoint.checkpoint.voip_reg_ipp | Registration IP protocol. | integer |
-| checkpoint.checkpoint.voip_reg_period | Registration period. | integer |
-| checkpoint.checkpoint.voip_reg_server | Registrar server IP address. | ip |
-| checkpoint.checkpoint.voip_reg_user_type | Registered IP-Phone type. | keyword |
-| checkpoint.checkpoint.voip_reject_reason | Reject reason. | keyword |
-| checkpoint.checkpoint.voip_to_user_type | Destination IP-Phone type. | keyword |
-| checkpoint.checkpoint.vpn_feature_name | L2TP /IKE / Link Selection. | keyword |
-| checkpoint.checkpoint.watermark | Reports whether watermark is added to the cleaned file. | keyword |
-| checkpoint.checkpoint.web_server_type | Web server detected in the HTTP response. | keyword |
-| checkpoint.checkpoint.word_list | Words matched by data type. | keyword |
+| checkpoint.action_reason | Connection drop reason. | integer |
+| checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
+| checkpoint.additional_ip | DNS host name. | keyword |
+| checkpoint.additional_rdata | List of additional resource records. | keyword |
+| checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
+| checkpoint.allocated_ports | Amount of allocated ports. | integer |
+| checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
+| checkpoint.answer_rdata | List of answer resource records to the questioned domains. | keyword |
+| checkpoint.anti_virus_type | Anti virus type. | keyword |
+| checkpoint.app_desc | Application description. | keyword |
+| checkpoint.app_id | Application ID. | integer |
+| checkpoint.app_package | Unique identifier of the application on the protected mobile device. | keyword |
+| checkpoint.app_properties | List of all found categories. | keyword |
+| checkpoint.app_repackaged | Indicates whether the original application was repackage not by the official developer. | keyword |
+| checkpoint.app_sid_id | Unique SHA identifier of a mobile application. | keyword |
+| checkpoint.app_sig_id | IOC indicator description. | keyword |
+| checkpoint.app_version | Version of the application downloaded on the protected mobile device. | keyword |
+| checkpoint.appi_name | Name of application downloaded on the protected mobile device. | keyword |
+| checkpoint.arrival_time | Email arrival timestamp. | keyword |
+| checkpoint.attachments_num | Number of attachments in the mail. | integer |
+| checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
+| checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
+| checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
+| checkpoint.authority_rdata | List of authoritative servers. | keyword |
+| checkpoint.authorization | Authorization HTTP header value. | keyword |
+| checkpoint.bcc | List of BCC addresses. | keyword |
+| checkpoint.blade_name | Blade name. | keyword |
+| checkpoint.broker_publisher | IP address of the broker publisher who shared the session information. | ip |
+| checkpoint.browse_time | Application session browse time. | keyword |
+| checkpoint.c_bytes | Boolean value indicates whether bytes sent from the client side are used. | integer |
+| checkpoint.calc_desc | Log description. | keyword |
+| checkpoint.capacity | Capacity of the ports. | integer |
+| checkpoint.capture_uuid | UUID generated for the capture. Used when enabling the capture when logging. | keyword |
+| checkpoint.cc | The Carbon Copy address of the email. | keyword |
+| checkpoint.certificate_resource | HTTPS resource Possible values: SNI or domain name (DN). | keyword |
+| checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
+| checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
+| checkpoint.chunk_type | Chunck of the sctp stream. | keyword |
+| checkpoint.client_name | Client Application or Software Blade that detected the event. | keyword |
+| checkpoint.client_type | Endpoint Connect. | keyword |
+| checkpoint.client_type_os | Client OS detected in the HTTP request. | keyword |
+| checkpoint.client_version | Build version of SandBlast Agent client installed on the computer. | keyword |
+| checkpoint.cluster_info | Cluster information. Possible options: Failover reason/cluster state changes/CP cluster or 3rd party. | keyword |
+| checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
+| checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
+| checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
+| checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
+| checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
+| checkpoint.content_disposition | Indicates how the content is expected to be displayed inline in the browser. | keyword |
+| checkpoint.content_length | Indicates the size of the entity-body of the HTTP header. | keyword |
+| checkpoint.content_risk | File risk. | integer |
+| checkpoint.content_type | Mail content type. Possible values: application/msword, text/html, image/gif etc. | keyword |
+| checkpoint.context_num | Serial number of the log for a specific connection. | integer |
+| checkpoint.cookieI | Initiator cookie. | keyword |
+| checkpoint.cookieR | Responder cookie. | keyword |
+| checkpoint.cp_message | Used to log a general message. | integer |
+| checkpoint.cvpn_category | Mobile Access application type. | keyword |
+| checkpoint.cvpn_resource | Mobile Access application. | keyword |
+| checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
+| checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
+| checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
+| checkpoint.desc | Override application description. | keyword |
+| checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
+| checkpoint.destination_object | Matched object name on destination column. | keyword |
+| checkpoint.detected_on | System and applications version the file was emulated on. | keyword |
+| checkpoint.developer_certificate_name | Name of the developer's certificate that was used to sign the mobile application. | keyword |
+| checkpoint.diameter_app_ID | The ID of diameter application. | integer |
+| checkpoint.diameter_cmd_code | Diameter not allowed application command id. | integer |
+| checkpoint.diameter_msg_type | Diameter message type. | keyword |
+| checkpoint.dlp_action_reason | Action chosen reason. | keyword |
+| checkpoint.dlp_additional_action | Watermark/None. | keyword |
+| checkpoint.dlp_categories | Data type category. | keyword |
+| checkpoint.dlp_data_type_name | Matched data type. | keyword |
+| checkpoint.dlp_data_type_uid | Unique ID of the matched data type. | keyword |
+| checkpoint.dlp_fingerprint_files_number | Number of successfully scanned files in repository. | integer |
+| checkpoint.dlp_fingerprint_long_status | Scan status - long format. | keyword |
+| checkpoint.dlp_fingerprint_short_status | Scan status - short format. | keyword |
+| checkpoint.dlp_incident_uid | Unique ID of the matched rule. | keyword |
+| checkpoint.dlp_recipients | Mail recipients. | keyword |
+| checkpoint.dlp_related_incident_uid | Other ID related to this one. | keyword |
+| checkpoint.dlp_relevant_data_types | In case of Compound/Group: the inner data types that were matched. | keyword |
+| checkpoint.dlp_repository_directories_number | Number of directories in repository. | integer |
+| checkpoint.dlp_repository_files_number | Number of files in repository. | integer |
+| checkpoint.dlp_repository_id | ID of scanned repository. | keyword |
+| checkpoint.dlp_repository_not_scanned_directories_percentage | Percentage of directories the Security Gateway was unable to read. | integer |
+| checkpoint.dlp_repository_reached_directories_number | Number of scanned directories in repository. | integer |
+| checkpoint.dlp_repository_root_path | Repository path. | keyword |
+| checkpoint.dlp_repository_scan_progress | Scan percentage. | integer |
+| checkpoint.dlp_repository_scanned_directories_number | Amount of directories scanned. | integer |
+| checkpoint.dlp_repository_scanned_files_number | Number of scanned files in repository. | integer |
+| checkpoint.dlp_repository_scanned_total_size | Size scanned. | integer |
+| checkpoint.dlp_repository_skipped_files_number | Skipped number of files because of configuration. | integer |
+| checkpoint.dlp_repository_total_size | Repository size. | integer |
+| checkpoint.dlp_repository_unreachable_directories_number | Number of directories the Security Gateway was unable to read. | integer |
+| checkpoint.dlp_rule_name | Matched rule name. | keyword |
+| checkpoint.dlp_subject | Mail subject. | keyword |
+| checkpoint.dlp_template_score | Template data type match score. | keyword |
+| checkpoint.dlp_transint | HTTP/SMTP/FTP. | keyword |
+| checkpoint.dlp_violation_description | Violation descriptions described in the rulebase. | keyword |
+| checkpoint.dlp_watermark_profile | Watermark which was applied. | keyword |
+| checkpoint.dlp_word_list | Phrases matched by data type. | keyword |
+| checkpoint.dns_query | DNS query. | keyword |
+| checkpoint.drop_reason | Drop reason description. | keyword |
+| checkpoint.dropped_file_hash | List of file hashes dropped from the original file. | keyword |
+| checkpoint.dropped_file_name | List of names dropped from the original file. | keyword |
+| checkpoint.dropped_file_type | List of file types dropped from the original file. | keyword |
+| checkpoint.dropped_file_verdict | List of file verdics dropped from the original file. | keyword |
+| checkpoint.dropped_incoming | Number of incoming bytes dropped when using UP-limit feature. | integer |
+| checkpoint.dropped_outgoing | Number of outgoing bytes dropped when using UP-limit feature. | integer |
+| checkpoint.dropped_total | Amount of dropped packets (both incoming and outgoing). | integer |
+| checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
+| checkpoint.dst_country | Destination country. | keyword |
+| checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
+| checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
+| checkpoint.dstkeyid | Responder Spi ID. | keyword |
+| checkpoint.duplicate | Log marked as duplicated, when mail is split and the Security Gateway sees it twice. | keyword |
+| checkpoint.duration | Scan duration. | keyword |
+| checkpoint.elapsed | Time passed since start time. | keyword |
+| checkpoint.email_content | Mail contents. Possible options: attachments/links & attachments/links/text only. | keyword |
+| checkpoint.email_control | Engine name. | keyword |
+| checkpoint.email_control_analysis | Message classification, received from spam vendor engine. | keyword |
+| checkpoint.email_headers | String containing all the email headers. | keyword |
+| checkpoint.email_id | Email number in smtp connection. | keyword |
+| checkpoint.email_message_id | Email session id (uniqe ID of the mail). | keyword |
+| checkpoint.email_queue_id | Postfix email queue id. | keyword |
+| checkpoint.email_queue_name | Postfix email queue name. | keyword |
+| checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | integer |
+| checkpoint.email_session_id | Connection uuid. | keyword |
+| checkpoint.email_spam_category | Email categories. Possible values: spam/not spam/phishing. | keyword |
+| checkpoint.email_status | Describes the email's state. Possible options: delivered, deferred, skipped, bounced, hold, new, scan_started, scan_ended | keyword |
+| checkpoint.email_subject | Original email subject. | keyword |
+| checkpoint.emulated_on | Images the files were emulated on. | keyword |
+| checkpoint.encryption_failure | Message indicating why the encryption failed. | keyword |
+| checkpoint.end_time | TCP connection end time. | keyword |
+| checkpoint.end_user_firewall_type | End user firewall type. | keyword |
+| checkpoint.esod_access_status | Access denied. | keyword |
+| checkpoint.esod_associated_policies | Associated policies. | keyword |
+| checkpoint.esod_noncompliance_reason | Non-compliance reason. | keyword |
+| checkpoint.esod_rule_action | Unknown rule action. | keyword |
+| checkpoint.esod_rule_name | Unknown rule name. | keyword |
+| checkpoint.esod_rule_type | Unknown rule type. | keyword |
+| checkpoint.esod_scan_status | Scan failed. | keyword |
+| checkpoint.event_count | Number of events associated with the log. | long |
+| checkpoint.expire_time | Connection closing time. | keyword |
+| checkpoint.extension_version | Build version of the SandBlast Agent browser extension. | keyword |
+| checkpoint.extracted_file_hash | Archive hash in case of extracted files. | keyword |
+| checkpoint.extracted_file_names | Names of extracted files in case of an archive. | keyword |
+| checkpoint.extracted_file_type | Types of extracted files in case of an archive. | keyword |
+| checkpoint.extracted_file_uid | UID of extracted files in case of an archive. | keyword |
+| checkpoint.extracted_file_verdict | Verdict of extracted files in case of an archive. | keyword |
+| checkpoint.failure_impact | The impact of update service failure. | keyword |
+| checkpoint.failure_reason | MTA failure description. | keyword |
+| checkpoint.file_direction | File direction. Possible options: upload/download. | keyword |
+| checkpoint.file_name | Malicious file name. | keyword |
+| checkpoint.files_names | List of files requested by FTP. | keyword |
+| checkpoint.first_hit_time | First hit time in current interval. | integer |
+| checkpoint.fs-proto | The file share protocol used in mobile acess file share application. | keyword |
+| checkpoint.ftp_user | FTP username. | keyword |
+| checkpoint.fw_message | Used for various firewall errors. | keyword |
+| checkpoint.fw_subproduct | Can be vpn/non vpn. | keyword |
+| checkpoint.hide_ip | Source IP which will be used after CGNAT. | ip |
+| checkpoint.hit | Number of hits on a rule. | integer |
+| checkpoint.host_time | Local time on the endpoint computer. | keyword |
+| checkpoint.http_host | Domain name of the server that the HTTP request is sent to. | keyword |
+| checkpoint.http_location | Response header, indicates the URL to redirect a page to. | keyword |
+| checkpoint.http_server | Server HTTP header value, contains information about the software used by the origin server, which handles the request. | keyword |
+| checkpoint.https_inspection_action | HTTPS inspection action (Inspect/Bypass/Error). | keyword |
+| checkpoint.https_inspection_rule_id | ID of the matched rule. | keyword |
+| checkpoint.https_inspection_rule_name | Name of the matched rule. | keyword |
+| checkpoint.https_validation | Precise error, describing HTTPS inspection failure. | keyword |
+| checkpoint.icap_more_info | Free text for verdict. | integer |
+| checkpoint.icap_server_name | Server name. | keyword |
+| checkpoint.icap_server_service | Service name, as given in the ICAP URI | keyword |
+| checkpoint.icap_service_id | Service ID, can work with multiple servers, treated as services. | integer |
+| checkpoint.icmp | Number of packets, received by the client. | keyword |
+| checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | integer |
+| checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | integer |
+| checkpoint.id | Override application ID. | integer |
+| checkpoint.ike | IKEMode (PHASE1, PHASE2, etc..). | keyword |
+| checkpoint.ike_ids | All QM ids. | keyword |
+| checkpoint.impacted_files | In case of an infection on an endpoint computer, the list of files that the malware impacted. | keyword |
+| checkpoint.incident_extension | Matched data type. | keyword |
+| checkpoint.indicator_description | IOC indicator description. | keyword |
+| checkpoint.indicator_name | IOC indicator name. | keyword |
+| checkpoint.indicator_reference | IOC indicator reference. | keyword |
+| checkpoint.indicator_uuid | IOC indicator uuid. | keyword |
+| checkpoint.info | Special log message. | keyword |
+| checkpoint.information | Policy installation status for a specific blade. | keyword |
+| checkpoint.inspection_category | Inspection category: protocol anomaly, signature etc. | keyword |
+| checkpoint.inspection_item | Blade element performed inspection. | keyword |
+| checkpoint.inspection_profile | Profile which the activated protection belongs to. | keyword |
+| checkpoint.inspection_settings_log | Indicats that the log was released by inspection settings. | keyword |
+| checkpoint.installed_products | List of installed Endpoint Software Blades. | keyword |
+| checkpoint.int_end | Subscriber end int which will be used for NAT. | integer |
+| checkpoint.int_start | Subscriber start int which will be used for NAT. | integer |
+| checkpoint.interface_name | Designated interface for mirror And decrypt. | keyword |
+| checkpoint.internal_error | Internal error, for troubleshooting | keyword |
+| checkpoint.invalid_file_size | File_size field is valid only if this field is set to 0. | integer |
+| checkpoint.ip_option | IP option that was dropped. | integer |
+| checkpoint.isp_link | Name of ISP link. | keyword |
+| checkpoint.last_hit_time | Last hit time in current interval. | integer |
+| checkpoint.last_rematch_time | Connection rematched time. | keyword |
+| checkpoint.layer_name | Layer name. | keyword |
+| checkpoint.layer_uuid | Layer UUID. | keyword |
+| checkpoint.limit_applied | Indicates whether the session was actually date limited. | integer |
+| checkpoint.limit_requested | Indicates whether data limit was requested for the session. | integer |
+| checkpoint.link_probing_status_update | IP address response status. | keyword |
+| checkpoint.links_num | Number of links in the mail. | integer |
+| checkpoint.log_delay | Time left before deleting template. | integer |
+| checkpoint.log_id | Unique identity for logs. | integer |
+| checkpoint.logid | System messages | keyword |
+| checkpoint.long_desc | More information on the process (usually describing error reason in failure). | keyword |
+| checkpoint.machine | L2TP machine which triggered the log and the log refers to it. | keyword |
+| checkpoint.malware_family | Additional information on protection. | keyword |
+| checkpoint.match_fk | Rule number. | integer |
+| checkpoint.match_id | Private key of the rule | integer |
+| checkpoint.matched_file | Unique ID of the matched data type. | keyword |
+| checkpoint.matched_file_percentage | Fingerprint: match percentage of the traffic. | integer |
+| checkpoint.matched_file_text_segments | Fingerprint: number of text segments matched by this traffic. | integer |
+| checkpoint.media_type | Media used (audio, video, etc.) | keyword |
+| checkpoint.message | ISP link has failed. | keyword |
+| checkpoint.message_info | Used for information messages, for example:NAT connection has ended. | keyword |
+| checkpoint.message_size | Mail/post size. | integer |
+| checkpoint.method | HTTP method. | keyword |
+| checkpoint.methods | IPSEc methods. | keyword |
+| checkpoint.mime_from | Sender's address. | keyword |
+| checkpoint.mime_to | List of receiver address. | keyword |
+| checkpoint.mirror_and_decrypt_type | Information about decrypt and forward. Possible values: Mirror only, Decrypt and mirror, Partial mirroring (HTTPS inspection Bypass). | keyword |
+| checkpoint.mitre_collection | The adversary is trying to collect data of interest to achieve his goal. | keyword |
+| checkpoint.mitre_command_and_control | The adversary is trying to communicate with compromised systems in order to control them. | keyword |
+| checkpoint.mitre_credential_access | The adversary is trying to steal account names and passwords. | keyword |
+| checkpoint.mitre_defense_evasion | The adversary is trying to avoid being detected. | keyword |
+| checkpoint.mitre_discovery | The adversary is trying to expose information about your environment. | keyword |
+| checkpoint.mitre_execution | The adversary is trying to run malicious code. | keyword |
+| checkpoint.mitre_exfiltration | The adversary is trying to steal data. | keyword |
+| checkpoint.mitre_impact | The adversary is trying to manipulate, interrupt, or destroy your systems and data. | keyword |
+| checkpoint.mitre_initial_access | The adversary is trying to break into your network. | keyword |
+| checkpoint.mitre_lateral_movement | The adversary is trying to explore your environment. | keyword |
+| checkpoint.mitre_persistence | The adversary is trying to maintain his foothold. | keyword |
+| checkpoint.mitre_privilege_escalation | The adversary is trying to gain higher-level permissions. | keyword |
+| checkpoint.monitor_reason | Aggregated logs of monitored packets. | keyword |
+| checkpoint.msgid | Message ID. | keyword |
+| checkpoint.name | Application name. | keyword |
+| checkpoint.nat46 | NAT 46 status, in most cases "enabled". | keyword |
+| checkpoint.nat_addtnl_rulenum | When matching 2 automatic rules , second rule match will be shown otherwise field will be 0. | integer |
+| checkpoint.nat_exhausted_pool | 4-tuple of an exhausted pool. | keyword |
+| checkpoint.nat_rulenum | NAT rulebase first matched rule. | integer |
+| checkpoint.needs_browse_time | Browse time required for the connection. | integer |
+| checkpoint.next_hop_ip | Next hop IP address. | keyword |
+| checkpoint.next_scheduled_scan_date | Next scan scheduled time according to time object. | keyword |
+| checkpoint.number_of_errors | Number of files that were not  scanned due to an error. | integer |
+| checkpoint.objecttable | Table of affected objects. | keyword |
+| checkpoint.objecttype | The type of the affected object. | keyword |
+| checkpoint.observable_comment | IOC observable signature description. | keyword |
+| checkpoint.observable_id | IOC observable signature id. | keyword |
+| checkpoint.observable_name | IOC observable signature name. | keyword |
+| checkpoint.operation | Operation made by Threat Extraction. | keyword |
+| checkpoint.operation_number | The operation nuber. | keyword |
+| checkpoint.origin_sic_name | Machine SIC. | keyword |
+| checkpoint.original_queue_id | Original postfix email queue id. | keyword |
+| checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
+| checkpoint.packet_amount | Amount of packets dropped. | integer |
+| checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
+| checkpoint.parent_file_hash | Archive's hash in case of extracted files. | keyword |
+| checkpoint.parent_file_name | Archive's name in case of extracted files. | keyword |
+| checkpoint.parent_file_uid | Archive's UID in case of extracted files. | keyword |
+| checkpoint.parent_process_username | Owner username of the parent process of the process that triggered the attack. | keyword |
+| checkpoint.parent_rule | Parent rule number, in case of inline layer. | integer |
+| checkpoint.peer_gateway | Main IP of the peer Security Gateway. | ip |
+| checkpoint.peer_ip | IP address which the client connects to. | keyword |
+| checkpoint.peer_ip_probing_status_update | IP address response status. | keyword |
+| checkpoint.performance_impact | Protection performance impact. | integer |
+| checkpoint.policy_mgmt | Name of the Management Server that manages this Security Gateway. | keyword |
+| checkpoint.policy_name | Name of the last policy that this Security Gateway fetched. | keyword |
+| checkpoint.ports_usage | Percentage of allocated ports. | integer |
+| checkpoint.ppp | Authentication status. | keyword |
+| checkpoint.precise_error | HTTP parser error. | keyword |
+| checkpoint.process_username | Owner username of the process that triggered the attack. | keyword |
+| checkpoint.properties | Application categories. | keyword |
+| checkpoint.protection_id | Protection malware id. | keyword |
+| checkpoint.protection_name | Specific signature name of the attack. | keyword |
+| checkpoint.protection_type | Type of protection used to detect the attack. | keyword |
+| checkpoint.protocol | Protocol detected on the connection. | keyword |
+| checkpoint.proxy_machine_name | Machine name connected to proxy IP. | integer |
+| checkpoint.proxy_src_ip | Sender source IP (even when using proxy). | ip |
+| checkpoint.proxy_user_dn | User distinguished name connected to proxy IP. | keyword |
+| checkpoint.proxy_user_name | User name connected to proxy IP. | keyword |
+| checkpoint.query | DNS query. | keyword |
+| checkpoint.question_rdata | List of question records domains. | keyword |
+| checkpoint.referrer | Referrer HTTP request header, previous web page address. | keyword |
+| checkpoint.referrer_parent_uid | Log UUID of the referring application. | keyword |
+| checkpoint.referrer_self_uid | UUID of the current log. | keyword |
+| checkpoint.registered_ip-phones | Registered IP-Phones. | keyword |
+| checkpoint.reject_category | Authentication failure reason. | keyword |
+| checkpoint.reject_id | A reject ID that corresponds to the one presented in the Mobile Access error page. | keyword |
+| checkpoint.rematch_info | Information sent when old connections cannot be matched during policy installation. | keyword |
+| checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
+| checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
+| checkpoint.risk | Risk level we got from the engine. | keyword |
+| checkpoint.rpc_prog | Log for new RPC state - prog values. | integer |
+| checkpoint.rule | Matched rule number. | integer |
+| checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
+| checkpoint.rulebase_id | Layer number. | integer |
+| checkpoint.scan_direction | Scan direction. | keyword |
+| checkpoint.scan_hosts_day | Number of unique hosts during the last day. | integer |
+| checkpoint.scan_hosts_hour | Number of unique hosts during the last hour. | integer |
+| checkpoint.scan_hosts_week | Number of unique hosts during the last week. | integer |
+| checkpoint.scan_id | Sequential number of scan. | keyword |
+| checkpoint.scan_mail | Number of emails that were scanned by "AB malicious activity" engine. | integer |
+| checkpoint.scan_results | "Infected"/description of a failure. | keyword |
+| checkpoint.scheme | Describes the scheme used for the log. | keyword |
+| checkpoint.scope | IP related to the attack. | keyword |
+| checkpoint.scrub_activity | The result of the extraction | keyword |
+| checkpoint.scrub_download_time | File download time from resource. | keyword |
+| checkpoint.scrub_time | Extraction process duration. | keyword |
+| checkpoint.scrub_total_time | Threat extraction total file handling time. | keyword |
+| checkpoint.scrubbed_content | Active content that was found. | keyword |
+| checkpoint.sctp_association_state | The bad state you were trying to update to. | keyword |
+| checkpoint.sctp_error | Error information, what caused sctp to fail on out_of_state. | keyword |
+| checkpoint.scv_message_info | Drop reason. | keyword |
+| checkpoint.scv_user | Username whose packets are dropped on SCV. | keyword |
+| checkpoint.securexl_message | Two options for a SecureXL message: 1. Missed accounting records after heavy load on logging system. 2. FW log message regarding a packet drop. | keyword |
+| checkpoint.session_id | Log uuid. | keyword |
+| checkpoint.session_uid | HTTP session-id. | keyword |
+| checkpoint.short_desc | Short description of the process that was executed. | keyword |
+| checkpoint.sig_id | Application's signature ID which how it was detected by. | keyword |
+| checkpoint.similar_communication | Network action found similar to the malicious file. | keyword |
+| checkpoint.similar_hashes | Hashes found similar to the malicious file. | keyword |
+| checkpoint.similar_strings | Strings found similar to the malicious file. | keyword |
+| checkpoint.similiar_iocs | Other IoCs similar to the ones found, related to the malicious file. | keyword |
+| checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
+| checkpoint.site_name | Site name. | keyword |
+| checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
+| checkpoint.source_object | Matched object name on source column. | integer |
+| checkpoint.source_os | OS which generated the attack. | keyword |
+| checkpoint.special_properties | If this field is set to '1' the log will not be shown (in use for monitoring scan progress). | integer |
+| checkpoint.specific_data_type_name | Compound/Group scenario, data type that was matched. | keyword |
+| checkpoint.speed | Current scan speed. | integer |
+| checkpoint.spyware_name | Spyware name. | keyword |
+| checkpoint.spyware_type | Spyware type. | keyword |
+| checkpoint.src_country | Country name, derived from connection source IP address. | keyword |
+| checkpoint.src_phone_number | Source IP-Phone. | keyword |
+| checkpoint.src_user_dn | User distinguished name connected to source IP. | keyword |
+| checkpoint.src_user_name | User name connected to source IP | keyword |
+| checkpoint.srckeyid | Initiator Spi ID. | keyword |
+| checkpoint.status | Ok/Warning/Error. | keyword |
+| checkpoint.status_update | Last time log was updated. | keyword |
+| checkpoint.sub_policy_name | Layer name. | keyword |
+| checkpoint.sub_policy_uid | Layer uid. | keyword |
+| checkpoint.subscriber | Source IP before CGNAT. | ip |
+| checkpoint.summary | Summary message of a non-compliant DNS traffic drops or detects. | keyword |
+| checkpoint.suppressed_logs | Aggregated connections for five minutes on the same source, destination and port. | integer |
+| checkpoint.sync | Sync status and the reason (stable, at risk). | keyword |
+| checkpoint.sys_message | System messages | keyword |
+| checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
+| checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
+| checkpoint.tcp_packet_out_of_state | State violation. | keyword |
+| checkpoint.tcp_state | Log reinting a tcp state change. | keyword |
+| checkpoint.te_verdict_determined_by | Emulators determined file verdict. | keyword |
+| checkpoint.ticket_id | Unique ID per file. | keyword |
+| checkpoint.tls_server_host_name | SNI/CN from encrypted TLS connection used by URLF for categorization. | keyword |
+| checkpoint.top_archive_file_name | In case of archive file: the file that was sent/received. | keyword |
+| checkpoint.total_attachments | The number of attachments in an email. | integer |
+| checkpoint.triggered_by | The name of the mechanism that triggered the Software Blade to enforce a protection. | keyword |
+| checkpoint.trusted_domain | In case of phishing event, the domain, which the attacker was impersonating. | keyword |
+| checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
+| checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
+| checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.url | Translated URL. | keyword |
+| checkpoint.user | Source user name. | keyword |
+| checkpoint.user_agent | String identifying requesting software user agent. | keyword |
+| checkpoint.vendor_list | The vendor name that provided the verdict for a malicious URL. | keyword |
+| checkpoint.verdict | TE engine verdict Possible values: Malicious/Benign/Error. | keyword |
+| checkpoint.via | Via header is added by proxies for tracking purposes to avoid sending reqests in loop. | keyword |
+| checkpoint.voip_attach_action_info | Attachment action Info. | keyword |
+| checkpoint.voip_attach_sz | Attachment size. | integer |
+| checkpoint.voip_call_dir | Call direction: in/out. | keyword |
+| checkpoint.voip_call_id | Call-ID. | keyword |
+| checkpoint.voip_call_state | Call state. Possible values: in/out. | keyword |
+| checkpoint.voip_call_term_time | Call termination time stamp. | keyword |
+| checkpoint.voip_config | Configuration. | keyword |
+| checkpoint.voip_duration | Call duration (seconds). | keyword |
+| checkpoint.voip_est_codec | Estimated codec. | keyword |
+| checkpoint.voip_exp | Expiration. | integer |
+| checkpoint.voip_from_user_type | Source IP-Phone type. | keyword |
+| checkpoint.voip_log_type | VoIP log types. Possible values: reject, call, registration. | keyword |
+| checkpoint.voip_media_codec | Estimated codec. | keyword |
+| checkpoint.voip_media_ipp | Media IP protocol. | keyword |
+| checkpoint.voip_media_port | Media int. | keyword |
+| checkpoint.voip_method | Registration request. | keyword |
+| checkpoint.voip_reason_info | Information. | keyword |
+| checkpoint.voip_reg_int | Registration port. | integer |
+| checkpoint.voip_reg_ipp | Registration IP protocol. | integer |
+| checkpoint.voip_reg_period | Registration period. | integer |
+| checkpoint.voip_reg_server | Registrar server IP address. | ip |
+| checkpoint.voip_reg_user_type | Registered IP-Phone type. | keyword |
+| checkpoint.voip_reject_reason | Reject reason. | keyword |
+| checkpoint.voip_to_user_type | Destination IP-Phone type. | keyword |
+| checkpoint.vpn_feature_name | L2TP /IKE / Link Selection. | keyword |
+| checkpoint.watermark | Reports whether watermark is added to the cleaned file. | keyword |
+| checkpoint.web_server_type | Web server detected in the HTTP response. | keyword |
+| checkpoint.word_list | Words matched by data type. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.domain | Client domain. | keyword |
 | client.ip | IP address of the client. | ip |
