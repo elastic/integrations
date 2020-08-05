@@ -19,6 +19,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -544,6 +545,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | tls.client.issuer | Distinguished name of subject of the issuer. | keyword |
 | tls.client.server_name | Hostname the client is trying to connect to. Also called the SNI. | keyword |
 | tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
