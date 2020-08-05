@@ -74,7 +74,7 @@ func extractInputTypeFromTextNode(textNode *parse.TextNode) (string, bool) {
 		aType := textNode.Text[i+6:]
 		j := bytes.IndexByte(aType, '\n')
 		if j < 0 {
-			j = len(textNode.Text)
+			j = len(aType)
 		}
 		aType = aType[:j]
 		return string(aType), true
