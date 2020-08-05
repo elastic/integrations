@@ -9,19 +9,19 @@ var baseFields = createBaseFields()
 func createBaseFields() []fieldDefinition {
 	return []fieldDefinition{
 		{
-			Name:        "datastream.type",
+			Name:        "data_stream.type",
 			Type:        "constant_keyword",
-			Description: "Datastream type.",
+			Description: "Data stream type.",
 		},
 		{
-			Name:        "datastream.dataset",
+			Name:        "data_stream.dataset",
 			Type:        "constant_keyword",
-			Description: "Datastream dataset name.",
+			Description: "Data stream dataset name.",
 		},
 		{
-			Name:        "datastream.namespace",
+			Name:        "data_stream.namespace",
 			Type:        "constant_keyword",
-			Description: "Datastream namespace.",
+			Description: "Data stream namespace.",
 		},
 		// TODO: This should be removed as soon as it is not a requirement anymore by the validation
 		// PR to change this can be found here: https://github.com/elastic/package-registry/pull/618
