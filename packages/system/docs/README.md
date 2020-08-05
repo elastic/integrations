@@ -40,9 +40,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -93,9 +90,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -156,9 +150,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -212,9 +203,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.entropy.available_bits | The available bits of entropy | long |
 | system.entropy.pct | The percentage of available entropy, relative to the pool size of 4096 | scaled_float |
 
@@ -240,9 +228,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.filesystem.available | The disk space available to an unprivileged user in bytes. | long |
 | system.filesystem.device_name | The disk name. For example: `/dev/disk1` | keyword |
 | system.filesystem.files | The total number of file nodes in the file system. | long |
@@ -275,9 +260,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -315,9 +297,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -358,9 +337,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -425,9 +401,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
@@ -472,9 +445,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.network_summary.icmp.* | ICMP counters | object |
 | system.network_summary.ip.* | IP counters | object |
 | system.network_summary.tcp.* | TCP counters | object |
@@ -502,9 +472,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -617,9 +584,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
@@ -662,9 +626,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.raid.blocks.synced | Number of blocks on the device that are in sync, in 1024-byte blocks. | long |
 | system.raid.blocks.total | Number of blocks the device holds, in 1024-byte blocks. | long |
 | system.raid.disks.active | Number of active disks. | long |
@@ -694,9 +655,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.service.exec_code | The SIGCHLD code from the service's main process | keyword |
 | system.service.load_state | The load state of the service | keyword |
 | system.service.name | The name of the service | keyword |
@@ -730,9 +688,6 @@ missing short-lived connections.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
@@ -773,9 +728,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
@@ -831,9 +783,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long |
 
 
@@ -853,9 +802,6 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | system.users.id | The ID of the session | keyword |
 | system.users.leader | The root PID of the session | long |
 | system.users.path | The DBus object path of the session | keyword |
