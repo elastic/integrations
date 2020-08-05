@@ -47,9 +47,9 @@ The `log` dataset collects the MongoDB logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | log.file.path | Full path to the log file this event came from, including the file name. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -193,9 +193,9 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | mongodb.collstats.collection | Collection name. | keyword |
 | mongodb.collstats.commands.count | Number of database commands executed. | long |
 | mongodb.collstats.commands.time.us | Time executing database commands in microseconds. | long |
@@ -314,9 +314,9 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | mongodb.dbstats.avg_obj_size.bytes |  | long |
 | mongodb.dbstats.collections |  | integer |
 | mongodb.dbstats.data_file_version.major |  | long |
@@ -616,9 +616,9 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | mongodb.metrics.commands.aggregate.failed |  | long |
 | mongodb.metrics.commands.aggregate.total |  | long |
 | mongodb.metrics.commands.build_info.failed |  | long |
@@ -814,9 +814,9 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | mongodb.replstatus.headroom.max | Difference between primary's oplog window and the replication lag of the fastest secondary | long |
 | mongodb.replstatus.headroom.min | Difference between primary's oplog window and the replication lag of the slowest secondary | long |
 | mongodb.replstatus.lag.max | Difference between optime of primary and slowest secondary | long |
@@ -1103,9 +1103,9 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | mongodb.status.asserts.msg | Number of msg assertions produced by the server. | long |
 | mongodb.status.asserts.regular | Number of regular assertions produced by the server. | long |
 | mongodb.status.asserts.rollovers | Number of rollovers assertions produced by the server. | long |

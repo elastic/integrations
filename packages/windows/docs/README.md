@@ -19,9 +19,9 @@ The Windows `service` dataset provides service details.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | windows.service.display_name | The display name of the service. | keyword |
 | windows.service.exit_code | For `Stopped` services this is the error code that service reports when starting to stopping. This will be the generic Windows service error code unless the service provides a service-specific error code. | keyword |
 | windows.service.id | A unique ID for the service. It is a hash of the machine's GUID and the service name. | keyword |
@@ -44,9 +44,9 @@ The Windows `perfmon` dataset provides performance counter values.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | windows.perfmon.instance | Instance value. | keyword |
 | windows.perfmon.metrics.*.* | Metric values returned. | object |
 | windows.perfmon.object | Object value. | keyword |
