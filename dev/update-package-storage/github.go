@@ -73,6 +73,12 @@ func openPullRequest(err error, options updateOptions, packageName, packageVersi
 }
 
 func getAuthToken() (string, error) {
+	githubTokenVar := os.Getenv("GITHUB_TOKEN")
+	if githubTokenVar != "" {
+		log.Println("Using Github token from environment variable.")
+		return githubTokenVar, nil
+	}
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", errors.Wrap(err, "reading user home directory failed")
@@ -83,6 +89,7 @@ func getAuthToken() (string, error) {
 	if err != nil {
 		return "", errors.Wrapf(err, "reading Github token file failed (path: %s)", githubTokenPath)
 	}
+	log.Println("Using Github token from file.")
 	return strings.TrimSpace(string(token)), nil
 }
 

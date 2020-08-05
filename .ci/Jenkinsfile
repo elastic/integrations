@@ -6,6 +6,7 @@ pipeline {
   agent { label 'ubuntu && immutable' }
   environment {
     BASE_DIR="src/github.com/elastic/integrations"
+    PACKAGE_STORAGE_BASE_DIR="src/github.com/elastic/package-storage"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PIPELINE_LOG_LEVEL='INFO'
   }
@@ -52,6 +53,10 @@ pipeline {
     stage('Update Package Storage') {
       steps {
         cleanup()
+        gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'snapshot')
+        dir("${PACKAGE_STORAGE_BASE_DIR}"){
+          sh(label: 'Add upstream to tracked repositories', script: 'git remote add upstream https://github.com/elastic/package-storage')
+        }
         withMageEnv(){
           dir("${BASE_DIR}"){
             sh(label: 'Updates Package Storage', script: 'mage -debug UpdatePackageStorage')
