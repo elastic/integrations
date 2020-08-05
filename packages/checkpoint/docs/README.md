@@ -435,9 +435,9 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | client.user.id | Unique identifier of the user. | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | container.id | Unique container id. | keyword |
-| datastream.dataset | Datastream dataset name. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
+| data_stream.dataset | Datastream dataset name. | constant_keyword |
+| data_stream.namespace | Datastream namespace. | constant_keyword |
+| data_stream.type | Datastream type. | constant_keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
