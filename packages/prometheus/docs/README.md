@@ -194,12 +194,12 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | prometheus.*.counter | Prometheus counter metric | object |
 | prometheus.*.histogram | Prometheus histogram metric | object |
 | prometheus.*.rate | Prometheus rated counter metric | object |
@@ -333,12 +333,12 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
 
@@ -459,11 +459,11 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| datastream.dataset | Datastream dataset. | constant_keyword |
-| datastream.namespace | Datastream namespace. | constant_keyword |
-| datastream.type | Datastream type. | constant_keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.query.* | Prometheus value resulted from PromQL | object |

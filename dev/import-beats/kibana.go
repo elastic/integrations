@@ -356,7 +356,7 @@ func stripReferencesToEventModuleInFilter(object mapStr, filterKey, moduleName s
 				return nil, errors.Wrapf(err, "setting meta.type failed")
 			}
 
-			_, err = filterObject.put("meta.value", fmt.Sprintf("{\"prefix\":{\"datastream.dataset\":\"%s.\"}}", moduleName))
+			_, err = filterObject.put("meta.value", fmt.Sprintf("{\"prefix\":{\"data_stream.dataset\":\"%s.\"}}", moduleName))
 			if err != nil {
 				return nil, errors.Wrapf(err, "setting meta.value failed")
 			}
@@ -368,7 +368,7 @@ func stripReferencesToEventModuleInFilter(object mapStr, filterKey, moduleName s
 
 			q := map[string]interface{}{
 				"prefix": map[string]interface{}{
-					"datastream.dataset": moduleName + ".",
+					"data_stream.dataset": moduleName + ".",
 				},
 			}
 			_, err = filterObject.put("query", q)
@@ -415,8 +415,8 @@ func stripReferencesToEventModuleInQuery(object mapStr, objectKey, moduleName st
 	query = strings.ReplaceAll(query, `"`, "")
 	if strings.Contains(query, "event.module:"+moduleName) && (strings.Contains(query, "metricset.name:") || strings.Contains(query, "fileset.name:")) {
 		query = strings.ReplaceAll(query, "event.module:"+moduleName, "")
-		query = strings.ReplaceAll(query, "metricset.name:", fmt.Sprintf("datastream.dataset:%s.", moduleName))
-		query = strings.ReplaceAll(query, "fileset.name:", fmt.Sprintf("datastream.dataset:%s.", moduleName))
+		query = strings.ReplaceAll(query, "metricset.name:", fmt.Sprintf("data_stream.dataset:%s.", moduleName))
+		query = strings.ReplaceAll(query, "fileset.name:", fmt.Sprintf("data_stream.dataset:%s.", moduleName))
 		query = strings.TrimSpace(query)
 		if strings.HasPrefix(query, "AND ") {
 			query = query[4:]
@@ -429,7 +429,7 @@ func stripReferencesToEventModuleInQuery(object mapStr, objectKey, moduleName st
 	} else if strings.Contains(query, "event.module:"+moduleName) {
 		var eventDatasets []string
 		for _, datasetName := range datasetNames {
-			eventDatasets = append(eventDatasets, fmt.Sprintf("datastream.dataset:%s.%s", moduleName, datasetName))
+			eventDatasets = append(eventDatasets, fmt.Sprintf("data_stream.dataset:%s.%s", moduleName, datasetName))
 		}
 
 		value := " (" + strings.Join(eventDatasets, " OR ") + ") "
@@ -450,7 +450,7 @@ func stripReferencesToEventModuleInQuery(object mapStr, objectKey, moduleName st
 }
 
 func replaceFieldEventDatasetWithStreamDataset(data []byte) []byte {
-	return bytes.ReplaceAll(data, []byte("event.dataset"), []byte("datastream.dataset"))
+	return bytes.ReplaceAll(data, []byte("event.dataset"), []byte("data_stream.dataset"))
 }
 
 func replaceBlacklistedWords(data []byte) []byte {
