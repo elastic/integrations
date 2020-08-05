@@ -24,9 +24,6 @@ The `log` dataset collects the Redis standard logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
@@ -46,9 +43,6 @@ The `slowlog` dataset collects the Redis slow logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
@@ -269,9 +263,6 @@ An example event for `info` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | os.full | Operating system name, including the version or code name. | keyword |
 | process.pid | Process id. | long |
 | redis.info.clients.biggest_input_buf | Biggest input buffer among current client connections (replaced by max_input_buffer). | long |
@@ -381,7 +372,7 @@ An example event for `info` looks as following:
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long |
 | service.address | Client address | keyword |
-| service.version | Version of the service the data was collected from | keyword |
+| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 
 
 ### key
@@ -453,9 +444,6 @@ An example event for `key` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | redis.key.expire.ttl | Seconds to expire. | long |
 | redis.key.id | Unique id for this key (With the form <keyspace>:<name>). | keyword |
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long |
@@ -518,9 +506,6 @@ An example event for `keyspace` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | redis.keyspace.avg_ttl | Average ttl. | long |
 | redis.keyspace.expires |  | long |
 | redis.keyspace.id | Keyspace identifier. | keyword |
