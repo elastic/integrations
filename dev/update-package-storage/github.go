@@ -19,28 +19,30 @@ import (
 	"github.com/pkg/errors"
 )
 
-const pullRequestsPerPage = 30
-
 type searchIssuesResponse struct {
 	Items []pullRequest `json:"items"`
+}
+
+type createPullRequestResponse struct {
+	Number int
 }
 
 type pullRequest struct {
 	Title string `json:"title"`
 }
 
-func openPullRequest(err error, options updateOptions, packageName, packageVersion, username, branchName, commitHash string) error {
+func openPullRequest(err error, options updateOptions, packageName, packageVersion, username, branchName, commitHash string) (int, error) {
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if options.skipPullRequest {
-		return nil
+		return 0, nil
 	}
 
 	authToken, err := getAuthToken()
 	if err != nil {
-		return errors.Wrap(err, "fetching auth token failed")
+		return 0, errors.Wrap(err, "fetching auth token failed")
 	}
 
 	title := buildPullRequestTitle(packageName, packageVersion)
@@ -49,30 +51,105 @@ func openPullRequest(err error, options updateOptions, packageName, packageVersi
 
 	requestBody, err := buildPullRequestRequestBody(title, username, branchName, description)
 	if err != nil {
-		return errors.Wrap(err, "building request body failed")
+		return 0, errors.Wrap(err, "building request body failed")
 	}
 
 	request, err := http.NewRequest("POST", "https://api.github.com/repos/elastic/package-storage/pulls", bytes.NewReader(requestBody))
 	if err != nil {
-		return errors.Wrap(err, "creating new HTTP request failed")
+		return 0, errors.Wrap(err, "creating new HTTP request failed")
 	}
 
 	request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
 	request.Header.Add("Content-Type", "application/json")
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return errors.Wrap(err, "making HTTP call failed")
+		return 0, errors.Wrap(err, "making HTTP call failed")
 	}
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		k, _ := ioutil.ReadAll(response.Body)
-		log.Fatal(string(k))
-		return fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+		return 0, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+	}
+
+	var data createPullRequestResponse
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return 0, errors.Wrap(err, "can't read response body")
+	}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return 0, errors.Wrap(err, "unmarshalling response failed")
+	}
+	return data.Number, nil
+}
+
+func updatePullRequestReviewers(err error, pullRequestID int, reviewer string) error {
+	if err != nil {
+		return err
+	}
+
+	requested, err := updatePullRequestReviewersWithoutFallback(pullRequestID, reviewer)
+	if err != nil {
+		return errors.Wrap(err, "updating reviewers failed")
+	}
+
+	if requested {
+		return nil // success
+	}
+
+	// Fallback to default package owner
+	requested, err = updatePullRequestReviewersWithoutFallback(pullRequestID, defaultPackageOwner)
+	if err != nil {
+		return errors.Wrap(err, "updating fallback reviewers failed")
+	}
+
+	if !requested {
+		return errors.New("can't request review from any package owner")
 	}
 	return nil
 }
 
+func updatePullRequestReviewersWithoutFallback(pullRequestID int, reviewer string) (bool, error) {
+	authToken, err := getAuthToken()
+	if err != nil {
+		return false, errors.Wrap(err, "fetching auth token failed")
+	}
+
+	requestBody, err := buildPullRequestReviewersRequestBody(reviewer)
+	if err != nil {
+		return false, errors.Wrap(err, "building reviewers request body failed")
+	}
+
+	request, err := http.NewRequest("POST", fmt.Sprintf("https://api.github.com/repos/elastic/package-storage/pulls/%d/requested_reviewers", pullRequestID),
+		bytes.NewReader(requestBody))
+	if err != nil {
+		return false, errors.Wrap(err, "creating new HTTP request failed")
+	}
+
+	request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
+	request.Header.Add("Content-Type", "application/json")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return false, errors.Wrap(err, "making HTTP call failed")
+	}
+
+	if response.StatusCode == 422 {
+		return false, nil // reviewer is not project collaborator
+	}
+
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+	}
+	return true, nil
+}
+
 func getAuthToken() (string, error) {
+	githubTokenVar := os.Getenv("GITHUB_TOKEN")
+	if githubTokenVar != "" {
+		log.Println("Using Github token from environment variable.")
+		return githubTokenVar, nil
+	}
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", errors.Wrap(err, "reading user home directory failed")
@@ -83,6 +160,7 @@ func getAuthToken() (string, error) {
 	if err != nil {
 		return "", errors.Wrapf(err, "reading Github token file failed (path: %s)", githubTokenPath)
 	}
+	log.Println("Using Github token from file.")
 	return strings.TrimSpace(string(token)), nil
 }
 
@@ -93,6 +171,22 @@ func buildPullRequestRequestBody(title, username, branchName, description string
 		"base":                  "snapshot",
 		"body":                  description,
 		"maintainer_can_modify": true,
+	}
+
+	m, err := json.Marshal(&requestBody)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshaling request body failed")
+	}
+	return m, nil
+}
+
+func buildPullRequestReviewersRequestBody(reviewer string) ([]byte, error) {
+	var requestBody map[string]interface{}
+
+	if i := strings.Index(reviewer, "/"); i > -1 {
+		requestBody = map[string]interface{}{"team_reviewers": []string{reviewer[i+1:]}}
+	} else {
+		requestBody = map[string]interface{}{"reviewers": []string{reviewer}}
 	}
 
 	m, err := json.Marshal(&requestBody)
@@ -141,8 +235,6 @@ func checkIfPullRequestAlreadyOpen(err error, packageName, packageVersion string
 	}
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		k, _ := ioutil.ReadAll(response.Body)
-		log.Fatal(string(k))
 		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
 	}
 
