@@ -53,7 +53,9 @@ pipeline {
      */
     stage('Update Package Storage') {
       steps {
-        githubPrCheckApproved()
+        when {
+          not { changeRequest() }
+        }
         cleanup()
         gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
