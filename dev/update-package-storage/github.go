@@ -24,7 +24,9 @@ type searchIssuesResponse struct {
 }
 
 type createPullRequestResponse struct {
-	Number int
+	Number         int           `json:"number"`
+	RequestedTeams []interface{} `json:"requested_teams"`
+	RequestedUsers []interface{} `json:"requested_users"`
 }
 
 type pullRequest struct {
@@ -133,12 +135,23 @@ func updatePullRequestReviewersWithoutFallback(pullRequestID int, reviewer strin
 		return false, errors.Wrap(err, "making HTTP call failed")
 	}
 
-	if response.StatusCode == 422 {
-		return false, nil // reviewer is not project collaborator
-	}
-
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+	}
+
+	var data createPullRequestResponse
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "can't read response body")
+	}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return false, errors.Wrap(err, "unmarshalling response failed")
+	}
+
+	if len(data.RequestedTeams) == 0 && len(data.RequestedUsers) == 0 {
+		return false, nil // no reviewers were found (not contributing)
 	}
 	return true, nil
 }
