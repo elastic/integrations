@@ -5,16 +5,16 @@
 package main
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/elastic/package-registry/util"
-
 	"github.com/blang/semver"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+
+	"github.com/elastic/package-registry/util"
 )
 
 var defaultPackageOwner = "elastic/integrations"
@@ -205,19 +205,19 @@ func copyPackageContents(sourcePath, destinationPath string) error {
 	})
 }
 
-func readPackageOwner(err error, options updateOptions, packageName string) (string, error) {
+func readPackageOwner(err error, options updateOptions, packageName, packageVersion string) (string, error) {
 	if err != nil {
 		return "", err
 	}
 
-	manifestPath := filepath.Join(options.packagesSourceDir, packageName, "manifest.yml")
+	manifestPath := filepath.Join(options.packagesSourceDir, packageName, packageVersion, "manifest.yml")
 	body, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
 		return "", err
 	}
 
 	var m util.Package
-	err = json.Unmarshal(body, &m)
+	err = yaml.Unmarshal(body, &m)
 	if err != nil {
 		return "", err
 	}

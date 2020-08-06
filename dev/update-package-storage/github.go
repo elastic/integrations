@@ -103,7 +103,7 @@ func updatePullRequestReviewers(err error, pullRequestID int, reviewer string) e
 		return errors.Wrap(err, "updating fallback reviewers failed")
 	}
 
-	if requested {
+	if !requested {
 		return errors.New("can't request review from any package owner")
 	}
 	return nil
@@ -133,12 +133,12 @@ func updatePullRequestReviewersWithoutFallback(pullRequestID int, reviewer strin
 		return false, errors.Wrap(err, "making HTTP call failed")
 	}
 
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+	if response.StatusCode == 422 {
+		return false, nil // reviewer is not project collaborator
 	}
 
-	if response.StatusCode == 422 {
-		return false, nil // reviewer is not collaborator
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		return false, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
 	}
 	return true, nil
 }
@@ -181,8 +181,12 @@ func buildPullRequestRequestBody(title, username, branchName, description string
 }
 
 func buildPullRequestReviewersRequestBody(reviewer string) ([]byte, error) {
-	requestBody := map[string]interface{}{
-		"team_reviewers": []string{reviewer},
+	var requestBody map[string]interface{}
+
+	if i := strings.Index(reviewer, "/"); i > -1 {
+		requestBody = map[string]interface{}{"team_reviewers": []string{reviewer[i+1:]}}
+	} else {
+		requestBody = map[string]interface{}{"reviewers": []string{reviewer}}
 	}
 
 	m, err := json.Marshal(&requestBody)

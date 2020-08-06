@@ -63,7 +63,7 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	if opened {
 		return nil
 	}
-	owner, err := readPackageOwner(err, options, packageName)
+	owner, err := readPackageOwner(err, options, packageName, packageVersion)
 	lastRelease, stage, err := detectGreatestReleasedPackageVersion(err, options, packageName)
 	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, stage, packageVersion)
 	if lastRelease != "0.0.0" {
