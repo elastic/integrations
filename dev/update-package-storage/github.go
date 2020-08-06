@@ -33,16 +33,16 @@ type pullRequest struct {
 
 func openPullRequest(err error, options updateOptions, packageName, packageVersion, username, branchName, commitHash string) (int, error) {
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	if options.skipPullRequest {
-		return -1, nil
+		return 0, nil
 	}
 
 	authToken, err := getAuthToken()
 	if err != nil {
-		return -1, errors.Wrap(err, "fetching auth token failed")
+		return 0, errors.Wrap(err, "fetching auth token failed")
 	}
 
 	title := buildPullRequestTitle(packageName, packageVersion)
@@ -51,34 +51,34 @@ func openPullRequest(err error, options updateOptions, packageName, packageVersi
 
 	requestBody, err := buildPullRequestRequestBody(title, username, branchName, description)
 	if err != nil {
-		return -1, errors.Wrap(err, "building request body failed")
+		return 0, errors.Wrap(err, "building request body failed")
 	}
 
 	request, err := http.NewRequest("POST", "https://api.github.com/repos/elastic/package-storage/pulls", bytes.NewReader(requestBody))
 	if err != nil {
-		return -1, errors.Wrap(err, "creating new HTTP request failed")
+		return 0, errors.Wrap(err, "creating new HTTP request failed")
 	}
 
 	request.Header.Add("Authorization", fmt.Sprintf("token %s", authToken))
 	request.Header.Add("Content-Type", "application/json")
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return -1, errors.Wrap(err, "making HTTP call failed")
+		return 0, errors.Wrap(err, "making HTTP call failed")
 	}
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		return -1, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
+		return 0, fmt.Errorf("unexpected status code return while opening a pull request: %d", response.StatusCode)
 	}
 
 	var data createPullRequestResponse
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return -1, errors.Wrap(err, "can't read response body")
+		return 0, errors.Wrap(err, "can't read response body")
 	}
 
 	if err := json.Unmarshal(body, &data); err != nil {
-		return -1, errors.Wrap(err, "unmarshalling response failed")
+		return 0, errors.Wrap(err, "unmarshalling response failed")
 	}
 	return data.Number, nil
 }
