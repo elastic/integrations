@@ -5,14 +5,19 @@
 package main
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/elastic/package-registry/util"
 
 	"github.com/blang/semver"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 )
+
+var defaultPackageOwner = "elastic/integrations"
 
 func listPackages(err error, options updateOptions) ([]string, error) {
 	if err != nil {
@@ -198,4 +203,27 @@ func copyPackageContents(sourcePath, destinationPath string) error {
 			filepath.Join(destinationPath, relativePath),
 			filepath.Join(sourcePath, relativePath))
 	})
+}
+
+func readPackageOwner(err error, options updateOptions, packageName string) (string, error) {
+	if err != nil {
+		return "", err
+	}
+
+	manifestPath := filepath.Join(options.packagesSourceDir, packageName, "manifest.yml")
+	body, err := ioutil.ReadFile(manifestPath)
+	if err != nil {
+		return "", err
+	}
+
+	var m util.Package
+	err = json.Unmarshal(body, &m)
+	if err != nil {
+		return "", err
+	}
+
+	if m.Owner == nil || m.Owner.Github == "" {
+		return defaultPackageOwner, nil
+	}
+	return m.Owner.Github, nil
 }

@@ -63,6 +63,7 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	if opened {
 		return nil
 	}
+	owner, err := readPackageOwner(err, options, packageName)
 	lastRelease, stage, err := detectGreatestReleasedPackageVersion(err, options, packageName)
 	err = copyLastPackageRevisionToPackageStorage(err, options, packageName, lastRelease, stage, packageVersion)
 	if lastRelease != "0.0.0" {
@@ -78,6 +79,7 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	err = pushChanges(err, options, branchName)
 	username, err := getUsername(err, options)
 	lastCommit, err := getLastCommit(err, options)
-	err = openPullRequest(err, options, packageName, packageVersion, username, branchName, lastCommit)
+	pullRequestID, err := openPullRequest(err, options, packageName, packageVersion, username, branchName, lastCommit)
+	err = updatePullRequestReviewers(err, pullRequestID, owner)
 	return err
 }
