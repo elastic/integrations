@@ -1,0 +1,70 @@
+name: checkpoint
+title: Check Point
+version: 0.1.0
+release: experimental
+description: Check Point Integration
+type: integration
+format_version: 1.0.0
+license: basic
+categories: [security]
+conditions:
+  kibana.version: ">=7.10.0"
+icons:
+  - src: /img/checkpoint-logo.svg
+    title: Check Point
+    size: 216x216
+    type: image/svg+xml
+config_templates:
+  - name: checkpoint
+    title: Check Point logs
+    description: Collect logs from Check Point instances
+    inputs:
+      - type: logfile
+        title: "Collect Check Point firewall logs (input: logfile)"
+        description: "Collecting firewall logs from Check Point instances (input: logfile)"
+        vars:
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - checkpoint-firewall
+              - forwarded
+          - name: paths
+            type: text
+            title: Paths
+            multi: true
+            required: false
+            show_user: true
+      - type: syslog
+        vars:
+          - name: syslog_host
+            type: text
+            title: Syslog Host
+            multi: false
+            required: true
+            show_user: true
+            default: localhost
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - checkpoint-firewall
+              - forwarded
+          - name: syslog_port
+            type: integer
+            title: Syslog Port
+            multi: false
+            required: true
+            show_user: true
+            default: 9001
+        title: "Collect Check Point firewall logs (input: syslog)"
+        description: "Collecting firewall logs from Check Point instances (input: syslog)"
+owner:
+  github: elastic/security-ingest
+requirement: {}
