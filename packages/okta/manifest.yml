@@ -1,0 +1,131 @@
+name: okta
+title: Okta
+version: 0.1.0
+release: experimental
+description: Okta Integration
+type: integration
+format_version: 1.0.0
+license: basic
+categories: [security]
+conditions:
+  kibana.version: ">=7.10"
+icons:
+  - src: /img/okta-logo.svg
+    title: Okta
+    size: 216x216
+    type: image/svg+xml
+screenshots:
+  - src: /img/filebeat-okta-dashboard.png
+    title: Okta Dashboard
+    size: 1024x662
+    type: image/png
+config_templates:
+  - name: okta
+    title: Okta logs
+    description: Collect logs from Okta
+    inputs:
+      - type: httpjson
+        vars:
+          - name: api_key
+            type: text
+            title: API Key
+            multi: false
+            required: false
+            show_user: true
+          - name: authentication_scheme
+            type: text
+            title: Authentication Scheme
+            multi: false
+            required: true
+            show_user: false
+            default: SSWS
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            multi: false
+            required: false
+            show_user: true
+          - name: http_method
+            type: text
+            title: HTTP Method
+            multi: false
+            required: false
+            show_user: false
+          - name: http_headers
+            type: yaml
+            title: HTTP Headers
+            multi: false
+            required: false
+            show_user: false
+          - name: http_request_body
+            type: yaml
+            title: HTTP Request Body
+            multi: false
+            required: false
+            show_user: false
+          - name: interval
+            type: text
+            title: Interval
+            multi: false
+            required: true
+            show_user: true
+            default: 60s
+          - name: json_objects_array
+            type: text
+            title: JSON Objects Array
+            multi: false
+            required: false
+            show_user: false
+          - name: no_http_body
+            type: bool
+            title: No HTTP Body
+            multi: false
+            required: true
+            show_user: false
+            default: true
+          - name: pagination
+            type: yaml
+            title: Pagination
+            multi: false
+            required: true
+            show_user: false
+            default: |
+              header:
+                field_name: Link
+                regex_pattern: <([^>]+)>; *rel="next"(?:,|$)
+          - name: rate_limit
+            type: yaml
+            title: Rate Limit
+            multi: false
+            required: true
+            show_user: false
+            default: |
+              limit: X-Rate-Limit-Limit
+              remaining: X-Rate-Limit-Remaining
+              reset: X-Rate-Limit-Reset
+          - name: ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: true
+          - name: url
+            type: text
+            title: Okta System Log API Url
+            multi: false
+            required: false
+            show_user: true
+        title: "Collect Okta logs via API"
+        description: "Collecting logs from Okta via API"
+      - type: logfile
+        vars:
+          - name: paths
+            type: text
+            title: Paths
+            multi: true
+            required: false
+            show_user: true
+        title: "Collect Okta logs via file"
+        description: "Collecting logs from Okta via file"
+owner:
+  github: elastic/security-ingest
