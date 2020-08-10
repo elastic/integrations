@@ -39,6 +39,7 @@ The Okta System Log records system events related to your organization in order 
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | ecs.version | ECS version this event conforms to. | keyword |
+| error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
