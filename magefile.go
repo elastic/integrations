@@ -134,6 +134,10 @@ func GenerateDocs() error {
 }
 
 func Check() error {
+	if err := Lint(); err != nil {
+		return err
+	}
+
 	Format()
 
 	err := Build()
@@ -179,6 +183,11 @@ func Format() {
 	// both can modify the same files.
 	mg.Deps(AddLicenseHeaders)
 	mg.Deps(GoImports)
+}
+
+// Lint lint checks every package.
+func Lint() error {
+	return runElasticPackageOnAllIntegrations("lint")
 }
 
 // GoImports executes goimports against all .go files in and below the CWD. It
