@@ -256,7 +256,7 @@ func ModTidy() error {
 	return nil
 }
 
-func runElasticPackageOnAllIntegrations(subcommand string) error {
+func runElasticPackageOnAllIntegrations(subCommand string) error {
 	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
@@ -273,10 +273,10 @@ func runElasticPackageOnAllIntegrations(subcommand string) error {
 			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
 		}
 
-		fmt.Printf("%s: elastic-package %s\n", packagePath, subcommand)
-		err = sh.Run("go", "run", "github.com/elastic/elastic-package", subcommand)
+		fmt.Printf("%s: elastic-package %s\n", packagePath, subCommand)
+		err = sh.Run("go", "run", "github.com/elastic/elastic-package", subCommand)
 		if err != nil {
-			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subcommand, packagePath)
+			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subCommand, packagePath)
 		}
 	}
 
