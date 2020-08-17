@@ -45,34 +45,7 @@ func Build() error {
 }
 
 func buildIntegrations() error {
-	packagePaths, err := findIntegrations()
-	if err != nil {
-		return err
-	}
-
-	workDir, err := os.Getwd()
-	if err != nil {
-		return errors.Wrap(err, "getwd failed")
-	}
-
-	for _, packagePath := range packagePaths {
-		err := os.Chdir(filepath.Join(workDir, packagePath))
-		if err != nil {
-			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
-		}
-
-		fmt.Printf("%s: elastic-package build\n", packagePath)
-		err = sh.Run("go", "run", "github.com/elastic/elastic-package", "build")
-		if err != nil {
-			return errors.Wrapf(err, "elastic-package build failed (path: %s)", packagePath)
-		}
-	}
-
-	err = os.Chdir(workDir)
-	if err != nil {
-		return errors.Wrapf(err, "chdir failed (path: %s)", workDir)
-	}
-	return nil
+	return runElasticPackageOnAllIntegrations("build")
 }
 
 func findIntegrations() ([]string, error) {
@@ -270,6 +243,37 @@ func ModTidy() error {
 	err := sh.RunV("go", "mod", "tidy")
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func runElasticPackageOnAllIntegrations(subcommand string) error {
+	packagePaths, err := findIntegrations()
+	if err != nil {
+		return err
+	}
+
+	workDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+
+	for _, packagePath := range packagePaths {
+		err := os.Chdir(filepath.Join(workDir, packagePath))
+		if err != nil {
+			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
+		}
+
+		fmt.Printf("%s: elastic-package %s\n", packagePath, subcommand)
+		err = sh.Run("go", "run", "github.com/elastic/elastic-package", subcommand)
+		if err != nil {
+			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subcommand, packagePath)
+		}
+	}
+
+	err = os.Chdir(workDir)
+	if err != nil {
+		return errors.Wrapf(err, "chdir failed (path: %s)", workDir)
 	}
 	return nil
 }
