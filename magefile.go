@@ -256,6 +256,8 @@ func ModTidy() error {
 	return nil
 }
 
+// runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
+// packages with the given subCommand.
 func runElasticPackageOnAllIntegrations(subCommand string) error {
 	packagePaths, err := findIntegrations()
 	if err != nil {
