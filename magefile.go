@@ -282,7 +282,7 @@ func runElasticPackageOnAllIntegrations(subCommand string) error {
 		}
 
 		fmt.Printf("%s: elastic-package %s\n", packagePath, subCommand)
-		err = sh.Run("elastic-package", subCommand)
+		err = sh.Run("go", "run", "github.com/elastic/elastic-package", subCommand)
 		if err != nil {
 			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subCommand, packagePath)
 		}
