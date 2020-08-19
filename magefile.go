@@ -183,6 +183,12 @@ func Format() {
 	// both can modify the same files.
 	mg.Deps(AddLicenseHeaders)
 	mg.Deps(GoImports)
+	mg.Deps(FormatIntegrations)
+}
+
+// Format method formats integrations.
+func FormatIntegrations() error {
+	return runElasticPackageOnAllIntegrations("format")
 }
 
 // Lint lint checks every package.
