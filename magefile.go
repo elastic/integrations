@@ -134,29 +134,14 @@ func GenerateDocs() error {
 }
 
 func Check() error {
-	if err := Lint(); err != nil {
-		return err
-	}
-
-	Format()
-
-	err := Build()
-	if err != nil {
-		return err
-	}
-
-	err = GenerateDocs()
-	if err != nil {
-		return err
-	}
-
-	err = ModTidy()
-	if err != nil {
-		return err
-	}
+	mg.Deps(Lint)
+	mg.Deps(Format)
+	mg.Deps(Build)
+	mg.Deps(GenerateDocs)
+	mg.Deps(ModTidy)
 
 	// Check if no changes are shown
-	err = sh.RunV("git", "update-index", "--refresh")
+	err := sh.RunV("git", "update-index", "--refresh")
 	if err != nil {
 		return err
 	}
@@ -265,6 +250,8 @@ func ModTidy() error {
 // runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
 // packages with the given subCommand.
 func runElasticPackageOnAllIntegrations(subCommand string) error {
+	mg.Deps(buildElasticPackageBinary)
+
 	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
@@ -282,7 +269,7 @@ func runElasticPackageOnAllIntegrations(subCommand string) error {
 		}
 
 		fmt.Printf("%s: elastic-package %s\n", packagePath, subCommand)
-		err = sh.Run("go", "run", "github.com/elastic/elastic-package", subCommand)
+		err = sh.Run(filepath.Join(workDir, "build", "elastic-package"), subCommand)
 		if err != nil {
 			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subCommand, packagePath)
 		}
@@ -291,6 +278,14 @@ func runElasticPackageOnAllIntegrations(subCommand string) error {
 	err = os.Chdir(workDir)
 	if err != nil {
 		return errors.Wrapf(err, "chdir failed (path: %s)", workDir)
+	}
+	return nil
+}
+
+func buildElasticPackageBinary() error {
+	err := sh.Run("go", "build", "-o", "./build/elastic-package", "github.com/elastic/elastic-package")
+	if err != nil {
+		return errors.Wrapf(err, "building elastic-package failed")
 	}
 	return nil
 }
