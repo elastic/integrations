@@ -52,7 +52,7 @@ The `asa` dataset collects the Cisco firewall logs.
 | event.start | The date when the event started or when the activity was first observed. | date |
 | event.timezone | Time zone information | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
-| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example:   application: foo-bar   env: production | object |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. | object |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 
 
@@ -97,7 +97,7 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | event.start | The date when the event started or when the activity was first observed. | date |
 | event.timezone | Time zone information | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
-| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example:   application: foo-bar   env: production | object |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. | object |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 
 
@@ -125,7 +125,7 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | event.start | The date when the event started or when the activity was first observed. | date |
 | event.timezone | Time zone information | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
-| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example:   application: foo-bar   env: production | object |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. | object |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 
 
