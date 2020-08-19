@@ -26,6 +26,36 @@ var (
 	integrationsDir = "./packages"
 )
 
+func Check() error {
+	mg.Deps(Lint)
+	mg.Deps(Format)
+	mg.Deps(Build)
+	mg.Deps(GenerateDocs)
+	mg.Deps(ModTidy)
+
+	// Check if no changes are shown
+	err := sh.RunV("git", "update-index", "--refresh")
+	if err != nil {
+		return err
+	}
+	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
+}
+
+// Lint lint checks every package.
+func Lint() error {
+	return runElasticPackageOnAllIntegrations("lint")
+}
+
+// Format adds license headers, formats .go files with goimports, and formats
+// .py files with autopep8.
+func Format() {
+	// Don't run AddLicenseHeaders and GoImports concurrently because they
+	// both can modify the same files.
+	mg.Deps(addLicenseHeaders)
+	mg.Deps(goImports)
+	mg.Deps(formatIntegrations)
+}
+
 func Build() error {
 	err := buildIntegrations()
 	if err != nil {
@@ -48,37 +78,6 @@ func buildIntegrations() error {
 	return runElasticPackageOnAllIntegrations("build")
 }
 
-func findIntegrations() ([]string, error) {
-	var matches []string
-
-	err := filepath.Walk(integrationsDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		f, err := os.Stat(path)
-		if err != nil {
-			return err
-		}
-
-		if !f.IsDir() {
-			return nil // skip as the path is not a directory
-		}
-
-		manifestPath := filepath.Join(path, "manifest.yml")
-		_, err = os.Stat(manifestPath)
-		if os.IsNotExist(err) {
-			return nil
-		}
-		matches = append(matches, path)
-		return filepath.SkipDir
-	})
-	if err != nil {
-		return nil, err
-	}
-	return matches, nil
-}
-
 func dryRunPackageRegistry() error {
 	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
 	if err != nil {
@@ -93,6 +92,15 @@ func buildImportBeats() error {
 		return errors.Wrap(err, "building import-beats failed")
 	}
 	return nil
+}
+
+func GenerateDocs() error {
+	args := []string{"run", "./dev/generate-docs/"}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
 }
 
 func ImportBeats() error {
@@ -124,30 +132,6 @@ func UpdatePackageStorage() error {
 	return sh.Run("go", args...)
 }
 
-func GenerateDocs() error {
-	args := []string{"run", "./dev/generate-docs/"}
-	if os.Getenv("PACKAGES") != "" {
-		args = append(args, "-packages", os.Getenv("PACKAGES"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
-}
-
-func Check() error {
-	mg.Deps(Lint)
-	mg.Deps(Format)
-	mg.Deps(Build)
-	mg.Deps(GenerateDocs)
-	mg.Deps(ModTidy)
-
-	// Check if no changes are shown
-	err := sh.RunV("git", "update-index", "--refresh")
-	if err != nil {
-		return err
-	}
-	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
-}
-
 func Reload() error {
 	err := Build()
 	if err != nil {
@@ -161,30 +145,15 @@ func Reload() error {
 	return sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "up", "-d", "package-registry")
 }
 
-// Format adds license headers, formats .go files with goimports, and formats
-// .py files with autopep8.
-func Format() {
-	// Don't run AddLicenseHeaders and GoImports concurrently because they
-	// both can modify the same files.
-	mg.Deps(AddLicenseHeaders)
-	mg.Deps(GoImports)
-	mg.Deps(FormatIntegrations)
-}
-
 // Format method formats integrations.
-func FormatIntegrations() error {
+func formatIntegrations() error {
 	return runElasticPackageOnAllIntegrations("format")
-}
-
-// Lint lint checks every package.
-func Lint() error {
-	return runElasticPackageOnAllIntegrations("lint")
 }
 
 // GoImports executes goimports against all .go files in and below the CWD. It
 // ignores vendor/ directories.
-func GoImports() error {
-	goFiles, err := FindFilesRecursive(func(path string, _ os.FileInfo) bool {
+func goImports() error {
+	goFiles, err := findFilesRecursive(func(path string, _ os.FileInfo) bool {
 		return filepath.Ext(path) == ".go" && !strings.Contains(path, "vendor/")
 	})
 	if err != nil {
@@ -205,15 +174,15 @@ func GoImports() error {
 
 // AddLicenseHeaders adds license headers to .go files. It applies the
 // appropriate license header based on the value of mage.BeatLicense.
-func AddLicenseHeaders() error {
+func addLicenseHeaders() error {
 	fmt.Println(">> fmt - go-licenser: Adding missing headers")
 	return sh.RunV("go-licenser", "-license", "Elastic")
 }
 
-// FindFilesRecursive recursively traverses from the CWD and invokes the given
+// findFilesRecursive recursively traverses from the CWD and invokes the given
 // match function on each regular file to determine if the given path should be
 // returned as a match.
-func FindFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
+func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
 	var matches []string
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -288,4 +257,35 @@ func buildElasticPackageBinary() error {
 		return errors.Wrapf(err, "building elastic-package failed")
 	}
 	return nil
+}
+
+func findIntegrations() ([]string, error) {
+	var matches []string
+
+	err := filepath.Walk(integrationsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !f.IsDir() {
+			return nil // skip as the path is not a directory
+		}
+
+		manifestPath := filepath.Join(path, "manifest.yml")
+		_, err = os.Stat(manifestPath)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		matches = append(matches, path)
+		return filepath.SkipDir
+	})
+	if err != nil {
+		return nil, err
+	}
+	return matches, nil
 }
