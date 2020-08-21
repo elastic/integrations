@@ -1,4 +1,3 @@
 # Elastic Synthetics Integration
 
-This integration sets up required assets for Synthetics to use central management.
-
+This integration sets up required assets and field definitions for Synthetics to use Fleet.
