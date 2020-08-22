@@ -4,6 +4,7 @@ This integration is used to fetches logs and metrics from
 [Amazon Web Services](https://aws.amazon.com/).
 
 ## AWS Credentials
+AWS credentials are required for running AWS integration. 
 
 ### Configuration parameters
 * *access_key_id*: first part of access key.
@@ -77,6 +78,20 @@ In Windows, shared credentials file is at `C:\Users\<yourUserName>\.aws\credenti
 For Linux, macOS or Unix, the file locates at `~/.aws/credentials`. Please see
 [Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
 for more details.
+
+## AWS Permissions
+Specific AWS permissions are required for the IAM user to make specific AWS API calls.
+In order to enable AWS integration, please make sure these permissions are given:
+
+* ec2:DescribeInstances
+* ec2:DescribeRegions
+* cloudwatch:GetMetricData
+* cloudwatch:ListMetrics
+* tag:getResources
+* sns:ListTopics
+* sqs:ListQueues
+* sts:GetCallerIdentity
+* iam:ListAccountAliases
 
 ## Logs
 
