@@ -117,6 +117,10 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.error_message | If the request returns an error, the description of the error. | keyword |
 | aws.cloudtrail.event_type | Identifies the type of event that generated the event record. | keyword |
 | aws.cloudtrail.event_version | The CloudTrail version of the log event format. | keyword |
+| aws.cloudtrail.flattened.additional_eventdata | Additional data about the event that was not part of the request or response. | flattened |
+| aws.cloudtrail.flattened.request_parameters | The parameters, if any, that were sent with the request. | flattened |
+| aws.cloudtrail.flattened.response_elements | The response element for actions that make changes (create, update, or delete actions). | flattened |
+| aws.cloudtrail.flattened.service_event_details | Identifies the service event, including what triggered the event and the result. | flattened |
 | aws.cloudtrail.management_event | A Boolean value that identifies whether the event is a management event. | keyword |
 | aws.cloudtrail.read_only | Identifies whether this operation is a read-only operation. | keyword |
 | aws.cloudtrail.recipient_account_id | Represents the account ID that received this event. | keyword |
