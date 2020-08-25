@@ -2,274 +2,292 @@
   type: group
   description: >
     Common monitor fields.
+
   fields:
-    - name: type
-      type: keyword
-      description: >
-        The monitor type.
-    - name: name
-      type: keyword
-      description: >
-        The monitors configured name
-      multi_fields:
-        - name: text
-          type: text
-          analyzer: simple
+  - name: type
+    type: keyword
+    description: >
+      The monitor type.
 
-    - name: id
-      type: keyword
-      description: >
-        The monitors full job ID as used by heartbeat.
-      multi_fields:
-        - name: text
-          type: text
-          analyzer: simple
+  - name: name
+    type: keyword
+    description: >
+      The monitors configured name
 
-    - name: duration
-      type: group
-      description: Total monitoring test duration
-      fields:
-        - name: us
-          type: long
-          description: Duration in microseconds
+    multi_fields:
+    - name: text
+      type: text
+      analyzer: simple
+  - name: id
+    type: keyword
+    description: >
+      The monitors full job ID as used by heartbeat.
 
-    - name: scheme
-      type: alias
-      path: url.scheme
-      migration: true
-      description: >
-        Address url scheme. For example `tcp`, `tls`, `http`, and `https`.
-    - name: host
-      type: alias
-      path: url.domain
-      migration: true
-      description: >
-        Hostname of service being monitored. Can be missing, if service is
-        monitored by IP.
-    - name: ip
-      type: ip
-      description: >
-        IP of service being monitored. If service is monitored by hostname,
-        the `ip` field contains the resolved ip address for the current host.
-    - name: status
-      required: true
-      type: keyword
-      description: >
-        Indicator if monitor could validate the service to be available.
-    - name: check_group
-      type: keyword
-      description: >
-        A token unique to a simultaneously invoked group of checks as in the case where multiple IPs are checked for a single DNS entry.
-    - name: timespan
-      type: date_range
-      description: >
-        Time range this ping reported starting at the instant the check was started, ending at the start of the next scheduled check.
+    multi_fields:
+    - name: text
+      type: text
+      analyzer: simple
+  - name: duration
+    type: group
+    description: Total monitoring test duration
+    fields:
+    - name: us
+      type: long
+      description: Duration in microseconds
+  - name: scheme
+    type: alias
+    path: url.scheme
+    migration: true
+    description: >
+      Address url scheme. For example `tcp`, `tls`, `http`, and `https`.
+
+  - name: host
+    type: alias
+    path: url.domain
+    migration: true
+    description: >
+      Hostname of service being monitored. Can be missing, if service is monitored
+      by IP.
+
+  - name: ip
+    type: ip
+    description: >
+      IP of service being monitored. If service is monitored by hostname, the `ip`
+      field contains the resolved ip address for the current host.
+
+  - name: status
+    required: true
+    type: keyword
+    description: >
+      Indicator if monitor could validate the service to be available.
+
+  - name: check_group
+    type: keyword
+    description: >
+      A token unique to a simultaneously invoked group of checks as in the case where
+      multiple IPs are checked for a single DNS entry.
+
+  - name: timespan
+    type: date_range
+    description: >
+      Time range this ping reported starting at the instant the check was started,
+      ending at the start of the next scheduled check.
 
 - name: summary
   type: group
-  description: "Present in the last event emitted during a check. If a monitor checks multiple endpoints, as is the case with `mode: all`."
+  description: "Present in the last event emitted during a check. If a monitor checks
+    multiple endpoints, as is the case with `mode: all`."
   fields:
-    - name: up
-      type: integer
-      description: >
-        The number of endpoints that succeeded
-    - name: down
-      type: integer
-      description: >
-        The number of endpoints that failed
+  - name: up
+    type: integer
+    description: >
+      The number of endpoints that succeeded
+
+  - name: down
+    type: integer
+    description: >
+      The number of endpoints that failed
 
 - name: resolve
   type: group
   description: >
     Host lookup fields.
-  fields:
-    - name: host
-      type: alias
-      path: url.domain
-      migration: true
-      description: >
-        Hostname of service being monitored.
-    - name: ip
-      type: ip
-      description: >
-        IP address found for the given host.
-    - name: rtt
-      type: group
-      description: Duration required to resolve an IP from hostname.
-      fields:
-        - name: us
-          type: long
-          description: Duration in microseconds
 
+  fields:
+  - name: host
+    type: alias
+    path: url.domain
+    migration: true
+    description: >
+      Hostname of service being monitored.
+
+  - name: ip
+    type: ip
+    description: >
+      IP address found for the given host.
+
+  - name: rtt
+    type: group
+    description: Duration required to resolve an IP from hostname.
+    fields:
+    - name: us
+      type: long
+      description: Duration in microseconds
 - name: http
   type: group
   description: >
     HTTP related fields.
+
   fields:
-    - name: url
-      type: alias
-      path: url.full
-      migration: true
-      description: >
-        Service url used by monitor.
-    - name: response
+  - name: url
+    type: alias
+    path: url.full
+    migration: true
+    description: >
+      Service url used by monitor.
+
+  - name: response
+    type: group
+    fields:
+    - name: body
       type: group
       fields:
-        - name: body
-          type: group
-          fields:
-            - name: hash
-              type: keyword
-              description: >
-                Hash of the full response body. Can be used to group responses with identical hashes.
-        - name: redirects
-          type: keyword
-          description: >
-            List of redirects followed to arrive at final content. Last item on the list is the URL for which
-            body content is shown.
-        - name: headers.*
-          type: object
-          enabled: false
-          description: >
-            The canonical headers of the monitored HTTP response.
-    - name: rtt
-      type: group
+      - name: hash
+        type: keyword
+        description: >
+          Hash of the full response body. Can be used to group responses with identical
+          hashes.
+
+    - name: redirects
+      type: keyword
       description: >
-        HTTP layer round trip times.
+        List of redirects followed to arrive at final content. Last item on the list
+        is the URL for which body content is shown.
+
+    - name: headers.*
+      type: object
+      enabled: false
+      description: >
+        The canonical headers of the monitored HTTP response.
+
+  - name: rtt
+    type: group
+    description: >
+      HTTP layer round trip times.
+
+    fields:
+    - name: validate
+      type: group
+      description: |
+        Duration between first byte of HTTP request being written and
+        response being processed by validator. Duration based on already
+        available network connection.
+        Note: if validator is not reading body or only a prefix, this
+              number does not fully represent the total time needed
+              to read the body.
       fields:
-        - name: validate
-          type: group
-          description: |
-            Duration between first byte of HTTP request being written and
-            response being processed by validator. Duration based on already
-            available network connection.
-            Note: if validator is not reading body or only a prefix, this
-                  number does not fully represent the total time needed
-                  to read the body.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
-
-        - name: validate_body
-          type: group
-          description: |
-            Duration of validator required to read and validate the response
-            body.
-            Note: if validator is not reading body or only a prefix, this
-                  number does not fully represent the total time needed
-                  to read the body.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
-
-        - name: write_request
-          type: group
-          description:
-            Duration of sending the complete HTTP request. Duration based on
-            already available network connection.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
-
-        - name: response_header
-          type: group
-          description:
-            Time required between sending the start of sending the HTTP
-            request and first byte from HTTP response being read. Duration
-            based on already available network connection.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
-
-        - name: content.us
-          type: long
-          description: Time required to retrieved the content in micro seconds.
-
-        - name: total
-          type: group
-          description: |
-            Duration required to process the HTTP transaction. Starts with
-            the initial TCP connection attempt. Ends with after validator
-            did check the response.
-            Note: if validator is not reading body or only a prefix, this
-                  number does not fully represent the total time needed.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
-
+      - name: us
+        type: long
+        description: Duration in microseconds
+    - name: validate_body
+      type: group
+      description: |
+        Duration of validator required to read and validate the response
+        body.
+        Note: if validator is not reading body or only a prefix, this
+              number does not fully represent the total time needed
+              to read the body.
+      fields:
+      - name: us
+        type: long
+        description: Duration in microseconds
+    - name: write_request
+      type: group
+      description: Duration of sending the complete HTTP request. Duration based on
+        already available network connection.
+      fields:
+      - name: us
+        type: long
+        description: Duration in microseconds
+    - name: response_header
+      type: group
+      description: Time required between sending the start of sending the HTTP request
+        and first byte from HTTP response being read. Duration based on already available
+        network connection.
+      fields:
+      - name: us
+        type: long
+        description: Duration in microseconds
+    - name: content.us
+      type: long
+      description: Time required to retrieved the content in micro seconds.
+    - name: total
+      type: group
+      description: |
+        Duration required to process the HTTP transaction. Starts with
+        the initial TCP connection attempt. Ends with after validator
+        did check the response.
+        Note: if validator is not reading body or only a prefix, this
+              number does not fully represent the total time needed.
+      fields:
+      - name: us
+        type: long
+        description: Duration in microseconds
 - name: tcp
   type: group
   description: >
     TCP network layer related fields.
+
   fields:
-    - name: port
-      type: alias
-      path: url.port
-      migration: true
-      description: >
-        Service port number.
-    - name: rtt
+  - name: port
+    type: alias
+    path: url.port
+    migration: true
+    description: >
+      Service port number.
+
+  - name: rtt
+    type: group
+    description: >
+      TCP layer round trip times.
+
+    fields:
+    - name: connect
       type: group
       description: >
-        TCP layer round trip times.
+        Duration required to establish a TCP connection based on already available
+        IP address.
+
       fields:
-        - name: connect
-          type: group
-          description: >
-            Duration required to establish a TCP connection based on already
-            available IP address.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
+      - name: us
+        type: long
+        description: Duration in microseconds
+    - name: validate
+      type: group
+      description: >
+        Duration of validation step based on existing TCP connection.
 
-        - name: validate
-          type: group
-          description: >
-            Duration of validation step based on existing TCP connection.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
-
+      fields:
+      - name: us
+        type: long
+        description: Duration in microseconds
 - name: icmp
   type: group
   description: >
     IP ping fields.
-  fields:
-    - name: requests
-      type: integer
-      description: >
-        Number if ICMP EchoRequests send.
-    - name: rtt
-      type: group
-      description: ICMP Echo Request and Reply round trip time
-      fields:
-        - name: us
-          type: long
-          description: Duration in microseconds
 
+  fields:
+  - name: requests
+    type: integer
+    description: >
+      Number if ICMP EchoRequests send.
+
+  - name: rtt
+    type: group
+    description: ICMP Echo Request and Reply round trip time
+    fields:
+    - name: us
+      type: long
+      description: Duration in microseconds
 - name: socks5
   type: group
   description: >
     SOCKS5 proxy related fields:
+
   fields:
-    - name: rtt
+  - name: rtt
+    type: group
+    description: >
+      TLS layer round trip times.
+
+    fields:
+    - name: connect
       type: group
       description: >
-        TLS layer round trip times.
+        Time required to establish a connection via SOCKS5 to endpoint based on available
+        connection to SOCKS5 proxy.
+
       fields:
-        - name: connect
-          type: group
-          description: >
-            Time required to establish a connection via SOCKS5 to endpoint
-            based on available connection to SOCKS5 proxy.
-          fields:
-            - name: us
-              type: long
-              description: Duration in microseconds
+      - name: us
+        type: long
+        description: Duration in microseconds
