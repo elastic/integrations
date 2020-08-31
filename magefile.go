@@ -229,7 +229,41 @@ func testPipeline() error {
 }
 
 func bootUpStackElasticsearch() error {
-	return runElasticPackage("stack", "up", "-d", "--services", "elasticsearch")
+	err := runElasticPackage("stack", "up", "-d", "--services", "elasticsearch")
+	if err != nil {
+		return err
+	}
+
+	return loadStackEnvs()
+}
+
+func loadStackEnvs() error {
+	mg.Deps(buildElasticPackageBinary)
+
+	workDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+
+	exports, err := sh.Output(filepath.Join(workDir, "build", "elastic-package"), "stack", "shellinit")
+	if err != nil {
+		return errors.Wrap(err, "shellinit failed")
+	}
+
+	exports = strings.ReplaceAll(exports, "export ", "")
+	exportPerLine := strings.Split(exports, "\n")
+	for _, record := range exportPerLine {
+		keyValue := strings.Split(record, "=")
+		if len(keyValue) != 2 {
+			return fmt.Errorf("invalid export line: %s", record)
+		}
+
+		err = os.Setenv(keyValue[0], keyValue[1])
+		if err != nil {
+			return errors.Wrap(err, "can't set env variable")
+		}
+	}
+	return nil
 }
 
 func tearDownStack() error {
