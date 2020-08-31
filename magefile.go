@@ -233,7 +233,6 @@ func bootUpStackElasticsearch() error {
 	if err != nil {
 		return err
 	}
-
 	return loadStackEnvs()
 }
 
