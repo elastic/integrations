@@ -218,13 +218,13 @@ func ModTidy() error {
 }
 
 func Test() {
-	defer tearDownStack()
-
 	mg.Deps(testPipeline)
 }
 
 func testPipeline() error {
 	mg.Deps(bootUpStackElasticsearch)
+	defer tearDownStack()
+
 	return runElasticPackageOnAllIntegrations("test")
 }
 
@@ -269,25 +269,9 @@ func tearDownStack() error {
 	return runElasticPackage("stack", "down")
 }
 
-func runElasticPackage(subCommandWithArgs ...string) error {
-	workDir, err := os.Getwd()
-	if err != nil {
-		return errors.Wrap(err, "getwd failed")
-	}
-
-	fmt.Printf("elastic-package %s\n", strings.Join(subCommandWithArgs, " "))
-	err = sh.RunV(filepath.Join(workDir, "build", "elastic-package"), subCommandWithArgs...)
-	if err != nil {
-		return errors.Wrapf(err, "running elastic-package failed")
-	}
-	return nil
-}
-
 // runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
 // packages with the given subCommand.
 func runElasticPackageOnAllIntegrations(subCommandWithArgs ...string) error {
-	mg.Deps(buildElasticPackageBinary)
-
 	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
@@ -299,21 +283,41 @@ func runElasticPackageOnAllIntegrations(subCommandWithArgs ...string) error {
 	}
 
 	for _, packagePath := range packagePaths {
-		err := os.Chdir(filepath.Join(workDir, packagePath))
+		fmt.Printf("%s:\n", packagePath)
+		err = runElasticPackageInWorkDir(filepath.Join(workDir, packagePath), subCommandWithArgs...)
 		if err != nil {
-			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
-		}
-
-		fmt.Printf("%s: elastic-package %s\n", packagePath, strings.Join(subCommandWithArgs, " "))
-		err = sh.RunV(filepath.Join(workDir, "build", "elastic-package"), subCommandWithArgs...)
-		if err != nil {
-			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", strings.Join(subCommandWithArgs, " "), packagePath)
+			return err
 		}
 	}
+	return nil
+}
+
+func runElasticPackage(subCommandWithArgs ...string) error {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+	return runElasticPackageInWorkDir(currentDir, subCommandWithArgs...)
+}
+
+func runElasticPackageInWorkDir(workDir string, subCommandWithArgs ...string) error {
+	mg.Deps(buildElasticPackageBinary)
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+	defer os.Chdir(currentDir)
 
 	err = os.Chdir(workDir)
 	if err != nil {
 		return errors.Wrapf(err, "chdir failed (path: %s)", workDir)
+	}
+
+	fmt.Printf("elastic-package %s\n", strings.Join(subCommandWithArgs, " "))
+	err = sh.RunV(filepath.Join(currentDir, "build", "elastic-package"), subCommandWithArgs...)
+	if err != nil {
+		return errors.Wrapf(err, "running elastic-package failed")
 	}
 	return nil
 }
