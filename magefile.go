@@ -26,6 +26,36 @@ var (
 	integrationsDir = "./packages"
 )
 
+func Check() error {
+	mg.Deps(Lint)
+	mg.Deps(Format)
+	mg.Deps(Build)
+	mg.Deps(GenerateDocs)
+	mg.Deps(ModTidy)
+
+	// Check if no changes are shown
+	err := sh.RunV("git", "update-index", "--refresh")
+	if err != nil {
+		return err
+	}
+	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
+}
+
+// Lint lint checks every package.
+func Lint() error {
+	return runElasticPackageOnAllIntegrations("lint")
+}
+
+// Format adds license headers, formats .go files with goimports, and formats
+// .py files with autopep8.
+func Format() {
+	// Don't run AddLicenseHeaders and GoImports concurrently because they
+	// both can modify the same files.
+	mg.Deps(addLicenseHeaders)
+	mg.Deps(goImports)
+	mg.Deps(formatIntegrations)
+}
+
 func Build() error {
 	err := buildIntegrations()
 	if err != nil {
@@ -45,6 +75,152 @@ func Build() error {
 }
 
 func buildIntegrations() error {
+	return runElasticPackageOnAllIntegrations("build")
+}
+
+func dryRunPackageRegistry() error {
+	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
+	if err != nil {
+		return errors.Wrap(err, "package-registry dry-run failed")
+	}
+	return nil
+}
+
+func buildImportBeats() error {
+	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/import-beats")
+	if err != nil {
+		return errors.Wrap(err, "building import-beats failed")
+	}
+	return nil
+}
+
+func GenerateDocs() error {
+	args := []string{"run", "./dev/generate-docs/"}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
+func ImportBeats() error {
+	args := []string{"run", "./dev/import-beats/"}
+	if os.Getenv("SKIP_KIBANA") == "true" {
+		args = append(args, "-skipKibana")
+	}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
+func UpdatePackageStorage() error {
+	err := Build()
+	if err != nil {
+		return err
+	}
+
+	args := []string{"run", "./dev/update-package-storage/"}
+	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
+		args = append(args, "-skipPullRequest")
+	}
+	if os.Getenv("PACKAGES_SOURCE_DIR") != "" {
+		args = append(args, "-packagesSourceDir", os.Getenv("PACKAGES_SOURCE_DIR"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
+}
+
+func Reload() error {
+	err := Build()
+	if err != nil {
+		return err
+	}
+
+	err = sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "build", "package-registry")
+	if err != nil {
+		return err
+	}
+	return sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "up", "-d", "package-registry")
+}
+
+// Format method formats integrations.
+func formatIntegrations() error {
+	return runElasticPackageOnAllIntegrations("format")
+}
+
+// GoImports executes goimports against all .go files in and below the CWD. It
+// ignores vendor/ directories.
+func goImports() error {
+	goFiles, err := findFilesRecursive(func(path string, _ os.FileInfo) bool {
+		return filepath.Ext(path) == ".go" && !strings.Contains(path, "vendor/")
+	})
+	if err != nil {
+		return err
+	}
+	if len(goFiles) == 0 {
+		return nil
+	}
+
+	fmt.Println(">> fmt - goimports: Formatting Go code")
+	args := append(
+		[]string{"-local", GoImportsLocalPrefix, "-l", "-w"},
+		goFiles...,
+	)
+
+	return sh.RunV("goimports", args...)
+}
+
+// AddLicenseHeaders adds license headers to .go files. It applies the
+// appropriate license header based on the value of mage.BeatLicense.
+func addLicenseHeaders() error {
+	fmt.Println(">> fmt - go-licenser: Adding missing headers")
+	return sh.RunV("go-licenser", "-license", "Elastic")
+}
+
+// findFilesRecursive recursively traverses from the CWD and invokes the given
+// match function on each regular file to determine if the given path should be
+// returned as a match.
+func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
+	var matches []string
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.Mode().IsRegular() {
+			// continue
+			return nil
+		}
+
+		if match(filepath.ToSlash(path), info) {
+			matches = append(matches, path)
+		}
+		return nil
+	})
+	return matches, err
+}
+
+func Clean() error {
+	return os.RemoveAll(buildDir)
+}
+
+func ModTidy() error {
+	fmt.Println(">> mod - updating vendor directory")
+
+	err := sh.RunV("go", "mod", "tidy")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
+// packages with the given subCommand.
+func runElasticPackageOnAllIntegrations(subCommand string) error {
+	mg.Deps(buildElasticPackageBinary)
+
 	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
@@ -61,16 +237,24 @@ func buildIntegrations() error {
 			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
 		}
 
-		fmt.Printf("%s: elastic-package build\n", packagePath)
-		err = sh.Run("go", "run", "github.com/elastic/elastic-package", "build")
+		fmt.Printf("%s: elastic-package %s\n", packagePath, subCommand)
+		err = sh.Run(filepath.Join(workDir, "build", "elastic-package"), subCommand)
 		if err != nil {
-			return errors.Wrapf(err, "elastic-package build failed (path: %s)", packagePath)
+			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subCommand, packagePath)
 		}
 	}
 
 	err = os.Chdir(workDir)
 	if err != nil {
 		return errors.Wrapf(err, "chdir failed (path: %s)", workDir)
+	}
+	return nil
+}
+
+func buildElasticPackageBinary() error {
+	err := sh.Run("go", "build", "-o", "./build/elastic-package", "github.com/elastic/elastic-package")
+	if err != nil {
+		return errors.Wrapf(err, "building elastic-package failed")
 	}
 	return nil
 }
@@ -104,172 +288,4 @@ func findIntegrations() ([]string, error) {
 		return nil, err
 	}
 	return matches, nil
-}
-
-func dryRunPackageRegistry() error {
-	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
-	if err != nil {
-		return errors.Wrap(err, "package-registry dry-run failed")
-	}
-	return nil
-}
-
-func buildImportBeats() error {
-	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/import-beats")
-	if err != nil {
-		return errors.Wrap(err, "building import-beats failed")
-	}
-	return nil
-}
-
-func ImportBeats() error {
-	args := []string{"run", "./dev/import-beats/"}
-	if os.Getenv("SKIP_KIBANA") == "true" {
-		args = append(args, "-skipKibana")
-	}
-	if os.Getenv("PACKAGES") != "" {
-		args = append(args, "-packages", os.Getenv("PACKAGES"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
-}
-
-func UpdatePackageStorage() error {
-	err := Build()
-	if err != nil {
-		return err
-	}
-
-	args := []string{"run", "./dev/update-package-storage/"}
-	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
-		args = append(args, "-skipPullRequest")
-	}
-	if os.Getenv("PACKAGES_SOURCE_DIR") != "" {
-		args = append(args, "-packagesSourceDir", os.Getenv("PACKAGES_SOURCE_DIR"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
-}
-
-func GenerateDocs() error {
-	args := []string{"run", "./dev/generate-docs/"}
-	if os.Getenv("PACKAGES") != "" {
-		args = append(args, "-packages", os.Getenv("PACKAGES"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
-}
-
-func Check() error {
-	Format()
-
-	err := Build()
-	if err != nil {
-		return err
-	}
-
-	err = GenerateDocs()
-	if err != nil {
-		return err
-	}
-
-	err = ModTidy()
-	if err != nil {
-		return err
-	}
-
-	// Check if no changes are shown
-	err = sh.RunV("git", "update-index", "--refresh")
-	if err != nil {
-		return err
-	}
-	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
-}
-
-func Reload() error {
-	err := Build()
-	if err != nil {
-		return err
-	}
-
-	err = sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "build", "package-registry")
-	if err != nil {
-		return err
-	}
-	return sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "up", "-d", "package-registry")
-}
-
-// Format adds license headers, formats .go files with goimports, and formats
-// .py files with autopep8.
-func Format() {
-	// Don't run AddLicenseHeaders and GoImports concurrently because they
-	// both can modify the same files.
-	mg.Deps(AddLicenseHeaders)
-	mg.Deps(GoImports)
-}
-
-// GoImports executes goimports against all .go files in and below the CWD. It
-// ignores vendor/ directories.
-func GoImports() error {
-	goFiles, err := FindFilesRecursive(func(path string, _ os.FileInfo) bool {
-		return filepath.Ext(path) == ".go" && !strings.Contains(path, "vendor/")
-	})
-	if err != nil {
-		return err
-	}
-	if len(goFiles) == 0 {
-		return nil
-	}
-
-	fmt.Println(">> fmt - goimports: Formatting Go code")
-	args := append(
-		[]string{"-local", GoImportsLocalPrefix, "-l", "-w"},
-		goFiles...,
-	)
-
-	return sh.RunV("goimports", args...)
-}
-
-// AddLicenseHeaders adds license headers to .go files. It applies the
-// appropriate license header based on the value of mage.BeatLicense.
-func AddLicenseHeaders() error {
-	fmt.Println(">> fmt - go-licenser: Adding missing headers")
-	return sh.RunV("go-licenser", "-license", "Elastic")
-}
-
-// FindFilesRecursive recursively traverses from the CWD and invokes the given
-// match function on each regular file to determine if the given path should be
-// returned as a match.
-func FindFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
-	var matches []string
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !info.Mode().IsRegular() {
-			// continue
-			return nil
-		}
-
-		if match(filepath.ToSlash(path), info) {
-			matches = append(matches, path)
-		}
-		return nil
-	})
-	return matches, err
-}
-
-func Clean() error {
-	return os.RemoveAll(buildDir)
-}
-
-func ModTidy() error {
-	fmt.Println(">> mod - updating vendor directory")
-
-	err := sh.RunV("go", "mod", "tidy")
-	if err != nil {
-		return err
-	}
-	return nil
 }
