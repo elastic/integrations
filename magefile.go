@@ -32,6 +32,7 @@ func Check() error {
 	mg.Deps(Build)
 	mg.Deps(GenerateDocs)
 	mg.Deps(ModTidy)
+	mg.Deps(Test)
 
 	// Check if no changes are shown
 	err := sh.RunV("git", "update-index", "--refresh")
@@ -216,9 +217,42 @@ func ModTidy() error {
 	return nil
 }
 
+func Test() {
+	defer tearDownStack()
+
+	mg.Deps(testPipeline)
+}
+
+func testPipeline() error {
+	mg.Deps(bootUpStackElasticsearch)
+	return runElasticPackageOnAllIntegrations("test")
+}
+
+func bootUpStackElasticsearch() error {
+	return runElasticPackage("stack", "up", "-d", "--services", "elasticsearch")
+}
+
+func tearDownStack() error {
+	return runElasticPackage("stack", "down")
+}
+
+func runElasticPackage(subCommandWithArgs ...string) error {
+	workDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+
+	fmt.Printf("elastic-package %s\n", strings.Join(subCommandWithArgs, " "))
+	err = sh.RunV(filepath.Join(workDir, "build", "elastic-package"), subCommandWithArgs...)
+	if err != nil {
+		return errors.Wrapf(err, "running elastic-package failed")
+	}
+	return nil
+}
+
 // runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
 // packages with the given subCommand.
-func runElasticPackageOnAllIntegrations(subCommand string) error {
+func runElasticPackageOnAllIntegrations(subCommandWithArgs ...string) error {
 	mg.Deps(buildElasticPackageBinary)
 
 	packagePaths, err := findIntegrations()
@@ -237,10 +271,10 @@ func runElasticPackageOnAllIntegrations(subCommand string) error {
 			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
 		}
 
-		fmt.Printf("%s: elastic-package %s\n", packagePath, subCommand)
-		err = sh.Run(filepath.Join(workDir, "build", "elastic-package"), subCommand)
+		fmt.Printf("%s: elastic-package %s\n", packagePath, strings.Join(subCommandWithArgs, " "))
+		err = sh.RunV(filepath.Join(workDir, "build", "elastic-package"), subCommandWithArgs...)
 		if err != nil {
-			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subCommand, packagePath)
+			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", strings.Join(subCommandWithArgs, " "), packagePath)
 		}
 	}
 
