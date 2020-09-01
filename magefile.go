@@ -26,6 +26,37 @@ var (
 	integrationsDir = "./packages"
 )
 
+func Check() error {
+	mg.Deps(Lint)
+	mg.Deps(Format)
+	mg.Deps(Build)
+	mg.Deps(GenerateDocs)
+	mg.Deps(ModTidy)
+	mg.Deps(Test)
+
+	// Check if no changes are shown
+	err := sh.RunV("git", "update-index", "--refresh")
+	if err != nil {
+		return err
+	}
+	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
+}
+
+// Lint lint checks every package.
+func Lint() error {
+	return runElasticPackageOnAllIntegrations("lint")
+}
+
+// Format adds license headers, formats .go files with goimports, and formats
+// .py files with autopep8.
+func Format() {
+	// Don't run AddLicenseHeaders and GoImports concurrently because they
+	// both can modify the same files.
+	mg.Deps(addLicenseHeaders)
+	mg.Deps(goImports)
+	mg.Deps(formatIntegrations)
+}
+
 func Build() error {
 	err := buildIntegrations()
 	if err != nil {
@@ -48,37 +79,6 @@ func buildIntegrations() error {
 	return runElasticPackageOnAllIntegrations("build")
 }
 
-func findIntegrations() ([]string, error) {
-	var matches []string
-
-	err := filepath.Walk(integrationsDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		f, err := os.Stat(path)
-		if err != nil {
-			return err
-		}
-
-		if !f.IsDir() {
-			return nil // skip as the path is not a directory
-		}
-
-		manifestPath := filepath.Join(path, "manifest.yml")
-		_, err = os.Stat(manifestPath)
-		if os.IsNotExist(err) {
-			return nil
-		}
-		matches = append(matches, path)
-		return filepath.SkipDir
-	})
-	if err != nil {
-		return nil, err
-	}
-	return matches, nil
-}
-
 func dryRunPackageRegistry() error {
 	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
 	if err != nil {
@@ -93,6 +93,15 @@ func buildImportBeats() error {
 		return errors.Wrap(err, "building import-beats failed")
 	}
 	return nil
+}
+
+func GenerateDocs() error {
+	args := []string{"run", "./dev/generate-docs/"}
+	if os.Getenv("PACKAGES") != "" {
+		args = append(args, "-packages", os.Getenv("PACKAGES"))
+	}
+	args = append(args, "*.go")
+	return sh.Run("go", args...)
 }
 
 func ImportBeats() error {
@@ -124,45 +133,6 @@ func UpdatePackageStorage() error {
 	return sh.Run("go", args...)
 }
 
-func GenerateDocs() error {
-	args := []string{"run", "./dev/generate-docs/"}
-	if os.Getenv("PACKAGES") != "" {
-		args = append(args, "-packages", os.Getenv("PACKAGES"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
-}
-
-func Check() error {
-	if err := Lint(); err != nil {
-		return err
-	}
-
-	Format()
-
-	err := Build()
-	if err != nil {
-		return err
-	}
-
-	err = GenerateDocs()
-	if err != nil {
-		return err
-	}
-
-	err = ModTidy()
-	if err != nil {
-		return err
-	}
-
-	// Check if no changes are shown
-	err = sh.RunV("git", "update-index", "--refresh")
-	if err != nil {
-		return err
-	}
-	return sh.RunV("git", "diff-index", "--exit-code", "HEAD", "--")
-}
-
 func Reload() error {
 	err := Build()
 	if err != nil {
@@ -176,24 +146,15 @@ func Reload() error {
 	return sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "up", "-d", "package-registry")
 }
 
-// Format adds license headers, formats .go files with goimports, and formats
-// .py files with autopep8.
-func Format() {
-	// Don't run AddLicenseHeaders and GoImports concurrently because they
-	// both can modify the same files.
-	mg.Deps(AddLicenseHeaders)
-	mg.Deps(GoImports)
-}
-
-// Lint lint checks every package.
-func Lint() error {
-	return runElasticPackageOnAllIntegrations("lint")
+// Format method formats integrations.
+func formatIntegrations() error {
+	return runElasticPackageOnAllIntegrations("format")
 }
 
 // GoImports executes goimports against all .go files in and below the CWD. It
 // ignores vendor/ directories.
-func GoImports() error {
-	goFiles, err := FindFilesRecursive(func(path string, _ os.FileInfo) bool {
+func goImports() error {
+	goFiles, err := findFilesRecursive(func(path string, _ os.FileInfo) bool {
 		return filepath.Ext(path) == ".go" && !strings.Contains(path, "vendor/")
 	})
 	if err != nil {
@@ -214,15 +175,15 @@ func GoImports() error {
 
 // AddLicenseHeaders adds license headers to .go files. It applies the
 // appropriate license header based on the value of mage.BeatLicense.
-func AddLicenseHeaders() error {
+func addLicenseHeaders() error {
 	fmt.Println(">> fmt - go-licenser: Adding missing headers")
 	return sh.RunV("go-licenser", "-license", "Elastic")
 }
 
-// FindFilesRecursive recursively traverses from the CWD and invokes the given
+// findFilesRecursive recursively traverses from the CWD and invokes the given
 // match function on each regular file to determine if the given path should be
 // returned as a match.
-func FindFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
+func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
 	var matches []string
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -256,9 +217,61 @@ func ModTidy() error {
 	return nil
 }
 
+func Test() {
+	mg.Deps(testPipeline)
+}
+
+func testPipeline() error {
+	mg.Deps(bootUpStackElasticsearch)
+	defer tearDownStack()
+
+	return runElasticPackageOnAllIntegrations("test")
+}
+
+func bootUpStackElasticsearch() error {
+	err := runElasticPackage("stack", "up", "-d", "--services", "elasticsearch")
+	if err != nil {
+		return err
+	}
+	return loadStackEnvs()
+}
+
+func loadStackEnvs() error {
+	mg.Deps(buildElasticPackageBinary)
+
+	workDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+
+	exports, err := sh.Output(filepath.Join(workDir, "build", "elastic-package"), "stack", "shellinit")
+	if err != nil {
+		return errors.Wrap(err, "shellinit failed")
+	}
+
+	exports = strings.ReplaceAll(exports, "export ", "")
+	exportPerLine := strings.Split(exports, "\n")
+	for _, record := range exportPerLine {
+		keyValue := strings.Split(record, "=")
+		if len(keyValue) != 2 {
+			return fmt.Errorf("invalid export line: %s", record)
+		}
+
+		err = os.Setenv(keyValue[0], keyValue[1])
+		if err != nil {
+			return errors.Wrap(err, "can't set env variable")
+		}
+	}
+	return nil
+}
+
+func tearDownStack() error {
+	return runElasticPackage("stack", "down")
+}
+
 // runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
 // packages with the given subCommand.
-func runElasticPackageOnAllIntegrations(subCommand string) error {
+func runElasticPackageOnAllIntegrations(subCommandWithArgs ...string) error {
 	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
@@ -270,21 +283,80 @@ func runElasticPackageOnAllIntegrations(subCommand string) error {
 	}
 
 	for _, packagePath := range packagePaths {
-		err := os.Chdir(filepath.Join(workDir, packagePath))
+		fmt.Printf("%s:\n", packagePath)
+		err = runElasticPackageInWorkDir(filepath.Join(workDir, packagePath), subCommandWithArgs...)
 		if err != nil {
-			return errors.Wrapf(err, "chdir failed (path: %s)", packagePath)
-		}
-
-		fmt.Printf("%s: elastic-package %s\n", packagePath, subCommand)
-		err = sh.Run("go", "run", "github.com/elastic/elastic-package", subCommand)
-		if err != nil {
-			return errors.Wrapf(err, "elastic-package %s failed (path: %s)", subCommand, packagePath)
+			return err
 		}
 	}
+	return nil
+}
+
+func runElasticPackage(subCommandWithArgs ...string) error {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+	return runElasticPackageInWorkDir(currentDir, subCommandWithArgs...)
+}
+
+func runElasticPackageInWorkDir(workDir string, subCommandWithArgs ...string) error {
+	mg.Deps(buildElasticPackageBinary)
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "getwd failed")
+	}
+	defer os.Chdir(currentDir)
 
 	err = os.Chdir(workDir)
 	if err != nil {
 		return errors.Wrapf(err, "chdir failed (path: %s)", workDir)
 	}
+
+	fmt.Printf("elastic-package %s\n", strings.Join(subCommandWithArgs, " "))
+	err = sh.RunV(filepath.Join(currentDir, "build", "elastic-package"), subCommandWithArgs...)
+	if err != nil {
+		return errors.Wrapf(err, "running elastic-package failed")
+	}
 	return nil
+}
+
+func buildElasticPackageBinary() error {
+	err := sh.Run("go", "build", "-o", "./build/elastic-package", "github.com/elastic/elastic-package")
+	if err != nil {
+		return errors.Wrapf(err, "building elastic-package failed")
+	}
+	return nil
+}
+
+func findIntegrations() ([]string, error) {
+	var matches []string
+
+	err := filepath.Walk(integrationsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if !f.IsDir() {
+			return nil // skip as the path is not a directory
+		}
+
+		manifestPath := filepath.Join(path, "manifest.yml")
+		_, err = os.Stat(manifestPath)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		matches = append(matches, path)
+		return filepath.SkipDir
+	})
+	if err != nil {
+		return nil, err
+	}
+	return matches, nil
 }
