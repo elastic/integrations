@@ -27,8 +27,8 @@ var (
 )
 
 func Check() error {
-	mg.Deps(Lint)
 	mg.Deps(Format)
+	mg.Deps(Lint)
 	mg.Deps(Build)
 	mg.Deps(GenerateDocs)
 	mg.Deps(ModTidy)
