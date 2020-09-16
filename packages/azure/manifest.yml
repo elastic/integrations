@@ -1,0 +1,109 @@
+name: azure
+title: Azure
+version: 0.0.1
+release: experimental
+description: Azure Integration
+type: integration
+icons:
+  - src: /img/logo_azure.svg
+    title: logo azure
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories:
+  - azure
+  - cloud
+  - network
+  - security
+conditions:
+  kibana.version: ^7.9.0
+screenshots:
+  - src: /img/filebeat-azure-overview.png
+    title: filebeat azure overview
+    size: 5002x2666
+    type: image/png
+  - src: /img/metricbeat-azure-vm-overview.png
+    title: metricbeat azure vm overview
+    size: 5006x2672
+    type: image/png
+  - src: /img/metricbeat-azure-vm-guestmetrics-overview.png
+    title: metricbeat azure vm guestmetrics overview
+    size: 5006x2672
+    type: image/png
+  - src: /img/metricbeat-azure-vmss-overview.png
+    title: metricbeat azure vmss overview
+    size: 5000x2668
+    type: image/png
+  - src: /img/metricbeat-azure-storage-overview.png
+    title: metricbeat azure storage overview
+    size: 5008x2662
+    type: image/png
+  - src: /img/metricbeat-azure-billing-overview.png
+    title: metricbeat azure billing overview
+    size: 3810x1951
+    type: image/png
+  - src: /img/metricbeat-azure-vm-guestmetrics-overview.png
+    title: metricbeat azure vm guestmetrics overview
+    size: 5006x2672
+    type: image/png
+  - src: /img/metricbeat-azure-database-account-overview.png
+    title: metricbeat azure database account overview
+    size: 3126x1614
+    type: image/png
+config_templates:
+  - name: azure
+    title: Azure logs and metrics
+    description: Collect logs and metrics from Azure instances
+    inputs:
+      - type: "azure-eventhub"
+        vars:
+          - name: consumer_group
+            type: text
+            title: Consumer Group
+            multi: false
+            required: true
+            show_user: true
+            default: $Default
+          - name: connection_string
+            type: text
+            title: Connection String
+            multi: false
+            required: false
+            show_user: true
+          - name: storage_account
+            type: text
+            title: Storage Account
+            multi: false
+            required: false
+            show_user: true
+          - name: storage_account_key
+            type: text
+            title: Storage Account Key
+            multi: false
+            required: false
+            show_user: true
+          - name: resource_manager_endpoint
+            type: text
+            title: Resource Manager Endpoint
+            multi: false
+            required: false
+            show_user: true
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - forwarded
+        title: "Collect Azure activitylogs, auditlogs and signinlogs logs (input: azure-eventhub)"
+        description: "Collecting activitylogs, auditlogs and signinlogs logs from Azure instances (input: azure-eventhub)"
+      - type: "log"
+        title: "Collect Azure activitylogs, auditlogs and signinlogs logs (input: log)"
+        description: "Collecting activitylogs, auditlogs and signinlogs logs from Azure instances (input: log)"
+      - type: azure/metrics
+        title: Collect Azure app_insights, billing, compute_vm, compute_vm_scaleset, container_instance, container_registry, container_service, database_account, monitor and storage metrics
+        description: Collecting app_insights, billing, compute_vm, compute_vm_scaleset, container_instance, container_registry, container_service, database_account, monitor and storage metrics from Azure instances
+owner:
+  github: elastic/integrations
