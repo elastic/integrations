@@ -964,6 +964,18 @@ contains kerberos data.
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.client.x509.subject.country | List of country (C) code | keyword |
+| tls.client.x509.subject.locality | List of locality names (L) | keyword |
+| tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.client.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.locality | List of locality names (L) | keyword |
+| tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.server.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | zeek.kerberos.cert.client.fuid | File unique ID of client cert. | keyword |
@@ -2298,10 +2310,22 @@ SSL/TLS handshake info.
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
+| tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.client.x509.subject.country | List of country (C) code | keyword |
+| tls.client.x509.subject.locality | List of locality names (L) | keyword |
+| tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.client.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
 | tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
+| tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.locality | List of locality names (L) | keyword |
+| tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.server.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | zeek.session_id | A unique identifier of the session | keyword |
@@ -2676,6 +2700,26 @@ X.509 certificate info.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| file.x509.alternative_names | List of subject alternative names (SAN). | keyword |
+| file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| file.x509.issuer.country | List of country (C) codes | keyword |
+| file.x509.issuer.locality | List of locality names (L) | keyword |
+| file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| file.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| file.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| file.x509.not_before | Time at which the certificate is first considered valid. | date |
+| file.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
+| file.x509.public_key_size | The size of the public key space in bits. | long |
+| file.x509.serial_number | Unique serial number issued by the certificate authority. | keyword |
+| file.x509.signature_algorithm | Identifier for certificate signature algorithm. | keyword |
+| file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.locality | List of locality names (L) | keyword |
+| file.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| file.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| file.x509.version_number | Version of x509 format. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
