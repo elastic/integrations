@@ -4,9 +4,8 @@ The System integrations allows you to monitor your servers. Because the System i
 always applies to the local server, the `hosts` config option is not needed.
 
 The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
-`process_summary`. To disable a default dataset, comment it out in the
-`modules.d/system.yml` configuration file. If _all_ datasets are commented out
-and the System module is enabled, fleet uses the default datasets.
+`process_summary`. If _all_ datasets are disabled
+and the System module is still enabled, fleet uses the default datasets.
 
 Note that certain datasets may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
