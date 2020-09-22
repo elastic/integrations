@@ -4,6 +4,8 @@ This integration is for Fortinet FortiOS and FortiClient Endpoint logs sent in t
 
 - `firewall` dataset: consists of Fortinet FortiGate logs.
 - `clientendpoint` dataset: supports Fortinet FortiClient Endpoint Security logs.
+- `fortimail` dataset: supports Fortinet FortiMail logs.
+- `fortimanager` dataset: supports Fortinet Manager/Analyzer logs.
 
 ## Compatibility
 
@@ -23,3 +25,14 @@ The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security log
 
 {{fields "clientendpoint"}}
 
+### Fortimail
+
+The `fortimail` dataset collects Fortinet FortiMail logs.
+
+{{fields "fortimail"}}
+
+### Fortimanager
+
+The `fortimanager` dataset collects Fortinet Manager/Analyzer logs.
+
+{{fields "fortimanager"}}
