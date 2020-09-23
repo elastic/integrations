@@ -95,6 +95,23 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.ip | Host ip address. | ip |
+| host.mac | Host mac address. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. | keyword |
+| process.exit_code | Identifier of the group of processes the process belongs to. | long |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.pid | Process id. | long |
+| process.ppid | Parent process' pid. | long |
+| process.working_directory | The working directory of the process. | keyword |
 | system.service.exec_code | The SIGCHLD code from the service's main process | keyword |
 | system.service.load_state | The load state of the service | keyword |
 | system.service.name | The name of the service | keyword |
@@ -108,6 +125,9 @@ This dataset is available on:
 | system.service.state | The activity state of the service | keyword |
 | system.service.state_since | The timestamp of the last state change. If the service is active and running, this is its uptime. | date |
 | system.service.sub_state | The sub-state of the service | keyword |
+| systemd.fragment_path | Service file location | keyword |
+| systemd.unit | Service unit name | keyword |
+| user.name | Short name or login of the user. | keyword |
 
 
 ### Socket
