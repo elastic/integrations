@@ -24,7 +24,6 @@ entropy will be out of a total pool size of 4096.
 The System `network_summary` dataset provides network IO metrics collected from the
 operating system. These events are global and sorted by protocol.
 
-
 {{fields "network_summary"}}
 
 ### RAID
