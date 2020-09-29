@@ -8,7 +8,7 @@ Template for README.md file supports following template functions:
 `{{fields "access"}}` - render a table with exported fields for the data stream `access`
 
 `{{event "access"}}` - render a sample event for the data stream `access`. The data stream event must be present in the
-`{packageName}/dataStream/{dataStreamName}/sample_event.json` file.
+`{packageName}/data_stream/{dataStreamName}/sample_event.json` file.
 
 ## Getting started
 
