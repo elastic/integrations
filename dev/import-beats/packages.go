@@ -288,13 +288,13 @@ func (r *packageRepository) save(outputDir string) error {
 			// dataStream/manifest.yml
 			m, err := yaml.Marshal(dataStream.manifest)
 			if err != nil {
-				return errors.Wrapf(err, "marshaling dataStream manifest failed (dataStreamName: %s)", dataStream.name)
+				return errors.Wrapf(err, "marshaling data stream manifest failed (dataStreamName: %s)", dataStream.name)
 			}
 
 			manifestFilePath := filepath.Join(dataStreamPath, "manifest.yml")
 			err = ioutil.WriteFile(manifestFilePath, m, 0644)
 			if err != nil {
-				return errors.Wrapf(err, "writing dataStream manifest file failed (path: %s)", manifestFilePath)
+				return errors.Wrapf(err, "writing data stream manifest file failed (path: %s)", manifestFilePath)
 			}
 
 			// dataStream/fields
@@ -302,7 +302,7 @@ func (r *packageRepository) save(outputDir string) error {
 				dataStreamFieldsPath := filepath.Join(dataStreamPath, "fields")
 				err := os.MkdirAll(dataStreamFieldsPath, 0755)
 				if err != nil {
-					return errors.Wrapf(err, "cannot make directory for dataStream fields: '%s'", dataStreamPath)
+					return errors.Wrapf(err, "cannot make directory for data stream fields: '%s'", dataStreamPath)
 				}
 
 				for fieldsFileName, definitions := range dataStream.fields.files {
@@ -328,7 +328,7 @@ func (r *packageRepository) save(outputDir string) error {
 				ingestPipelinesPath := filepath.Join(dataStreamPath, "elasticsearch", util.DirIngestPipeline)
 				err := os.MkdirAll(ingestPipelinesPath, 0755)
 				if err != nil {
-					return errors.Wrapf(err, "cannot make directory for dataStream ingest pipelines: '%s'", ingestPipelinesPath)
+					return errors.Wrapf(err, "cannot make directory for data stream ingest pipelines: '%s'", ingestPipelinesPath)
 				}
 
 				for _, ingestPipeline := range dataStream.elasticsearch.ingestPipelines {
@@ -347,7 +347,7 @@ func (r *packageRepository) save(outputDir string) error {
 				agentStreamPath := filepath.Join(dataStreamPath, "agent", "stream")
 				err := os.MkdirAll(agentStreamPath, 0755)
 				if err != nil {
-					return errors.Wrapf(err, "cannot make directory for dataStream agent stream: '%s'", agentStreamPath)
+					return errors.Wrapf(err, "cannot make directory for data stream agent stream: '%s'", agentStreamPath)
 				}
 
 				for _, agentStream := range dataStream.agent.streams {

@@ -131,7 +131,7 @@ func loadDataStreamFields(modulePath, moduleName, dataStreamName string) ([]fiel
 	fieldsPath := filepath.Join(modulePath, dataStreamName, "_meta", "fields.yml")
 	fs, err := loadFieldsFile(fieldsPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "loading dataStream fields file failed")
+		return nil, errors.Wrapf(err, "loading data stream fields file failed")
 	}
 	for i, f := range fs {
 		fs[i].Name = fmt.Sprintf("%s.%s", moduleName, f.Name)

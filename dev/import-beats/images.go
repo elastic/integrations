@@ -61,12 +61,12 @@ func createImages(beatDocsPath, modulePath string) (imageContentArray, error) {
 			continue
 		}
 
-		log.Printf("\t%s: dataStream found", dataStreamName)
+		log.Printf("\t%s: data stream found", dataStreamName)
 
 		dataStreamDocsPath := path.Join(modulePath, dataStreamName, "_meta", "docs.asciidoc")
 		dataStreamDocsFile, err := ioutil.ReadFile(dataStreamDocsPath)
 		if err != nil && !os.IsNotExist(err) {
-			return nil, errors.Wrapf(err, "reading dataStream docs file failed (path: %s)", dataStreamDocsPath)
+			return nil, errors.Wrapf(err, "reading data stream docs file failed (path: %s)", dataStreamDocsPath)
 		} else if os.IsNotExist(err) {
 			log.Printf("\t%s: no docs found (path: %s), skipped", dataStreamName, dataStreamDocsPath)
 			continue
