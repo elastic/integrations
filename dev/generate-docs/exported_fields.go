@@ -30,11 +30,11 @@ type fieldsTableRecord struct {
 	aType       string
 }
 
-func renderExportedFields(options generateOptions, packageName, datasetName string) (string, error) {
-	datasetPath := filepath.Join(options.packagesSourceDir, packageName, "dataset", datasetName)
-	fieldFiles, err := listFieldFields(datasetPath)
+func renderExportedFields(options generateOptions, packageName, dataStreamName string) (string, error) {
+	dataStreamPath := filepath.Join(options.packagesSourceDir, packageName, "data_stream", dataStreamName)
+	fieldFiles, err := listFieldFields(dataStreamPath)
 	if err != nil {
-		return "", errors.Wrapf(err, "listing field files failed (datasetPath: %s)", datasetPath)
+		return "", errors.Wrapf(err, "listing field files failed (dataStreamPath: %s)", dataStreamPath)
 	}
 
 	fields, err := loadFields(fieldFiles)
@@ -63,13 +63,13 @@ func renderExportedFields(options generateOptions, packageName, datasetName stri
 	return builder.String(), nil
 }
 
-func listFieldFields(datasetPath string) ([]string, error) {
-	fieldsPath := filepath.Join(datasetPath, "fields")
+func listFieldFields(dataStreamPath string) ([]string, error) {
+	fieldsPath := filepath.Join(dataStreamPath, "fields")
 
 	var files []string
 	fileInfos, err := ioutil.ReadDir(fieldsPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "reading dataset fields dir failed (path: %s)", fieldsPath)
+		return nil, errors.Wrapf(err, "reading data stream fields dir failed (path: %s)", fieldsPath)
 	}
 
 	for _, fileInfo := range fileInfos {

@@ -20,7 +20,7 @@ type configTemplateContent struct {
 }
 
 type configTemplateInput struct {
-	datasetNames []string
+	dataStreamNames []string
 	packageType  string
 	inputType    string
 	vars         []util.Variable
@@ -52,8 +52,8 @@ func (ds configTemplateContent) toMetadataConfigTemplates() []util.ConfigTemplat
 			if input.packageType == packageType {
 				inputs = append(inputs, util.Input{
 					Type:        input.inputType,
-					Title:       toConfigTemplateInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
-					Description: toConfigTemplateInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].datasetNames, inputType),
+					Title:       toConfigTemplateInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].dataStreamNames, inputType),
+					Description: toConfigTemplateInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].dataStreamNames, inputType),
 					Vars:        input.vars,
 				})
 			}
@@ -74,7 +74,7 @@ type updateConfigTemplateParameters struct {
 	moduleTitle string
 	packageType string
 
-	datasets  datasetContentArray
+	dataStreams  dataStreamContentArray
 	inputVars map[string][]util.Variable
 }
 
@@ -86,8 +86,8 @@ func updateConfigTemplate(dsc configTemplateContent, params updateConfigTemplate
 		dsc.inputs = map[string]configTemplateInput{}
 	}
 
-	for _, dataset := range params.datasets {
-		for _, stream := range dataset.manifest.Streams {
+	for _, dataStream := range params.dataStreams {
+		for _, stream := range dataStream.manifest.Streams {
 			inputType := stream.Input
 
 			v, ok := dsc.inputs[inputType]
@@ -99,7 +99,7 @@ func updateConfigTemplate(dsc configTemplateContent, params updateConfigTemplate
 				}
 			}
 
-			v.datasetNames = append(v.datasetNames, dataset.name)
+			v.dataStreamNames = append(v.dataStreamNames, dataStream.name)
 			dsc.inputs[inputType] = v
 		}
 	}
@@ -123,11 +123,11 @@ func toConfigTemplateDescriptionForTwoTypes(moduleTitle, firstPackageType, secon
 	return fmt.Sprintf("Collect %s and %s from %s instances", firstPackageType, secondPackageType, moduleTitle)
 }
 
-func toConfigTemplateInputTitle(moduleTitle, packageType string, datasets []string, inputType string) string {
-	datasets = adjustDatasetNamesForInputDescription(datasets)
+func toConfigTemplateInputTitle(moduleTitle, packageType string, dataStreams []string, inputType string) string {
+	dataStreams = adjustDataStreamNamesForInputDescription(dataStreams)
 
-	firstPart := datasets[:len(datasets)-1]
-	secondPart := datasets[len(datasets)-1:]
+	firstPart := dataStreams[:len(dataStreams)-1]
+	secondPart := dataStreams[len(dataStreams)-1:]
 
 	var description strings.Builder
 	description.WriteString("Collect ")
@@ -150,11 +150,11 @@ func toConfigTemplateInputTitle(moduleTitle, packageType string, datasets []stri
 	return description.String()
 }
 
-func toConfigTemplateInputDescription(moduleTitle, packageType string, datasets []string, inputType string) string {
-	datasets = adjustDatasetNamesForInputDescription(datasets)
+func toConfigTemplateInputDescription(moduleTitle, packageType string, dataStreams []string, inputType string) string {
+	dataStreams = adjustDataStreamNamesForInputDescription(dataStreams)
 
-	firstPart := datasets[:len(datasets)-1]
-	secondPart := datasets[len(datasets)-1:]
+	firstPart := dataStreams[:len(dataStreams)-1]
+	secondPart := dataStreams[len(dataStreams)-1:]
 
 	var description strings.Builder
 	description.WriteString("Collecting ")
@@ -178,7 +178,7 @@ func toConfigTemplateInputDescription(moduleTitle, packageType string, datasets 
 	return description.String()
 }
 
-func adjustDatasetNamesForInputDescription(names []string) []string {
+func adjustDataStreamNamesForInputDescription(names []string) []string {
 	var adjusted []string
 	for _, name := range names {
 		if name == "log" {
