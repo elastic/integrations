@@ -25,11 +25,11 @@ var ignoredModules = map[string]bool{"apache2": true}
 
 type packageContent struct {
 	manifest       util.Package
-	dataStreams       dataStreamContentArray
+	dataStreams    dataStreamContentArray
 	images         []imageContent
 	kibana         kibanaContent
 	docs           []docContent
-	configTemplate configTemplateContent
+	policyTemplate policyTemplateContent
 }
 
 func newPackageContent(name string) packageContent {
@@ -214,18 +214,18 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 		}
 		aPackage.addDataStreams(dataStreams)
 
-		// configTemplates
-		aPackage.configTemplate, err = updateConfigTemplate(aPackage.configTemplate, updateConfigTemplateParameters{
+		// policyTemplates
+		aPackage.policyTemplate, err = updatePolicyTemplate(aPackage.policyTemplate, updatePolicyTemplateParameters{
 			moduleName:  moduleName,
 			moduleTitle: moduleTitle,
 			packageType: beatType,
-			dataStreams:    dataStreams,
+			dataStreams: dataStreams,
 			inputVars:   inputVarsPerInputType,
 		})
 		if err != nil {
 			return err
 		}
-		manifest.ConfigTemplates = aPackage.configTemplate.toMetadataConfigTemplates()
+		manifest.PolicyTemplates = aPackage.policyTemplate.toMetadataPolicyTemplates()
 
 		// kibana
 		kibana, err := createKibanaContent(r.kibanaMigrator, modulePath, moduleName, dataStreams.names())

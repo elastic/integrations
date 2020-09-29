@@ -12,24 +12,24 @@ import (
 	"github.com/elastic/package-registry/util"
 )
 
-type configTemplateContent struct {
+type policyTemplateContent struct {
 	moduleName  string
 	moduleTitle string
 
-	inputs map[string]configTemplateInput // map[inputType]..
+	inputs map[string]policyTemplateInput // map[inputType]..
 }
 
-type configTemplateInput struct {
+type policyTemplateInput struct {
 	dataStreamNames []string
-	packageType  string
-	inputType    string
-	vars         []util.Variable
+	packageType     string
+	inputType       string
+	vars            []util.Variable
 }
 
-func (ds configTemplateContent) toMetadataConfigTemplates() []util.ConfigTemplate {
+func (ptc policyTemplateContent) toMetadataPolicyTemplates() []util.PolicyTemplate {
 	var inputTypes []string
 	var packageTypes []string
-	for k, input := range ds.inputs {
+	for k, input := range ptc.inputs {
 		inputTypes = append(inputTypes, k)
 		packageTypes = append(packageTypes, input.packageType)
 	}
@@ -39,29 +39,29 @@ func (ds configTemplateContent) toMetadataConfigTemplates() []util.ConfigTemplat
 
 	var title, description string
 	if len(packageTypes) == 2 {
-		title = toConfigTemplateTitleForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
-		description = toConfigTemplateDescriptionForTwoTypes(ds.moduleTitle, packageTypes[0], packageTypes[1])
+		title = toPolicyTemplateTitleForTwoTypes(ptc.moduleTitle, packageTypes[0], packageTypes[1])
+		description = toPolicyTemplateDescriptionForTwoTypes(ptc.moduleTitle, packageTypes[0], packageTypes[1])
 	} else {
-		title = toConfigTemplateTitle(ds.moduleTitle, packageTypes[0])
-		description = toConfigTemplateDescription(ds.moduleTitle, packageTypes[0])
+		title = toPolicyTemplateTitle(ptc.moduleTitle, packageTypes[0])
+		description = toPolicyTemplateDescription(ptc.moduleTitle, packageTypes[0])
 	}
 
 	var inputs []util.Input
 	for _, packageType := range packageTypes {
-		for inputType, input := range ds.inputs {
+		for inputType, input := range ptc.inputs {
 			if input.packageType == packageType {
 				inputs = append(inputs, util.Input{
 					Type:        input.inputType,
-					Title:       toConfigTemplateInputTitle(ds.moduleTitle, packageType, ds.inputs[inputType].dataStreamNames, inputType),
-					Description: toConfigTemplateInputDescription(ds.moduleTitle, packageType, ds.inputs[inputType].dataStreamNames, inputType),
+					Title:       toPolicyTemplateInputTitle(ptc.moduleTitle, packageType, ptc.inputs[inputType].dataStreamNames, inputType),
+					Description: toPolicyTemplateInputDescription(ptc.moduleTitle, packageType, ptc.inputs[inputType].dataStreamNames, inputType),
 					Vars:        input.vars,
 				})
 			}
 		}
 	}
-	return []util.ConfigTemplate{
+	return []util.PolicyTemplate{
 		{
-			Name:        ds.moduleName,
+			Name:        ptc.moduleName,
 			Title:       title,
 			Description: description,
 			Inputs:      inputs,
@@ -69,21 +69,21 @@ func (ds configTemplateContent) toMetadataConfigTemplates() []util.ConfigTemplat
 	}
 }
 
-type updateConfigTemplateParameters struct {
+type updatePolicyTemplateParameters struct {
 	moduleName  string
 	moduleTitle string
 	packageType string
 
-	dataStreams  dataStreamContentArray
-	inputVars map[string][]util.Variable
+	dataStreams dataStreamContentArray
+	inputVars   map[string][]util.Variable
 }
 
-func updateConfigTemplate(dsc configTemplateContent, params updateConfigTemplateParameters) (configTemplateContent, error) {
+func updatePolicyTemplate(dsc policyTemplateContent, params updatePolicyTemplateParameters) (policyTemplateContent, error) {
 	dsc.moduleName = params.moduleName
 	dsc.moduleTitle = params.moduleTitle
 
 	if dsc.inputs == nil {
-		dsc.inputs = map[string]configTemplateInput{}
+		dsc.inputs = map[string]policyTemplateInput{}
 	}
 
 	for _, dataStream := range params.dataStreams {
@@ -92,7 +92,7 @@ func updateConfigTemplate(dsc configTemplateContent, params updateConfigTemplate
 
 			v, ok := dsc.inputs[inputType]
 			if !ok {
-				v = configTemplateInput{
+				v = policyTemplateInput{
 					packageType: params.packageType,
 					inputType:   inputType,
 					vars:        params.inputVars[inputType],
@@ -107,23 +107,23 @@ func updateConfigTemplate(dsc configTemplateContent, params updateConfigTemplate
 	return dsc, nil
 }
 
-func toConfigTemplateTitle(moduleTitle, packageType string) string {
+func toPolicyTemplateTitle(moduleTitle, packageType string) string {
 	return fmt.Sprintf("%s %s", moduleTitle, packageType)
 }
 
-func toConfigTemplateDescription(moduleTitle, packageType string) string {
+func toPolicyTemplateDescription(moduleTitle, packageType string) string {
 	return fmt.Sprintf("Collect %s from %s instances", packageType, moduleTitle)
 }
 
-func toConfigTemplateTitleForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
+func toPolicyTemplateTitleForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
 	return fmt.Sprintf("%s %s and %s", moduleTitle, firstPackageType, secondPackageType)
 }
 
-func toConfigTemplateDescriptionForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
+func toPolicyTemplateDescriptionForTwoTypes(moduleTitle, firstPackageType, secondPackageType string) string {
 	return fmt.Sprintf("Collect %s and %s from %s instances", firstPackageType, secondPackageType, moduleTitle)
 }
 
-func toConfigTemplateInputTitle(moduleTitle, packageType string, dataStreams []string, inputType string) string {
+func toPolicyTemplateInputTitle(moduleTitle, packageType string, dataStreams []string, inputType string) string {
 	dataStreams = adjustDataStreamNamesForInputDescription(dataStreams)
 
 	firstPart := dataStreams[:len(dataStreams)-1]
@@ -150,7 +150,7 @@ func toConfigTemplateInputTitle(moduleTitle, packageType string, dataStreams []s
 	return description.String()
 }
 
-func toConfigTemplateInputDescription(moduleTitle, packageType string, dataStreams []string, inputType string) string {
+func toPolicyTemplateInputDescription(moduleTitle, packageType string, dataStreams []string, inputType string) string {
 	dataStreams = adjustDataStreamNamesForInputDescription(dataStreams)
 
 	firstPart := dataStreams[:len(dataStreams)-1]
