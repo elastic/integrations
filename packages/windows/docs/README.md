@@ -74,30 +74,9 @@ The Windows `application` dataset provides events from the Windows
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | error.message | Error message. | text |
-| event.action | The action captured by the event. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.module | Name of the module this data is coming from. | keyword |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
-| group.domain | Name of the directory the group is a member of. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| process.command_line | Full command line that started the process. | keyword |
-| process.executable | Absolute path to the process executable. | keyword |
-| process.name | Process name. | keyword |
-| process.parent.executable | Absolute path to the process executable. | keyword |
-| process.pid | Process id. | long |
-| related.user | All the user names seen on your event. | keyword |
-| service.name | Name of the service. | keyword |
-| service.type | The type of the service. | keyword |
-| source.domain | Source domain. | keyword |
-| source.ip | IP address of the source. | ip |
-| source.port | Port of the source. | long |
-| user.domain | Name of the directory the user is a member of. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| event.original | Raw text message of entire event. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
@@ -216,11 +195,6 @@ The Windows `application` dataset provides events from the Windows
 | winlog.event_data.param8 |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
-| winlog.logon.failure.reason | The reason the logon failed. | keyword |
-| winlog.logon.failure.status | The reason the logon failed. This is textual description based on the value of the hexadecimal `Status` field. | keyword |
-| winlog.logon.failure.sub_status | Additional information about the logon failure. This is a textual description based on the value of the hexidecimal `SubStatus` field. | keyword |
-| winlog.logon.id | Logon ID that can be used to associate this logon with other events related to the same logon session. | keyword |
-| winlog.logon.type | Logon type name. This is the descriptive version of the `winlog.event_data.LogonType` ordinal. This is an enrichment added by the Security module. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
 | winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
 | winlog.process.thread.id |  | long |

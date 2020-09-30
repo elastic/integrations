@@ -33,7 +33,7 @@ Both datasets are available on Windows only.
 The Windows `application` dataset provides events from the Windows
 `Application` event log.
 
-{{fields "security"}}
+{{fields "application"}}
 
 ### Forwarded
 
