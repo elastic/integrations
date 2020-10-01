@@ -1,0 +1,378 @@
+- description: Time when the event was first read by an agent or by your pipeline.
+  example: '2016-05-23T08:05:34.857Z'
+  name: event.created
+  type: date
+- description: Timestamp when an event arrived in the central data store.
+  example: '2016-05-23T08:05:35.101Z'
+  name: event.ingested
+  type: date
+- description: Raw text message of entire event.
+  example: Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232
+  ignore_above: 1024
+  name: event.original
+  type: keyword
+- description: Error message.
+  name: error.message
+  type: text
+- description: Array of process arguments.
+  example:
+    - /usr/bin/ssh
+    - -l
+    - user
+    - 10.0.0.16
+  ignore_above: 1024
+  name: process.args
+  type: keyword
+- description: Length of the process.args array.
+  example: 4
+  name: process.args_count
+  type: long
+- description: Full path to the file, including the file name.
+  example: /home/alice/example.png
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: file.path.text
+      name: text
+      norms: false
+      type: text
+  name: file.path
+  type: keyword
+- description: Name of the file including the extension, without the directory.
+  example: example.png
+  ignore_above: 1024
+  name: file.name
+  type: keyword
+- description: Directory where the file is located.
+  example: /home/alice
+  ignore_above: 1024
+  name: file.directory
+  type: keyword
+- description: File extension.
+  example: png
+  ignore_above: 1024
+  name: file.extension
+  type: keyword
+- description: Name of the directory the user is a member of.
+  ignore_above: 1024
+  name: user.domain
+  type: keyword
+- description: Short name or login of the user.
+  example: albert
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: user.name.text
+      name: text
+      norms: false
+      type: text
+  name: user.name
+  type: keyword
+- description: All the user names seen on your event.
+  ignore_above: 1024
+  name: related.user
+  type: keyword
+- description: Sequence number of the event.
+  name: event.sequence
+  type: long
+- description: Unique identifier for the process.
+  example: c2c455d9f99375d
+  ignore_above: 1024
+  name: process.entity_id
+  type: keyword
+- description: Full command line that started the process.
+  example: /usr/bin/ssh -l user 10.0.0.16
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.command_line.text
+      name: text
+      norms: false
+      type: text
+  name: process.command_line
+  type: keyword
+- description: Process title.
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.title.text
+      name: text
+      norms: false
+      type: text
+  name: process.title
+  type: keyword
+- description: Event category. The second categorization field in the hierarchy.
+  example: authentication
+  ignore_above: 1024
+  name: event.category
+  type: keyword
+- description: Event type. The third categorization field in the hierarchy.
+  ignore_above: 1024
+  name: event.type
+  type: keyword
+- description: Name of the module this data is coming from.
+  example: apache
+  ignore_above: 1024
+  name: event.module
+  type: keyword
+- description: The action captured by the event.
+  example: user-password-change
+  ignore_above: 1024
+  name: event.action
+  type: keyword
+- description: Identification code for this event.
+  example: 4648
+  ignore_above: 1024
+  name: event.code
+  type: keyword
+- description: Name of the directory the group is a member of.
+  ignore_above: 1024
+  name: group.domain
+  type: keyword
+- description: Unique identifier for the group on the system/platform.
+  ignore_above: 1024
+  name: group.id
+  type: keyword
+- description: Name of the group.
+  ignore_above: 1024
+  name: group.name
+  type: keyword
+- description: Absolute path to the process executable.
+  example: /usr/bin/ssh
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.executable.text
+      name: text
+      norms: false
+      type: text
+  name: process.executable
+  type: keyword
+- description: Process name.
+  example: ssh
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.name.text
+      name: text
+      norms: false
+      type: text
+  name: process.name
+  type: keyword
+- description: Absolute path to the process executable.
+  example: /usr/bin/ssh
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.parent.executable.text
+      name: text
+      norms: false
+      type: text
+  name: process.parent.executable
+  type: keyword
+- description: Process id.
+  example: 4242
+  name: process.pid
+  type: long
+- description: Name of the service.
+  example: elasticsearch-metrics
+  ignore_above: 1024
+  name: service.name
+  type: keyword
+- description: The type of the service.
+  example: elasticsearch
+  ignore_above: 1024
+  name: service.type
+  type: keyword
+- description: Source domain.
+  ignore_above: 1024
+  name: source.domain
+  type: keyword
+- description: IP address of the source.
+  name: source.ip
+  type: ip
+- description: Port of the source.
+  name: source.port
+  type: long
+- description: Unique identifier of the user.
+  ignore_above: 1024
+  name: user.id
+  type: keyword
+- description: Destination domain.
+  ignore_above: 1024
+  name: destination.domain
+  type: keyword
+- description: IP address of the destination.
+  name: destination.ip
+  type: ip
+- description: Port of the destination.
+  name: destination.port
+  type: long
+- description: Array of DNS answers.
+  name: dns.answers
+  type: object
+- description: The class of DNS data contained in this resource record.
+  example: IN
+  ignore_above: 1024
+  name: dns.answers.class
+  type: keyword
+- description: The data describing the resource.
+  example: 10.10.10.10
+  ignore_above: 1024
+  name: dns.answers.data
+  type: keyword
+- description: The domain name to which this resource record pertains.
+  example: www.example.com
+  ignore_above: 1024
+  name: dns.answers.name
+  type: keyword
+- description: The time interval in seconds that this resource record may be cached before it should be discarded.
+  example: 180
+  name: dns.answers.ttl
+  type: long
+- description: The type of data contained in this resource record.
+  example: CNAME
+  ignore_above: 1024
+  name: dns.answers.type
+  type: keyword
+- description: The name being queried.
+  example: www.example.com
+  ignore_above: 1024
+  name: dns.question.name
+  type: keyword
+- description: The highest registered domain, stripped of the subdomain.
+  example: example.com
+  ignore_above: 1024
+  name: dns.question.registered_domain
+  type: keyword
+- description: Array containing all IPs seen in answers.data
+  example:
+    - 10.10.10.10
+    - 10.10.10.11
+  name: dns.resolved_ip
+  type: ip
+- description: Error code describing the error.
+  ignore_above: 1024
+  name: error.code
+  type: keyword
+- description: Additional information about the certificate status.
+  example: ERROR_UNTRUSTED_ROOT
+  ignore_above: 1024
+  name: file.code_signature.status
+  type: keyword
+- description: Subject name of the code signer
+  example: Microsoft Corporation
+  ignore_above: 1024
+  name: file.code_signature.subject_name
+  type: keyword
+- description: Boolean to capture if the digital signature is verified against the binary content.
+  example: 'true'
+  name: file.code_signature.valid
+  type: boolean
+- description: Direction of the network traffic.
+  example: inbound
+  ignore_above: 1024
+  name: network.direction
+  type: keyword
+- description: L7 Network protocol name.
+  example: http
+  ignore_above: 1024
+  name: network.protocol
+  type: keyword
+- description: Protocol Name corresponding to the field `iana_number`.
+  example: tcp
+  ignore_above: 1024
+  name: network.transport
+  type: keyword
+- description: In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc
+  example: ipv4
+  ignore_above: 1024
+  name: network.type
+  type: keyword
+- description: Array of process arguments.
+  example:
+    - /usr/bin/ssh
+    - -l
+    - user
+    - 10.0.0.16
+  ignore_above: 1024
+  name: process.parent.args
+  type: keyword
+- description: Length of the process.args array.
+  example: 4
+  name: process.parent.args_count
+  type: long
+- description: Full command line that started the process.
+  example: /usr/bin/ssh -l user 10.0.0.16
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.parent.command_line.text
+      name: text
+      norms: false
+      type: text
+  name: process.parent.command_line
+  type: keyword
+- description: Unique identifier for the process.
+  example: c2c455d9f99375d
+  ignore_above: 1024
+  name: process.parent.entity_id
+  type: keyword
+- description: Process name.
+  example: ssh
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.parent.name.text
+      name: text
+      norms: false
+      type: text
+  name: process.parent.name
+  type: keyword
+- description: Process id.
+  example: 4242
+  name: process.parent.pid
+  type: long
+- description: The working directory of the process.
+  example: /home/alice
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: process.working_directory.text
+      name: text
+      norms: false
+      type: text
+  name: process.working_directory
+  type: keyword
+- description: List of strings representing what was written to the registry.
+  example: '["C:\rta\red_ttp\bin\myapp.exe"]'
+  ignore_above: 1024
+  name: registry.data.strings
+  type: keyword
+- description: Standard registry type for encoding contents
+  example: REG_SZ
+  ignore_above: 1024
+  name: registry.data.type
+  type: keyword
+- description: Abbreviated name for the hive.
+  example: HKLM
+  ignore_above: 1024
+  name: registry.hive
+  type: keyword
+- description: Hive-relative path of keys.
+  example: SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\winword.exe
+  ignore_above: 1024
+  name: registry.key
+  type: keyword
+- description: Full path, including hive, key and value
+  example: HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\winword.exe\Debugger
+  ignore_above: 1024
+  name: registry.path
+  type: keyword
+- description: Name of the value written.
+  example: Debugger
+  ignore_above: 1024
+  name: registry.value
+  type: keyword
+- description: All the hashes seen on your event.
+  ignore_above: 1024
+  name: related.hash
+  type: keyword
+- description: All of the IPs seen on your event.
+  name: related.ip
+  type: ip
+- description: Rule name
+  example: BLOCK_DNS_over_TLS
+  ignore_above: 1024
+  name: rule.name
+  type: keyword
