@@ -7,8 +7,13 @@ username: {{password}}
 content_type: "{{content_type}}"
 secret: {{secret}}
 ssl: {{ssl}}
-tags: {{tags}}
-publisher_pipeline.disable_host: {{nList tags forwarded"}}
+tags:
+{{#each tags as |tag i|}}
+ - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 processors:
   - decode_json_fields:
       fields: [message]

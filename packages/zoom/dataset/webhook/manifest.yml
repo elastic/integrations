@@ -1,13 +1,90 @@
 type: logs
 title: Zoom webhook logs
-release: experimental
+release: beta
 streams:
 - input: http_endpoint
   template_path: http_endpoint.yml.hbs
-  title: Zoom webhook logs (http_endpoint)
-  description: Collect Zoom webhook logs using http_endpoint input
-- input: logfile
+  title: Zoom webhook logs
+  description: Collect Zoom logs via Webhook
   vars:
+  - name: listen_address
+    type: text
+    title: Listen Address
+    multi: false
+    required: true
+    show_user: true
+    default: localhost
+  - name: listen_port
+    type: integer
+    title: Listen Port
+    multi: false
+    required: true
+    show_user: true
+    default: 80
+  - name: content_type
+    type: text
+    title: Content Type
+    multi: false
+    required: false
+    show_user: true
+    default: ""
+  - name: prefix
+    type: text
+    title: Prefix
+    multi: false
+    required: true
+    show_user: true
+    default: zoom
+  - name: basic_auth
+    type: bool
+    title: Basic Auth
+    multi: false
+    required: true
+    show_user: true
+    default: false
+  - name: username
+    type: text
+    title: Username
+    multi: false
+    required: false
+    show_user: true
+    default: ""
+  - name: password
+    type: password
+    title: Password
+    multi: false
+    required: false
+    show_user: true
+    default: ""
+  - name: secret
+    type: yaml
+    title: Secret
+    multi: false
+    required: true
+    show_user: true
+    default: |
+      header: Authorization
+      value: ""
+  - name: tags
+    type: text
+    title: Tags
+    multi: true
+    required: true
+    show_user: true
+    default:
+    - zoom-webhook
+    - forwarded
+- input: logfile
+  enabled: false
+  vars:
+  - name: paths
+    type: text
+    title: Paths
+    multi: true
+    required: true
+    show_user: true
+    default:
+      - /var/log/zoom-webhook.log
   - name: tags
     type: text
     title: Tags
@@ -18,5 +95,5 @@ streams:
     - zoom-webhook
     - forwarded
   template_path: log.yml.hbs
-  title: Zoom webhook logs (log)
-  description: Collect Zoom webhook logs using log input
+  title: Zoom webhook logs via file
+  description: Read Zoom webhook logs from a file
