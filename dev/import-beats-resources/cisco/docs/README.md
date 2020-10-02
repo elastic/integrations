@@ -7,6 +7,7 @@ datasets for receiving logs over syslog or read from a file:
 - `ftd` dataset: supports Cisco Firepower Threat Defense logs.
 - `ios` dataset: supports Cisco IOS router and switch logs.
 - `nexus` fileset: supports Cisco Nexus switch logs.
+- `meraki` dataset: supports Cisco Meraki logs.
 
 ## Compatibility
 
@@ -35,3 +36,9 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 The `nexus` dataset collects Cisco Nexus logs.
 
 {{fields "nexus"}}
+
+### Meraki
+
+The `meraki` dataset collects Cisco Meraki logs.
+
+{{fields "meraki"}}
