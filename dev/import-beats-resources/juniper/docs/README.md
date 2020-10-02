@@ -11,6 +11,7 @@ Currently it supports these datasets:
 The SRX integration only supports syslog messages in the format "structured-data + brief". See the [JunOS Documentation on structured-data.](https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/structured-data-edit-system.html)
 
 To configure a remote syslog destination, please reference the [SRX Getting Started - Configure System Logging.](https://kb.juniper.net/InfoCenter/index?page=content&id=kb16502)
+The syslog format choosen should be `Default`.
 
 The following processes and tags are supported:
 
@@ -41,7 +42,6 @@ The following processes and tags are supported:
 |                 | AAMW_ACTION_LOG                           |
 | RT_SECINTEL     | SECINTEL_ACTION_LOG                       |
 
-The syslog format choosen should be `Default`.
 
 {{fields "srx"}}
 
