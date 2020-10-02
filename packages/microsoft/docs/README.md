@@ -779,3 +779,53 @@ The `dhcp` dataset collects Microsoft DHCP logs.
 | user.name | Short name or login of the user. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
+
+### M365 Defender
+
+The `m365_defender` dataset collects information from the 365 Defender API, also known as Microsoft Threat Protection (MTP)
+
+To configure access for filebeat to Microsoft 365 Defender you will have to create a new Azure Application registration, this will again return
+Oauth tokens with access to the Microsoft 365 Defender API
+
+The procedure to create an application is found on the below link:
+
+https://docs.microsoft.com/en-us/microsoft-365/security/mtp/api-create-app-web?view=o365-worldwide#create-an-app[Create a new Azure Application]
+
+When giving the application the API permissions described in the documentation (Incident.Read.All) it will only grant access to read Incidents from 365 Defender and nothing else in the Azure Domain.
+
+After the application has been created, it should contain 3 values that you need to apply to the module configuration.
+
+These values are:
+
+- Client ID
+- Client Secret
+- Tenant ID
+
+**Exported fields**
+This is a list of 365 Defender fields that are mapped to ECS.
+|======================================================================|
+| 365 Defender Fields                 | ECS Fields                     |
+| lastUpdateTime                      | @timestamp                     |
+| severity                            | event.severity                 |
+| createdTime                         | event.created                  |
+| alerts.category                     | threat.technique.name          |
+| alerts.description                  | rule.description               |
+| alerts.serviceSource                | event.provider                 |
+| alerts.alertId                      | event.id                       |
+| alerts.firstActivity                | event.start                    |
+| alerts.lastActivity                 | event.end                      |
+| alerts.title                        | message                        |
+| entities.processId                  | process.pid                    |
+| entities.processCommandLine         | process.command_line           |
+| entities.processCreationTime        | process.start                  |
+| entities.parentProcessId            | process.parent.pid             |
+| entities.parentProcessCreationTime  | process.parent.start           |
+| entities.sha1                       | file.hash.sha1                 |
+| entities.sha256                     | file.hash.sha256               |
+| entities.url                        | url.full                       |
+| entities.filePath                   | file.path                      |
+| entities.fileName                   | file.name                      |
+| entities.userPrincipalName          | host.user.name                 |
+| entities.domainName                 | host.user.domain               |
+| entities.aadUserId                  | host.user.id                   |
+|======================================================================|
