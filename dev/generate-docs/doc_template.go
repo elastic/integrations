@@ -32,11 +32,11 @@ func renderReadme(options generateOptions, packageName string) error {
 
 	t := template.New(readmeFilename)
 	t, err = t.Funcs(template.FuncMap{
-		"event": func(datasetName string) (string, error) {
-			return renderSampleEvent(options, packageName, datasetName)
+		"event": func(dataStreamName string) (string, error) {
+			return renderSampleEvent(options, packageName, dataStreamName)
 		},
-		"fields": func(datasetName string) (string, error) {
-			return renderExportedFields(options, packageName, datasetName)
+		"fields": func(dataStreamName string) (string, error) {
+			return renderExportedFields(options, packageName, dataStreamName)
 		},
 	}).ParseFiles(templatePath)
 	if err != nil {

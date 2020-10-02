@@ -20,23 +20,23 @@ import (
 // createStreams method builds a set of stream inputs including configuration variables.
 // Stream definitions depend on a beat type - log or metric.
 // At the moment, the array returns only one stream.
-func createStreams(modulePath, moduleName, moduleTitle, datasetName, beatType string) ([]util.Stream, agentContent, error) {
+func createStreams(modulePath, moduleName, moduleTitle, dataStreamName, beatType string) ([]util.Stream, agentContent, error) {
 	var streams []util.Stream
 	var agent agentContent
 	var err error
 
 	switch beatType {
 	case "logs":
-		streams, agent, err = createLogStreams(modulePath, moduleTitle, datasetName)
+		streams, agent, err = createLogStreams(modulePath, moduleTitle, dataStreamName)
 		if err != nil {
-			return nil, agentContent{}, errors.Wrapf(err, "creating log streams failed (modulePath: %s, datasetName: %s)",
-				modulePath, datasetName)
+			return nil, agentContent{}, errors.Wrapf(err, "creating log streams failed (modulePath: %s, dataStreamName: %s)",
+				modulePath, dataStreamName)
 		}
 	case "metrics":
-		streams, agent, err = createMetricStreams(modulePath, moduleName, moduleTitle, datasetName)
+		streams, agent, err = createMetricStreams(modulePath, moduleName, moduleTitle, dataStreamName)
 		if err != nil {
-			return nil, agentContent{}, errors.Wrapf(err, "creating metric streams failed (modulePath: %s, datasetName: %s)",
-				modulePath, datasetName)
+			return nil, agentContent{}, errors.Wrapf(err, "creating metric streams failed (modulePath: %s, dataStreamName: %s)",
+				modulePath, dataStreamName)
 		}
 	default:
 		return nil, agentContent{}, fmt.Errorf("invalid beat type: %s", beatType)
@@ -44,10 +44,10 @@ func createStreams(modulePath, moduleName, moduleTitle, datasetName, beatType st
 	return streams, agent, nil
 }
 
-// createLogStreams method builds a set of stream inputs for logs oriented dataset.
+// createLogStreams method builds a set of stream inputs for logs oriented dataStream.
 // The method unmarshals "manifest.yml" file and picks all configuration variables.
-func createLogStreams(modulePath, moduleTitle, datasetName string) ([]util.Stream, agentContent, error) {
-	manifestPath := filepath.Join(modulePath, datasetName, "manifest.yml")
+func createLogStreams(modulePath, moduleTitle, dataStreamName string) ([]util.Stream, agentContent, error) {
+	manifestPath := filepath.Join(modulePath, dataStreamName, "manifest.yml")
 	manifestFile, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
 		return nil, agentContent{}, errors.Wrapf(err, "reading manifest file failed (path: %s)", manifestPath)
@@ -58,13 +58,13 @@ func createLogStreams(modulePath, moduleTitle, datasetName string) ([]util.Strea
 		return nil, agentContent{}, errors.Wrapf(err, "creating log stream variables failed (path: %s)", manifestPath)
 	}
 
-	configFilePaths, err := filepath.Glob(filepath.Join(modulePath, datasetName, "config", "*.*"))
+	configFilePaths, err := filepath.Glob(filepath.Join(modulePath, dataStreamName, "config", "*.*"))
 	if err != nil {
-		return nil, agentContent{}, errors.Wrapf(err, "locating config files failed (modulePath: %s, datasetName: %s)", modulePath, datasetName)
+		return nil, agentContent{}, errors.Wrapf(err, "locating config files failed (modulePath: %s, dataStreamName: %s)", modulePath, dataStreamName)
 	}
 
 	if len(configFilePaths) == 0 {
-		return nil, agentContent{}, fmt.Errorf("expected at least one config file (modulePath: %s, datasetName: %s)", modulePath, datasetName)
+		return nil, agentContent{}, fmt.Errorf("expected at least one config file (modulePath: %s, dataStreamName: %s)", modulePath, dataStreamName)
 	}
 
 	var streams []util.Stream
@@ -104,8 +104,8 @@ func createLogStreams(modulePath, moduleTitle, datasetName string) ([]util.Strea
 
 			streams = append(streams, util.Stream{
 				Input:        aType,
-				Title:        fmt.Sprintf("%s %s logs (%s)", moduleTitle, datasetName, inputType),
-				Description:  fmt.Sprintf("Collect %s %s logs using %s input", moduleTitle, datasetName, inputType),
+				Title:        fmt.Sprintf("%s %s logs (%s)", moduleTitle, dataStreamName, inputType),
+				Description:  fmt.Sprintf("Collect %s %s logs using %s input", moduleTitle, dataStreamName, inputType),
 				TemplatePath: targetFileName,
 				Vars:         root.filterVarsForInput(inputType, vars),
 			})
@@ -114,35 +114,35 @@ func createLogStreams(modulePath, moduleTitle, datasetName string) ([]util.Strea
 	return streams, agent, nil
 }
 
-// wrapVariablesWithDefault method builds a set of stream inputs for metrics oriented dataset.
+// wrapVariablesWithDefault method builds a set of stream inputs for metrics oriented dataStream.
 // The method combines all config files in module's _meta directory, unmarshals all configuration entries and selects
 // ones related to the particular metricset (first seen, first occurrence, next occurrences skipped).
 //
 // The method skips commented variables, but keeps arrays of structures (even if it's not possible to render them using
 // UI).
-func createMetricStreams(modulePath, moduleName, moduleTitle, datasetName string) ([]util.Stream, agentContent, error) {
+func createMetricStreams(modulePath, moduleName, moduleTitle, dataStreamName string) ([]util.Stream, agentContent, error) {
 	merged, err := mergeMetaConfigFiles(modulePath)
 	if err != nil {
 		return nil, agentContent{}, errors.Wrapf(err, "merging config files failed")
 	}
 
-	vars, err := createMetricStreamVariables(merged, moduleName, datasetName)
+	vars, err := createMetricStreamVariables(merged, moduleName, dataStreamName)
 	if err != nil {
 		return nil, agentContent{}, errors.Wrapf(err, "creating metric stream variables failed (modulePath: %s)", modulePath)
 	}
 	streams := []util.Stream{
 		{
 			Input:       moduleName + "/metrics",
-			Title:       fmt.Sprintf("%s %s metrics", moduleTitle, datasetName),
-			Description: fmt.Sprintf("Collect %s %s metrics", moduleTitle, datasetName),
+			Title:       fmt.Sprintf("%s %s metrics", moduleTitle, dataStreamName),
+			Description: fmt.Sprintf("Collect %s %s metrics", moduleTitle, dataStreamName),
 			Vars:        vars,
 		},
 	}
 
-	agent, err := createAgentContentForMetrics(moduleName, datasetName, streams)
+	agent, err := createAgentContentForMetrics(moduleName, dataStreamName, streams)
 	if err != nil {
-		return nil, agentContent{}, errors.Wrapf(err, "creating agent content for logs failed (modulePath: %s, datasetName: %s)",
-			modulePath, datasetName)
+		return nil, agentContent{}, errors.Wrapf(err, "creating agent content for logs failed (modulePath: %s, dataStreamName: %s)",
+			modulePath, dataStreamName)
 	}
 	return streams, agent, nil
 }

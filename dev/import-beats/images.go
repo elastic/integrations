@@ -46,34 +46,34 @@ func createImages(beatDocsPath, modulePath string) (imageContentArray, error) {
 		images = append(images, extractImages(beatDocsPath, moduleDocsFile)...)
 	}
 
-	datasetDirs, err := ioutil.ReadDir(modulePath)
+	dataStreamDirs, err := ioutil.ReadDir(modulePath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot read module directory %s", modulePath)
 	}
 
-	for _, datasetDir := range datasetDirs {
-		if !datasetDir.IsDir() {
+	for _, dataStreamDir := range dataStreamDirs {
+		if !dataStreamDir.IsDir() {
 			continue
 		}
-		datasetName := datasetDir.Name()
+		dataStreamName := dataStreamDir.Name()
 
-		if datasetName == "_meta" {
+		if dataStreamName == "_meta" {
 			continue
 		}
 
-		log.Printf("\t%s: dataset found", datasetName)
+		log.Printf("\t%s: data stream found", dataStreamName)
 
-		datasetDocsPath := path.Join(modulePath, datasetName, "_meta", "docs.asciidoc")
-		datasetDocsFile, err := ioutil.ReadFile(datasetDocsPath)
+		dataStreamDocsPath := path.Join(modulePath, dataStreamName, "_meta", "docs.asciidoc")
+		dataStreamDocsFile, err := ioutil.ReadFile(dataStreamDocsPath)
 		if err != nil && !os.IsNotExist(err) {
-			return nil, errors.Wrapf(err, "reading dataset docs file failed (path: %s)", datasetDocsPath)
+			return nil, errors.Wrapf(err, "reading data stream docs file failed (path: %s)", dataStreamDocsPath)
 		} else if os.IsNotExist(err) {
-			log.Printf("\t%s: no docs found (path: %s), skipped", datasetName, datasetDocsPath)
+			log.Printf("\t%s: no docs found (path: %s), skipped", dataStreamName, dataStreamDocsPath)
 			continue
 		}
 
-		log.Printf("\t%s: docs found (path: %s)", datasetName, datasetDocsPath)
-		images = append(images, extractImages(beatDocsPath, datasetDocsFile)...)
+		log.Printf("\t%s: docs found (path: %s)", dataStreamName, dataStreamDocsPath)
+		images = append(images, extractImages(beatDocsPath, dataStreamDocsFile)...)
 	}
 
 	return images, nil

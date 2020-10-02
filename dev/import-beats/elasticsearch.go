@@ -34,30 +34,30 @@ var (
 	reUnsupportedPlaceholderInPipeline    = regexp.MustCompile("{<.+>}")
 )
 
-func loadElasticsearchContent(datasetPath string) (elasticsearchContent, error) {
+func loadElasticsearchContent(dataStreamPath string) (elasticsearchContent, error) {
 	var esc elasticsearchContent
 
-	datasetManifestPath := filepath.Join(datasetPath, "manifest.yml")
-	datasetManifestFile, err := ioutil.ReadFile(datasetManifestPath)
+	dataStreamManifestPath := filepath.Join(dataStreamPath, "manifest.yml")
+	dataStreamManifestFile, err := ioutil.ReadFile(dataStreamManifestPath)
 	if os.IsNotExist(err) {
 		return elasticsearchContent{}, nil // no manifest.yml file found,
 	}
 	if err != nil {
-		return elasticsearchContent{}, errors.Wrapf(err, "reading dataset manifest file failed (path: %s)", datasetManifestPath)
+		return elasticsearchContent{}, errors.Wrapf(err, "reading dataStream manifest file failed (path: %s)", dataStreamManifestPath)
 	}
 
 	var ingestPipelines []string
-	var dmsp datasetManifestSinglePipeline
-	err = yaml.Unmarshal(datasetManifestFile, &dmsp)
+	var dmsp dataStreamManifestSinglePipeline
+	err = yaml.Unmarshal(dataStreamManifestFile, &dmsp)
 	if err == nil {
 		if len(dmsp.IngestPipeline) > 0 {
 			ingestPipelines = append(ingestPipelines, dmsp.IngestPipeline)
 		}
 	} else {
-		var dmmp datasetManifestMultiplePipelines
-		err = yaml.Unmarshal(datasetManifestFile, &dmmp)
+		var dmmp dataStreamManifestMultiplePipelines
+		err = yaml.Unmarshal(dataStreamManifestFile, &dmmp)
 		if err != nil {
-			return elasticsearchContent{}, errors.Wrapf(err, "unmarshalling dataset manifest file failed (path: %s)", datasetManifestPath)
+			return elasticsearchContent{}, errors.Wrapf(err, "unmarshalling dataStream manifest file failed (path: %s)", dataStreamManifestPath)
 		}
 
 		if len(dmmp.IngestPipeline) > 0 {
@@ -83,7 +83,7 @@ func loadElasticsearchContent(datasetPath string) (elasticsearchContent, error) 
 			}
 		}
 
-		pipelinePath := filepath.Join(datasetPath, ingestPipeline)
+		pipelinePath := filepath.Join(dataStreamPath, ingestPipeline)
 		body, err := ioutil.ReadFile(pipelinePath)
 		if err != nil {
 			return elasticsearchContent{}, errors.Wrapf(err, "reading pipeline body failed (path: %s)", pipelinePath)

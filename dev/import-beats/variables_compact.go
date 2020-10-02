@@ -13,17 +13,17 @@ import (
 	"github.com/elastic/package-registry/util"
 )
 
-func compactDatasetVariables(datasets datasetContentArray) (datasetContentArray, map[string][]util.Variable, error) { // map[inputType][]util.Variable
+func compactDataStreamVariables(dataStreams dataStreamContentArray) (dataStreamContentArray, map[string][]util.Variable, error) { // map[inputType][]util.Variable
 	varsPerInputType := map[string][]util.Variable{}
-	var compacted datasetContentArray
+	var compacted dataStreamContentArray
 
-	for _, dataset := range datasets {
-		for i, stream := range dataset.manifest.Streams {
+	for _, dataStream := range dataStreams {
+		for i, stream := range dataStream.manifest.Streams {
 			var notCompactedVars []util.Variable
 			for _, aVar := range stream.Vars {
 				isAlreadyCompacted := isVariableAlreadyCompacted(varsPerInputType, aVar, stream.Input)
 				if !isAlreadyCompacted {
-					canBeCompacted, err := canVariableBeCompacted(datasets, aVar, stream.Input)
+					canBeCompacted, err := canVariableBeCompacted(dataStreams, aVar, stream.Input)
 					if err != nil {
 						return nil, nil, errors.Wrap(err, "checking compactibility failed")
 					}
@@ -35,9 +35,9 @@ func compactDatasetVariables(datasets datasetContentArray) (datasetContentArray,
 				}
 			}
 			stream.Vars = notCompactedVars
-			dataset.manifest.Streams[i] = stream
+			dataStream.manifest.Streams[i] = stream
 		}
-		compacted = append(compacted, dataset)
+		compacted = append(compacted, dataStream)
 	}
 	return compacted, varsPerInputType, nil
 }
@@ -53,11 +53,11 @@ func isVariableAlreadyCompacted(varsPerInputType map[string][]util.Variable, aVa
 	return false
 }
 
-func canVariableBeCompacted(datasets datasetContentArray, aVar util.Variable, inputType string) (bool, error) {
-	for _, dataset := range datasets {
+func canVariableBeCompacted(dataStreams dataStreamContentArray, aVar util.Variable, inputType string) (bool, error) {
+	for _, dataStream := range dataStreams {
 		var varUsed bool
 
-		for _, stream := range dataset.manifest.Streams {
+		for _, stream := range dataStream.manifest.Streams {
 			if stream.Input != inputType {
 				break // input is not related with this var
 			}
@@ -79,7 +79,7 @@ func canVariableBeCompacted(datasets datasetContentArray, aVar util.Variable, in
 		}
 
 		if !varUsed {
-			return false, nil // variable not present in this dataset
+			return false, nil // variable not present in this dataStream
 		}
 	}
 	return true, nil

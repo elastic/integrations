@@ -16,20 +16,20 @@ import (
 	"github.com/elastic/package-registry/util"
 )
 
-type datasetContent struct {
+type dataStreamContent struct {
 	name     string
 	beatType string
 
-	manifest util.Dataset
+	manifest util.DataStream
 
 	agent         agentContent
 	elasticsearch elasticsearchContent
 	fields        fieldsContent
 }
 
-type datasetContentArray []datasetContent
+type dataStreamContentArray []dataStreamContent
 
-func (dca datasetContentArray) names() []string {
+func (dca dataStreamContentArray) names() []string {
 	var names []string
 	for _, dc := range dca {
 		names = append(names, dc.name)
@@ -37,57 +37,57 @@ func (dca datasetContentArray) names() []string {
 	return names
 }
 
-type datasetManifestMultiplePipelines struct {
+type dataStreamManifestMultiplePipelines struct {
 	IngestPipeline []string `yaml:"ingest_pipeline"`
 }
 
-type datasetManifestSinglePipeline struct {
+type dataStreamManifestSinglePipeline struct {
 	IngestPipeline string `yaml:"ingest_pipeline"`
 }
 
-func createDatasets(beatType, modulePath, moduleName, moduleTitle string, moduleFields []fieldDefinition,
-	filteredEcsModuleFieldNames []string, ecsFields fieldDefinitionArray) (datasetContentArray, error) {
-	datasetDirs, err := ioutil.ReadDir(modulePath)
+func createDataStreams(beatType, modulePath, moduleName, moduleTitle string, moduleFields []fieldDefinition,
+	filteredEcsModuleFieldNames []string, ecsFields fieldDefinitionArray) (dataStreamContentArray, error) {
+	dataStreamDirs, err := ioutil.ReadDir(modulePath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot read module directory %s", modulePath)
 	}
 
-	var contents []datasetContent
-	for _, datasetDir := range datasetDirs {
-		if !datasetDir.IsDir() {
+	var contents []dataStreamContent
+	for _, dataStreamDir := range dataStreamDirs {
+		if !dataStreamDir.IsDir() {
 			continue
 		}
-		datasetName := datasetDir.Name()
+		dataStreamName := dataStreamDir.Name()
 
-		if datasetName == "_meta" {
+		if dataStreamName == "_meta" {
 			continue
 		}
 
-		datasetPath := filepath.Join(modulePath, datasetName)
-		_, err := os.Stat(filepath.Join(datasetPath, "_meta"))
+		dataStreamPath := filepath.Join(modulePath, dataStreamName)
+		_, err := os.Stat(filepath.Join(dataStreamPath, "_meta"))
 		if os.IsNotExist(err) {
-			_, err = os.Stat(filepath.Join(datasetPath, "manifest.yml"))
+			_, err = os.Stat(filepath.Join(dataStreamPath, "manifest.yml"))
 			if os.IsNotExist(err) {
-				log.Printf("\t%s: not a valid dataset, skipped", datasetName)
+				log.Printf("\t%s: not a valid dataStream, skipped", dataStreamName)
 				continue
 			}
 		}
 
-		log.Printf("\t%s: dataset found", datasetName)
+		log.Printf("\t%s: dataStream found", dataStreamName)
 
 		// fields
-		datasetFields, err := loadDatasetFields(modulePath, moduleName, datasetName)
+		dataStreamFields, err := loadDataStreamFields(modulePath, moduleName, dataStreamName)
 		if err != nil {
-			return nil, errors.Wrapf(err, "loading dataset fields failed (modulePath: %s, datasetName: %s)",
-				modulePath, datasetName)
+			return nil, errors.Wrapf(err, "loading dataStream fields failed (modulePath: %s, dataStreamName: %s)",
+				modulePath, dataStreamName)
 		}
-		datasetFields, filteredEcsDatasetFieldNames, err := filterMigratedFields(datasetFields, ecsFields.names())
+		dataStreamFields, filteredEcsDataStreamFieldNames, err := filterMigratedFields(dataStreamFields, ecsFields.names())
 		if err != nil {
-			return nil, errors.Wrapf(err, "filtering uncommon migrated failed (modulePath: %s, datasetName: %s)",
-				modulePath, datasetName)
+			return nil, errors.Wrapf(err, "filtering uncommon migrated failed (modulePath: %s, dataStreamName: %s)",
+				modulePath, dataStreamName)
 		}
 
-		foundEcsFieldNames := uniqueStringValues(append(filteredEcsModuleFieldNames, filteredEcsDatasetFieldNames...))
+		foundEcsFieldNames := uniqueStringValues(append(filteredEcsModuleFieldNames, filteredEcsDataStreamFieldNames...))
 		ecsFields := filterEcsFields(ecsFields, foundEcsFieldNames)
 
 		fieldsFiles := map[string]fieldDefinitionArray{}
@@ -97,8 +97,8 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 		if len(moduleFields) > 0 && len(moduleFields[0].Fields) > 0 {
 			fieldsFiles["package-fields.yml"] = moduleFields
 		}
-		if len(datasetFields) > 0 {
-			fieldsFiles["fields.yml"] = datasetFields
+		if len(dataStreamFields) > 0 {
+			fieldsFiles["fields.yml"] = dataStreamFields
 		}
 		fieldsFiles["base-fields.yml"] = baseFields
 
@@ -107,27 +107,27 @@ func createDatasets(beatType, modulePath, moduleName, moduleTitle string, module
 		}
 
 		// elasticsearch
-		elasticsearch, err := loadElasticsearchContent(datasetPath)
+		elasticsearch, err := loadElasticsearchContent(dataStreamPath)
 		if err != nil {
-			return nil, errors.Wrapf(err, "loading elasticsearch content failed (datasetPath: %s)", datasetPath)
+			return nil, errors.Wrapf(err, "loading elasticsearch content failed (dataStreamPath: %s)", dataStreamPath)
 		}
 
 		// streams and agents
-		streams, agent, err := createStreams(modulePath, moduleName, moduleTitle, datasetName, beatType)
+		streams, agent, err := createStreams(modulePath, moduleName, moduleTitle, dataStreamName, beatType)
 		if err != nil {
-			return nil, errors.Wrapf(err, "creating streams failed (datasetPath: %s)", datasetPath)
+			return nil, errors.Wrapf(err, "creating streams failed (dataStreamPath: %s)", dataStreamPath)
 		}
 
 		// manifest
-		manifest := util.Dataset{
-			Title:   fmt.Sprintf("%s %s %s", moduleTitle, datasetName, beatType),
+		manifest := util.DataStream{
+			Title:   fmt.Sprintf("%s %s %s", moduleTitle, dataStreamName, beatType),
 			Release: "experimental",
 			Type:    beatType,
 			Streams: streams,
 		}
 
-		contents = append(contents, datasetContent{
-			name:          datasetName,
+		contents = append(contents, dataStreamContent{
+			name:          dataStreamName,
 			beatType:      beatType,
 			manifest:      manifest,
 			agent:         agent,
