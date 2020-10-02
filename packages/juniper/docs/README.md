@@ -331,102 +331,102 @@ The following processes and tags are supported:
 | interface.alias | Interface alias as reported by the system, typically used in firewall implementations for e.g. inside, outside, or dmz logical interface naming. | keyword |
 | interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
 | interface.name | Interface name as reported by the system. | keyword |
-| juniper.juniper.srx.action | action | keyword |
-| juniper.juniper.srx.action_detail | action detail | keyword |
-| juniper.juniper.srx.alert | repeat alert | keyword |
-| juniper.juniper.srx.apbr_rule_type | apbr rule type | keyword |
-| juniper.juniper.srx.application | application | keyword |
-| juniper.juniper.srx.application_category | application category | keyword |
-| juniper.juniper.srx.application_characteristics | application characteristics | keyword |
-| juniper.juniper.srx.application_name | application name | keyword |
-| juniper.juniper.srx.application_sub_category | application sub category | keyword |
-| juniper.juniper.srx.attack_name | attack name | keyword |
-| juniper.juniper.srx.category | filter category | keyword |
-| juniper.juniper.srx.client_ip | client ip | ip |
-| juniper.juniper.srx.connection_hit_rate | connection hit rate | integer |
-| juniper.juniper.srx.connection_tag | connection tag | keyword |
-| juniper.juniper.srx.context_hit_rate | context hit rate | integer |
-| juniper.juniper.srx.context_name | context name | keyword |
-| juniper.juniper.srx.context_value | context value | keyword |
-| juniper.juniper.srx.context_value_hit_rate | context value hit rate | integer |
-| juniper.juniper.srx.ddos_application_name | ddos application name | keyword |
-| juniper.juniper.srx.dscp_value | apbr rule type | integer |
-| juniper.juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
-| juniper.juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
-| juniper.juniper.srx.dst_vrf_grp | dst_vrf_grp | keyword |
-| juniper.juniper.srx.elapsed_time | elapsed time | date |
-| juniper.juniper.srx.encrypted | encrypted | keyword |
-| juniper.juniper.srx.epoch_time | epoch time | date |
-| juniper.juniper.srx.error_code | error_code | keyword |
-| juniper.juniper.srx.error_message | error_message | keyword |
-| juniper.juniper.srx.export_id | packet log id | integer |
-| juniper.juniper.srx.feed_name | feed name | keyword |
-| juniper.juniper.srx.file_category | file category | keyword |
-| juniper.juniper.srx.file_hash_lookup | file hash lookup | keyword |
-| juniper.juniper.srx.file_name | file name | keyword |
-| juniper.juniper.srx.filename | filename | keyword |
-| juniper.juniper.srx.hostname | hostname | keyword |
-| juniper.juniper.srx.icmp_type | icmp type | integer |
-| juniper.juniper.srx.inbound_bytes | bytes from server | integer |
-| juniper.juniper.srx.inbound_packets | packets from server | integer |
-| juniper.juniper.srx.index | index | keyword |
-| juniper.juniper.srx.logical_system_name | logical system name | keyword |
-| juniper.juniper.srx.malware_info | malware info | keyword |
-| juniper.juniper.srx.message | mesagge | keyword |
-| juniper.juniper.srx.message_type | message type | keyword |
-| juniper.juniper.srx.name | name | keyword |
-| juniper.juniper.srx.nat_connection_tag | nat connection tag | keyword |
-| juniper.juniper.srx.nested_application | nested application | keyword |
-| juniper.juniper.srx.obj | url path | keyword |
-| juniper.juniper.srx.occur_count | occur count | integer |
-| juniper.juniper.srx.outbound_bytes | bytes from client | integer |
-| juniper.juniper.srx.outbound_packets | packets from client | integer |
-| juniper.juniper.srx.packet_log_id | packet log id | integer |
-| juniper.juniper.srx.peer_destination_address | peer destination address | ip |
-| juniper.juniper.srx.peer_destination_port | peer destination port | integer |
-| juniper.juniper.srx.peer_session_id | peer session id | keyword |
-| juniper.juniper.srx.peer_source_address | peer source address | ip |
-| juniper.juniper.srx.peer_source_port | peer source port | integer |
-| juniper.juniper.srx.policy_name | policy name | keyword |
-| juniper.juniper.srx.process | process that generated the message | keyword |
-| juniper.juniper.srx.profile | filter profile | keyword |
-| juniper.juniper.srx.profile_name | profile name | keyword |
-| juniper.juniper.srx.protocol | protocol | keyword |
-| juniper.juniper.srx.protocol_id | protocol id | keyword |
-| juniper.juniper.srx.protocol_name | protocol name | keyword |
-| juniper.juniper.srx.reason | reason | keyword |
-| juniper.juniper.srx.repeat_count | repeat count | integer |
-| juniper.juniper.srx.roles | roles | keyword |
-| juniper.juniper.srx.routing_instance | routing instance | keyword |
-| juniper.juniper.srx.rule_name | rule name | keyword |
-| juniper.juniper.srx.ruleebase_name | ruleebase name | keyword |
-| juniper.juniper.srx.sample_sha256 | sample sha256 | keyword |
-| juniper.juniper.srx.secure_web_proxy_session_type | secure web proxy session type | keyword |
-| juniper.juniper.srx.service_name | service name | keyword |
-| juniper.juniper.srx.session_id | session id | keyword |
-| juniper.juniper.srx.session_id_32 | session id 32 | keyword |
-| juniper.juniper.srx.src_nat_rule_name | src nat rule name | keyword |
-| juniper.juniper.srx.src_nat_rule_type | src nat rule type | keyword |
-| juniper.juniper.srx.src_vrf_grp | src_vrf_grp | keyword |
-| juniper.juniper.srx.state | state | keyword |
-| juniper.juniper.srx.status | status | keyword |
-| juniper.juniper.srx.sub_category | sub category | keyword |
-| juniper.juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
-| juniper.juniper.srx.temporary_filename | temporary_filename | keyword |
-| juniper.juniper.srx.tenant_id | tenant id | keyword |
-| juniper.juniper.srx.th | th | keyword |
-| juniper.juniper.srx.threat_severity | threat severity | keyword |
-| juniper.juniper.srx.time_count | time count | integer |
-| juniper.juniper.srx.time_period | time period | integer |
-| juniper.juniper.srx.time_scope | time scope | keyword |
-| juniper.juniper.srx.timestamp | timestamp | date |
-| juniper.juniper.srx.type | type | keyword |
-| juniper.juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
-| juniper.juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |
-| juniper.juniper.srx.url | url domain | keyword |
-| juniper.juniper.srx.username | username | keyword |
-| juniper.juniper.srx.verdict_number | verdict number | integer |
-| juniper.juniper.srx.verdict_source | verdict source | keyword |
+| juniper.srx.action | action | keyword |
+| juniper.srx.action_detail | action detail | keyword |
+| juniper.srx.alert | repeat alert | keyword |
+| juniper.srx.apbr_rule_type | apbr rule type | keyword |
+| juniper.srx.application | application | keyword |
+| juniper.srx.application_category | application category | keyword |
+| juniper.srx.application_characteristics | application characteristics | keyword |
+| juniper.srx.application_name | application name | keyword |
+| juniper.srx.application_sub_category | application sub category | keyword |
+| juniper.srx.attack_name | attack name | keyword |
+| juniper.srx.category | filter category | keyword |
+| juniper.srx.client_ip | client ip | ip |
+| juniper.srx.connection_hit_rate | connection hit rate | integer |
+| juniper.srx.connection_tag | connection tag | keyword |
+| juniper.srx.context_hit_rate | context hit rate | integer |
+| juniper.srx.context_name | context name | keyword |
+| juniper.srx.context_value | context value | keyword |
+| juniper.srx.context_value_hit_rate | context value hit rate | integer |
+| juniper.srx.ddos_application_name | ddos application name | keyword |
+| juniper.srx.dscp_value | apbr rule type | integer |
+| juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
+| juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
+| juniper.srx.dst_vrf_grp | dst_vrf_grp | keyword |
+| juniper.srx.elapsed_time | elapsed time | date |
+| juniper.srx.encrypted | encrypted | keyword |
+| juniper.srx.epoch_time | epoch time | date |
+| juniper.srx.error_code | error_code | keyword |
+| juniper.srx.error_message | error_message | keyword |
+| juniper.srx.export_id | packet log id | integer |
+| juniper.srx.feed_name | feed name | keyword |
+| juniper.srx.file_category | file category | keyword |
+| juniper.srx.file_hash_lookup | file hash lookup | keyword |
+| juniper.srx.file_name | file name | keyword |
+| juniper.srx.filename | filename | keyword |
+| juniper.srx.hostname | hostname | keyword |
+| juniper.srx.icmp_type | icmp type | integer |
+| juniper.srx.inbound_bytes | bytes from server | integer |
+| juniper.srx.inbound_packets | packets from server | integer |
+| juniper.srx.index | index | keyword |
+| juniper.srx.logical_system_name | logical system name | keyword |
+| juniper.srx.malware_info | malware info | keyword |
+| juniper.srx.message | mesagge | keyword |
+| juniper.srx.message_type | message type | keyword |
+| juniper.srx.name | name | keyword |
+| juniper.srx.nat_connection_tag | nat connection tag | keyword |
+| juniper.srx.nested_application | nested application | keyword |
+| juniper.srx.obj | url path | keyword |
+| juniper.srx.occur_count | occur count | integer |
+| juniper.srx.outbound_bytes | bytes from client | integer |
+| juniper.srx.outbound_packets | packets from client | integer |
+| juniper.srx.packet_log_id | packet log id | integer |
+| juniper.srx.peer_destination_address | peer destination address | ip |
+| juniper.srx.peer_destination_port | peer destination port | integer |
+| juniper.srx.peer_session_id | peer session id | keyword |
+| juniper.srx.peer_source_address | peer source address | ip |
+| juniper.srx.peer_source_port | peer source port | integer |
+| juniper.srx.policy_name | policy name | keyword |
+| juniper.srx.process | process that generated the message | keyword |
+| juniper.srx.profile | filter profile | keyword |
+| juniper.srx.profile_name | profile name | keyword |
+| juniper.srx.protocol | protocol | keyword |
+| juniper.srx.protocol_id | protocol id | keyword |
+| juniper.srx.protocol_name | protocol name | keyword |
+| juniper.srx.reason | reason | keyword |
+| juniper.srx.repeat_count | repeat count | integer |
+| juniper.srx.roles | roles | keyword |
+| juniper.srx.routing_instance | routing instance | keyword |
+| juniper.srx.rule_name | rule name | keyword |
+| juniper.srx.ruleebase_name | ruleebase name | keyword |
+| juniper.srx.sample_sha256 | sample sha256 | keyword |
+| juniper.srx.secure_web_proxy_session_type | secure web proxy session type | keyword |
+| juniper.srx.service_name | service name | keyword |
+| juniper.srx.session_id | session id | keyword |
+| juniper.srx.session_id_32 | session id 32 | keyword |
+| juniper.srx.src_nat_rule_name | src nat rule name | keyword |
+| juniper.srx.src_nat_rule_type | src nat rule type | keyword |
+| juniper.srx.src_vrf_grp | src_vrf_grp | keyword |
+| juniper.srx.state | state | keyword |
+| juniper.srx.status | status | keyword |
+| juniper.srx.sub_category | sub category | keyword |
+| juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
+| juniper.srx.temporary_filename | temporary_filename | keyword |
+| juniper.srx.tenant_id | tenant id | keyword |
+| juniper.srx.th | th | keyword |
+| juniper.srx.threat_severity | threat severity | keyword |
+| juniper.srx.time_count | time count | integer |
+| juniper.srx.time_period | time period | integer |
+| juniper.srx.time_scope | time scope | keyword |
+| juniper.srx.timestamp | timestamp | date |
+| juniper.srx.type | type | keyword |
+| juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
+| juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |
+| juniper.srx.url | url domain | keyword |
+| juniper.srx.username | username | keyword |
+| juniper.srx.verdict_number | verdict number | integer |
+| juniper.srx.verdict_source | verdict source | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -1131,102 +1131,102 @@ The `junos` dataset collects Juniper JUNOS logs.
 | interface.alias | Interface alias as reported by the system, typically used in firewall implementations for e.g. inside, outside, or dmz logical interface naming. | keyword |
 | interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
 | interface.name | Interface name as reported by the system. | keyword |
-| juniper.juniper.srx.action | action | keyword |
-| juniper.juniper.srx.action_detail | action detail | keyword |
-| juniper.juniper.srx.alert | repeat alert | keyword |
-| juniper.juniper.srx.apbr_rule_type | apbr rule type | keyword |
-| juniper.juniper.srx.application | application | keyword |
-| juniper.juniper.srx.application_category | application category | keyword |
-| juniper.juniper.srx.application_characteristics | application characteristics | keyword |
-| juniper.juniper.srx.application_name | application name | keyword |
-| juniper.juniper.srx.application_sub_category | application sub category | keyword |
-| juniper.juniper.srx.attack_name | attack name | keyword |
-| juniper.juniper.srx.category | filter category | keyword |
-| juniper.juniper.srx.client_ip | client ip | ip |
-| juniper.juniper.srx.connection_hit_rate | connection hit rate | integer |
-| juniper.juniper.srx.connection_tag | connection tag | keyword |
-| juniper.juniper.srx.context_hit_rate | context hit rate | integer |
-| juniper.juniper.srx.context_name | context name | keyword |
-| juniper.juniper.srx.context_value | context value | keyword |
-| juniper.juniper.srx.context_value_hit_rate | context value hit rate | integer |
-| juniper.juniper.srx.ddos_application_name | ddos application name | keyword |
-| juniper.juniper.srx.dscp_value | apbr rule type | integer |
-| juniper.juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
-| juniper.juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
-| juniper.juniper.srx.dst_vrf_grp | dst_vrf_grp | keyword |
-| juniper.juniper.srx.elapsed_time | elapsed time | date |
-| juniper.juniper.srx.encrypted | encrypted | keyword |
-| juniper.juniper.srx.epoch_time | epoch time | date |
-| juniper.juniper.srx.error_code | error_code | keyword |
-| juniper.juniper.srx.error_message | error_message | keyword |
-| juniper.juniper.srx.export_id | packet log id | integer |
-| juniper.juniper.srx.feed_name | feed name | keyword |
-| juniper.juniper.srx.file_category | file category | keyword |
-| juniper.juniper.srx.file_hash_lookup | file hash lookup | keyword |
-| juniper.juniper.srx.file_name | file name | keyword |
-| juniper.juniper.srx.filename | filename | keyword |
-| juniper.juniper.srx.hostname | hostname | keyword |
-| juniper.juniper.srx.icmp_type | icmp type | integer |
-| juniper.juniper.srx.inbound_bytes | bytes from server | integer |
-| juniper.juniper.srx.inbound_packets | packets from server | integer |
-| juniper.juniper.srx.index | index | keyword |
-| juniper.juniper.srx.logical_system_name | logical system name | keyword |
-| juniper.juniper.srx.malware_info | malware info | keyword |
-| juniper.juniper.srx.message | mesagge | keyword |
-| juniper.juniper.srx.message_type | message type | keyword |
-| juniper.juniper.srx.name | name | keyword |
-| juniper.juniper.srx.nat_connection_tag | nat connection tag | keyword |
-| juniper.juniper.srx.nested_application | nested application | keyword |
-| juniper.juniper.srx.obj | url path | keyword |
-| juniper.juniper.srx.occur_count | occur count | integer |
-| juniper.juniper.srx.outbound_bytes | bytes from client | integer |
-| juniper.juniper.srx.outbound_packets | packets from client | integer |
-| juniper.juniper.srx.packet_log_id | packet log id | integer |
-| juniper.juniper.srx.peer_destination_address | peer destination address | ip |
-| juniper.juniper.srx.peer_destination_port | peer destination port | integer |
-| juniper.juniper.srx.peer_session_id | peer session id | keyword |
-| juniper.juniper.srx.peer_source_address | peer source address | ip |
-| juniper.juniper.srx.peer_source_port | peer source port | integer |
-| juniper.juniper.srx.policy_name | policy name | keyword |
-| juniper.juniper.srx.process | process that generated the message | keyword |
-| juniper.juniper.srx.profile | filter profile | keyword |
-| juniper.juniper.srx.profile_name | profile name | keyword |
-| juniper.juniper.srx.protocol | protocol | keyword |
-| juniper.juniper.srx.protocol_id | protocol id | keyword |
-| juniper.juniper.srx.protocol_name | protocol name | keyword |
-| juniper.juniper.srx.reason | reason | keyword |
-| juniper.juniper.srx.repeat_count | repeat count | integer |
-| juniper.juniper.srx.roles | roles | keyword |
-| juniper.juniper.srx.routing_instance | routing instance | keyword |
-| juniper.juniper.srx.rule_name | rule name | keyword |
-| juniper.juniper.srx.ruleebase_name | ruleebase name | keyword |
-| juniper.juniper.srx.sample_sha256 | sample sha256 | keyword |
-| juniper.juniper.srx.secure_web_proxy_session_type | secure web proxy session type | keyword |
-| juniper.juniper.srx.service_name | service name | keyword |
-| juniper.juniper.srx.session_id | session id | keyword |
-| juniper.juniper.srx.session_id_32 | session id 32 | keyword |
-| juniper.juniper.srx.src_nat_rule_name | src nat rule name | keyword |
-| juniper.juniper.srx.src_nat_rule_type | src nat rule type | keyword |
-| juniper.juniper.srx.src_vrf_grp | src_vrf_grp | keyword |
-| juniper.juniper.srx.state | state | keyword |
-| juniper.juniper.srx.status | status | keyword |
-| juniper.juniper.srx.sub_category | sub category | keyword |
-| juniper.juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
-| juniper.juniper.srx.temporary_filename | temporary_filename | keyword |
-| juniper.juniper.srx.tenant_id | tenant id | keyword |
-| juniper.juniper.srx.th | th | keyword |
-| juniper.juniper.srx.threat_severity | threat severity | keyword |
-| juniper.juniper.srx.time_count | time count | integer |
-| juniper.juniper.srx.time_period | time period | integer |
-| juniper.juniper.srx.time_scope | time scope | keyword |
-| juniper.juniper.srx.timestamp | timestamp | date |
-| juniper.juniper.srx.type | type | keyword |
-| juniper.juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
-| juniper.juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |
-| juniper.juniper.srx.url | url domain | keyword |
-| juniper.juniper.srx.username | username | keyword |
-| juniper.juniper.srx.verdict_number | verdict number | integer |
-| juniper.juniper.srx.verdict_source | verdict source | keyword |
+| juniper.srx.action | action | keyword |
+| juniper.srx.action_detail | action detail | keyword |
+| juniper.srx.alert | repeat alert | keyword |
+| juniper.srx.apbr_rule_type | apbr rule type | keyword |
+| juniper.srx.application | application | keyword |
+| juniper.srx.application_category | application category | keyword |
+| juniper.srx.application_characteristics | application characteristics | keyword |
+| juniper.srx.application_name | application name | keyword |
+| juniper.srx.application_sub_category | application sub category | keyword |
+| juniper.srx.attack_name | attack name | keyword |
+| juniper.srx.category | filter category | keyword |
+| juniper.srx.client_ip | client ip | ip |
+| juniper.srx.connection_hit_rate | connection hit rate | integer |
+| juniper.srx.connection_tag | connection tag | keyword |
+| juniper.srx.context_hit_rate | context hit rate | integer |
+| juniper.srx.context_name | context name | keyword |
+| juniper.srx.context_value | context value | keyword |
+| juniper.srx.context_value_hit_rate | context value hit rate | integer |
+| juniper.srx.ddos_application_name | ddos application name | keyword |
+| juniper.srx.dscp_value | apbr rule type | integer |
+| juniper.srx.dst_nat_rule_name | dst nat rule name | keyword |
+| juniper.srx.dst_nat_rule_type | dst nat rule type | keyword |
+| juniper.srx.dst_vrf_grp | dst_vrf_grp | keyword |
+| juniper.srx.elapsed_time | elapsed time | date |
+| juniper.srx.encrypted | encrypted | keyword |
+| juniper.srx.epoch_time | epoch time | date |
+| juniper.srx.error_code | error_code | keyword |
+| juniper.srx.error_message | error_message | keyword |
+| juniper.srx.export_id | packet log id | integer |
+| juniper.srx.feed_name | feed name | keyword |
+| juniper.srx.file_category | file category | keyword |
+| juniper.srx.file_hash_lookup | file hash lookup | keyword |
+| juniper.srx.file_name | file name | keyword |
+| juniper.srx.filename | filename | keyword |
+| juniper.srx.hostname | hostname | keyword |
+| juniper.srx.icmp_type | icmp type | integer |
+| juniper.srx.inbound_bytes | bytes from server | integer |
+| juniper.srx.inbound_packets | packets from server | integer |
+| juniper.srx.index | index | keyword |
+| juniper.srx.logical_system_name | logical system name | keyword |
+| juniper.srx.malware_info | malware info | keyword |
+| juniper.srx.message | mesagge | keyword |
+| juniper.srx.message_type | message type | keyword |
+| juniper.srx.name | name | keyword |
+| juniper.srx.nat_connection_tag | nat connection tag | keyword |
+| juniper.srx.nested_application | nested application | keyword |
+| juniper.srx.obj | url path | keyword |
+| juniper.srx.occur_count | occur count | integer |
+| juniper.srx.outbound_bytes | bytes from client | integer |
+| juniper.srx.outbound_packets | packets from client | integer |
+| juniper.srx.packet_log_id | packet log id | integer |
+| juniper.srx.peer_destination_address | peer destination address | ip |
+| juniper.srx.peer_destination_port | peer destination port | integer |
+| juniper.srx.peer_session_id | peer session id | keyword |
+| juniper.srx.peer_source_address | peer source address | ip |
+| juniper.srx.peer_source_port | peer source port | integer |
+| juniper.srx.policy_name | policy name | keyword |
+| juniper.srx.process | process that generated the message | keyword |
+| juniper.srx.profile | filter profile | keyword |
+| juniper.srx.profile_name | profile name | keyword |
+| juniper.srx.protocol | protocol | keyword |
+| juniper.srx.protocol_id | protocol id | keyword |
+| juniper.srx.protocol_name | protocol name | keyword |
+| juniper.srx.reason | reason | keyword |
+| juniper.srx.repeat_count | repeat count | integer |
+| juniper.srx.roles | roles | keyword |
+| juniper.srx.routing_instance | routing instance | keyword |
+| juniper.srx.rule_name | rule name | keyword |
+| juniper.srx.ruleebase_name | ruleebase name | keyword |
+| juniper.srx.sample_sha256 | sample sha256 | keyword |
+| juniper.srx.secure_web_proxy_session_type | secure web proxy session type | keyword |
+| juniper.srx.service_name | service name | keyword |
+| juniper.srx.session_id | session id | keyword |
+| juniper.srx.session_id_32 | session id 32 | keyword |
+| juniper.srx.src_nat_rule_name | src nat rule name | keyword |
+| juniper.srx.src_nat_rule_type | src nat rule type | keyword |
+| juniper.srx.src_vrf_grp | src_vrf_grp | keyword |
+| juniper.srx.state | state | keyword |
+| juniper.srx.status | status | keyword |
+| juniper.srx.sub_category | sub category | keyword |
+| juniper.srx.tag | system log message tag, which uniquely identifies the message. | keyword |
+| juniper.srx.temporary_filename | temporary_filename | keyword |
+| juniper.srx.tenant_id | tenant id | keyword |
+| juniper.srx.th | th | keyword |
+| juniper.srx.threat_severity | threat severity | keyword |
+| juniper.srx.time_count | time count | integer |
+| juniper.srx.time_period | time period | integer |
+| juniper.srx.time_scope | time scope | keyword |
+| juniper.srx.timestamp | timestamp | date |
+| juniper.srx.type | type | keyword |
+| juniper.srx.uplink_rx_bytes | uplink rx bytes | integer |
+| juniper.srx.uplink_tx_bytes | uplink tx bytes | integer |
+| juniper.srx.url | url domain | keyword |
+| juniper.srx.username | username | keyword |
+| juniper.srx.verdict_number | verdict number | integer |
+| juniper.srx.verdict_source | verdict source | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
