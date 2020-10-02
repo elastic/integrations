@@ -79,7 +79,7 @@ The script needs to visit and process input data from [beats](https://github.com
 metrics modules.
 
 Starting with modules, it collects and processes information about module fields, release type, icons, screenshots,
-Kibana dashboards and docs. While browsing datasets content, it focuses on fields specific for the dataset, release
+Kibana dashboards and docs. While browsing data streams content, it focuses on fields specific for the data stream, release
 type, ingestion pipeline, stream and agent configuration.
 
 ##### Fields
@@ -96,8 +96,8 @@ as the proper form. Remember to adjust this value if working on the migration fr
 
 Values: _beta, experimental, ga_
 
-~~The value depends on definitions in module and dataset fields. The scripts determines the correct release type
-for dataset, depending on overall release status for module (e.g. dataset can't be annotated as GA if the entire module
+~~The value depends on definitions in module and data stream fields. The scripts determines the correct release type
+for data stream, depending on overall release status for module (e.g. data stream can't be annotated as GA if the entire module
 is in beta).~~
 
 Currently, all imported packages are created with default value - experimental.
@@ -129,13 +129,13 @@ Every Kibana object needs to be stored in a decoded form (unpacked JSON format) 
 particular revisions.
 
 There is also a change related to the `event.module` field - the field is no longer available in the integration.
-The script adjusts dashboards automatically by replacing all references with a special clause including all datasets,
+The script adjusts dashboards automatically by replacing all references with a special clause including all data streams,
 e.g.:
 
-_The module "duck" contains 3 datasets: foo, bar, baz._
+_The module "duck" contains 3 data streams: foo, bar, baz._
 
 The `event.module = duck` will be transformed into
-`(event.dataset = duck.foo OR event.dataset = duck.bar OR event.dataset = duck.baz)`.
+`(event.data stream = duck.foo OR event.data stream = duck.bar OR event.data stream = duck.baz)`.
 
 ##### Dependency requirements
 
@@ -150,7 +150,7 @@ Documentation in the Beats repository refers to modules, metricsets and filesets
 well in the concept of integrations, so all documentation pages need to be adjusted.
 
 Every integration may have a doc template defined, so that the script can pick it up while building packages.
-The template can refer to functions, e.g. to render a table with fields used by a dataset.
+The template can refer to functions, e.g. to render a table with fields used by a data stream.
 
 ##### Ingest pipelines
 
@@ -161,7 +161,7 @@ If the fileset used an ingest pipeline, the script includes it in the target pac
 
 Stream configuration defines available Metricbeat and Filebeat settings used to reconfigure the integration.
 
-Depending on the dataset type, the configuration can be imported from the following files: `_meta/config.*.yml`
+Depending on the data stream type, the configuration can be imported from the following files: `_meta/config.*.yml`
 for Metricbeat or `manifest.yml` for Filebeat. The new format provides additional properties (required, show_user,
 title, multi), which can be used to provide better user experience in Kibana UI. Unfortunately the script can't
 detect these properties automatically, so manual adjustments will be required.
