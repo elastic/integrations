@@ -42,14 +42,14 @@ func createDocTemplates(packageDocsPath string) ([]docContent, error) {
 	}, nil
 }
 
-func renderExportedFields(packageDataset string, datasets datasetContentArray) (string, error) {
-	for _, dataset := range datasets {
-		if packageDataset == dataset.name {
+func renderExportedFields(packageDataStream string, dataStreams dataStreamContentArray) (string, error) {
+	for _, dataStream := range dataStreams {
+		if packageDataStream == dataStream.name {
 			var buffer strings.Builder
 			buffer.WriteString("**Exported fields**")
 			buffer.WriteString("\n\n")
 
-			collected, err := collectFields(dataset.fields)
+			collected, err := collectFields(dataStream.fields)
 			if err != nil {
 				return "", errors.Wrapf(err, "collecting fields failed")
 			}
@@ -68,7 +68,7 @@ func renderExportedFields(packageDataset string, datasets datasetContentArray) (
 			return buffer.String(), nil
 		}
 	}
-	return "", fmt.Errorf("missing dataset: %s", packageDataset)
+	return "", fmt.Errorf("missing dataStream: %s", packageDataStream)
 }
 
 func collectFields(content fieldsContent) ([]fieldsTableRecord, error) {
