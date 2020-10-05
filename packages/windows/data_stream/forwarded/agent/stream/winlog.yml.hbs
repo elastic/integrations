@@ -16,7 +16,7 @@ processors:
         var security = (function () {
             var path = require("path");
             var processor = require("processor");
-            // var winlogbeat = require("winlogbeat");
+            var windows = require("windows");
             // Logon Types
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/basic-audit-logon-events
             var logonTypes = {
@@ -1643,7 +1643,7 @@ processors:
                     if (!cl) {
                         return;
                     }
-                    // evt.Put("process.args", winlogbeat.splitCommandLine(cl));
+                    evt.Put("process.args", windows.splitCommandLine(cl));
                     evt.Put("process.command_line", cl);
                 })
                 .Build();
@@ -2075,7 +2075,7 @@ processors:
         var sysmon = (function () {
             var path = require("path");
             var processor = require("processor");
-            // var winlogbeat = require("winlogbeat");
+            var windows = require("windows");
             var net = require("net");
 
             // Windows error codes for DNS. This list was generated using
@@ -2371,7 +2371,7 @@ processors:
                 if (!commandLine) {
                     return;
                 }
-                // evt.Put(target, winlogbeat.splitCommandLine(commandLine));
+                evt.Put(target, windows.splitCommandLine(commandLine));
             };
 
             var splitProcessArgs = function (evt) {
@@ -3682,7 +3682,7 @@ processors:
         var powershell = (function () {
             var path = require("path");
             var processor = require("processor");
-            // var winlogbeat = require("winlogbeat");
+            var windows = require("windows");
 
             var normalizeCommonFieldNames = new processor.Convert({
                 fields: [
@@ -3860,7 +3860,7 @@ processors:
                 if (!commandLine) {
                     return;
                 }
-                // evt.Put(target, winlogbeat.splitCommandLine(commandLine));
+                evt.Put(target, windows.splitCommandLine(commandLine));
             };
 
             var addProcessArgs = function (evt) {

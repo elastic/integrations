@@ -28,13 +28,6 @@ Both datasets are available on Windows only.
 
 ## Logs
 
-### Application
-
-The Windows `application` dataset provides events from the Windows
-`Application` event log.
-
-{{fields "application"}}
-
 ### Forwarded
 
 The Windows `forwarded` dataset provides events from the Windows
@@ -70,10 +63,3 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
 
 {{fields "sysmon_operational"}}
-
-### System
-
-The Windows `system` dataset provides events from the Windows `System`
-event log.
-
-{{fields "system"}}
