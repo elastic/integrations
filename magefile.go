@@ -218,18 +218,23 @@ func ModTidy() error {
 }
 
 func Test() {
+	mg.Deps(bootUpStack)
+	defer tearDownStack()
+
 	mg.Deps(testPipeline)
+	mg.Deps(testSystem)
 }
 
 func testPipeline() error {
-	mg.Deps(bootUpStackElasticsearch)
-	defer tearDownStack()
-
 	return runElasticPackageOnAllIntegrations("test pipeline")
 }
 
-func bootUpStackElasticsearch() error {
-	err := runElasticPackage("stack", "up", "-d", "--services", "elasticsearch")
+func testSystem() error {
+	return runElasticPackageOnAllIntegrations("test system")
+}
+
+func bootUpStack() error {
+	err := runElasticPackage("stack", "up", "-d")
 	if err != nil {
 		return err
 	}
