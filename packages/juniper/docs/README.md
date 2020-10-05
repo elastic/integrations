@@ -1643,7 +1643,6 @@ The `junos` dataset collects Juniper JUNOS logs.
 
 The `netscreen` dataset collects Netscreen logs.
 
-
 **Exported fields**
 
 | Field | Description | Type |
