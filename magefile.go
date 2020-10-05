@@ -225,7 +225,7 @@ func testPipeline() error {
 	mg.Deps(bootUpStackElasticsearch)
 	defer tearDownStack()
 
-	return runElasticPackageOnAllIntegrations("test")
+	return runElasticPackageOnAllIntegrations("test pipeline")
 }
 
 func bootUpStackElasticsearch() error {
