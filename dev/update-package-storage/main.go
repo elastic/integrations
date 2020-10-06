@@ -33,7 +33,7 @@ func main() {
 	var options updateOptions
 	flag.StringVar(&options.packagesSourceDir, "sourceDir", "./build/integrations", "Path to the packages directory")
 	flag.StringVar(&options.packageStorageDir, "packageStorageDir", "../package-storage", "Path to the package-storage repository")
-	flag.BoolVar(&options.skipPullRequest, "skipPullRequest", false, "Skip opening pull requests")
+	flag.BoolVar(&options.skipPullRequest, "skipPullRequest", true, "Skip opening pull requests")
 	flag.Parse()
 
 	err := options.validate()
@@ -80,6 +80,6 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	username, err := getUsername(err, options)
 	lastCommit, err := getLastCommit(err, options)
 	pullRequestID, err := openPullRequest(err, options, packageName, packageVersion, username, branchName, lastCommit)
-	err = updatePullRequestReviewers(err, pullRequestID, owner)
+	err = updatePullRequestReviewers(err, options, pullRequestID, owner)
 	return err
 }

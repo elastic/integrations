@@ -85,9 +85,13 @@ func openPullRequest(err error, options updateOptions, packageName, packageVersi
 	return data.Number, nil
 }
 
-func updatePullRequestReviewers(err error, pullRequestID int, reviewer string) error {
+func updatePullRequestReviewers(err error, options updateOptions, pullRequestID int, reviewer string) error {
 	if err != nil {
 		return err
+	}
+
+	if options.skipPullRequest {
+		return nil
 	}
 
 	requested, err := updatePullRequestReviewersWithoutFallback(pullRequestID, reviewer)
