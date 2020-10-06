@@ -172,7 +172,34 @@ func copyIntegrationToPackageStorage(err error, options updateOptions, packageNa
 
 	sourcePath := filepath.Join(options.packagesSourceDir, packageName, packageVersion)
 	destinationPath := filepath.Join(options.packageStorageDir, "packages", packageName, packageVersion)
+
+	// Principle of operation
+	// 0. Git index is clean.
+	// 1. All files need to be removed from the destination folder (removeDestinationContent).
+	// 2. Copy integration content to the destination folder (copyPackageContents).
+	// Result:
+	// The destination folder contains new/updated files and doesn't contain removed ones.
+	err = removeDestinationContent(destinationPath)
+	if err != nil {
+		return err
+	}
 	return copyPackageContents(sourcePath, destinationPath)
+}
+
+func removeDestinationContent(destinationPath string) error {
+	fis, err := ioutil.ReadDir(destinationPath)
+	if err != nil {
+		return errors.Wrapf(err, "readdir failed (path: %s)", destinationPath)
+	}
+
+	for _, fi := range fis {
+		p := filepath.Join(destinationPath, fi.Name())
+		err = os.RemoveAll(p)
+		if err != nil {
+			return errors.Wrapf(err, "removing resource failed (path: %s)", p)
+		}
+	}
+	return nil
 }
 
 func copyPackageContents(sourcePath, destinationPath string) error {

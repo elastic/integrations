@@ -80,6 +80,6 @@ func handlePackageChanges(err error, options updateOptions, packageName string) 
 	username, err := getUsername(err, options)
 	lastCommit, err := getLastCommit(err, options)
 	pullRequestID, err := openPullRequest(err, options, packageName, packageVersion, username, branchName, lastCommit)
-	err = updatePullRequestReviewers(err, pullRequestID, owner)
+	err = updatePullRequestReviewers(err, options, pullRequestID, owner)
 	return err
 }
