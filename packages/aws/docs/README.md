@@ -1081,6 +1081,13 @@ An example event for `ec2` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float |
+| host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | scaled_float |
+| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |
 
 
 ### elb
