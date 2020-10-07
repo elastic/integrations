@@ -90,6 +90,7 @@ This dataset is available on:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
+| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
@@ -150,6 +151,8 @@ This dataset is available on:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
+| host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float |
+| host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | scaled_float |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
@@ -381,6 +384,10 @@ This dataset is available on:
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pid | Process id. | long |
