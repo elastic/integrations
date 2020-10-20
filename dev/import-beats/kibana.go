@@ -254,7 +254,7 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			return nil, errors.Wrapf(err, "marshalling object failed")
 		}
 
-		data = prependModuleNameToDashboard(replaceBlacklistedWords(
+		data = prependModuleNameToDashboardLinks(replaceBlacklistedWords(
 			replaceFieldEventDatasetWithDataStreamDataset(
 				data)), moduleName)
 
@@ -474,7 +474,7 @@ func replaceBlacklistedWords(data []byte) []byte {
 	return data
 }
 
-func prependModuleNameToDashboard(data []byte, moduleName string) []byte {
+func prependModuleNameToDashboardLinks(data []byte, moduleName string) []byte {
 	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+moduleName+"-"), []byte("/app/kibana#/dashboard/"))
 	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"), []byte("/app/kibana#/dashboard/"+moduleName+"-"))
 	return data
