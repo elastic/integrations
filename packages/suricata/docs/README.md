@@ -51,6 +51,21 @@ with other versions of Suricata.
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
+| file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| file.x509.issuer.country | List of country (C) codes | keyword |
+| file.x509.issuer.locality | List of locality names (L) | keyword |
+| file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| file.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| file.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| file.x509.not_before | Time at which the certificate is first considered valid. | date |
+| file.x509.serial_number | Unique serial number issued by the certificate authority. | keyword |
+| file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.locality | List of locality names (L) | keyword |
+| file.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| file.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -60,6 +75,7 @@ with other versions of Suricata.
 | log.offset | The file offset the reported line starts at. | long |
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| related.hosts | All the host identifiers seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -251,6 +267,8 @@ with other versions of Suricata.
 | suricata.eve.tls.version |  | keyword |
 | suricata.eve.tx_id |  | long |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.server.not_after | Timestamp indicating when server certificate is no longer considered valid. | date |
+| tls.server.not_before | Timestamp indicating when server certificate is first considered valid. | date |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
