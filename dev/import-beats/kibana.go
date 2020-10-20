@@ -234,29 +234,40 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			return nil, errors.Wrapf(err, "retrieving type failed")
 		}
 
+		id, err := object.getValue("id")
+		if err != nil {
+			return nil, errors.Wrapf(err, "retrieving id failed")
+		}
+
+		dashboardName := id.(string)
+		if aType == "dashboard" && !strings.HasPrefix(dashboardName, moduleName+"-") {
+			dashboardName = moduleName + "-" + dashboardName
+		}
+
+		_, err = object.put("id", dashboardName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "putting new ID failed")
+		}
+
 		data, err := json.MarshalIndent(object, "", "    ")
 		if err != nil {
 			return nil, errors.Wrapf(err, "marshalling object failed")
 		}
 
-		data = replaceBlacklistedWords(
-			replaceFieldEventDataStreamWithStreamDataStream(
-				data))
+		data = prependModuleNameToDashboardLinks(replaceBlacklistedWords(
+			replaceFieldEventDatasetWithDataStreamDataset(
+				data)), moduleName)
 
 		err = verifyKibanaObjectConvertion(data)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Kibana object convertion failed")
 		}
 
-		id, err := object.getValue("id")
-		if err != nil {
-			return nil, errors.Wrapf(err, "retrieving id failed")
-		}
-
 		if _, ok := extracted[aType.(string)]; !ok {
 			extracted[aType.(string)] = map[string][]byte{}
 		}
-		extracted[aType.(string)][id.(string)+".json"] = data
+
+		extracted[aType.(string)][dashboardName+".json"] = data
 	}
 
 	return extracted, nil
@@ -449,7 +460,7 @@ func stripReferencesToEventModuleInQuery(object mapStr, objectKey, moduleName st
 	return object, nil
 }
 
-func replaceFieldEventDataStreamWithStreamDataStream(data []byte) []byte {
+func replaceFieldEventDatasetWithDataStreamDataset(data []byte) []byte {
 	return bytes.ReplaceAll(data, []byte("event.dataset"), []byte("data_stream.dataset"))
 }
 
@@ -460,6 +471,12 @@ func replaceBlacklistedWords(data []byte) []byte {
 	data = bytes.ReplaceAll(data, []byte("filebeat"), []byte("logs"))
 	data = bytes.ReplaceAll(data, []byte("Module"), []byte("Integration"))
 	data = bytes.ReplaceAll(data, []byte("module"), []byte("integration"))
+	return data
+}
+
+func prependModuleNameToDashboardLinks(data []byte, moduleName string) []byte {
+	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+moduleName+"-"), []byte("/app/kibana#/dashboard/"))
+	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"), []byte("/app/kibana#/dashboard/"+moduleName+"-"))
 	return data
 }
 
