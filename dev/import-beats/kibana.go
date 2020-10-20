@@ -240,7 +240,7 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 		}
 
 		dashboardName := id.(string)
-		if aType == "dashboard" && !strings.HasPrefix(dashboardName, moduleName + "-") {
+		if aType == "dashboard" && !strings.HasPrefix(dashboardName, moduleName+"-") {
 			dashboardName = moduleName + "-" + dashboardName
 		}
 
@@ -263,12 +263,11 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			return nil, errors.Wrapf(err, "Kibana object convertion failed")
 		}
 
-
 		if _, ok := extracted[aType.(string)]; !ok {
 			extracted[aType.(string)] = map[string][]byte{}
 		}
 
-		extracted[aType.(string)][dashboardName + ".json"] = data
+		extracted[aType.(string)][dashboardName+".json"] = data
 	}
 
 	return extracted, nil
@@ -476,8 +475,8 @@ func replaceBlacklistedWords(data []byte) []byte {
 }
 
 func prependModuleNameToDashboard(data []byte, moduleName string) []byte {
-	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/" + moduleName + "-"), []byte("/app/kibana#/dashboard/"))
-	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"), []byte("/app/kibana#/dashboard/" + moduleName + "-"))
+	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+moduleName+"-"), []byte("/app/kibana#/dashboard/"))
+	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"), []byte("/app/kibana#/dashboard/"+moduleName+"-"))
 	return data
 }
 
