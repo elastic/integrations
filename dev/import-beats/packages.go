@@ -428,6 +428,9 @@ func writeDoc(docsPath string, doc docContent, aPackage packageContent) error {
 		t = template.Must(t.Parse("TODO"))
 	} else {
 		t, err = t.Funcs(template.FuncMap{
+			"event": func(dataStream string) (string, error) {
+				return "TODO", nil
+			},
 			"fields": func(dataStream string) (string, error) {
 				return renderExportedFields(dataStream, aPackage.dataStreams)
 			},
