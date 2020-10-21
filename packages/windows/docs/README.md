@@ -94,6 +94,7 @@ The Windows `forwarded` dataset provides events from the Windows
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.module | Name of the module this data is coming from. | keyword |
 | event.original | Raw text message of entire event. | keyword |
+| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.sequence | Sequence number of the event. | long |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.code_signature.status | Additional information about the certificate status. | keyword |
@@ -106,6 +107,8 @@ The Windows `forwarded` dataset provides events from the Windows
 | group.domain | Name of the directory the group is a member of. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
+| host.ip | Host ip addresses. | ip |
+| log.level | Log level of the log event. | keyword |
 | network.direction | Direction of the network traffic. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
@@ -299,16 +302,20 @@ The Windows `powershell` dataset provides events from the Windows
 | dataset.type | Dataset type. | constant_keyword |
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
+| event.code | Identification code for this event. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.module | Name of the module this data is coming from. | keyword |
 | event.original | Raw text message of entire event. | keyword |
+| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.sequence | Sequence number of the event. | long |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.directory | Directory where the file is located. | keyword |
 | file.extension | File extension. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. | keyword |
+| host.ip | Host ip addresses. | ip |
+| log.level | Log level of the log event. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
@@ -493,16 +500,20 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | dataset.type | Dataset type. | constant_keyword |
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
+| event.code | Identification code for this event. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.module | Name of the module this data is coming from. | keyword |
 | event.original | Raw text message of entire event. | keyword |
+| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.sequence | Sequence number of the event. | long |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.directory | Directory where the file is located. | keyword |
 | file.extension | File extension. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. | keyword |
+| host.ip | Host ip addresses. | ip |
+| log.level | Log level of the log event. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
@@ -693,10 +704,13 @@ The Windows `security` dataset provides events from the Windows
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.module | Name of the module this data is coming from. | keyword |
+| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | group.domain | Name of the directory the group is a member of. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
+| host.ip | Host ip addresses. | ip |
+| log.level | Log level of the log event. | keyword |
 | process.command_line | Full command line that started the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
@@ -767,10 +781,12 @@ The Windows `security` dataset provides events from the Windows
 | winlog.event_data.NewProcessId |  | keyword |
 | winlog.event_data.NewProcessName |  | keyword |
 | winlog.event_data.NewSchemeGuid |  | keyword |
+| winlog.event_data.NewTargetUserName |  | keyword |
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NominalFrequency |  | keyword |
 | winlog.event_data.Number |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
+| winlog.event_data.OldTargetUserName |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.Path |  | keyword |
@@ -880,9 +896,11 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
 | error.code | Error code describing the error. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
+| event.code | Identification code for this event. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.module | Name of the module this data is coming from. | keyword |
+| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.code_signature.status | Additional information about the certificate status. | keyword |
 | file.code_signature.subject_name | Subject name of the code signer | keyword |
@@ -891,6 +909,8 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | file.extension | File extension. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. | keyword |
+| host.ip | Host ip addresses. | ip |
+| log.level | Log level of the log event. | keyword |
 | network.direction | Direction of the network traffic. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
