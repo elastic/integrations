@@ -25,7 +25,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | client.port | Port of the client. | long |
 | client.user.name | Short name or login of the user. | keyword |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
@@ -62,6 +62,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | event.timezone | Event time zone. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.type | File type (file, dir, or symlink). | keyword |
+| hostname | Name of host parsed from syslog message. | keyword |
 | http.request.referer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. | object |
@@ -70,6 +71,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | Log message optimized for viewing in a log viewer. | text |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
@@ -93,6 +95,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.destination.nat.ip | Post-NAT destination IP. | ip |
 | panw.panos.destination.nat.port | Post-NAT destination port. | long |
 | panw.panos.destination.zone | Destination zone for this session. | keyword |
+| panw.panos.endreason | The reason a session terminated. | keyword |
 | panw.panos.file.hash | Binary hash for a threat file sent to be analyzed by the WildFire service. | keyword |
 | panw.panos.flow_id | Internal numeric identifier for each session. | keyword |
 | panw.panos.network.nat.community_id | Community ID flow-hash for the NAT 5-tuple. | keyword |
@@ -103,11 +106,14 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.source.nat.ip | Post-NAT source IP. | ip |
 | panw.panos.source.nat.port | Post-NAT source port. | long |
 | panw.panos.source.zone | Source zone for this session. | keyword |
+| panw.panos.sub_type | Specifies the sub type of the log | keyword |
 | panw.panos.threat.id | Palo Alto Networks identifier for the threat. | keyword |
 | panw.panos.threat.name | Palo Alto Networks name for the threat. | keyword |
 | panw.panos.threat.resource | URL or file name for a threat. | keyword |
+| panw.panos.type | Specifies the type of the log | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
+| related.host | All the host identifiers seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | rule.name | Rule name | keyword |
@@ -137,6 +143,11 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | source.port | Port of the source. | long |
 | source.user.email | User email address. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility | Syslog numeric facility of the event. | long |
+| syslog.facility_label | Syslog text-based facility of the event. | keyword |
+| syslog.priority | Syslog priority of the event. | long |
+| syslog.severity_label | Syslog text-based severity of the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
