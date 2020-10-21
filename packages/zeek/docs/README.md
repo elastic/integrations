@@ -24,12 +24,9 @@ which contains packet loss rate data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
@@ -60,12 +57,9 @@ contains TCP/UDP/ICMP connection data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -143,12 +137,9 @@ contains Distributed Computing Environment/RPC data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -212,12 +203,9 @@ DHCP lease data.
 | @timestamp | Event timestamp. | date |
 | client.address | Client network address. | keyword |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
@@ -274,12 +262,9 @@ requests and replies.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -341,12 +326,9 @@ activity.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -436,12 +418,9 @@ protocol detection failures.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -502,12 +481,9 @@ file analysis results.
 | @timestamp | Event timestamp. | date |
 | client.ip | IP address of the client. | ip |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
@@ -569,12 +545,9 @@ activity.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -656,12 +629,9 @@ HTTP requests and replies.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -760,12 +730,9 @@ intelligence data matches.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -834,12 +801,9 @@ commands and responses.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -913,12 +877,9 @@ contains kerberos data.
 | @timestamp | Event timestamp. | date |
 | client.address | Client network address. | keyword |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1012,12 +973,9 @@ modbus commands and responses.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1078,12 +1036,9 @@ MySQL data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1146,12 +1101,9 @@ Zeek notices.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1236,12 +1188,9 @@ LAN Manager(NTLM) data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1310,12 +1259,9 @@ Online Certificate Status Protocol (OCSP) data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
@@ -1352,12 +1298,9 @@ portable executable data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
@@ -1401,12 +1344,9 @@ RADIUS authentication attempts.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1476,12 +1416,9 @@ data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1556,12 +1493,9 @@ Remote Framebuffer (RFB) data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1629,12 +1563,9 @@ data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1716,12 +1647,9 @@ contains SMB commands.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1799,12 +1727,9 @@ contains SMB file data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1882,12 +1807,9 @@ which contains SMB trees.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -1949,12 +1871,9 @@ SMTP transactions..
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2036,12 +1955,9 @@ SNMP messages.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2108,12 +2024,9 @@ SOCKS proxy requests.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2182,12 +2095,9 @@ connection data.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2259,12 +2169,9 @@ SSL/TLS handshake info.
 | @timestamp | Event timestamp. | date |
 | client.address | Client network address. | keyword |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2380,12 +2287,9 @@ memory/event/packet/lag statistics.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
@@ -2435,12 +2339,9 @@ syslog messages.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2501,12 +2402,9 @@ contains traceroute detections.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2559,12 +2457,9 @@ tunneling protocol events.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2622,12 +2517,9 @@ unexpected network-level activity.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -2687,12 +2579,9 @@ X.509 certificate info.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
