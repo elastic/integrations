@@ -153,6 +153,7 @@ This dataset is available on:
 | host.architecture | Operating system architecture. | keyword |
 | host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float |
 | host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | scaled_float |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
