@@ -49,6 +49,7 @@ pipeline {
       }
       post {
         always {
+          sh(label: 'Delete "empty" XML result files', script: 'find .elastic-package/tmp/test/reports/ -type f -name *.xml -size -100c -delete')
           archiveArtifacts(allowEmptyArchive: true, artifacts: '.elastic-package/tmp/test/reports/*.xml')
           junit(allowEmptyResults: false,
                 keepLongStdio: true,
