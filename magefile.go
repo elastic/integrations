@@ -226,11 +226,11 @@ func Test() {
 }
 
 func testPipeline() error {
-	return runElasticPackageOnAllIntegrations("test", "pipeline")
+	return runElasticPackageOnAllIntegrations("test", "pipeline", "--report-format", "xUnit", "--report-output", "file")
 }
 
 func testSystem() error {
-	return runElasticPackageOnAllIntegrations("test", "system")
+	return runElasticPackageOnAllIntegrations("test", "system", "--report-format", "xUnit", "--report-output", "file")
 }
 
 func bootUpStack() error {
