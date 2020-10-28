@@ -34,6 +34,7 @@ Access logs collects the nginx access logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -41,17 +42,24 @@ Access logs collects the nginx access logs.
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | nginx.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
+| related.ip | All of the IPs seen on your event. | ip |
+| source.address | An IP address, a domain, a unix socket | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source | ip |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
@@ -102,22 +110,27 @@ Error logs collects the ingress controller logs.
 | nginx.ingress_controller.upstream.alternative_name | The name of the alternative upstream. | text |
 | nginx.ingress_controller.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
 | nginx.ingress_controller.upstream.name | The name of the upstream. | text |
-| nginx.ingress_controller.upstream.port | The port of the upstream server. | long |
+| nginx.ingress_controller.upstream.port | The port of the upstream server. | keyword |
 | nginx.ingress_controller.upstream.response.length | The length of the response obtained from the upstream server | long |
 | nginx.ingress_controller.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
 | nginx.ingress_controller.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| source.address | IP address, domain or unix socket. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source. | ip |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
 
 
 ## Metrics
