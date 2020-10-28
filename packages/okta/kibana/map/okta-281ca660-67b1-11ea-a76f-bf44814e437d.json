@@ -1,37 +1,10 @@
 {
     "attributes": {
-        "bounds": {
-            "coordinates": [
-                [
-                    [
-                        -180,
-                        74.14342
-                    ],
-                    [
-                        -180,
-                        -58.35006
-                    ],
-                    [
-                        180,
-                        -58.35006
-                    ],
-                    [
-                        180,
-                        74.14342
-                    ],
-                    [
-                        -180,
-                        74.14342
-                    ]
-                ]
-            ],
-            "type": "Polygon"
-        },
         "description": "",
         "layerListJSON": [
             {
                 "alpha": 1,
-                "id": "2c7b49fb-3fb5-4e18-b27f-fabe930971f3",
+                "id": "6908e81b-1695-4445-aee4-8bc8c9f65600",
                 "label": null,
                 "maxZoom": 24,
                 "minZoom": 0,
@@ -45,20 +18,19 @@
             },
             {
                 "alpha": 0.75,
-                "id": "a10fa758-30ad-4e2a-bf9d-472e133a7f17",
-                "joins": [],
-                "label": "CloudTrail Soure Location",
+                "id": "dc52e707-92d7-4de7-becf-a3a8bfaa2c2d",
+                "label": "Okta ",
                 "maxZoom": 24,
                 "minZoom": 0,
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset:aws.cloudtrail"
+                    "query": "data_stream.dataset : \"okta.system\" "
                 },
                 "sourceDescriptor": {
                     "applyGlobalQuery": true,
-                    "filterByMapBounds": true,
-                    "geoField": "source.geo.location",
-                    "id": "7bfe2df9-9398-4f1a-8cf7-b57aa5f3f31e",
+                    "filterByMapBounds": false,
+                    "geoField": "client.geo.location",
+                    "id": "4b8bd321-4b90-4d97-83e0-2b12bf091f66",
                     "indexPatternRefName": "layer_1_source_index_pattern",
                     "scalingType": "LIMIT",
                     "sortField": "",
@@ -149,10 +121,32 @@
         ],
         "mapStateJSON": {
             "center": {
-                "lat": 19.94277,
-                "lon": 0
+                "lat": 26.54701,
+                "lon": -44.69098
             },
-            "filters": [],
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "logs-*",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": {
+                            "query": "okta.system"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "data_stream.dataset": "okta.system"
+                        }
+                    }
+                }
+            ],
             "query": {
                 "language": "kuery",
                 "query": ""
@@ -162,18 +156,24 @@
                 "isPaused": false
             },
             "timeFilters": {
-                "from": "now-15m",
+                "from": "now-15w",
                 "to": "now"
             },
-            "zoom": 1.97
+            "zoom": 2.75
         },
-        "title": "CloudTrail Source Location [Logs AWS]",
+        "title": "Geolocation [Logs Okta]",
         "uiStateJSON": {
             "isLayerTOCOpen": true,
             "openTOCDetails": []
         }
     },
-    "id": "dae24080-739a-11ea-a345-f985c61fe654",
+    "id": "okta-281ca660-67b1-11ea-a76f-bf44814e437d",
+    "migrationVersion": {
+        "map": "7.9.0"
+    },
+    "namespaces": [
+        "default"
+    ],
     "references": [
         {
             "id": "logs-*",
