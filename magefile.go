@@ -8,6 +8,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -44,7 +45,7 @@ func Check() error {
 
 // Lint lint checks every package.
 func Lint() error {
-	return runElasticPackageOnAllIntegrations("lint")
+	return runElasticPackageOnAllIntegrations(true, "lint")
 }
 
 // Format adds license headers, formats .go files with goimports, and formats
@@ -76,7 +77,7 @@ func Build() error {
 }
 
 func buildIntegrations() error {
-	return runElasticPackageOnAllIntegrations("build")
+	return runElasticPackageOnAllIntegrations(true, "build")
 }
 
 func dryRunPackageRegistry() error {
@@ -148,7 +149,7 @@ func Reload() error {
 
 // Format method formats integrations.
 func formatIntegrations() error {
-	return runElasticPackageOnAllIntegrations("format")
+	return runElasticPackageOnAllIntegrations(true, "format")
 }
 
 // GoImports executes goimports against all .go files in and below the CWD. It
@@ -221,20 +222,32 @@ func Test() {
 	mg.Deps(bootUpStack)
 	defer tearDownStack()
 
-	mg.Deps(TestPipeline)
-	mg.Deps(testSystem)
+	var failed bool
+	err := testPipeline()
+	if err != nil {
+		failed = true
+	}
+
+	err = testSystem()
+	if err != nil {
+		failed = true
+	}
+
+	if failed {
+		log.Fatal("testing failed")
+	}
 }
 
-func TestPipeline() error {
+func testPipeline() error {
 	cmdArgs := []string{"test", "pipeline"}
 	cmdArgs = append(cmdArgs, strings.Split(os.Getenv("TEST_RUNNER_CMD_ARGS"), " ")...)
-	return runElasticPackageOnAllIntegrations(cmdArgs...)
+	return runElasticPackageOnAllIntegrations(false, cmdArgs...)
 }
 
 func testSystem() error {
 	cmdArgs := []string{"test", "system"}
 	cmdArgs = append(cmdArgs, strings.Split(os.Getenv("TEST_RUNNER_CMD_ARGS"), " ")...)
-	return runElasticPackageOnAllIntegrations(cmdArgs...)
+	return runElasticPackageOnAllIntegrations(false, cmdArgs...)
 }
 
 func bootUpStack() error {
@@ -280,7 +293,7 @@ func tearDownStack() error {
 
 // runElasticPackageOnAllIntegrations runs the `elastic-package <subCommand>` tool on all
 // packages with the given subCommand.
-func runElasticPackageOnAllIntegrations(subCommandWithArgs ...string) error {
+func runElasticPackageOnAllIntegrations(failFast bool, subCommandWithArgs ...string) error {
 	packagePaths, err := findIntegrations()
 	if err != nil {
 		return err
@@ -291,12 +304,19 @@ func runElasticPackageOnAllIntegrations(subCommandWithArgs ...string) error {
 		return errors.Wrap(err, "getwd failed")
 	}
 
+	var failed bool
 	for _, packagePath := range packagePaths {
 		fmt.Printf("%s:\n", packagePath)
 		err = runElasticPackageInWorkDir(filepath.Join(workDir, packagePath), subCommandWithArgs...)
-		if err != nil {
+		if err != nil && failFast {
 			return err
 		}
+		if err != nil {
+			failed = true
+		}
+	}
+	if failed {
+		return fmt.Errorf("command failed: elastic-package %s", strings.TrimSpace(strings.Join(subCommandWithArgs, " ")))
 	}
 	return nil
 }
