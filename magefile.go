@@ -221,16 +221,20 @@ func Test() {
 	mg.Deps(bootUpStack)
 	defer tearDownStack()
 
-	mg.Deps(testPipeline)
+	mg.Deps(TestPipeline)
 	mg.Deps(testSystem)
 }
 
-func testPipeline() error {
-	return runElasticPackageOnAllIntegrations("test", "pipeline", "--report-format", "xUnit", "--report-output", "file")
+func TestPipeline() error {
+	cmdArgs := []string{"test", "pipeline"}
+	cmdArgs = append(cmdArgs, strings.Split(os.Getenv("TEST_RUNNER_CMD_ARGS"), " ")...)
+	return runElasticPackageOnAllIntegrations(cmdArgs...)
 }
 
 func testSystem() error {
-	return runElasticPackageOnAllIntegrations("test", "system", "--report-format", "xUnit", "--report-output", "file")
+	cmdArgs := []string{"test", "system"}
+	cmdArgs = append(cmdArgs, strings.Split(os.Getenv("TEST_RUNNER_CMD_ARGS"), " ")...)
+	return runElasticPackageOnAllIntegrations(cmdArgs...)
 }
 
 func bootUpStack() error {
