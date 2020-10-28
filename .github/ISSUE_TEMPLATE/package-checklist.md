@@ -1,5 +1,5 @@
 ---
-name: New Module / Dataset
+name: Integration / Dataset creation or update
 about: "Issue to track the creation or update of a new package or dataset."
 labels: package
 
@@ -18,6 +18,7 @@ This checklist is intended for Devs which create or update a package to make sur
 * [ ] Documentation
 * [ ] Fields follow [ECS](https://github.com/elastic/ecs) and [naming conventions](https://www.elastic.co/guide/en/beats/devguide/master/event-conventions.html)
 * [ ] Dashboards exists (if applicable)
+* [ ] Screenshots of added / updated dashboards
 
 ## Log datasets
 
@@ -27,9 +28,8 @@ This checklist is intended for Devs which create or update a package to make sur
 
 ## Metric datasets
 
-* [ ] Example `data.json` exists and an automated way to generate it exists
-* [ ] Test environment in Docker exist for integration tests
+* [ ] Sample event (`sample_event.json`) exists
 
-## Additional Requirements for moving to GA
+## New Packages
 
-_TODO_
+* [ ] Screenshot of the Fleet "Add Integration" Page.
