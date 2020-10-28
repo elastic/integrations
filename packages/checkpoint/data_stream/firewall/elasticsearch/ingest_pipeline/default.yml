@@ -1,6 +1,9 @@
 ---
 description: Pipeline for parsing checkpoint firewall logs
 processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
 - grok:
     field: message
     patterns:
@@ -38,10 +41,14 @@ processors:
     - message
     - host
     ignore_missing: true
-- set:
-    field: '@timestamp'
-    value: '{{syslog5424_ts}}'
-    if: ctx.checkpoint?.time == null
+- rename:
+    field: "@timestamp"
+    target_field: "event.created"
+    ignore_missing: true
+- date:
+    field: "syslog5424_ts"
+    formats: ["ISO8601", "UNIX"]
+    if: "ctx.checkpoint?.time == null"
 - set:
     field: event.module
     value: checkpoint
@@ -158,7 +165,7 @@ processors:
     target_field: source.nat.port
     type: long
     ignore_failure: true
-    ignore_missing: true 
+    ignore_missing: true
     if: "ctx.checkpoint?.xlatesport != '0'"
 - rename:
     field: checkpoint.mac_source_address
@@ -576,10 +583,10 @@ processors:
     field: checkpoint.industry_reference
     target_field: vulnerability.id
     ignore_missing: true
-- rename:
-    field: checkpoint.time
-    target_field: '@timestamp'
-    ignore_missing: true
+- date:
+    field: "checkpoint.time"
+    formats: ["ISO8601", "UNIX"]
+    if: "ctx.checkpoint?.time != null"
 - rename:
     field: checkpoint.message
     target_field: message
@@ -692,7 +699,7 @@ processors:
     field: client.nat.port
     type: long
     ignore_failure: true
-    ignore_missing: true 
+    ignore_missing: true
 - convert:
     field: client.bytes
     type: long
@@ -712,7 +719,7 @@ processors:
     field: server.nat.port
     type: long
     ignore_failure: true
-    ignore_missing: true 
+    ignore_missing: true
 - convert:
     field: server.bytes
     type: long
@@ -722,7 +729,7 @@ processors:
     field: server.packets
     type: long
     ignore_failure: true
-    ignore_missing: true 
+    ignore_missing: true
 - script:
     lang: painless
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
@@ -793,6 +800,7 @@ processors:
     - checkpoint.xlatesrc
     - checkpoint.xlatedst
     - checkpoint.uid
+    - checkpoint.time
     - syslog5424_ts
     ignore_missing: true
 on_failure:
