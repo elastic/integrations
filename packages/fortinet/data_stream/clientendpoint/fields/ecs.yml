@@ -11,6 +11,7 @@
 
         This field is not indexed and doc_values are disabled so it can''t be queried but the value can be retrieved from `_source`.'
       example: Sep 19 08:26:10 localhost My log
+      index: false
     - name: level
       level: core
       type: keyword
@@ -86,16 +87,6 @@
 
         Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense.'
       example: success
-    - name: category
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.
-
-        `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory.
-
-        This field is an array. This will allow proper categorization of some events that fall in multiple categories.'
-      example: authentication
     - name: timezone
       level: extended
       type: keyword
@@ -104,8 +95,15 @@
 
         Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00").'
     - name: ingested
+      level: core
       type: date
-      description: Timestamp when an event arrived in the central data store.
+      description: 'Timestamp when an event arrived in the central data store.
+
+        This is different from `@timestamp`, which is when the event originally occurred.  It''s also different from `event.created`, which is meant to capture the first time an agent saw the event.
+
+        In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`.'
+      example: '2016-05-23T08:05:35.101Z'
+      default_field: false
 - name: '@timestamp'
   level: core
   required: true
@@ -118,6 +116,15 @@
 
     Required field for all events.'
   example: '2016-05-23T08:05:34.853Z'
+- name: related
+  type: group
+  fields:
+    - name: user
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All the user names seen on your event.
+      default_field: false
 - name: user
   type: group
   fields:
@@ -154,7 +161,7 @@
       level: core
       type: keyword
       ignore_above: 1024
-      description: Unique identifiers of the user.
+      description: Unique identifier of the user.
 - name: message
   level: core
   type: text
@@ -170,9 +177,7 @@
     - name: ip
       level: core
       type: ip
-      description: 'IP address of the source.
-
-        Can be one or multiple IPv4 or IPv6 addresses.'
+      description: IP address of the source (IPv4 or IPv6).
     - name: port
       level: core
       type: long
@@ -239,6 +244,28 @@
           ignore_above: 1024
           description: City name.
           example: Montreal
+    - name: as
+      type: group
+      fields:
+        - name: number
+          level: extended
+          type: long
+          description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+          example: 15169
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              multi_fields:
+                - name: text
+                  type: text
+                  norms: false
+                  default_field: false
+              description: Organization name.
+              example: Google LLC
 - name: host
   type: group
   fields:
@@ -271,9 +298,7 @@
     - name: ip
       level: core
       type: ip
-      description: 'IP address of the destination.
-
-        Can be one or multiple IPv4 or IPv6 addresses.'
+      description: IP address of the destination (IPv4 or IPv6).
     - name: port
       level: core
       type: long
@@ -340,6 +365,28 @@
           ignore_above: 1024
           description: City name.
           example: Montreal
+    - name: as
+      type: group
+      fields:
+        - name: number
+          level: extended
+          type: long
+          description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+          example: 15169
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              multi_fields:
+                - name: text
+                  type: text
+                  norms: false
+                  default_field: false
+              description: Organization name.
+              example: Google LLC
 - name: network
   type: group
   fields:
@@ -526,7 +573,7 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for google.com is "com".
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
 
         This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
       example: co.uk
@@ -536,10 +583,10 @@
       ignore_above: 1024
       description: 'The highest registered url domain, stripped of the subdomain.
 
-        For example, the registered domain for "foo.google.com" is "google.com".
+        For example, the registered domain for "foo.example.com" is "example.com".
 
         This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
-      example: google.com
+      example: example.com
 - name: service
   type: group
   fields:
@@ -561,6 +608,19 @@
       type: keyword
       ignore_above: 1024
       description: Server domain.
+- name: group
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+    - name: id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
 - name: process
   type: group
   fields:
@@ -655,23 +715,6 @@
 - name: http
   type: group
   fields:
-    - name: response
-      type: group
-      fields:
-        - name: body
-          type: group
-          fields:
-            - name: content
-              level: extended
-              type: keyword
-              ignore_above: 1024
-              multi_fields:
-                - name: text
-                  type: text
-                  norms: false
-                  default_field: false
-              description: The full HTTP response body.
-              example: Hello world
     - name: request
       type: group
       fields:
@@ -687,8 +730,12 @@
           ignore_above: 1024
           description: 'HTTP request method.
 
-            The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".'
-          example: get, post, put
+            Prior to ECS 1.6.0 the following guidance was provided:
+
+            "The field value must be normalized to lowercase for querying."
+
+            As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0'
+          example: GET, POST, PUT, PoST
 - name: geo
   type: group
   fields:
@@ -742,13 +789,17 @@
           description: 'The domain name to which this resource record pertains.
 
             If a chain of CNAME is being resolved, each answer''s `name` should be the one that corresponds with the answer''s `data`. It should not simply be the original `question.name` repeated.'
-          example: www.google.com
+          example: www.example.com
         - name: type
           level: extended
           type: keyword
           ignore_above: 1024
           description: The type of data contained in this resource record.
           example: CNAME
-- name: related.hosts
-  type: keyword
-  description: All the host identifiers seen on your event.
+- name: error
+  type: group
+  fields:
+    - name: message
+      level: core
+      type: text
+      description: Error message.
