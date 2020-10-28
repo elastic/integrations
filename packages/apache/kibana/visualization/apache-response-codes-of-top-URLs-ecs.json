@@ -7,37 +7,43 @@
             }
         },
         "savedSearchRefName": "search_0",
-        "title": "Operating systems breakdown [Logs Apache] ECS",
-        "uiStateJSON": {},
+        "title": "Top URLs by response code [Logs Apache] ECS",
+        "uiStateJSON": {
+            "vis": {
+                "colors": {
+                    "200": "#7EB26D",
+                    "404": "#EF843C"
+                }
+            }
+        },
         "version": 1,
         "visState": {
             "aggs": [
                 {
                     "enabled": true,
                     "id": "1",
-                    "params": {
-                        "field": "source.address"
-                    },
+                    "params": {},
                     "schema": "metric",
-                    "type": "cardinality"
-                },
-                {
-                    "enabled": true,
-                    "id": "2",
-                    "params": {
-                        "field": "user_agent.os.name",
-                        "order": "desc",
-                        "orderBy": "1",
-                        "size": 5
-                    },
-                    "schema": "segment",
-                    "type": "terms"
+                    "type": "count"
                 },
                 {
                     "enabled": true,
                     "id": "3",
                     "params": {
-                        "field": "user_agent.os.version",
+                        "customLabel": "URL",
+                        "field": "url.original",
+                        "order": "desc",
+                        "orderBy": "1",
+                        "size": 5
+                    },
+                    "schema": "split",
+                    "type": "terms"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "field": "http.response.status_code",
                         "order": "desc",
                         "orderBy": "1",
                         "size": 5
@@ -50,15 +56,16 @@
             "params": {
                 "addLegend": true,
                 "addTooltip": true,
-                "isDonut": true,
-                "legendPosition": "bottom",
+                "isDonut": false,
+                "legendPosition": "right",
+                "row": false,
                 "shareYAxis": true
             },
-            "title": "Apache operating systems ECS",
+            "title": "Apache response codes of top URLs ECS",
             "type": "pie"
         }
     },
-    "id": "apache-Apache-operating-systems-ecs",
+    "id": "apache-response-codes-of-top-URLs-ecs",
     "migrationVersion": {
         "visualization": "7.8.0"
     },

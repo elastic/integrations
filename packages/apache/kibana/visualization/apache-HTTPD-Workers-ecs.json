@@ -7,27 +7,21 @@
             }
         },
         "savedSearchRefName": "search_0",
-        "title": "Response codes over time [Logs Apache] ECS",
-        "uiStateJSON": {
-            "vis": {
-                "colors": {
-                    "200": "#629E51",
-                    "404": "#EF843C"
-                }
-            }
-        },
+        "title": "Workers [Metrics Apache] ECS",
+        "uiStateJSON": {},
         "version": 1,
         "visState": {
             "aggs": [
                 {
-                    "enabled": true,
                     "id": "1",
-                    "params": {},
+                    "params": {
+                        "customLabel": "Busy workers",
+                        "field": "apache.status.workers.busy"
+                    },
                     "schema": "metric",
-                    "type": "count"
+                    "type": "avg"
                 },
                 {
-                    "enabled": true,
                     "id": "2",
                     "params": {
                         "extended_bounds": {},
@@ -39,16 +33,25 @@
                     "type": "date_histogram"
                 },
                 {
-                    "enabled": true,
                     "id": "3",
                     "params": {
-                        "field": "http.response.status_code",
+                        "customLabel": "Hostname",
+                        "field": "apache.status.hostname",
                         "order": "desc",
                         "orderBy": "1",
                         "size": 5
                     },
-                    "schema": "group",
+                    "schema": "split",
                     "type": "terms"
+                },
+                {
+                    "id": "4",
+                    "params": {
+                        "customLabel": "Idle workers",
+                        "field": "apache.status.workers.idle"
+                    },
+                    "schema": "metric",
+                    "type": "avg"
                 }
             ],
             "listeners": {},
@@ -57,25 +60,29 @@
                 "addTimeMarker": false,
                 "addTooltip": true,
                 "defaultYExtents": false,
-                "legendPosition": "right",
-                "mode": "stacked",
+                "drawLinesBetweenPoints": true,
+                "interpolate": "linear",
+                "radiusRatio": 9,
+                "row": true,
                 "scale": "linear",
                 "setYExtents": false,
                 "shareYAxis": true,
+                "showCircles": true,
+                "smoothLines": false,
                 "times": [],
                 "yAxis": {}
             },
-            "title": "Apache response codes over time ECS",
-            "type": "histogram"
+            "title": "Apache HTTPD - Workers ECS",
+            "type": "line"
         }
     },
-    "id": "apache-Apache-response-codes-over-time-ecs",
+    "id": "apache-HTTPD-Workers-ecs",
     "migrationVersion": {
         "visualization": "7.8.0"
     },
     "references": [
         {
-            "id": "Apache-access-logs-ecs",
+            "id": "Apache-HTTPD-ecs",
             "name": "search_0",
             "type": "search"
         }
