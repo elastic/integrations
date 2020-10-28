@@ -229,7 +229,7 @@ For network load balancer, please follow [enable access log for network load bal
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.elb.action_executed | The action executed when processing the request (forward, fixed-response, authenticate...). It can contain several values. | keyword |
-| aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | keyword |
+| aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | long |
 | aws.elb.backend.ip | The IP address of the backend processing this connection. | keyword |
 | aws.elb.backend.port | The port in the backend processing this connection. | keyword |
 | aws.elb.backend_processing_time.sec | The total time in seconds since the connection is sent to the backend till the backend starts responding. | float |
@@ -282,7 +282,7 @@ For network load balancer, please follow [enable access log for network load bal
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
-| source.port | Port of the source. | long |
+| source.port | Port of the source. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
