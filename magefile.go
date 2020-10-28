@@ -8,7 +8,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -234,7 +233,7 @@ func Test() {
 	}
 
 	if failed {
-		log.Fatal("testing failed")
+		panic("testing failed")
 	}
 }
 
