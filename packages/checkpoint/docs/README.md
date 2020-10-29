@@ -435,9 +435,9 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | client.user.id | Unique identifier of the user. | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Datastream dataset name. | constant_keyword |
-| data_stream.namespace | Datastream namespace. | constant_keyword |
-| data_stream.type | Datastream type. | constant_keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
@@ -468,8 +468,10 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. | keyword |
+| event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.end | Contains the date when the event ended. | date |
 | event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
 | event.outcome | The outcome of the event. | keyword |
