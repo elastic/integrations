@@ -1,0 +1,46 @@
+title: Windows perfmon metrics
+release: experimental
+type: metrics
+streams:
+  - input: windows/metrics
+    vars:
+      - name: perfmon.group_measurements_by_instance
+        type: bool
+        title: Perfmon Group Measurements By Instance
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: Enabling this option will send all measurements with a matching perfmon instance as part of a single event
+      - name: perfmon.ignore_non_existent_counters
+        type: bool
+        title: Perfmon Ignore Non Existent Counters
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: Enabling this option will make sure to ignore any errors caused by counters that do not exist
+      - name: perfmon.queries
+        type: yaml
+        title: Perfmon Queries
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - object: 'Process'
+            instance: ["*"]
+            counters:
+             - name: '% Processor Time'
+               field: cpu_perc
+               format: "float"
+             - name: "Working Set"
+        description: Will list the perfmon queries to execute, each query will have an `object` option, an optional `instance` contiguration and the actual counters
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+    title: Windows perfmon metrics
+    description: Collect Windows perfmon metrics

@@ -16,8 +16,8 @@ import (
 
 const sampleEventFile = "sample_event.json"
 
-func renderSampleEvent(options generateOptions, packageName, datasetName string) (string, error) {
-	eventPath := filepath.Join(options.packagesSourceDir, packageName, "dataset", datasetName, sampleEventFile)
+func renderSampleEvent(options generateOptions, packageName, dataStreamName string) (string, error) {
+	eventPath := filepath.Join(options.packagesSourceDir, packageName, "data_stream", dataStreamName, sampleEventFile)
 
 	body, err := ioutil.ReadFile(eventPath)
 	if err != nil {
@@ -31,7 +31,7 @@ func renderSampleEvent(options generateOptions, packageName, datasetName string)
 
 	var builder strings.Builder
 	builder.WriteString(fmt.Sprintf("An example event for `%s` looks as following:\n\n",
-		stripDatasetFolderSuffix(datasetName)))
+		stripDataStreamFolderSuffix(dataStreamName)))
 	builder.WriteString("```$json\n")
 	builder.Write(formatted)
 	builder.WriteString("\n```")
@@ -52,8 +52,8 @@ func formatSampleEvent(body []byte) ([]byte, error) {
 	return body, nil
 }
 
-func stripDatasetFolderSuffix(datasetName string) string {
-	datasetName = strings.ReplaceAll(datasetName, "_metrics", "")
-	datasetName = strings.ReplaceAll(datasetName, "_logs", "")
-	return datasetName
+func stripDataStreamFolderSuffix(dataStreamName string) string {
+	dataStreamName = strings.ReplaceAll(dataStreamName, "_metrics", "")
+	dataStreamName = strings.ReplaceAll(dataStreamName, "_logs", "")
+	return dataStreamName
 }

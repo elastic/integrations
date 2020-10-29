@@ -39,7 +39,7 @@ func createLogStreamVariables(manifestFile []byte) ([]util.Variable, error) {
 	return adjusted.Vars, nil
 }
 
-func createMetricStreamVariables(configFileContent []byte, moduleName, datasetName string) ([]util.Variable, error) {
+func createMetricStreamVariables(configFileContent []byte, moduleName, dataStreamName string) ([]util.Variable, error) {
 	var vars []util.Variable
 	if len(configFileContent) == 0 {
 		return vars, nil
@@ -55,7 +55,7 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, datasetNa
 
 	for _, moduleConfigEntry := range moduleConfig {
 		flatEntry := moduleConfigEntry.flatten()
-		related, err := isConfigEntryRelatedToMetricset(flatEntry, moduleName, datasetName)
+		related, err := isConfigEntryRelatedToMetricset(flatEntry, moduleName, dataStreamName)
 		if err != nil {
 			return nil, errors.Wrapf(err, "checking if config entry is related failed")
 		}
@@ -69,7 +69,7 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, datasetNa
 				continue // already processed this config option
 			}
 
-			if related || strings.HasPrefix(name, fmt.Sprintf("%s.", datasetName)) {
+			if related || strings.HasPrefix(name, fmt.Sprintf("%s.", dataStreamName)) {
 				var isArray bool
 				variableType := determineInputVariableType(name, value)
 				if variableType == "yaml" {
@@ -147,23 +147,23 @@ func shouldConfigOptionBeIgnored(optionName string, value interface{}) bool {
 	return false
 }
 
-// isConfigEntryRelatedToMetricset method checks if the configuration entry may affect the dataset settings,
-// in other words, checks if the "metricsets" field is present and contains the given datasetName.
-func isConfigEntryRelatedToMetricset(entry mapStr, moduleName, datasetName string) (bool, error) {
+// isConfigEntryRelatedToMetricset method checks if the configuration entry may affect the dataStream settings,
+// in other words, checks if the "metricsets" field is present and contains the given dataStreamName.
+func isConfigEntryRelatedToMetricset(entry mapStr, moduleName, dataStreamName string) (bool, error) {
 	var metricsetRelated bool
 	if metricsets, ok := entry["metricsets"]; ok {
 		metricsetsMapped, ok := metricsets.([]interface{})
 		if !ok {
-			return false, fmt.Errorf("mapping metricsets failed (moduleName: %s, datasetName: %s)",
-				moduleName, datasetName)
+			return false, fmt.Errorf("mapping metricsets failed (moduleName: %s, dataStreamName: %s)",
+				moduleName, dataStreamName)
 		}
 		if len(metricsetsMapped) == 0 {
-			return false, fmt.Errorf("no metricsets defined (moduleName: %s, datasetName: %s)", moduleName,
-				datasetName)
+			return false, fmt.Errorf("no metricsets defined (moduleName: %s, dataStreamName: %s)", moduleName,
+				dataStreamName)
 		}
 
 		for _, metricset := range metricsetsMapped {
-			if metricset.(string) == datasetName {
+			if metricset.(string) == dataStreamName {
 				metricsetRelated = true
 				break
 			}

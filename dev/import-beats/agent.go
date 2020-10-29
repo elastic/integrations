@@ -26,12 +26,12 @@ func extractInputConfigFilename(configFilePath string) string {
 	return configFilePath[i+1:]
 }
 
-func createAgentContentForMetrics(moduleName, datasetName string, streams []util.Stream) (agentContent, error) {
+func createAgentContentForMetrics(moduleName, dataStreamName string, streams []util.Stream) (agentContent, error) {
 	inputName := moduleName + "/metrics"
 	vars := extractVarsFromStream(streams, inputName)
 
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("metricsets: [\"%s\"]\n", datasetName))
+	buffer.WriteString(fmt.Sprintf("metricsets: [\"%s\"]\n", dataStreamName))
 
 	for _, aVar := range vars {
 		variableName := aVar.Name

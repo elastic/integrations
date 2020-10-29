@@ -1,0 +1,354 @@
+---
+description: Pipeline for parsing Suricata EVE logs
+
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      value: "{{suricata.eve.http.http_method}}"
+      field: http.request.method
+      if: "ctx?.suricata?.eve?.http?.http_method != null"
+  - rename:
+      field: suricata.eve.http.status
+      target_field: http.response.status_code
+      ignore_missing: true
+  - append:
+      if: ctx.suricata?.eve?.http?.hostname != null
+      value: '{{suricata.eve.http.hostname}}'
+      field: destination.domain
+  - remove:
+      field: suricata.eve.http.hostname
+      ignore_failure: true
+  - script:
+      lang: painless
+      source: >
+        def domain = ctx.destination?.domain;
+        if (domain instanceof Collection) {
+          domain = domain.stream().distinct().collect(Collectors.toList());
+          if (domain.length == 1) {
+            domain = domain[0];
+          }
+          ctx.destination.domain = domain;
+        }
+      ignore_failure: true
+  - set:
+      if: "ctx?.network?.protocol == 'http'"
+      field: url.domain
+      value: '{{destination.domain}}'
+      ignore_empty_value: true
+  - grok:
+      field: suricata.eve.http.url
+      patterns:
+        - '%{PATH:url.path}(?:\?%{QUERY:url.query})?(?:#%{ANY:url.fragment})?'
+      ignore_missing: true
+      pattern_definitions:
+        PATH: '[^?#]*'
+        QUERY: '[^#]*'
+        ANY: '.*'
+  - rename:
+      field: suricata.eve.http.url
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.http.http_refer
+      target_field: http.request.referrer
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.http.length
+      target_field: http.response.body.bytes
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.fileinfo.filename
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.fileinfo.size
+      target_field: file.size
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - convert:
+      field: suricata.eve.alert.category
+      target_field: message
+      type: string
+      ignore_missing: true
+  - set:
+      field: rule.category
+      value: "{{suricata.eve.alert.category}}"
+      ignore_empty_value: true
+  - set:
+      field: rule.id
+      value: "{{suricata.eve.alert.signature_id}}"
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      value: "{{suricata.eve.alert.signature}}"
+      ignore_empty_value: true
+  - set:
+      field: suricata.eve.alert.action
+      value: denied
+      if:  "ctx?.suricata?.eve?.alert?.action == 'blocked'"
+  - append:
+      field: event.type
+      value: "{{suricata.eve.alert.action}}"
+      if: "ctx?.suricata?.eve?.alert?.action != null"
+  - remove:
+      field: suricata.eve.alert.action
+      ignore_failure: true
+  - rename:
+      field: suricata.eve.alert.severity
+      target_field: event.severity
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.flow.pkts_toclient
+      target_field: destination.packets
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.flow.pkts_toserver
+      target_field: source.packets
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.flow.bytes_toclient
+      target_field: destination.bytes
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.flow.bytes_toserver
+      target_field: source.bytes
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: >
+        long getOrZero(def map, def key) {
+          if (map!=null && map[key]!=null) {
+            return map[key];
+          }
+          return 0;
+        }
+        def network=ctx['network'], source=ctx['source'], dest=ctx['destination'];
+        def sp=getOrZero(source,'packets'), sb=getOrZero(source,'bytes'), dp=getOrZero(dest,'packets'), db=getOrZero(dest,'bytes');
+        if (sb+db+sp+dp > 0) {
+          if (network == null) {
+            network=new HashMap();
+            ctx['network']=network;
+          }
+          if (sb+db > 0) {
+            network['bytes'] = sb+db;
+          }
+          if(sp+dp>0) {
+            network['packets'] = sp+dp;
+          }
+        }
+  - date:
+      field: suricata.eve.flow.start
+      target_field: event.start
+      formats:
+        - ISO8601
+      ignore_failure: true
+  - date:
+      field: suricata.eve.flow.end
+      target_field: event.end
+      formats:
+        - ISO8601
+      ignore_failure: true
+  - script:
+      lang: painless
+      source: >
+        Instant ins(def d) {
+          try {
+            return Instant.parse(d);
+          } catch(Exception e) {
+            return null;
+          }
+        }
+        def ev = ctx['event'];
+        if (ev != null) {
+          def start = ins(ev['start']);
+          def end = ins(ev['end']);
+          if (start != null && end != null && !start.isAfter(end)) {
+            ev['duration'] = Duration.between(start,end).toNanos();
+          }
+        }
+  - lowercase:
+      field: suricata.eve.proto
+      target_field: network.transport
+      ignore_missing: true
+  - user_agent:
+      field: suricata.eve.http.http_user_agent
+      ignore_missing: true
+  - geoip:
+      if: ctx.source?.geo == null
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      if: ctx.destination?.geo == null
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - uppercase:
+      field: tls.server.hash.sha1
+      ignore_missing: true
+  - split:
+      field: tls.server.hash.sha1
+      separator: ":"
+      ignore_missing: true
+  - join:
+      field: tls.server.hash.sha1
+      separator: ""
+      ignore_failure: true
+  - append:
+      field: related.hash
+      value: "{{tls.server.hash.sha1}}"
+      if: "ctx?.tls?.server?.hash?.sha1 != null"
+  - gsub:
+      field: suricata.eve.tls.issuerdn
+      pattern: \\,
+      replacement: ""
+      ignore_missing: true
+  - kv:
+      field: suricata.eve.tls.issuerdn
+      field_split: ', '
+      value_split: '='
+      target_field: suricata.eve.tls.kv_issuerdn
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_issuerdn.C
+      target_field: tls.server.x509.issuer.country
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_issuerdn.CN
+      target_field: tls.server.x509.issuer.common_name
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_issuerdn.L
+      target_field: tls.server.x509.issuer.locality
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_issuerdn.O
+      target_field: tls.server.x509.issuer.organization
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_issuerdn.OU
+      target_field: tls.server.x509.issuer.organizational_unit
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_issuerdn.ST
+      target_field: tls.server.x509.issuer.state_or_province
+      ignore_missing: true
+  - gsub:
+      field: suricata.eve.tls.subject
+      pattern: \\,
+      replacement: ""
+      ignore_missing: true
+  - kv:
+      field: suricata.eve.tls.subject
+      field_split: ', '
+      value_split: '='
+      target_field: suricata.eve.tls.kv_subject
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_subject.C
+      target_field: tls.server.x509.subject.country
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_subject.CN
+      target_field: tls.server.x509.subject.common_name
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_subject.L
+      target_field: tls.server.x509.subject.locality
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_subject.O
+      target_field: tls.server.x509.subject.organization
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_subject.OU
+      target_field: tls.server.x509.subject.organizational_unit
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.tls.kv_subject.ST
+      target_field: tls.server.x509.subject.state_or_province
+      ignore_missing: true
+  - set:
+      field: tls.server.x509.serial_number
+      value: '{{suricata.eve.tls.serial}}'
+      ignore_empty_value: true
+  - gsub:
+      field: tls.server.x509.serial_number
+      pattern: ':'
+      replacement: ''
+      ignore_missing: true
+  - date:
+      field: suricata.eve.tls.notafter
+      target_field: tls.server.not_after
+      formats:
+        - ISO8601
+      if: ctx.suricata?.eve?.tls?.notafter != null
+  - date:
+      field: suricata.eve.tls.notbefore
+      target_field: tls.server.not_before
+      formats:
+        - ISO8601
+      if: ctx.suricata?.eve?.tls?.notbefore != null
+  - set:
+      field: tls.server.x509.not_after
+      value: '{{tls.server.not_after}}'
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.not_before
+      value: '{{tls.server.not_before}}'
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{url.domain}}'
+      if: ctx.url?.domain != null && ctx.url?.domain != ''
+      allow_duplicates: false
+  - remove:
+      field:
+        - suricata.eve.app_proto
+        - suricata.eve.flow.end
+        - suricata.eve.flow.start
+        - suricata.eve.http.http_method
+        - suricata.eve.http.http_user_agent
+        - suricata.eve.tls.kv_issuerdn
+        - suricata.eve.tls.kv_subject
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

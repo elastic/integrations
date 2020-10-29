@@ -25,11 +25,11 @@ var ignoredModules = map[string]bool{"apache2": true}
 
 type packageContent struct {
 	manifest       util.Package
-	datasets       datasetContentArray
+	dataStreams    dataStreamContentArray
 	images         []imageContent
 	kibana         kibanaContent
 	docs           []docContent
-	configTemplate configTemplateContent
+	policyTemplate policyTemplateContent
 }
 
 func newPackageContent(name string) packageContent {
@@ -53,22 +53,22 @@ func newPackageContent(name string) packageContent {
 	}
 }
 
-func (pc *packageContent) addDatasets(ds []datasetContent) {
+func (pc *packageContent) addDataStreams(ds []dataStreamContent) {
 	for _, dc := range ds {
-		for i, v := range pc.datasets {
+		for i, v := range pc.dataStreams {
 			if v.name == dc.name {
 				if v.beatType != dc.beatType {
-					pc.datasets[i].name = fmt.Sprintf("%s_%s", pc.datasets[i].name, pc.datasets[i].beatType)
+					pc.dataStreams[i].name = fmt.Sprintf("%s_%s", pc.dataStreams[i].name, pc.dataStreams[i].beatType)
 					dc.name = fmt.Sprintf("%s_%s", dc.name, dc.beatType)
-					pc.datasets = append(pc.datasets, dc)
+					pc.dataStreams = append(pc.dataStreams, dc)
 				} else {
 					log.Printf("Resolve naming conflict (packageName: %s, beatType: %s)", dc.name, dc.beatType)
-					pc.datasets[i] = dc
+					pc.dataStreams[i] = dc
 				}
 				break
 			}
 		}
-		pc.datasets = append(pc.datasets, dc)
+		pc.dataStreams = append(pc.dataStreams, dc)
 	}
 }
 
@@ -198,37 +198,37 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 			aPackage.docs = append(aPackage.docs, docs...)
 		}
 
-		// datasets
+		// dataStreams
 		var moduleTitle = "TODO"
 		if manifest.Title != nil {
 			moduleTitle = *manifest.Title
 		}
 
-		datasets, err := createDatasets(beatType, modulePath, moduleName, moduleTitle, moduleFields, filteredEcsModuleFieldNames, r.ecsFields)
+		dataStreams, err := createDataStreams(beatType, modulePath, moduleName, moduleTitle, moduleFields, filteredEcsModuleFieldNames, r.ecsFields)
 		if err != nil {
 			return err
 		}
-		datasets, inputVarsPerInputType, err := compactDatasetVariables(datasets)
+		dataStreams, inputVarsPerInputType, err := compactDataStreamVariables(dataStreams)
 		if err != nil {
 			return err
 		}
-		aPackage.addDatasets(datasets)
+		aPackage.addDataStreams(dataStreams)
 
-		// configTemplates
-		aPackage.configTemplate, err = updateConfigTemplate(aPackage.configTemplate, updateConfigTemplateParameters{
+		// policyTemplates
+		aPackage.policyTemplate, err = updatePolicyTemplate(aPackage.policyTemplate, updatePolicyTemplateParameters{
 			moduleName:  moduleName,
 			moduleTitle: moduleTitle,
 			packageType: beatType,
-			datasets:    datasets,
+			dataStreams: dataStreams,
 			inputVars:   inputVarsPerInputType,
 		})
 		if err != nil {
 			return err
 		}
-		manifest.ConfigTemplates = aPackage.configTemplate.toMetadataConfigTemplates()
+		manifest.PolicyTemplates = aPackage.policyTemplate.toMetadataPolicyTemplates()
 
 		// kibana
-		kibana, err := createKibanaContent(r.kibanaMigrator, modulePath, moduleName, datasets.names())
+		kibana, err := createKibanaContent(r.kibanaMigrator, modulePath, moduleName, dataStreams.names())
 		if err != nil {
 			return err
 		}
@@ -277,38 +277,38 @@ func (r *packageRepository) save(outputDir string) error {
 			return errors.Wrapf(err, "writing manifest file failed (path: %s)", manifestFilePath)
 		}
 
-		// dataset
-		for _, dataset := range content.datasets {
-			datasetPath := filepath.Join(packagePath, "dataset", dataset.name)
-			err := os.MkdirAll(datasetPath, 0755)
+		// dataStream
+		for _, dataStream := range content.dataStreams {
+			dataStreamPath := filepath.Join(packagePath, "data_stream", dataStream.name)
+			err := os.MkdirAll(dataStreamPath, 0755)
 			if err != nil {
-				return errors.Wrapf(err, "cannot make directory for dataset: '%s'", datasetPath)
+				return errors.Wrapf(err, "cannot make directory for dataStream: '%s'", dataStreamPath)
 			}
 
-			// dataset/manifest.yml
-			m, err := yaml.Marshal(dataset.manifest)
+			// dataStream/manifest.yml
+			m, err := yaml.Marshal(dataStream.manifest)
 			if err != nil {
-				return errors.Wrapf(err, "marshaling dataset manifest failed (datasetName: %s)", dataset.name)
+				return errors.Wrapf(err, "marshaling data stream manifest failed (dataStreamName: %s)", dataStream.name)
 			}
 
-			manifestFilePath := filepath.Join(datasetPath, "manifest.yml")
+			manifestFilePath := filepath.Join(dataStreamPath, "manifest.yml")
 			err = ioutil.WriteFile(manifestFilePath, m, 0644)
 			if err != nil {
-				return errors.Wrapf(err, "writing dataset manifest file failed (path: %s)", manifestFilePath)
+				return errors.Wrapf(err, "writing data stream manifest file failed (path: %s)", manifestFilePath)
 			}
 
-			// dataset/fields
-			if len(dataset.fields.files) > 0 {
-				datasetFieldsPath := filepath.Join(datasetPath, "fields")
-				err := os.MkdirAll(datasetFieldsPath, 0755)
+			// dataStream/fields
+			if len(dataStream.fields.files) > 0 {
+				dataStreamFieldsPath := filepath.Join(dataStreamPath, "fields")
+				err := os.MkdirAll(dataStreamFieldsPath, 0755)
 				if err != nil {
-					return errors.Wrapf(err, "cannot make directory for dataset fields: '%s'", datasetPath)
+					return errors.Wrapf(err, "cannot make directory for data stream fields: '%s'", dataStreamPath)
 				}
 
-				for fieldsFileName, definitions := range dataset.fields.files {
-					log.Printf("%s: write '%s' file\n", dataset.name, fieldsFileName)
+				for fieldsFileName, definitions := range dataStream.fields.files {
+					log.Printf("%s: write '%s' file\n", dataStream.name, fieldsFileName)
 
-					fieldsFilePath := filepath.Join(datasetFieldsPath, fieldsFileName)
+					fieldsFilePath := filepath.Join(dataStreamFieldsPath, fieldsFileName)
 					var fieldsFile []byte
 
 					stripped := definitions.stripped()
@@ -323,15 +323,15 @@ func (r *packageRepository) save(outputDir string) error {
 				}
 			}
 
-			// dataset/elasticsearch
-			if len(dataset.elasticsearch.ingestPipelines) > 0 {
-				ingestPipelinesPath := filepath.Join(datasetPath, "elasticsearch", util.DirIngestPipeline)
+			// dataStream/elasticsearch
+			if len(dataStream.elasticsearch.ingestPipelines) > 0 {
+				ingestPipelinesPath := filepath.Join(dataStreamPath, "elasticsearch", util.DirIngestPipeline)
 				err := os.MkdirAll(ingestPipelinesPath, 0755)
 				if err != nil {
-					return errors.Wrapf(err, "cannot make directory for dataset ingest pipelines: '%s'", ingestPipelinesPath)
+					return errors.Wrapf(err, "cannot make directory for data stream ingest pipelines: '%s'", ingestPipelinesPath)
 				}
 
-				for _, ingestPipeline := range dataset.elasticsearch.ingestPipelines {
+				for _, ingestPipeline := range dataStream.elasticsearch.ingestPipelines {
 					ingestPipelinePath := filepath.Join(ingestPipelinesPath, ingestPipeline.targetFileName)
 					log.Printf("write ingest pipeline file '%s'", ingestPipelinePath)
 
@@ -342,15 +342,15 @@ func (r *packageRepository) save(outputDir string) error {
 				}
 			}
 
-			// dataset/agent/stream
-			if len(dataset.agent.streams) > 0 {
-				agentStreamPath := filepath.Join(datasetPath, "agent", "stream")
+			// dataStream/agent/stream
+			if len(dataStream.agent.streams) > 0 {
+				agentStreamPath := filepath.Join(dataStreamPath, "agent", "stream")
 				err := os.MkdirAll(agentStreamPath, 0755)
 				if err != nil {
-					return errors.Wrapf(err, "cannot make directory for dataset agent stream: '%s'", agentStreamPath)
+					return errors.Wrapf(err, "cannot make directory for data stream agent stream: '%s'", agentStreamPath)
 				}
 
-				for _, agentStream := range dataset.agent.streams {
+				for _, agentStream := range dataStream.agent.streams {
 					err := ioutil.WriteFile(path.Join(agentStreamPath, agentStream.targetFileName), agentStream.body, 0644)
 					if err != nil {
 						return errors.Wrapf(err, "writing agent stream file failed")
@@ -428,8 +428,11 @@ func writeDoc(docsPath string, doc docContent, aPackage packageContent) error {
 		t = template.Must(t.Parse("TODO"))
 	} else {
 		t, err = t.Funcs(template.FuncMap{
-			"fields": func(dataset string) (string, error) {
-				return renderExportedFields(dataset, aPackage.datasets)
+			"event": func(dataStream string) (string, error) {
+				return "TODO", nil
+			},
+			"fields": func(dataStream string) (string, error) {
+				return renderExportedFields(dataStream, aPackage.dataStreams)
 			},
 		}).ParseFiles(doc.templatePath)
 		if err != nil {

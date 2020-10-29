@@ -4,9 +4,8 @@ The System integrations allows you to monitor your servers. Because the System i
 always applies to the local server, the `hosts` config option is not needed.
 
 The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
-`process_summary`. To disable a default dataset, comment it out in the
-`modules.d/system.yml` configuration file. If _all_ datasets are commented out
-and the System module is enabled, fleet uses the default datasets.
+`process_summary`. If _all_ datasets are disabled
+and the System module is still enabled, fleet uses the default datasets.
 
 Note that certain datasets may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
@@ -61,18 +60,6 @@ This dataset is available on:
 - FreeBSD (amd64)
 
 {{fields "diskio"}}
-
-### Entropy
-
-This is the entropy dataset of the module system. 
-It collects the amount of available entropy in bits. On kernel versions greater than 2.6, 
-entropy will be out of a total pool size of 4096.
-
-This dataset is available on:
-
-- linux
-
-{{fields "entropy"}}
 
 ### Filesystem
 
@@ -144,17 +131,6 @@ This dataset is available on:
 
 {{fields "network"}}
 
-### Network summary
-
-The System `network_summary` dataset provides network IO metrics collected from the
-operating system. These events are global and sorted by protocol.
-
-This dataset is available on:
-
-- Linux
-
-{{fields "network_summary"}}
-
 ### Process
 
 The System `process` dataset provides process statistics. One document is
@@ -182,38 +158,6 @@ This dataset is available on:
 - Windows
 
 {{fields "process_summary"}}
-
-### RAID
-
-This is the raid dataset of the module system. It collects stats about the raid.
-
-This dataset is available on:
-
-- Linux
-
-{{fields "raid"}}
-
-### Service
-
-The `service` dataset reports on the status of systemd services.
-
-This dataset is available on:
-
-- Linux
-
-{{fields "service"}}
-
-### Socket
-
-This dataset is available on Linux only and requires kernel 2.6.14 or newer.
-
-The system `socket` dataset reports an event for each new TCP socket that it
-sees. It does this by polling the kernel periodically to get a dump of all
-sockets. You set the polling interval by configuring the `period` option.
-Specifying a short polling interval with this dataset is important to avoid
-missing short-lived connections.
-
-{{fields "socket"}}
 
 ### Socket summary
 
@@ -246,12 +190,3 @@ This dataset is available on:
 
 {{fields "uptime"}}
 
-### Users
-
-The system/users dataset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the dataset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
-
-This dataset is available on:
-
-- Linux
-
-{{fields "users"}}

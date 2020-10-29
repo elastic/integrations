@@ -229,12 +229,14 @@ For network load balancer, please follow [enable access log for network load bal
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.elb.action_executed | The action executed when processing the request (forward, fixed-response, authenticate...). It can contain several values. | keyword |
-| aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | keyword |
+| aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | long |
 | aws.elb.backend.ip | The IP address of the backend processing this connection. | keyword |
 | aws.elb.backend.port | The port in the backend processing this connection. | keyword |
 | aws.elb.backend_processing_time.sec | The total time in seconds since the connection is sent to the backend till the backend starts responding. | float |
 | aws.elb.chosen_cert.arn | The ARN of the chosen certificate presented to the client in TLS/SSL connections. | keyword |
 | aws.elb.chosen_cert.serial | The serial number of the chosen certificate presented to the client in TLS/SSL connections. | keyword |
+| aws.elb.classification | The classification for desync mitigation. | keyword |
+| aws.elb.classification_reason | The classification reason code. | keyword |
 | aws.elb.connection_time.ms | The total time of the connection in milliseconds, since it is opened till it is closed. | long |
 | aws.elb.error.reason | The error reason if the executed action failed. | keyword |
 | aws.elb.incoming_tls_alert | The integer value of TLS alerts received by the load balancer from the client, if present. | keyword |
@@ -248,6 +250,8 @@ For network load balancer, please follow [enable access log for network load bal
 | aws.elb.ssl_cipher | The SSL cipher used in TLS/SSL connections. | keyword |
 | aws.elb.ssl_protocol | The SSL protocol used in TLS/SSL connections. | keyword |
 | aws.elb.target_group.arn | The ARN of the target group handling the request. | keyword |
+| aws.elb.target_port | List of IP addresses and ports for the targets that processed this request. | keyword |
+| aws.elb.target_status_code | List of status codes from the responses of the targets. | keyword |
 | aws.elb.tls_handshake_time.ms | The total time for the TLS handshake to complete in milliseconds once the connection has been established. | long |
 | aws.elb.tls_named_group | The TLS named group. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
@@ -278,7 +282,7 @@ For network load balancer, please follow [enable access log for network load bal
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
-| source.port | Port of the source. | long |
+| source.port | Port of the source. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
@@ -1081,6 +1085,13 @@ An example event for `ec2` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float |
+| host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | scaled_float |
+| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |
 
 
 ### elb
