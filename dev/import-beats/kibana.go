@@ -530,7 +530,7 @@ func updateDashboardLinks(data []byte, origID, newID string) []byte {
 	return bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+origID), []byte("/app/kibana#/dashboard/"+newID))
 }
 
-func updateObjectID(origID, moduleName string) (string) {
+func updateObjectID(origID, moduleName string) string {
 	// If object ID starts with the module name, make sure that module name is all lowercase
 	// Else, prefix an all-lowercase module name to the object ID.
 	newID := origID
@@ -544,6 +544,12 @@ func updateObjectID(origID, moduleName string) (string) {
 	ecsSuffix := "-ecs"
 	if strings.HasSuffix(newID, "-ecs") {
 		newID = strings.TrimSuffix(newID, ecsSuffix)
+	}
+
+	// Finally, if after all transformations if the new ID is the same as the
+	// original one, to avoid a collision, we suffix "-pkg"
+	if newID == origID {
+		newID += "-pkg"
 	}
 
 	return newID
