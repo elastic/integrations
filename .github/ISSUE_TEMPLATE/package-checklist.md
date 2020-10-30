@@ -9,6 +9,14 @@ labels: package
 
 This checklist is intended for Devs which create or update a package to make sure they are consistent.
 
+<!--
+
+If the change targets a specific ES / Kibana / Agent version, uncomment this line and specify version.
+
+* [ ] Required Kibana version set to target version: 
+
+-->
+
 ## All Changes
 
 * [ ] Change follows [development guidelines](https://github.com/elastic/integrations/tree/master/doc/development/guidelines)
@@ -19,6 +27,8 @@ This checklist is intended for Devs which create or update a package to make sur
 * [ ] Fields follow [ECS](https://github.com/elastic/ecs) and [naming conventions](https://www.elastic.co/guide/en/beats/devguide/master/event-conventions.html)
 * [ ] Dashboards exists (if applicable)
 * [ ] Screenshots of added / updated dashboards
+* [ ] At least a manual test with ES / Kibana / Agent has been performed.
+* [ ] The required Kibana version is set to the lowest version used in the manual test.
 
 ## Log datasets
 
@@ -27,6 +37,8 @@ This checklist is intended for Devs which create or update a package to make sur
 * [ ] Generated output for at least 1 log file exists
 
 ## Metric datasets
+
+This entry is currently _recommended_. It will be mandatory once we provide better support for it.
 
 * [ ] Sample event (`sample_event.json`) exists
 
