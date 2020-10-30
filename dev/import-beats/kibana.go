@@ -308,6 +308,7 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 
 		data = replaceFieldEventDatasetWithDataStreamDataset(data)
 		data = replaceBlacklistedWords(data)
+		data = removeECSTextualSuffixes(data)
 		data = updateDashboardLinks(data, origID, newID)
 
 		err = verifyKibanaObjectConvertion(data)
@@ -528,6 +529,10 @@ func replaceBlacklistedWords(data []byte) []byte {
 
 func updateDashboardLinks(data []byte, origID, newID string) []byte {
 	return bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+origID), []byte("/app/kibana#/dashboard/"+newID))
+}
+
+func removeECSTextualSuffixes(data []byte) []byte {
+	return bytes.ReplaceAll(data, []byte(" ECS"), []byte(""))
 }
 
 func updateObjectID(origID, moduleName string) string {
