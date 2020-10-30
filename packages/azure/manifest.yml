@@ -23,25 +23,63 @@ screenshots:
     title: filebeat azure overview
     size: 5002x2666
     type: image/png
-config_templates:
+policy_templates:
   - name: azure
-    title: Azure logs and metrics
-    description: Collect logs and metrics from Azure instances
+    title: Azure logs
+    description: Collects platforms and Active Directory logs
     inputs:
       - type: "azure-eventhub"
         vars:
+        - name: eventhub
+          type: text
+          title: Eventhub
+          multi: false
+          required: true
+          show_user: true
+          default: insights-operational-logs
+        - name: consumer_group
+          type: text
+          title: Consumer Group
+          multi: false
+          required: true
+          show_user: true
+          default: $Default
+        - name: connection_string
+          type: text
+          title: Connection String
+          multi: false
+          required: true
+          show_user: true
+        - name: storage_account
+          type: text
+          title: Storage Account
+          multi: false
+          required: true
+          show_user: true
+        - name: storage_account_key
+          type: text
+          title: Storage Account Key
+          multi: false
+          required: true
+          show_user: true
+        - name: resource_manager_endpoint
+          type: text
+          title: Resource Manager Endpoint
+          multi: false
+          required: false
+          show_user: true
         - name: tags
           type: text
           title: Tags
           multi: true
           required: true
-          show_user: true
+          show_user: false
           default:
           - forwarded
         title: "Collect Azure activitylogs, auditlogs and signinlogs logs (input: azure-eventhub)"
         description: "Collecting activitylogs, auditlogs and signinlogs logs from Azure instances (input: azure-eventhub)"
-      - type: azure/metrics
-        title: Collect Azure app_insights, billing, compute_vm, compute_vm_scaleset, container_instance, container_registry, container_service, database_account, monitor and storage metrics
-        description: Collecting app_insights, billing, compute_vm, compute_vm_scaleset, container_instance, container_registry, container_service, database_account, monitor and storage metrics from Azure instances
+
+
+
 owner:
   github: elastic/integrations
