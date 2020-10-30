@@ -239,14 +239,66 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			return nil, errors.Wrapf(err, "retrieving id failed")
 		}
 
-		dashboardName := id.(string)
-		if aType == "dashboard" && !strings.HasPrefix(dashboardName, moduleName+"-") {
-			dashboardName = moduleName + "-" + dashboardName
+		origID, ok := id.(string)
+		if !ok {
+			return nil, errors.New("expected id to be a string")
 		}
 
-		_, err = object.put("id", dashboardName)
+		newID := updateObjectID(origID, moduleName)
+
+		_, err = object.put("id", newID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "putting new ID failed")
+		}
+
+		// Update any references to other objects in this object
+		refs, err := object.getValue("references")
+		if err != nil {
+			return nil, errors.Wrap(err, "retrieving references failed")
+		}
+
+		references, ok := refs.([]interface{})
+		if !ok {
+			return nil, errors.New("expected references to be an array of objects")
+		}
+
+		for _, r := range references {
+			ref, ok := r.(map[string]interface{})
+			if !ok {
+				return nil, errors.New("expected reference to be an object")
+			}
+
+			reference := mapStr(ref)
+
+			// Exclude index pattern references
+			rt, err := reference.getValue("type")
+			if err != nil {
+				return nil, errors.Wrap(err, "retrieving reference type failed")
+			}
+			refType, ok := rt.(string)
+			if !ok {
+				return nil, errors.New("expected reference type to be a string")
+			}
+
+			if refType == "index-pattern" {
+				continue
+			}
+
+			refID, err := reference.getValue("id")
+			if err != nil {
+				return nil, errors.Wrapf(err, "retrieving reference id failed")
+			}
+
+			origRefID, ok := refID.(string)
+			if !ok {
+				return nil, errors.New("expected reference id to be a string")
+			}
+
+			newRefID := updateObjectID(origRefID, moduleName)
+
+			if _, err := reference.put("id", newRefID); err != nil {
+				return nil, errors.Wrapf(err, "putting new reference ID failed")
+			}
 		}
 
 		data, err := json.MarshalIndent(object, "", "    ")
@@ -254,9 +306,9 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			return nil, errors.Wrapf(err, "marshalling object failed")
 		}
 
-		data = prependModuleNameToDashboardLinks(replaceBlacklistedWords(
-			replaceFieldEventDatasetWithDataStreamDataset(
-				data)), moduleName)
+		data = replaceFieldEventDatasetWithDataStreamDataset(data)
+		data = replaceBlacklistedWords(data)
+		data = updateDashboardLinks(data, origID, newID)
 
 		err = verifyKibanaObjectConvertion(data)
 		if err != nil {
@@ -267,7 +319,7 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			extracted[aType.(string)] = map[string][]byte{}
 		}
 
-		extracted[aType.(string)][dashboardName+".json"] = data
+		extracted[aType.(string)][newID+".json"] = data
 	}
 
 	return extracted, nil
@@ -474,10 +526,27 @@ func replaceBlacklistedWords(data []byte) []byte {
 	return data
 }
 
-func prependModuleNameToDashboardLinks(data []byte, moduleName string) []byte {
-	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+moduleName+"-"), []byte("/app/kibana#/dashboard/"))
-	data = bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"), []byte("/app/kibana#/dashboard/"+moduleName+"-"))
-	return data
+func updateDashboardLinks(data []byte, origID, newID string) []byte {
+	return bytes.ReplaceAll(data, []byte("/app/kibana#/dashboard/"+origID), []byte("/app/kibana#/dashboard/"+newID))
+}
+
+func updateObjectID(origID, moduleName string) (string) {
+	// If object ID starts with the module name, make sure that module name is all lowercase
+	// Else, prefix an all-lowercase module name to the object ID.
+	newID := origID
+	prefix := moduleName + "-"
+	if strings.HasPrefix(strings.ToLower(newID), prefix) {
+		newID = newID[len(prefix):]
+	}
+	newID = prefix + newID
+
+	// If object ID ends with "-ecs", trim it off.
+	ecsSuffix := "-ecs"
+	if strings.HasSuffix(newID, "-ecs") {
+		newID = strings.TrimSuffix(newID, ecsSuffix)
+	}
+
+	return newID
 }
 
 func verifyKibanaObjectConvertion(data []byte) error {
