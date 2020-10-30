@@ -25,10 +25,14 @@ If the change targets a specific ES / Kibana / Agent version, uncomment this lin
 * [ ] [System tests](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md) exist
 * [ ] Documentation
 * [ ] Fields follow [ECS](https://github.com/elastic/ecs) and [naming conventions](https://www.elastic.co/guide/en/beats/devguide/master/event-conventions.html)
-* [ ] Dashboards exists (if applicable)
-* [ ] Screenshots of added / updated dashboards
 * [ ] At least a manual test with ES / Kibana / Agent has been performed.
 * [ ] The required Kibana version is set to the lowest version used in the manual test.
+
+### Dashboards
+
+* [ ] Dashboards exists (if applicable)
+* [ ] Screenshots of added / updated dashboards
+* [ ] Datastream filters added to visualizations
 
 ## Log datasets
 
