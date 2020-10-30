@@ -1,7 +1,7 @@
 ---
 name: Integration / Dataset creation or update
 about: "Issue to track the creation or update of a new package or dataset."
-labels: package
+labels: integration
 
 ---
 
