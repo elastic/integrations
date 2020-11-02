@@ -1,0 +1,17 @@
+paths:
+  {{#each paths as |path i|}}
+- {{path}}
+  {{/each}}
+exclude_files: [".gz$"]
+tags:
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.5.0
