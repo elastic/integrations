@@ -1,0 +1,82 @@
+name: azure
+title: Azure
+version: 0.0.1
+release: experimental
+description: Azure Integration
+type: integration
+icons:
+  - src: /img/logo_azure.svg
+    title: logo azure
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories:
+  - azure
+  - cloud
+  - network
+  - security
+conditions:
+  kibana.version: ^7.9.0
+screenshots:
+  - src: /img/filebeat-azure-overview.png
+    title: filebeat azure overview
+    size: 5002x2666
+    type: image/png
+policy_templates:
+  - name: azure
+    title: Azure logs
+    description: Collects platforms and Active Directory logs
+    inputs:
+      - type: "azure-eventhub"
+        vars:
+          - name: eventhub
+            type: text
+            title: Eventhub
+            multi: false
+            required: true
+            show_user: true
+            default: insights-operational-logs
+          - name: consumer_group
+            type: text
+            title: Consumer Group
+            multi: false
+            required: true
+            show_user: true
+            default: $Default
+          - name: connection_string
+            type: text
+            title: Connection String
+            multi: false
+            required: true
+            show_user: true
+          - name: storage_account
+            type: text
+            title: Storage Account
+            multi: false
+            required: true
+            show_user: true
+          - name: storage_account_key
+            type: text
+            title: Storage Account Key
+            multi: false
+            required: true
+            show_user: true
+          - name: resource_manager_endpoint
+            type: text
+            title: Resource Manager Endpoint
+            multi: false
+            required: false
+            show_user: true
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: false
+            default:
+              - forwarded
+        title: "Collect Azure logs from Event Hub"
+        description: "Collecting activitylogs, auditlogs and signinlogs logs from Azure instances (input: azure-eventhub)"
+owner:
+  github: elastic/integrations
