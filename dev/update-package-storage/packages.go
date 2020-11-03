@@ -188,6 +188,9 @@ func copyIntegrationToPackageStorage(err error, options updateOptions, packageNa
 
 func removeDestinationContent(destinationPath string) error {
 	fis, err := ioutil.ReadDir(destinationPath)
+	if os.IsNotExist(err) {
+		return nil // destination doesn't exist, no need to remove children
+	}
 	if err != nil {
 		return errors.Wrapf(err, "readdir failed (path: %s)", destinationPath)
 	}
