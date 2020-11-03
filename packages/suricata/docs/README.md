@@ -51,6 +51,7 @@ with other versions of Suricata.
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
+| host.ip | Host ip addresses. | ip |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |

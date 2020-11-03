@@ -33,6 +33,7 @@ which contains packet loss rate data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -85,6 +86,7 @@ contains TCP/UDP/ICMP connection data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -163,6 +165,7 @@ contains Distributed Computing Environment/RPC data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -217,6 +220,7 @@ DHCP lease data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -288,6 +292,7 @@ requests and replies.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -363,6 +368,7 @@ activity.
 | event.original | Raw text message of entire event. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -442,6 +448,7 @@ protocol detection failures.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -498,6 +505,7 @@ file analysis results.
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.size | File size in bytes. | long |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -572,6 +580,7 @@ activity.
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -655,6 +664,7 @@ HTTP requests and replies.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.method | HTTP request method. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -753,6 +763,7 @@ intelligence data matches.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.original | Raw text message of entire event. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -829,6 +840,7 @@ commands and responses.
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.size | File size in bytes. | long |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -903,6 +915,7 @@ contains kerberos data.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -999,6 +1012,7 @@ modbus commands and responses.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1062,6 +1076,7 @@ MySQL data.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1127,6 +1142,7 @@ Zeek notices.
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1213,6 +1229,7 @@ LAN Manager(NTLM) data.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1267,6 +1284,7 @@ Online Certificate Status Protocol (OCSP) data.
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1308,6 +1326,7 @@ portable executable data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1369,6 +1388,7 @@ RADIUS authentication attempts.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1440,6 +1460,7 @@ data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1517,6 +1538,7 @@ Remote Framebuffer (RFB) data.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1589,6 +1611,7 @@ data.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1673,6 +1696,7 @@ contains SMB commands.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1759,6 +1783,7 @@ contains SMB file data.
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. | keyword |
 | file.size | File size in bytes. | long |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1831,6 +1856,7 @@ which contains SMB trees.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1895,6 +1921,7 @@ SMTP transactions..
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -1979,6 +2006,7 @@ SNMP messages.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2048,6 +2076,7 @@ SOCKS proxy requests.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2120,6 +2149,7 @@ connection data.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2193,6 +2223,7 @@ SSL/TLS handshake info.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2295,6 +2326,7 @@ memory/event/packet/lag statistics.
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2361,6 +2393,7 @@ syslog messages.
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2424,6 +2457,7 @@ contains traceroute detections.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2482,6 +2516,7 @@ tunneling protocol events.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2540,6 +2575,7 @@ unexpected network-level activity.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -2609,6 +2645,7 @@ X.509 certificate info.
 | file.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
 | file.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | file.x509.version_number | Version of x509 format. | keyword |
+| host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
