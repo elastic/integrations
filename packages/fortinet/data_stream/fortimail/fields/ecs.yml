@@ -104,6 +104,15 @@
         In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`.'
       example: '2016-05-23T08:05:35.101Z'
       default_field: false
+    - name: original
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Raw text message of entire event. Used to demonstrate log integrity.
+
+        This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`.'
+      example: Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232
+      index: false
 - name: '@timestamp'
   level: core
   required: true
@@ -125,6 +134,10 @@
       ignore_above: 1024
       description: All the user names seen on your event.
       default_field: false
+    - name: ip
+      level: extended
+      type: ip
+      description: All of the IPs seen on your event.
 - name: user
   type: group
   fields:
@@ -477,6 +490,20 @@
               description: Interface name as reported by the system.
               example: eth0
               default_field: false
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'The type of the observer the data is coming from.
+
+        There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`.'
+      example: firewall
+    - name: vendor
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Vendor name of the observer.
+      example: Symantec
 - name: file
   type: group
   fields:
@@ -803,3 +830,9 @@
       level: core
       type: text
       description: Error message.
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+  example: '["production", "env2"]'
