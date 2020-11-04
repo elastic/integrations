@@ -482,3 +482,10 @@ An example event for `signinlogs` looks as following:
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+
+
+
+
+
+
+
