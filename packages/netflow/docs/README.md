@@ -88,6 +88,7 @@ The `log` dataset collects netflow logs.
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. Can be one or multiple IPv4 or IPv6 addresses. | ip |
+| destination.locality | Whether the destination IP is private or public. | keyword |
 | destination.mac | MAC address of the destination. | keyword |
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
@@ -137,6 +138,7 @@ The `log` dataset collects netflow logs.
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.hash | Hash (perhaps logstash fingerprint) of raw field to be able to demonstrate log integrity. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. | keyword |
@@ -171,6 +173,8 @@ The `log` dataset collects netflow logs.
 | file.target_path | Target path for symlinks. | keyword |
 | file.type | File type (file, dir, or symlink). | keyword |
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
+| flow.id | Hash of source and destination IPs. | keyword |
+| flow.locality | Identifies whether the flow involved public IP addresses or only private address. | keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
 | geo.country_iso_code | Country ISO code. | keyword |
@@ -227,6 +231,7 @@ The `log` dataset collects netflow logs.
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
@@ -813,6 +818,7 @@ The `log` dataset collects netflow logs.
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. Can be one or multiple IPv4 or IPv6 addresses. | ip |
+| source.locality | Whether the source IP is private or public. | keyword |
 | source.mac | MAC address of the source. | keyword |
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |

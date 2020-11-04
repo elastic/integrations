@@ -13,16 +13,32 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
-                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
-                    "query_string": {
-                        "analyze_wildcard": true,
-                        "query": "*"
-                    }
+                    "query": "",
+                    "language": "kuery"
                 },
-                "version": true
+                "version": true,
+                "filter": [
+                    {
+                        "meta": {
+                            "alias": null,
+                            "negate": false,
+                            "disabled": false,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "params": {
+                                "query": "netflow.log"
+                            },
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "netflow.log"
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index"
             }
         },
         "sort": [
