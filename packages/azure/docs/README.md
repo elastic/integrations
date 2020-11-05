@@ -12,6 +12,9 @@ The module contains the following filesets:
 ### activitylogs
 Will retrieve azure activity logs. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
 
+### platformlogs
+Will retrieve azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
+
 ### signinlogs 
 Will retrieve azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
@@ -193,6 +196,114 @@ An example event for `activitylogs` looks as following:
 | azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.schema | Schema | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.surname | Surname | keyword |
+| azure.activitylogs.operation_name | Operation name | keyword |
+| azure.activitylogs.properties.service_request_id | Service Request Id | keyword |
+| azure.activitylogs.properties.status_code | Status code | keyword |
+| azure.activitylogs.result_signature | Result signature | keyword |
+| azure.activitylogs.result_type | Result type | keyword |
+| azure.correlation_id | Correlation ID | keyword |
+| azure.resource.authorization_rule | Authorization rule | keyword |
+| azure.resource.group | Resource group | keyword |
+| azure.resource.id | Resource ID | keyword |
+| azure.resource.name | Name | keyword |
+| azure.resource.namespace | Resource type/namespace | keyword |
+| azure.resource.provider | Resource type/namespace | keyword |
+| azure.subscription_id | Azure subscription ID | keyword |
+| azure.tenant_id | tenant ID | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
+
+
+An example event for `platformlogs` looks as following:
+
+```$json
+{
+  "_id": "oQRumHUBvB2moownKezJ",
+  "_index": "filebeat-8.0.0-2020.11.05-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-11-05T12:41:49.000Z",
+    "agent": {
+      "ephemeral_id": "a6339387-a2fe-4db0-9d13-ca3123f92366",
+      "id": "17cead09-57ad-4668-8a0e-b9025f8b0cb0",
+      "name": "DESKTOP-RFOOE09",
+      "type": "filebeat",
+      "version": "8.0.0"
+    },
+    "azure": {
+      "platformlogs": {
+        "Cloud": "AzureCloud",
+        "Environment": "prod",
+        "UnderlayClass": "hcp-underlay",
+        "UnderlayName": "hcp-underlay-westeurope-cx-316",
+        "attrs": "{\"annotation.io.kubernetes.container.hash\"=\u003e\"b74d7ef3\", \"annotation.io.kubernetes.container.ports\"=\u003e\"[{\"name\":\"https\",\"containerPort\":4444,\"protocol\":\"TCP\"}]\", \"annotation.io.kubernetes.container.preStopHandler\"=\u003e\"{\"exec\":{\"command\":[\"/bin/bash\",\"-c\",\"sleep 20\"]}}\"}",
+        "category": "kube-apiserver",
+        "ccpNamespace": "5e4bf4baee195b00017cdbfa",
+        "event_category": "Administrative",
+        "operation_name": "Microsoft.ContainerService/managedClusters/diagnosticLogs/Read",
+        "properties": {
+          "containerID": "ca7ca3b15f428368fabab4dff0c14879a838f8653f84312833d5024547a008f4",
+          "pod": "kube-apiserver-666bd4b459-vgc5h",
+          "stream": "stderr"
+        }
+      },
+      "resource": {
+        "group": "OBS-INFRASTRUCTURE",
+        "id": "/SUBSCRIPTIONS/70BD6E77-4B1E-4835-8896-DB77B8EEF364/RESOURCEGROUPS/OBS-INFRASTRUCTURE/PROVIDERS/MICROSOFT.CONTAINERSERVICE/MANAGEDCLUSTERS/OBSKUBE",
+        "name": "OBSKUBE",
+        "provider": "MICROSOFT.CONTAINERSERVICE/MANAGEDCLUSTERS"
+      },
+      "subscription_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+    },
+    "azure-eventhub": {
+      "consumer_group": "$Default",
+      "enqueued_time": "2020-11-05T12:42:14.453Z",
+      "eventhub": "insights-logs-kube-apiserver",
+      "offset": 100168,
+      "sequence_number": 45
+    },
+    "cloud": {
+      "provider": "azure"
+    },
+    "ecs": {
+      "version": "1.6.0"
+    },
+    "event": {
+      "action": "Microsoft.ContainerService/managedClusters/diagnosticLogs/Read",
+      "dataset": "azure.platformlogs",
+      "ingested": "2020-11-05T12:42:37.895235200Z",
+      "kind": "event",
+      "module": "azure"
+    },
+    "fileset": {
+      "name": "platformlogs"
+    },
+    "input": {
+      "type": "azure-eventhub"
+    },
+    "message": "I1105 12:41:49.339404       1 controller.go:107] OpenAPI AggregationController: Processing item v1beta1.metrics.k8s.io",
+    "service": {
+      "type": "azure"
+    },
+    "tags": [
+      "forwarded"
+    ]
+  },
+  "_type": "_doc"
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.activitylogs.category | Category | keyword |
+| azure.activitylogs.event_category | Event Category | keyword |
 | azure.activitylogs.operation_name | Operation name | keyword |
 | azure.activitylogs.properties.service_request_id | Service Request Id | keyword |
 | azure.activitylogs.properties.status_code | Status code | keyword |
