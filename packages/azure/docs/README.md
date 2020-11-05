@@ -311,14 +311,13 @@ An example event for `platformlogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.activitylogs.category | Category | keyword |
-| azure.activitylogs.event_category | Event Category | keyword |
-| azure.activitylogs.operation_name | Operation name | keyword |
-| azure.activitylogs.properties.service_request_id | Service Request Id | keyword |
-| azure.activitylogs.properties.status_code | Status code | keyword |
-| azure.activitylogs.result_signature | Result signature | keyword |
-| azure.activitylogs.result_type | Result type | keyword |
 | azure.correlation_id | Correlation ID | keyword |
+| azure.platformlogs.category | Category | keyword |
+| azure.platformlogs.event_category | Event Category | keyword |
+| azure.platformlogs.operation_name | Operation name | keyword |
+| azure.platformlogs.properties.status_code | Status code | keyword |
+| azure.platformlogs.result_signature | Result signature | keyword |
+| azure.platformlogs.result_type | Result type | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
