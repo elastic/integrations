@@ -222,72 +222,81 @@ An example event for `platformlogs` looks as following:
 
 ```$json
 {
-  "_id": "oQRumHUBvB2moownKezJ",
-  "_index": "filebeat-8.0.0-2020.11.05-000001",
+  "_id": "BHSwg3UBWgbgrXIaDOF-",
+  "_index": ".ds-logs-azure.platformlogs-default-000001",
   "_score": null,
   "_source": {
-    "@timestamp": "2020-11-05T12:41:49.000Z",
+    "@timestamp": "2020-11-05T14:07:32.000Z",
     "agent": {
-      "ephemeral_id": "a6339387-a2fe-4db0-9d13-ca3123f92366",
-      "id": "17cead09-57ad-4668-8a0e-b9025f8b0cb0",
+      "ephemeral_id": "d3c4d56c-e7c7-489e-9d25-683452d16ec9",
+      "hostname": "DESKTOP-RFOOE09",
+      "id": "c1118415-bcb7-4cf9-b64d-a6c6e8ebcfac",
       "name": "DESKTOP-RFOOE09",
       "type": "filebeat",
-      "version": "8.0.0"
+      "version": "7.10.0"
     },
     "azure": {
       "platformlogs": {
-        "Cloud": "AzureCloud",
-        "Environment": "prod",
-        "UnderlayClass": "hcp-underlay",
-        "UnderlayName": "hcp-underlay-westeurope-cx-316",
-        "attrs": "{\"annotation.io.kubernetes.container.hash\"=\u003e\"b74d7ef3\", \"annotation.io.kubernetes.container.ports\"=\u003e\"[{\"name\":\"https\",\"containerPort\":4444,\"protocol\":\"TCP\"}]\", \"annotation.io.kubernetes.container.preStopHandler\"=\u003e\"{\"exec\":{\"command\":[\"/bin/bash\",\"-c\",\"sleep 20\"]}}\"}",
-        "category": "kube-apiserver",
-        "ccpNamespace": "5e4bf4baee195b00017cdbfa",
+        "ActivityId": "5890c6fc-fc6b-47cd-971a-2366a1641d99",
+        "Caller": "Portal",
+        "Environment": "PROD",
+        "EventTimeString": "11/5/2020 2:07:32 PM +00:00",
+        "ScaleUnit": "PROD-AM3-AZ501",
+        "Status": "Succeeded",
+        "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
+        "category": "OperationalLogs",
         "event_category": "Administrative",
-        "operation_name": "Microsoft.ContainerService/managedClusters/diagnosticLogs/Read",
         "properties": {
-          "containerID": "ca7ca3b15f428368fabab4dff0c14879a838f8653f84312833d5024547a008f4",
-          "pod": "kube-apiserver-666bd4b459-vgc5h",
-          "stream": "stderr"
+          "Namespace": "obstesteventhubs",
+          "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
+          "TrackingId": "5890c6fc-fc6b-47cd-971a-2366a1641d99_M8CH3_M8CH3_G8S3",
+          "Via": "https://obstesteventhubs.servicebus.windows.net/$Resources/eventhubs?api-version=2017-04\u0026$skip=0\u0026$top=100"
         }
       },
       "resource": {
-        "group": "OBS-INFRASTRUCTURE",
-        "id": "/SUBSCRIPTIONS/70BD6E77-4B1E-4835-8896-DB77B8EEF364/RESOURCEGROUPS/OBS-INFRASTRUCTURE/PROVIDERS/MICROSOFT.CONTAINERSERVICE/MANAGEDCLUSTERS/OBSKUBE",
-        "name": "OBSKUBE",
-        "provider": "MICROSOFT.CONTAINERSERVICE/MANAGEDCLUSTERS"
+        "group": "OBS-TEST",
+        "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
+        "name": "OBSTESTEVENTHUBS",
+        "provider": "MICROSOFT.EVENTHUB/NAMESPACES"
       },
-      "subscription_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+      "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
     },
     "azure-eventhub": {
       "consumer_group": "$Default",
-      "enqueued_time": "2020-11-05T12:42:14.453Z",
-      "eventhub": "insights-logs-kube-apiserver",
-      "offset": 100168,
-      "sequence_number": 45
+      "enqueued_time": "2020-11-05T14:08:28.137Z",
+      "eventhub": "insights-logs-operationallogs",
+      "offset": 4294976088,
+      "sequence_number": 15
     },
     "cloud": {
-      "provider": "azure"
+      "provider": "azure",
+      "region": "West Europe"
+    },
+    "data_stream": {
+      "dataset": "azure.platformlogs",
+      "namespace": "default",
+      "type": "logs"
     },
     "ecs": {
-      "version": "1.6.0"
+      "version": "1.5.0"
+    },
+    "elastic_agent": {
+      "id": "02f4e39d-8a1b-4506-a531-b45d0f492ee7",
+      "snapshot": false,
+      "version": "7.10.0"
     },
     "event": {
-      "action": "Microsoft.ContainerService/managedClusters/diagnosticLogs/Read",
+      "action": "Retreive Namespace",
       "dataset": "azure.platformlogs",
-      "ingested": "2020-11-05T12:42:37.895235200Z",
+      "ingested": "2020-11-01T12:02:34.237205200Z",
       "kind": "event",
-      "module": "azure"
+      "outcome": "succeeded"
     },
-    "fileset": {
-      "name": "platformlogs"
+    "host": {
+      "name": "DESKTOP-RFOOE09"
     },
     "input": {
       "type": "azure-eventhub"
-    },
-    "message": "I1105 12:41:49.339404       1 controller.go:107] OpenAPI AggregationController: Processing item v1beta1.metrics.k8s.io",
-    "service": {
-      "type": "azure"
     },
     "tags": [
       "forwarded"
