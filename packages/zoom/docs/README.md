@@ -55,10 +55,11 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
@@ -254,6 +255,7 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | hash.sha256 | SHA256 hash. | keyword |
 | hash.sha512 | SHA512 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
@@ -268,6 +270,8 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
@@ -283,7 +287,7 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | host.user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | host.user.group.name | Name of the group. | keyword |
 | host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
-| host.user.id | Unique identifiers of the user. | keyword |
+| host.user.id | Unique identifier of the user. | keyword |
 | host.user.name | Short name or login of the user. | keyword |
 | host.user.roles | Array of user roles at the time of the event. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
