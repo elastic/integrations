@@ -283,7 +283,7 @@ This integration is compatible with the Zoom Platform API as of September 2020.
 | host.user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | host.user.group.name | Name of the group. | keyword |
 | host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
-| host.user.id | Unique identifier of the user. | keyword |
+| host.user.id | Unique identifiers of the user. | keyword |
 | host.user.name | Short name or login of the user. | keyword |
 | host.user.roles | Array of user roles at the time of the event. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |

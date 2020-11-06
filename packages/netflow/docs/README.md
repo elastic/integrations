@@ -191,6 +191,7 @@ The `log` dataset collects netflow logs.
 | hash.sha256 | SHA256 hash. | keyword |
 | hash.sha512 | SHA512 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
 | host.geo.country_iso_code | Country ISO code. | keyword |
