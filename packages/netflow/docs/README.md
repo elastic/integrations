@@ -60,9 +60,11 @@ The `log` dataset collects netflow logs.
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
@@ -191,6 +193,8 @@ The `log` dataset collects netflow logs.
 | hash.sha256 | SHA256 hash. | keyword |
 | hash.sha512 | SHA512 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
 | host.geo.country_iso_code | Country ISO code. | keyword |
@@ -204,6 +208,8 @@ The `log` dataset collects netflow logs.
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
