@@ -12,6 +12,9 @@ The module contains the following filesets:
 ### activitylogs
 Will retrieve azure activity logs. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
 
+### platformlogs
+Will retrieve azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
+
 ### signinlogs 
 Will retrieve azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
@@ -58,6 +61,10 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 {{event "activitylogs"}}
 
 {{fields "activitylogs"}}
+
+{{event "platformlogs"}}
+
+{{fields "platformlogs"}}
 
 {{event "auditlogs"}}
 
