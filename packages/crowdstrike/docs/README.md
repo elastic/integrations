@@ -19,7 +19,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Date/time when the event originated. | date |
+| @timestamp | Event timestamp. | date |
 | agent.id | Unique identifier of this agent. | keyword |
 | agent.name | Custom name of the agent. | keyword |
 | agent.type | Type of the agent. | keyword |
@@ -156,7 +156,6 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.full | Operating system name, including the version or code name. | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
