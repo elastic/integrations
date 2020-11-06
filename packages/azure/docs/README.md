@@ -12,6 +12,9 @@ The module contains the following filesets:
 ### activitylogs
 Will retrieve azure activity logs. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
 
+### platformlogs
+Will retrieve azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
+
 ### signinlogs 
 Will retrieve azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
@@ -243,6 +246,122 @@ An example event for `activitylogs` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+
+
+An example event for `platformlogs` looks as following:
+
+```$json
+{
+  "_id": "BHSwg3UBWgbgrXIaDOF-",
+  "_index": ".ds-logs-azure.platformlogs-default-000001",
+  "_score": null,
+  "_source": {
+    "@timestamp": "2020-11-05T14:07:32.000Z",
+    "agent": {
+      "ephemeral_id": "d3c4d56c-e7c7-489e-9d25-683452d16ec9",
+      "hostname": "DESKTOP-RFOOE09",
+      "id": "c1118415-bcb7-4cf9-b64d-a6c6e8ebcfac",
+      "name": "DESKTOP-RFOOE09",
+      "type": "filebeat",
+      "version": "7.10.0"
+    },
+    "azure": {
+      "platformlogs": {
+        "ActivityId": "5890c6fc-fc6b-47cd-971a-2366a1641d99",
+        "Caller": "Portal",
+        "Environment": "PROD",
+        "EventTimeString": "11/5/2020 2:07:32 PM +00:00",
+        "ScaleUnit": "PROD-AM3-AZ501",
+        "Status": "Succeeded",
+        "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
+        "category": "OperationalLogs",
+        "event_category": "Administrative",
+        "properties": {
+          "Namespace": "obstesteventhubs",
+          "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
+          "TrackingId": "5890c6fc-fc6b-47cd-971a-2366a1641d99_M8CH3_M8CH3_G8S3",
+          "Via": "https://obstesteventhubs.servicebus.windows.net/$Resources/eventhubs?api-version=2017-04\u0026$skip=0\u0026$top=100"
+        }
+      },
+      "resource": {
+        "group": "OBS-TEST",
+        "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
+        "name": "OBSTESTEVENTHUBS",
+        "provider": "MICROSOFT.EVENTHUB/NAMESPACES"
+      },
+      "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
+    },
+    "azure-eventhub": {
+      "consumer_group": "$Default",
+      "enqueued_time": "2020-11-05T14:08:28.137Z",
+      "eventhub": "insights-logs-operationallogs",
+      "offset": 4294976088,
+      "sequence_number": 15
+    },
+    "cloud": {
+      "provider": "azure",
+      "region": "West Europe"
+    },
+    "data_stream": {
+      "dataset": "azure.platformlogs",
+      "namespace": "default",
+      "type": "logs"
+    },
+    "ecs": {
+      "version": "1.5.0"
+    },
+    "elastic_agent": {
+      "id": "02f4e39d-8a1b-4506-a531-b45d0f492ee7",
+      "snapshot": false,
+      "version": "7.10.0"
+    },
+    "event": {
+      "action": "Retreive Namespace",
+      "dataset": "azure.platformlogs",
+      "ingested": "2020-11-01T12:02:34.237205200Z",
+      "kind": "event",
+      "outcome": "succeeded"
+    },
+    "host": {
+      "name": "DESKTOP-RFOOE09"
+    },
+    "input": {
+      "type": "azure-eventhub"
+    },
+    "tags": [
+      "forwarded"
+    ]
+  },
+  "_type": "_doc"
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.correlation_id | Correlation ID | keyword |
+| azure.platformlogs.category | Category | keyword |
+| azure.platformlogs.event_category | Event Category | keyword |
+| azure.platformlogs.operation_name | Operation name | keyword |
+| azure.platformlogs.properties.status_code | Status code | keyword |
+| azure.platformlogs.result_signature | Result signature | keyword |
+| azure.platformlogs.result_type | Result type | keyword |
+| azure.resource.authorization_rule | Authorization rule | keyword |
+| azure.resource.group | Resource group | keyword |
+| azure.resource.id | Resource ID | keyword |
+| azure.resource.name | Name | keyword |
+| azure.resource.namespace | Resource type/namespace | keyword |
+| azure.resource.provider | Resource type/namespace | keyword |
+| azure.subscription_id | Azure subscription ID | keyword |
+| azure.tenant_id | tenant ID | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
 
 
 An example event for `auditlogs` looks as following:
