@@ -56,17 +56,81 @@ An example event for `log` looks as following:
 | @timestamp | Event timestamp. | date |
 | auditd.log.a0 | The first argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
+| auditd.log.audit_failure |  | keyword |
+| auditd.log.cipher |  | keyword |
+| auditd.log.data |  | keyword |
+| auditd.log.default-context |  | keyword |
+| auditd.log.dev |  | keyword |
+| auditd.log.direction |  | keyword |
+| auditd.log.dst_prefixlen |  | long |
+| auditd.log.entries |  | long |
+| auditd.log.family |  | keyword |
+| auditd.log.fe |  | keyword |
+| auditd.log.fi |  | keyword |
+| auditd.log.format |  | keyword |
+| auditd.log.fp |  | keyword |
+| auditd.log.fver |  | keyword |
+| auditd.log.gpg_res |  | keyword |
+| auditd.log.hostname |  | keyword |
+| auditd.log.id |  | keyword |
+| auditd.log.img-ctx |  | keyword |
+| auditd.log.inode |  | keyword |
 | auditd.log.item | The item field indicates which item out of the total number of items. This number is zero-based; a value of 0 means it is the first item. | keyword |
 | auditd.log.items | The number of items in an event. | keyword |
+| auditd.log.kernel |  | keyword |
+| auditd.log.key_enforce |  | boolean |
+| auditd.log.kind |  | keyword |
+| auditd.log.ksize |  | long |
 | auditd.log.laddr |  | ip |
+| auditd.log.list |  | keyword |
 | auditd.log.lport |  | long |
+| auditd.log.major |  | keyword |
+| auditd.log.minor |  | keyword |
+| auditd.log.mode |  | keyword |
+| auditd.log.model |  | keyword |
+| auditd.log.name |  | keyword |
+| auditd.log.new-level |  | keyword |
 | auditd.log.new_auid | For login events this is the new audit ID. The audit ID can be used to trace future events to the user even if their identity changes (like becoming root). | keyword |
+| auditd.log.new_pe |  | keyword |
+| auditd.log.new_pi |  | keyword |
+| auditd.log.new_pp |  | keyword |
 | auditd.log.new_ses | For login events this is the new session ID. It can be used to tie a user to future events by session ID. | keyword |
+| auditd.log.node |  | keyword |
+| auditd.log.obj |  | keyword |
+| auditd.log.objtype |  | keyword |
+| auditd.log.old |  | keyword |
+| auditd.log.old-level |  | keyword |
 | auditd.log.old_auid | For login events this is the old audit ID used for the user prior to this login. | keyword |
+| auditd.log.old_pe |  | keyword |
+| auditd.log.old_pi |  | keyword |
+| auditd.log.old_pp |  | keyword |
 | auditd.log.old_ses | For login events this is the old session ID used for the user prior to this login. | keyword |
+| auditd.log.op |  | keyword |
+| auditd.log.pfs |  | keyword |
+| auditd.log.proctitle |  | keyword |
+| auditd.log.rdev |  | keyword |
+| auditd.log.reason |  | keyword |
+| auditd.log.root_dir |  | keyword |
 | auditd.log.rport |  | long |
+| auditd.log.saddr |  | keyword |
+| auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
+| auditd.log.ses |  | keyword |
+| auditd.log.spid |  | keyword |
+| auditd.log.src_prefixlen |  | long |
+| auditd.log.subj |  | keyword |
+| auditd.log.success |  | boolean |
+| auditd.log.sw |  | keyword |
+| auditd.log.sw_type |  | keyword |
+| auditd.log.syscall |  | keyword |
+| auditd.log.table |  | keyword |
 | auditd.log.tty |  | keyword |
+| auditd.log.unit |  | keyword |
+| auditd.log.uuid |  | keyword |
+| auditd.log.ver |  | keyword |
+| auditd.log.virt |  | keyword |
+| auditd.log.vm |  | keyword |
+| auditd.log.vm-ctx |  | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |

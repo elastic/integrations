@@ -1,9 +1,17 @@
 ---
 description: Pipeline for parsing Linux auditd logs
 processors:
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
+# Change to:
+# - set:
+#     field: event.ingested
+#     value: '{{_ingest.timestamp}}'
+# once pipeline tests accept dynamic fields
+- date:
+    field: auditd.log.epoch
+    target_field: "event.ingested"
+    formats:
+    - UNIX
+    ignore_failure: true
 - grok:
     field: message
     pattern_definitions:
@@ -11,11 +19,12 @@ processors:
       AUDIT_NODE: "node=%{IPORHOST:auditd.log.node} "
       AUDIT_PREFIX: "^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\\):(%{DATA})?"
       AUDIT_KEY_VALUES: "%{WORD}=%{GREEDYDATA}"
+      ANY: ".*"
     patterns:
     - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid}
       new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses}
       new ses=%{NUMBER:auditd.log.new_ses}"
-    - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]%{AUDIT_KEY_VALUES:auditd.log.sub_kv}['\"]"
+    - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=['\"]([^=]*\\s)?%{ANY:auditd.log.sub_kv}['\"]"
     - "%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}"
     - "%{AUDIT_PREFIX}"
     - "%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}"
@@ -48,18 +57,14 @@ processors:
 - remove:
     field: auditd.log.epoch
     ignore_failure: true
-- convert:
-    field: auditd.log.sequence
-    type: long
-    ignore_missing: true
-- convert:
-    field: auditd.log.lport
-    type: long
-    ignore_missing: true
-- convert:
-    field: auditd.log.rport
-    type: long
-    ignore_missing: true
+- rename:
+    ignore_failure: true
+    field: auditd.log.old-auid
+    target_field: auditd.log.old_auid
+- rename:
+    ignore_failure: true
+    field: auditd.log.old-ses
+    target_field: auditd.log.old_ses
 - script:
     lang: painless
     source: |
@@ -144,6 +149,38 @@ processors:
     params:
       single_quote: "'"
       double_quote: "\""
+- convert:
+    field: auditd.log.sequence
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.lport
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.rport
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.entries
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.dst_prefixlen
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.ksize
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.size
+    type: long
+    ignore_missing: true
+- convert:
+    field: auditd.log.src_prefixlen
+    type: long
+    ignore_missing: true
 - set:
     field: event.kind
     value: event
