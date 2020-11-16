@@ -1,5 +1,5 @@
 FROM alpine
 
-ADD ./audit.log /
+COPY ./audit.log .
 
-CMD [ "/bin/sh" ]
+ENTRYPOINT [ "/bin/sh" ]
