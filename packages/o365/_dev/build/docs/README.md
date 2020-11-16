@@ -8,14 +8,14 @@ To use this package you need to enable _Audit Log Search_ and register an applic
 
 Once this application is registered note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
 
-For each entry in _Directory (tenant) IDs,_ add the hostname that this tenant identifies in _Directory (tenant) names._ For example:
-
-Directory IDs: `my-id-a` `my-id-b`
-Directory names: `a.onmicrosoft.com` `b.onmicrosoft.com`.
-
 To use client-secret authentication, add you secret to the _Client Secret (API key)_ field.
 
 To use certificate-based authentication, set the paths to the certificate and private key files. If the key file is protected with a passphrase, set this passphrase in the _Private key passphrase_ field. Paths must be absolute and files must exist in the host where _Elastic Agent_ is running.
+
+
+Add your tenant ID(s) to the _Directory (tenant) IDs_ field, then add the hostname that this tenant identifies to the _Directory (tenant) domains_ field. For example:
+- Directory IDs: `my-id-a` `my-id-b`
+- Directory domains: `a.onmicrosoft.com` `b.onmicrosoft.com`
 
 ## Compatibility
 
