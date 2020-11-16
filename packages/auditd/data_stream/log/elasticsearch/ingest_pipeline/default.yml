@@ -1,17 +1,9 @@
 ---
 description: Pipeline for parsing Linux auditd logs
 processors:
-# Change to:
-# - set:
-#     field: event.ingested
-#     value: '{{_ingest.timestamp}}'
-# TODO (2020-11-12): Uncomment after pipeline tests accept dynamic fields. https://github.com/elastic/elastic-package/issues/169
-- date:
-    field: auditd.log.epoch
-    target_field: "event.ingested"
-    formats:
-    - UNIX
-    ignore_failure: true
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
 - grok:
     field: message
     pattern_definitions:

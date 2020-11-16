@@ -21,11 +21,11 @@ An example event for `log` looks as following:
   "@timestamp": "2017-01-31T20:17:14.891Z",
   "auditd": {
     "log": {
-      "dst_prefixlen": "16",
+      "dst_prefixlen": 16,
       "op": "SPD-delete",
       "sequence": 18877201,
       "ses": "4294967295",
-      "src_prefixlen": "24"
+      "src_prefixlen": 24
     }
   },
   "destination": {
@@ -33,7 +33,7 @@ An example event for `log` looks as following:
   },
   "event": {
     "action": "mac_ipsec_event",
-    "ingested": "2020-11-10T10:07:12.607185600Z",
+    "ingested": "2020-11-16T10:43:43.094510300Z",
     "kind": "event",
     "outcome": "1"
   },
