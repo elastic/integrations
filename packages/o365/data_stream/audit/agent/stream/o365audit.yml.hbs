@@ -1,7 +1,7 @@
 {{#if application_id}}application_id: {{application_id}}{{/if}}
 tenant_id:
-{{#each tenants as |tenant i|}}
- - "{{tenant}}"
+{{#each tenants}}
+ - "{{this}}"
 {{/each}}
 {{#if certificate}}certificate: {{certificate}}{{/if}}
 {{#if key}}key: {{key}}{{/if}}
@@ -27,9 +27,9 @@ processors:
       params:
         debug: false
         tenants:
-          {{#each tenants as |tenant i|}}
-          - id: "{{tenant}}"
-            name: "{{tenant}}"
+          {{#each tenants}}
+          - id: "{{.}}"
+            name: "{{lookup ../tenant_names @index}}"
           {{/each}}
       lang: javascript
       id: o365audit_script
