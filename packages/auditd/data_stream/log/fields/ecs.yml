@@ -157,6 +157,20 @@
         Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
         Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
       ignore_above: 1024
+    - name: as.number
+      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+      level: extended
+      type: long
+    - name: as.organization.name
+      description: Organization name.
+      ignore_above: 1024
+      level: extended
+      type: keyword
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: geo.city_name
       level: core
       type: keyword
@@ -172,6 +186,11 @@
       type: keyword
       description: Country ISO code.
       ignore_above: 1024
+    - name: geo.country_name
+      description: Country name.
+      ignore_above: 1024
+      level: core
+      type: keyword
     - name: geo.location
       level: core
       type: geo_point
