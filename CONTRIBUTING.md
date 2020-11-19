@@ -88,14 +88,12 @@ feel free to review the script's [README](https://github.com/elastic/integration
         ```bash
        $ go get -u -d github.com/magefile/mage
        ```
-3. Use the `elastic-package stack up` command to boot up required dependencies:
+3. Use the `elastic-package stack up -v -d` command to boot up required dependencies:
     1. Elasticseach instance:
         * Kibana's dependency
     2. Kibana instance:
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
-    ~~_Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
-    `docker-compose -f snapshot.yml up --force-recreate`.~~ (deprecated)
     _Hint_. There is the `elastic-package` cheat sheet available [here](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
 
 4. Create a new branch for the integration in `integrations` repository (diverge from master).
@@ -283,10 +281,14 @@ testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/syste
    $ elastic-package stack up -d -v
    ```
 
-   ~~The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. After every time you
-   rebuild and reload packages (`mage Reload`), all adjustments in packages will be propagated to the registry.~~
-   The `mage Reload` has been natively replaced with `elastic-package`. More information about reloading local changes in
-   Kibana in the [cheat sheet](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
+   The command above will boot up the Elastic stack (Elasticsearch, Kibana, Package Registry) using Docker containers.
+   It rebuilds the Package Registry Docker image using local packages and boots up the Package Registry.
+
+   To reload the already deployed Package Registry use the following command:
+
+   ```bash
+   $ elastic-package stack up -v -d --services package-registry
+   ```
 
 3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use
    `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
@@ -391,11 +393,20 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
 #### Development
 
-1. ~~When you're developing integrations and you'd like to propagate your changes to the package registry,
-   use `mage Reload` to rebuild and reload the package registry.~~
+1. When you're developing integrations and you'd like to propagate your changes to the package registry, first rebuild the package:
 
-   The `mage Reload` has been natively replaced with `elastic-package`. More information about reloading local changes in
-   Kibana in the [cheat sheet](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
+   ```bash
+   $ cd packages/apache
+   $ elastic-package build
+   ```
+
+   Then, rebuild and redeploy the Package Registry:
+
+   _It's important to execute the following command in the Integrations repository._
+
+   ```bash
+   $ elastic-package stack up -v -d --services package-registry
+   ```
 
    Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
    mounted volumes.

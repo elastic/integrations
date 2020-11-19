@@ -1,9 +1,3 @@
-## Deprecation notice
-
-Docker Compose files have been deprecated in favor of the `elastic-package stack` command. The tool can be found in:
-https://github.com/elastic/elastic-package . With the current building procedure, you will also find the correct binary
-in the `build` directory.
-
 ## Cheat sheet: elastic-package
 
 Update already downloaded Docker images:
