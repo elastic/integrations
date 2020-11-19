@@ -88,14 +88,16 @@ feel free to review the script's [README](https://github.com/elastic/integration
         ```bash
        $ go get -u -d github.com/magefile/mage
        ```
-3. Boot up required dependencies:
+3. Use the `elastic-package stack up` command to boot up required dependencies:
     1. Elasticseach instance:
         * Kibana's dependency
     2. Kibana instance:
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
-    _Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
-    `docker-compose -f snapshot.yml up --force-recreate`.
+    ~~_Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
+    `docker-compose -f snapshot.yml up --force-recreate`.~~ (deprecated)
+    _Hint_. There is the `elastic-package` cheat sheet available [here](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
+
 4. Create a new branch for the integration in `integrations` repository (diverge from master).
 5. Run the command: `mage ImportBeats` to start the import process (note that the import script assumes the projects checked out in step 2 are at `../{project-name}`).
 
@@ -123,7 +125,7 @@ Most of migration work has been done by the `import-beats` script, but there're 
 interaction.
 
 It may happen that your integration misses a screenshot or an icon, it's a good moment to add missing resources to
-Beats/Kibana repositories and re-import the integration (idempotent). 
+Beats/Kibana repositories and re-import the integration (idempotent).
 
 #### Checklist
 
@@ -160,7 +162,7 @@ what's been already fixed, as the script has overridden part of it).
     The README template is used to render the final README file including exported fields. The template should be placed
     in the `dev/import-beats-resources/<integration-name>/docs/README.md`.
 
-    Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`). 
+    Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`).
     If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
 
 5. Review fields file and exported fields in docs.
@@ -264,21 +266,29 @@ what's been already fixed, as the script has overridden part of it).
 
 ### Run the whole setup
 
-1. Build `public` directory with package data:
+_The `elastic-package stack` provides an enrolled instance of the Elastic Agent. Use that one instead of a local application
+if you can run the service (you're integrating with) in the Docker network. The service Docker image can be used for [system
+testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md).
+
+1. Build `packages` directory with package data:
    ```bash
    $ mage build
    ```
 
 2. Start testing environment:
+
+   _Run from inside the Integrations repository._
+
    ```bash
-   $ cd testing/environments
-   $ docker-compose -f snapshot.yml up
+   $ elastic-package stack up -d -v
    ```
 
-   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. After every time you
-   rebuild and reload packages (`mage Reload`), all adjustments in packages will be propagated to the registry.
+   ~~The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. After every time you
+   rebuild and reload packages (`mage Reload`), all adjustments in packages will be propagated to the registry.~~
+   The `mage Reload` has been natively replaced with `elastic-package`. More information about reloading local changes in
+   Kibana in the [cheat sheet](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
 
-3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
+3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use
    `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
    package's `manifest.yml`, if appropriate.)
 
@@ -381,9 +391,12 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
 #### Development
 
-1. When you're developing integrations and you'd like to propagate your changes to the package registry,
-   use `mage Reload` to rebuild and reload the package registry.
-   
+1. ~~When you're developing integrations and you'd like to propagate your changes to the package registry,
+   use `mage Reload` to rebuild and reload the package registry.~~
+
+   The `mage Reload` has been natively replaced with `elastic-package`. More information about reloading local changes in
+   Kibana in the [cheat sheet](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
+
    Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
    mounted volumes.
 
@@ -437,7 +450,7 @@ on the business or technical requirements for the entire platform (Elastic Packa
    If you notice that fields file (e.g. `package-fields.yml`) doesn't contain any field definitions or it defines root only,
    feel free to remove it.
 
-   Bad candidate: 
+   Bad candidate:
    ```yaml
    - name: mypackage.mydataset
      type: group

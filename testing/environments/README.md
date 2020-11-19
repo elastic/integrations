@@ -1,26 +1,55 @@
-Before using the Package Registry, remember to `mage build` the project to prepare the volume with packages
-(`public` directory).
+## Deprecation notice
 
-Refresh docker images:
+Docker Compose files have been deprecated in favor of the `elastic-package stack` command. The tool can be found in:
+https://github.com/elastic/elastic-package . With the current building procedure, you will also find the correct binary
+in the `build` directory.
+
+## Cheat sheet: elastic-package
+
+Update already downloaded Docker images:
+
+`elastic-package stack update -v`
+
+Quickly boot up the stack use:
+
+_Run from within the Integrations repository to consider local package sources (expected for package development)._
+
+`elastic-package stack up -d -v`
+
+Take down the stack:
+
+`elastic-package stack down -v`
+
+Advanced: if you need to modify the internal Docker compose definition, edit files in `~/.elastic-package/stack`, but
+keep in mind that these files shouldn't be modified and your changes will be reverted once you update the `elastic-package`:
 
 ```bash
-$ docker-compose -f snapshot.yml pull
+$tree ~/.elastic-package/stack
+/Users/JohnDoe/.elastic-package/stack
+├── Dockerfile.package-registry
+├── development
+├── kibana.config.yml
+├── package-registry.config.yml
+└── snapshot.yml
 ```
 
-Run docker containers (Elasticsearch, Kibana, Package Registry):
+## Cheat sheet: reload local changes in Kibana
+
+Rebuild the modified package:
+
+`mage build` (for all packages)
+
+or
 
 ```bash
-$ docker-compose -f snapshot.yml up --force-recreate
+$ cd packages/apache
+$ elastic-package build
 ```
 
-... or with Elastic Agent:
+(for single package, in this sample - _Apache_).
 
-```bash
-$ docker-compose -f snapshot.yml -f agent.yml up --force-recreate
-```
+Rebuild and restart the package-registry image:
 
-Use this command to spawn more agents:
+`elastic-package stack up -v -d --services package-registry`
 
-```bash
-$ docker-compose -f snapshot.yml -f agent.yml up --scale elastic-agent=10 --no-recreate -d
-```
+You should see your latest changes in the Kibana UI.
