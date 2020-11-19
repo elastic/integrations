@@ -30,7 +30,6 @@ func Check() error {
 	mg.Deps(Format)
 	mg.Deps(Lint)
 	mg.Deps(Build)
-	mg.Deps(GenerateDocs)
 	mg.Deps(ModTidy)
 	mg.Deps(Test)
 
@@ -93,15 +92,6 @@ func buildImportBeats() error {
 		return errors.Wrap(err, "building import-beats failed")
 	}
 	return nil
-}
-
-func GenerateDocs() error {
-	args := []string{"run", "./dev/generate-docs/"}
-	if os.Getenv("PACKAGES") != "" {
-		args = append(args, "-packages", os.Getenv("PACKAGES"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
 }
 
 func ImportBeats() error {
