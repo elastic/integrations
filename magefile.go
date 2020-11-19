@@ -133,19 +133,6 @@ func UpdatePackageStorage() error {
 	return sh.Run("go", args...)
 }
 
-func Reload() error {
-	err := Build()
-	if err != nil {
-		return err
-	}
-
-	err = sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "build", "package-registry")
-	if err != nil {
-		return err
-	}
-	return sh.RunV("docker-compose", "-f", "testing/environments/snapshot.yml", "up", "-d", "package-registry")
-}
-
 // Format method formats integrations.
 func formatIntegrations() error {
 	return runElasticPackageOnAllIntegrations(true, "format")
