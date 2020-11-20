@@ -62,11 +62,6 @@ func Build() error {
 		return err
 	}
 
-	err = dryRunPackageRegistry()
-	if err != nil {
-		return err
-	}
-
 	err = buildImportBeats()
 	if err != nil {
 		return err
@@ -76,14 +71,6 @@ func Build() error {
 
 func buildIntegrations() error {
 	return runElasticPackageOnAllIntegrations(true, "build")
-}
-
-func dryRunPackageRegistry() error {
-	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
-	if err != nil {
-		return errors.Wrap(err, "package-registry dry-run failed")
-	}
-	return nil
 }
 
 func buildImportBeats() error {
