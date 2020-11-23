@@ -37,7 +37,8 @@ pipeline {
       steps {
         withMageEnv(){
           dir("${BASE_DIR}") {
-            sh(label: 'Install elastic-package', script: 'go get github.com/elastic/elastic-package')
+            sh(label: 'Create build directory', script: 'mkdir build')
+            sh(label: 'Install elastic-package', script: 'go build -o build/elastic-package github.com/elastic/elastic-package')
           }
         }
       }
@@ -74,7 +75,7 @@ pipeline {
         script {
           for(int i=0; i < packagePaths.size(); i++) {
             dir("${BASE_DIR}/${list[i]}"){
-              sh(label: "Check integration: ${list[i]}", script: 'elastic-package check -v')
+              sh(label: "Check integration: ${list[i]}", script: '../../build/elastic-package check -v')
             }
           }
         }
