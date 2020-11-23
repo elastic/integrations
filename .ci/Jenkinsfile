@@ -50,6 +50,8 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
+            pp = list.sort( false ) { it.name }
+            echo "${pp[0]} ${pp[1]} ${pp[2]}"
             packages.each {
               dir("${it.name}"){
                 sh(label: "Check integration: ${it.name}", script: '../../build/elastic-package check -v')
