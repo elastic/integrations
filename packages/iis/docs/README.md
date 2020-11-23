@@ -19,94 +19,94 @@ An example event for `webserver` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-07-08T11:42:12.102Z",
-  "agent": {
-    "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
-    "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
-    "name": "DESKTOP-RFOOE09",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.webserver",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "iis.webserver",
-    "duration": 1205854900,
-    "module": "iis"
-  },
-  "iis": {
-    "webserver": {
-      "asp_net": {
-        "application_restarts": 0,
-        "request_wait_time": 0
-      },
-      "asp_net_application": {
-        "errors_total/sec": 0,
-        "pipeline_instance_count": 2,
-        "requests/sec": 0,
-        "requests_executing": 0,
-        "requests_in_application_queue": 0
-      },
-      "cache": {
-        "current_file_cache_memory_usage": 696,
-        "current_files_cached": 2,
-        "current_uris_cached": 1,
-        "file_cache_hits": 18,
-        "file_cache_misses": 70,
-        "maximum_file_cache_memory_usage": 99453,
-        "output_cache_current_items": 0,
-        "output_cache_current_memory_usage": 0,
-        "output_cache_total_hits": 0,
-        "output_cache_total_misses": 76,
-        "total_files_cached": 15,
-        "total_uris_cached": 10,
-        "uri_cache_hits": 14,
-        "uri_cache_misses": 62
-      },
-      "network": {
-        "anonymous_users_per_sec": 0,
-        "bytes_received_per_sec": 0,
-        "bytes_sent_per_sec": 0,
-        "current_anonymous_users": 0,
-        "current_connections": 2,
-        "current_non_anonymous_users": 0,
-        "delete_requests_per_sec": 0,
-        "get_requests_per_sec": 0,
-        "maximum_connections": 6,
-        "post_requests_per_sec": 0,
-        "service_uptime": 1721919,
-        "total_anonymous_users": 52,
-        "total_bytes_received": 33151,
-        "total_bytes_sent": 903338,
-        "total_connection_attempts": 23,
-        "total_delete_requests": 0,
-        "total_get_requests": 52,
-        "total_non_anonymous_users": 0,
-        "total_post_requests": 0
-      },
-      "process": {
-        "io_read_operations_per_sec": 5.7271735422265,
-        "io_write_operations_per_sec": 5.7271735422265,
-        "page_faults_per_sec": 1.0738450391674688,
-        "private_bytes": 106692608,
-        "virtual_bytes": 2222663852032,
-        "worker_process_count": 2
-      }
+    "@timestamp": "2020-07-08T11:42:12.102Z",
+    "service": {
+        "type": "iis"
+    },
+    "dataset": {
+        "type": "metrics",
+        "name": "iis.webserver",
+        "namespace": "default"
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
+        "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c"
+    },
+    "iis": {
+        "webserver": {
+            "asp_net": {
+                "application_restarts": 0,
+                "request_wait_time": 0
+            },
+            "asp_net_application": {
+                "requests_in_application_queue": 0,
+                "pipeline_instance_count": 2,
+                "requests/sec": 0,
+                "requests_executing": 0,
+                "errors_total/sec": 0
+            },
+            "network": {
+                "total_get_requests": 52,
+                "total_anonymous_users": 52,
+                "current_connections": 2,
+                "anonymous_users_per_sec": 0,
+                "service_uptime": 1721919.0,
+                "total_post_requests": 0,
+                "total_non_anonymous_users": 0,
+                "bytes_received_per_sec": 0,
+                "total_delete_requests": 0,
+                "current_non_anonymous_users": 0,
+                "bytes_sent_per_sec": 0,
+                "total_bytes_received": 33151,
+                "current_anonymous_users": 0,
+                "post_requests_per_sec": 0,
+                "total_connection_attempts": 23,
+                "delete_requests_per_sec": 0,
+                "get_requests_per_sec": 0,
+                "maximum_connections": 6,
+                "total_bytes_sent": 903338
+            },
+            "process": {
+                "io_write_operations_per_sec": 5.7271735422265,
+                "worker_process_count": 2,
+                "private_bytes": 1.06692608E8,
+                "page_faults_per_sec": 1.0738450391674688,
+                "virtual_bytes": 2.222663852032E12,
+                "io_read_operations_per_sec": 5.7271735422265
+            },
+            "cache": {
+                "current_files_cached": 2,
+                "file_cache_misses": 70,
+                "total_files_cached": 15,
+                "output_cache_current_memory_usage": 0,
+                "file_cache_hits": 18,
+                "uri_cache_hits": 14,
+                "output_cache_total_hits": 0,
+                "output_cache_current_items": 0,
+                "current_file_cache_memory_usage": 696,
+                "current_uris_cached": 1,
+                "uri_cache_misses": 62,
+                "maximum_file_cache_memory_usage": 99453,
+                "output_cache_total_misses": 76,
+                "total_uris_cached": 10
+            }
+        }
+    },
+    "event": {
+        "dataset": "iis.webserver",
+        "module": "iis",
+        "duration": 1205854900
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "webserver"
     }
-  },
-  "metricset": {
-    "name": "webserver",
-    "period": 10000
-  },
-  "service": {
-    "type": "iis"
-  }
 }
 ```
 
@@ -159,51 +159,51 @@ An example event for `website` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-07-08T11:40:22.114Z",
-  "agent": {
-    "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
-    "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
-    "name": "DESKTOP-RFOOE09",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.website",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "iis.website",
-    "duration": 5008200,
-    "module": "iis"
-  },
-  "iis": {
-    "website": {
-      "name": "test2.local",
-      "network": {
-        "current_connections": 0,
-        "maximum_connections": 4,
-        "service_uptime": 1721807,
-        "total_bytes_received": 4250,
-        "total_bytes_sent": 135739,
-        "total_connection_attempts": 7,
-        "total_delete_requests": 0,
-        "total_get_requests": 11,
-        "total_post_requests": 0,
-        "total_put_requests": 0
-      }
+    "@timestamp": "2020-07-08T11:40:22.114Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "iis": {
+        "website": {
+            "name": "test2.local",
+            "network": {
+                "total_put_requests": 0,
+                "total_get_requests": 11,
+                "service_uptime": 1721807.0,
+                "total_bytes_sent": 135739,
+                "maximum_connections": 4,
+                "total_connection_attempts": 7,
+                "total_post_requests": 0,
+                "total_bytes_received": 4250,
+                "current_connections": 0,
+                "total_delete_requests": 0
+            }
+        }
+    },
+    "event": {
+        "dataset": "iis.website",
+        "module": "iis",
+        "duration": 5008200
+    },
+    "metricset": {
+        "name": "website",
+        "period": 10000
+    },
+    "service": {
+        "type": "iis"
+    },
+    "dataset": {
+        "name": "iis.website",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
+        "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
+        "name": "DESKTOP-RFOOE09"
     }
-  },
-  "metricset": {
-    "name": "website",
-    "period": 10000
-  },
-  "service": {
-    "type": "iis"
-  }
 }
 ```
 
@@ -256,50 +256,50 @@ An example event for `application_pool` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-07-08T11:41:31.048Z",
-  "agent": {
-    "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
-    "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
-    "name": "DESKTOP-RFOOE09",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.application_pool",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "iis.application_pool",
-    "duration": 397142600,
-    "module": "iis"
-  },
-  "iis": {
-    "application_pool": {
-      "name": "DefaultAppPool",
-      "net_clr": {
-        "total_exceptions_thrown": 0
-      },
-      "process": {
-        "handle_count": 466,
-        "private_bytes": 71516160,
-        "thread_count": 30
-      }
+    "@timestamp": "2020-07-08T11:41:31.048Z",
+    "process": {
+        "pid": 51224
+    },
+    "event": {
+        "dataset": "iis.application_pool",
+        "module": "iis",
+        "duration": 397142600
+    },
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
+        "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c"
+    },
+    "service": {
+        "type": "iis"
+    },
+    "iis": {
+        "application_pool": {
+            "name": "DefaultAppPool",
+            "net_clr": {
+                "total_exceptions_thrown": 0
+            },
+            "process": {
+                "thread_count": 30,
+                "handle_count": 466,
+                "private_bytes": 7.151616E7
+            }
+        }
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "application_pool"
+    },
+    "dataset": {
+        "namespace": "default",
+        "type": "metrics",
+        "name": "iis.application_pool"
     }
-  },
-  "metricset": {
-    "name": "application_pool",
-    "period": 10000
-  },
-  "process": {
-    "pid": 51224
-  },
-  "service": {
-    "type": "iis"
-  }
 }
 ```
 
@@ -358,90 +358,90 @@ An example event for `access` looks as following:
 
 ```$json
 {
-  "@timestamp": "2018-11-19T15:24:54.000Z",
-  "agent": {
-    "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
-    "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
-    "name": "DESKTOP-RFOOE09",
-    "type": "filebeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.access",
-    "namespace": "default",
-    "type": "logs"
-  },
-  "destination": {
-    "address": "127.0.0.1",
-    "ip": "127.0.0.1",
-    "port": 80
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "category": [
-      "web",
-      "network"
-    ],
-    "created": "2020-07-08T11:40:14.112Z",
-    "duration": 725000000,
-    "kind": "event",
-    "outcome": "failure",
-    "type": [
-      "connection"
-    ]
-  },
-  "http": {
-    "request": {
-      "method": "GET"
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
+        "type": "filebeat",
+        "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
+        "version": "8.0.0"
     },
-    "response": {
-      "status_code": 401
+    "temp": {},
+    "log": {
+        "file": {
+            "path": "C:\\inetpub\\logs\\LogFiles\\W3SVC2\\u_ex181119.log"
+        },
+        "offset": 261
+    },
+    "destination": {
+        "address": "127.0.0.1",
+        "port": 80,
+        "ip": "127.0.0.1"
+    },
+    "source": {
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1"
+    },
+    "url": {
+        "path": "/"
+    },
+    "input": {
+        "type": "log"
+    },
+    "iis": {
+        "access": {
+            "sub_status": 3,
+            "win32_status": 5
+        }
+    },
+    "@timestamp": "2018-11-19T15:24:54.000Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1",
+            "127.0.0.1"
+        ]
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "status_code": 401
+        }
+    },
+    "event": {
+        "duration": 725000000,
+        "created": "2020-07-08T11:40:14.112Z",
+        "kind": "event",
+        "category": [
+            "web",
+            "network"
+        ],
+        "type": [
+            "connection"
+        ],
+        "outcome": "failure"
+    },
+    "dataset": {
+        "name": "iis.access",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "user_agent": {
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36",
+        "os": {
+            "name": "Windows",
+            "version": "10",
+            "full": "Windows 10"
+        },
+        "name": "Chrome",
+        "device": {
+            "name": "Other"
+        },
+        "version": "70.0.3538.102"
     }
-  },
-  "iis": {
-    "access": {
-      "sub_status": 3,
-      "win32_status": 5
-    }
-  },
-  "input": {
-    "type": "log"
-  },
-  "log": {
-    "file": {
-      "path": "C:\\inetpub\\logs\\LogFiles\\W3SVC2\\u_ex181119.log"
-    },
-    "offset": 261
-  },
-  "related": {
-    "ip": [
-      "127.0.0.1",
-      "127.0.0.1"
-    ]
-  },
-  "source": {
-    "address": "127.0.0.1",
-    "ip": "127.0.0.1"
-  },
-  "temp": {},
-  "url": {
-    "path": "/"
-  },
-  "user_agent": {
-    "device": {
-      "name": "Other"
-    },
-    "name": "Chrome",
-    "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36",
-    "os": {
-      "full": "Windows 10",
-      "name": "Windows",
-      "version": "10"
-    },
-    "version": "70.0.3538.102"
-  }
 }
 ```
 
@@ -522,63 +522,63 @@ An example event for `error` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-30T13:56:46.000Z",
-  "agent": {
-    "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
-    "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
-    "name": "DESKTOP-RFOOE09",
-    "type": "filebeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.error",
-    "namespace": "default",
-    "type": "logs"
-  },
-  "destination": {
-    "address": "::1%0",
-    "ip": "::1",
-    "port": 80
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "category": [
-      "web",
-      "network"
-    ],
-    "created": "2020-07-08T11:40:13.768Z",
-    "kind": "event",
-    "type": [
-      "connection"
-    ]
-  },
-  "iis": {
-    "error": {
-      "reason_phrase": "Timer_ConnectionIdle"
-    }
-  },
-  "input": {
-    "type": "log"
-  },
-  "log": {
-    "file": {
-      "path": "c:\\Windows\\System32\\LogFiles\\HTTPERR\\httperr1.log"
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
+        "type": "filebeat",
+        "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
+        "version": "8.0.0"
     },
-    "offset": 199
-  },
-  "related": {
-    "ip": [
-      "::1",
-      "::1"
-    ]
-  },
-  "source": {
-    "address": "::1%0",
-    "ip": "::1",
-    "port": 59827
-  }
+    "log": {
+        "file": {
+            "path": "c:\\Windows\\System32\\LogFiles\\HTTPERR\\httperr1.log"
+        },
+        "offset": 199
+    },
+    "destination": {
+        "address": "::1%0",
+        "port": 80,
+        "ip": "::1"
+    },
+    "source": {
+        "address": "::1%0",
+        "port": 59827,
+        "ip": "::1"
+    },
+    "input": {
+        "type": "log"
+    },
+    "iis": {
+        "error": {
+            "reason_phrase": "Timer_ConnectionIdle"
+        }
+    },
+    "@timestamp": "2020-06-30T13:56:46.000Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "related": {
+        "ip": [
+            "::1",
+            "::1"
+        ]
+    },
+    "event": {
+        "created": "2020-07-08T11:40:13.768Z",
+        "kind": "event",
+        "category": [
+            "web",
+            "network"
+        ],
+        "type": [
+            "connection"
+        ]
+    },
+    "dataset": {
+        "name": "iis.error",
+        "namespace": "default",
+        "type": "logs"
+    }
 }
 ```
 

@@ -165,104 +165,104 @@ An example event for `galera_status` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-04-20T12:33:24.613Z",
-  "agent": {
-    "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f",
-    "hostname": "MacBook-Elastic.local",
-    "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "mysql.galera_status",
-    "duration": 3275482,
-    "module": "mysql"
-  },
-  "fields": {
-    "stream": {
-      "dataset": "mysql.galera_status",
-      "namespace": "default",
-      "type": "metrics"
+    "@timestamp": "2020-04-20T12:33:24.613Z",
+    "mysql": {
+        "galera_status": {
+            "apply": {
+                "oooe": 0,
+                "oool": 0,
+                "window": 1
+            },
+            "connected": "ON",
+            "flow_ctl": {
+                "recv": 0,
+                "sent": 0,
+                "paused": 0,
+                "paused_ns": 0
+            },
+            "ready": "ON",
+            "received": {
+                "count": 173,
+                "bytes": 152425
+            },
+            "local": {
+                "state": "Synced",
+                "bf_aborts": 0,
+                "cert_failures": 0,
+                "commits": 1325,
+                "recv": {
+                    "queue_max": 2,
+                    "queue_min": 0,
+                    "queue": 0,
+                    "queue_avg": 0.011561
+                },
+                "replays": 0,
+                "send": {
+                    "queue_min": 0,
+                    "queue": 0,
+                    "queue_avg": 0,
+                    "queue_max": 1
+                }
+            },
+            "evs": {
+                "evict": "",
+                "state": "OPERATIONAL"
+            },
+            "repl": {
+                "bytes": 1689804,
+                "data_bytes": 1540647,
+                "keys": 4170,
+                "keys_bytes": 63973,
+                "other_bytes": 0,
+                "count": 1331
+            },
+            "commit": {
+                "oooe": 0,
+                "window": 1
+            },
+            "cluster": {
+                "conf_id": 930,
+                "size": 3,
+                "status": "Primary"
+            },
+            "last_committed": 23944,
+            "cert": {
+                "deps_distance": 43.524557,
+                "index_size": 22,
+                "interval": 0
+            }
+        }
+    },
+    "fields": {
+        "stream": {
+            "type": "metrics",
+            "dataset": "mysql.galera_status",
+            "namespace": "default"
+        }
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "agent": {
+        "hostname": "MacBook-Elastic.local",
+        "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
+        "version": "8.0.0",
+        "type": "metricbeat",
+        "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f"
+    },
+    "event": {
+        "dataset": "mysql.galera_status",
+        "module": "mysql",
+        "duration": 3275482
+    },
+    "metricset": {
+        "name": "galera_status",
+        "period": 10000
+    },
+    "service": {
+        "address": "127.0.0.1:3306",
+        "type": "mysql"
     }
-  },
-  "metricset": {
-    "name": "galera_status",
-    "period": 10000
-  },
-  "mysql": {
-    "galera_status": {
-      "apply": {
-        "oooe": 0,
-        "oool": 0,
-        "window": 1
-      },
-      "cert": {
-        "deps_distance": 43.524557,
-        "index_size": 22,
-        "interval": 0
-      },
-      "cluster": {
-        "conf_id": 930,
-        "size": 3,
-        "status": "Primary"
-      },
-      "commit": {
-        "oooe": 0,
-        "window": 1
-      },
-      "connected": "ON",
-      "evs": {
-        "evict": "",
-        "state": "OPERATIONAL"
-      },
-      "flow_ctl": {
-        "paused": 0,
-        "paused_ns": 0,
-        "recv": 0,
-        "sent": 0
-      },
-      "last_committed": 23944,
-      "local": {
-        "bf_aborts": 0,
-        "cert_failures": 0,
-        "commits": 1325,
-        "recv": {
-          "queue": 0,
-          "queue_avg": 0.011561,
-          "queue_max": 2,
-          "queue_min": 0
-        },
-        "replays": 0,
-        "send": {
-          "queue": 0,
-          "queue_avg": 0,
-          "queue_max": 1,
-          "queue_min": 0
-        },
-        "state": "Synced"
-      },
-      "ready": "ON",
-      "received": {
-        "bytes": 152425,
-        "count": 173
-      },
-      "repl": {
-        "bytes": 1689804,
-        "count": 1331,
-        "data_bytes": 1540647,
-        "keys": 4170,
-        "keys_bytes": 63973,
-        "other_bytes": 0
-      }
-    }
-  },
-  "service": {
-    "address": "127.0.0.1:3306",
-    "type": "mysql"
-  }
 }
 ```
 
@@ -354,138 +354,138 @@ An example event for `status` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-04-20T12:32:54.614Z",
-  "agent": {
-    "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f",
-    "hostname": "MacBook-Elastic.local",
-    "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "mysql.status",
-    "duration": 4708776,
-    "module": "mysql"
-  },
-  "fields": {
-    "stream": {
-      "dataset": "mysql.status",
-      "namespace": "default",
-      "type": "metrics"
+    "@timestamp": "2020-04-20T12:32:54.614Z",
+    "mysql": {
+        "status": {
+            "max_used_connections": 3,
+            "queries": 479,
+            "handler": {
+                "prepare": 0,
+                "savepoint": 0,
+                "update": 0,
+                "delete": 0,
+                "read": {
+                    "rnd_next": 59604,
+                    "first": 8,
+                    "key": 6,
+                    "last": 0,
+                    "next": 1,
+                    "prev": 0,
+                    "rnd": 0
+                },
+                "rollback": 0,
+                "write": 0,
+                "commit": 5,
+                "savepoint_rollback": 0,
+                "external_lock": 552,
+                "mrr_init": 0
+            },
+            "aborted": {
+                "clients": 0,
+                "connects": 0
+            },
+            "threads": {
+                "running": 2,
+                "cached": 1,
+                "created": 3,
+                "connected": 2
+            },
+            "flush_commands": 1,
+            "created": {
+                "tmp": {
+                    "disk_tables": 0,
+                    "files": 6,
+                    "tables": 0
+                }
+            },
+            "connections": 159,
+            "command": {
+                "insert": 0,
+                "select": 155,
+                "update": 0,
+                "delete": 0
+            },
+            "opened_tables": 122,
+            "binlog": {
+                "cache": {
+                    "use": 0,
+                    "disk_use": 0
+                }
+            },
+            "delayed": {
+                "writes": 0,
+                "errors": 0,
+                "insert_threads": 0
+            },
+            "questions": 479,
+            "innodb": {
+                "buffer_pool": {
+                    "read": {
+                        "ahead_rnd": 0,
+                        "requests": 1488,
+                        "ahead": 0,
+                        "ahead_evicted": 0
+                    },
+                    "pool": {
+                        "wait_free": 0,
+                        "reads": 405
+                    },
+                    "write_requests": 325,
+                    "bytes": {
+                        "data": 7176192,
+                        "dirty": 0
+                    },
+                    "pages": {
+                        "dirty": 0,
+                        "flushed": 36,
+                        "free": 7753,
+                        "misc": 0,
+                        "total": 8191,
+                        "data": 438
+                    }
+                }
+            },
+            "bytes": {
+                "received": 38468,
+                "sent": 1622162
+            },
+            "open": {
+                "streams": 0,
+                "tables": 115,
+                "files": 14
+            }
+        }
+    },
+    "event": {
+        "dataset": "mysql.status",
+        "module": "mysql",
+        "duration": 4708776
+    },
+    "metricset": {
+        "name": "status",
+        "period": 10000
+    },
+    "fields": {
+        "stream": {
+            "type": "metrics",
+            "dataset": "mysql.status",
+            "namespace": "default"
+        }
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "agent": {
+        "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
+        "version": "8.0.0",
+        "type": "metricbeat",
+        "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f",
+        "hostname": "MacBook-Elastic.local"
+    },
+    "service": {
+        "address": "127.0.0.1:3306",
+        "type": "mysql"
     }
-  },
-  "metricset": {
-    "name": "status",
-    "period": 10000
-  },
-  "mysql": {
-    "status": {
-      "aborted": {
-        "clients": 0,
-        "connects": 0
-      },
-      "binlog": {
-        "cache": {
-          "disk_use": 0,
-          "use": 0
-        }
-      },
-      "bytes": {
-        "received": 38468,
-        "sent": 1622162
-      },
-      "command": {
-        "delete": 0,
-        "insert": 0,
-        "select": 155,
-        "update": 0
-      },
-      "connections": 159,
-      "created": {
-        "tmp": {
-          "disk_tables": 0,
-          "files": 6,
-          "tables": 0
-        }
-      },
-      "delayed": {
-        "errors": 0,
-        "insert_threads": 0,
-        "writes": 0
-      },
-      "flush_commands": 1,
-      "handler": {
-        "commit": 5,
-        "delete": 0,
-        "external_lock": 552,
-        "mrr_init": 0,
-        "prepare": 0,
-        "read": {
-          "first": 8,
-          "key": 6,
-          "last": 0,
-          "next": 1,
-          "prev": 0,
-          "rnd": 0,
-          "rnd_next": 59604
-        },
-        "rollback": 0,
-        "savepoint": 0,
-        "savepoint_rollback": 0,
-        "update": 0,
-        "write": 0
-      },
-      "innodb": {
-        "buffer_pool": {
-          "bytes": {
-            "data": 7176192,
-            "dirty": 0
-          },
-          "pages": {
-            "data": 438,
-            "dirty": 0,
-            "flushed": 36,
-            "free": 7753,
-            "misc": 0,
-            "total": 8191
-          },
-          "pool": {
-            "reads": 405,
-            "wait_free": 0
-          },
-          "read": {
-            "ahead": 0,
-            "ahead_evicted": 0,
-            "ahead_rnd": 0,
-            "requests": 1488
-          },
-          "write_requests": 325
-        }
-      },
-      "max_used_connections": 3,
-      "open": {
-        "files": 14,
-        "streams": 0,
-        "tables": 115
-      },
-      "opened_tables": 122,
-      "queries": 479,
-      "questions": 479,
-      "threads": {
-        "cached": 1,
-        "connected": 2,
-        "created": 3,
-        "running": 2
-      }
-    }
-  },
-  "service": {
-    "address": "127.0.0.1:3306",
-    "type": "mysql"
-  }
 }
 ```
 
