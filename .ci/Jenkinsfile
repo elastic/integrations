@@ -48,12 +48,10 @@ pipeline {
     }
     stage('Check integrations') {
       steps {
-        script {
-          dir("${BASE_DIR}/packages") {
-            findFiles().each {
-              dir("${it}"){
-                sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-              }
+        dir("${BASE_DIR}/packages") {
+          findFiles().each {
+            dir("${it}"){
+              sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
             }
           }
         }
