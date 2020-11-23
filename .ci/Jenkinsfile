@@ -47,14 +47,7 @@ pipeline {
         }
       }
     }
-    stage('Find packages') {
-      steps {
-        script {
-          packagePaths = findFiles(glob: 'packages/*')
-        }
-      }
-    }
-    stage('Check') {
+    stage('Check integrations') {
       steps {
         withMageEnv(){
           dir("${BASE_DIR}") {
@@ -62,6 +55,7 @@ pipeline {
           }
         }
         script {
+          packagePaths = findFiles(glob: 'packages/*')
           for(int i=0; i < packagePaths.size(); i++) {
             dir("${BASE_DIR}/${list[i]}"){
               sh(label: "Check integration: ${list[i]}", script: '../../build/elastic-package check -v')
