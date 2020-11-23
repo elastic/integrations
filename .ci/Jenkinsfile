@@ -74,6 +74,7 @@ pipeline {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
             packages = packages.sort(true, { it.name })
+            packages = packages.findAll { it -> !it.name.endsWith('@tmp') }
             packages.each {
               dir("${it.name}"){
                 sh(label: "Test integration: ${it.name}", script: '''
