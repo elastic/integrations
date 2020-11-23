@@ -51,7 +51,8 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            echo packages.sort()
+            pp = packages.sort()
+            echo "${pp[0]} ${pp[1]} ${pp[2]} ${pp[3]}"
             packages.each {
               dir("${it.name}"){
                 sh(label: "Check integration: ${it.name}", script: '../../build/elastic-package check -v')
@@ -74,6 +75,7 @@ pipeline {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
             packages.sort()
+            // Hack to skip temporary files with "@tmp" suffix:
             packages = packages.findAll { !it.name.endsWith('@tmp') }
             packages.each {
               dir("${it.name}"){
