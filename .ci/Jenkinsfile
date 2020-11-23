@@ -50,10 +50,12 @@ pipeline {
       }
       post {
         always {
-          archiveArtifacts(allowEmptyArchive: true, artifacts: '.elastic-package/tmp/test/reports/*.xml')
+          dir("${BASE_DIR}") {
+          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
           junit(allowEmptyResults: false,
                 keepLongStdio: true,
-                testResults: ".elastic-package/tmp/test/reports/*.xml")
+                testResults: "build/test-results/*.xml")
+          }
         }
       }
     }
