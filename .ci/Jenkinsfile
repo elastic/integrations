@@ -50,8 +50,8 @@ pipeline {
     stage('Check integrations') {
       steps {
         withMageEnv(){
-          dir("${BASE_DIR}") {
-            sh(label: 'Install elastic-package', script: 'mkdir build && go build -o build/elastic-package github.com/elastic/elastic-package')
+          dir("${BASE_DIR}/build") {
+            sh(label: 'Install elastic-package', script: 'go build -o build/elastic-package github.com/elastic/elastic-package')
           }
         }
         script {
@@ -59,7 +59,7 @@ pipeline {
             def packagePaths = findFiles()
             echo "$packagePaths"
             packagePaths.each {
-              dir("${BASE_DIR}/packages/${it}"){
+              dir("${it}"){
                 sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
               }
             }
