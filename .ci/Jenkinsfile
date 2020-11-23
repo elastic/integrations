@@ -33,17 +33,6 @@ pipeline {
         stash allowEmpty: true, name: 'source', useDefaultExcludes: false
       }
     }
-    stage('Prepare tools') {
-      steps {
-        withMageEnv(){
-          dir("${BASE_DIR}") {
-            sh(label: 'DEBUG', script: 'pwd && ls -la')
-            sh(label: 'Install Go deps', script: 'mage')
-            sh(label: 'Install elastic-package', script: 'mkdir build && go build -o build/elastic-package github.com/elastic/elastic-package')
-          }
-        }
-      }
-    }
     stage('Check Go sources') {
       steps {
         cleanup()
@@ -52,15 +41,9 @@ pipeline {
             sh(label: 'Checks and builds Go sources', script: 'mage -debug check')
           }
         }
-      }
-      post {
-        always {
-          dir("${BASE_DIR}") {
-          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-          junit(allowEmptyResults: false,
-                keepLongStdio: true,
-                testResults: "build/test-results/*.xml")
-          }
+        dir("${BASE_DIR}") {
+          sh(label: "git update-index", script: 'git update-index --refresh')
+          sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
         }
       }
     }
@@ -73,6 +56,11 @@ pipeline {
     }
     stage('Check') {
       steps {
+        withMageEnv(){
+          dir("${BASE_DIR}") {
+            sh(label: 'Install elastic-package', script: 'mkdir build && go build -o build/elastic-package github.com/elastic/elastic-package')
+          }
+        }
         script {
           for(int i=0; i < packagePaths.size(); i++) {
             dir("${BASE_DIR}/${list[i]}"){
@@ -80,10 +68,6 @@ pipeline {
             }
           }
         }
-      }
-    }
-    stage('Verify: no changes') {
-      steps {
         dir("${BASE_DIR}") {
           sh(label: "git update-index", script: 'git update-index --refresh')
           sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
