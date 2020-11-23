@@ -36,7 +36,6 @@ pipeline {
     }
     stage('Check Go sources') {
       steps {
-        cleanup()
         withMageEnv(){
           dir("${BASE_DIR}"){
             sh(label: 'Checks and builds Go sources', script: 'mage -debug check')
@@ -50,10 +49,8 @@ pipeline {
     }
     stage('Check integrations') {
       steps {
-        withMageEnv(){
-          dir("${BASE_DIR}/build") {
-            sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
-          }
+        dir("${BASE_DIR}/build") {
+          sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
         }
         script {
           dir("${BASE_DIR}/packages") {
@@ -68,6 +65,7 @@ pipeline {
           sh(label: "git update-index", script: 'git update-index --refresh')
           sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
         }
+        stash allowEmpty: true, name: 'source', useDefaultExcludes: false
       }
     }
     stage('Update Package Storage') {
@@ -75,7 +73,6 @@ pipeline {
         branch 'master'
       }
       steps {
-        cleanup()
         gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
           sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
