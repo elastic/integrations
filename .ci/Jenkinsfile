@@ -65,13 +65,15 @@ pipeline {
     }
     stage('Test integrations') {
       steps {
-        sh(label: "Boot up Elastic stack", script: '../../build/elastic-package stack up -d -v')
+        dir("${BASE_DIR}") {
+          sh(label: "Boot up Elastic stack", script: '../../build/elastic-package stack up -d -v')
+        }
         script {
           dir("${BASE_DIR}/packages") {
             findFiles().each {
               dir("${it}"){
                 sh(label: "Test integration: ${it}", script: '''
-                eval "$(elastic-package stack shellinit)"
+                eval "$(../../build/elastic-package stack shellinit)"
                 ../../build/elastic-package test -v
                 ''')
               }
