@@ -119,197 +119,197 @@ An example event for `info` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-25T10:16:10.138Z",
-  "dataset": {
-    "name": "redis.info",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "redis.info",
-    "duration": 374411,
-    "module": "redis"
-  },
-  "metricset": {
-    "name": "info",
-    "period": 10000
-  },
-  "redis": {
-    "info": {
-      "clients": {
-        "biggest_input_buf": 0,
-        "blocked": 0,
-        "connected": 5,
-        "longest_output_list": 0,
-        "max_input_buffer": 0,
-        "max_output_buffer": 0
-      },
-      "cluster": {
-        "enabled": false
-      },
-      "cpu": {
-        "used": {
-          "sys": 1.66,
-          "sys_children": 0,
-          "user": 0.39,
-          "user_children": 0.01
-        }
-      },
-      "memory": {
-        "active_defrag": {},
-        "allocator": "jemalloc-4.0.3",
-        "allocator_stats": {
-          "fragmentation": {},
-          "rss": {}
-        },
-        "fragmentation": {
-          "ratio": 2.71
-        },
-        "max": {
-          "policy": "noeviction",
-          "value": 0
-        },
-        "used": {
-          "lua": 37888,
-          "peak": 945016,
-          "rss": 2453504,
-          "value": 904992
-        }
-      },
-      "persistence": {
-        "aof": {
-          "bgrewrite": {
-            "last_status": "ok"
-          },
-          "buffer": {},
-          "copy_on_write": {},
-          "enabled": false,
-          "fsync": {},
-          "rewrite": {
-            "buffer": {},
-            "current_time": {
-              "sec": -1
+    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "dataset": {
+        "name": "redis.info",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "redis": {
+        "info": {
+            "clients": {
+                "biggest_input_buf": 0,
+                "blocked": 0,
+                "connected": 5,
+                "longest_output_list": 0,
+                "max_input_buffer": 0,
+                "max_output_buffer": 0
             },
-            "in_progress": false,
-            "last_time": {
-              "sec": -1
+            "cluster": {
+                "enabled": false
             },
-            "scheduled": false
-          },
-          "size": {},
-          "write": {
-            "last_status": "ok"
-          }
-        },
-        "loading": false,
-        "rdb": {
-          "bgsave": {
-            "current_time": {
-              "sec": -1
+            "cpu": {
+                "used": {
+                    "sys": 1.66,
+                    "sys_children": 0,
+                    "user": 0.39,
+                    "user_children": 0.01
+                }
             },
-            "in_progress": false,
-            "last_status": "ok",
-            "last_time": {
-              "sec": -1
+            "memory": {
+                "active_defrag": {},
+                "allocator": "jemalloc-4.0.3",
+                "allocator_stats": {
+                    "fragmentation": {},
+                    "rss": {}
+                },
+                "fragmentation": {
+                    "ratio": 2.71
+                },
+                "max": {
+                    "policy": "noeviction",
+                    "value": 0
+                },
+                "used": {
+                    "lua": 37888,
+                    "peak": 945016,
+                    "rss": 2453504,
+                    "value": 904992
+                }
+            },
+            "persistence": {
+                "aof": {
+                    "bgrewrite": {
+                        "last_status": "ok"
+                    },
+                    "buffer": {},
+                    "copy_on_write": {},
+                    "enabled": false,
+                    "fsync": {},
+                    "rewrite": {
+                        "buffer": {},
+                        "current_time": {
+                            "sec": -1
+                        },
+                        "in_progress": false,
+                        "last_time": {
+                            "sec": -1
+                        },
+                        "scheduled": false
+                    },
+                    "size": {},
+                    "write": {
+                        "last_status": "ok"
+                    }
+                },
+                "loading": false,
+                "rdb": {
+                    "bgsave": {
+                        "current_time": {
+                            "sec": -1
+                        },
+                        "in_progress": false,
+                        "last_status": "ok",
+                        "last_time": {
+                            "sec": -1
+                        }
+                    },
+                    "copy_on_write": {},
+                    "last_save": {
+                        "changes_since": 35,
+                        "time": 1548663522
+                    }
+                }
+            },
+            "replication": {
+                "backlog": {
+                    "active": 0,
+                    "first_byte_offset": 0,
+                    "histlen": 0,
+                    "size": 1048576
+                },
+                "connected_slaves": 0,
+                "master": {
+                    "offset": 0,
+                    "sync": {}
+                },
+                "master_offset": 0,
+                "role": "master",
+                "slave": {}
+            },
+            "server": {
+                "arch_bits": "64",
+                "build_id": "b9a4cd86ce8027d3",
+                "config_file": "",
+                "gcc_version": "6.4.0",
+                "git_dirty": "0",
+                "git_sha1": "00000000",
+                "hz": 10,
+                "lru_clock": 5159690,
+                "mode": "standalone",
+                "multiplexing_api": "epoll",
+                "run_id": "0f681cb959aa47413ec40ff383715c923f9cbefd",
+                "tcp_port": 6379,
+                "uptime": 707
+            },
+            "slowlog": {
+                "count": 0
+            },
+            "stats": {
+                "active_defrag": {},
+                "commands_processed": 265,
+                "connections": {
+                    "received": 848,
+                    "rejected": 0
+                },
+                "instantaneous": {
+                    "input_kbps": 0.18,
+                    "ops_per_sec": 6,
+                    "output_kbps": 1.39
+                },
+                "keys": {
+                    "evicted": 0,
+                    "expired": 0
+                },
+                "keyspace": {
+                    "hits": 15,
+                    "misses": 0
+                },
+                "latest_fork_usec": 0,
+                "migrate_cached_sockets": 0,
+                "net": {
+                    "input": {
+                        "bytes": 7300
+                    },
+                    "output": {
+                        "bytes": 219632
+                    }
+                },
+                "pubsub": {
+                    "channels": 0,
+                    "patterns": 0
+                },
+                "sync": {
+                    "full": 0,
+                    "partial": {
+                        "err": 0,
+                        "ok": 0
+                    }
+                }
             }
-          },
-          "copy_on_write": {},
-          "last_save": {
-            "changes_since": 35,
-            "time": 1548663522
-          }
         }
-      },
-      "replication": {
-        "backlog": {
-          "active": 0,
-          "first_byte_offset": 0,
-          "histlen": 0,
-          "size": 1048576
-        },
-        "connected_slaves": 0,
-        "master": {
-          "offset": 0,
-          "sync": {}
-        },
-        "master_offset": 0,
-        "role": "master",
-        "slave": {}
-      },
-      "server": {
-        "arch_bits": "64",
-        "build_id": "b9a4cd86ce8027d3",
-        "config_file": "",
-        "gcc_version": "6.4.0",
-        "git_dirty": "0",
-        "git_sha1": "00000000",
-        "hz": 10,
-        "lru_clock": 5159690,
-        "mode": "standalone",
-        "multiplexing_api": "epoll",
-        "run_id": "0f681cb959aa47413ec40ff383715c923f9cbefd",
-        "tcp_port": 6379,
-        "uptime": 707
-      },
-      "slowlog": {
-        "count": 0
-      },
-      "stats": {
-        "active_defrag": {},
-        "commands_processed": 265,
-        "connections": {
-          "received": 848,
-          "rejected": 0
-        },
-        "instantaneous": {
-          "input_kbps": 0.18,
-          "ops_per_sec": 6,
-          "output_kbps": 1.39
-        },
-        "keys": {
-          "evicted": 0,
-          "expired": 0
-        },
-        "keyspace": {
-          "hits": 15,
-          "misses": 0
-        },
-        "latest_fork_usec": 0,
-        "migrate_cached_sockets": 0,
-        "net": {
-          "input": {
-            "bytes": 7300
-          },
-          "output": {
-            "bytes": 219632
-          }
-        },
-        "pubsub": {
-          "channels": 0,
-          "patterns": 0
-        },
-        "sync": {
-          "full": 0,
-          "partial": {
-            "err": 0,
-            "ok": 0
-          }
-        }
-      }
+    },
+    "event": {
+        "duration": 374411,
+        "dataset": "redis.info",
+        "module": "redis"
+    },
+    "stream": {
+        "dataset": "redis.info",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "metricset": {
+        "name": "info",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:6379",
+        "type": "redis"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
-  },
-  "service": {
-    "address": "localhost:6379",
-    "type": "redis"
-  },
-  "stream": {
-    "dataset": "redis.info",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
@@ -479,47 +479,47 @@ An example event for `key` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-25T10:16:10.138Z",
-  "dataset": {
-    "name": "redis.key",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "redis.key",
-    "duration": 374411,
-    "module": "redis"
-  },
-  "metricset": {
-    "name": "key",
-    "period": 10000
-  },
-  "redis": {
-    "key": {
-      "expire": {
-        "ttl": 360
-      },
-      "id": "0:foo",
-      "length": 3,
-      "name": "foo",
-      "type": "string"
+    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "dataset": {
+        "name": "redis.key",
+        "namespace": "default",
+        "type": "metrics"
     },
-    "keyspace": {
-      "id": "db0"
+    "redis": {
+        "key": {
+            "expire": {
+                "ttl": 360
+            },
+            "id": "0:foo",
+            "length": 3,
+            "name": "foo",
+            "type": "string"
+        },
+        "keyspace": {
+            "id": "db0"
+        }
+    },
+    "event": {
+        "duration": 374411,
+        "dataset": "redis.key",
+        "module": "redis"
+    },
+    "stream": {
+        "dataset": "redis.key",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "metricset": {
+        "name": "key",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:6379",
+        "type": "redis"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
-  },
-  "service": {
-    "address": "localhost:6379",
-    "type": "redis"
-  },
-  "stream": {
-    "dataset": "redis.key",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
@@ -576,41 +576,41 @@ An example event for `keyspace` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-25T10:16:10.138Z",
-  "dataset": {
-    "name": "redis.keyspace",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "redis.keyspace",
-    "duration": 374411,
-    "module": "redis"
-  },
-  "metricset": {
-    "name": "keyspace",
-    "period": 10000
-  },
-  "redis": {
-    "keyspace": {
-      "avg_ttl": 359459,
-      "expires": 0,
-      "id": "db0",
-      "keys": 1
+    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "dataset": {
+        "name": "redis.keyspace",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "redis": {
+        "keyspace": {
+            "avg_ttl": 359459,
+            "expires": 0,
+            "id": "db0",
+            "keys": 1
+        }
+    },
+    "event": {
+        "duration": 374411,
+        "dataset": "redis.keyspace",
+        "module": "redis"
+    },
+    "stream": {
+        "dataset": "redis.keyspace",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "metricset": {
+        "name": "keyspace",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:6379",
+        "type": "redis"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
-  },
-  "service": {
-    "address": "localhost:6379",
-    "type": "redis"
-  },
-  "stream": {
-    "dataset": "redis.keyspace",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 

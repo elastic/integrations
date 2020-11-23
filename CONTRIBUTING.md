@@ -158,7 +158,7 @@ what's been already fixed, as the script has overridden part of it).
 4. Write README template file for the integration.
 
     The README template is used to render the final README file including exported fields. The template should be placed
-    in the `dev/import-beats-resources/<integration-name>/docs/README.md`.
+    in the `package/<integration-name>/_dev/build/docs/README.md`. If the directory doesn't exist, please create it.
 
     Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`).
     If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
@@ -251,7 +251,7 @@ what's been already fixed, as the script has overridden part of it).
 11. Update docs template with sample events.
 
     The events collected by the agent slightly differ from original, Metricbeat's and Filebeat's, ones. Adjust the event
-    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/dev/import-beats-resources/mysql/docs/README.md))
+    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/packages/mysql/_dev/build/docs/README.md))
     or copy them once managed to run whole setup with real agent.
 
 12. Kibana: use `stream.dataset` field instead of `event.dataset`.

@@ -18,34 +18,34 @@ An example event for `log` looks as following:
 
 ```$json
 {
-  "@timestamp": "2017-01-31T20:17:14.891Z",
-  "auditd": {
-    "log": {
-      "dst_prefixlen": 16,
-      "op": "SPD-delete",
-      "sequence": 18877201,
-      "ses": "4294967295",
-      "src_prefixlen": 24
+    "@timestamp": "2017-01-31T20:17:14.891Z",
+    "destination": {
+        "address": "192.168.0.0"
+    },
+    "source": {
+        "address": "192.168.2.0",
+        "ip": "192.168.2.0"
+    },
+    "event": {
+        "action": "mac_ipsec_event",
+        "ingested": "2020-11-16T10:43:43.094510300Z",
+        "kind": "event",
+        "outcome": "1"
+    },
+    "auditd": {
+        "log": {
+            "ses": "4294967295",
+            "sequence": 18877201,
+            "op": "SPD-delete",
+            "src_prefixlen": 24,
+            "dst_prefixlen": 16
+        }
+    },
+    "user": {
+        "audit": {
+            "id": "4294967295"
+        }
     }
-  },
-  "destination": {
-    "address": "192.168.0.0"
-  },
-  "event": {
-    "action": "mac_ipsec_event",
-    "ingested": "2020-11-16T10:43:43.094510300Z",
-    "kind": "event",
-    "outcome": "1"
-  },
-  "source": {
-    "address": "192.168.2.0",
-    "ip": "192.168.2.0"
-  },
-  "user": {
-    "audit": {
-      "id": "4294967295"
-    }
-  }
 }
 ```
 

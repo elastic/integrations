@@ -30,7 +30,6 @@ func Check() error {
 	mg.Deps(Format)
 	mg.Deps(Lint)
 	mg.Deps(Build)
-	mg.Deps(GenerateDocs)
 	mg.Deps(ModTidy)
 	mg.Deps(Test)
 
@@ -63,11 +62,6 @@ func Build() error {
 		return err
 	}
 
-	err = dryRunPackageRegistry()
-	if err != nil {
-		return err
-	}
-
 	err = buildImportBeats()
 	if err != nil {
 		return err
@@ -79,29 +73,12 @@ func buildIntegrations() error {
 	return runElasticPackageOnAllIntegrations(true, "build")
 }
 
-func dryRunPackageRegistry() error {
-	err := sh.Run("go", "run", "github.com/elastic/package-registry", "-dry-run=true")
-	if err != nil {
-		return errors.Wrap(err, "package-registry dry-run failed")
-	}
-	return nil
-}
-
 func buildImportBeats() error {
 	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/import-beats")
 	if err != nil {
 		return errors.Wrap(err, "building import-beats failed")
 	}
 	return nil
-}
-
-func GenerateDocs() error {
-	args := []string{"run", "./dev/generate-docs/"}
-	if os.Getenv("PACKAGES") != "" {
-		args = append(args, "-packages", os.Getenv("PACKAGES"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
 }
 
 func ImportBeats() error {

@@ -165,98 +165,98 @@ An example event for `status` looks as following:
 
 ```$json
 {
-  "@metadata": {
-    "beat": "metricbeat",
-    "raw_index": "metrics-apache.status-default",
-    "type": "_doc",
-    "version": "8.0.0"
-  },
-  "@timestamp": "2020-06-24T10:19:48.005Z",
-  "agent": {
-    "ephemeral_id": "685f03e4-76e7-4d05-b398-8454b8964681",
-    "id": "a74466da-3ea4-44f9-aea0-11c5e4b920be",
-    "name": "MacBook-Elastic.local",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "apache": {
-    "status": {
-      "bytes_per_request": 94.0933,
-      "bytes_per_sec": 83.6986,
-      "connections": {
-        "async": {
-          "closing": 0,
-          "keep_alive": 0,
-          "writing": 0
-        },
-        "total": 0
-      },
-      "cpu": {
-        "children_system": 0,
-        "children_user": 0,
-        "load": 0.185185,
-        "system": 1.79,
-        "user": 1.11
-      },
-      "hostname": "127.0.0.1:8088",
-      "load": {
-        "1": 3.58,
-        "15": 2.79,
-        "5": 3.54
-      },
-      "requests_per_sec": 0.889527,
-      "scoreboard": {
-        "closing_connection": 0,
-        "dns_lookup": 0,
-        "gracefully_finishing": 0,
-        "idle_cleanup": 0,
-        "keepalive": 0,
-        "logging": 0,
-        "open_slot": 325,
-        "reading_request": 0,
-        "sending_reply": 1,
-        "starting_up": 0,
-        "total": 400,
-        "waiting_for_connection": 74
-      },
-      "total_accesses": 1393,
-      "total_kbytes": 128,
-      "uptime": {
-        "server_uptime": 1566,
-        "uptime": 1566
-      },
-      "workers": {
-        "busy": 1,
-        "idle": 74
-      }
+    "@timestamp": "2020-06-24T10:19:48.005Z",
+    "@metadata": {
+        "beat": "metricbeat",
+        "type": "_doc",
+        "version": "8.0.0",
+        "raw_index": "metrics-apache.status-default"
+    },
+    "metricset": {
+        "name": "status",
+        "period": 10000
+    },
+    "apache": {
+        "status": {
+            "connections": {
+                "total": 0,
+                "async": {
+                    "writing": 0,
+                    "keep_alive": 0,
+                    "closing": 0
+                }
+            },
+            "total_kbytes": 128,
+            "cpu": {
+                "children_user": 0,
+                "children_system": 0,
+                "load": 0.185185,
+                "user": 1.11,
+                "system": 1.79
+            },
+            "scoreboard": {
+                "logging": 0,
+                "idle_cleanup": 0,
+                "starting_up": 0,
+                "reading_request": 0,
+                "dns_lookup": 0,
+                "closing_connection": 0,
+                "gracefully_finishing": 0,
+                "sending_reply": 1,
+                "keepalive": 0,
+                "total": 400,
+                "open_slot": 325,
+                "waiting_for_connection": 74
+            },
+            "workers": {
+                "busy": 1,
+                "idle": 74
+            },
+            "bytes_per_sec": 83.6986,
+            "hostname": "127.0.0.1:8088",
+            "uptime": {
+                "server_uptime": 1566,
+                "uptime": 1566
+            },
+            "total_accesses": 1393,
+            "bytes_per_request": 94.0933,
+            "requests_per_sec": 0.889527,
+            "load": {
+                "1": 3.58,
+                "5": 3.54,
+                "15": 2.79
+            }
+        }
+    },
+    "service": {
+        "address": "127.0.0.1:8088",
+        "type": "apache"
+    },
+    "event": {
+        "duration": 2381832,
+        "dataset": "apache.status",
+        "module": "apache"
+    },
+    "dataset": {
+        "type": "metrics",
+        "name": "apache.status",
+        "namespace": "default"
+    },
+    "stream": {
+        "dataset": "apache.status",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "685f03e4-76e7-4d05-b398-8454b8964681",
+        "id": "a74466da-3ea4-44f9-aea0-11c5e4b920be",
+        "name": "MacBook-Elastic.local"
     }
-  },
-  "dataset": {
-    "name": "apache.status",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "apache.status",
-    "duration": 2381832,
-    "module": "apache"
-  },
-  "metricset": {
-    "name": "status",
-    "period": 10000
-  },
-  "service": {
-    "address": "127.0.0.1:8088",
-    "type": "apache"
-  },
-  "stream": {
-    "dataset": "apache.status",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
