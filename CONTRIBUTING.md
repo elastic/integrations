@@ -158,7 +158,7 @@ what's been already fixed, as the script has overridden part of it).
 4. Write README template file for the integration.
 
     The README template is used to render the final README file including exported fields. The template should be placed
-    in the `package/<integration-name>/_dev/build/docs/README.md` (if the directory doesn't exist, please create it).
+    in the `package/<integration-name>/_dev/build/docs/README.md`. If the directory doesn't exist, please create it.
 
     Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`).
     If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
