@@ -48,12 +48,11 @@ pipeline {
     stage('Check integrations') {
       steps {
         script {
-          withElasticPackage() {
-            dir("${BASE_DIR}/packages") {
-              findFiles().each {
-                dir("${it}"){
-                  sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                }
+          useElasticPackage()
+          dir("${BASE_DIR}/packages") {
+            findFiles().each {
+              dir("${it}"){
+                sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
               }
             }
           }
@@ -62,7 +61,20 @@ pipeline {
           sh(label: "git update-index", script: 'git update-index --refresh')
           sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
         }
-        stash allowEmpty: true, name: 'source', useDefaultExcludes: false, excludes: '**/.gvm'
+      }
+    }
+    stage('Test integrations') {
+      steps {
+        script {
+          useElasticPackage()
+          dir("${BASE_DIR}/packages") {
+            findFiles().each {
+              dir("${it}"){
+                sh(label: "Test integration: ${it}", script: '../../build/elastic-package test -v')
+              }
+            }
+          }
+        }
       }
     }
     stage('Update Package Storage') {
@@ -104,7 +116,7 @@ def cleanup(){
   unstash 'source'
 }
 
-def withElasticPackage() {
+def useElasticPackage() {
   withGoEnv() {
     dir("${BASE_DIR}/build") {
       sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
