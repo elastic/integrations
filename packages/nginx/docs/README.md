@@ -233,49 +233,49 @@ An example event for `stubstatus` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-04-28T11:07:58.223Z",
-  "agent": {
-    "ephemeral_id": "8eb07b4f-df58-4794-8e00-60f1443f33b6",
-    "hostname": "MacBook-Elastic.local",
-    "id": "e47f6e4d-5277-46f3-801d-221c7584c604",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "nginx.stubstatus",
-    "duration": 1112095,
-    "module": "nginx"
-  },
-  "metricset": {
-    "name": "stubstatus",
-    "period": 10000
-  },
-  "nginx": {
-    "stubstatus": {
-      "accepts": 7339,
-      "active": 1,
-      "current": 10,
-      "dropped": 0,
-      "handled": 7339,
-      "hostname": "127.0.0.1:8081",
-      "reading": 0,
-      "requests": 7411,
-      "waiting": 0,
-      "writing": 1
+    "@timestamp": "2020-04-28T11:07:58.223Z",
+    "service": {
+        "type": "nginx",
+        "address": "127.0.0.1:8081"
+    },
+    "nginx": {
+        "stubstatus": {
+            "waiting": 0,
+            "hostname": "127.0.0.1:8081",
+            "dropped": 0,
+            "writing": 1,
+            "handled": 7339,
+            "requests": 7411,
+            "reading": 0,
+            "accepts": 7339,
+            "current": 10,
+            "active": 1
+        }
+    },
+    "stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "nginx.stubstatus"
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "ephemeral_id": "8eb07b4f-df58-4794-8e00-60f1443f33b6",
+        "hostname": "MacBook-Elastic.local",
+        "id": "e47f6e4d-5277-46f3-801d-221c7584c604",
+        "version": "8.0.0"
+    },
+    "event": {
+        "module": "nginx",
+        "duration": 1112095,
+        "dataset": "nginx.stubstatus"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "stubstatus"
     }
-  },
-  "service": {
-    "address": "127.0.0.1:8081",
-    "type": "nginx"
-  },
-  "stream": {
-    "dataset": "nginx.stubstatus",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 

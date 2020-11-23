@@ -1,26 +1,49 @@
-Before using the Package Registry, remember to `mage build` the project to prepare the volume with packages
-(`public` directory).
+## Cheat sheet: elastic-package
 
-Refresh docker images:
+Update already downloaded Docker images:
 
-```bash
-$ docker-compose -f snapshot.yml pull
-```
+`elastic-package stack update -v`
 
-Run docker containers (Elasticsearch, Kibana, Package Registry):
+Quickly boot up the stack use:
 
-```bash
-$ docker-compose -f snapshot.yml up --force-recreate
-```
+_Run from within the Integrations repository to consider local package sources (expected for package development)._
 
-... or with Elastic Agent:
+`elastic-package stack up -d -v`
 
-```bash
-$ docker-compose -f snapshot.yml -f agent.yml up --force-recreate
-```
+Take down the stack:
 
-Use this command to spawn more agents:
+`elastic-package stack down -v`
+
+Advanced: if you need to modify the internal Docker compose definition, edit files in `~/.elastic-package/stack`, but
+keep in mind that these files shouldn't be modified and your changes will be reverted once you update the `elastic-package`:
 
 ```bash
-$ docker-compose -f snapshot.yml -f agent.yml up --scale elastic-agent=10 --no-recreate -d
+$tree ~/.elastic-package/stack
+/Users/JohnDoe/.elastic-package/stack
+├── Dockerfile.package-registry
+├── development
+├── kibana.config.yml
+├── package-registry.config.yml
+└── snapshot.yml
 ```
+
+## Cheat sheet: reload local changes in Kibana
+
+Rebuild the modified package:
+
+`mage build` (for all packages)
+
+or
+
+```bash
+$ cd packages/apache
+$ elastic-package build
+```
+
+(for single package, in this sample - _Apache_).
+
+Rebuild and restart the package-registry image:
+
+`elastic-package stack up -v -d --services package-registry`
+
+You should see your latest changes in the Kibana UI.
