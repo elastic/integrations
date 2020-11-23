@@ -51,7 +51,7 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            packages = packages.sort(true, { it.name })
+            packages = packages.sort { it.name }
             packages.each {
               dir("${it.name}"){
                 sh(label: "Check integration: ${it.name}", script: '../../build/elastic-package check -v')
@@ -73,7 +73,7 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            packages = packages.sort(true, { it.name })
+            packages = packages.sort { it.name }
             packages = packages.findAll { it -> !it.name.endsWith('@tmp') }
             packages.each {
               dir("${it.name}"){
