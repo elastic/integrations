@@ -10,7 +10,6 @@ pipeline {
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
     PIPELINE_LOG_LEVEL='INFO'
-    TEST_RUNNER_CMD_ARGS='--report-format xUnit --report-output file'
     HOME = "${env.WORKSPACE}"
   }
   options {
@@ -51,8 +50,6 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            pp = packages.sort()
-            echo "${pp[0]} ${pp[1]} ${pp[2]} ${pp[3]}"
             packages.each {
               dir("${it.name}"){
                 sh(label: "Check integration: ${it.name}", script: '../../build/elastic-package check -v')
@@ -74,14 +71,13 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            packages.sort()
             // Hack to skip temporary files with "@tmp" suffix:
             packages = packages.findAll { !it.name.endsWith('@tmp') }
             packages.each {
               dir("${it.name}"){
                 sh(label: "Test integration: ${it.name}", script: '''
                 eval "$(../../build/elastic-package stack shellinit)"
-                ../../build/elastic-package test -v
+                ../../build/elastic-package test -v --report-format xUnit --report-output file
                 ''')
               }
             }
