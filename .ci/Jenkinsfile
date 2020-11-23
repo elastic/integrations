@@ -51,10 +51,10 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            packages.sort { it.path }
+            packages.sort { it.name }
             packages.each {
-              dir("${it}"){
-                sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+              dir("${it.name}"){
+                sh(label: "Check integration: ${it.name}", script: '../../build/elastic-package check -v')
               }
             }
           }
@@ -73,10 +73,10 @@ pipeline {
         script {
           dir("${BASE_DIR}/packages") {
             packages = findFiles()
-            packages.sort { it.path }
+            packages.sort { it.name }
             packages.each {
-              dir("${it}"){
-                sh(label: "Test integration: ${it}", script: '''
+              dir("${it.name}"){
+                sh(label: "Test integration: ${it.name}", script: '''
                 eval "$(../../build/elastic-package stack shellinit)"
                 ../../build/elastic-package test -v
                 ''')
