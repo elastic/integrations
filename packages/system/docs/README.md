@@ -69,7 +69,7 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. | keyword |
-| system.core.id | CPU Core number. | long |
+| system.core.id | CPU Core number. | keyword |
 | system.core.idle.pct | The percentage of CPU time spent idle. | scaled_float |
 | system.core.idle.ticks | The amount of CPU time spent idle. | long |
 | system.core.iowait.pct | The percentage of CPU time spent in wait (on disk). | scaled_float |
