@@ -56,9 +56,7 @@ pipeline {
         }
         script {
           dir("${BASE_DIR}/packages") {
-            def packagePaths = findFiles()
-            echo "$packagePaths"
-            packagePaths.each {
+            findFiles().each {
               dir("${it}"){
                 sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
               }
