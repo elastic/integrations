@@ -48,10 +48,9 @@ pipeline {
       steps {
         script {
           dir("${BASE_DIR}/packages") {
-            packages = findFiles().sort()
-            packages.each {
-              dir("${it.name}"){
-                sh(label: "Check integration: ${it.name}", script: '../../build/elastic-package check -v')
+            findFiles()?.collect{ it.name }?.sort()?.each {
+              dir("${it}"){
+                sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
               }
             }
           }
@@ -69,10 +68,8 @@ pipeline {
         }
         script {
           dir("${BASE_DIR}/packages") {
-            packages = findFiles()
-            // Hack to skip temporary files with "@tmp" suffix:
-            packages = packages.findAll { !it.name.endsWith('@tmp') }
-            packages.each {
+            // Include hack to skip temporary files with "@tmp" suffix:
+            findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               dir("${it.name}"){
                 sh(label: "Test integration: ${it.name}", script: '''
                 eval "$(../../build/elastic-package stack shellinit)"
