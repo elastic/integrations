@@ -70,8 +70,8 @@ pipeline {
           dir("${BASE_DIR}/packages") {
             // Include hack to skip temporary files with "@tmp" suffix:
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              dir("${it.name}"){
-                sh(label: "Test integration: ${it.name}", script: '''
+              dir("${it}"){
+                sh(label: "Test integration: ${it}", script: '''
                 eval "$(../../build/elastic-package stack shellinit)"
                 ../../build/elastic-package test -v --report-format xUnit --report-output file
                 ''')
