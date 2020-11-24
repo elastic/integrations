@@ -429,7 +429,7 @@ $ ./elastic-package help
 #### Testing
 
 `elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
-to find the best option for testing packages.
+to learn about the various methods for testing packages.
 
 The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
 If you're using the Elastic stack created with `elastic-package`, you can use export endpoints with `elastic-package stack shellinit`:
