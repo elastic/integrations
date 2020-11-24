@@ -428,7 +428,7 @@ $ ./elastic-package help
 
 #### Testing
 
-The `elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
+`elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
 to find the best option for testing packages.
 
 The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
