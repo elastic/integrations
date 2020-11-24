@@ -1,0 +1,129 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2019-10-04T15:27:55.000Z",
+            "log": {
+                "level": "notification"
+            },
+            "destination": {
+                "port": 53,
+                "address": "203.0.113.42",
+                "ip": "203.0.113.42"
+            },
+            "syslog": {
+                "facility": 165
+            },
+            "source": {
+                "port": 27218,
+                "address": "WHAT-IS-THIS-A-HOSTNAME-192.0.2.244",
+                "domain": "WHAT-IS-THIS-A-HOSTNAME-192.0.2.244"
+            },
+            "event": {
+                "severity": 5,
+                "action": "firewall-rule",
+                "code": "106100",
+                "original": "%ASA-5-106100: access-list AL-DMZ-LB-IN denied tcp LB-DMZ/WHAT-IS-THIS-A-HOSTNAME-192.0.2.244(27218) -\u003e OUTSIDE/203.0.113.42(53) hit-cnt 1 first hit [0x16847359, 0x00000000]",
+                "outcome": "deny"
+            },
+            "cisco": {
+                "asa": {
+                    "destination_interface": "OUTSIDE",
+                    "message_id": "106100",
+                    "rule_name": "AL-DMZ-LB-IN",
+                    "source_interface": "LB-DMZ"
+                }
+            },
+            "network": {
+                "iana_number": "6",
+                "transport": "tcp"
+            }
+        },
+        {
+            "@timestamp": "2020-01-01T10:42:53.000Z",
+            "log": {
+                "level": "informational"
+            },
+            "host": {
+                "hostname": "localhost"
+            },
+            "destination": {
+                "address": "172.24.177.29",
+                "ip": "172.24.177.29"
+            },
+            "source": {
+                "address": "192.168.132.46",
+                "ip": "192.168.132.46"
+            },
+            "event": {
+                "severity": 6,
+                "action": "flow-expiration",
+                "code": "302021",
+                "original": "%ASA-6-302021: Teardown ICMP connection for faddr 172.24.177.29/0 gaddr mydomain.example.net/17233 laddr 192.168.132.46/17233"
+            },
+            "cisco": {
+                "asa": {
+                    "mapped_source_host": "mydomain.example.net",
+                    "message_id": "302021"
+                }
+            },
+            "network": {
+                "iana_number": "1",
+                "transport": "icmp"
+            }
+        },
+        {
+            "server": {
+                "domain": "example.org"
+            },
+            "@timestamp": "2020-01-02T11:33:20.000Z",
+            "log": {
+                "level": "warning"
+            },
+            "destination": {
+                "nat": {
+                    "port": "80"
+                },
+                "address": "172.24.177.3",
+                "port": 80,
+                "domain": "example.org",
+                "ip": "172.24.177.3"
+            },
+            "host": {
+                "hostname": "localhost"
+            },
+            "source": {
+                "nat": {
+                    "port": "11234"
+                },
+                "address": "10.10.10.1",
+                "port": 1234,
+                "ip": "10.10.10.1"
+            },
+            "event": {
+                "severity": 4,
+                "action": "firewall-rule",
+                "code": "338204",
+                "original": "%ASA-4-338204: Dynamic filter dropped greylisted TCP traffic from eth0:10.10.10.1/1234 (source.example.net/11234) to wan:172.24.177.3/80 (www.example.org/80), destination malicious address resolved from dynamic list: example.org, threat-level: high, category: malware",
+                "outcome": "deny"
+            },
+            "cisco": {
+                "asa": {
+                    "mapped_destination_host": "www.example.org",
+                    "destination_interface": "wan",
+                    "mapped_source_port": 11234,
+                    "threat_level": "high",
+                    "mapped_source_host": "source.example.net",
+                    "rule_name": "dynamic",
+                    "source_interface": "eth0",
+                    "mapped_destination_port": 80,
+                    "message_id": "338204",
+                    "threat_category": "malware"
+                }
+            },
+            "network": {
+                "iana_number": "6",
+                "transport": "tcp"
+            }
+        }
+    ]
+}

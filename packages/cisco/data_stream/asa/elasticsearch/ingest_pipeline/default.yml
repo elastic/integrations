@@ -1128,7 +1128,7 @@ processors:
       ignore_failure: true
   - convert:
       field: "network.iana_number"
-      type: integer
+      type: string
       ignore_failure: true
 
   #
@@ -1243,17 +1243,10 @@ processors:
   #
   # Populate ECS event.code
   #
-  - convert:
-      field: _temp_.cisco.message_id
-      target_field: event.code
-      type: integer
-      ignore_failure: true
-
-  - remove:
-      field:
-        - _temp_.cisco.message_id
-        - event.code
-      if: 'ctx._temp_.cisco.message_id == ""'
+  - set:
+      field: event.code
+      value: '{{_temp_.cisco.message_id}}'
+      ignore_empty_value: true
       ignore_failure: true
 
   #

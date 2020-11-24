@@ -29,8 +29,10 @@ The `asa` dataset collects the Cisco firewall logs.
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
 | cisco.asa.icmp_type | ICMP type. | short |
+| cisco.asa.mapped_destination_host |  | keyword |
 | cisco.asa.mapped_destination_ip | The translated destination IP address. | ip |
 | cisco.asa.mapped_destination_port | The translated destination port. | long |
+| cisco.asa.mapped_source_host |  | keyword |
 | cisco.asa.mapped_source_ip | The translated source IP address. | ip |
 | cisco.asa.mapped_source_port | The translated source port. | long |
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
@@ -40,6 +42,7 @@ The `asa` dataset collects the Cisco firewall logs.
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
+| cisco.asa.username |  | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -56,6 +59,21 @@ The `asa` dataset collects the Cisco firewall logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Destination network address. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.domain | Destination domain. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
+| destination.ip | IP address of the destination. | ip |
+| destination.nat.port | Destination NAT Port | long |
+| destination.port | Port of the destination. | long |
+| error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
@@ -83,7 +101,33 @@ The `asa` dataset collects the Cisco firewall logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. | object |
+| log.level | Log level of the log event. | keyword |
+| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
+| network.bytes | Total bytes transferred in both directions. | long |
+| network.direction | Direction of the network traffic. | keyword |
+| network.iana_number | IANA Protocol Number. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| process.name | Process name. | keyword |
+| process.pid | Process id. | long |
+| server.domain | Server domain. | keyword |
+| source.address | Source network address. | keyword |
+| source.domain | Source domain. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source. | ip |
+| source.nat.ip | Source NAT ip | ip |
+| source.nat.port | Source NAT port | long |
+| source.port | Port of the source. | long |
+| syslog.facility | Syslog facility. | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
+| user.email | User email address. | keyword |
 
 
 ### FTD
