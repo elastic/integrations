@@ -363,7 +363,7 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
 ### elastic-package
 
-The [elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It can help you lint,
+[elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It can help you lint,
 format, test, build, and promote your packages. This is the official builder tool to develop Integrations. See the
 [Getting started](https://github.com/elastic/elastic-package#getting-started) section to ramp up quickly and review its features.
 
