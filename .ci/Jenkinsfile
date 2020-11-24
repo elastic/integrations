@@ -68,7 +68,8 @@ pipeline {
         }
         script {
           dir("${BASE_DIR}/packages") {
-            // Include hack to skip temporary files with "@tmp" suffix:
+            // Include hack to skip temporary files with "@tmp" suffix.
+            // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               dir("${it}"){
                 sh(label: "Test integration: ${it}", script: '''
