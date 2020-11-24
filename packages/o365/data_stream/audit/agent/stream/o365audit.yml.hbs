@@ -1,20 +1,16 @@
 {{#if application_id}}application_id: {{application_id}}{{/if}}
 tenant_id:
 {{#each tenants}}
- - {{id}}
+ - "{{this}}"
 {{/each}}
 {{#if certificate}}certificate: {{certificate}}{{/if}}
 {{#if key}}key: {{key}}{{/if}}
 {{#if key_passphrase}}key_passphrase: {{key_passphrase}}{{/if}}
 {{#if client_secret}}client_secret: {{client_secret}}{{/if}}
-{{#if eq "string" (printf "%T" .content_type)}}
-content_type: {{content_type}}
-{{else}}
 content_type:
 {{#each content_type}}
- - {{this}}
+ - "{{this}}"
 {{/each}}
-{{/if}}
 {{#if api}}
 api: {{api}}
 {{/if}}
@@ -28,6 +24,13 @@ publisher_pipeline.disable_host: true
 processors:
   - script:
       when.has_fields: ['o365audit']
+      params:
+        debug: false
+        tenants:
+          {{#each tenants}}
+          - id: "{{.}}"
+            name: "{{lookup ../tenant_names @index}}"
+          {{/each}}
       lang: javascript
       id: o365audit_script
       source: |
@@ -890,13 +893,6 @@ processors:
         function process(evt) {
             return audit.process(evt);
         }
-      params:
-        debug: false
-        tenants:
-          {{#each tenants}}
-          - id: "{{id}}"
-            name: "{{name}}"
-          {{/each}}
   - add_fields:
       target: ''
       fields:

@@ -3,28 +3,107 @@ title: Office 365 audit logs
 release: experimental
 streams:
   - input: o365audit
+    title: "Collect Office 365 audit logs"
+    description: "Collect audit logs from Office 365 via the Management Activity API"
     vars:
+      - name: application_id
+        type: text
+        title: Application (client) ID
+        multi: false
+        required: true
+        show_user: true
+      - name: client_secret
+        title: Client secret (API key)
+        type: password
+        multi: false
+        required: false
+        show_user: true
+      - name: certificate
+        type: text
+        title: Path to certificate file
+        multi: false
+        required: false
+        show_user: true
+      - name: key
+        type: text
+        title: Path to private key file
+        multi: false
+        required: false
+        show_user: true
+      - name: key_passphrase
+        type: text
+        title: Private key passphrase
+        multi: false
+        required: false
+        show_user: true
+      - name: tenants
+        type: text
+        multi: true
+        title: Directory (tenant) IDs
+        required: true
+        show_user: true
+      - name: tenant_names
+        type: text
+        multi: true
+        title: Directory (tenant) domains
+        required: true
+        show_user: true
+      - name: content_type
+        type: text
+        title: Content types
+        multi: true
+        default:
+          - "Audit.AzureActiveDirectory"
+          - "Audit.Exchange"
+          - "Audit.SharePoint"
+          - "Audit.General"
+          - "DLP.All"
+        required: true
+        show_user: true
+      - name: api
+        type: text
+        title: Advanced API settings
+        multi: false
+        required: false
+        show_user: false
       - name: tags
         type: text
         title: Tags
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - forwarded
     template_path: o365audit.yml.hbs
-    title: Office 365 audit logs
-    description: Collect Office 365 audit logs using Azure api input
   - input: logfile
+    title: "Collect Office 365 audit logs via log files"
+    description: "Collecting audit logs from Office 365 via log files"
+    enabled: false
+    template_path: log.yml.hbs
     vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: false
+        show_user: true
+      - name: tenants
+        type: text
+        multi: true
+        title: Directory (tenant) IDs
+        required: true
+        show_user: true
+      - name: tenant_names
+        type: text
+        multi: true
+        title: Directory (tenant) domains
+        required: true
+        show_user: true
       - name: tags
         type: text
         title: Tags
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - forwarded
-    template_path: log.yml.hbs
-    title: Office 365 audit logs
-    description: Collect Office 365 audit logs using log input
