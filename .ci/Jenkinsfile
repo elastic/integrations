@@ -38,8 +38,7 @@ pipeline {
         withMageEnv(){
           dir("${BASE_DIR}"){
             sh(label: 'Checks and builds Go sources', script: 'mage -debug check')
-            sh(label: "git update-index", script: 'git update-index --refresh')
-            sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
+            checkGitDiff()
           }
         }
       }
@@ -55,10 +54,7 @@ pipeline {
             }
           }
         }
-        dir("${BASE_DIR}") {
-          sh(label: "git update-index", script: 'git update-index --refresh')
-          sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
-        }
+        checkGitDiff()
       }
     }
     stage('Test integrations') {
@@ -137,5 +133,14 @@ def useElasticPackage() {
     dir("${BASE_DIR}/build") {
       sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
     }
+  }
+}
+
+// Check if there are non-versioned local changes.
+// For reference: https://stackoverflow.com/questions/34807971/why-does-git-diff-index-head-result-change-for-touched-files-after-git-diff-or-g
+def checkGitDiff() {
+  dir("${BASE_DIR}") {
+    sh(label: "git update-index", script: 'git update-index --refresh')
+    sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
   }
 }
