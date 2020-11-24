@@ -114,49 +114,62 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cef.checkpoint.app_risk | Application risk. | keyword |
-| cef.checkpoint.app_severity | Application threat severity. | keyword |
-| cef.checkpoint.app_sig_id | The signature ID which the application was detected by. | keyword |
-| cef.checkpoint.auth_method | Password authentication protocol used. | keyword |
-| cef.checkpoint.category | Category. | keyword |
-| cef.checkpoint.confidence_level | Confidence level determined. | integer |
-| cef.checkpoint.connectivity_state | Connectivity state. | keyword |
-| cef.checkpoint.cookie | IKE cookie. | keyword |
-| cef.checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
-| cef.checkpoint.email_control | Engine name. | keyword |
-| cef.checkpoint.email_id | Internal email ID. | keyword |
-| cef.checkpoint.email_recipients_num | Number of recipients. | long |
-| cef.checkpoint.email_session_id | Internal email session ID. | keyword |
-| cef.checkpoint.email_spool_id | Internal email spool ID. | keyword |
-| cef.checkpoint.email_subject | Email subject. | keyword |
-| cef.checkpoint.event_count | Number of events associated with the log. | long |
-| cef.checkpoint.frequency | Scan frequency. | keyword |
-| cef.checkpoint.icmp_code | ICMP code. | long |
-| cef.checkpoint.icmp_type | ICMP type. | long |
-| cef.checkpoint.identity_type | Identity type. | keyword |
-| cef.checkpoint.incident_extension | Format of original data. | keyword |
-| cef.checkpoint.integrity_av_invoke_type | Scan invoke type. | keyword |
-| cef.checkpoint.malware_family | Malware family. | keyword |
-| cef.checkpoint.peer_gateway | Main IP of the peer Security Gateway. | ip |
-| cef.checkpoint.performance_impact | Protection performance impact. | integer |
-| cef.checkpoint.protection_id | Protection malware ID. | keyword |
-| cef.checkpoint.protection_name | Specific signature name of the attack. | keyword |
-| cef.checkpoint.protection_type | Type of protection used to detect the attack. | keyword |
-| cef.checkpoint.scan_result | Scan result. | keyword |
-| cef.checkpoint.sensor_mode | Sensor mode. | keyword |
-| cef.checkpoint.severity | Threat severity. | keyword |
-| cef.checkpoint.spyware_name | Spyware name. | keyword |
-| cef.checkpoint.spyware_status | Spyware status. | keyword |
-| cef.checkpoint.subs_exp | The expiration date of the subscription. | date |
-| cef.checkpoint.tcp_flags | TCP packet flags. | keyword |
-| cef.checkpoint.termination_reason | Termination reason. | keyword |
-| cef.checkpoint.update_status | Update status. | keyword |
-| cef.checkpoint.user_status | User response. | keyword |
-| cef.checkpoint.uuid | External ID. | keyword |
-| cef.checkpoint.virus_name | Virus name. | keyword |
-| cef.checkpoint.voip_log_type | VoIP log types. | keyword |
+| cef.device.event_class_id |  | keyword |
+| cef.device.product |  | keyword |
+| cef.device.vendor |  | keyword |
+| cef.device.version |  | keyword |
+| cef.extensions.applicationProtocol |  | keyword |
+| cef.extensions.baseEventCount |  | keyword |
+| cef.extensions.bytesIn |  | long |
+| cef.extensions.bytesOut |  | long |
+| cef.extensions.categoryBehavior |  | keyword |
+| cef.extensions.categoryDeviceGroup |  | keyword |
+| cef.extensions.categoryDeviceType |  | keyword |
+| cef.extensions.categoryObject |  | keyword |
+| cef.extensions.categoryOutcome |  | keyword |
+| cef.extensions.categorySignificance |  | keyword |
+| cef.extensions.categoryTechnique |  | keyword |
 | cef.extensions.cp_app_risk |  | keyword |
 | cef.extensions.cp_severity |  | keyword |
+| cef.extensions.destinationAddress |  | ip |
+| cef.extensions.destinationNtDomain |  | keyword |
+| cef.extensions.destinationPort |  | long |
+| cef.extensions.destinationServiceName |  | keyword |
+| cef.extensions.destinationTranslatedAddress |  | ip |
+| cef.extensions.destinationTranslatedPort |  | long |
+| cef.extensions.destinationUserName |  | keyword |
+| cef.extensions.destinationUserPrivileges |  | keyword |
+| cef.extensions.deviceAction |  | keyword |
+| cef.extensions.deviceAddress |  | ip |
+| cef.extensions.deviceCustomDate2 |  | keyword |
+| cef.extensions.deviceCustomDate2Label |  | keyword |
+| cef.extensions.deviceCustomIPv6Address2 |  | ip |
+| cef.extensions.deviceCustomIPv6Address2Label |  | keyword |
+| cef.extensions.deviceCustomIPv6Address3 |  | ip |
+| cef.extensions.deviceCustomIPv6Address3Label |  | keyword |
+| cef.extensions.deviceCustomNumber1 |  | long |
+| cef.extensions.deviceCustomNumber1Label |  | keyword |
+| cef.extensions.deviceCustomNumber2 |  | long |
+| cef.extensions.deviceCustomNumber2Label |  | keyword |
+| cef.extensions.deviceCustomString1 |  | keyword |
+| cef.extensions.deviceCustomString1Label |  | keyword |
+| cef.extensions.deviceCustomString2 |  | keyword |
+| cef.extensions.deviceCustomString2Label |  | keyword |
+| cef.extensions.deviceCustomString3 |  | keyword |
+| cef.extensions.deviceCustomString3Label |  | keyword |
+| cef.extensions.deviceCustomString4 |  | keyword |
+| cef.extensions.deviceCustomString4Label |  | keyword |
+| cef.extensions.deviceCustomString5 |  | keyword |
+| cef.extensions.deviceCustomString5Label |  | keyword |
+| cef.extensions.deviceDirection |  | long |
+| cef.extensions.deviceEventCategory |  | keyword |
+| cef.extensions.deviceExternalId |  | keyword |
+| cef.extensions.deviceFacility |  | keyword |
+| cef.extensions.deviceHostName |  | keyword |
+| cef.extensions.deviceOutboundInterface |  | keyword |
+| cef.extensions.deviceReceiptTime |  | keyword |
+| cef.extensions.eventId |  | long |
+| cef.extensions.fileHash |  | keyword |
 | cef.extensions.ifname |  | keyword |
 | cef.extensions.inzone |  | keyword |
 | cef.extensions.layer_name |  | keyword |
@@ -164,19 +177,79 @@ An example event for `log` looks as following:
 | cef.extensions.logid |  | keyword |
 | cef.extensions.loguid |  | keyword |
 | cef.extensions.match_id |  | keyword |
+| cef.extensions.message |  | keyword |
 | cef.extensions.nat_addtnl_rulenum |  | keyword |
 | cef.extensions.nat_rulenum |  | keyword |
+| cef.extensions.oldFileHash |  | keyword |
 | cef.extensions.origin |  | keyword |
 | cef.extensions.originsicname |  | keyword |
 | cef.extensions.outzone |  | keyword |
 | cef.extensions.parent_rule |  | keyword |
 | cef.extensions.product |  | keyword |
+| cef.extensions.requestContext |  | keyword |
+| cef.extensions.requestMethod |  | keyword |
+| cef.extensions.requestUrl |  | keyword |
 | cef.extensions.rule_action |  | keyword |
 | cef.extensions.rule_uid |  | keyword |
 | cef.extensions.sequencenum |  | keyword |
 | cef.extensions.service_id |  | keyword |
+| cef.extensions.sourceAddress |  | ip |
+| cef.extensions.sourceGeoLatitude |  | long |
+| cef.extensions.sourceGeoLongitude |  | long |
+| cef.extensions.sourceNtDomain |  | keyword |
+| cef.extensions.sourcePort |  | long |
+| cef.extensions.sourceServiceName |  | keyword |
+| cef.extensions.sourceTranslatedAddress |  | ip |
+| cef.extensions.sourceTranslatedPort |  | long |
+| cef.extensions.sourceUserName |  | keyword |
+| cef.extensions.sourceUserPrivileges |  | keyword |
+| cef.extensions.transportProtocol |  | keyword |
 | cef.extensions.version |  | keyword |
 | cef.forcepoint.virus_id | Virus ID | keyword |
+| cef.name |  | keyword |
+| cef.severity |  | keyword |
+| cef.version |  | keyword |
+| checkpoint.app_risk |  | keyword |
+| checkpoint.app_severity | Application threat severity. | keyword |
+| checkpoint.app_sig_id | The signature ID which the application was detected by. | keyword |
+| checkpoint.auth_method | Password authentication protocol used. | keyword |
+| checkpoint.category | Category. | keyword |
+| checkpoint.confidence_level | Confidence level determined. | integer |
+| checkpoint.connectivity_state | Connectivity state. | keyword |
+| checkpoint.cookie | IKE cookie. | keyword |
+| checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
+| checkpoint.email_control |  | keyword |
+| checkpoint.email_id | Internal email ID. | keyword |
+| checkpoint.email_recipients_num | Number of recipients. | long |
+| checkpoint.email_session_id | Internal email session ID. | keyword |
+| checkpoint.email_spool_id | Internal email spool ID. | keyword |
+| checkpoint.email_subject | Email subject. | keyword |
+| checkpoint.event_count | Number of events associated with the log. | long |
+| checkpoint.frequency | Scan frequency. | keyword |
+| checkpoint.icmp_code | ICMP code. | long |
+| checkpoint.icmp_type | ICMP type. | long |
+| checkpoint.identity_type | Identity type. | keyword |
+| checkpoint.incident_extension | Format of original data. | keyword |
+| checkpoint.integrity_av_invoke_type | Scan invoke type. | keyword |
+| checkpoint.malware_family | Malware family. | keyword |
+| checkpoint.peer_gateway | Main IP of the peer Security Gateway. | ip |
+| checkpoint.performance_impact | Protection performance impact. | integer |
+| checkpoint.protection_id | Protection malware ID. | keyword |
+| checkpoint.protection_name | Specific signature name of the attack. | keyword |
+| checkpoint.protection_type | Type of protection used to detect the attack. | keyword |
+| checkpoint.scan_result | Scan result. | keyword |
+| checkpoint.sensor_mode | Sensor mode. | keyword |
+| checkpoint.severity |  | keyword |
+| checkpoint.spyware_name | Spyware name. | keyword |
+| checkpoint.spyware_status | Spyware status. | keyword |
+| checkpoint.subs_exp | The expiration date of the subscription. | date |
+| checkpoint.tcp_flags | TCP packet flags. | keyword |
+| checkpoint.termination_reason | Termination reason. | keyword |
+| checkpoint.update_status | Update status. | keyword |
+| checkpoint.user_status | User response. | keyword |
+| checkpoint.uuid | External ID. | keyword |
+| checkpoint.virus_name | Virus name. | keyword |
+| checkpoint.voip_log_type | VoIP log types. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -196,6 +269,7 @@ An example event for `log` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | Destination domain. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -207,11 +281,13 @@ An example event for `log` looks as following:
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
+| destination.service.name |  | keyword |
 | destination.user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | destination.user.group.name | Name of the group. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | ecs.version | ECS version | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. | date |
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -249,6 +325,7 @@ An example event for `log` looks as following:
 | observer.type | The type of the observer the data is coming from. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
+| original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
@@ -258,6 +335,7 @@ An example event for `log` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.domain | Destination domain. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -269,9 +347,11 @@ An example event for `log` looks as following:
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
+| source.service.name |  | keyword |
 | source.user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
 
