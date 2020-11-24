@@ -28,6 +28,13 @@ Both datasets are available on Windows only.
 
 ## Logs
 
+### Forwarded
+
+The Windows `forwarded` dataset provides events from the Windows
+`ForwardedEvents` event log.
+
+{{fields "forwarded"}}
+
 ### Powershell
 
 The Windows `powershell` dataset provides events from the Windows
@@ -42,3 +49,9 @@ The Windows `powershell_operational` dataset provides events from the Windows
 
 {{fields "powershell_operational"}}
 
+### Sysmon/Operational
+
+The Windows `sysmon_operational` dataset provides events from the Windows
+`Microsoft-Windows-Sysmon/Operational` event log.
+
+{{fields "sysmon_operational"}}
