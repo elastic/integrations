@@ -268,9 +268,10 @@ _The `elastic-package stack` provides an enrolled instance of the Elastic Agent.
 if you can run the service (you're integrating with) in the Docker network. The service Docker image can be used for [system
 testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md).
 
-1. Build `packages` directory with package data:
+1. Build the package you'd like to verify (e.g. `apache`):
    ```bash
-   $ mage build
+   $ cd apache
+   $ elastic-package build
    ```
 
 2. Start testing environment:
@@ -282,7 +283,7 @@ testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/syste
    ```
 
    The command above will boot up the Elastic stack (Elasticsearch, Kibana, Package Registry) using Docker containers.
-   It rebuilds the Package Registry Docker image using local packages and boots up the Package Registry.
+   It rebuilds the Package Registry Docker image using packages built in step 1. and boots up the Package Registry.
 
    To reload the already deployed Package Registry use the following command:
 
@@ -411,6 +412,28 @@ on the business or technical requirements for the entire platform (Elastic Packa
    Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
    mounted volumes.
 
+#### Testing
+
+The `elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
+to find the best option for testing packages.
+
+The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
+If you're using the Elastic stack created with `elastic-package`, you can use export endpoints with `elastic-package stack shellinit`:
+
+```bash
+$ eval "$(elastic-package stack shellinit)"
+```
+
+To preview environment variables:
+
+```bash
+$ elastic-package stack shellinit
+export ELASTIC_PACKAGE_ELASTICSEARCH_HOST=http://127.0.0.1:9200
+export ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic
+export ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme
+export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
+```
+
 #### Code reviewers
 
 1. Ping "Team:Integrations".
@@ -449,10 +472,19 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
 #### CI
 
-1. Run `mage check` locally.
+1. Run `elastic-package check` and `elastic-package test` locally.
 
-   Before pushing commits to the repository, verify if the change complete with `mage check`. This command target is
-   used by the CI while validating your code changes.
+   If you want to verify if your integration works as intended, you can execute the same steps as CI:
+
+   ```bash
+   $ cd packages/apache
+   $ elastic-package check -v
+   $ elastic-package test -v
+   ```
+
+   Keep in mind that the `elastic-package test` command requires a live cluster running and exported environment variables.
+   The environment variables can be set with `eval "$(elastic-package stack shellinit)"`.
+
 
 #### Fields
 
