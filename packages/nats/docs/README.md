@@ -31,6 +31,7 @@ An example event for `stats` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | error.message | Error message. | text |
+| event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | log.level | Log level of the log event. | keyword |
