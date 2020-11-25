@@ -63,8 +63,10 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.client_type_os | Client OS detected in the HTTP request. | keyword |
 | checkpoint.client_version | Build version of SandBlast Agent client installed on the computer. | keyword |
 | checkpoint.cluster_info | Cluster information. Possible options: Failover reason/cluster state changes/CP cluster or 3rd party. | keyword |
+| checkpoint.comment |  | keyword |
 | checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
 | checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
+| checkpoint.conn_direction | Connection direction | keyword |
 | checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
 | checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
 | checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
@@ -79,6 +81,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.cvpn_category | Mobile Access application type. | keyword |
 | checkpoint.cvpn_resource | Mobile Access application. | keyword |
 | checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
+| checkpoint.db_ver | Database version | keyword |
 | checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
@@ -388,6 +391,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
 | checkpoint.user_agent | String identifying requesting software user agent. | keyword |
@@ -509,7 +513,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |

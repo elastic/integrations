@@ -23,6 +23,13 @@ processors:
   - script:
       when.has_fields: ['o365audit']
       lang: javascript
+      params:
+        debug: false
+        tenants:
+          {{#each tenants}}
+          - id: "{{.}}"
+            name: "{{lookup ../tenant_names @index}}"
+          {{/each}}
       id: o365audit_script
       source: |
         // Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
@@ -884,13 +891,6 @@ processors:
         function process(evt) {
             return audit.process(evt);
         }
-      params:
-        debug: false
-        tenants:
-          {{#each tenants}}
-          - id: "{{id}}"
-            name: "{{name}}"
-          {{/each}}
   - add_fields:
       target: ''
       fields:

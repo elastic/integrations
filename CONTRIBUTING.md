@@ -88,14 +88,14 @@ feel free to review the script's [README](https://github.com/elastic/integration
         ```bash
        $ go get -u -d github.com/magefile/mage
        ```
-3. Boot up required dependencies:
+3. Use the `elastic-package stack up -v -d` command to boot up required dependencies:
     1. Elasticseach instance:
         * Kibana's dependency
     2. Kibana instance:
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
-    _Hint_. There is dockerized environment in beats (`cd testing/environments`). Boot it up with the following command:
-    `docker-compose -f snapshot.yml up --force-recreate`.
+    _Hint_. There is the `elastic-package` cheat sheet available [here](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
+
 4. Create a new branch for the integration in `integrations` repository (diverge from master).
 5. Run the command: `mage ImportBeats` to start the import process (note that the import script assumes the projects checked out in step 2 are at `../{project-name}`).
 
@@ -123,7 +123,7 @@ Most of migration work has been done by the `import-beats` script, but there're 
 interaction.
 
 It may happen that your integration misses a screenshot or an icon, it's a good moment to add missing resources to
-Beats/Kibana repositories and re-import the integration (idempotent). 
+Beats/Kibana repositories and re-import the integration (idempotent).
 
 #### Checklist
 
@@ -158,9 +158,9 @@ what's been already fixed, as the script has overridden part of it).
 4. Write README template file for the integration.
 
     The README template is used to render the final README file including exported fields. The template should be placed
-    in the `dev/import-beats-resources/<integration-name>/docs/README.md`.
+    in the `package/<integration-name>/_dev/build/docs/README.md`. If the directory doesn't exist, please create it.
 
-    Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`). 
+    Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`).
     If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
 
 5. Review fields file and exported fields in docs.
@@ -251,7 +251,7 @@ what's been already fixed, as the script has overridden part of it).
 11. Update docs template with sample events.
 
     The events collected by the agent slightly differ from original, Metricbeat's and Filebeat's, ones. Adjust the event
-    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/dev/import-beats-resources/mysql/docs/README.md))
+    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/packages/mysql/_dev/build/docs/README.md))
     or copy them once managed to run whole setup with real agent.
 
 12. Kibana: use `stream.dataset` field instead of `event.dataset`.
@@ -264,21 +264,34 @@ what's been already fixed, as the script has overridden part of it).
 
 ### Run the whole setup
 
-1. Build `public` directory with package data:
+_The `elastic-package stack` provides an enrolled instance of the Elastic Agent. Use that one instead of a local application
+if you can run the service (you're integrating with) in the Docker network. The service Docker image can be used for [system
+testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md).
+
+1. Build the package you'd like to verify (e.g. `apache`):
    ```bash
-   $ mage build
+   $ cd apache
+   $ elastic-package build
    ```
 
 2. Start testing environment:
+
+   _Run from inside the Integrations repository._
+
    ```bash
-   $ cd testing/environments
-   $ docker-compose -f snapshot.yml up
+   $ elastic-package stack up -d -v
    ```
 
-   The command will boot up a docker cluster with Elasticsearch, Kibana and Package Registry. After every time you
-   rebuild and reload packages (`mage Reload`), all adjustments in packages will be propagated to the registry.
+   The command above will boot up the Elastic stack (Elasticsearch, Kibana, Package Registry) using Docker containers.
+   It rebuilds the Package Registry Docker image using packages built in step 1. and boots up the Package Registry.
 
-3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use 
+   To reload the already deployed Package Registry use the following command:
+
+   ```bash
+   $ elastic-package stack up -v -d --services package-registry
+   ```
+
+3. Verify that your integration is available (in the right version), e.g. MySQL: http://localhost:8080/search?package=mysql (use
    `experimental=true` parameter if the package is in experimental version. Alternatively set `release` to `beta` or higher in your
    package's `manifest.yml`, if appropriate.)
 
@@ -348,6 +361,20 @@ The section offers a set of tips for developers to improve integrations that the
 recommendations and tricks. Please consider this section as a live document that may evolve in the future, depending
 on the business or technical requirements for the entire platform (Elastic Package Registry, Elastic Agent and Kibana).
 
+### elastic-package
+
+[elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It can help you lint,
+format, test, build, and promote your packages. This is the official builder tool to develop Integrations. See the
+[Getting started](https://github.com/elastic/elastic-package#getting-started) section to ramp up quickly and review its features.
+
+If you need the revision of elastic-package in the correct version (the same one as the CI uses), which is defined in `go.mod`, use the following command
+(in the Integrations repository):
+
+```bash
+$ go build github.com/elastic/elastic-package
+$ ./elastic-package help
+```
+
 ### New integrations
 
 #### Manifest files
@@ -381,11 +408,45 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
 #### Development
 
-1. When you're developing integrations and you'd like to propagate your changes to the package registry,
-   use `mage Reload` to rebuild and reload the package registry.
-   
+1. When you're developing integrations and you'd like to propagate your changes to the package registry, first rebuild the package:
+
+   ```bash
+   $ cd packages/apache
+   $ elastic-package build
+   ```
+
+   Then, rebuild and redeploy the Package Registry:
+
+   _It's important to execute the following command in the Integrations repository._
+
+   ```bash
+   $ elastic-package stack up -v -d --services package-registry
+   ```
+
    Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
    mounted volumes.
+
+#### Testing
+
+`elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
+to learn about the various methods for testing packages.
+
+The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
+If you're using the Elastic stack created with `elastic-package`, you can use export endpoints with `elastic-package stack shellinit`:
+
+```bash
+$ eval "$(elastic-package stack shellinit)"
+```
+
+To preview environment variables:
+
+```bash
+$ elastic-package stack shellinit
+export ELASTIC_PACKAGE_ELASTICSEARCH_HOST=http://127.0.0.1:9200
+export ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic
+export ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme
+export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
+```
 
 #### Code reviewers
 
@@ -425,10 +486,19 @@ on the business or technical requirements for the entire platform (Elastic Packa
 
 #### CI
 
-1. Run `mage check` locally.
+1. Run `elastic-package check` and `elastic-package test` locally.
 
-   Before pushing commits to the repository, verify if the change complete with `mage check`. This command target is
-   used by the CI while validating your code changes.
+   If you want to verify if your integration works as intended, you can execute the same steps as CI:
+
+   ```bash
+   $ cd packages/apache
+   $ elastic-package check -v
+   $ elastic-package test -v
+   ```
+
+   Keep in mind that the `elastic-package test` command requires a live cluster running and exported environment variables.
+   The environment variables can be set with `eval "$(elastic-package stack shellinit)"`.
+
 
 #### Fields
 
@@ -437,7 +507,7 @@ on the business or technical requirements for the entire platform (Elastic Packa
    If you notice that fields file (e.g. `package-fields.yml`) doesn't contain any field definitions or it defines root only,
    feel free to remove it.
 
-   Bad candidate: 
+   Bad candidate:
    ```yaml
    - name: mypackage.mydataset
      type: group

@@ -190,7 +190,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 
 		// docs
 		if len(aPackage.docs) == 0 {
-			packageDocsPath := filepath.Join("dev/import-beats-resources", moduleDir.Name(), "docs")
+			packageDocsPath := filepath.Join("packages", moduleDir.Name(), "_dev", "build", "docs")
 			docs, err := createDocTemplates(packageDocsPath)
 			if err != nil {
 				return err
