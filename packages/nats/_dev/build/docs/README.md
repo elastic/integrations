@@ -12,7 +12,7 @@ The Nats package is tested with Nats 1.3.0, 2.0.4 and 2.1.4
 
 ### log
 
-The `log` dataset collects the MongoDB logs.
+The `log` dataset collects the NATS logs.
 
 {{event "stats"}}
 

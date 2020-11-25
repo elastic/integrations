@@ -12,7 +12,7 @@ The Nats package is tested with Nats 1.3.0, 2.0.4 and 2.1.4
 
 ### log
 
-The `log` dataset collects the MongoDB logs.
+The `log` dataset collects the NATS logs.
 
 An example event for `stats` looks as following:
 
@@ -25,9 +25,15 @@ An example event for `stats` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip | IP address of the client. | ip |
+| client.port | Port of the client. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.message | Error message. | text |
+| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| log.level | Log level of the log event. | keyword |
 | nats.log.client.id | The id of the client | integer |
 | nats.log.msg.bytes | Size of the payload in bytes | long |
 | nats.log.msg.error.message | Details about the error occurred | text |
@@ -37,6 +43,8 @@ An example event for `stats` looks as following:
 | nats.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
 | nats.log.msg.subject | Subject name this message was received on | keyword |
 | nats.log.msg.type | The protocol message type | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 
 
 ## Metrics
