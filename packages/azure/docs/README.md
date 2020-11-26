@@ -822,7 +822,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.device_detail.trust_type | Trust type | keyword |
 | azure.signinlogs.properties.id | ID | keyword |
 | azure.signinlogs.properties.ip_address | Ip address | keyword |
-| azure.signinlogs.properties.is_interactive | Is interactive | bool |
+| azure.signinlogs.properties.is_interactive | Is interactive | boolean |
 | azure.signinlogs.properties.original_request_id | Original request ID | keyword |
 | azure.signinlogs.properties.processing_time_ms | Processing time in milliseconds | float |
 | azure.signinlogs.properties.resource_display_name | Resource display name | keyword |
