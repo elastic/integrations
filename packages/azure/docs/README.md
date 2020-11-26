@@ -253,6 +253,11 @@ An example event for `activitylogs` looks as following:
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| geo.city_name | City name. | keyword |
+| geo.continent_name | Name of the continent. | keyword |
+| geo.country_iso_code | Country ISO code. |  |
+| geo.country_name | Country name. | keyword |
+| geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -269,6 +274,7 @@ An example event for `activitylogs` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| log.level | Log level of the log event. | keyword |
 | message | Message. | text |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -286,6 +292,9 @@ An example event for `activitylogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| user.domain | Domain of the user. | keyword |
+| user.full_name | Full name of the user. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -448,6 +457,11 @@ An example event for `platformlogs` looks as following:
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| geo.city_name | City name. | keyword |
+| geo.continent_name | Name of the continent. | keyword |
+| geo.country_iso_code | Country ISO code. |  |
+| geo.country_name | Country name. | keyword |
+| geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -464,6 +478,7 @@ An example event for `platformlogs` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| log.level | Log level of the log event. | keyword |
 | message | Message. | text |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -481,6 +496,9 @@ An example event for `platformlogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| user.domain | Domain of the user. | keyword |
+| user.full_name | Full name of the user. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -648,6 +666,11 @@ An example event for `auditlogs` looks as following:
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| geo.city_name | City name. | keyword |
+| geo.continent_name | Name of the continent. | keyword |
+| geo.country_iso_code | Country ISO code. |  |
+| geo.country_name | Country name. | keyword |
+| geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -664,6 +687,7 @@ An example event for `auditlogs` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| log.level | Log level of the log event. | keyword |
 | message | Message. | text |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -681,6 +705,9 @@ An example event for `auditlogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| user.domain | Domain of the user. | keyword |
+| user.full_name | Full name of the user. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -795,7 +822,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.device_detail.trust_type | Trust type | keyword |
 | azure.signinlogs.properties.id | ID | keyword |
 | azure.signinlogs.properties.ip_address | Ip address | keyword |
-| azure.signinlogs.properties.is_interactive | Is interactive | keyword |
+| azure.signinlogs.properties.is_interactive | Is interactive | bool |
 | azure.signinlogs.properties.original_request_id | Original request ID | keyword |
 | azure.signinlogs.properties.processing_time_ms | Processing time in milliseconds | float |
 | azure.signinlogs.properties.resource_display_name | Resource display name | keyword |
@@ -804,7 +831,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.risk_level_during_signin | Risk level during signIn | keyword |
 | azure.signinlogs.properties.risk_state | Risk state | keyword |
 | azure.signinlogs.properties.service_principal_id | Status | keyword |
-| azure.signinlogs.properties.status.error_code | Error code | keyword |
+| azure.signinlogs.properties.status.error_code | Error code | long |
 | azure.signinlogs.properties.token_issuer_name | Token issuer name | keyword |
 | azure.signinlogs.properties.token_issuer_type | Token issuer type | keyword |
 | azure.signinlogs.properties.user_display_name | User display name | keyword |
@@ -859,6 +886,11 @@ An example event for `signinlogs` looks as following:
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| geo.city_name | City name. | keyword |
+| geo.continent_name | Name of the continent. | keyword |
+| geo.country_iso_code | Country ISO code. |  |
+| geo.country_name | Country name. | keyword |
+| geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -875,6 +907,7 @@ An example event for `signinlogs` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| log.level | Log level of the log event. | keyword |
 | message | Message. | text |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -892,6 +925,9 @@ An example event for `signinlogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| user.domain | Domain of the user. | keyword |
+| user.full_name | Full name of the user. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
