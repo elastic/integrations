@@ -47,43 +47,28 @@ pipeline {
       steps {
         script {
           dir("${BASE_DIR}/packages") {
-            findFiles()?.collect{ it.name }?.sort()?.each {
-              dir("${it}"){
-                sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-              }
-            }
-          }
-        }
-        checkGitDiff()
-      }
-    }
-    stage('Test integrations') {
-      steps {
-        script {
-          dir("${BASE_DIR}/packages") {
             def tests = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              tests["${it}"] = {
+              integrations["${it}"] = {
                 node {
                   stage("${it}") {
                     try {
-                      dir("${BASE_DIR}") {
-                        sh(label: "Boot up the Elastic stack", script: 'build/elastic-package stack up -d -v')
-                      }
                       dir("${it}"){
+                        sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                        sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                         sh(label: "Test integration: ${it}", script: '''
                           eval "$(../../build/elastic-package stack shellinit)"
                           ../../build/elastic-package test -v --report-format xUnit --report-output file
                           ''')
                       }
                     } finally {
-                      dir("${BASE_DIR}") {
+                      dir("..") {
                         archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: false,
                             keepLongStdio: true,
-                            estResults: "build/test-results/*.xml")
+                            testResults: "build/test-results/*.xml")
                         sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                       }
                     }
@@ -91,7 +76,7 @@ pipeline {
                 }
               }
             }
-            parallel tests
+            parallel integrations
           }
         }
       }
