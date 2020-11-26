@@ -59,32 +59,42 @@ pipeline {
     }
     stage('Test integrations') {
       steps {
-        dir("${BASE_DIR}") {
-          sh(label: "Boot up the Elastic stack", script: 'build/elastic-package stack up -d -v')
-        }
         script {
           dir("${BASE_DIR}/packages") {
+            def tests = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              dir("${it}"){
-                sh(label: "Test integration: ${it}", script: '''
-                eval "$(../../build/elastic-package stack shellinit)"
-                ../../build/elastic-package test -v --report-format xUnit --report-output file
-                ''')
+              tests["${it}"] = {
+                node {
+                  stage("${it}") {
+                    steps {
+                      dir("${BASE_DIR}") {
+                        sh(label: "Boot up the Elastic stack", script: 'build/elastic-package stack up -d -v')
+                      }
+                      dir("${it}"){
+                        sh(label: "Test integration: ${it}", script: '''
+                          eval "$(../../build/elastic-package stack shellinit)"
+                          ../../build/elastic-package test -v --report-format xUnit --report-output file
+                          ''')
+                      }
+                    }
+                    post {
+                      always {
+                        dir("${BASE_DIR}") {
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                            junit(allowEmptyResults: false,
+                              keepLongStdio: true,
+                              estResults: "build/test-results/*.xml")
+                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
-          }
-        }
-      }
-      post {
-        always {
-          dir("${BASE_DIR}") {
-            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-            junit(allowEmptyResults: false,
-                  keepLongStdio: true,
-                  testResults: "build/test-results/*.xml")
-            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+            parallel tests
           }
         }
       }
