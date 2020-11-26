@@ -17,7 +17,118 @@ The `log` dataset collects the NATS logs.
 An example event for `stats` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.stats-default-000001",
+    "_type": "_doc",
+    "_id": "wVBB_3UBsNbKIce59H5f",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:55:12.889Z",
+        "agent": {
+            "version": "7.11.0",
+            "hostname": "5706c620a165",
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
+            "name": "5706c620a165",
+            "type": "metricbeat"
+        },
+        "ecs": {
+            "version": "1.6.0"
+        },
+        "host": {
+            "ip": [
+                "192.168.192.8"
+            ],
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ],
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "os": {
+                "version": "7 (Core)",
+                "family": "redhat",
+                "name": "CentOS Linux",
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core",
+                "platform": "centos"
+            },
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "name": "5706c620a165",
+            "containerized": true
+        },
+        "metricset": {
+            "name": "stats",
+            "period": 10000
+        },
+        "nats": {
+            "stats": {
+                "cores": 8,
+                "cpu": 0,
+                "total_connections": 158,
+                "out": {
+                    "messages": 0,
+                    "bytes": 0
+                },
+                "in": {
+                    "messages": 136883,
+                    "bytes": 2190128
+                },
+                "slow_consumers": 0,
+                "mem": {
+                    "bytes": 12308480
+                },
+                "uptime": 780,
+                "remotes": 1,
+                "http": {
+                    "req_stats": {
+                        "uri": {
+                            "subsz": 65,
+                            "varz": 65,
+                            "root": 0,
+                            "connz": 130,
+                            "routez": 130
+                        }
+                    }
+                }
+            },
+            "server": {
+                "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL",
+                "time": "2020-11-25T11:55:12.8894258Z"
+            }
+        },
+        "elastic_agent": {
+            "version": "7.11.0",
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true
+        },
+        "event": {
+            "dataset": "nats.stats",
+            "module": "nats",
+            "duration": 1323200
+        },
+        "service": {
+            "address": "http://nats:8222/varz",
+            "type": "nats"
+        },
+        "data_stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "nats.stats"
+        }
+    },
+    "fields": {
+        "nats.server.time": [
+            "2020-11-25T11:55:12.889Z"
+        ],
+        "@timestamp": [
+            "2020-11-25T11:55:12.889Z"
+        ]
+    },
+    "sort": [
+        1606305312889
+    ]
+}
 ```
 
 **Exported fields**
@@ -62,7 +173,118 @@ metrics from a Nats instance.
 An example event for `stats` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.stats-default-000001",
+    "_type": "_doc",
+    "_id": "wVBB_3UBsNbKIce59H5f",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:55:12.889Z",
+        "agent": {
+            "version": "7.11.0",
+            "hostname": "5706c620a165",
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
+            "name": "5706c620a165",
+            "type": "metricbeat"
+        },
+        "ecs": {
+            "version": "1.6.0"
+        },
+        "host": {
+            "ip": [
+                "192.168.192.8"
+            ],
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ],
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "os": {
+                "version": "7 (Core)",
+                "family": "redhat",
+                "name": "CentOS Linux",
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core",
+                "platform": "centos"
+            },
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "name": "5706c620a165",
+            "containerized": true
+        },
+        "metricset": {
+            "name": "stats",
+            "period": 10000
+        },
+        "nats": {
+            "stats": {
+                "cores": 8,
+                "cpu": 0,
+                "total_connections": 158,
+                "out": {
+                    "messages": 0,
+                    "bytes": 0
+                },
+                "in": {
+                    "messages": 136883,
+                    "bytes": 2190128
+                },
+                "slow_consumers": 0,
+                "mem": {
+                    "bytes": 12308480
+                },
+                "uptime": 780,
+                "remotes": 1,
+                "http": {
+                    "req_stats": {
+                        "uri": {
+                            "subsz": 65,
+                            "varz": 65,
+                            "root": 0,
+                            "connz": 130,
+                            "routez": 130
+                        }
+                    }
+                }
+            },
+            "server": {
+                "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL",
+                "time": "2020-11-25T11:55:12.8894258Z"
+            }
+        },
+        "elastic_agent": {
+            "version": "7.11.0",
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true
+        },
+        "event": {
+            "dataset": "nats.stats",
+            "module": "nats",
+            "duration": 1323200
+        },
+        "service": {
+            "address": "http://nats:8222/varz",
+            "type": "nats"
+        },
+        "data_stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "nats.stats"
+        }
+    },
+    "fields": {
+        "nats.server.time": [
+            "2020-11-25T11:55:12.889Z"
+        ],
+        "@timestamp": [
+            "2020-11-25T11:55:12.889Z"
+        ]
+    },
+    "sort": [
+        1606305312889
+    ]
+}
 ```
 
 **Exported fields**
@@ -101,7 +323,91 @@ metrics about connections from a Nats instance.
 An example event for `connections` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.connections-default-000001",
+    "_type": "_doc",
+    "_id": "8VBC_3UBsNbKIce5Qupc",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:55:32.849Z",
+        "metricset": {
+            "name": "connections",
+            "period": 10000
+        },
+        "service": {
+            "address": "http://nats:8222/connz",
+            "type": "nats"
+        },
+        "data_stream": {
+            "dataset": "nats.connections",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.6.0"
+        },
+        "agent": {
+            "hostname": "5706c620a165",
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
+            "name": "5706c620a165",
+            "type": "metricbeat",
+            "version": "7.11.0"
+        },
+        "nats": {
+            "server": {
+                "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL",
+                "time": "2020-11-25T11:55:32.8490791Z"
+            },
+            "connections": {
+                "total": 0
+            }
+        },
+        "elastic_agent": {
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true,
+            "version": "7.11.0"
+        },
+        "host": {
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "os": {
+                "platform": "centos",
+                "version": "7 (Core)",
+                "family": "redhat",
+                "name": "CentOS Linux",
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core"
+            },
+            "name": "5706c620a165",
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "containerized": true,
+            "ip": [
+                "192.168.192.8"
+            ],
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ]
+        },
+        "event": {
+            "dataset": "nats.connections",
+            "module": "nats",
+            "duration": 2287200
+        }
+    },
+    "fields": {
+        "nats.server.time": [
+            "2020-11-25T11:55:32.849Z"
+        ],
+        "@timestamp": [
+            "2020-11-25T11:55:32.849Z"
+        ]
+    },
+    "sort": [
+        1606305332849
+    ]
+}
 ```
 
 **Exported fields**
@@ -125,7 +431,91 @@ metrics about routes from a Nats instance.
 An example event for `routes` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.routes-default-000001",
+    "_type": "_doc",
+    "_id": "LFBB_3UBsNbKIce5phhB",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:54:52.887Z",
+        "event": {
+            "dataset": "nats.routes",
+            "module": "nats",
+            "duration": 2796500
+        },
+        "data_stream": {
+            "type": "metrics",
+            "dataset": "nats.routes",
+            "namespace": "default"
+        },
+        "host": {
+            "os": {
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core",
+                "platform": "centos",
+                "version": "7 (Core)",
+                "family": "redhat",
+                "name": "CentOS Linux"
+            },
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "containerized": true,
+            "ip": [
+                "192.168.192.8"
+            ],
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ],
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "name": "5706c620a165"
+        },
+        "elastic_agent": {
+            "version": "7.11.0",
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true
+        },
+        "agent": {
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
+            "name": "5706c620a165",
+            "type": "metricbeat",
+            "version": "7.11.0",
+            "hostname": "5706c620a165"
+        },
+        "ecs": {
+            "version": "1.6.0"
+        },
+        "metricset": {
+            "name": "routes",
+            "period": 10000
+        },
+        "service": {
+            "type": "nats",
+            "address": "http://nats:8222/routez"
+        },
+        "nats": {
+            "routes": {
+                "total": 1
+            },
+            "server": {
+                "time": "2020-11-25T11:54:52.8871762Z",
+                "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL"
+            }
+        }
+    },
+    "fields": {
+        "nats.server.time": [
+            "2020-11-25T11:54:52.887Z"
+        ],
+        "@timestamp": [
+            "2020-11-25T11:54:52.887Z"
+        ]
+    },
+    "sort": [
+        1606305292887
+    ]
+}
 ```
 
 **Exported fields**
@@ -149,7 +539,95 @@ metrics about subscriptions from a Nats instance.
 An example event for `subscriptions` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.subscriptions-default-000001",
+    "_type": "_doc",
+    "_id": "hVFC_3UBsNbKIce53rh8",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:56:12.814Z",
+        "service": {
+            "address": "http://nats:8222/subsz",
+            "type": "nats"
+        },
+        "metricset": {
+            "name": "subscriptions",
+            "period": 10000
+        },
+        "data_stream": {
+            "dataset": "nats.subscriptions",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "event": {
+            "dataset": "nats.subscriptions",
+            "module": "nats",
+            "duration": 2620000
+        },
+        "nats": {
+            "subscriptions": {
+                "removes": 0,
+                "matches": 171,
+                "total": 0,
+                "cache": {
+                    "size": 4,
+                    "hit_rate": 0.9766081871345029,
+                    "fanout": {
+                        "max": 0,
+                        "avg": 0
+                    }
+                },
+                "inserts": 0
+            }
+        },
+        "elastic_agent": {
+            "version": "7.11.0",
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true
+        },
+        "host": {
+            "name": "5706c620a165",
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ],
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "os": {
+                "name": "CentOS Linux",
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core",
+                "platform": "centos",
+                "version": "7 (Core)",
+                "family": "redhat"
+            },
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "containerized": true,
+            "ip": [
+                "192.168.192.8"
+            ]
+        },
+        "agent": {
+            "name": "5706c620a165",
+            "type": "metricbeat",
+            "version": "7.11.0",
+            "hostname": "5706c620a165",
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a"
+        },
+        "ecs": {
+            "version": "1.6.0"
+        }
+    },
+    "fields": {
+        "@timestamp": [
+            "2020-11-25T11:56:12.814Z"
+        ]
+    },
+    "sort": [
+        1606305372814
+    ]
+}
 ```
 
 **Exported fields**
@@ -180,7 +658,99 @@ metrics per connection from a Nats instance.
 An example event for `connection` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.connection-default-000001",
+    "_type": "_doc",
+    "_id": "llFC_3UBsNbKIce5kE5a",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:55:52.814Z",
+        "service": {
+            "address": "http://nats:8222/connz",
+            "type": "nats"
+        },
+        "nats": {
+            "server": {
+                "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL"
+            },
+            "connection": {
+                "out": {
+                    "messages": 0,
+                    "bytes": 0
+                },
+                "pending_bytes": 0,
+                "uptime": 12,
+                "idle_time": 6,
+                "name": "NATS Benchmark",
+                "subscriptions": 0,
+                "in": {
+                    "messages": 2167,
+                    "bytes": 34672
+                }
+            }
+        },
+        "elastic_agent": {
+            "version": "7.11.0",
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true
+        },
+        "agent": {
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
+            "name": "5706c620a165",
+            "type": "metricbeat",
+            "version": "7.11.0",
+            "hostname": "5706c620a165",
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c"
+        },
+        "host": {
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ],
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "os": {
+                "platform": "centos",
+                "version": "7 (Core)",
+                "family": "redhat",
+                "name": "CentOS Linux",
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core"
+            },
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "containerized": true,
+            "ip": [
+                "192.168.192.8"
+            ],
+            "name": "5706c620a165"
+        },
+        "event": {
+            "module": "nats",
+            "duration": 8447800,
+            "dataset": "nats.connection"
+        },
+        "metricset": {
+            "name": "connection",
+            "period": 10000
+        },
+        "data_stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "nats.connection"
+        },
+        "ecs": {
+            "version": "1.6.0"
+        }
+    },
+    "fields": {
+        "@timestamp": [
+            "2020-11-25T11:55:52.814Z"
+        ]
+    },
+    "sort": [
+        1606305352814
+    ]
+}
 ```
 
 **Exported fields**
@@ -212,7 +782,99 @@ metric per route from a Nats instance.
 An example event for `route` looks as following:
 
 ```$json
-{}
+{
+    "_index": ".ds-metrics-nats.route-default-000001",
+    "_type": "_doc",
+    "_id": "BU9B_3UBsNbKIce5MXQw",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-11-25T11:54:22.920Z",
+        "service": {
+            "address": "http://nats:8222/routez",
+            "type": "nats"
+        },
+        "event": {
+            "duration": 2391000,
+            "dataset": "nats.route",
+            "module": "nats"
+        },
+        "data_stream": {
+            "dataset": "nats.route",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "elastic_agent": {
+            "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+            "snapshot": true,
+            "version": "7.11.0"
+        },
+        "agent": {
+            "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
+            "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
+            "name": "5706c620a165",
+            "type": "metricbeat",
+            "version": "7.11.0",
+            "hostname": "5706c620a165"
+        },
+        "metricset": {
+            "name": "route",
+            "period": 10000
+        },
+        "nats": {
+            "server": {
+                "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL"
+            },
+            "route": {
+                "in": {
+                    "messages": 0,
+                    "bytes": 0
+                },
+                "out": {
+                    "messages": 0,
+                    "bytes": 0
+                },
+                "pending_size": 0,
+                "port": 55276,
+                "ip": "192.168.192.4",
+                "remote_id": "NAEKG72UKB5SS3MH27LLWTVUXUWXIKRAX5ZCXVVBZT7SC6LKBBNSNDQY",
+                "subscriptions": 0
+            }
+        },
+        "ecs": {
+            "version": "1.6.0"
+        },
+        "host": {
+            "id": "06c26569966fd125c15acac5d7feffb6",
+            "containerized": true,
+            "name": "5706c620a165",
+            "ip": [
+                "192.168.192.8"
+            ],
+            "mac": [
+                "02:42:c0:a8:c0:08"
+            ],
+            "hostname": "5706c620a165",
+            "architecture": "x86_64",
+            "os": {
+                "version": "7 (Core)",
+                "family": "redhat",
+                "name": "CentOS Linux",
+                "kernel": "4.9.184-linuxkit",
+                "codename": "Core",
+                "platform": "centos"
+            }
+        }
+    },
+    "fields": {
+        "@timestamp": [
+            "2020-11-25T11:54:22.920Z"
+        ]
+    },
+    "sort": [
+        1606305262920
+    ]
+}
 ```
 
 **Exported fields**
