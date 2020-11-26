@@ -30,7 +30,6 @@ pipeline {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
         stash allowEmpty: true, name: 'source', useDefaultExcludes: false
-        useElasticPackage()
       }
     }
     stage('Check Go sources') {
@@ -53,10 +52,19 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               integrations["${it}"] = {
                 node {
-                  stage("${it}") {
+                  stage("${it}: Initialize") {
+                    dir("..") {
+                      useElasticPackage()
+                    }
+                  }
+                  stage("${it}: Check") {
+                    dir("${it}") {
+                      sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                    }
+                  }
+                  stage("${it}: Test") {
                     try {
                       dir("${it}"){
-                        sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                         sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                         sh(label: "Test integration: ${it}", script: '''
                           eval "$(../../build/elastic-package stack shellinit)"
@@ -66,9 +74,7 @@ pipeline {
                     } finally {
                       dir("..") {
                         archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: false,
-                            keepLongStdio: true,
-                            testResults: "build/test-results/*.xml")
+                        junit(allowEmptyResults: false, keepLongStdio: true, testResults: "build/test-results/*.xml")
                         sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                       }
                     }
