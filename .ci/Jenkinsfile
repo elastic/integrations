@@ -68,7 +68,7 @@ pipeline {
               tests["${it}"] = {
                 node {
                   stage("${it}") {
-                    steps {
+                    try {
                       dir("${BASE_DIR}") {
                         sh(label: "Boot up the Elastic stack", script: 'build/elastic-package stack up -d -v')
                       }
@@ -78,16 +78,13 @@ pipeline {
                           ../../build/elastic-package test -v --report-format xUnit --report-output file
                           ''')
                       }
-                    }
-                    post {
-                      always {
-                        dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                            junit(allowEmptyResults: false,
-                              keepLongStdio: true,
-                              estResults: "build/test-results/*.xml")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                        }
+                    } finally {
+                      dir("${BASE_DIR}") {
+                        archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                          junit(allowEmptyResults: false,
+                            keepLongStdio: true,
+                            estResults: "build/test-results/*.xml")
+                        sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                       }
                     }
                   }
