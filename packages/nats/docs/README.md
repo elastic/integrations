@@ -141,11 +141,16 @@ An example event for `stats` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | nats.log.client.id | The id of the client | integer |
 | nats.log.msg.bytes | Size of the payload in bytes | long |
 | nats.log.msg.error.message | Details about the error occurred | text |
@@ -156,6 +161,7 @@ An example event for `stats` looks as following:
 | nats.log.msg.subject | Subject name this message was received on | keyword |
 | nats.log.msg.type | The protocol message type | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
+| process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
 
 
@@ -295,6 +301,7 @@ An example event for `stats` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
 | nats.stats.cores | The number of logical cores the NATS process runs on | integer |
@@ -313,6 +320,8 @@ An example event for `stats` looks as following:
 | nats.stats.slow_consumers | The number of slow consumers currently on NATS | long |
 | nats.stats.total_connections | The number of totally created clients | long |
 | nats.stats.uptime | The period the server is up (sec) | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### connections
@@ -418,9 +427,12 @@ An example event for `connections` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | nats.connections.total | The number of currently active clients | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### routes
@@ -526,9 +538,12 @@ An example event for `routes` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | nats.routes.total | The number of registered routes | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### subscriptions
@@ -638,6 +653,7 @@ An example event for `subscriptions` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
 | nats.subscriptions.cache.fanout.avg | The average fanout served by cache | double |
@@ -648,6 +664,8 @@ An example event for `subscriptions` looks as following:
 | nats.subscriptions.matches | The number of times a match is found for a subscription | long |
 | nats.subscriptions.removes | The number of remove operations in subscriptions list | long |
 | nats.subscriptions.total | The number of active subscriptions | integer |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### connection
@@ -761,6 +779,7 @@ An example event for `connection` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | nats.connection.idle_time | The period the connection is idle (sec) | long |
 | nats.connection.in.bytes | The amount of incoming bytes | long |
 | nats.connection.in.messages | The amount of incoming messages | long |
@@ -772,6 +791,8 @@ An example event for `connection` looks as following:
 | nats.connection.uptime | The period the connection is up (sec) | long |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### route
@@ -885,6 +906,7 @@ An example event for `route` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | nats.route.in.bytes | The amount of incoming bytes | long |
 | nats.route.in.messages | The amount of incoming messages | long |
 | nats.route.ip | The ip of the route | ip |
@@ -896,4 +918,6 @@ An example event for `route` looks as following:
 | nats.route.subscriptions | The number of subscriptions in this connection | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
