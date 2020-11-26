@@ -255,7 +255,7 @@ An example event for `activitylogs` looks as following:
 | file.size | File size in bytes. | long |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. |  |
+| geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
@@ -459,7 +459,7 @@ An example event for `platformlogs` looks as following:
 | file.size | File size in bytes. | long |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. |  |
+| geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
@@ -668,7 +668,7 @@ An example event for `auditlogs` looks as following:
 | file.size | File size in bytes. | long |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. |  |
+| geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
@@ -888,7 +888,7 @@ An example event for `signinlogs` looks as following:
 | file.size | File size in bytes. | long |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
-| geo.country_iso_code | Country ISO code. |  |
+| geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
 | host.architecture | Operating system architecture. | keyword |
