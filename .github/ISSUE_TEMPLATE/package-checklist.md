@@ -37,7 +37,6 @@ If the change targets a specific ES / Kibana / Agent version, uncomment this lin
 ## Log datasets
 
 * [ ] [Pipeline tests](https://github.com/elastic/elastic-package/blob/master/docs/howto/pipeline_testing.md) exist (if applicable)
-* [ ] Test log files exist for the grok patterns
 * [ ] Generated output for at least 1 log file exists
 
 ## Metric datasets
