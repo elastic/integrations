@@ -60,7 +60,7 @@ pipeline {
                       try {
                         sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                         def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
-                        if == 0 {
+                        if (r == 0) {
                           sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                           sh(label: "Test integration: ${it}", script: '''
                             eval "$(../../build/elastic-package stack shellinit)"
