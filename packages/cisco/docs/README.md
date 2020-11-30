@@ -22,6 +22,15 @@ The `asa` dataset collects the Cisco firewall logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cisco.asa.assigned_ip | The IP address assigned to a VPN client successfully connecting | ip |
+| cisco.asa.burst.avg_rate | The current average burst rate seen | keyword |
+| cisco.asa.burst.configured_avg_rate | The current configured average burst rate allowed | keyword |
+| cisco.asa.burst.configured_rate | The current configured burst rate | keyword |
+| cisco.asa.burst.cumulative_count | The total count of burst rate hits since the object was created or cleared | keyword |
+| cisco.asa.burst.current_rate | The current burst rate seen | keyword |
+| cisco.asa.burst.id | The related rate ID for burst warnings | keyword |
+| cisco.asa.burst.object | The related object for burst warnings | keyword |
+| cisco.asa.command_line_arguments | The command line arguments logged by the local audit log | keyword |
 | cisco.asa.connection_id | Unique identifier for a flow. | keyword |
 | cisco.asa.connection_type | The VPN connection type | keyword |
 | cisco.asa.dap_records | The assigned DAP records | keyword |
@@ -36,6 +45,8 @@ The `asa` dataset collects the Cisco firewall logs.
 | cisco.asa.mapped_source_ip | The translated source IP address. | ip |
 | cisco.asa.mapped_source_port | The translated source port. | long |
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
+| cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
+| cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
@@ -43,6 +54,7 @@ The `asa` dataset collects the Cisco firewall logs.
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.asa.username |  | keyword |
+| client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -62,6 +74,7 @@ The `asa` dataset collects the Cisco firewall logs.
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | Destination domain. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
@@ -71,12 +84,14 @@ The `asa` dataset collects the Cisco firewall logs.
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
+| destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Destination NAT Port | long |
 | destination.port | Port of the destination. | long |
+| destination.user.name | Short name or login of the user. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
-| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | keyword |
 | event.kind | Event kind (e.g. event) | keyword |
@@ -84,6 +99,7 @@ The `asa` dataset collects the Cisco firewall logs.
 | event.start | The date when the event started or when the activity was first observed. | date |
 | event.timezone | Time zone information | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -104,15 +120,33 @@ The `asa` dataset collects the Cisco firewall logs.
 | log.level | Log level of the log event. | keyword |
 | log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
+| nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| observer.egress.interface.name | Interface name | keyword |
+| observer.egress.zone | Observer Egress zone | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
+| observer.ingress.interface.name | Interface name | keyword |
+| observer.ingress.zone | Observer ingress zone | keyword |
+| observer.ip | IP addresses of the observer. | ip |
+| observer.name | Custom name of the observer. | keyword |
+| observer.product | The product name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| observer.version | Observer version. | keyword |
 | process.name | Process name. | keyword |
 | process.pid | Process id. | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names seen on your event. | keyword |
 | server.domain | Server domain. | keyword |
 | source.address | Source network address. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | Source domain. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -125,9 +159,11 @@ The `asa` dataset collects the Cisco firewall logs.
 | source.nat.ip | Source NAT ip | ip |
 | source.nat.port | Source NAT port | long |
 | source.port | Port of the source. | long |
+| source.user.name | Short name or login of the user. | keyword |
 | syslog.facility | Syslog facility. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
 | user.email | User email address. | keyword |
+| user.name | Short name or login of the user. | keyword |
 
 
 ### FTD
