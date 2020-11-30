@@ -1,4 +1,4 @@
-ARG SERVICE_VERSION=${SERVICE_VERSION:-2.4.20}
+ARG SERVICE_VERSION=${SERVICE_VERSION:-2.4.46}
 FROM httpd:$SERVICE_VERSION
 RUN sed -i "/jessie-updates/d" /etc/apt/sources.list
 RUN apt-get update && apt-get install -y curl

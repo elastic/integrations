@@ -5,8 +5,8 @@ logs created by the Apache server.
 
 ## Compatibility
 
-The Apache datasets were tested with Apache 2.4.12 and 2.4.20 and are expected to work with
-all versions >= 2.2.31 and >= 2.4.16.
+The Apache datasets were tested with Apache 2.4.12 and 2.4.46 and are expected to work with
+all versions >= 2.2.31 and >= 2.4.16 (independent from operating system).
 
 ## Logs
 
@@ -332,6 +332,7 @@ An example event for `status` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.uptime | Seconds the server has been up. | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
