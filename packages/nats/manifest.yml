@@ -1,0 +1,48 @@
+name: nats
+title: NATS
+version: 0.1.0
+release: experimental
+description: NATS Integration
+type: integration
+icons:
+  - src: /img/nats.svg
+    title: NATS Logo
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories:
+  - message_queue
+conditions:
+  kibana.version: ">=7.11.0"
+screenshots:
+  - src: /img/filebeat_nats_dashboard.png
+    title: Filebeat NATS Dashboard
+    size: 1919x951
+    type: image/png
+  - src: /img/metricbeat_nats_dashboard.png
+    title: Metricbeat NATS Dashboard
+    size: 3360x1834
+    type: image/png
+policy_templates:
+  - name: nats
+    title: NATS Logs and Metrics
+    description: Collect logs and metrics from NATS instances
+    inputs:
+      - type: logfile
+        title: 'Collect NATS application logs (input: logfile)'
+        description: 'Collecting application logs from NATS instances (input: logfile)'
+      - type: nats/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - localhost:8222
+        title: Collect NATS metrics
+        description: Collecting metrics about connections, routes, stats and subscriptions from NATS instances
+owner:
+  github: elastic/integrations-platforms
