@@ -52,17 +52,17 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               integrations["${it}"] = {
                 node('ubuntu && immutable') {
-                  stage("${it}: Prepare workspace") {
+                  stage("Prepare workspace") {
                       deleteDir()
                       gitCheckout(basedir: "${BASE_DIR}")
                       useElasticPackage()
                   }
-                  stage("${it}: Check") {
+                  stage("Check") {
                     dir("${BASE_DIR}/packages/${it}") {
                       sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                     }
                   }
-                  stage("${it}: Test") {
+                  stage("Test") {
                     try {
                       dir("${BASE_DIR}/packages/${it}"){
                         sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
