@@ -311,7 +311,7 @@ processors:
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302022'"
       field: "message"
-      pattern: "Built %{} stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
+      pattern: "Built %{} stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})"
   - grok:
       if: "ctx._temp_.cisco.message_id == '304001'"
       field: "message"
@@ -1236,14 +1236,6 @@ processors:
       type: integer
       ignore_failure: true
   - convert:
-      field: "source.nat.port"
-      type: integer
-      ignore_failure: true
-  - convert:
-      field: "destination.nat.port"
-      type: integer
-      ignore_failure: true
-  - convert:
       field: "source.bytes"
       type: integer
       ignore_failure: true
@@ -1392,6 +1384,16 @@ processors:
       value: "{{_temp_.cisco.mapped_destination_port}}"
       if: "ctx?._temp_?.cisco?.mapped_destination_port != ctx?.destination?.port"
       ignore_empty_value: true
+
+  - convert:
+      field: "source.nat.port"
+      type: integer
+      ignore_failure: true
+
+  - convert:
+      field: "destination.nat.port"
+      type: integer
+      ignore_failure: true
 
   #
   # Populate ECS event.code
