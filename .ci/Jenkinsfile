@@ -52,7 +52,7 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               integrations["${it}"] = {
                 node('ubuntu && immutable') {
-                  stage("Check") {
+                  stage("${it}: check") {
                     deleteDir()
                     gitCheckout(basedir: "${BASE_DIR}")
                     useElasticPackage()
