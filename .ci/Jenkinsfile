@@ -53,20 +53,18 @@ pipeline {
               integrations["${it}"] = {
                 node('ubuntu && immutable') {
                   stage("${it}: Prepare workspace") {
-                    dir("..") {
                       deleteDir()
                       gitCheckout(basedir: "${BASE_DIR}")
                       useElasticPackage()
-                    }
                   }
                   stage("${it}: Check") {
-                    dir("${it}") {
+                    dir("${BASE_DIR}/packages/${it}") {
                       sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                     }
                   }
                   stage("${it}: Test") {
                     try {
-                      dir("${it}"){
+                      dir("${BASE_DIR}/packages/${it}"){
                         sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                         sh(label: "Test integration: ${it}", script: '''
                           eval "$(../../build/elastic-package stack shellinit)"
