@@ -84,10 +84,25 @@ pipeline {
       }
     }
     stage('Update Package Storage') {
-      when {
-        branch 'master'
-      }
+      //when {
+      //  branch 'master'
+      //}
       steps {
+        useElasticPackage()
+        dir("${BASE_DIR}/packages") {
+          sh(label: "Build packages", script: '''
+            for d in *; do
+              (
+                if [[$d == *"@tmp"*]]; then
+                  continue
+                fi
+
+                cd $d
+                ../../build/elastic-package build -v
+              )
+            done
+            ''')
+        }
         gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
           sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
