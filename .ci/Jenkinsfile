@@ -29,8 +29,6 @@ pipeline {
       steps {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
-        stash allowEmpty: true, name: 'source', useDefaultExcludes: false
-        useElasticPackage()
       }
     }
     stage('Check Go sources') {
@@ -47,44 +45,43 @@ pipeline {
       steps {
         script {
           dir("${BASE_DIR}/packages") {
-            findFiles()?.collect{ it.name }?.sort()?.each {
-              dir("${it}"){
-                sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-              }
-            }
-          }
-        }
-        checkGitDiff()
-      }
-    }
-    stage('Test integrations') {
-      steps {
-        dir("${BASE_DIR}") {
-          sh(label: "Boot up the Elastic stack", script: 'build/elastic-package stack up -d -v')
-        }
-        script {
-          dir("${BASE_DIR}/packages") {
+            def integrations = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              dir("${it}"){
-                sh(label: "Test integration: ${it}", script: '''
-                eval "$(../../build/elastic-package stack shellinit)"
-                ../../build/elastic-package test -v --report-format xUnit --report-output file
-                ''')
+              integrations["${it}"] = {
+                node('ubuntu && immutable') {
+                  stage("${it}: check") {
+                    deleteDir()
+                    gitCheckout(basedir: "${BASE_DIR}")
+                    useElasticPackage()
+                    try {
+                      dir("${BASE_DIR}/packages/${it}") {
+                        sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                        // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
+                        // locally and run tests for the integration. The condition prevents from spawning the stack
+                        // unnecessarily (while no tests are defined).
+                        def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
+                        if (r == 0) {
+                          sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                          sh(label: "Test integration: ${it}", script: '''
+                            eval "$(../../build/elastic-package stack shellinit)"
+                            ../../build/elastic-package test -v --report-format xUnit --report-output file
+                            ''')
+                         }
+                      }
+                    } finally {
+                      dir("${BASE_DIR}") {
+                        archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                        sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                      }
+                    }
+                  }
+                }
               }
             }
-          }
-        }
-      }
-      post {
-        always {
-          dir("${BASE_DIR}") {
-            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-            junit(allowEmptyResults: false,
-                  keepLongStdio: true,
-                  testResults: "build/test-results/*.xml")
-            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+            parallel integrations
           }
         }
       }
@@ -94,6 +91,17 @@ pipeline {
         branch 'master'
       }
       steps {
+        useElasticPackage()
+        dir("${BASE_DIR}/packages") {
+          sh(label: "Build packages", script: '''
+            for d in *; do
+              (
+                cd $d
+                ../../build/elastic-package build -v
+              )
+            done
+            ''')
+        }
         gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
           sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
@@ -125,7 +133,6 @@ def cleanup(){
   dir("${BASE_DIR}"){
     deleteDir()
   }
-  unstash 'source'
 }
 
 def useElasticPackage() {
