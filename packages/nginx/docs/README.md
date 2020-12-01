@@ -201,10 +201,14 @@ Error logs collects the ingress controller logs.
 | nginx.ingress_controller.upstream.response.length | The length of the response obtained from the upstream server | long |
 | nginx.ingress_controller.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
 | nginx.ingress_controller.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| related.ip | All of the IPs seen on your event. | ip |
 | source.address | IP address, domain or unix socket. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
