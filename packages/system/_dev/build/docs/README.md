@@ -195,14 +195,14 @@ This dataset is available on:
 The Windows `application` dataset provides events from the Windows
 `Application` event log.
 
-{{fields "windows_application"}}
+{{fields "application"}}
 
 ### System
 
 The Windows `system` dataset provides events from the Windows `System`
 event log.
 
-{{fields "windows_system"}}
+{{fields "system"}}
 
 
 ### Security
