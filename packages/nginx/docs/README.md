@@ -304,6 +304,7 @@ An example event for `stubstatus` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -330,4 +331,6 @@ An example event for `stubstatus` looks as following:
 | nginx.stubstatus.requests | The total number of client requests. | long |
 | nginx.stubstatus.waiting | The current number of idle client connections waiting for a request. | long |
 | nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
