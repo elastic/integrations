@@ -26,6 +26,117 @@ field can be overwritten with the original timezone using the add_fields process
 
 Access logs collects the nginx access logs.
 
+An example event for `access` looks as following:
+
+```$json
+{
+    "agent": {
+        "hostname": "a73e7856c209",
+        "name": "a73e7856c209",
+        "id": "3987d2b3-b40a-4aa0-99fc-478f9d7079ea",
+        "ephemeral_id": "6d41da1c-5f71-4bd4-b326-a8913bfaa884",
+        "type": "filebeat",
+        "version": "7.11.0"
+    },
+    "nginx": {
+        "access": {
+            "remote_ip_list": [
+                "127.0.0.1"
+            ]
+        }
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/access.log"
+        },
+        "offset": 0
+    },
+    "elastic_agent": {
+        "id": "5ca3af72-37c3-48b6-92e8-176d154bb66f",
+        "version": "7.11.0",
+        "snapshot": true
+    },
+    "source": {
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1"
+    },
+    "url": {
+        "original": "/server-status"
+    },
+    "input": {
+        "type": "log"
+    },
+    "@timestamp": "2020-12-03T11:41:57.000Z",
+    "ecs": {
+        "version": "1.6.0"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "data_stream": {
+        "namespace": "ep",
+        "type": "logs",
+        "dataset": "nginx.access"
+    },
+    "host": {
+        "hostname": "a73e7856c209",
+        "os": {
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.80.6"
+        ],
+        "name": "a73e7856c209",
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "mac": [
+            "02:42:c0:a8:50:06"
+        ],
+        "architecture": "x86_64"
+    },
+    "http": {
+        "request": {
+            "method": "get"
+        },
+        "response": {
+            "status_code": 200,
+            "body": {
+                "bytes": 97
+            }
+        },
+        "version": "1.1"
+    },
+    "event": {
+        "timezone": "+00:00",
+        "created": "2020-12-03T11:42:17.116Z",
+        "kind": "event",
+        "category": [
+            "web"
+        ],
+        "type": [
+            "access"
+        ],
+        "dataset": "nginx.access",
+        "outcome": "success"
+    },
+    "user_agent": {
+        "original": "curl/7.64.0",
+        "name": "curl",
+        "device": {
+            "name": "Other"
+        },
+        "version": "7.64.0"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -100,6 +211,88 @@ Access logs collects the nginx access logs.
 ### Error Logs
 
 Error logs collects the nginx error logs.
+
+An example event for `error` looks as following:
+
+```$json
+{
+    "agent": {
+        "hostname": "a73e7856c209",
+        "name": "a73e7856c209",
+        "id": "3987d2b3-b40a-4aa0-99fc-478f9d7079ea",
+        "ephemeral_id": "6d41da1c-5f71-4bd4-b326-a8913bfaa884",
+        "type": "filebeat",
+        "version": "7.11.0"
+    },
+    "process": {
+        "pid": 1,
+        "thread": {
+            "id": 1
+        }
+    },
+    "nginx": {
+        "error": {}
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/error.log"
+        },
+        "offset": 0,
+        "level": "warn"
+    },
+    "elastic_agent": {
+        "id": "5ca3af72-37c3-48b6-92e8-176d154bb66f",
+        "version": "7.11.0",
+        "snapshot": true
+    },
+    "message": "conflicting server name \"localhost\" on 0.0.0.0:80, ignored",
+    "input": {
+        "type": "log"
+    },
+    "@timestamp": "2020-12-03T11:44:39.000Z",
+    "ecs": {
+        "version": "1.6.0"
+    },
+    "data_stream": {
+        "namespace": "ep",
+        "type": "logs",
+        "dataset": "nginx.error"
+    },
+    "host": {
+        "hostname": "a73e7856c209",
+        "os": {
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.80.6"
+        ],
+        "name": "a73e7856c209",
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "mac": [
+            "02:42:c0:a8:50:06"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "timezone": "+00:00",
+        "created": "2020-12-03T11:44:52.803Z",
+        "kind": "event",
+        "category": [
+            "web"
+        ],
+        "type": [
+            "error"
+        ],
+        "dataset": "nginx.error"
+    }
+}
+```
 
 **Exported fields**
 
@@ -253,48 +446,75 @@ An example event for `stubstatus` looks as following:
 
 ```$json
 {
-    "@timestamp": "2020-04-28T11:07:58.223Z",
+    "@timestamp": "2020-12-03T11:47:31.996Z",
+    "host": {
+        "hostname": "a73e7856c209",
+        "architecture": "x86_64",
+        "os": {
+            "codename": "Core",
+            "platform": "centos",
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux",
+            "kernel": "4.9.184-linuxkit"
+        },
+        "name": "a73e7856c209",
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "containerized": true,
+        "ip": [
+            "192.168.80.6"
+        ],
+        "mac": [
+            "02:42:c0:a8:50:06"
+        ]
+    },
     "service": {
         "type": "nginx",
-        "address": "127.0.0.1:8081"
+        "address": "http://elastic-package-service_nginx_1:80/server-status"
     },
     "nginx": {
         "stubstatus": {
+            "requests": 13,
             "waiting": 0,
-            "hostname": "127.0.0.1:8081",
+            "hostname": "elastic-package-service_nginx_1:80",
+            "accepts": 13,
+            "handled": 13,
+            "current": 13,
             "dropped": 0,
             "writing": 1,
-            "handled": 7339,
-            "requests": 7411,
-            "reading": 0,
-            "accepts": 7339,
-            "current": 10,
-            "active": 1
+            "active": 1,
+            "reading": 0
         }
     },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "nginx.stubstatus"
+    "elastic_agent": {
+        "snapshot": true,
+        "version": "7.11.0",
+        "id": "5ca3af72-37c3-48b6-92e8-176d154bb66f"
     },
     "ecs": {
-        "version": "1.5.0"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "ephemeral_id": "8eb07b4f-df58-4794-8e00-60f1443f33b6",
-        "hostname": "MacBook-Elastic.local",
-        "id": "e47f6e4d-5277-46f3-801d-221c7584c604",
-        "version": "8.0.0"
+        "version": "1.6.0"
     },
     "event": {
+        "dataset": "nginx.stubstatus",
         "module": "nginx",
-        "duration": 1112095,
-        "dataset": "nginx.stubstatus"
+        "duration": 2231100
     },
     "metricset": {
         "period": 10000,
         "name": "stubstatus"
+    },
+    "data_stream": {
+        "type": "metrics",
+        "dataset": "nginx.stubstatus",
+        "namespace": "ep"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "7.11.0",
+        "hostname": "a73e7856c209",
+        "ephemeral_id": "1fbb4215-4ba3-42fa-9984-244b112c9a17",
+        "id": "2689a72c-6e18-45fe-b493-af1ec86af2b3",
+        "name": "a73e7856c209"
     }
 }
 ```

@@ -26,11 +26,15 @@ field can be overwritten with the original timezone using the add_fields process
 
 Access logs collects the nginx access logs.
 
+{{event "access"}}
+
 {{fields "access"}}
 
 ### Error Logs
 
 Error logs collects the nginx error logs.
+
+{{event "error"}}
 
 {{fields "error"}}
 
