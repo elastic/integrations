@@ -276,7 +276,6 @@ An example event for `status` looks as following:
 | apache.status.cpu.load | CPU Load. | scaled_float |
 | apache.status.cpu.system | System cpu. | scaled_float |
 | apache.status.cpu.user | CPU user load. | scaled_float |
-| apache.status.hostname | Apache hostname. | keyword |
 | apache.status.load.1 | Load average for the last minute. | scaled_float |
 | apache.status.load.15 | Load average for the last 15 minutes. | scaled_float |
 | apache.status.load.5 | Load average for the last 5 minutes. | scaled_float |
@@ -332,7 +331,6 @@ An example event for `status` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| host.uptime | Seconds the server has been up. | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
