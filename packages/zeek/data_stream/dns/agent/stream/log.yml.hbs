@@ -174,10 +174,15 @@ processors:
         - {from: source.address, to: source.ip, type: ip}
         - {from: destination.address, to: destination.ip, type: ip}
         - {from: zeek.session_id, to: event.id}
-        - {from: zeek.dns.trans_id, to: dns.id}
+        - {from: zeek.dns.trans_id, to: dns.id, type: string}
         - {from: zeek.dns.query, to: dns.question.name}
         - {from: zeek.dns.qtype_name, to: dns.question.type}
         - {from: zeek.dns.rcode_name, to: dns.response_code}
+  - convert:
+      ignore_missing: true
+      ignore_failure: true
+      fields:
+        - {from: zeek.dns.trans_id, type: string}
   - add_fields:
       target: event
       fields:
