@@ -790,12 +790,14 @@ processors:
                     {from: "client.address", to: "client.ip", type: "ip"},
                     {from: "server.address", to: "server.ip", type: "ip"},
                     {from: "client._ip",     to: "client.ip", type: "ip"},
+                    {from: "client._port",   to: "client.port", type: "long"},
                 ],
                 ignore_missing: true,
                 fail_on_error: false
             }));
             builder.Add("removeTempIP", function (evt) {
                 evt.Delete("client._ip");
+                evt.Delete("client._port");
             });
             builder.Add("setSrcDstFields", new processor.Convert({
                 fields: [
