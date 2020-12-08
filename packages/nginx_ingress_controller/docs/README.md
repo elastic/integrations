@@ -61,17 +61,17 @@ The `access` data stream collects the Nginx Ingress Controller access logs.
 | input.type | Input type | keyword |
 | log.file.path | Log path | keyword |
 | log.offset | Log offset | long |
-| nginx.access.http.request.id | The randomly generated ID of the request | text |
-| nginx.access.http.request.length | The request length (including request line, header, and request body) | long |
-| nginx.access.http.request.time | Time elapsed since the first bytes were read from the client | double |
-| nginx.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
-| nginx.access.upstream.alternative_name | The name of the alternative upstream. | text |
-| nginx.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
-| nginx.access.upstream.name | The name of the upstream. | text |
-| nginx.access.upstream.port | The port of the upstream server. | keyword |
-| nginx.access.upstream.response.length | The length of the response obtained from the upstream server | long |
-| nginx.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
-| nginx.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| nginx_ingress_controller.access.http.request.id | The randomly generated ID of the request | text |
+| nginx_ingress_controller.access.http.request.length | The request length (including request line, header, and request body) | long |
+| nginx_ingress_controller.access.http.request.time | Time elapsed since the first bytes were read from the client | double |
+| nginx_ingress_controller.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
+| nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
+| nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
+| nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
+| nginx_ingress_controller.access.upstream.port | The port of the upstream server. | keyword |
+| nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | IP address, domain or unix socket. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
