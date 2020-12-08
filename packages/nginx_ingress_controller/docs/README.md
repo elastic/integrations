@@ -35,6 +35,7 @@ The `access` data stream collects the Nginx Ingress Controller access logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -57,6 +58,9 @@ The `access` data stream collects the Nginx Ingress Controller access logs.
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Log path | keyword |
+| log.offset | Log offset | long |
 | nginx.access.http.request.id | The randomly generated ID of the request | text |
 | nginx.access.http.request.length | The request length (including request line, header, and request body) | long |
 | nginx.access.http.request.time | Time elapsed since the first bytes were read from the client | double |
