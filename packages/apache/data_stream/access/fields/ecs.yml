@@ -29,6 +29,8 @@
       type: long
       format: bytes
       description: Size in bytes of the response body.
+      unit: byte
+      metric_type: gauge
     - name: response.status_code
       level: extended
       type: long
@@ -168,7 +170,7 @@
     - name: os.name
       level: extended
       type: keyword
-      description: Operating system name, without the version.
+      description: Operating system name, without the version
       ignore_above: 1024
       multi_fields:
         - name: text
@@ -179,12 +181,12 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: Operating system version as a raw string.
+      description: Operating system version as a raw string
     - name: version
       level: extended
       type: keyword
       ignore_above: 1024
-      description: Version of the user agent.
+      description: Version of the user agent
 - name: ecs.version
   type: keyword
   description: ECS version
@@ -200,3 +202,48 @@
 - name: source.ip
   type: ip
   description: IP address of the source
+- name: source.domain
+  type: keyword
+  description: Source domain
+- name: user_agent
+  type: group
+  fields:
+    - name: device.name
+      type: keyword
+      description: Name of the device.
+    - name: name
+      type: keyword
+      description: Name of the user agent.
+    - name: original
+      type: keyword
+      description: Unparsed user_agent string.
+    - name: os.name
+      type: keyword
+      description: Operating system name, without the version.
+    - name: os.full
+      type: keyword
+      description: Operating system name, including the version or code name.
+- name: source.as.organization.name
+  type: keyword
+  description: Organization name.
+- name: source.as.number
+  type: long
+  description: Unique number allocated to the autonomous system.
+- name: source.geo.country_name
+  type: keyword
+  description: Country name.
+- name: destination.domain
+  type: keyword
+  description: Destination domain
+- name: tls
+  type: group
+  fields:
+    - name: cipher
+      type: keyword
+      description: String indicating the cipher used during the current connection.
+    - name: version
+      type: keyword
+      description: Numeric part of the version parsed from the original string.
+    - name: version_protocol
+      type: keyword
+      description: Normalized lowercase protocol name parsed from original string.

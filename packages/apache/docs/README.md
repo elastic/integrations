@@ -37,6 +37,7 @@ Access logs collects the Apache access logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | Destination domain | keyword |
 | ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -67,21 +68,29 @@ Access logs collects the Apache access logs.
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.domain | Source domain | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source | ip |
+| tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
-| user_agent.version | Version of the user agent. | keyword |
+| user_agent.os.version | Operating system version as a raw string | keyword |
+| user_agent.version | Version of the user agent | keyword |
 
 
 ### Error Logs
@@ -140,12 +149,17 @@ Error logs collects the Apache error logs.
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | Source IP address. | keyword |
+| source.port | Source port. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -165,97 +179,104 @@ An example event for `status` looks as following:
 
 ```$json
 {
-    "@timestamp": "2020-06-24T10:19:48.005Z",
-    "@metadata": {
-        "beat": "metricbeat",
-        "type": "_doc",
-        "version": "8.0.0",
-        "raw_index": "metrics-apache.status-default"
+    "@timestamp": "2020-12-03T16:31:04.445Z",
+    "data_stream": {
+        "type": "metrics",
+        "dataset": "apache.status",
+        "namespace": "ep"
+    },
+    "elastic_agent": {
+        "version": "7.11.0",
+        "id": "6c69e2bc-7bb3-4bac-b7e9-41f22558321c",
+        "snapshot": true
+    },
+    "host": {
+        "os": {
+            "platform": "centos",
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux",
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core"
+        },
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "name": "4942ef7a8cfc",
+        "containerized": true,
+        "ip": [
+            "192.168.0.4"
+        ],
+        "mac": [
+            "02:42:c0:a8:00:04"
+        ],
+        "hostname": "4942ef7a8cfc",
+        "architecture": "x86_64"
+    },
+    "agent": {
+        "hostname": "4942ef7a8cfc",
+        "ephemeral_id": "8371d3a3-5321-4436-9fd5-cafcabfe4c57",
+        "id": "af6f66ef-d7d0-4784-b9bb-3fddbcc151b5",
+        "name": "4942ef7a8cfc",
+        "type": "metricbeat",
+        "version": "7.11.0"
     },
     "metricset": {
         "name": "status",
-        "period": 10000
+        "period": 30000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_1:80/server-status?auto=",
+        "type": "apache"
     },
     "apache": {
         "status": {
+            "load": {
+                "5": 1.89,
+                "15": 1.07,
+                "1": 1.53
+            },
+            "total_accesses": 11,
             "connections": {
                 "total": 0,
                 "async": {
+                    "closing": 0,
                     "writing": 0,
-                    "keep_alive": 0,
-                    "closing": 0
+                    "keep_alive": 0
                 }
             },
-            "total_kbytes": 128,
-            "cpu": {
-                "children_user": 0,
-                "children_system": 0,
-                "load": 0.185185,
-                "user": 1.11,
-                "system": 1.79
-            },
+            "requests_per_sec": 0.916667,
             "scoreboard": {
-                "logging": 0,
-                "idle_cleanup": 0,
                 "starting_up": 0,
-                "reading_request": 0,
+                "keepalive": 0,
+                "sending_reply": 1,
+                "logging": 0,
+                "gracefully_finishing": 0,
                 "dns_lookup": 0,
                 "closing_connection": 0,
-                "gracefully_finishing": 0,
-                "sending_reply": 1,
-                "keepalive": 0,
-                "total": 400,
                 "open_slot": 325,
-                "waiting_for_connection": 74
+                "total": 400,
+                "idle_cleanup": 0,
+                "waiting_for_connection": 74,
+                "reading_request": 0
             },
+            "bytes_per_sec": 0,
+            "bytes_per_request": 0,
+            "uptime": {
+                "server_uptime": 12,
+                "uptime": 12
+            },
+            "total_kbytes": 0,
             "workers": {
                 "busy": 1,
                 "idle": 74
             },
-            "bytes_per_sec": 83.6986,
-            "hostname": "127.0.0.1:8088",
-            "uptime": {
-                "server_uptime": 1566,
-                "uptime": 1566
-            },
-            "total_accesses": 1393,
-            "bytes_per_request": 94.0933,
-            "requests_per_sec": 0.889527,
-            "load": {
-                "1": 3.58,
-                "5": 3.54,
-                "15": 2.79
+            "cpu": {
+                "load": 0.583333,
+                "user": 0.03,
+                "system": 0.04,
+                "children_user": 0,
+                "children_system": 0
             }
         }
-    },
-    "service": {
-        "address": "127.0.0.1:8088",
-        "type": "apache"
-    },
-    "event": {
-        "duration": 2381832,
-        "dataset": "apache.status",
-        "module": "apache"
-    },
-    "dataset": {
-        "type": "metrics",
-        "name": "apache.status",
-        "namespace": "default"
-    },
-    "stream": {
-        "dataset": "apache.status",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "685f03e4-76e7-4d05-b398-8454b8964681",
-        "id": "a74466da-3ea4-44f9-aea0-11c5e4b920be",
-        "name": "MacBook-Elastic.local"
     }
 }
 ```
@@ -276,7 +297,6 @@ An example event for `status` looks as following:
 | apache.status.cpu.load | CPU Load. | scaled_float |
 | apache.status.cpu.system | System cpu. | scaled_float |
 | apache.status.cpu.user | CPU user load. | scaled_float |
-| apache.status.hostname | Apache hostname. | keyword |
 | apache.status.load.1 | Load average for the last minute. | scaled_float |
 | apache.status.load.15 | Load average for the last 15 minutes. | scaled_float |
 | apache.status.load.5 | Load average for the last 5 minutes. | scaled_float |
@@ -332,7 +352,6 @@ An example event for `status` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| host.uptime | Seconds the server has been up. | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
