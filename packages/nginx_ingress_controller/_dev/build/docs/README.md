@@ -1,29 +1,17 @@
-# Nginx Integration
+# Nginx Ingress Controller Integration
 
-This integration periodically fetches metrics from [Nginx](https://nginx.org/) servers. It can parse access and error
-logs created by the HTTP server. 
+This integration periodically fetches metrics from [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx)
+instances. It can parse access logs created by the ingress. 
 
 ## Compatibility
 
-The Nginx `stubstatus` metrics was tested with Nginx 1.19.5 and are expected to work with all version >= 1.9.
-The logs were tested with version 1.19.5.
-On Windows, the module was tested with Nginx installed from the Chocolatey repository.
+The integration was tested with version v0.30.0 of Nginx Ingress Controller. The log format is described
+[here](https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/docs/user-guide/nginx-configuration/log-format.md).
 
 ## Logs
 
-**Timezone support**
-
-This datasource parses logs that don’t contain timezone information. For these logs, the Elastic Agent reads the local
-timezone and uses it when parsing to convert the timestamp to UTC. The timezone to be used for parsing is included
-in the event in the `event.timezone` field.
-
-To disable this conversion, the event.timezone field can be removed with the drop_fields processor.
-
-If logs are originated from systems or applications with a different timezone to the local one, the `event.timezone`
-field can be overwritten with the original timezone using the add_fields processor.
-
 ### Ingress Controller Logs
 
-Error logs collects the ingress controller logs.
+Access log collects the Nginx Ingress Controller access logs.
 
-{{fields "ingress_controller"}}
+{{fields "access"}}
