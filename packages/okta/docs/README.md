@@ -147,6 +147,7 @@ The Okta System Log records system events related to your organization in order 
 | source.ip | IP address of the source. | ip |
 | source.user.full_name | User’s full name, if available. | keyword |
 | source.user.id | Unique identifiers of the user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
