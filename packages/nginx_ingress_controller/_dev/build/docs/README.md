@@ -10,8 +10,8 @@ The integration was tested with version v0.30.0 of Nginx Ingress Controller. The
 
 ## Logs
 
-### Ingress Controller Logs
+### Access Logs
 
-Access log collects the Nginx Ingress Controller access logs.
+The `access` data stream collects the Nginx Ingress Controller access logs.
 
 {{fields "access"}}
