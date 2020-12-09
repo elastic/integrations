@@ -85,7 +85,19 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.ParentImageFileName | Path to the parent process. | keyword |
 | crowdstrike.event.ParentProcessId | Parent process ID related to the detection. | integer |
 | crowdstrike.event.PatternDispositionDescription | Action taken by Falcon. | keyword |
-| crowdstrike.event.PatternDispositionFlags | Flags indicating actions taken. | object |
+| crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.InddetMask |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.Indicator |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillParent |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillProcess |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillSubProcess |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.OperationBlocked |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.PolicyDisabled |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.ProcessBlocked |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.QuarantineFile |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.QuarantineMachine |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.Rooting |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.SensorOnly |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
