@@ -14,4 +14,6 @@ The integration was tested with version v0.30.0 of Nginx Ingress Controller. The
 
 The `access` data stream collects the Nginx Ingress Controller access logs.
 
+{{event "access"}}
+
 {{fields "access"}}
