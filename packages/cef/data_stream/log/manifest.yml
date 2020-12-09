@@ -1,0 +1,58 @@
+type: logs
+title: CEF log logs
+release: experimental
+streams:
+  - input: logfile
+    template_path: log.yml.hbs
+    title: CEF logs
+    description: Collect CEF logs using log input
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/cef.log
+      - name: tags
+        type: text
+        title: Tags
+        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - cef
+          - forwarded
+  - input: syslog
+    template_path: syslog.yml.hbs
+    title: CEF logs
+    description: Collect CEF logs using syslog input
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - cef
+          - forwarded
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        description: The interface to listen to UDP based syslog traffic. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        description: The UDP port to listen for syslog traffic. Ports below 1024 require Filebeat to run as root.
+        multi: false
+        required: true
+        show_user: true
+        default: 9003
