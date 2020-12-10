@@ -1,0 +1,68 @@
+type: logs
+title: Iptables log logs
+release: experimental
+streams:
+  - input: syslog
+    template_path: syslog.yml.hbs
+    title: Iptables syslog logs
+    description: Collect iptables logs using syslog input
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - iptables
+          - forwarded
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        multi: false
+        required: true
+        show_user: true
+        default: 9001
+      - name: community_id
+        type: bool
+        title: Community Id
+        multi: false
+        required: true
+        show_user: true
+        default: true
+  - input: logfile
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/iptables.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - iptables
+          - forwarded
+      - name: community_id
+        type: bool
+        title: Community Id
+        multi: false
+        required: true
+        show_user: true
+        default: true
+    template_path: log.yml.hbs
+    title: Iptables log logs
+    description: Collect iptables logs using log input
