@@ -21,7 +21,7 @@ processors:
       target: zeek.dns
   - registered_domain:
       ignore_missing: true
-      ignore_failure: true
+      fail_on_error: false
       field: zeek.dns.query
       target_field: dns.question.registered_domain
   - script:
@@ -157,7 +157,7 @@ processors:
         }
   - convert:
       ignore_missing: true
-      ignore_failure: true
+      fail_on_error: false
       mode: rename
       fields:
         - {from: zeek.dns.id.orig_h, to: source.address}
@@ -168,7 +168,7 @@ processors:
         - {from: zeek.dns.proto, to: network.transport}
   - convert:
       ignore_missing: true
-      ignore_failure: true
+      fail_on_error: false
       mode: copy
       fields:
         - {from: source.address, to: source.ip, type: ip}
@@ -180,7 +180,7 @@ processors:
         - {from: zeek.dns.rcode_name, to: dns.response_code}
   - convert:
       ignore_missing: true
-      ignore_failure: true
+      fail_on_error: false
       fields:
         - {from: zeek.dns.trans_id, type: string}
   - add_fields:
