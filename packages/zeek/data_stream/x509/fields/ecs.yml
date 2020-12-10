@@ -28,51 +28,25 @@
   ignore_above: 1024
   name: event.type
   type: keyword
-- description: Exponent used to derive the public key. This is algorithm specific.
-  example: 65537
-  name: file.x509.public_key_exponent
-  type: long
-- description: Unique serial number issued by the certificate authority.
-  example: 55FBB9C7DEBF09809D12CCAA
-  ignore_above: 1024
-  name: file.x509.serial_number
-  type: keyword
-- description: Version of x509 format.
-  example: 3
-  ignore_above: 1024
-  name: file.x509.version_number
-  type: keyword
 - description: List of subject alternative names (SAN).
   example: '*.elastic.co'
   ignore_above: 1024
   name: file.x509.alternative_names
   type: keyword
-- description: Time at which the certificate is first considered valid.
-  example: 2019-08-16 01:40:25+00:00
-  name: file.x509.not_before
-  type: date
-- description: Time at which the certificate is no longer considered valid.
-  example: 2020-07-16 03:15:39+00:00
-  name: file.x509.not_after
-  type: date
-- description: Identifier for certificate signature algorithm.
-  example: SHA256-RSA
+- description: List of common name (CN) of issuing certificate authority.
+  example: Example SHA2 High Assurance Server CA
   ignore_above: 1024
-  name: file.x509.signature_algorithm
+  name: file.x509.issuer.common_name
   type: keyword
-- description: The size of the public key space in bits.
-  example: 2048
-  name: file.x509.public_key_size
-  type: long
 - description: List of country (C) codes
   example: US
   ignore_above: 1024
   name: file.x509.issuer.country
   type: keyword
-- description: List of common name (CN) of issuing certificate authority.
-  example: Example SHA2 High Assurance Server CA
+- description: Distinguished name (DN) of issuing certificate authority.
+  example: C=US, O=Example Inc, OU=www.example.com, CN=Example SHA2 High Assurance Server CA
   ignore_above: 1024
-  name: file.x509.issuer.common_name
+  name: file.x509.issuer.distinguished_name
   type: keyword
 - description: List of locality names (L)
   example: Mountain View
@@ -94,15 +68,56 @@
   ignore_above: 1024
   name: file.x509.issuer.state_or_province
   type: keyword
-- description: List of country (C) code
-  example: US
+- description: Time at which the certificate is no longer considered valid.
+  example: 2020-07-16 03:15:39+00:00
+  name: file.x509.not_after
+  type: date
+- description: Time at which the certificate is first considered valid.
+  example: 2019-08-16 01:40:25+00:00
+  name: file.x509.not_before
+  type: date
+- description: Algorithm used to generate the public key.
+  example: RSA
   ignore_above: 1024
-  name: file.x509.subject.country
+  name: file.x509.public_key_algorithm
+  type: keyword
+- description: The curve used by the elliptic curve public key algorithm. This is algorithm specific.
+  example: nistp521
+  ignore_above: 1024
+  name: file.x509.public_key_curve
+  type: keyword
+- description: Exponent used to derive the public key. This is algorithm specific.
+  example: 65537
+  name: file.x509.public_key_exponent
+  type: long
+- description: The size of the public key space in bits.
+  example: 2048
+  name: file.x509.public_key_size
+  type: long
+- description: Unique serial number issued by the certificate authority.
+  example: 55FBB9C7DEBF09809D12CCAA
+  ignore_above: 1024
+  name: file.x509.serial_number
+  type: keyword
+- description: Identifier for certificate signature algorithm.
+  example: SHA256-RSA
+  ignore_above: 1024
+  name: file.x509.signature_algorithm
   type: keyword
 - description: List of common names (CN) of subject.
   example: shared.global.example.net
   ignore_above: 1024
   name: file.x509.subject.common_name
+  type: keyword
+- description: List of country (C) code
+  example: US
+  ignore_above: 1024
+  name: file.x509.subject.country
+  type: keyword
+- description: Distinguished name (DN) of the certificate subject entity.
+  example: C=US, ST=California, L=San Francisco, O=Example, Inc., CN=shared.global.example.net
+  ignore_above: 1024
+  name: file.x509.subject.distinguished_name
   type: keyword
 - description: List of locality names (L)
   example: San Francisco
@@ -122,6 +137,11 @@
   example: California
   ignore_above: 1024
   name: file.x509.subject.state_or_province
+  type: keyword
+- description: Version of x509 format.
+  example: 3
+  ignore_above: 1024
+  name: file.x509.version_number
   type: keyword
 - description: "Host ip addresses."
   name: host.ip
