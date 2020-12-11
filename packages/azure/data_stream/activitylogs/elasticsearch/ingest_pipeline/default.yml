@@ -202,6 +202,7 @@ processors:
   - geoip:
       field: source.ip
       target_field: source.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -232,7 +233,7 @@ processors:
       field: event.kind
       value: event
   - pipeline:
-      name: '{< IngestPipeline "azure-shared-pipeline" >}'
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
   - set:
       field: error.message

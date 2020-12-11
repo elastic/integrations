@@ -122,7 +122,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.flattened.response_elements | The response element for actions that make changes (create, update, or delete actions). | flattened |
 | aws.cloudtrail.flattened.service_event_details | Identifies the service event, including what triggered the event and the result. | flattened |
 | aws.cloudtrail.management_event | A Boolean value that identifies whether the event is a management event. | keyword |
-| aws.cloudtrail.read_only | Identifies whether this operation is a read-only operation. | keyword |
+| aws.cloudtrail.read_only | Identifies whether this operation is a read-only operation. | boolean |
 | aws.cloudtrail.recipient_account_id | Represents the account ID that received this event. | keyword |
 | aws.cloudtrail.request_id | The value that identifies the request. The service being called generates this value. | keyword |
 | aws.cloudtrail.request_parameters | The parameters, if any, that were sent with the request. | keyword |
@@ -159,6 +159,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
@@ -197,6 +198,10 @@ events for the account. If user creates a trail, it delivers those events as log
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
 
 
 ### cloudwatch

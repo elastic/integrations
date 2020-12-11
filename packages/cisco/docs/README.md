@@ -267,9 +267,22 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Destination network address. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.ip | IP address of the destination. | ip |
+| destination.port | Port of the destination. | long |
+| ecs.version | ECS version this event conforms to. | keyword |
+| elastic.agent.id |  | keyword |
+| elastic.agent.snapshot |  | boolean |
+| elastic.agent.version |  | keyword |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
-| event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | keyword |
 | event.kind | Event kind (e.g. event) | keyword |
@@ -293,8 +306,28 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| icmp.code | ICMP code. | keyword |
+| icmp.type | ICMP type. | keyword |
+| igmp.type | IGMP type. | keyword |
+| input.type |  | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. | object |
+| log.file.path | Full path to the log file this event came from. | keyword |
+| log.level | Log level of the log event. | keyword |
+| log.offset |  | long |
+| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
+| log.source.address |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
+| network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.iana_number | IANA Protocol Number. | keyword |
+| network.packets | Total packets transferred in both directions. | long |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| source.address | Source network address. | keyword |
+| source.ip | IP address of the source. | ip |
+| source.packets | Packets sent from the source to the destination. | long |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ### Nexus
@@ -339,6 +372,7 @@ The `nexus` dataset collects Cisco Nexus logs.
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
+| ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -1154,6 +1188,7 @@ The `meraki` dataset collects Cisco Meraki logs.
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
+| ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |

@@ -9,8 +9,7 @@ pipeline {
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
-    PIPELINE_LOG_LEVEL='INFO'
-    TEST_RUNNER_CMD_ARGS='--report-format xUnit --report-output file'
+    HOME = "${env.WORKSPACE}"
   }
   options {
     timeout(time: 1, unit: 'HOURS')
@@ -26,48 +25,83 @@ pipeline {
     issueCommentTrigger('(?i).*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*')
   }
   stages {
-    /**
-     Checkout the code and stash it, to use it on other stages.
-     */
-    stage('Checkout') {
+    stage('Prepare workspace') {
       steps {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
-        stash allowEmpty: true, name: 'source', useDefaultExcludes: false
       }
     }
-    /**
-     Checks source code
-     */
-    stage('Check') {
+    stage('Check Go sources') {
       steps {
-        cleanup()
         withMageEnv(){
           dir("${BASE_DIR}"){
-            sh(label: 'Checks and builds integration sources', script: 'mage -debug check')
-          }
-        }
-      }
-      post {
-        always {
-          dir("${BASE_DIR}") {
-          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-          junit(allowEmptyResults: false,
-                keepLongStdio: true,
-                testResults: "build/test-results/*.xml")
+            sh(label: 'Checks and builds Go sources', script: 'mage -debug check')
+            checkGitDiff()
           }
         }
       }
     }
-    /**
-     Update Package Storage
-     */
+    stage('Check integrations') {
+      steps {
+        script {
+          dir("${BASE_DIR}/packages") {
+            def integrations = [:]
+            // Include hack to skip temporary files with "@tmp" suffix.
+            // For reference: https://issues.jenkins.io/browse/JENKINS-52750
+            findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
+              integrations["${it}"] = {
+                node('ubuntu && immutable') {
+                  stage("${it}: check") {
+                    deleteDir()
+                    gitCheckout(basedir: "${BASE_DIR}")
+                    useElasticPackage()
+                    try {
+                      dir("${BASE_DIR}/packages/${it}") {
+                        sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                        // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
+                        // locally and run tests for the integration. The condition prevents from spawning the stack
+                        // unnecessarily (while no tests are defined).
+                        def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
+                        if (r == 0) {
+                          sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                          sh(label: "Test integration: ${it}", script: '''
+                            eval "$(../../build/elastic-package stack shellinit)"
+                            ../../build/elastic-package test -v --report-format xUnit --report-output file
+                            ''')
+                         }
+                      }
+                    } finally {
+                      dir("${BASE_DIR}") {
+                        archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                        sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            parallel integrations
+          }
+        }
+      }
+    }
     stage('Update Package Storage') {
       when {
         branch 'master'
       }
       steps {
-        cleanup()
+        useElasticPackage()
+        dir("${BASE_DIR}/packages") {
+          sh(label: "Build packages", script: '''
+            for d in *; do
+              (
+                cd $d
+                ../../build/elastic-package build -v
+              )
+            done
+            ''')
+        }
         gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
           sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
@@ -99,5 +133,21 @@ def cleanup(){
   dir("${BASE_DIR}"){
     deleteDir()
   }
-  unstash 'source'
+}
+
+def useElasticPackage() {
+  withGoEnv() {
+    dir("${BASE_DIR}/build") {
+      sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
+    }
+  }
+}
+
+// Check if there are non-versioned local changes.
+// For reference: https://stackoverflow.com/questions/34807971/why-does-git-diff-index-head-result-change-for-touched-files-after-git-diff-or-g
+def checkGitDiff() {
+  dir("${BASE_DIR}") {
+    sh(label: "git update-index", script: 'git update-index --refresh')
+    sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
+  }
 }

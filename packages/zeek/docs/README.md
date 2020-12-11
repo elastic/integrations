@@ -252,6 +252,8 @@ contains Distributed Computing Environment/RPC data.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
@@ -335,6 +337,8 @@ DHCP lease data.
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | server.address | Server network address. | keyword |
 | source.address | Source network address. | keyword |
@@ -433,6 +437,8 @@ requests and replies.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
@@ -494,6 +500,12 @@ activity.
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
+| dns.answers | Array of DNS answers. | object |
+| dns.answers.class | The class of DNS data contained in this resource record. | keyword |
+| dns.answers.data | The data describing the resource. | keyword |
+| dns.answers.name | The domain name to which this resource record pertains. | keyword |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. | long |
+| dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.header_flags | Array of DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -946,6 +958,7 @@ HTTP requests and replies.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
@@ -1272,6 +1285,8 @@ contains kerberos data.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | server.address | Server network address. | keyword |
@@ -1396,6 +1411,8 @@ modbus commands and responses.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
@@ -1487,6 +1504,8 @@ MySQL data.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
@@ -2032,6 +2051,7 @@ data.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| network.community_id | A hash of source and destination IPs and ports. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -3095,6 +3115,13 @@ SSL/TLS handshake info.
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
 | tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
+| tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.country | List of country (C) codes | keyword |
+| tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.locality | List of locality names (L) | keyword |
+| tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.server.x509.subject.country | List of country (C) code | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
@@ -3612,18 +3639,22 @@ X.509 certificate info.
 | file.x509.alternative_names | List of subject alternative names (SAN). | keyword |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | file.x509.issuer.country | List of country (C) codes | keyword |
+| file.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | file.x509.issuer.locality | List of locality names (L) | keyword |
 | file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
 | file.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
 | file.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
 | file.x509.not_before | Time at which the certificate is first considered valid. | date |
+| file.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
+| file.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
 | file.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
 | file.x509.public_key_size | The size of the public key space in bits. | long |
 | file.x509.serial_number | Unique serial number issued by the certificate authority. | keyword |
 | file.x509.signature_algorithm | Identifier for certificate signature algorithm. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | file.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
