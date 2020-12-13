@@ -1,0 +1,43 @@
+type: logs
+title: Google Cloud Platform (GCP) audit logs
+release: experimental
+streams:
+  - input: gcp-pubsub
+    vars:
+      - name: topic
+        type: text
+        title: Topic
+        multi: false
+        required: true
+        show_user: true
+        default: stackdriver-audit
+      - name: subscription_name
+        type: text
+        title: Subscription Name
+        multi: false
+        required: true
+        show_user: true
+        default: filebeat-gcp-audit
+    template_path: gcp-pubsub.yml.hbs
+    title: Google Cloud Platform (GCP) audit logs (gcp-pubsub)
+    description: Collect Google Cloud Platform (GCP) audit logs using gcp-pubsub input
+  - input: logfile
+    vars:
+      - name: keep_original_message
+        type: bool
+        title: Keep Original Message
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+    template_path: log.yml.hbs
+    title: Google Cloud Platform (GCP) audit logs (log)
+    description: Collect Google Cloud Platform (GCP) audit logs using log input
