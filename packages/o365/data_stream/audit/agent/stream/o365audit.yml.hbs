@@ -762,20 +762,20 @@ processors:
             }));
 
             builder.Add("extractClientIPPortBrackets", new processor.Dissect({
-                tokenizer: '[%{_ip}]:%{port}',
+                tokenizer: '[%{_ip}]:%{_port}',
                 field: 'client.address',
                 target_prefix: 'client',
                 'when.and': [
-                    {'not.has_fields': ['client._ip', 'client.port']},
+                    {'not.has_fields': ['client._ip', 'client._port']},
                     {'contains.client.address': ']:'},
                 ],
             }));
             builder.Add("extractClientIPv4Port", new processor.Dissect({
-                tokenizer: '%{_ip}:%{port}',
+                tokenizer: '%{_ip}:%{_port}',
                 field: 'client.address',
                 target_prefix: 'client',
                 'when.and': [
-                    {'not.has_fields': ['client._ip', 'client.port']},
+                    {'not.has_fields': ['client._ip', 'client._port']},
                     {'contains.client.address': '.'},
                     {'contains.client.address': ':'},
                     // Best effort to avoid parsing IPv6-mapped IPv4 as ip:port.
