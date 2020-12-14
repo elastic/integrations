@@ -2,54 +2,22 @@ type: logs
 title: Google Cloud Platform (GCP) firewall logs
 release: experimental
 streams:
-  # - input: gcp-pubsub
-  #   vars:
-  #     - name: topic
-  #       type: text
-  #       title: Topic
-  #       multi: false
-  #       required: true
-  #       show_user: true
-  #       default: stackdriver-firewall
-  #     - name: subscription_name
-  #       type: text
-  #       title: Subscription Name
-  #       multi: false
-  #       required: true
-  #       show_user: true
-  #       default: filebeat-gcp-firewall
-  #     - name: debug
-  #       type: bool
-  #       title: Debug
-  #       multi: false
-  #       required: true
-  #       show_user: true
-  #       default: false
-  #     - name: internal_networks
-  #       type: text
-  #       title: Internal Networks
-  #       multi: false
-  #       required: false
-  #       show_user: true
-  #   template_path: gcp-pubsub.yml.hbs
-  #   title: Google Cloud Platform (GCP) firewall logs (gcp-pubsub)
-  #   description: Collect Google Cloud Platform (GCP) firewall logs using gcp-pubsub input
-  - input: logfile
+  - input: gcp-pubsub
     vars:
-      - name: debug
-        type: bool
-        title: Debug
+      - name: topic
+        type: text
+        title: Topic
         multi: false
         required: true
         show_user: true
-        default: false
-      - name: keep_original_message
-        type: bool
-        title: Keep Original Message
+        default: stackdriver-firewall
+      - name: subscription_name
+        type: text
+        title: Subscription Name
         multi: false
         required: true
         show_user: true
-        default: false
+        default: filebeat-gcp-firewall
       - name: tags
         type: text
         title: Tags
@@ -58,12 +26,27 @@ streams:
         show_user: true
         default:
           - forwarded
-      - name: internal_networks
+    template_path: gcp-pubsub.yml.hbs
+    title: Google Cloud Platform (GCP) firewall logs (gcp-pubsub)
+    description: Collect Google Cloud Platform (GCP) firewall logs using gcp-pubsub input
+  - input: logfile
+    vars:
+      - name: tags
         type: text
-        title: Internal Networks
-        multi: false
-        required: false
+        title: Tags
+        multi: true
+        required: true
         show_user: true
+        default:
+          - forwarded
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/logs/firewall.log
     template_path: log.yml.hbs
     title: Google Cloud Platform (GCP) firewall logs (log)
     description: Collect Google Cloud Platform (GCP) firewall logs using log input

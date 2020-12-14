@@ -123,20 +123,24 @@ processors:
       ignore_missing: true
   - rename:
       field: json.jsonPayload.connection.protocol
-      target_field: network.transport
+      target_field: network.iana_number
+      ignore_missing: true
+  - convert:
+      field: network.iana_number
+      type: string
       ignore_missing: true
   - set:
-      field: network.iana_number
-      value: "1"
-      if: ctx?.network?.transport == "icmp"
+      field: network.transport
+      value: icmp
+      if: ctx?.network?.iana_number == "1"
   - set:
-      field: network.iana_number
-      value: "6"
-      if: ctx?.network?.transport == "tcp"
+      field: network.transport
+      value: tcp
+      if: ctx?.network?.iana_number == "6"
   - set:
-      field: network.iana_number
-      value: "17"
-      if: ctx?.network?.transport == "udp"
+      field: network.transport
+      value: udp
+      if: ctx?.network?.iana_number == "17"
   - rename:
       field: json.jsonPayload.connection.dest_ip
       target_field: destination.address

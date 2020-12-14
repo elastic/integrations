@@ -1,12 +1,8 @@
-project_id: {{project_id}}
-topic: {{topic}}
-subscription.name: {{subscription_name}}
-{{#if credentials_file}}
-credentials_file: {{credentials_file}}
-{{/if}}
-{{#if credentials_json}}
-credentials_json: {{credentials_json}}
-{{/if}}
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
 tags:
   {{#each tags as |tag i|}}
   - {{tag}}
@@ -18,6 +14,13 @@ processors:
   - decode_json_fields:
       fields: ["message"]
       target: "json"
+  - community_id:
+      fields:
+        source_ip: json.jsonPayload.connection.src_ip
+        source_port: json.jsonPayload.connection.src_port
+        destination_ip: json.jsonPayload.connection.dest_ip
+        destination_port: json.jsonPayload.connection.dest_port
+        iana_number: json.jsonPayload.connection.protocol
   - add_fields:
       target: ''
       fields:

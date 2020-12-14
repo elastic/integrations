@@ -18,24 +18,6 @@ streams:
         required: true
         show_user: true
         default: filebeat-gcp-vpcflow
-      - name: internal_networks
-        type: text
-        title: Internal Networks
-        multi: false
-        required: false
-        show_user: true
-    template_path: gcp-pubsub.yml.hbs
-    title: Google Cloud Platform (GCP) vpcflow logs (gcp-pubsub)
-    description: Collect Google Cloud Platform (GCP) vpcflow logs using gcp-pubsub input
-  - input: logfile
-    vars:
-      - name: keep_original_message
-        type: bool
-        title: Keep Original Message
-        multi: false
-        required: true
-        show_user: true
-        default: false
       - name: tags
         type: text
         title: Tags
@@ -44,12 +26,27 @@ streams:
         show_user: true
         default:
           - forwarded
-      - name: internal_networks
+    template_path: gcp-pubsub.yml.hbs
+    title: Google Cloud Platform (GCP) vpcflow logs (gcp-pubsub)
+    description: Collect Google Cloud Platform (GCP) vpcflow logs using gcp-pubsub input
+  - input: logfile
+    vars:
+      - name: tags
         type: text
-        title: Internal Networks
-        multi: false
-        required: false
+        title: Tags
+        multi: true
+        required: true
         show_user: true
+        default:
+          - forwarded
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/logs/vpcflow.log
     template_path: log.yml.hbs
     title: Google Cloud Platform (GCP) vpcflow logs (log)
     description: Collect Google Cloud Platform (GCP) vpcflow logs using log input

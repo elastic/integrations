@@ -1,97 +1,132 @@
 {
+    "agent": {
+        "hostname": "66e0c5b04237",
+        "name": "66e0c5b04237",
+        "id": "af0969e5-9921-47c0-9e5c-6df9e9639e00",
+        "ephemeral_id": "0f15c646-60bd-4364-9ddc-b54df5e13bd9",
+        "type": "filebeat",
+        "version": "7.11.0"
+    },
     "log": {
+        "file": {
+            "path": "/tmp/service_logs/firewall.log"
+        },
+        "offset": 15731,
         "logger": "projects/test-beats/logs/compute.googleapis.com%2Ffirewall"
     },
+    "elastic_agent": {
+        "id": "1f564e30-3eb3-11eb-bc02-cf42f57e2460",
+        "version": "7.11.0",
+        "snapshot": true
+    },
     "destination": {
-        "address": "10.128.0.16",
+        "geo": {
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lon": -97.822,
+                "lat": 37.751
+            }
+        },
+        "as": {
+            "number": 15169,
+            "organization": {
+                "name": "Google LLC"
+            }
+        },
+        "address": "8.8.8.8",
         "port": 80,
-        "domain": "local-adrian-test",
-        "ip": "10.128.0.16"
+        "ip": "8.8.8.8"
     },
     "rule": {
-        "name": "network:default/firewall:adrian-test-3"
+        "name": "network:default/firewall:adrian-test-1"
     },
     "source": {
-        "address": "10.142.0.10",
-        "port": 57794,
-        "domain": "test-es",
-        "ip": "10.142.0.10"
+        "address": "10.28.0.16",
+        "port": 58725,
+        "domain": "adrian-test",
+        "ip": "10.28.0.16"
     },
     "network": {
-        "name": "mysubnet",
+        "community_id": "1:c7bqGkBTPmOmWydHv/uxpk1qOjc=",
+        "name": "default",
         "transport": "udp",
         "type": "ipv4",
         "iana_number": "17",
-        "direction": "inbound"
+        "direction": "outbound"
     },
+    "tags": [
+        "forwarded"
+    ],
     "cloud": {
-        "region": "us-central1",
         "availability_zone": "us-central1-a",
         "project": {
-            "id": "local-test"
-        }
+            "id": "test-beats"
+        },
+        "region": "us-central1"
     },
-    "@timestamp": "2019-11-06T16:41:38.394Z",
+    "input": {
+        "type": "log"
+    },
+    "@timestamp": "2019-11-12T12:42:26.505Z",
+    "ecs": {
+        "version": "1.7.0"
+    },
     "related": {
         "ip": [
-            "10.142.0.10",
-            "10.128.0.16"
+            "10.28.0.16",
+            "8.8.8.8"
         ]
     },
     "gcp": {
-        "destination": {
-            "vpc": {
-                "project_id": "test-beats",
-                "subnetwork_name": "mysubnet",
-                "vpc_name": "default"
-            },
-            "instance": {
-                "region": "us-central1",
-                "project_id": "local-test",
-                "zone": "us-central1-a"
-            }
-        },
         "firewall": {
             "rule_details": {
-                "action": "DENY",
-                "source_range": [
-                    "0.0.0.0/0"
+                "destination_range": [
+                    "8.8.8.0/24"
                 ],
+                "ip_port_info": [
+                    {
+                        "ip_protocol": "ALL"
+                    }
+                ],
+                "action": "DENY",
                 "target_tag": [
                     "adrian-test"
                 ],
                 "priority": 1000,
-                "ip_port_info": [
-                    {
-                        "port_range": [
-                            "80",
-                            "8080"
-                        ],
-                        "ip_protocol": "TCP"
-                    }
-                ],
-                "direction": "INGRESS"
+                "direction": "EGRESS"
             }
         },
         "source": {
-            "vpc": {
-                "project_id": "remote-beats",
-                "subnetwork_name": "mysubnet",
-                "vpc_name": "default"
-            },
             "instance": {
-                "region": "us-east1",
-                "project_id": "remote-beats",
-                "zone": "us-east1-b"
+                "project_id": "test-beats",
+                "zone": "us-central1-a",
+                "region": "us-central1"
+            },
+            "vpc": {
+                "vpc_name": "default",
+                "project_id": "test-beats",
+                "subnetwork_name": "default"
             }
         }
     },
+    "data_stream": {
+        "namespace": "ep",
+        "type": "logs",
+        "dataset": "gcp.firewall"
+    },
+    "host": {
+        "name": "66e0c5b04237"
+    },
     "event": {
+        "ingested": "2020-12-15T09:00:38.139240274Z",
+        "original": "{\"insertId\":\"1k2b7kefsnhzq7\",\"jsonPayload\":{\"connection\":{\"dest_ip\":\"8.8.8.8\",\"dest_port\":80,\"protocol\":17,\"src_ip\":\"10.28.0.16\",\"src_port\":58725},\"disposition\":\"DENIED\",\"instance\":{\"project_id\":\"test-beats\",\"region\":\"us-central1\",\"vm_name\":\"adrian-test\",\"zone\":\"us-central1-a\"},\"remote_location\":{\"continent\":\"America\",\"country\":\"usa\"},\"rule_details\":{\"action\":\"DENY\",\"destination_range\":[\"8.8.8.0/24\"],\"direction\":\"EGRESS\",\"ip_port_info\":[{\"ip_protocol\":\"ALL\"}],\"priority\":1000,\"reference\":\"network:default/firewall:adrian-test-1\",\"target_tag\":[\"adrian-test\"]},\"vpc\":{\"project_id\":\"test-beats\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"}},\"logName\":\"projects/test-beats/logs/compute.googleapis.com%2Ffirewall\",\"receiveTimestamp\":\"2019-11-12T12:42:33.671883883Z\",\"resource\":{\"labels\":{\"location\":\"us-central1-a\",\"project_id\":\"test-beats\",\"subnetwork_id\":\"1266623735137648253\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-11-12T12:42:26.50532921Z\"}",
+        "kind": "event",
         "action": "firewall-rule",
-        "ingested": "2020-12-14T10:09:53.021220200Z",
-        "id": "1dobeotg13df9f5",
+        "id": "1k2b7kefsnhzq7",
         "category": "network",
         "type": "connection",
-        "kind": "event"
+        "dataset": "gcp.firewall"
     }
 }
