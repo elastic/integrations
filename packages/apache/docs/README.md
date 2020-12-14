@@ -314,7 +314,7 @@ An example event for `status` looks as following:
 | apache.status.scoreboard.total | Total. | long |
 | apache.status.scoreboard.waiting_for_connection | Waiting for connections. | long |
 | apache.status.total_accesses | Total number of access requests. | long |
-| apache.status.total_kbytes | Total number of kilobytes served. | long |
+| apache.status.total_bytes | Total number of bytes served. | long |
 | apache.status.uptime.server_uptime | Server uptime in seconds. | long |
 | apache.status.uptime.uptime | Server uptime. | long |
 | apache.status.workers.busy | Number of busy workers. | long |
