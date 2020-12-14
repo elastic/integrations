@@ -38,12 +38,6 @@ Error logs collects the nginx error logs.
 
 {{fields "error"}}
 
-### Ingress Controller Logs
-
-Error logs collects the ingress controller logs.
-
-{{fields "ingress_controller"}}
-
 ## Metrics
 
 ### Stub Status Metrics
