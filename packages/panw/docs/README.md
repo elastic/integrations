@@ -94,6 +94,17 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | http.request.referer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. | object |
+| labels.captive_portal |  | boolean |
+| labels.container_page |  | boolean |
+| labels.http_proxy |  | boolean |
+| labels.ipv6_session |  | boolean |
+| labels.nat_translated |  | boolean |
+| labels.pcap_included |  | boolean |
+| labels.ssl_decrypted |  | boolean |
+| labels.symmetric_return |  | boolean |
+| labels.temporary_match |  | boolean |
+| labels.url_filter_denied |  | boolean |
+| labels.x_forwarded_for |  | boolean |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Log level of the log event. | keyword |
@@ -141,7 +152,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.type | Specifies the type of the log | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
-| related.host | All the host identifiers seen on your event. | keyword |
+| related.hosts | All the host identifiers seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | rule.name | Rule name | keyword |
