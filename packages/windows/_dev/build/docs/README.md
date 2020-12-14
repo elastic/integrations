@@ -1,7 +1,7 @@
 # Windows Integration
 
 The Windows package allows you to monitor the Windows os, services, applications etc. Because the Windows integration
-always applies to the local server, the `hosts` config option is not needed.
+always applies to the local server, the `hosts` config option is not needed. Note that for 7.11, `security`, `application` and `system` logs have been moved to the system package.
 
 ## Compatibility
 
@@ -48,14 +48,6 @@ The Windows `powershell_operational` dataset provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
 {{fields "powershell_operational"}}
-
-
-### Security
-
-The Windows `security` dataset provides events from the Windows
-`Security` event log.
-
-{{fields "security"}}
 
 ### Sysmon/Operational
 
