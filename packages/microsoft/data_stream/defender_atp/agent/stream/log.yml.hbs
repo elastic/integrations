@@ -1,0 +1,26 @@
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+tags:
+{{#each tags as |tag i|}}
+ - {{tag}}
+{{/each}}
+fields_under_root: true
+fields:
+    observer:
+        vendor: "Microsoft"
+        product: "DHCP"
+        type: "Application"
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - decode_json_fields:
+      fields: [message]
+      target: json
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
