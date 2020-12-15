@@ -116,7 +116,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Comments |  | text |
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |
-| o365.audit.CustomUniqueId |  | keyword |
+| o365.audit.CustomUniqueId |  | boolean |
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
@@ -125,7 +125,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.ExceptionInfo.* |  | object |
 | o365.audit.ExchangeMetaData.* |  | object |
 | o365.audit.ExtendedProperties.* |  | object |
-| o365.audit.ExternalAccess |  | keyword |
+| o365.audit.ExternalAccess |  | boolean |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
 | o365.audit.ImplicitShare |  | keyword |
@@ -160,7 +160,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
 | o365.audit.ResultStatus |  | keyword |
-| o365.audit.SensitiveInfoDetectionIsIncluded |  | keyword |
+| o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
 | o365.audit.SharePointMetaData.* |  | object |
