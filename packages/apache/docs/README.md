@@ -264,7 +264,7 @@ An example event for `status` looks as following:
                 "server_uptime": 12,
                 "uptime": 12
             },
-            "total_kbytes": 0,
+            "total_bytes": 0,
             "workers": {
                 "busy": 1,
                 "idle": 74
