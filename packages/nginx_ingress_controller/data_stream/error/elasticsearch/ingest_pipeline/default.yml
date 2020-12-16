@@ -1,22 +1,40 @@
 ---
 description: Pipeline for parsing the Nginx Ingress Controller error logs
 processors:
-- grok:
-    field: message
-    patterns:
-    - ''
-    pattern_definitions: ~
-    ignore_missing: true
-- set:
-    field: event.kind
-    value: event
-- append:
-    field: event.category
-    value: web
-- append:
-    field: event.type
-    value: error # TODO info
+  - grok:
+      field: message
+      patterns:
+        - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.[0-9]{6}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}]'
+      pattern_definitions:
+        LOG_LEVEL: '[A-Z]{1}'
+        SOURCE_FILE: '[^:]+'
+        GREEDYMULTILINE: "(.|\\n)*"
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+  - append:
+      if: ctx.log.level == 'F'
+      field: event.type
+      value: error
+  - append:
+      if: ctx.log.level == 'E'
+      field: event.type
+      value: error
+  - append:
+      if: ctx.log.level != 'E'
+      field: event.type
+      value: info
+  - convert:
+      field: "nginx_ingress_controller.error.thread_id"
+      type: "integer"
+  - convert:
+      field: "nginx_ingress_controller.error.source.line_number"
+      type: "integer"
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
