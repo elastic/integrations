@@ -226,4 +226,5 @@ An example event for `error` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | nginx_ingress_controller.error.source_file | Source file | keyword |
 | nginx_ingress_controller.error.source_line | Source line number | long |
+| nginx_ingress_controller.error.stack_trace | Stack trace | keyword |
 | nginx_ingress_controller.error.thread_id | Thread ID | long |
