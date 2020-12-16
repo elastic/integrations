@@ -4,7 +4,7 @@ processors:
   - grok:
       field: message
       patterns:
-        - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.%{NANOS:timestamp_nano}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}]'
+        - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.%{NANOS:timestamp_nano}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}] %{GREEDYMULTILINE:message}'
       pattern_definitions:
         LOG_LEVEL: '[A-Z]{1}'
         NANOS: '[0-9]{6}'
@@ -21,15 +21,11 @@ processors:
       field: event.category
       value: web
   - append:
-      if: ctx.log.level == 'F'
+      if: 'ctx.log.level == "E" || ctx.log.level == "F"'
       field: event.type
       value: error
   - append:
-      if: ctx.log.level == 'E'
-      field: event.type
-      value: error
-  - append:
-      if: ctx.log.level != 'E'
+      if: 'ctx.log.level != "E" && ctx.log.level != "F"'
       field: event.type
       value: info
   - convert:
