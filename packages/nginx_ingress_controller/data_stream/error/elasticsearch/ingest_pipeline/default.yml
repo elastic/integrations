@@ -4,12 +4,16 @@ processors:
   - grok:
       field: message
       patterns:
-        - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.[0-9]{6}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}]'
+        - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.%{NANOS:timestamp_nano}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}]'
       pattern_definitions:
         LOG_LEVEL: '[A-Z]{1}'
+        NANOS: '[0-9]{6}'
         SOURCE_FILE: '[^:]+'
         GREEDYMULTILINE: "(.|\\n)*"
       ignore_missing: true
+  - set:
+      field: timestamp
+      value: '{{_ingest.timestamp}}'
   - set:
       field: event.kind
       value: event
@@ -34,6 +38,48 @@ processors:
   - convert:
       field: "nginx_ingress_controller.error.source.line_number"
       type: "integer"
+  - convert:
+      field: "timestamp_month"
+      type: "integer"
+  - convert:
+      field: "timestamp_day"
+      type: "integer"
+  - convert:
+      field: "timestamp_hour"
+      type: "integer"
+  - convert:
+      field: "timestamp_minute"
+      type: "integer"
+  - convert:
+      field: "timestamp_second"
+      type: "integer"
+  - convert:
+      field: "timestamp_nano"
+      type: "integer"
+  - script:
+      lang: painless
+      source: >-
+        ZoneId zid = ZoneId.of(ctx.event.timezone);
+        ZonedDateTime zdt = ZonedDateTime.parse(ctx.timestamp)
+                 .withMonth(ctx.timestamp_month)
+                 .withDayOfMonth(ctx.timestamp_day)
+                 .withHour(ctx.timestamp_hour)
+                 .withMinute(ctx.timestamp_minute)
+                 .withSecond(ctx.timestamp_second)
+                 .withNano(ctx.timestamp_nano * 1000)
+                 .withZoneSameLocal(zid);
+        ctx.timestamp = zdt;
+  - rename:
+      field: timestamp
+      target_field: '@timestamp'
+  - remove:
+      field:
+        - timestamp_month
+        - timestamp_day
+        - timestamp_hour
+        - timestamp_minute
+        - timestamp_second
+        - timestamp_nano
 on_failure:
   - set:
       field: error.message
