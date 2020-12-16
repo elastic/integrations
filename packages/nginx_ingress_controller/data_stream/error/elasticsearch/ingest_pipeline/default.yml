@@ -11,8 +11,11 @@ processors:
         SOURCE_FILE: '[^:]+'
         GREEDYMULTILINE: "(.|\\n)*"
       ignore_missing: true
+  - rename:
+      field: '@timestamp'
+      target_field: event.created
   - set:
-      field: timestamp
+      field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       field: event.kind
@@ -56,7 +59,7 @@ processors:
       lang: painless
       source: >-
         ZoneId zid = ZoneId.of(ctx.event.timezone);
-        ZonedDateTime zdt = ZonedDateTime.parse(ctx.timestamp)
+        ZonedDateTime zdt = ZonedDateTime.parse(ctx.event.ingested)
                  .withMonth(ctx.timestamp_month)
                  .withDayOfMonth(ctx.timestamp_day)
                  .withHour(ctx.timestamp_hour)
