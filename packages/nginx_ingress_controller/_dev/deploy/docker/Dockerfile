@@ -14,7 +14,7 @@ RUN echo token > /var/run/secrets/kubernetes.io/serviceaccount/token
 RUN mkdir -p /tmp/service_logs/
 
 # Add sample logs
-ADD ingest.log /sample_logs/
+ADD ingress.log /sample_logs/
 
 # Add entrypoint
 ADD entrypoint.sh /
