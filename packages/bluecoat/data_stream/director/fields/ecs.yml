@@ -1,1076 +1,697 @@
 - name: log
   type: group
   fields:
-  - name: original
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'This is the original log message and contains the full log message
-      before splitting it up in multiple parts.
+    - name: original
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'This is the original log message and contains the full log message before splitting it up in multiple parts.
 
-      In contrast to the `message` field which can contain an extracted part of the
-      log message, this field contains the original, full log message. It can have
-      already some modifications applied like encoding or new lines removed to clean
-      up the log message.
+        In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message.
 
-      This field is not indexed and doc_values are disabled so it can''t be queried
-      but the value can be retrieved from `_source`.'
-    example: Sep 19 08:26:10 localhost My log
-    index: false
-  - name: level
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Original log level of the log event.
+        This field is not indexed and doc_values are disabled so it can''t be queried but the value can be retrieved from `_source`.'
+      example: Sep 19 08:26:10 localhost My log
+      index: false
+    - name: level
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Original log level of the log event.
 
-      If the source of the event provides a log level or textual severity, this is
-      the one that goes in `log.level`. If your source doesn''t specify one, you may
-      put your event transport''s severity here (e.g. Syslog severity).
+        If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn''t specify one, you may put your event transport''s severity here (e.g. Syslog severity).
 
-      Some examples are `warn`, `err`, `i`, `informational`.'
-    example: error
-  - name: syslog
-    type: group
-    fields:
-    - name: priority
-      level: extended
-      type: long
-      format: string
-      description: 'Syslog numeric priority of the event, if available.
-
-        According to RFCs 5424 and 3164, the priority is 8 * facility + severity.
-        This number is therefore expected to contain a value between 0 and 191.'
-      example: 135
-    - name: facility
+        Some examples are `warn`, `err`, `i`, `informational`.'
+      example: error
+    - name: syslog
       type: group
       fields:
-      - name: code
-        level: extended
-        type: long
-        format: string
-        description: 'The Syslog numeric facility of the log event, if available.
+        - name: priority
+          level: extended
+          type: long
+          format: string
+          description: 'Syslog numeric priority of the event, if available.
 
-          According to RFCs 5424 and 3164, this value should be an integer between
-          0 and 23.'
-        example: 23
-    - name: severity
-      type: group
-      fields:
-      - name: code
-        level: extended
-        type: long
-        description: 'The Syslog numeric severity of the log event, if available.
+            According to RFCs 5424 and 3164, the priority is 8 * facility + severity. This number is therefore expected to contain a value between 0 and 191.'
+          example: 135
+        - name: facility
+          type: group
+          fields:
+            - name: code
+              level: extended
+              type: long
+              format: string
+              description: 'The Syslog numeric facility of the log event, if available.
 
-          If the event source publishing via Syslog provides a different numeric severity
-          value (e.g. firewall, IDS), your source''s numeric severity should go to
-          `event.severity`. If the event source does not specify a distinct severity,
-          you can optionally copy the Syslog severity to `event.severity`.'
-        example: 3
+                According to RFCs 5424 and 3164, this value should be an integer between 0 and 23.'
+              example: 23
+        - name: severity
+          type: group
+          fields:
+            - name: code
+              level: extended
+              type: long
+              description: 'The Syslog numeric severity of the log event, if available.
+
+                If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source''s numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`.'
+              example: 3
 - name: event
   type: group
   fields:
-  - name: code
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Identification code for this event, if one exists.
+    - name: code
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Identification code for this event, if one exists.
 
-      Some event sources use event codes to identify messages unambiguously, regardless
-      of message language or wording adjustments over time. An example of this is
-      the Windows Event ID.'
-    example: 4648
-  - name: action
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'The action captured by the event.
+        Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID.'
+      example: 4648
+    - name: action
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'The action captured by the event.
 
-      This describes the information in the event. It is more specific than `event.category`.
-      Examples are `group-add`, `process-started`, `file-created`. The value is normally
-      defined by the implementer.'
-    example: user-password-change
-  - name: outcome
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'This is one of four ECS Categorization Fields, and indicates the
-      lowest level in the ECS category hierarchy.
+        This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer.'
+      example: user-password-change
+    - name: outcome
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.
 
-      `event.outcome` simply denotes whether the event represents a success or a failure
-      from the perspective of the entity that produced the event.
+        `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event.
 
-      Note that when a single transaction is described in multiple events, each event
-      may populate different values of `event.outcome`, according to their perspective.
+        Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective.
 
-      Also note that in the case of a compound event (a single event that contains
-      multiple logical events), this field should be populated with the value that
-      best captures the overall success or failure from the perspective of the event
-      producer.
+        Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer.
 
-      Further note that not all events will have an associated outcome. For example,
-      this field is generally not populated for metric events, events with `event.type:info`,
-      or any events for which an outcome does not make logical sense.'
-    example: success
-  - name: timezone
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'This field should be populated when the event''s timestamp does
-      not include timezone information already (e.g. default Syslog timestamps). It''s
-      optional otherwise.
+        Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense.'
+      example: success
+    - name: timezone
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'This field should be populated when the event''s timestamp does not include timezone information already (e.g. default Syslog timestamps). It''s optional otherwise.
 
-      Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated
-      (e.g. "EST") or an HH:mm differential (e.g. "-05:00").'
-  - name: ingested
-    level: core
-    type: date
-    description: 'Timestamp when an event arrived in the central data store.
+        Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00").'
+    - name: ingested
+      level: core
+      type: date
+      description: 'Timestamp when an event arrived in the central data store.
 
-      This is different from `@timestamp`, which is when the event originally occurred.  It''s
-      also different from `event.created`, which is meant to capture the first time
-      an agent saw the event.
+        This is different from `@timestamp`, which is when the event originally occurred.  It''s also different from `event.created`, which is meant to capture the first time an agent saw the event.
 
-      In normal conditions, assuming no tampering, the timestamps should chronologically
-      look like this: `@timestamp` < `event.created` < `event.ingested`.'
-    example: '2016-05-23T08:05:35.101Z'
-    default_field: false
-  - name: original
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Raw text message of entire event. Used to demonstrate log integrity.
+        In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`.'
+      example: '2016-05-23T08:05:35.101Z'
+      default_field: false
+    - name: original
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Raw text message of entire event. Used to demonstrate log integrity.
 
-      This field is not indexed and doc_values are disabled. It cannot be searched,
-      but it can be retrieved from `_source`.'
-    example: Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124;
-      worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232
-    index: false
+        This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`.'
+      example: Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232
+      index: false
 - name: '@timestamp'
   level: core
   required: true
   type: date
   description: 'Date/time when the event originated.
 
-    This is the date/time extracted from the event, typically representing when the
-    event was generated by the source.
+    This is the date/time extracted from the event, typically representing when the event was generated by the source.
 
-    If the event source has no original timestamp, this value is typically populated
-    by the first time the event was received by the pipeline.
+    If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline.
 
     Required field for all events.'
   example: '2016-05-23T08:05:34.853Z'
 - name: related
   type: group
   fields:
-  - name: user
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: All the user names seen on your event.
-    default_field: false
-  - name: hosts
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: All hostnames or other host identifiers seen on your event. Example
-      identifiers include FQDNs, domain names, workstation names, or aliases.
-    default_field: false
-  - name: ip
-    level: extended
-    type: ip
-    description: All of the IPs seen on your event.
+    - name: user
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All the user names seen on your event.
+      default_field: false
+    - name: hosts
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
+      default_field: false
+    - name: ip
+      level: extended
+      type: ip
+      description: All of the IPs seen on your event.
 - name: user
   type: group
   fields:
-  - name: name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-    description: Short name or login of the user.
-    example: albert
-  - name: full_name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-    description: User's full name, if available.
-    example: Albert Einstein
-  - name: domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Name of the directory the user is a member of.
+    - name: name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+      example: albert
+    - name: full_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: User's full name, if available.
+      example: Albert Einstein
+    - name: domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.
 
-      For example, an LDAP or Active Directory domain name.'
-  - name: id
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Unique identifier of the user.
+        For example, an LDAP or Active Directory domain name.'
+    - name: id
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
 - name: message
   level: core
   type: text
-  description: 'For log events the message field contains the log message, optimized
-    for viewing in a log viewer.
+  description: 'For log events the message field contains the log message, optimized for viewing in a log viewer.
 
-    For structured logs without an original message field, other fields can be concatenated
-    to form a human-readable summary of the event.
+    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
 
     If multiple messages exist, they can be combined into one message.'
   example: Hello World
 - name: source
   type: group
   fields:
-  - name: ip
-    level: core
-    type: ip
-    description: IP address of the source (IPv4 or IPv6).
-  - name: port
-    level: core
-    type: long
-    format: string
-    description: Port of the source.
-  - name: address
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Some event source addresses are defined ambiguously. The event will
-      sometimes list an IP, a domain or a unix socket.  You should always store the
-      raw address in the `.address` field.
-
-      Then it should be duplicated to `.ip` or `.domain`, depending on which one it
-      is.'
-  - name: mac
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: MAC address of the source.
-  - name: bytes
-    level: core
-    type: long
-    format: bytes
-    description: Bytes sent from the source to the destination.
-    example: 184
-  - name: nat
-    type: group
-    fields:
     - name: ip
-      level: extended
+      level: core
       type: ip
-      description: 'Translated ip of source based NAT sessions (e.g. internal client
-        to internet)
-
-        Typically connections traversing load balancers, firewalls, or routers.'
+      description: IP address of the source (IPv4 or IPv6).
     - name: port
-      level: extended
+      level: core
       type: long
       format: string
-      description: 'Translated port of source based NAT sessions. (e.g. internal client
-        to internet)
-
-        Typically used with load balancers, firewalls, or routers.'
-  - name: domain
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Source domain.
-  - name: registered_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The highest registered source domain, stripped of the subdomain.
-
-      For example, the registered domain for "foo.example.com" is "example.com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last two labels will not work well for TLDs such as "co.uk".'
-    example: example.com
-  - name: subdomain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The subdomain portion of a fully qualified domain name includes
-      all of the names except the host name under the registered_domain.  In a partially
-      qualified domain, or if the the qualification level of the full name cannot
-      be determined, subdomain contains all of the names below the registered domain.
-
-      For example the subdomain portion of "www.east.mydomain.co.uk" is "east".
-      If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com",
-      the subdomain field should contain "sub2.sub1", with no trailing period.'
-    example: east
-  - name: top_level_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The effective top level domain (eTLD), also known as the domain
-      suffix, is the last part of the domain name. For example, the top level domain
-      for example.com is "com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last label will not work well for effective TLDs such as "co.uk".'
-    example: co.uk
-  - name: geo
-    type: group
-    fields:
-    - name: country_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Country name.
-      example: Canada
-    - name: location
-      type: group
-      fields:
-      - type: double
-        name: lat
-      - type: double
-        name: lon
-    - name: city_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: City name.
-      example: Montreal
-  - name: as
-    type: group
-    fields:
-    - name: number
+      description: Port of the source.
+    - name: address
       level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
+
+        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.'
+    - name: mac
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: MAC address of the source.
+    - name: bytes
+      level: core
       type: long
-      description: Unique number allocated to the autonomous system. The autonomous
-        system number (ASN) uniquely identifies each network on the Internet.
-      example: 15169
-    - name: organization
+      format: bytes
+      description: Bytes sent from the source to the destination.
+      example: 184
+    - name: nat
       type: group
       fields:
-      - name: name
-        level: extended
-        type: keyword
-        ignore_above: 1024
-        multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-        description: Organization name.
-        example: Google LLC
+        - name: ip
+          level: extended
+          type: ip
+          description: 'Translated ip of source based NAT sessions (e.g. internal client to internet)
+
+            Typically connections traversing load balancers, firewalls, or routers.'
+        - name: port
+          level: extended
+          type: long
+          format: string
+          description: 'Translated port of source based NAT sessions. (e.g. internal client to internet)
+
+            Typically used with load balancers, firewalls, or routers.'
+    - name: domain
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Source domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+    - name: geo
+      type: group
+      fields:
+        - name: country_name
+          level: core
+          type: keyword
+          ignore_above: 1024
+          description: Country name.
+          example: Canada
+        - name: location
+          type: group
+          fields:
+            - type: double
+              name: lat
+            - type: double
+              name: lon
+        - name: city_name
+          level: core
+          type: keyword
+          ignore_above: 1024
+          description: City name.
+          example: Montreal
+    - name: as
+      type: group
+      fields:
+        - name: number
+          level: extended
+          type: long
+          description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+          example: 15169
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              multi_fields:
+                - name: text
+                  type: text
+                  norms: false
+                  default_field: false
+              description: Organization name.
+              example: Google LLC
 - name: host
   type: group
   fields:
-  - name: name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Name of the host.
+    - name: name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the host.
 
-      It can contain what `hostname` returns on Unix systems, the fully qualified
-      domain name, or a name specified by the user. The sender decides which value
-      to use.'
-  - name: ip
-    level: core
-    type: ip
-    description: Host ip addresses.
-  - name: hostname
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Hostname of the host.
+        It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use.'
+    - name: ip
+      level: core
+      type: ip
+      description: Host ip addresses.
+    - name: hostname
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Hostname of the host.
 
-      It normally contains what the `hostname` command returns on the host machine.'
-  - name: mac
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Host mac addresses.
+        It normally contains what the `hostname` command returns on the host machine.'
+    - name: mac
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Host mac addresses.
 - name: destination
   type: group
   fields:
-  - name: ip
-    level: core
-    type: ip
-    description: IP address of the destination (IPv4 or IPv6).
-  - name: port
-    level: core
-    type: long
-    format: string
-    description: Port of the destination.
-  - name: address
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Some event destination addresses are defined ambiguously. The event
-      will sometimes list an IP, a domain or a unix socket.  You should always store
-      the raw address in the `.address` field.
-
-      Then it should be duplicated to `.ip` or `.domain`, depending on which one it
-      is.'
-  - name: bytes
-    level: core
-    type: long
-    format: bytes
-    description: Bytes sent from the destination to the source.
-    example: 184
-  - name: mac
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: MAC address of the destination.
-  - name: nat
-    type: group
-    fields:
     - name: ip
-      level: extended
+      level: core
       type: ip
-      description: 'Translated ip of destination based NAT sessions (e.g. internet
-        to private DMZ)
-
-        Typically used with load balancers, firewalls, or routers.'
+      description: IP address of the destination (IPv4 or IPv6).
     - name: port
-      level: extended
+      level: core
       type: long
       format: string
-      description: 'Port the source session is translated to by NAT Device.
-
-        Typically used with load balancers, firewalls, or routers.'
-  - name: domain
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Destination domain.
-  - name: registered_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The highest registered source domain, stripped of the subdomain.
-
-      For example, the registered domain for "foo.example.com" is "example.com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last two labels will not work well for TLDs such as "co.uk".'
-    example: example.com
-  - name: subdomain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The subdomain portion of a fully qualified domain name includes
-      all of the names except the host name under the registered_domain.  In a partially
-      qualified domain, or if the the qualification level of the full name cannot
-      be determined, subdomain contains all of the names below the registered domain.
-
-      For example the subdomain portion of "www.east.mydomain.co.uk" is "east".
-      If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com",
-      the subdomain field should contain "sub2.sub1", with no trailing period.'
-    example: east
-  - name: top_level_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The effective top level domain (eTLD), also known as the domain
-      suffix, is the last part of the domain name. For example, the top level domain
-      for example.com is "com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last label will not work well for effective TLDs such as "co.uk".'
-    example: co.uk
-  - name: geo
-    type: group
-    fields:
-    - name: country_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Country name.
-      example: Canada
-    - name: location
-      type: group
-      fields:
-      - type: double
-        name: lat
-      - type: double
-        name: lon
-    - name: city_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: City name.
-      example: Montreal
-  - name: as
-    type: group
-    fields:
-    - name: number
+      description: Port of the destination.
+    - name: address
       level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
+
+        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.'
+    - name: bytes
+      level: core
       type: long
-      description: Unique number allocated to the autonomous system. The autonomous
-        system number (ASN) uniquely identifies each network on the Internet.
-      example: 15169
-    - name: organization
+      format: bytes
+      description: Bytes sent from the destination to the source.
+      example: 184
+    - name: mac
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: MAC address of the destination.
+    - name: nat
       type: group
       fields:
-      - name: name
-        level: extended
-        type: keyword
-        ignore_above: 1024
-        multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-        description: Organization name.
-        example: Google LLC
+        - name: ip
+          level: extended
+          type: ip
+          description: 'Translated ip of destination based NAT sessions (e.g. internet to private DMZ)
+
+            Typically used with load balancers, firewalls, or routers.'
+        - name: port
+          level: extended
+          type: long
+          format: string
+          description: 'Port the source session is translated to by NAT Device.
+
+            Typically used with load balancers, firewalls, or routers.'
+    - name: domain
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Destination domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+    - name: geo
+      type: group
+      fields:
+        - name: country_name
+          level: core
+          type: keyword
+          ignore_above: 1024
+          description: Country name.
+          example: Canada
+        - name: location
+          type: group
+          fields:
+            - type: double
+              name: lat
+            - type: double
+              name: lon
+        - name: city_name
+          level: core
+          type: keyword
+          ignore_above: 1024
+          description: City name.
+          example: Montreal
+    - name: as
+      type: group
+      fields:
+        - name: number
+          level: extended
+          type: long
+          description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+          example: 15169
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              multi_fields:
+                - name: text
+                  type: text
+                  norms: false
+                  default_field: false
+              description: Organization name.
+              example: Google LLC
 - name: network
   type: group
   fields:
-  - name: protocol
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'L7 Network protocol name. ex. http, lumberjack, transport protocol.
+    - name: protocol
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'L7 Network protocol name. ex. http, lumberjack, transport protocol.
 
-      The field value must be normalized to lowercase for querying. See the documentation
-      section "Implementing ECS".'
-    example: http
-  - name: application
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'A name given to an application level protocol. This can be arbitrarily
-      assigned for things like microservices, but also apply to things like skype,
-      icq, facebook, twitter. This would be used in situations where the vendor or
-      service can be decoded such as from the source/dest IP owners, ports, or wire
-      format.
+        The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".'
+      example: http
+    - name: application
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format.
 
-      The field value must be normalized to lowercase for querying. See the documentation
-      section "Implementing ECS".'
-    example: aim
-  - name: interface
-    type: group
-    fields:
-    - type: keyword
-      name: name
-  - name: bytes
-    level: core
-    type: long
-    format: bytes
-    description: 'Total bytes transferred in both directions.
+        The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".'
+      example: aim
+    - name: interface
+      type: group
+      fields:
+        - type: keyword
+          name: name
+    - name: bytes
+      level: core
+      type: long
+      format: bytes
+      description: 'Total bytes transferred in both directions.
 
-      If `source.bytes` and `destination.bytes` are known, `network.bytes` is their
-      sum.'
-    example: 368
-  - name: direction
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: "Direction of the network traffic.\nRecommended values are:\n  *\
-      \ ingress\n  * egress\n  * inbound\n  * outbound\n  * internal\n  * external\n\
-      \  * unknown\n\nWhen mapping events from a host-based monitoring context, populate\
-      \ this field from the host's point of view, using the values \"ingress\" or\
-      \ \"egress\".\nWhen mapping events from a network or perimeter-based monitoring\
-      \ context, populate this field from the point of view of the network perimeter,\
-      \ using the values \"inbound\", \"outbound\", \"internal\" or \"external\".\n\
-      Note that \"internal\" is not crossing perimeter boundaries, and is meant to\
-      \ describe communication between two hosts within the perimeter. Note also that\
-      \ \"external\" is meant to describe traffic between two hosts that are external\
-      \ to the perimeter. This could for example be useful for ISPs or VPN service\
-      \ providers."
-    example: inbound
-  - name: packets
-    level: core
-    type: long
-    description: 'Total packets transferred in both directions.
+        If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum.'
+      example: 368
+    - name: direction
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: "Direction of the network traffic.\nRecommended values are:\n  * ingress\n  * egress\n  * inbound\n  * outbound\n  * internal\n  * external\n  * unknown\n\nWhen mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values \"ingress\" or \"egress\".\nWhen mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values \"inbound\", \"outbound\", \"internal\" or \"external\".\nNote that \"internal\" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that \"external\" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers."
+      example: inbound
+    - name: packets
+      level: core
+      type: long
+      description: 'Total packets transferred in both directions.
 
-      If `source.packets` and `destination.packets` are known, `network.packets` is
-      their sum.'
-    example: 24
-  - name: forwarded_ip
-    level: core
-    type: ip
-    description: Host IP address when the source IP address is the proxy.
-    example: 192.1.1.2
+        If `source.packets` and `destination.packets` are known, `network.packets` is their sum.'
+      example: 24
+    - name: forwarded_ip
+      level: core
+      type: ip
+      description: Host IP address when the source IP address is the proxy.
+      example: 192.1.1.2
 - name: observer
   type: group
   fields:
-  - name: version
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Observer version.
-  - name: product
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: The product name of the observer.
-    example: s200
-  - name: ingress
-    type: group
-    fields:
-    - name: interface
+    - name: version
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Observer version.
+    - name: product
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The product name of the observer.
+      example: s200
+    - name: ingress
       type: group
       fields:
-      - name: name
-        level: extended
-        type: keyword
-        ignore_above: 1024
-        description: Interface name as reported by the system.
-        example: eth0
-        default_field: false
-  - name: egress
-    type: group
-    fields:
-    - name: interface
+        - name: interface
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              description: Interface name as reported by the system.
+              example: eth0
+              default_field: false
+    - name: egress
       type: group
       fields:
-      - name: name
-        level: extended
-        type: keyword
-        ignore_above: 1024
-        description: Interface name as reported by the system.
-        example: eth0
-        default_field: false
-  - name: type
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'The type of the observer the data is coming from.
+        - name: interface
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              description: Interface name as reported by the system.
+              example: eth0
+              default_field: false
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'The type of the observer the data is coming from.
 
-      There is no predefined list of observer types. Some examples are `forwarder`,
-      `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`.'
-    example: firewall
-  - name: vendor
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Vendor name of the observer.
-    example: Symantec
+        There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`.'
+      example: firewall
+    - name: vendor
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Vendor name of the observer.
+      example: Symantec
 - name: file
   type: group
   fields:
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Name of the file including the extension, without the directory.
-    example: example.png
-  - name: directory
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Directory where the file is located. It should include the drive
-      letter, when appropriate.
-    example: /home/alice
-  - name: size
-    level: extended
-    type: long
-    description: 'File size in bytes.
-
-      Only relevant when `file.type` is "file".'
-    example: 16384
-  - name: type
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: File type (file, dir, or symlink).
-    example: file
-  - name: extension
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'File extension, excluding the leading dot.
-
-      Note that when the file name has multiple extensions (example.tar.gz), only
-      the last one should be captured ("gz", not "tar.gz").'
-    example: png
-  - name: path
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-    description: Full path to the file, including the file name. It should include
-      the drive letter, when appropriate.
-    example: /home/alice/example.png
-  - name: attributes
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Array of file attributes.
-
-      Attributes names will vary by platform. Here''s a non-exhaustive list of values
-      that are expected in this field: archive, compressed, directory, encrypted,
-      execute, hidden, read, readonly, system, write.'
-    example: '["readonly", "system"]'
-    default_field: false
-- name: url
-  type: group
-  fields:
-  - name: original
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-    description: 'Unmodified original url as seen in the event source.
-
-      Note that in network monitoring, the observed URL may be a full URL, whereas
-      in access logs, the URL is often just represented as a path.
-
-      This field is meant to represent the URL as it was observed, complete or not.'
-    example: https://www.elastic.co:443/search?q=elasticsearch#top or /search?q=elasticsearch
-  - name: query
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The query field describes the query string of the request, such
-      as "q=elasticsearch".
-
-      The `?` is excluded from the query string. If a URL contains no `?`, there is
-      no query field. If there is a `?` but no query, the query field exists with
-      an empty string. The `exists` query can be used to differentiate between the
-      two cases.'
-  - name: domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Domain of the url, such as "www.elastic.co".
-
-      In some cases a URL may refer to an IP and/or port directly, without a domain
-      name. In this case, the IP address would go to the `domain` field.
-
-      If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC
-      2732), the `[` and `]` characters should also be captured in the `domain` field.'
-    example: www.elastic.co
-  - name: path
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Path of the request, such as "/search".
-  - name: top_level_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The effective top level domain (eTLD), also known as the domain
-      suffix, is the last part of the domain name. For example, the top level domain
-      for example.com is "com".
-
-      This value can be determined precisely with a list like the public suffix list
-      (http://publicsuffix.org). Trying to approximate this by simply taking the last
-      label will not work well for effective TLDs such as "co.uk".'
-    example: co.uk
-  - name: registered_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The highest registered url domain, stripped of the subdomain.
-
-      For example, the registered domain for "foo.example.com" is "example.com".
-
-      This value can be determined precisely with a list like the public suffix list
-      (http://publicsuffix.org). Trying to approximate this by simply taking the last
-      two labels will not work well for TLDs such as "co.uk".'
-    example: example.com
-- name: service
-  type: group
-  fields:
-  - name: name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Name of the service data is collected from.
-
-      The name of the service is normally user given. This allows for distributed
-      services that run on multiple hosts to correlate the related instances based
-      on the name.
-
-      In the case of Elasticsearch the `service.name` could contain the cluster name.
-      For Beats the `service.name` is by default a copy of the `service.type` field
-      if no name is specified.'
-    example: elasticsearch-metrics
-- name: client
-  type: group
-  fields:
-  - name: domain
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Server domain.
-  - name: registered_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The highest registered source domain, stripped of the subdomain.
-
-      For example, the registered domain for "foo.example.com" is "example.com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last two labels will not work well for TLDs such as "co.uk".'
-    example: example.com
-  - name: subdomain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The subdomain portion of a fully qualified domain name includes
-      all of the names except the host name under the registered_domain.  In a partially
-      qualified domain, or if the the qualification level of the full name cannot
-      be determined, subdomain contains all of the names below the registered domain.
-
-      For example the subdomain portion of "www.east.mydomain.co.uk" is "east".
-      If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com",
-      the subdomain field should contain "sub2.sub1", with no trailing period.'
-    example: east
-  - name: top_level_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The effective top level domain (eTLD), also known as the domain
-      suffix, is the last part of the domain name. For example, the top level domain
-      for example.com is "com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last label will not work well for effective TLDs such as "co.uk".'
-    example: co.uk
-- name: server
-  type: group
-  fields:
-  - name: domain
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Server domain.
-  - name: registered_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The highest registered source domain, stripped of the subdomain.
-
-      For example, the registered domain for "foo.example.com" is "example.com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last two labels will not work well for TLDs such as "co.uk".'
-    example: example.com
-  - name: subdomain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The subdomain portion of a fully qualified domain name includes
-      all of the names except the host name under the registered_domain.  In a partially
-      qualified domain, or if the the qualification level of the full name cannot
-      be determined, subdomain contains all of the names below the registered domain.
-
-      For example the subdomain portion of "www.east.mydomain.co.uk" is "east".
-      If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com",
-      the subdomain field should contain "sub2.sub1", with no trailing period.'
-    example: east
-  - name: top_level_domain
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'The effective top level domain (eTLD), also known as the domain
-      suffix, is the last part of the domain name. For example, the top level domain
-      for example.com is "com".
-
-      This value can be determined precisely with a list like the public suffix
-      list (http://publicsuffix.org). Trying to approximate this by simply taking
-      the last label will not work well for effective TLDs such as "co.uk".'
-    example: co.uk
-- name: group
-  type: group
-  fields:
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Name of the group.
-  - name: id
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Unique identifier for the group on the system/platform.
-- name: process
-  type: group
-  fields:
-  - name: pid
-    level: core
-    type: long
-    format: string
-    description: Process id.
-    example: 4242
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-    description: 'Process name.
-
-      Sometimes called program name or similar.'
-    example: ssh
-  - name: ppid
-    level: extended
-    type: long
-    format: string
-    description: Parent process' pid.
-    example: 4241
-  - name: parent
-    type: group
-    fields:
     - name: name
       level: extended
       type: keyword
       ignore_above: 1024
-      multi_fields:
-      - name: text
-        type: text
-        norms: false
-      description: 'Process name.
-
-        Sometimes called program name or similar.'
-      example: ssh
-      default_field: false
-    - name: title
+      description: Name of the file including the extension, without the directory.
+      example: example.png
+    - name: directory
       level: extended
       type: keyword
       ignore_above: 1024
-      multi_fields:
-      - name: text
-        type: text
-        norms: false
-      description: 'Process title.
-
-        The proctitle, some times the same as process name. Can also be different:
-        for example a browser setting its title to the web page currently opened.'
-      default_field: false
-  - name: title
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-    description: 'Process title.
-
-      The proctitle, some times the same as process name. Can also be different: for
-      example a browser setting its title to the web page currently opened.'
-- name: rule
-  type: group
-  fields:
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: The name of the rule or signature generating the event.
-    example: BLOCK_DNS_over_TLS
-    default_field: false
-- name: user_agent
-  type: group
-  fields:
-  - name: original
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: text
-      norms: false
-    description: Unparsed user_agent string.
-    example: Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15
-      (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1
-- name: http
-  type: group
-  fields:
-  - name: request
-    type: group
-    fields:
-    - name: referrer
+      description: Directory where the file is located. It should include the drive letter, when appropriate.
+      example: /home/alice
+    - name: size
       level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Referrer for this HTTP request.
-      example: https://blog.example.com/
-    - name: method
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'HTTP request method.
+      type: long
+      description: 'File size in bytes.
 
-        Prior to ECS 1.6.0 the following guidance was provided:
-
-        "The field value must be normalized to lowercase for querying."
-
-        As of ECS 1.6.0, the guidance is deprecated because the original case of the
-        method may be useful in anomaly detection.  Original case will be mandated
-        in ECS 2.0.0'
-      example: GET, POST, PUT, PoST
-- name: geo
-  type: group
-  fields:
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'User-defined description of a location, at the level of granularity
-      they care about.
-
-      Could be the name of their data centers, the floor number, if this describes
-      a local physical entity, city names.
-
-      Not typically used in automated geolocation.'
-    example: boston-dc
-  - name: country_name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Country name.
-    example: Canada
-  - name: city_name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: City name.
-    example: Montreal
-  - name: region_name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Region name.
-    example: Quebec
-- name: dns
-  type: group
-  fields:
-  - name: question
-    type: group
-    fields:
+        Only relevant when `file.type` is "file".'
+      example: 16384
     - name: type
       level: extended
       type: keyword
       ignore_above: 1024
-      description: The type of record being queried.
-      example: AAAA
+      description: File type (file, dir, or symlink).
+      example: file
+    - name: extension
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'File extension, excluding the leading dot.
+
+        Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz").'
+      example: png
+    - name: path
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+      example: /home/alice/example.png
+    - name: attributes
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Array of file attributes.
+
+        Attributes names will vary by platform. Here''s a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write.'
+      example: '["readonly", "system"]'
+      default_field: false
+- name: url
+  type: group
+  fields:
+    - name: original
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Unmodified original url as seen in the event source.
+
+        Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path.
+
+        This field is meant to represent the URL as it was observed, complete or not.'
+      example: https://www.elastic.co:443/search?q=elasticsearch#top or /search?q=elasticsearch
+    - name: query
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The query field describes the query string of the request, such as "q=elasticsearch".
+
+        The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.'
+    - name: domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Domain of the url, such as "www.elastic.co".
+
+        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
+
+        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
+      example: www.elastic.co
+    - name: path
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Path of the request, such as "/search".
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered url domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+- name: service
+  type: group
+  fields:
+    - name: name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the service data is collected from.
+
+        The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name.
+
+        In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified.'
+      example: elasticsearch-metrics
+- name: client
+  type: group
+  fields:
     - name: domain
       level: core
       type: keyword
@@ -1084,61 +705,284 @@
 
         For example, the registered domain for "foo.example.com" is "example.com".
 
-        This value can be determined precisely with a list like the public suffix
-        list (http://publicsuffix.org). Trying to approximate this by simply taking
-        the last two labels will not work well for TLDs such as "co.uk".'
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
       example: example.com
     - name: subdomain
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The subdomain portion of a fully qualified domain name includes
-        all of the names except the host name under the registered_domain.  In a partially
-        qualified domain, or if the the qualification level of the full name cannot
-        be determined, subdomain contains all of the names below the registered domain.
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
 
-        For example the subdomain portion of "www.east.mydomain.co.uk" is "east".
-        If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com",
-        the subdomain field should contain "sub2.sub1", with no trailing period.'
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
       example: east
     - name: top_level_domain
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The effective top level domain (eTLD), also known as the domain
-        suffix, is the last part of the domain name. For example, the top level domain
-        for example.com is "com".
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
 
-        This value can be determined precisely with a list like the public suffix
-        list (http://publicsuffix.org). Trying to approximate this by simply taking
-        the last label will not work well for effective TLDs such as "co.uk".'
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
       example: co.uk
-  - name: answers
-    type: group
-    fields:
+- name: server
+  type: group
+  fields:
+    - name: domain
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Server domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+- name: group
+  type: group
+  fields:
     - name: name
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The domain name to which this resource record pertains.
-
-        If a chain of CNAME is being resolved, each answer''s `name` should be the
-        one that corresponds with the answer''s `data`. It should not simply be the
-        original `question.name` repeated.'
-      example: www.example.com
-    - name: type
+      description: Name of the group.
+    - name: id
       level: extended
       type: keyword
       ignore_above: 1024
-      description: The type of data contained in this resource record.
-      example: CNAME
+      description: Unique identifier for the group on the system/platform.
+- name: process
+  type: group
+  fields:
+    - name: pid
+      level: core
+      type: long
+      format: string
+      description: Process id.
+      example: 4242
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Process name.
+
+        Sometimes called program name or similar.'
+      example: ssh
+    - name: ppid
+      level: extended
+      type: long
+      format: string
+      description: Parent process' pid.
+      example: 4241
+    - name: parent
+      type: group
+      fields:
+        - name: name
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          multi_fields:
+            - name: text
+              type: text
+              norms: false
+          description: 'Process name.
+
+            Sometimes called program name or similar.'
+          example: ssh
+          default_field: false
+        - name: title
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          multi_fields:
+            - name: text
+              type: text
+              norms: false
+          description: 'Process title.
+
+            The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened.'
+          default_field: false
+    - name: title
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Process title.
+
+        The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened.'
+- name: rule
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The name of the rule or signature generating the event.
+      example: BLOCK_DNS_over_TLS
+      default_field: false
+- name: user_agent
+  type: group
+  fields:
+    - name: original
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Unparsed user_agent string.
+      example: Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1
+- name: http
+  type: group
+  fields:
+    - name: request
+      type: group
+      fields:
+        - name: referrer
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: Referrer for this HTTP request.
+          example: https://blog.example.com/
+        - name: method
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'HTTP request method.
+
+            Prior to ECS 1.6.0 the following guidance was provided:
+
+            "The field value must be normalized to lowercase for querying."
+
+            As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0'
+          example: GET, POST, PUT, PoST
+- name: geo
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'User-defined description of a location, at the level of granularity they care about.
+
+        Could be the name of their data centers, the floor number, if this describes a local physical entity, city names.
+
+        Not typically used in automated geolocation.'
+      example: boston-dc
+    - name: country_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Country name.
+      example: Canada
+    - name: city_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: City name.
+      example: Montreal
+    - name: region_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Region name.
+      example: Quebec
+- name: dns
+  type: group
+  fields:
+    - name: question
+      type: group
+      fields:
+        - name: type
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: The type of record being queried.
+          example: AAAA
+        - name: domain
+          level: core
+          type: keyword
+          ignore_above: 1024
+          description: Server domain.
+        - name: registered_domain
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The highest registered source domain, stripped of the subdomain.
+
+            For example, the registered domain for "foo.example.com" is "example.com".
+
+            This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+          example: example.com
+        - name: subdomain
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+            For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+          example: east
+        - name: top_level_domain
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+            This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+          example: co.uk
+    - name: answers
+      type: group
+      fields:
+        - name: name
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The domain name to which this resource record pertains.
+
+            If a chain of CNAME is being resolved, each answer''s `name` should be the one that corresponds with the answer''s `data`. It should not simply be the original `question.name` repeated.'
+          example: www.example.com
+        - name: type
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: The type of data contained in this resource record.
+          example: CNAME
 - name: error
   type: group
   fields:
-  - name: message
-    level: core
-    type: text
-    description: Error message.
+    - name: message
+      level: core
+      type: text
+      description: Error message.
 - name: tags
   level: core
   type: keyword
