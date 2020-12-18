@@ -143,7 +143,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.user_identity.session_context.session_issuer.type | The source of the temporary security credentials, such as Root, IAMUser, or Role. | keyword |
 | aws.cloudtrail.user_identity.type | The type of the identity | keyword |
 | aws.cloudtrail.vpc_endpoint_id | Identifies the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -161,6 +161,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | data_stream.type | Data stream type. | constant_keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | event.provider | Source of the event. | keyword |
