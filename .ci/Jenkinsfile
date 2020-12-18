@@ -45,15 +45,11 @@ pipeline {
       steps {
         script {
           dir("${BASE_DIR}/packages") {
-            def isPrAffected(integrationName) {
-              return true
-            }
-
             def integrations = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              if (isPrAffected("${it}") {
+              if (isPrAffected("${it}")) {
                 integrations["${it}"] = {
                   node('ubuntu && immutable') {
                     stage("${it}: check") {
@@ -156,4 +152,8 @@ def checkGitDiff() {
     sh(label: "git update-index", script: 'git update-index --refresh')
     sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
   }
+}
+
+def isPrAffected(integrationName) {
+  return true
 }
