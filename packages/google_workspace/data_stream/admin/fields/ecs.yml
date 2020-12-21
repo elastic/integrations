@@ -20,6 +20,99 @@
       type: keyword
       description: Runtime managing this container.
       ignore_above: 1024
+- name: url
+  title: URL
+  group: 2
+  type: group
+  fields:
+    - name: domain
+      level: extended
+      type: wildcard
+      description: 'Domain of the url, such as "www.elastic.co".'
+    - name: extension
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The field contains the file extension from the original request url, excluding the leading dot.'
+    - name: fragment
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Portion of the url after the `#`, such as "top".
+
+        The `#` is not part of the fragment.'
+    - name: full
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
+    - name: original
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Unmodified original url as seen in the event source.'
+    - name: password
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Password of the request.
+    - name: path
+      level: extended
+      type: wildcard
+      description: Path of the request, such as "/search".
+    - name: port
+      level: extended
+      type: long
+      format: string
+      description: Port of the request, such as 443.
+    - name: query
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The query field describes the query string of the request, such as "q=elasticsearch".'
+    - name: registered_domain
+      level: extended
+      type: wildcard
+      description: 'The highest registered url domain, stripped of the subdomain.'
+    - name: scheme
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Scheme of the request, such as "https".'
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.'
+      default_field: false
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".'
+    - name: username
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Username of the request.
+- name: network
+  title: Network
+  group: 2
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name given by operators to sections of their network.
 - name: ecs.version
   type: keyword
   description: ECS version

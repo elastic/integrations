@@ -844,7 +844,7 @@ An example event for `admin` looks as following:
 | google_workspace.admin.application.enabled | The enabled application. | keyword |
 | google_workspace.admin.application.id | The application ID. | keyword |
 | google_workspace.admin.application.licences_order_number | Order number used to redeem licenses. | keyword |
-| google_workspace.admin.application.licences_purchased | Number of licences purchased. | keyword |
+| google_workspace.admin.application.licences_purchased | Number of licences purchased. | long |
 | google_workspace.admin.application.name | The application's name. | keyword |
 | google_workspace.admin.application.package_id | The mobile application package ID. | keyword |
 | google_workspace.admin.bulk_upload.failed | Number of failed records in bulk upload operation. | long |
@@ -944,6 +944,7 @@ An example event for `admin` looks as following:
 | log.file.path | Log path | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| network.name | Name given by operators to sections of their network. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -965,6 +966,20 @@ An example event for `admin` looks as following:
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | wildcard |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | wildcard |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | wildcard |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 
 
 ### Drive
