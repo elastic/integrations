@@ -1,0 +1,84 @@
+name: google_workspace
+title: Google Workspace
+version: 0.0.1
+release: experimental
+description: Google Workspace Integration
+type: integration
+format_version: 1.0.0
+license: basic
+icons:
+  - src: /img/logo.svg
+    title: logo Google
+    size: 32x32
+    type: image/svg+xml
+categories:
+  - security
+conditions:
+  kibana.version: ^7.9.0
+policy_templates:
+  - name: google_workspace
+    title: Google Workspace logs
+    description: Collect logs from Google Workspace APIs
+    inputs:
+      - type: httpjson
+        vars:
+          - name: jwt_file
+            type: text
+            title: Jwt File
+            description: Specifies the path to the JWT credentials file.
+            multi: false
+            required: false
+            show_user: true
+          - name: delegated_account
+            type: text
+            title: Delegated Account
+            description: Email of the admin user used to access the API.
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            multi: false
+            required: true
+            show_user: true
+            default: 24h
+          - name: http_client_timeout
+            type: text
+            title: Http Client Timeout
+            description: Duration of the time limit on HTTP requests.
+            multi: false
+            required: true
+            show_user: true
+            default: 60s
+          - name: user_key
+            type: text
+            title: User Key
+            description: Specifies the user key to fetch reports from.
+            multi: false
+            required: true
+            show_user: true
+            default: all
+          - name: interval
+            type: text
+            title: Interval
+            description: Duration between requests to the API. Google Workspace defaults to a 2 hour polling interval because Google reports can go from some minutes up to 3 days of delay. For more details on this, you can read more at https://support.google.com/a/answer/7061566.
+            multi: false
+            required: true
+            show_user: true
+            default: 2h
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - forwarded
+        title: 'Collect admin, drive, groups, login, saml and user accounts logs (input: httpjson)'
+        description: 'Collecting admin, drive, groups, login, saml and user accounts logs (input: httpjson)'
+      - type: logfile
+        title: 'Collect admin, drive, groups, login, saml and user accounts logs (input: logfile)'
+        description: 'Collecting admin, drive, groups, login, saml and user accounts logs (input: logfile)'
+owner:
+  github: elastic/security-external-integrations
