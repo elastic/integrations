@@ -19,7 +19,6 @@ when creating or updating a Package, Module or Dataset for an Integration.
 - [ ] Fields follow [ECS](https://github.com/elastic/ecs) and [naming conventions](https://www.elastic.co/guide/en/beats/devguide/master/event-conventions.html)
 - [ ] At least a manual test with ES / Kibana / Agent has been performed.
 - [ ] Required Kibana version set to:
-- [ ] Change is released and Generally Available
 
 <!-- Uncomment as many of the following sections as needed
 ### New Package
