@@ -42,12 +42,12 @@ _This entry is currently only recommended. It will be mandatory once we provide 
 
 - [ ] Sample event (`sample_event.json`) exists
 
-## Filebeat module changes
+### Filebeat module changes
 
 - [ ] Test log files exist for the grok patterns
 - [ ] Generated output for at least 1 log file exists
 
-## Metricbeat module changes
+### Metricbeat module changes
 
 - [ ] Example `data.json` exists and an automated way to generate it exists (`go test -data`)
 - [ ] Test environment in Docker exist for integration tests
