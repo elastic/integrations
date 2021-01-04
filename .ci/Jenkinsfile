@@ -165,13 +165,13 @@ def isPrAffected(integrationName) {
   def to = params.get('to', env.GIT_BASE_COMMIT)
 
   def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only ${from}..${to} | egrep -v '^packages/'", returnStatus: true)
-  if r == 0 {
+  if (r == 0) {
     echo "[${integrationName}] PR is affected: found non-package files"
     return true
   }
 
   r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only ${from}..${to} | egrep '^packages/${integrationName}/'", returnStatus: true)
-  if r == 0 {
+  if (r == 0) {
     echo "[${integrationName}] PR is affected: found package files"
     return true
   }
