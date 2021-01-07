@@ -127,7 +127,7 @@ This dataset is available on:
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.ip | Host ip address. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -219,7 +219,7 @@ This dataset is available on:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | system.diskio.io.time | The total number of of milliseconds spent doing I/Os. | long |
 | system.diskio.iostat.await | The average time spent for requests issued to the device to be served. | float |
 | system.diskio.iostat.busy | Percentage of CPU time during which I/O requests were issued to the device (bandwidth utilization for the device). Device saturation occurs when this value is close to 100%. | float |
@@ -548,9 +548,9 @@ This dataset is available on:
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float |
-| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float |
-| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -621,8 +621,8 @@ This dataset is available on:
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.ip | Host ip address. | ip |
+| host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -632,11 +632,15 @@ This dataset is available on:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| process.cpu.pct | The percentage of CPU time spent by the process since the last event. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| process.cpu.start_time | The time when the process was started. | date |
+| process.memory.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pgid | Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
 | process.ppid | Parent process' pid. | long |
+| process.state | The process state. For example: "running". | keyword |
 | process.working_directory | The working directory of the process. | keyword |
 | system.process.cgroup.blkio.id | ID of the cgroup. | keyword |
 | system.process.cgroup.blkio.path | Path to the cgroup relative to the cgroup subsystems mountpoint. | keyword |
