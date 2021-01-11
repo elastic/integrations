@@ -1,4 +1,5 @@
 ---
+---
 description: Pipeline for normalizing Zeek intel.log.
 processors:
   - set:
@@ -13,6 +14,7 @@ processors:
         - UNIX
   - remove:
       field: zeek.intel.ts
+  # IP Geolocation Lookup
   - geoip:
       if: ctx.source?.geo == null
       field: source.ip
@@ -39,6 +41,8 @@ processors:
         - location
         - region_iso_code
         - region_name
+
+  # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -79,6 +83,7 @@ processors:
       field: "related.ip"
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+
 on_failure:
   - set:
       field: error.message
