@@ -19,6 +19,8 @@ This is the `firewall` dataset.
 
 {{event "firewall"}}
 
+{{fields "firewall"}}
+
 ### VPC Flow
 
 This is the `VPC Flow` dataset.
