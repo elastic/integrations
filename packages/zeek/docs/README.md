@@ -511,6 +511,7 @@ activity.
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. | wildcard |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
+| dns.question.subdomain | The subdomain of the domain. | keyword |
 | dns.question.top_level_domain | The effective top level domain (com, org, net, co.uk). | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
