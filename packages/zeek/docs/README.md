@@ -70,7 +70,6 @@ which contains packet loss rate data.
 | zeek.capture_loss.gaps | Number of missed ACKs from the previous measurement interval. | integer |
 | zeek.capture_loss.peer | In the event that there are multiple Bro instances logging to the same host, this distinguishes each peer with its individual name. | keyword |
 | zeek.capture_loss.percent_lost | Percentage of ACKs seen where the data being ACKed wasn't seen. | double |
-| zeek.capture_loss.ts | The timestamp of the event. | double |
 | zeek.capture_loss.ts_delta | The time delay between this measurement and the last. | integer |
 | zeek.session_id | A unique identifier of the session | keyword |
 
