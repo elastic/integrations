@@ -55,14 +55,14 @@ pipeline {
                     stage("${it}: check") {
                       deleteDir()
                       gitCheckout(basedir: "${BASE_DIR}")
-                      dir("${env.NODE_NAME}") {
+                      dir("${it}") {
                         sh(label: "Copy filebeat configuration", script: 'cp ../${BASE_DIR}/.ci/filebeat_conf.yml .')
                       }
                       useElasticPackage()
                       try {
-                        filebeat(workdir: "${env.WORKSPACE}/${env.NODE_NAME}") {
+                        filebeat(workdir: "${env.WORKSPACE}/${it}") {
                           dir("${BASE_DIR}/packages/${it}") {
-                            sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                            sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v', output: 'elastic-stack-')
                             // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
                             // locally and run tests for the integration. The condition prevents from spawning the stack
                             // unnecessarily (while no tests are defined).
@@ -79,7 +79,6 @@ pipeline {
                       } finally {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: '${env.NODE_NAME}/elastic-stack-*.log')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                         }
