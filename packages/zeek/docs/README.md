@@ -3116,6 +3116,7 @@ SSL/TLS handshake info.
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
 | tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | wildcard |
+| tls.server.subject | Subject of the x.509 certificate presented by the server. | wildcard |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.country | List of country (C) codes | keyword |
 | tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | wildcard |
