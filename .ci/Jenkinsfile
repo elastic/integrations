@@ -73,13 +73,13 @@ pipeline {
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file
                                 ''')
-                              sh(label: "docker ps", script: 'docker ps -a')
                             }
                           }
                         }
                       } finally {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: '${env.NODE_NAME}/elastic-stack-*.log')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                         }
