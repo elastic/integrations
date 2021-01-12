@@ -64,11 +64,13 @@ pipeline {
                           // unnecessarily (while no tests are defined).
                           def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
                           if (r == 0) {
-                            sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
-                            sh(label: "Test integration: ${it}", script: '''
-                              eval "$(../../build/elastic-package stack shellinit)"
-                              ../../build/elastic-package test -v --report-format xUnit --report-output file
-                              ''')
+                            filebeat(workdir: "${env.WORKSPACE}") {
+                              sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                              sh(label: "Test integration: ${it}", script: '''
+                                eval "$(../../build/elastic-package stack shellinit)"
+                                ../../build/elastic-package test -v --report-format xUnit --report-output file
+                                ''')
+                            }
                           }
                         }
                       } finally {
@@ -76,6 +78,7 @@ pipeline {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                          filebeat.stop(workdir: "${env.WORKSPACE}")
                         }
                       }
                     }
