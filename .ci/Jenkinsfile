@@ -49,32 +49,34 @@ pipeline {
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              integrations["${it}"] = {
-                node('ubuntu && immutable') {
-                  stage("${it}: check") {
-                    deleteDir()
-                    gitCheckout(basedir: "${BASE_DIR}")
-                    useElasticPackage()
-                    try {
-                      dir("${BASE_DIR}/packages/${it}") {
-                        sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                        // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
-                        // locally and run tests for the integration. The condition prevents from spawning the stack
-                        // unnecessarily (while no tests are defined).
-                        def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
-                        if (r == 0) {
-                          sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
-                          sh(label: "Test integration: ${it}", script: '''
-                            eval "$(../../build/elastic-package stack shellinit)"
-                            ../../build/elastic-package test -v --report-format xUnit --report-output file
-                            ''')
-                         }
-                      }
-                    } finally {
-                      dir("${BASE_DIR}") {
-                        archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                        junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                        sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+              if (isPrAffected("${it}")) {
+                integrations["${it}"] = {
+                  node('ubuntu && immutable') {
+                    stage("${it}: check") {
+                      deleteDir()
+                      gitCheckout(basedir: "${BASE_DIR}")
+                      useElasticPackage()
+                      try {
+                        dir("${BASE_DIR}/packages/${it}") {
+                          sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                          // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
+                          // locally and run tests for the integration. The condition prevents from spawning the stack
+                          // unnecessarily (while no tests are defined).
+                          def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
+                          if (r == 0) {
+                            sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                            sh(label: "Test integration: ${it}", script: '''
+                              eval "$(../../build/elastic-package stack shellinit)"
+                              ../../build/elastic-package test -v --report-format xUnit --report-output file
+                              ''')
+                          }
+                        }
+                      } finally {
+                        dir("${BASE_DIR}") {
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                        }
                       }
                     }
                   }
@@ -150,4 +152,30 @@ def checkGitDiff() {
     sh(label: "git update-index", script: 'git update-index --refresh')
     sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
   }
+}
+
+def isPrAffected(integrationName) {
+  if (env.BRANCH_NAME == "master") {
+    echo "[${integrationName}] PR is affected: running on master branch"
+    return true
+  }
+
+  // Source: https://github.com/elastic/apm-pipeline-library/blob/721115cf0fdb2b5a4e1cb6a576bfbb7035d14485/vars/getGitMatchingGroup.groovy#L40-L41
+  def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
+  def to = env.GIT_BASE_COMMIT
+
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only ${from}..${to} | egrep -v '^packages/'", returnStatus: true)
+  if (r == 0) {
+    echo "[${integrationName}] PR is affected: found non-package files"
+    return true
+  }
+
+  r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only ${from}..${to} | egrep '^packages/${integrationName}/'", returnStatus: true)
+  if (r == 0) {
+    echo "[${integrationName}] PR is affected: found package files"
+    return true
+  }
+
+  echo "[${integrationName}] PR is not affected"
+  return false
 }
