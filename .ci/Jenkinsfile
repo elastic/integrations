@@ -53,9 +53,11 @@ pipeline {
                 integrations["${it}"] = {
                   node('ubuntu && immutable') {
                     stage("${it}: check") {
-                      dir("${env.NODE_NAME}") {}
                       deleteDir()
                       gitCheckout(basedir: "${BASE_DIR}")
+                      dir("${env.NODE_NAME}") {
+                        sh(label: "Copy filebeat configuration", script: 'cp ../${BASE_DIR}/.ci/filebeat_conf.yml .')
+                      }
                       useElasticPackage()
                       try {
                         filebeat(workdir: "${env.WORKSPACE}/${env.NODE_NAME}") {
