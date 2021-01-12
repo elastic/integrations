@@ -9,7 +9,25 @@ tags:
 {{/each}}
 publisher_pipeline.disable_host: true
 processors:
+  {{#if internal_interfaces.length}}
+  - add_fields:
+      target: _temp
+      fields:
+        internal_interfaces:
+          {{#each internal_interfaces as |interface i|}}
+          - {{interface}}
+          {{/each}}
+  {{/if}}
+  {{#if external_interfaces.length}}
+  - add_fields:
+      target: _temp
+      fields:
+        external_interfaces:
+          {{#each external_interfaces as |interface i|}}
+          - {{interface}}
+          {{/each}}
+  {{/if}}
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.6.0
+        ecs.version: 1.7.0
