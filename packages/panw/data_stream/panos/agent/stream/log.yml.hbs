@@ -175,7 +175,25 @@ processors:
         - {from: destination.nat.ip, to: panw.panos.destination.nat.ip, type: ip}
         - {from: source.nat.port, to: panw.panos.source.nat.port, type: long}
         - {from: destination.nat.port, to: panw.panos.destination.nat.port, type: long}
+  {{#if internal_zones.length}}
+  - add_fields:
+      target: _temp_
+      fields:
+        internal_zones:
+          {{#each internal_zones as |zone i|}}
+          - {{zone}}
+          {{/each}}
+  {{/if}}
+  {{#if external_zones.length}}
+  - add_fields:
+      target: _temp_
+      fields:
+        external_zones:
+          {{#each external_zones as |zone i|}}
+          - {{zone}}
+          {{/each}}
+  {{/if}}
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.6.0
+        ecs.version: 1.7.0
