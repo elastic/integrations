@@ -166,22 +166,22 @@ processors:
       if: "ctx.network?.direction == null"
   # Normalize the network direction
   - script:
-    lang: painless
-    ignore_failure: true
-    params:
-      outgoing: outbound
-      incoming: inbound
-    source: >-
-      if (ctx.network?.direction == null) {
-        return;
-      }
-      def k = ctx.network?.direction.toLowerCase();
-      def normalized = params.get(k);
-      if (normalized != null) {
-        ctx.network.direction = normalized;
-        return
-      }
-      ctx.network.direction = k;
+      lang: painless
+      ignore_failure: true
+      params:
+        outgoing: outbound
+        incoming: inbound
+      source: >-
+        if (ctx.network?.direction == null) {
+            return;
+        }
+        def k = ctx.network?.direction.toLowerCase();
+        def normalized = params.get(k);
+        if (normalized != null) {
+            ctx.network.direction = normalized;
+            return
+        }
+        ctx.network.direction = k;
   - rename:
       field: fortinet.firewall.error
       target_field: event.message
