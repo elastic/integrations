@@ -53,32 +53,34 @@ pipeline {
                 integrations["${it}"] = {
                   node('ubuntu && immutable') {
                     stage("${it}: check") {
-                      deleteDir()
-                      gitCheckout(basedir: "${BASE_DIR}")
-                      useElasticPackage()
-                      try {
-                        filebeat() {
-                          dir("${BASE_DIR}/packages/${it}") {
-                            sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                            // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
-                            // locally and run tests for the integration. The condition prevents from spawning the stack
-                            // unnecessarily (while no tests are defined).
-                            def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
-                            if (r == 0) {
-                              sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
-                              sh(label: "Test integration: ${it}", script: '''
-                                eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package test -v --report-format xUnit --report-output file
-                                ''')
-                              sh(label: "docker ps", script: 'docker ps -a')
+                      dir("${env.NODE_NAME}") {
+                        deleteDir()
+                        gitCheckout(basedir: "${BASE_DIR}")
+                        useElasticPackage()
+                        try {
+                          filebeat() {
+                            dir("${BASE_DIR}/packages/${it}") {
+                              sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                              // Check if there are test folders present, so the CI job runner can spawn the Elastic stack
+                              // locally and run tests for the integration. The condition prevents from spawning the stack
+                              // unnecessarily (while no tests are defined).
+                              def r = sh(label: "Find test folders", script: 'find . -d  -name test | grep .', returnStatus: true)
+                              if (r == 0) {
+                                sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                                sh(label: "Test integration: ${it}", script: '''
+                                  eval "$(../../build/elastic-package stack shellinit)"
+                                  ../../build/elastic-package test -v --report-format xUnit --report-output file
+                                  ''')
+                                sh(label: "docker ps", script: 'docker ps -a')
+                              }
                             }
                           }
-                        }
-                      } finally {
-                        dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                        } finally {
+                          dir("${BASE_DIR}") {
+                            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                            junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                          }
                         }
                       }
                     }
