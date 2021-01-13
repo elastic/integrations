@@ -3,16 +3,18 @@ description: Pipeline for Filebeat Zeek dns.log
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.created
-      value: '{{@timestamp}}'
+      value: "{{@timestamp}}"
   - date:
       field: zeek.dns.ts
       formats:
         - UNIX
   - remove:
       field: zeek.dns.ts
+
+  # IP Geolocation Lookup
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -21,6 +23,8 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -53,6 +57,7 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+
 on_failure:
   - set:
       field: error.message

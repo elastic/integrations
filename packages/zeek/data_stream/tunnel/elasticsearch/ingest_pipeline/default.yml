@@ -3,10 +3,10 @@ description: Pipeline for normalizing Zeek tunnel.log
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.created
-      value: '{{@timestamp}}'
+      value: "{{@timestamp}}"
   - date:
       field: zeek.tunnel.ts
       formats:
@@ -50,9 +50,9 @@ processors:
       target_field: destination.as.number
       ignore_missing: true
   - rename:
-     field: destination.as.organization_name
-     target_field: destination.as.organization.name
-     ignore_missing: true
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
       value: "{{source.ip}}"
@@ -64,4 +64,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"

@@ -3,10 +3,10 @@ description: Pipeline for normalizing Zeek dnp3.log
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.created
-      value: '{{@timestamp}}'
+      value: "{{@timestamp}}"
   - date:
       field: zeek.dnp3.ts
       formats:
@@ -15,11 +15,11 @@ processors:
       field: zeek.dnp3.ts
   - set:
       field: event.action
-      value: '{{zeek.dnp3.function.request}}'
+      value: "{{zeek.dnp3.function.request}}"
       if: "ctx?.zeek?.dnp3?.function?.request != null"
   - set:
       field: event.action
-      value: '{{zeek.dnp3.function.reply}}'
+      value: "{{zeek.dnp3.function.reply}}"
       if: "ctx?.zeek?.dnp3?.function?.reply != null"
   - lowercase:
       field: event.action
@@ -64,13 +64,13 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{source.ip}}'
-      if: 'ctx?.source?.ip != null'
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
   - append:
       field: related.ip
-      value: '{{destination.ip}}'
-      if: 'ctx?.destination?.ip != null'
+      value: "{{destination.ip}}"
+      if: ctx?.destination?.ip != null
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"

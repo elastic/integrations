@@ -3,10 +3,10 @@ description: Pipeline for normalizing Zeek dce_rpc.log
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.created
-      value: '{{@timestamp}}'
+      value: "{{@timestamp}}"
   - date:
       field: zeek.dce_rpc.ts
       formats:
@@ -15,8 +15,8 @@ processors:
       field: zeek.dce_rpc.ts
   - append:
       field: related.ip
-      value: '{{source.ip}}'
-      if: "ctx?.source?.ip != null"
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -38,8 +38,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{destination.ip}}'
-      if: "ctx?.destination?.ip != null"
+      value: "{{destination.ip}}"
+      if: ctx?.destination?.ip != null
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -61,9 +61,9 @@ processors:
       ignore_missing: true
   - set:
       field: event.action
-      value: '{{zeek.dce_rpc.operation}}'
+      value: "{{zeek.dce_rpc.operation}}"
       if: "ctx?.zeek?.dce_rpc?.operation != null"
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"
