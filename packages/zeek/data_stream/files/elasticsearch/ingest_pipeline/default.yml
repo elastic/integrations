@@ -3,10 +3,10 @@ description: Pipeline for normalizing Zeek files.log
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.created
-      value: '{{@timestamp}}'
+      value: "{{@timestamp}}"
   - date:
       field: zeek.files.ts
       formats:
@@ -20,7 +20,7 @@ processors:
       ignore_failure: true
   - set:
       field: event.id
-      value: '{{zeek.session_id}}'
+      value: "{{zeek.session_id}}"
       if: ctx.zeek.session_id != null
   - foreach:
       field: zeek.files.tx_hosts
@@ -31,9 +31,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source: >-
-        ctx.zeek.files.tx_host = ctx.zeek.files.tx_hosts[0];
-        ctx.zeek.files.remove('tx_hosts');
+      source: ctx.zeek.files.tx_host = ctx.zeek.files.tx_hosts[0]; ctx.zeek.files.remove('tx_hosts');
       ignore_failure: true
   - set:
       field: server.ip
@@ -48,9 +46,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source: >-
-        ctx.zeek.files.rx_host = ctx.zeek.files.rx_hosts[0];
-        ctx.zeek.files.remove('rx_hosts');
+      source: ctx.zeek.files.rx_host = ctx.zeek.files.rx_hosts[0]; ctx.zeek.files.remove('rx_hosts');
       ignore_failure: true
   - set:
       field: client.ip
@@ -71,4 +67,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"
