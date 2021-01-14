@@ -32,7 +32,7 @@ def test_classify(test_name):
     WHEN those test names are passed to the classifier
     THEN the classifier identifies their package, component, and test type
     """
-    assert report.classify(test_name) == ('aws', 'cloudtrail', 'pipeline_test')
+    assert report.classify(test_name) == ('aws', 'cloudtrail', 'pipeline')
 
 def test_extract_tests(mock_es_return):
     """
@@ -48,7 +48,7 @@ def test_extract_tests(mock_es_return):
     test_ret = ret[-1]
     assert test_ret.package == 'zeek'
     assert test_ret.timestamp == '2021-01-07T20:48:18.256+0000'
-    assert test_ret.type == 'system_test'
+    assert test_ret.type == 'system'
     assert test_ret.result == 'PASSED'
     # TODO test_ret.version
     # TODO test_ret.integration_version

@@ -290,14 +290,13 @@ def classify(name):
     ('aws', 'cloudtrail', 'pipeline_test')
     """
     package, component = name.split("%2F")[1:3]
-    test_type = name.split("___")[-1].split("__", maxsplit=1)[0]
+    test_type = name.split("___")[-1].split("__", maxsplit=1)[0].split('_')[0]
     return (package, component, test_type)
 
 
 def test_frequency(tests, packages, type_filter=None):
     """
-    Take a list of tests and determine the least frequently
-    tested packages
+    Determine the frequency of all tests
 
     Parameters
     ----------
@@ -314,11 +313,58 @@ def test_frequency(tests, packages, type_filter=None):
     Returns
     -------
     dict
-        Dictionary describing test frequency
+        Dictionary describing test frequency. Example snippet:
+        {'apache': 110,
+        'auditd': 18,
+        'aws': 340,
+        'azure': 60,
+        'cef': 14,
+        ...
+        }
     """
+    # TODO tests
     frequency_map = {}
-    raise Exception(NotImplemented) 
+    # Initialize the map with the list of packages
+    for package in packages:
+        frequency_map[package] = 0
 
+    # Bucket each test into the map
+    for test in tests:
+        if type_filter:
+            if test.type == type_filter:
+                frequency_map[test.package] += 1
+        else:
+            frequency_map[test.package] += 1
+    return frequency_map
+
+
+def test_status(tests, type_filter=None):
+    """
+    Bucket tests by their status
+
+    Parameters
+    ----------
+    tests : list
+        Test objects to analyze
+
+    str : type_filter
+        If present, this calculates test frequency by type. Argument
+        should be one of ['pipeline', 'system']. Default: None
+    """
+
+    # TODO decorator for type_filter validation for this and the above func
+    # TODO tests
+    status_map = {}
+
+    for test in tests:
+        if test.package not in status_map:
+            status_map[test.package] = {'PASSED': 0, 'FAILED': 0, 'ERROR': 0, 'UNKNOWN': 0}
+        if type_filter:
+            if test.type == type_filter:
+                status_map[test.package][test.result] += 1
+        else:
+            status_map[test.package][test.result] += 1
+    return status_map
 
 
 
@@ -336,8 +382,11 @@ if __name__ == "__main__":
     gh_ = gh_conn(args.gh_token)
     gh_response = gather_gh_packages(gh_)
 
+    es_tests = []
     for doc in es_response['hits']['hits']:
-        extract_tests(doc)
+        es_tests.extend(extract_tests(doc))
 
-    for pkg in gh_response:
-        print(pkg)
+    import pprint
+    freq = test_frequency(es_tests, gh_response)
+    status = test_status(es_tests)
+    pprint.pprint(status)
