@@ -77,6 +77,9 @@ An example event for `stats` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 | stan.cluster.id | The cluster ID | keyword |
 | stan.server.id | The server ID | keyword |
 | stan.stats.bytes | Number of bytes consumed across all STAN queues | long |
@@ -107,6 +110,9 @@ An example event for `channels` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 | stan.channels.bytes | The number of STAN bytes in the channel | long |
 | stan.channels.depth | Queue depth based upon current sequence number and highest reported subscriber sequence number | long |
 | stan.channels.first_seq | First sequence number stored in the channel. If first_seq > min([seq in subscriptions]) data loss has possibly occurred | long |
@@ -136,6 +142,9 @@ An example event for `subscriptions` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 | stan.cluster.id | The cluster ID | keyword |
 | stan.server.id | The server ID | keyword |
 | stan.subscriptions.channel | The name of the STAN channel the subscription is associated with | keyword |
