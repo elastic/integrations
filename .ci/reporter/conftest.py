@@ -1,6 +1,9 @@
 import os
+import json
 import pytest
 import argparse
+
+
 @pytest.fixture
 def default_args():
     """
@@ -43,3 +46,39 @@ def wrap_env():
     """
     os.environ['ES_HOST'] = "http://fake_es_hostname"
     os.environ['ES_USER'] = "fake_username"
+    os.environ['ES_PASS'] = "fake_password"
+
+@pytest.fixture
+def mock_es_return():
+    """
+    A sample raw return from Elasticserch which contains
+    two tests.
+
+    Pre-generated via the following query:
+
+    GET /jenkins-builds*/_search
+    {
+      "size": 2,
+      "query" : {
+        "bool": {
+          "must": [{
+               "range" : {
+                  "build.startTime": {
+                  "gte": "now-7d"
+                }
+              }
+            }],
+          "filter":[
+            {
+              "term": {
+                "job.fullName.keyword": "Ingest-manager/integrations/master"
+              }
+            }
+          ]
+        }
+      }
+    }
+    """
+    with open("mock_es_response.json", "r") as fh_:
+        es_ret = json.load(fh_)
+    return es_ret

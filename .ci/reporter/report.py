@@ -28,6 +28,7 @@ import logging
 import argparse
 from collections import namedtuple
 from elasticsearch import Elasticsearch
+from github import Github
 
 def setup_logging(opts):
     """
@@ -56,7 +57,7 @@ def setup_logging(opts):
             )
     return log_level
 
-def gather_args():
+def gather_args(strict_mode=True):
     """
     Gather the command line arguments
 
@@ -101,6 +102,11 @@ def gather_args():
             default=os.environ.get("ES_PASS"),
             required="ES_PASS" not in os.environ
             )
+    parser.add_argument(
+            "--gh-token",
+            help="GitHub token which has read access the elastic/integrations repo",
+            required="GH_TOKEN" not in os.environ
+            )
     return parser.parse_args()
 
 def es_conn(hostname, username, password):
@@ -125,6 +131,22 @@ def es_conn(hostname, username, password):
         the Elasticsearch cluster where the test data is stored.
     """
     return Elasticsearch([hostname], http_auth=(username, password))
+
+def gh_conn(token):
+    """
+    Return a Github connection that is initialized and ready
+
+    Parameters
+    ----------
+    str : token
+        A valid GitHub token
+
+    Returns
+    -------
+    GitHub
+        An initialized GitHub object
+    """
+    return Github(token)
 
 
 def gather_docs(conn, timespan):
@@ -172,6 +194,31 @@ def gather_docs(conn, timespan):
     return conn.search(body=query_body, index=index_to_query)
 
 
+def gather_gh_packages(gh, branch='master'):
+    """
+    Gather a list of packages in the elastic/integrations repo
+
+    Parameters
+    ---------
+    Github : gh
+        A connected Github instance
+
+    str : branch
+        The branch of the project to search. Default: `master`.
+
+    Returns
+    -------
+    An unordered list of packages available in repo
+    """
+    packages = []
+    repo = gh.get_repo("elastic/integrations")
+    contents = repo.get_contents("packages", ref=branch)
+    for package in contents:
+        package_name = package.path.split("/").pop()
+        packages.append(package_name)
+    return packages
+
+
 def extract_tests(document):
     """
     Given a document containing tests that has been returned
@@ -211,7 +258,7 @@ def extract_tests(document):
                 test_type,
                 test["status"],
                 -1, # `version` is a TODO
-                -1, # `integration_version` is a TODO 
+                -1, # `integration_version` is a TODO
                 component
                 )
         logging.debug(composed_test)
@@ -240,11 +287,38 @@ def classify(name):
     Example
     -------
     >>> classify('io.jenkins.blueocean.service.embedded.rest.junit.BlueJUnitTestResult:aws.cloudtrail%3Ajunit%2Faws%2Fcloudtrail%2FCheck_integrations___aws___aws__check___pipeline_test__test_console_login_json_log')
-    ['aws', 'cloudtrail']
+    ('aws', 'cloudtrail', 'pipeline_test')
     """
     package, component = name.split("%2F")[1:3]
     test_type = name.split("___")[-1].split("__", maxsplit=1)[0]
     return (package, component, test_type)
+
+
+def test_frequency(tests, packages, type_filter=None):
+    """
+    Take a list of tests and determine the least frequently
+    tested packages
+
+    Parameters
+    ----------
+    tests : list
+        Test objects to analyze
+
+    packages : list
+        Packages to analyze
+
+    str : type_filter
+        If present, this calculates test frequency by type. Argument
+        should be one of ['pipeline', 'system']. Default: None
+
+    Returns
+    -------
+    dict
+        Dictionary describing test frequency
+    """
+    frequency_map = {}
+    raise Exception(NotImplemented) 
+
 
 
 
@@ -253,9 +327,17 @@ if __name__ == "__main__":
     args = gather_args()
     setup_logging(args)
     # Begin main operations
+
+    # Fetch tests from the Elasticsearch stats cluster
     es_ = es_conn(args.es_host, args.es_user, args.es_pass)
     es_response = gather_docs(es_, args.timespan)
-    #pprint.pprint(es_response['hits']['hits'])
+
+    # Fetch list of packages from GitHub
+    gh_ = gh_conn(args.gh_token)
+    gh_response = gather_gh_packages(gh_)
+
     for doc in es_response['hits']['hits']:
         extract_tests(doc)
 
+    for pkg in gh_response:
+        print(pkg)
