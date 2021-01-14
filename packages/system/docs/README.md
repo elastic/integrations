@@ -957,6 +957,7 @@ The Windows `application` dataset provides events from the Windows
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | error.message | Error message. | text |
+| event.code | Identification code for this event. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.original | Raw text message of entire event. | keyword |
