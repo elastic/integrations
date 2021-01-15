@@ -26,6 +26,8 @@ of package testing.
 import os
 import logging
 import argparse
+import jinja2
+import itertools
 from collections import namedtuple
 from elasticsearch import Elasticsearch
 from github import Github
@@ -293,10 +295,56 @@ def classify(name):
     test_type = name.split("___")[-1].split("__", maxsplit=1)[0].split('_')[0]
     return (package, component, test_type)
 
-
-def test_frequency(tests, packages, type_filter=None):
+def validate_filter(func):
     """
-    Determine the frequency of all tests
+    Decorator to verify that a valid filter was passed in
+
+    Raises
+    ------
+    Exception
+        If the passed in filter was not valid, a generalized Exception is raised
+    """
+    # TODO test coverage
+    def wrapper(*args, **kwargs):
+        if kwargs.get('type_filter') and kwargs['type_filter'] not in ('system', 'pipeline'):
+            raise Exception("Valid options for system_filter are: `system`, `pipeline`. "
+                    "Function received: `{}`".format(kwargs['type_filter'])
+                            )
+        func(*args, **kwargs)
+        return func(*args, **kwargs)
+    return wrapper
+
+def dict_limit(data, limit, high_pass):
+    """
+    Helper function to sort a dictionary by value and then select only
+    up to a certain number of the sorted entries.
+
+    Parameters
+    ----------
+    limit : int
+        If set, limit entries to the provided value
+
+    high_pass : bool
+        If limit is set, this argument determines whether to return the lowest
+        set of values or the highest. When False, only the lowest values up to
+        to the number requested by `limit` will be returned. When True, only the
+        highest values up to the numbe requested by `limit` will be returned.
+
+    Returns
+    -------
+    dict
+        A dictionary which contains the first N entries, as sorted by value
+    """
+    sort_list = sorted(data.items(), key=lambda x: x[1], reverse=high_pass)[:limit]
+    filtered_dict = {}
+    for pair in sort_list:
+        filtered_dict[pair[0]] = pair[1]
+    return filtered_dict
+
+@validate_filter
+def test_frequency(tests, packages, type_filter=None, limit=10, high_pass=False):
+    """
+    Determine the frequency of tests
 
     Parameters
     ----------
@@ -310,6 +358,15 @@ def test_frequency(tests, packages, type_filter=None):
         If present, this calculates test frequency by type. Argument
         should be one of ['pipeline', 'system']. Default: None
 
+    limit : int
+        If set, limit entries to the provided value
+
+    high_pass : bool
+        If limit is set, this argument determines whether to return the lowest
+        set of values or the highest. When False, only the lowest values up to
+        to the number requested by `limit` will be returned. When True, only the
+        highest values up to the numbe requested by `limit` will be returned.
+
     Returns
     -------
     dict
@@ -322,7 +379,6 @@ def test_frequency(tests, packages, type_filter=None):
         ...
         }
     """
-    # TODO tests
     frequency_map = {}
     # Initialize the map with the list of packages
     for package in packages:
@@ -335,9 +391,13 @@ def test_frequency(tests, packages, type_filter=None):
                 frequency_map[test.package] += 1
         else:
             frequency_map[test.package] += 1
+
+    if limit:
+        frequency_map = dict_limit(frequency_map, limit, high_pass)
+
     return frequency_map
 
-
+@validate_filter
 def test_status(tests, type_filter=None):
     """
     Bucket tests by their status
@@ -351,9 +411,6 @@ def test_status(tests, type_filter=None):
         If present, this calculates test frequency by type. Argument
         should be one of ['pipeline', 'system']. Default: None
     """
-
-    # TODO decorator for type_filter validation for this and the above func
-    # TODO tests
     status_map = {}
 
     for test in tests:
@@ -366,27 +423,59 @@ def test_status(tests, type_filter=None):
             status_map[test.package][test.result] += 1
     return status_map
 
+def jinja_tmpl():
+    """
+    Helper function to prepare and load the Jinja template
 
+    Returns
+    -------
+    jinja.Template
+        The main layout template from which all others inherit
+    """
+    env = jinja2.Environment(
+            loader=jinja2.PackageLoader('report', 'templates'),
+            autoescape=jinja2.select_autoescape(['html', 'xml'])
+            )
+    return env.get_template('layout.html')
+
+def render(template, freq, freq_system, freq_pipeline, freq_limit):
+    """
+    Take a template and its data and render it
+
+    Returns
+    -------
+    str
+        The rendered HTML, ready for consumption
+    """
+    return template.render(
+            test_frequency=freq,
+            test_frequency_system=freq_system,
+            test_frequency_pipeline=freq_pipeline,
+            frequency_limit=freq_limit
+            )
 
 if __name__ == "__main__":
     # Pre-flight setup of argument parsing and logging
-    args = gather_args()
-    setup_logging(args)
+    cli_args = gather_args()
+    setup_logging(cli_args)
     # Begin main operations
 
     # Fetch tests from the Elasticsearch stats cluster
-    es_ = es_conn(args.es_host, args.es_user, args.es_pass)
-    es_response = gather_docs(es_, args.timespan)
+    es_ = es_conn(cli_args.es_host, cli_args.es_user, cli_args.es_pass)
+    es_response = gather_docs(es_, cli_args.timespan)
 
     # Fetch list of packages from GitHub
-    gh_ = gh_conn(args.gh_token)
+    gh_ = gh_conn(cli_args.gh_token)
     gh_response = gather_gh_packages(gh_)
 
     es_tests = []
     for doc in es_response['hits']['hits']:
         es_tests.extend(extract_tests(doc))
 
-    import pprint
-    freq = test_frequency(es_tests, gh_response)
+    freq = test_frequency(es_tests, gh_response, limit=100)
+    freq_system = test_frequency(es_tests, gh_response, type_filter='system', limit=100)
+    freq_pipeline = test_frequency(es_tests, gh_response, type_filter='pipeline', limit=100)
     status = test_status(es_tests)
-    pprint.pprint(status)
+
+    tmpl = jinja_tmpl()
+    print(render(tmpl, freq, freq_system, freq_pipeline, 10))  # FIXME Fine a better way to grab the limit. Probably CLI arg.
