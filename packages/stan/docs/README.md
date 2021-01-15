@@ -40,18 +40,18 @@ An example event for `log` looks as following:
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
-| nats.log.client.id | The id of the client | integer |
-| nats.log.msg.bytes | Size of the payload in bytes | long |
-| nats.log.msg.error.message | Details about the error occurred | text |
-| nats.log.msg.max_messages | An optional number of messages to wait for before automatically unsubscribing | integer |
-| nats.log.msg.queue_group | The queue group which subscriber will join | text |
-| nats.log.msg.reply_to | The inbox subject on which the publisher is listening for responses | keyword |
-| nats.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
-| nats.log.msg.subject | Subject name this message was received on | keyword |
-| nats.log.msg.type | The protocol message type | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
+| stan.log.client.id | The id of the client | integer |
+| stan.log.msg.bytes | Size of the payload in bytes | long |
+| stan.log.msg.error.message | Details about the error occurred | text |
+| stan.log.msg.max_messages | An optional number of messages to wait for before automatically unsubscribing | integer |
+| stan.log.msg.queue_group | The queue group which subscriber will join | text |
+| stan.log.msg.reply_to | The inbox subject on which the publisher is listening for responses | keyword |
+| stan.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
+| stan.log.msg.subject | Subject name this message was received on | keyword |
+| stan.log.msg.type | The protocol message type | keyword |
 
 
 ## Metrics
@@ -66,7 +66,80 @@ metrics from a STAN instance.
 An example event for `stats` looks as following:
 
 ```$json
-{}
+{
+    "@timestamp": "2021-01-15T12:26:32.467Z",
+    "service": {
+        "address": "http://elastic-package-service_stan_1:8222/streaming/serverz",
+        "type": "stan"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "stan.stats"
+    },
+    "ecs": {
+        "version": "1.7.0"
+    },
+    "host": {
+        "mac": [
+            "02:42:ac:13:00:05"
+        ],
+        "name": "ec072aa02d8b",
+        "hostname": "ec072aa02d8b",
+        "architecture": "x86_64",
+        "os": {
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux",
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core",
+            "platform": "centos"
+        },
+        "id": "88c3c3ec3afebed7631b44a69754359e",
+        "containerized": true,
+        "ip": [
+            "172.19.0.5"
+        ]
+    },
+    "agent": {
+        "version": "7.11.0",
+        "hostname": "ec072aa02d8b",
+        "ephemeral_id": "8d73aff0-201b-4260-9e89-cd519348de03",
+        "id": "67b9c377-7d0c-4a69-9351-2befe6386fbd",
+        "name": "ec072aa02d8b",
+        "type": "metricbeat"
+    },
+    "event": {
+        "dataset": "stan.stats",
+        "module": "stan",
+        "duration": 1252350
+    },
+    "metricset": {
+        "name": "stats",
+        "period": 60000
+    },
+    "stan": {
+        "cluster": {
+            "id": "test-cluster"
+        },
+        "stats": {
+            "subscriptions": 4,
+            "channels": 4,
+            "messages": 4990,
+            "bytes": 5214423,
+            "state": "STANDALONE",
+            "clients": 100
+        },
+        "server": {
+            "id": "kvQEpbFak88fHAnWCZxZDL"
+        }
+    },
+    "elastic_agent": {
+        "id": "df58bff0-5714-11eb-b094-915beebb3c66",
+        "snapshot": true,
+        "version": "7.11.0"
+    }
+}
 ```
 
 **Exported fields**
@@ -99,7 +172,80 @@ metrics about channels from a STAN instance.
 An example event for `channels` looks as following:
 
 ```$json
-{}
+{
+    "@timestamp": "2021-01-15T12:23:32.592Z",
+    "service": {
+        "address": "http://elastic-package-service_stan_1:8222/streaming/channelsz?subs=1",
+        "type": "stan"
+    },
+    "event": {
+        "duration": 8406132380,
+        "dataset": "stan.channels",
+        "module": "stan"
+    },
+    "metricset": {
+        "name": "channels",
+        "period": 60000
+    },
+    "stan": {
+        "cluster": {
+            "id": "test-cluster"
+        },
+        "server": {
+            "id": "kvQEpbFak88fHAnWCZxZDL"
+        },
+        "channels": {
+            "depth": 3966,
+            "name": "bar",
+            "messages": 4990,
+            "bytes": 5214423,
+            "first_seq": 1,
+            "last_seq": 4990
+        }
+    },
+    "elastic_agent": {
+        "version": "7.11.0",
+        "id": "df58bff0-5714-11eb-b094-915beebb3c66",
+        "snapshot": true
+    },
+    "ecs": {
+        "version": "1.7.0"
+    },
+    "data_stream": {
+        "type": "metrics",
+        "dataset": "stan.channels",
+        "namespace": "default"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "os": {
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core",
+            "platform": "centos",
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux"
+        },
+        "id": "88c3c3ec3afebed7631b44a69754359e",
+        "name": "ec072aa02d8b",
+        "containerized": true,
+        "ip": [
+            "172.19.0.5"
+        ],
+        "mac": [
+            "02:42:ac:13:00:05"
+        ],
+        "hostname": "ec072aa02d8b"
+    },
+    "agent": {
+        "version": "7.11.0",
+        "hostname": "ec072aa02d8b",
+        "ephemeral_id": "8d73aff0-201b-4260-9e89-cd519348de03",
+        "id": "67b9c377-7d0c-4a69-9351-2befe6386fbd",
+        "name": "ec072aa02d8b",
+        "type": "metricbeat"
+    }
+}
 ```
 
 **Exported fields**
@@ -131,7 +277,80 @@ metrics about subscriptions from a STAN instance.
 An example event for `subscriptions` looks as following:
 
 ```$json
-{}
+{
+    "@timestamp": "2021-01-15T12:25:32.509Z",
+    "ecs": {
+        "version": "1.7.0"
+    },
+    "agent": {
+        "ephemeral_id": "8d73aff0-201b-4260-9e89-cd519348de03",
+        "id": "67b9c377-7d0c-4a69-9351-2befe6386fbd",
+        "name": "ec072aa02d8b",
+        "type": "metricbeat",
+        "version": "7.11.0",
+        "hostname": "ec072aa02d8b"
+    },
+    "metricset": {
+        "name": "subscriptions",
+        "period": 60000
+    },
+    "data_stream": {
+        "type": "metrics",
+        "dataset": "stan.subscriptions",
+        "namespace": "default"
+    },
+    "elastic_agent": {
+        "version": "7.11.0",
+        "id": "df58bff0-5714-11eb-b094-915beebb3c66",
+        "snapshot": true
+    },
+    "host": {
+        "architecture": "x86_64",
+        "name": "ec072aa02d8b",
+        "os": {
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core",
+            "platform": "centos",
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux"
+        },
+        "id": "88c3c3ec3afebed7631b44a69754359e",
+        "containerized": true,
+        "ip": [
+            "172.19.0.5"
+        ],
+        "mac": [
+            "02:42:ac:13:00:05"
+        ],
+        "hostname": "ec072aa02d8b"
+    },
+    "event": {
+        "dataset": "stan.subscriptions",
+        "module": "stan",
+        "duration": 935334325
+    },
+    "service": {
+        "address": "http://elastic-package-service_stan_1:8222/streaming/channelsz?subs=1",
+        "type": "stan"
+    },
+    "stan": {
+        "subscriptions": {
+            "stalled": true,
+            "pending": 1024,
+            "id": "benchmark-sub-1",
+            "channel": "bar",
+            "last_sent": 1024,
+            "offline": true
+        },
+        "server": {
+            "id": "kvQEpbFak88fHAnWCZxZDL"
+        },
+        "cluster": {
+            "id": "test-cluster"
+        }
+    }
+}
 ```
 
 **Exported fields**

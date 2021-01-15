@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing nats log logs
+description: Pipeline for parsing stan log logs
 processors:
 - set:
     field: event.ingested
@@ -7,59 +7,59 @@ processors:
 - grok:
     field: message
     patterns:
-    - \[%{POSINT:process.pid}\]( %{NATSTIME:nats.log.timestamp})? \[%{NATSLOGLEVEL:log.level}\]
-      %{GREEDYDATA:nats.log.info}
+    - \[%{POSINT:process.pid}\]( %{STANTIME:stan.log.timestamp})? \[%{STANLOGLEVEL:log.level}\]
+      %{GREEDYDATA:stan.log.info}
     pattern_definitions:
-      NATSTIME: '%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}'
-      NATSLOGLEVEL: (INF|DBG|WRN|ERR|FTL|TRC)
+      STANTIME: '%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}'
+      STANLOGLEVEL: (INF|DBG|WRN|ERR|FTL|TRC)
     ignore_missing: true
 - grok:
-    field: nats.log.info
+    field: stan.log.info
     patterns:
-    - '%{IPV4:client.ip}:%{POSINT:client.port} - cid:%{POSINT:nats.log.client.id}
-      - %{GREEDYDATA:nats.log.msg.info}'
-    - '%{GREEDYDATA:nats.log.msg.data}'
+    - '%{IPV4:client.ip}:%{POSINT:client.port} - cid:%{POSINT:stan.log.client.id}
+      - %{GREEDYDATA:stan.log.msg.info}'
+    - '%{GREEDYDATA:stan.log.msg.data}'
     ignore_missing: true
 - grok:
-    field: nats.log.msg.info
+    field: stan.log.msg.info
     patterns:
-    - '%{NATSDIRECTION:network.direction} %{NATSPAYLOAD:nats.log.msg.type}: \[%{GREEDYDATA:nats.log.msg.payload}\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSNOINFO:nats.log.msg.type}\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSUNSUB:nats.log.msg.type}\s+%{POSINT:nats.log.msg.sid}(\s+%{POSINT:nats.log.msg.max_messages})?\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSPUB:nats.log.msg.type}\s+%{NOTSPACE:nats.log.msg.subject}(\s+%{NOTSPACE:nats.log.msg.reply_to})?\s+%{POSINT:nats.log.msg.bytes}\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSSUB:nats.log.msg.type}\s+%{NOTSPACE:nats.log.msg.subject}(\s+%{NOTSPACE:nats.log.msg.queue_group})?\s+%{POSINT:nats.log.msg.sid}\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSMSG:nats.log.msg.type}\s+%{NOTSPACE:nats.log.msg.subject}\s+%{POSINT:nats.log.msg.sid}(\s+%{NOTSPACE:nats.log.msg.reply_to})?\s+%{POSINT:nats.log.msg.bytes}\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSCONNECTION:nats.log.msg.type}\s+%{GREEDYDATA:nats.log.msg.data}\]'
-    - '%{NATSDIRECTION:network.direction} \[%{NATSERROR:nats.log.msg.type}\s+%{GREEDYDATA:nats.log.msg.error\]'
-    - '%{GREEDYDATA:nats.log.msg.data}'
+    - '%{STANDIRECTION:network.direction} %{STANPAYLOAD:stan.log.msg.type}: \[%{GREEDYDATA:stan.log.msg.payload}\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANNOINFO:stan.log.msg.type}\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANUNSUB:stan.log.msg.type}\s+%{POSINT:stan.log.msg.sid}(\s+%{POSINT:stan.log.msg.max_messages})?\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANPUB:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}(\s+%{NOTSPACE:stan.log.msg.reply_to})?\s+%{POSINT:stan.log.msg.bytes}\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANSUB:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}(\s+%{NOTSPACE:stan.log.msg.queue_group})?\s+%{POSINT:stan.log.msg.sid}\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANMSG:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}\s+%{POSINT:stan.log.msg.sid}(\s+%{NOTSPACE:stan.log.msg.reply_to})?\s+%{POSINT:stan.log.msg.bytes}\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANCONNECTION:stan.log.msg.type}\s+%{GREEDYDATA:stan.log.msg.data}\]'
+    - '%{STANDIRECTION:network.direction} \[%{STANERROR:stan.log.msg.type}\s+%{GREEDYDATA:stan.log.msg.error\]'
+    - '%{GREEDYDATA:stan.log.msg.data}'
     pattern_definitions:
-      NATSDIRECTION: (<<-|->>)
-      NATSMSG: MSG
-      NATSPUB: PUB
-      NATSSUB: SUB
-      NATSUNSUB: UNSUB
-      NATSPAYLOAD: MSG_PAYLOAD
-      NATSERROR: -ERROR
-      NATSPING: PING
-      NATSPONG: PONG
-      NATSOK: OK
-      NATSCONNECT: CONNECT
-      NATSINFO: INFO
-      NATSCONNECTION: (?:%{NATSCONNECT}|%{NATSINFO})
-      NATSNOINFO: (?:%{NATSPING}|%{NATSPONG}|%{NATSOK})
+      STANDIRECTION: (<<-|->>)
+      STANMSG: MSG
+      STANPUB: PUB
+      STANSUB: SUB
+      STANUNSUB: UNSUB
+      STANPAYLOAD: MSG_PAYLOAD
+      STANERROR: -ERROR
+      STANPING: PING
+      STANPONG: PONG
+      STANOK: OK
+      STANCONNECT: CONNECT
+      STANINFO: INFO
+      STANCONNECTION: (?:%{STANCONNECT}|%{STANINFO})
+      STANNOINFO: (?:%{STANPING}|%{STANPONG}|%{STANOK})
     ignore_missing: true
 - remove:
-    field: nats.log.info
+    field: stan.log.info
 - remove:
-    field: nats.log.msg.info
+    field: stan.log.msg.info
     ignore_missing: true
 - remove:
-    field: nats.log.msg.payload
+    field: stan.log.msg.payload
     ignore_missing: true
 - remove:
     field: message
 - rename:
-    field: nats.log.msg.data
+    field: stan.log.msg.data
     target_field: message
     ignore_missing: true
 - script:
@@ -94,28 +94,28 @@ processors:
 - script:
     lang: painless
     source: |-
-      if (ctx.nats.log.msg.type == params.msg) {
-                ctx.nats.log.msg.type = params.message;
-              } else if (ctx.nats.log.msg.type == params.pub) {
-                ctx.nats.log.msg.type = params.publish;
-              } else if (ctx.nats.log.msg.type == params.sub) {
-                ctx.nats.log.msg.type = params.subscribe;
-              } else if (ctx.nats.log.msg.type == params.unsub) {
-                ctx.nats.log.msg.type = params.unsubscribe;
-              } else if (ctx.nats.log.msg.type == params.msg_payload) {
-                ctx.nats.log.msg.type = params.payload;
-              } else if (ctx.nats.log.msg.type == params.err) {
-                ctx.nats.log.msg.type = params.error;
-              } else if (ctx.nats.log.msg.type == params.pi) {
-                ctx.nats.log.msg.type = params.ping;
-              } else if (ctx.nats.log.msg.type == params.po) {
-                ctx.nats.log.msg.type = params.pong;
-              } else if (ctx.nats.log.msg.type == params.ok) {
-                ctx.nats.log.msg.type = params.acknowledge;
-              } else if (ctx.nats.log.msg.type == params.connect) {
-                ctx.nats.log.msg.type = params.connection;
-              } else if (ctx.nats.log.msg.type == params.info) {
-                ctx.nats.log.msg.type = params.information;
+      if (ctx.stan.log.msg.type == params.msg) {
+                ctx.stan.log.msg.type = params.message;
+              } else if (ctx.stan.log.msg.type == params.pub) {
+                ctx.stan.log.msg.type = params.publish;
+              } else if (ctx.stan.log.msg.type == params.sub) {
+                ctx.stan.log.msg.type = params.subscribe;
+              } else if (ctx.stan.log.msg.type == params.unsub) {
+                ctx.stan.log.msg.type = params.unsubscribe;
+              } else if (ctx.stan.log.msg.type == params.msg_payload) {
+                ctx.stan.log.msg.type = params.payload;
+              } else if (ctx.stan.log.msg.type == params.err) {
+                ctx.stan.log.msg.type = params.error;
+              } else if (ctx.stan.log.msg.type == params.pi) {
+                ctx.stan.log.msg.type = params.ping;
+              } else if (ctx.stan.log.msg.type == params.po) {
+                ctx.stan.log.msg.type = params.pong;
+              } else if (ctx.stan.log.msg.type == params.ok) {
+                ctx.stan.log.msg.type = params.acknowledge;
+              } else if (ctx.stan.log.msg.type == params.connect) {
+                ctx.stan.log.msg.type = params.connection;
+              } else if (ctx.stan.log.msg.type == params.info) {
+                ctx.stan.log.msg.type = params.information;
               }
     params:
       msg: MSG
@@ -140,7 +140,7 @@ processors:
       connection: connection
       info: INFO
       information: information
-    if: ctx.nats.log.msg?.type != null
+    if: ctx.stan.log.msg?.type != null
 - script:
     lang: painless
     source: |-
@@ -159,12 +159,12 @@ processors:
     field: '@timestamp'
     target_field: event.created
 - date:
-    field: nats.log.timestamp
+    field: stan.log.timestamp
     target_field: '@timestamp'
     formats:
     - yyyy/MM/dd HH:mm:ss.SSSSSS
 - remove:
-    field: nats.log.timestamp
+    field: stan.log.timestamp
 - set:
     field: event.kind
     value: event
@@ -189,7 +189,7 @@ processors:
     type: long
 - convert:
     ignore_missing: true
-    field: nats.log.msg.bytes
+    field: stan.log.msg.bytes
     type: long
 on_failure:
 - set:
