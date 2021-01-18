@@ -6,7 +6,7 @@ The integration collects metrics from [STAN monitoring server APIs](https://gith
 
 ## Compatibility
 
-The STAN package is tested with Stan 0.15.1
+The STAN package is tested with Stan 0.15.1.
 
 ## Logs
 
