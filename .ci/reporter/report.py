@@ -23,18 +23,26 @@ Integrations Test Reporter
 This is a script which produces reports on various aspects
 of package testing.
 """
-import os
-import logging
 import argparse
-import jinja2
-import itertools
+import logging
+import os
 from collections import namedtuple
+from email.message import EmailMessage
+from smtplib import SMTP
+
+import jinja2
 from elasticsearch import Elasticsearch
 from github import Github
 
-def setup_logging(opts):
+
+def setup_logging(verbose_flag: bool):
     """
     Setup the logger
+
+    Parameters
+    ----------
+    verbose_flag : bool
+        Set to true to enable verbose logging
 
     Note
     ----
@@ -48,7 +56,7 @@ def setup_logging(opts):
     str
         The log level which was set
     """
-    if opts.verbose:
+    if verbose_flag:
         log_level = 'DEBUG'
     else:
         log_level = 'INFO'
@@ -59,7 +67,8 @@ def setup_logging(opts):
             )
     return log_level
 
-def gather_args(strict_mode=True):
+
+def gather_args():
     """
     Gather the command line arguments
 
@@ -69,49 +78,107 @@ def gather_args(strict_mode=True):
         An object which contains the parsed args. Arguments
         are accessible as object attributes.
     """
-    parser = argparse.ArgumentParser(description='Generate Integrations test report.')
+    parser = argparse.ArgumentParser(
+        description='Generate Integrations test report.'
+        )
     parser.add_argument(
             "-v",
             "--verbose",
-            help="Run with increased logging. Useful for development and debugging.",
+            help="Run with increased logging. "
+            "Useful for development and debugging.",
             action="store_true"
             )
     parser.add_argument(
             "--timespan",
-            help="The length of time to search back through for tests to be included "
-            "in this report. Pass with a suffix of h (hours), d (days), m (months), or "
-            "y (years). Ex: `--history=10D` to gather history for the previous 10 days.",
+            help="The length of time to search back through for tests to be "
+            "included in this report. Pass with a suffix of h (hours), "
+            "d (days), m (months), or y (years). Ex: `--history=10D` to "
+            "gather history for the previous 10 days.",
             default="7d"
             )
-    parser.add_argument(
+
+    es_group = parser.add_argument_group("Elasticsearch")
+
+    es_group.add_argument(
             "--es-host",
-            help="The URL of the Elasticsearch cluster which contains test results to be parsed. "
-            "Can also be set with ES_HOST in the environment",
+            help="The URL of the Elasticsearch cluster which contains "
+            "test results to be parsed. Can also be set with ES_HOST "
+            "in the environment",
             default=os.environ.get("ES_HOST"),
             required="ES_HOST" not in os.environ
             )
-    parser.add_argument(
+    es_group.add_argument(
             "--es-user",
-            help="The username to use to authenticate to the Elasticsearch cluster which contains "
-            "test results to be parsed. Can also be set with ES_USER in the environment",
+            help="The username to use to authenticate to the Elasticsearch "
+            "cluster which contains test results to be parsed. Can also be "
+            "set with ES_USER in the environment",
             default=os.environ.get("ES_USER"),
             required="ES_USER" not in os.environ
             )
-    parser.add_argument(
+    es_group.add_argument(
             "--es-pass",
-            help="The username to use to authenticate to the Elasticsearch cluster which contains "
-            "test results to be parsed. Can also be set with ES_USER in the environment",
+            help="The username to use to authenticate to the Elasticsearch "
+            "cluster which contains test results to be parsed. Can also be "
+            "set with ES_USER in the environment",
             default=os.environ.get("ES_PASS"),
             required="ES_PASS" not in os.environ
             )
     parser.add_argument(
             "--gh-token",
-            help="GitHub token which has read access the elastic/integrations repo",
+            help="GitHub token which has read access the elastic/integrations "
+            "repo",
             required="GH_TOKEN" not in os.environ
             )
+
+    smtp_group = parser.add_argument_group(
+        "Email",
+        "Configuration for SMTP mailer"
+        )
+
+    smtp_group.add_argument(
+            "--smtp-recipient",
+            help="SMTP recipient. (Can be passed multiple times.)",
+            required="SMTP_RECIP" not in os.environ,
+            action="append"
+    )
+    smtp_group.add_argument(
+            "--smtp-provider",
+            help="SMTP provider to use",
+            choices=["gmail"],
+            required=False
+    )
+    smtp_group.add_argument(
+            "--smtp-user",
+            help="SMTP username to authenticate with",
+            required="SMTP_USER" not in os.environ
+    )
+    smtp_group.add_argument(
+            "--smtp-pass",
+            help="SMTP password to authenticate with",
+            required="SMTP_PASS" not in os.environ
+    )
+    parser.add_argument(
+            "--include-untested",
+            help="Include packages which are present in the repo but for "
+                 "which no tests have been found. (Default: False)",
+            action="store_true"
+    )
+    parser.add_argument(
+            "--limit",
+            help="Limit the number of tests displayed in reports",
+            default=os.environ.get("TEST_LIMIT", 10),
+            required=False
+    )
+    parser.add_argument(
+            "--output",
+            help="Where should we send the generated HTML",
+            choices=["email", "stdout"],
+            default="email"
+    )
     return parser.parse_args()
 
-def es_conn(hostname, username, password):
+
+def es_conn(hostname: str, username: str, password: str):
     """
     Connection to the Elasticsearch cluster where the test data is stored
 
@@ -134,7 +201,8 @@ def es_conn(hostname, username, password):
     """
     return Elasticsearch([hostname], http_auth=(username, password))
 
-def gh_conn(token):
+
+def gh_conn(token: str):
     """
     Return a Github connection that is initialized and ready
 
@@ -151,7 +219,7 @@ def gh_conn(token):
     return Github(token)
 
 
-def gather_docs(conn, timespan):
+def gather_docs(conn, timespan: str):
     """
     Take a connected Elasticsearch instance and direct it to return documents
     going back from the present time extending backward to the given timespan.
@@ -192,11 +260,14 @@ def gather_docs(conn, timespan):
         }
 
     index_to_query = "jenkins-builds*"
+    logging.debug(f"Querying Elasticsearch index [{index_to_query}] with query: {query_body}")  # noqa E205
 
-    return conn.search(body=query_body, index=index_to_query)
+    search_result = conn.search(body=query_body, index=index_to_query)
+    logging.debug(f"Elasticsearch query returned: {search_result}")
+    return search_result
 
 
-def gather_gh_packages(gh, branch='master'):
+def gather_gh_packages(gh, branch='master') -> list:
     """
     Gather a list of packages in the elastic/integrations repo
 
@@ -210,18 +281,22 @@ def gather_gh_packages(gh, branch='master'):
 
     Returns
     -------
-    An unordered list of packages available in repo
+    list
+        An unordered list of packages available in repo
     """
     packages = []
     repo = gh.get_repo("elastic/integrations")
     contents = repo.get_contents("packages", ref=branch)
+
+    logging.debug(f"GitHub query to [{repo}] returned the following contents: {contents}")  # noqa E205
+
     for package in contents:
         package_name = package.path.split("/").pop()
         packages.append(package_name)
     return packages
 
 
-def extract_tests(document):
+def extract_tests(document: dict) -> list:
     """
     Given a document containing tests that has been returned
     from Elasticsearch, extract the set of tests it contains.
@@ -243,14 +318,28 @@ def extract_tests(document):
     """
     tests = []
     Test = namedtuple("Test", [
-        "timestamp",  # Time of test
-        "package",  # Package being tested
-        "type",  # Type of test: pipeline or system
-        "result",  # Test result: pass, fail, or error
-        "version",  # Stack version used in test
-        "integration_version",  # Integration version used in test (only applicable to system tests)
-        "component"  # Component for the package. TODO this might not be the right language?
-        ])
+        # Time of test
+        "timestamp",
+
+        # Package being tested
+        "package",
+
+        # Type of test: pipeline or system
+        "type",
+
+        # Test result: pass, fail, or error
+        "result",
+
+        # Stack version used in test
+        "version",
+
+        # Integration version used in test(only applicable to system tests)
+        "integration_version",
+
+        # Component for the package. TODO this might not be the right language?
+        "component"
+        ]
+        )
 
     for test in document['_source']['test']:
         package, component, test_type = classify(test["id"])
@@ -259,16 +348,16 @@ def extract_tests(document):
                 package,
                 test_type,
                 test["status"],
-                -1, # `version` is a TODO
-                -1, # `integration_version` is a TODO
+                -1,  # `version` is a TODO
+                -1,  # `integration_version` is a TODO
                 component
                 )
-        logging.debug(composed_test)
+        logging.debug(f"Composed test: {composed_test}")
         tests.append(composed_test)
     return tests
 
 
-def classify(name):
+def classify(name: str) -> tuple:
     """
     Take a test name and determine which package it references
     and the type of test it is.
@@ -288,12 +377,13 @@ def classify(name):
 
     Example
     -------
-    >>> classify('io.jenkins.blueocean.service.embedded.rest.junit.BlueJUnitTestResult:aws.cloudtrail%3Ajunit%2Faws%2Fcloudtrail%2FCheck_integrations___aws___aws__check___pipeline_test__test_console_login_json_log')
+    >>> classify('io.jenkins.blueocean.service.embedded.rest.junit.BlueJUnitTestResult:aws.cloudtrail%3Ajunit%2Faws%2Fcloudtrail%2FCheck_integrations___aws___aws__check___pipeline_test__test_console_login_json_log') # noqa E205
     ('aws', 'cloudtrail', 'pipeline_test')
     """
     package, component = name.split("%2F")[1:3]
     test_type = name.split("___")[-1].split("__", maxsplit=1)[0].split('_')[0]
     return (package, component, test_type)
+
 
 def validate_filter(func):
     """
@@ -302,47 +392,71 @@ def validate_filter(func):
     Raises
     ------
     Exception
-        If the passed in filter was not valid, a generalized Exception is raised
+        If the passed in filter was not valid, a generalized Exception is
+        raised
     """
-    # TODO test coverage
     def wrapper(*args, **kwargs):
-        if kwargs.get('type_filter') and kwargs['type_filter'] not in ('system', 'pipeline'):
-            raise Exception("Valid options for system_filter are: `system`, `pipeline`. "
-                    "Function received: `{}`".format(kwargs['type_filter'])
+        if kwargs.get('type_filter') and kwargs['type_filter'] not in ('system', 'pipeline'):  # noqa E205
+            raise Exception(
+                    "Valid options for system_filter are: `system`, `pipeline`"
+                    f" Function received: {kwargs['type_filter']}"
                             )
         func(*args, **kwargs)
         return func(*args, **kwargs)
     return wrapper
 
-def dict_limit(data, limit, high_pass):
+
+def dict_limit(data: dict, limit: int, high_pass: bool) -> dict:
     """
     Helper function to sort a dictionary by value and then select only
     up to a certain number of the sorted entries.
 
     Parameters
     ----------
+    data : dict
+        The dictionary to process
     limit : int
-        If set, limit entries to the provided value
+        If set, limit entries to the provided value. If `0` is passed, an empty
+        dictionary is returned. If `-1` is passed, the original dictionary is
+        returned unmodified.
 
     high_pass : bool
         If limit is set, this argument determines whether to return the lowest
         set of values or the highest. When False, only the lowest values up to
-        to the number requested by `limit` will be returned. When True, only the
-        highest values up to the numbe requested by `limit` will be returned.
+        to the number requested by `limit` will be returned. When True, only
+        the highest values up to the numbe requested by `limit` will be
+        returned.
 
     Returns
     -------
     dict
         A dictionary which contains the first N entries, as sorted by value
     """
-    sort_list = sorted(data.items(), key=lambda x: x[1], reverse=high_pass)[:limit]
+    if limit == 0:
+        return {}
+    elif limit < 0:
+        return data
+    sort_list = sorted(
+        data.items(),
+        key=lambda x: x[1],
+        reverse=high_pass
+        )[:limit]
+
     filtered_dict = {}
     for pair in sort_list:
         filtered_dict[pair[0]] = pair[1]
     return filtered_dict
 
+
 @validate_filter
-def test_frequency(tests, packages, type_filter=None, limit=10, high_pass=False):
+def test_frequency(
+    tests: list,
+    packages: list,
+    type_filter=None,
+    limit=10,
+    high_pass=False,
+    include_untested=False
+) -> dict:
     """
     Determine the frequency of tests
 
@@ -364,8 +478,14 @@ def test_frequency(tests, packages, type_filter=None, limit=10, high_pass=False)
     high_pass : bool
         If limit is set, this argument determines whether to return the lowest
         set of values or the highest. When False, only the lowest values up to
-        to the number requested by `limit` will be returned. When True, only the
-        highest values up to the numbe requested by `limit` will be returned.
+        to the number requested by `limit` will be returned. When True, only
+        the highest values up to the numbe requested by `limit` will be
+        returned.
+
+    include_untested : bool
+        If this flag is set to True, then packages for which no tests have been
+        detected will be included in the final report. If it is False, then
+        only tested packages will be included.
 
     Returns
     -------
@@ -392,13 +512,22 @@ def test_frequency(tests, packages, type_filter=None, limit=10, high_pass=False)
         else:
             frequency_map[test.package] += 1
 
-    if limit:
-        frequency_map = dict_limit(frequency_map, limit, high_pass)
+    if not include_untested:
+        frequency_map = {k: v for (k, v) in frequency_map.items() if v > 0}
+
+    frequency_map = dict_limit(frequency_map, limit, high_pass)
 
     return frequency_map
 
+
 @validate_filter
-def test_status(tests, type_filter=None):
+def test_status(
+        tests: list,
+        type_filter=None,
+        collate_by=None,
+        limit=10,
+        high_pass=False,
+        include_untested=False) -> dict:  # noqa E205
     """
     Bucket tests by their status
 
@@ -410,18 +539,68 @@ def test_status(tests, type_filter=None):
     str : type_filter
         If present, this calculates test frequency by type. Argument
         should be one of ['pipeline', 'system']. Default: None
+
+    list : collate_by
+        If set, this configures the value for a given key to simply
+        contain the number of tests with the given condition(s). All
+        items in the list will be included.
+
+    limit : int
+        Limit the number of entries returned. If collation is not set,
+        this argument does nothing.
+
+    high_pass : bool
+        If limit is set, this argument determines whether to return the lowest
+        set of values or the highest. When False, only the lowest values up to
+        to the number requested by `limit` will be returned. When True, only
+        the highest values up to the numbe requested by `limit` will be
+        returned. If collation is not set, this argument does nothing.
+
+    include_untested : bool
+        If this flag is set to True, then packages for which no tests have been
+        detected will be included in the final report. If it is False, then
+        only tested packages will be included. If collation is not set, this argument
+        does nothing.
+
+    Returns
+    -------
+    dict
+        A dictionary where tests are bucketed by their status
     """
     status_map = {}
 
     for test in tests:
         if test.package not in status_map:
-            status_map[test.package] = {'PASSED': 0, 'FAILED': 0, 'ERROR': 0, 'UNKNOWN': 0}
+            if collate_by:
+                status_map[test.package] = 0
+            else:
+                status_map[test.package] = {
+                    'PASSED': 0,
+                    'FAILED': 0,
+                    'ERROR': 0,
+                    'UNKNOWN': 0
+                    }
         if type_filter:
             if test.type == type_filter:
-                status_map[test.package][test.result] += 1
+                if collate_by:
+                    if test.result.lower() in [c.lower() for c in collate_by]:
+                        status_map[test.package] += 1
+                else:
+                    status_map[test.package][test.result] += 1
         else:
-            status_map[test.package][test.result] += 1
+            if collate_by:
+                if test.result.lower() in [c.lower() for c in collate_by]:
+                    status_map[test.package] += 1
+            else:
+                status_map[test.package][test.result] += 1
+
+    if collate_by:
+        if not include_untested:
+            status_map = {k: v for (k, v) in status_map.items() if v > 0}
+        status_map = dict_limit(status_map, limit, high_pass)
+
     return status_map
+
 
 def jinja_tmpl():
     """
@@ -438,9 +617,27 @@ def jinja_tmpl():
             )
     return env.get_template('layout.html')
 
-def render(template, freq, freq_system, freq_pipeline, freq_limit):
+
+def render(template, freq, freq_system, freq_pipeline, freq_limit) -> str:
     """
     Take a template and its data and render it
+
+    Parameters
+    ----------
+    template : Jinja2.Template
+        Jina template to render
+
+    freq : dict
+        A dictionary containing a general frequency analysis
+
+    freq_system : dict
+        A diciontary containing a frequency analysis filtered by system tests
+
+    freq_pipeline : dict
+        A dictionary containing a frequency analysis filtered by pipeline tests
+
+    freq_limit : int
+        The number of individual entries that each report should be limited to
 
     Returns
     -------
@@ -454,17 +651,82 @@ def render(template, freq, freq_system, freq_pipeline, freq_limit):
             frequency_limit=freq_limit
             )
 
+
+def send_html_email(
+        subject: str,
+        sender: str,
+        to: str,
+        content: str,
+        smtp_user: str,
+        smtp_pass: str,
+        provider='gmail') -> None:
+    """
+    Send HTML email
+
+    Parameters
+    ----------
+    subject : str
+        Email subject
+
+    sender : str
+        Email sender
+
+    to : str
+        Email recepient
+
+    content : str
+        HTML content
+
+    smtp_user : str
+        Username to authenticate to SMTP server with
+
+    smtp_pass : str
+        Password to authenticate to SMTP server with
+
+    provider : str
+        Email provider. Supported providers: ['gmail']
+
+    Raises
+    ------
+    Exception
+        If the `provider` argument contains an unsupported provider, an exception is raised.
+    """
+    # construct email
+    email = EmailMessage()
+    email['Subject'] = subject
+    email['From'] = sender
+    email['To'] = ", ".join(to)
+    email.set_content(content, subtype='html')
+
+    # We just leave room in the future for other providers, as our infra needs
+    # may shift underneath us
+    if provider.lower() == 'gmail':
+        logging.debug(f"Sending email to {to} from {sender} with subject: {subject}")  # noqa E205
+        with SMTP('smtp.gmail.com', 587) as s:
+            s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.send_message(email)
+            s.quit()
+    else:
+        raise Exception("Must pass in supported email provider: "
+                        f"{provider} is not supported")
+
+
 if __name__ == "__main__":
     # Pre-flight setup of argument parsing and logging
     cli_args = gather_args()
-    setup_logging(cli_args)
+
+    setup_logging(cli_args.verbose)
+
     # Begin main operations
 
     # Fetch tests from the Elasticsearch stats cluster
+    logging.info("✨ Fetching test history from Elasticsearch")
     es_ = es_conn(cli_args.es_host, cli_args.es_user, cli_args.es_pass)
     es_response = gather_docs(es_, cli_args.timespan)
 
     # Fetch list of packages from GitHub
+    logging.info("✨ Fetching list of packages")
     gh_ = gh_conn(cli_args.gh_token)
     gh_response = gather_gh_packages(gh_)
 
@@ -472,10 +734,55 @@ if __name__ == "__main__":
     for doc in es_response['hits']['hits']:
         es_tests.extend(extract_tests(doc))
 
-    freq = test_frequency(es_tests, gh_response, limit=100)
-    freq_system = test_frequency(es_tests, gh_response, type_filter='system', limit=100)
-    freq_pipeline = test_frequency(es_tests, gh_response, type_filter='pipeline', limit=100)
+    logging.info("🤔 Analyzing test frequency [overall]")
+    freq = test_frequency(
+        es_tests,
+        gh_response,
+        limit=cli_args.limit,
+        include_untested=cli_args.include_untested
+        )
+
+    logging.info("🤔 Analyzing test frequency [system]")
+    freq_system = test_frequency(
+        es_tests,
+        gh_response,
+        type_filter='system',
+        limit=cli_args.limit,
+        include_untested=cli_args.include_untested
+        )
+
+    logging.info("🤔 Analyzing test frequency [pipeline]")
+    freq_pipeline = test_frequency(
+        es_tests,
+        gh_response,
+        type_filter='pipeline',
+        limit=cli_args.limit,
+        include_untested=cli_args.include_untested
+        )
+
+    logging.info("🤔 Analyzing test status")
     status = test_status(es_tests)
 
     tmpl = jinja_tmpl()
-    print(render(tmpl, freq, freq_system, freq_pipeline, 10))  # FIXME Fine a better way to grab the limit. Probably CLI arg.
+
+    if cli_args.output == "stdout":
+        print(render(tmpl, freq, freq_system, freq_pipeline, cli_args.limit))
+    elif cli_args.output == "email":
+        html_out = render(
+            tmpl,
+            freq,
+            freq_system,
+            freq_pipeline,
+            cli_args.limit
+            )
+        logging.info("📧 Sending email report")
+        send_html_email(
+            "Integrations test report",
+            cli_args.smtp_user,
+            cli_args.smtp_recipient,
+            html_out,
+            cli_args.smtp_user,
+            cli_args.smtp_pass
+        )
+
+    logging.info("🏁 Done!")
