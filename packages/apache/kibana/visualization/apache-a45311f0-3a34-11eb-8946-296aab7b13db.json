@@ -4,18 +4,28 @@
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
-                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
                     "query": ""
                 }
             }
         },
-        "title": "Total connections [Metrics Apache]",
+        "savedSearchRefName": "search_0",
+        "title": "Bytes per sec [Metrics Apache]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
             "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {
+                        "customLabel": "Bytes per sec",
+                        "field": "apache.status.bytes_per_sec"
+                    },
+                    "schema": "metric",
+                    "type": "avg"
+                },
                 {
                     "enabled": true,
                     "id": "2",
@@ -23,7 +33,7 @@
                         "drop_partials": false,
                         "extended_bounds": {},
                         "field": "@timestamp",
-                        "interval": "30s",
+                        "interval": "auto",
                         "min_doc_count": 1,
                         "scaleMetricValues": false,
                         "timeRange": {
@@ -34,16 +44,6 @@
                     },
                     "schema": "segment",
                     "type": "date_histogram"
-                },
-                {
-                    "enabled": true,
-                    "id": "4",
-                    "params": {
-                        "customLabel": "Total",
-                        "field": "apache.status.connections.total"
-                    },
-                    "schema": "metric",
-                    "type": "max"
                 }
             ],
             "params": {
@@ -68,16 +68,22 @@
                         "type": "category"
                     }
                 ],
+                "defaultYExtents": false,
+                "drawLinesBetweenPoints": true,
                 "grid": {
                     "categoryLines": false
                 },
+                "interpolate": "linear",
                 "labels": {},
                 "legendPosition": "right",
+                "radiusRatio": 9,
+                "row": true,
+                "scale": "linear",
                 "seriesParams": [
                     {
                         "data": {
-                            "id": "4",
-                            "label": "Total"
+                            "id": "1",
+                            "label": "Bytes per sec"
                         },
                         "drawLinesBetweenPoints": true,
                         "interpolate": "linear",
@@ -89,6 +95,10 @@
                         "valueAxis": "ValueAxis-1"
                     }
                 ],
+                "setYExtents": false,
+                "shareYAxis": true,
+                "showCircles": true,
+                "smoothLines": false,
                 "thresholdLine": {
                     "color": "#E7664C",
                     "show": false,
@@ -116,25 +126,26 @@
                         "show": true,
                         "style": {},
                         "title": {
-                            "text": "Connections"
+                            "text": "Bytes per sec"
                         },
                         "type": "value"
                     }
-                ]
+                ],
+                "yAxis": {}
             },
-            "title": "Total connections [Metrics Apache]",
+            "title": "Bytes per sec [Metrics Apache]",
             "type": "line"
         }
     },
-    "id": "apache-7d68f730-3a39-11eb-8946-296aab7b13db",
+    "id": "apache-a45311f0-3a34-11eb-8946-296aab7b13db",
     "migrationVersion": {
         "visualization": "7.9.3"
     },
     "references": [
         {
-            "id": "metrics-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
-            "type": "index-pattern"
+            "id": "apache-HTTPD",
+            "name": "search_0",
+            "type": "search"
         }
     ],
     "type": "visualization"
