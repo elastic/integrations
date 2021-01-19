@@ -138,24 +138,23 @@ def gather_args():
     smtp_group.add_argument(
             "--smtp-recipient",
             help="SMTP recipient. (Can be passed multiple times.)",
-            required="SMTP_RECIP" not in os.environ,
+            default=os.environ.get("SMTP_RECIP"),
             action="append"
     )
     smtp_group.add_argument(
             "--smtp-provider",
             help="SMTP provider to use",
             choices=["gmail"],
-            required=False
     )
     smtp_group.add_argument(
             "--smtp-user",
             help="SMTP username to authenticate with",
-            required="SMTP_USER" not in os.environ
+            default=os.environ.get("SMTP_USER"),
     )
     smtp_group.add_argument(
             "--smtp-pass",
             help="SMTP password to authenticate with",
-            required="SMTP_PASS" not in os.environ
+            default=os.environ.get("SMTP_PASS"),
     )
     parser.add_argument(
             "--include-untested",
@@ -411,10 +410,16 @@ def dict_limit(data: dict, limit: int, high_pass: bool) -> dict:
     Helper function to sort a dictionary by value and then select only
     up to a certain number of the sorted entries.
 
+    Note
+    ----
+    This is not a general-purpose function. It has very specific requirements,
+    such as values which can be sorted via the __gt__ magic method.
+
     Parameters
     ----------
     data : dict
         The dictionary to process
+
     limit : int
         If set, limit entries to the provided value. If `0` is passed, an empty
         dictionary is returned. If `-1` is passed, the original dictionary is
@@ -559,8 +564,8 @@ def test_status(
     include_untested : bool
         If this flag is set to True, then packages for which no tests have been
         detected will be included in the final report. If it is False, then
-        only tested packages will be included. If collation is not set, this argument
-        does nothing.
+        only tested packages will be included. If collation is not set, this
+        argument does nothing.
 
     Returns
     -------
@@ -618,7 +623,15 @@ def jinja_tmpl():
     return env.get_template('layout.html')
 
 
-def render(template, freq, freq_system, freq_pipeline, freq_limit) -> str:
+def render(
+        template,
+        freq_all: dict[str, int],
+        freq_system: dict[str, int],
+        freq_pipeline: dict[str, int],
+        fail_system: dict[str, int],
+        fail_pipeline: dict[str, int],
+        freq_limit: int
+        ) -> str:
     """
     Take a template and its data and render it
 
@@ -627,7 +640,7 @@ def render(template, freq, freq_system, freq_pipeline, freq_limit) -> str:
     template : Jinja2.Template
         Jina template to render
 
-    freq : dict
+    freq_all : dict
         A dictionary containing a general frequency analysis
 
     freq_system : dict
@@ -635,6 +648,12 @@ def render(template, freq, freq_system, freq_pipeline, freq_limit) -> str:
 
     freq_pipeline : dict
         A dictionary containing a frequency analysis filtered by pipeline tests
+
+   fail_system : dict
+        A dictionary containing a failure analysis filtered by system tests
+
+    fail_pipeline : dict
+        A dictionary containing a failure analysis filtered by pipeline tests
 
     freq_limit : int
         The number of individual entries that each report should be limited to
@@ -645,9 +664,11 @@ def render(template, freq, freq_system, freq_pipeline, freq_limit) -> str:
         The rendered HTML, ready for consumption
     """
     return template.render(
-            test_frequency=freq,
+            test_frequency_all=freq_all,
             test_frequency_system=freq_system,
             test_frequency_pipeline=freq_pipeline,
+            fail_frequency_system=fail_system,
+            fail_frequency_pipeline=fail_pipeline,
             frequency_limit=freq_limit
             )
 
@@ -689,7 +710,8 @@ def send_html_email(
     Raises
     ------
     Exception
-        If the `provider` argument contains an unsupported provider, an exception is raised.
+        If the `provider` argument contains an unsupported provider,
+        an exception is raised.
     """
     # construct email
     email = EmailMessage()
@@ -735,7 +757,7 @@ if __name__ == "__main__":
         es_tests.extend(extract_tests(doc))
 
     logging.info("🤔 Analyzing test frequency [overall]")
-    freq = test_frequency(
+    freq_all = test_frequency(
         es_tests,
         gh_response,
         limit=cli_args.limit,
@@ -746,7 +768,7 @@ if __name__ == "__main__":
     freq_system = test_frequency(
         es_tests,
         gh_response,
-        type_filter='system',
+        type_filter="system",
         limit=cli_args.limit,
         include_untested=cli_args.include_untested
         )
@@ -755,26 +777,42 @@ if __name__ == "__main__":
     freq_pipeline = test_frequency(
         es_tests,
         gh_response,
-        type_filter='pipeline',
+        type_filter="pipeline",
         limit=cli_args.limit,
         include_untested=cli_args.include_untested
         )
 
-    logging.info("🤔 Analyzing test status")
-    status = test_status(es_tests)
+    logging.info("🤔 Analyzing test status [system]")
+    fail_freq_system = test_status(
+        es_tests,
+        type_filter="system",
+        collate_by=['ERROR', 'FAILED'],
+        high_pass=True
+        )
+
+    logging.info("🤔 Analyzing test status [pipeline]")
+    fail_freq_pipeline = test_status(
+        es_tests,
+        type_filter="pipeline",
+        collate_by=['ERROR', 'FAILED'],
+        high_pass=True
+        )
 
     tmpl = jinja_tmpl()
 
+    html_out = render(
+        tmpl,
+        freq_all,
+        freq_system,
+        freq_pipeline,
+        fail_freq_system,
+        fail_freq_pipeline,
+        cli_args.limit
+        )
+
     if cli_args.output == "stdout":
-        print(render(tmpl, freq, freq_system, freq_pipeline, cli_args.limit))
+        print(html_out)
     elif cli_args.output == "email":
-        html_out = render(
-            tmpl,
-            freq,
-            freq_system,
-            freq_pipeline,
-            cli_args.limit
-            )
         logging.info("📧 Sending email report")
         send_html_email(
             "Integrations test report",

@@ -54,7 +54,7 @@ def test_extract_tests(mock_es_return):
     assert test_ret.type == 'system'
     assert test_ret.result == 'PASSED'
     # TODO test_ret.version
-    # TO19 bis place du Panthéon DO test_ret.integration_version
+    # TODO test_ret.integration_version
     assert test_ret.component == 'socks'
 
 

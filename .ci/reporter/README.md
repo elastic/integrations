@@ -47,3 +47,26 @@ Email:
                         SMTP password to authenticate with
 ```
 
+## Development
+
+### Testing
+
+Tests are written using [Pytest](https://www.pytest.org). Excecute them by running `pytest` from the root of this project:
+
+```bash
+❯ pytest
+================================================================================================================= test session starts =================================================================================================================
+platform darwin -- Python 3.9.0, pytest-6.2.1, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/mp/devel/integrations/.ci/reporter
+collected 51 items                                                                                                                                                                                                                                    
+
+tests/test_report.py ...................................................                                                                                                                                                                        [100%]
+
+================================================================================================================= 51 passed in 0.29s ==================================================================================================================
+```
+
+Tests are entirely self-contained and do not require network access or any Pytest plugins.
+
+### Deployment
+
+This project contains a Docker file. The recommended configuration is to deploy into a system which can run the container on a schedule.
