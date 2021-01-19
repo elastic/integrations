@@ -132,7 +132,7 @@ will produce results and open the results directly in Firefox:
 ## Deployment
 
 This project contains a Docker file as well as a deployment manifest which can be used to deploy the application inside
-a Kubenretes cluster. (This requires knowledge of the Elastic internal applications cluster which is not discussed here.)
+a Kubernetes cluster. (This requires knowledge of the Elastic internal applications cluster which is not discussed here.)
 
 If you require access to view or change the secrets, please contact the Observability Developer Productivity Team. 
 
