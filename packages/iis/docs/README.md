@@ -149,7 +149,56 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| iis.webserver.*.* | webserver | object |
+| iis.webserver.asp_net.application_restarts | Number of applications restarts. | float |
+| iis.webserver.asp_net.request_wait_time | Request wait time. | long |
+| iis.webserver.asp_net_application.errors_total_per_sec | Total number of errors per sec. | float |
+| iis.webserver.asp_net_application.pipeline_instance_count | The pipeline instance count. | float |
+| iis.webserver.asp_net_application.requests_executing | Number of requests executing. | float |
+| iis.webserver.asp_net_application.requests_in_application_queue | Number of requests in the application queue. | float |
+| iis.webserver.asp_net_application.requests_per_sec | Number of requests per sec. | float |
+| iis.webserver.cache.current_file_cache_memory_usage | The current file cache memory usage size. | float |
+| iis.webserver.cache.current_files_cached | The number of current files cached. | float |
+| iis.webserver.cache.current_uris_cached | The number of current uris cached. | float |
+| iis.webserver.cache.file_cache_hits | The number of file cache hits. | float |
+| iis.webserver.cache.file_cache_misses | The number of file cache misses. | float |
+| iis.webserver.cache.maximum_file_cache_memory_usage | The max file cache size. | float |
+| iis.webserver.cache.output_cache_current_items | The number of output cache current items. | float |
+| iis.webserver.cache.output_cache_current_memory_usage | The output cache memory usage size. | float |
+| iis.webserver.cache.output_cache_total_hits | The output cache total hits count. | float |
+| iis.webserver.cache.output_cache_total_misses | The output cache total misses count. | float |
+| iis.webserver.cache.total_files_cached | the total number of files cached. | float |
+| iis.webserver.cache.total_uris_cached | The total number of URIs cached. | float |
+| iis.webserver.cache.uri_cache_hits | The number of URIs cached hits. | float |
+| iis.webserver.cache.uri_cache_misses | The number of URIs cache misses. | float |
+| iis.webserver.network.anonymous_users_per_sec | The number of anonymous users per sec. | float |
+| iis.webserver.network.bytes_received_per_sec | The size of bytes received per sec. | float |
+| iis.webserver.network.bytes_sent_per_sec | The size of bytes sent per sec. | float |
+| iis.webserver.network.current_anonymous_users | The number of current anonymous users. | float |
+| iis.webserver.network.current_connections | The number of current connections. | float |
+| iis.webserver.network.current_non_anonymous_users | The number of current non anonymous users. | float |
+| iis.webserver.network.delete_requests_per_sec | Number of DELETE requests per sec. | float |
+| iis.webserver.network.get_requests_per_sec | Number of GET requests per sec. | float |
+| iis.webserver.network.maximum_connections | Number of maximum connections. | float |
+| iis.webserver.network.post_requests_per_sec | Number of POST requests per sec. | float |
+| iis.webserver.network.service_uptime | Service uptime. | float |
+| iis.webserver.network.total_anonymous_users | Total number of anonymous users. | float |
+| iis.webserver.network.total_bytes_received | Total size of bytes received. | float |
+| iis.webserver.network.total_bytes_sent | Total size of bytes sent. | float |
+| iis.webserver.network.total_connection_attempts | The total number of connection attempts. | float |
+| iis.webserver.network.total_delete_requests | The total number of DELETE requests. | float |
+| iis.webserver.network.total_get_requests | The total number of GET requests. | float |
+| iis.webserver.network.total_non_anonymous_users | The total number of non anonymous users. | float |
+| iis.webserver.network.total_post_requests | The total number of POST requests. | float |
+| iis.webserver.process.cpu_usage_perc | The CPU usage percentage. | float |
+| iis.webserver.process.handle_count | The number of handles. | float |
+| iis.webserver.process.io_read_operations_per_sec | IO read operations per sec. | float |
+| iis.webserver.process.io_write_operations_per_sec | IO write operations per sec. | float |
+| iis.webserver.process.page_faults_per_sec | Memory page faults. | float |
+| iis.webserver.process.private_bytes | Memory private bytes. | float |
+| iis.webserver.process.thread_count | The number of threads. | long |
+| iis.webserver.process.virtual_bytes | Memory virtual bytes. | float |
+| iis.webserver.process.worker_process_count | Number of worker processes running. | float |
+| iis.webserver.process.working_set | Memory working set. | float |
 
 
 ### website
@@ -247,6 +296,22 @@ The fields reported are:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | iis.website.name | website name | keyword |
+| iis.website.network.bytes_received_per_sec | The bytes received per sec size. | float |
+| iis.website.network.bytes_sent_per_sec | The bytes sent per sec size. | float |
+| iis.website.network.current_connections | The number of current connections. | float |
+| iis.website.network.delete_requests_per_sec | The number of DELETE requests per sec. | float |
+| iis.website.network.get_requests_per_sec | The number of GET requests per sec. | float |
+| iis.website.network.maximum_connections | The number of maximum connections. | float |
+| iis.website.network.post_requests_per_sec | The number of POST requests per sec. | float |
+| iis.website.network.put_requests_per_sec | The number of PUT requests per sec. | float |
+| iis.website.network.service_uptime | The service uptime. | float |
+| iis.website.network.total_bytes_received | The total number of bytes received. | float |
+| iis.website.network.total_bytes_sent | The  total number of bytes sent. | float |
+| iis.website.network.total_connection_attempts | The total number of connection attempts. | float |
+| iis.website.network.total_delete_requests | The total number of DELETE requests. | float |
+| iis.website.network.total_get_requests | The total number of GET requests. | float |
+| iis.website.network.total_post_requests | The total number of POST requests. | float |
+| iis.website.network.total_put_requests | The total number of PUT requests. | float |
 
 
 ### application_pool
@@ -343,6 +408,19 @@ The fields reported are:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | iis.application_pool.name | application pool name | keyword |
+| iis.application_pool.net_clr.filters_per_sec | Number of filters per sec. | float |
+| iis.application_pool.net_clr.finallys_per_sec | The number of finallys per sec. | float |
+| iis.application_pool.net_clr.throw_to_catch_depth_per_sec | Throw to catch depth count per sec. | float |
+| iis.application_pool.net_clr.total_exceptions_thrown | Total number of exceptions thrown. | long |
+| iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float |
+| iis.application_pool.process.handle_count | The number of handles. | long |
+| iis.application_pool.process.io_read_operations_per_sec | IO read operations per sec. | float |
+| iis.application_pool.process.io_write_operations_per_sec | IO write operations per sec. | float |
+| iis.application_pool.process.page_faults_per_sec | Memory page faults. | float |
+| iis.application_pool.process.private_bytes | Memory private bytes. | float |
+| iis.application_pool.process.thread_count | The number of threats. | long |
+| iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float |
+| iis.application_pool.process.working_set | Memory working set. | float |
 
 
 ## Logs
@@ -469,7 +547,10 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.domain | Destination domain. | wildcard |
+| destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
+| error.message | Error message. | text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -497,20 +578,30 @@ The fields reported are:
 | iis.access.site_name | The site name and instance number. | keyword |
 | iis.access.sub_status | The HTTP substatus code. | long |
 | iis.access.win32_status | The Windows status code. | long |
+| message | Message. | text |
+| related.ip | All of the IPs seen in the event. | ip |
+| related.user | All the user names seen in the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source. | ip |
 | url.path | Path of the request, such as "/search". | keyword |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version. | keyword |
+| user_agent.version | Version. | keyword |
 
 
 
@@ -606,7 +697,10 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.domain | Destination domain. | wildcard |
+| destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
+| error.message | Error message | text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -628,12 +722,17 @@ The fields reported are:
 | http.version | HTTP version. | keyword |
 | iis.error.queue_name | The IIS application pool name. | keyword |
 | iis.error.reason_phrase | The HTTP reason phrase. | keyword |
+| message | Message | text |
+| related.ip | All of the IPs seen in the event. | ip |
+| related.user | All the user names seen in the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |

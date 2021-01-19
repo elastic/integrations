@@ -79,6 +79,20 @@
       type: keyword
       description: HTTP version.
       ignore_above: 1024
+- name: source.as.number
+  description: Unique number allocated to the autonomous system.
+  example: 15169
+  type: long
+- name: source.as.organization.name
+  description: Organization name.
+  example: Google LLC
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: source.as.organization.name.text
+      name: text
+      norms: false
+      type: text
+  type: keyword
 - name: source
   title: Source
   group: 2
@@ -200,3 +214,27 @@
 - description: Message.
   name: message
   type: text
+- name: user_agent
+  type: group
+  fields:
+    - name: device.name
+      type: keyword
+      description: Name of the device.
+    - name: name
+      type: keyword
+      description: Name of the user agent.
+    - name: original
+      type: keyword
+      description: Unparsed user_agent string.
+    - name: version
+      type: keyword
+      description: Version.
+    - name: os.name
+      type: keyword
+      description: Operating system name, without the version.
+    - name: os.full
+      type: keyword
+      description: Operating system name, including the version or code name.
+    - name: os.version
+      type: keyword
+      description: Operating system version.
