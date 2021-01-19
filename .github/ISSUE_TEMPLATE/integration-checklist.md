@@ -11,7 +11,7 @@ when creating or updating a Package, Module or Dataset for an Integration.
 
 ### All changes
 
-- [ ] Change follows [development guidelines](https://github.com/elastic/integrations/tree/master/doc/development/guidelines)
+- [ ] Change follows the [contributing guidelines](https://github.com/elastic/integrations/blob/master/CONTRIBUTING.md)
 - [ ] Supported versions of the monitoring target are documented
 - [ ] Supported operating systems are documented (if applicable)
 - [ ] Integration or [System tests](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md) exist
