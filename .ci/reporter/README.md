@@ -100,8 +100,8 @@ tests/test_report.py ...................................................        
 ========================================================================================================================================= 51 passed in 0.30s ==========================================================================================================================================
 ```
 
-## Adding or modifying a report
-## Analyzers
+### Adding or modifying a report
+#### Analyzers
 Analyzers can take input pulled from data sources, such as the GitHub API or queries to an Elasticsearch cluster containing
 test results and then analyze them to produce data structure.
 
@@ -110,11 +110,24 @@ outputting a dictionary where the keys are tests and the values are integers rep
 test which has been analyzed by the `test_` function. (This may be enforced in the future if there is a need, so it is
 a good idea to try to support this if you can.)
 
-## Reports
+#### Reports
 Reports can either be directed to standard out or as an email via the use of the `--output` flag. All reports are written
 using the [Jinja2 templating language](https://jinja.palletsprojects.com/en/2.11.x/templates/). Find the catalog of available
 reports in the `/templates` directory from the root of this project. Currently template inheretance is not used but if there
 is a need for it in the future, it may be added to simplifiy the development of additional reports.
+
+### Logging
+
+Pass `-v` to enable debug logging.
+
+### Development and testing workflow
+
+The easiest thing to do is just to execute `report.py` with the appropriate options and the `--output=stdout` flag is set, logging will be sent to standard error and the output will be sent to standard out. Therefore, a command such as the following
+will produce results and open the results directly in Firefox:
+
+```bash
+> ./report.py > /tmp/out.html && /Applications/Firefox.app/Contents/MacOS/firefox-bin /tmp/out.html
+``` 
 
 ## Deployment
 
