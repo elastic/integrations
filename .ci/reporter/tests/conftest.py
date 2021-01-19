@@ -1,9 +1,27 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
 import os
 import json
 import math
 import pytest
 import argparse
 from collections import namedtuple
+
 
 def _packages():
     """
@@ -55,6 +73,8 @@ def _packages():
             "fake_zookeeper",
             "fake_zoom",
             ]
+
+
 @pytest.fixture
 def default_args():
     """
@@ -137,6 +157,69 @@ def mock_es_return():
         es_ret = json.load(fh_)
     return es_ret
 
+@pytest.fixture
+def test_fixture_status_failure_distributed():
+    """
+    A test fixture with the following:
+        - 50 passing tests of different package names all of the system type
+        - 25 passing tests of different package names all of the pipeline type
+        - 300 failing tests of varying package names all of the pipeline type
+    """
+    tests = []
+    fake_date = '2021-01-07T20:48:18.256+0000'
+
+    Test = namedtuple("Test", [
+        "timestamp",  # Time of test
+        "package",  # Package being tested
+        "type",  # Type of test: pipeline or system
+        "result",  # Test result: pass, fail, or error
+        "version",  # Stack version used in test
+        "integration_version",  # Integration version used in test
+        "component"  # Component for the package.
+        ])
+    # Make 50 passing tests for the first type
+    for i in range(1, 51):
+        test = Test(
+                fake_date,
+                f"p-{i}",
+                'system',
+                'PASSED',
+                -1,
+                -1,
+                'fake_component'
+        )
+        tests.append(test)
+
+    # Make 25 passing tests of the second type
+    for i in range(1, 26):
+        test = Test(
+                fake_date,
+                f"p-{i}",
+                'pipeline',
+                'PASSED',
+                -1,
+                -1,
+                'fake_component'
+        )
+        tests.append(test)
+
+    # Make a distribution of failing tests for each package
+    for i in range(1, 26):
+        for j in range(1, i):
+            test = Test(
+                    fake_date,
+                    f"p-{i}",
+                    'pipeline',
+                    'FAILED',
+                    -1,
+                    -1,
+                    'fake_component'
+            )
+            tests.append(test)
+    return tests
+
+
+
 
 @pytest.fixture
 def test_fixture_freq_linear():
@@ -176,6 +259,7 @@ def test_fixture_freq_linear():
                        )
                 tests.append(test)
     return tests
+
 
 @pytest.fixture
 def test_status_range():
@@ -324,7 +408,7 @@ def test_fixture_subset_10():
         "integration_version",  # Integration version used in test
         "component"  # Component for the package
         ])
-        
+
     for package in _packages()[:10]:
         fake_date = '2021-01-07T20:48:18.256+0000'
         test = Test(
@@ -338,6 +422,7 @@ def test_fixture_subset_10():
             )
         tests.append(test)
     return tests
+
 
 @pytest.fixture
 def tests_fixture_even():

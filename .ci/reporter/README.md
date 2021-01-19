@@ -47,6 +47,19 @@ Email:
                         SMTP password to authenticate with
 ```
 
+See the following table for variables which can be set via environment variables:
+
+|CLI Argument|Env variable|
+|------------|------------|
+|`--es-host` |IREPORT_ES_HOST|
+|`--es-user` |IREPORT_ES_USER|
+|`--es-pass` |IREPORT_ES_PASS|
+|`--gh-token`|IREPORT_GH_TOKEN|
+|`--smtp-recipient`|IREPORT_SMTP_RECIP|
+|`--smtp-user`|IREPORT_SMTP_USER|
+|`--smtp-pass`|IREPORT_SMTP_PASS|
+|`--limit`|IREPORT_TEST_LIMIT|
+
 ## Development
 
 ### Testing
@@ -67,6 +80,49 @@ tests/test_report.py ...................................................        
 
 Tests are entirely self-contained and do not require network access or any Pytest plugins.
 
-### Deployment
+In addition to Python tests, there are basic [BATS](https://github.com/sstephenson/bats) just to verify that the Docker image can be built without errors.
 
-This project contains a Docker file. The recommended configuration is to deploy into a system which can run the container on a schedule.
+To run all tests:
+
+```bash
+❯ make test
+Tests are in progress, please be patient
+ ✓ Build image
+
+1 test, 0 failures
+========================================================================================================================================= test session starts =========================================================================================================================================
+platform darwin -- Python 3.9.0, pytest-6.2.1, py-1.10.0, pluggy-0.13.1
+rootdir: /Users/mp/devel/integrations/.ci/reporter
+collected 51 items
+
+tests/test_report.py ...................................................                                                                                                                                                                                                                        [100%]
+
+========================================================================================================================================= 51 passed in 0.30s ==========================================================================================================================================
+```
+
+## Adding or modifying a report
+## Analyzers
+Analyzers can take input pulled from data sources, such as the GitHub API or queries to an Elasticsearch cluster containing
+test results and then analyze them to produce data structure.
+
+Analyzers start with `test_` in `report.py` by convention. The current analyzers are designed to be somewhat flexible but if they not meeting one's needs, a new analyzer may be added. Currently, there is no fixed format for output but by convention, they all support
+outputting a dictionary where the keys are tests and the values are integers representing some type of value about that
+test which has been analyzed by the `test_` function. (This may be enforced in the future if there is a need, so it is
+a good idea to try to support this if you can.)
+
+## Reports
+Reports can either be directed to standard out or as an email via the use of the `--output` flag. All reports are written
+using the [Jinja2 templating language](https://jinja.palletsprojects.com/en/2.11.x/templates/). Find the catalog of available
+reports in the `/templates` directory from the root of this project. Currently template inheretance is not used but if there
+is a need for it in the future, it may be added to simplifiy the development of additional reports.
+
+## Deployment
+
+This project contains a Docker file as well as a deployment manifest which can be used to deploy the application inside
+a Kubenretes cluster. (This requires knowledge of the Elastic internal applications cluster which is not discussed here.)
+
+If you require access to view or change the secrets, please contact the Observability Developer Productivity Team. 
+
+## Getting help
+
+🤖 This project was built and is maintained by the Observability Robots group at Elastic. 

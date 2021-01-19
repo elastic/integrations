@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+#
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
 import pytest
 from .. import report
 
@@ -53,8 +70,8 @@ def test_extract_tests(mock_es_return):
     assert test_ret.timestamp == '2021-01-07T20:48:18.256+0000'
     assert test_ret.type == 'system'
     assert test_ret.result == 'PASSED'
-    # TODO test_ret.version
-    # TODO test_ret.integration_version
+    # TODO test_ret.version. Future work. Currently unsupported.
+    # TODO test_ret.integration_version. Future work. Currently unsupported.
     assert test_ret.component == 'socks'
 
 
@@ -192,6 +209,7 @@ def test_frequency_exclude_untested(test_fixture_subset_10, packages_fixture):
         )
     assert len(got.keys()) == 10
 
+
 def test_frequency(tests_fixture_even, packages_fixture):
     """
     GIVEN a set of tests and a set of packages
@@ -288,3 +306,63 @@ def test_status_limit_range(requested_limit, tests_fixture_even):
         collate_by=['PASSED']
         )
     assert len(got.keys()) == requested_limit
+
+
+def test_status_filter_collate_high_pass(test_fixture_status_failure_distributed):  # noqa E205
+    """
+    GIVEN a request to analyze document that has the high pass flag set
+    AND has a type filter set
+    AND provide a list to collate
+    WHEN the request is made to the test_status() function
+    THEN the correct result set is returned
+    """
+    got = report.test_status(
+        test_fixture_status_failure_distributed,
+        type_filter="pipeline",
+        collate_by=['ERROR', 'FAILED'],
+        high_pass=True,
+        limit=10
+    )
+    want = {
+        'p-25': 24,
+        'p-24': 23,
+        'p-23': 22,
+        'p-22': 21,
+        'p-21': 20,
+        'p-20': 19,
+        'p-19': 18,
+        'p-18': 17,
+        'p-17': 16,
+        'p-16': 15
+         }
+    assert want == got
+
+
+def test_status_filter_collate_low_pass(test_fixture_status_failure_distributed):  # noqa E205
+    """
+    GIVEN a request to analyze document that has the high pass flag set
+    AND has a type filter set
+    AND provide a list to collate
+    WHEN the request is made to the test_status() function
+    THEN the correct result set is returned
+    """
+    got = report.test_status(
+        test_fixture_status_failure_distributed,
+        type_filter="pipeline",
+        collate_by=['ERROR', 'FAILED'],
+        high_pass=False,
+        limit=10
+    )
+    want = {
+        'p-2': 1,
+        'p-3': 2,
+        'p-4': 3,
+        'p-5': 4,
+        'p-6': 5,
+        'p-7': 6,
+        'p-8': 7,
+        'p-9': 8,
+        'p-10': 9,
+        'p-11': 10
+        }
+    assert want == got

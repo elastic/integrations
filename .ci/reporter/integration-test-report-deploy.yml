@@ -1,0 +1,65 @@
+---
+apiVersion: vaultproject.io/v1
+kind: SecretClaim
+metadata:
+  name: integration-test-report-secret
+  namespace: apm
+spec:
+  type: Opaque
+  path: secret/k8s/elastic-apps/apm/integration-test-report-config
+  renew: 3600
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: integration-test-report
+  namespace: apm
+spec:
+  schedule: "@weekly"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          imagePullSecrets:
+            - name: elastic-prod-registry
+          containers:
+            - name: integrations-test-reporter
+              image: docker.elastic.co/observability-ci/integrations-test-reporter
+              imagePullPolicy: Always
+              env:
+                - name: IREPORT_ES_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_ES_HOST
+                - name: IREPORT_ES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_ES_USER
+                - name: IREPORT_ES_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_ES_PASS
+                - name: IREPORT_GH_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_GH_TOKEN
+                - name: IREPORT_SMTP_RECIP
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_SMTP_RECIP
+                - name: IREPORT_SMTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_SMTP_USER
+                - name: IREPORT_SMTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: integration-test-report-secret
+                      key: IREPORT_SMTP_PASS

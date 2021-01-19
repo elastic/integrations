@@ -79,7 +79,7 @@ def gather_args():
         are accessible as object attributes.
     """
     parser = argparse.ArgumentParser(
-        description='Generate Integrations test report.'
+        description='Generate Integrations test report'
         )
     parser.add_argument(
             "-v",
@@ -104,30 +104,30 @@ def gather_args():
             help="The URL of the Elasticsearch cluster which contains "
             "test results to be parsed. Can also be set with ES_HOST "
             "in the environment",
-            default=os.environ.get("ES_HOST"),
-            required="ES_HOST" not in os.environ
+            default=os.environ.get("IREPORT_ES_HOST"),
+            required="IREPORT_ES_HOST" not in os.environ
             )
     es_group.add_argument(
             "--es-user",
             help="The username to use to authenticate to the Elasticsearch "
             "cluster which contains test results to be parsed. Can also be "
             "set with ES_USER in the environment",
-            default=os.environ.get("ES_USER"),
-            required="ES_USER" not in os.environ
+            default=os.environ.get("IREPORT_ES_USER"),
+            required="IREPORT_ES_USER" not in os.environ
             )
     es_group.add_argument(
             "--es-pass",
             help="The username to use to authenticate to the Elasticsearch "
             "cluster which contains test results to be parsed. Can also be "
             "set with ES_USER in the environment",
-            default=os.environ.get("ES_PASS"),
-            required="ES_PASS" not in os.environ
+            default=os.environ.get("IREPORT_ES_PASS"),
+            required="IREPORT_ES_PASS" not in os.environ
             )
     parser.add_argument(
             "--gh-token",
             help="GitHub token which has read access the elastic/integrations "
             "repo",
-            required="GH_TOKEN" not in os.environ
+            required="IREPORT_GH_TOKEN" not in os.environ
             )
 
     smtp_group = parser.add_argument_group(
@@ -138,7 +138,7 @@ def gather_args():
     smtp_group.add_argument(
             "--smtp-recipient",
             help="SMTP recipient. (Can be passed multiple times.)",
-            default=os.environ.get("SMTP_RECIP"),
+            default=os.environ.get("IREPORT_SMTP_RECIP"),
             action="append"
     )
     smtp_group.add_argument(
@@ -149,12 +149,12 @@ def gather_args():
     smtp_group.add_argument(
             "--smtp-user",
             help="SMTP username to authenticate with",
-            default=os.environ.get("SMTP_USER"),
+            default=os.environ.get("IREPORT_SMTP_USER"),
     )
     smtp_group.add_argument(
             "--smtp-pass",
             help="SMTP password to authenticate with",
-            default=os.environ.get("SMTP_PASS"),
+            default=os.environ.get("IREPORT_SMTP_PASS"),
     )
     parser.add_argument(
             "--include-untested",
@@ -165,7 +165,7 @@ def gather_args():
     parser.add_argument(
             "--limit",
             help="Limit the number of tests displayed in reports",
-            default=os.environ.get("TEST_LIMIT", 10),
+            default=os.environ.get("IREPORT_TEST_LIMIT", 10),
             required=False
     )
     parser.add_argument(
