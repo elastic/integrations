@@ -1,4 +1,4 @@
-# System Integration
+# Linux Integration
 
 The Linux integration allows you to monitor low-level metrics on linux servers. Because the System integration
 always applies to the local server, the `hosts` config option is not needed.
@@ -10,6 +10,38 @@ permissions can be blocked by
 
 
 ## Metrics
+
+### Conntrack
+
+The conntrack module reports on performance counters for the linux connection tracking component of netfilter. 
+Conntrack uses a http://people.netfilter.org/pablo/docs/login.pdf[hash table] to track the state of network connections.
+
+### Iostat
+
+The iostat module reports per-disk IO statistics that emulate `iostat -x` on linux.
+
+### KSM
+
+The KSM module reports data from https://www.kernel.org/doc/html/latest/admin-guide/mm/ksm.html[Kernel Samepage Merging]. 
+In order to take advantage of KSM, applications must use the `madvise` system call to mark memory regions for merging. KSM is not enabled on all distros, and KSM status is set with the `CONFIG_KSM` kernel flag.
+
+
+### Memory
+
+The memory metricset extends system/memory and adds linux-specific memory metrics, including Huge Pages and overall paging statistics.
+
+### Pageinfo
+
+The pageinfo metricset reports on paging statistics as found in /proc/pagetypeinfo
+
+
+Reported metrics are broken down by page type: DMA, DMA32, Normal, and Highmem. These types are further broken down by order, which represents zones of 2^ORDER*PAGE_SIZE.
+These metrics are divided into two reporting types: `buddyinfo`, which is summarized by page type, as in `/proc/buddyinfo`. `nodes` reports info broken down by memory migration type.
+
+
+This information can be used to determine memory fragmentation. 
+The kernel https://www.kernel.org/doc/gorman/html/understand/understand009.html[buddy algorithim] will always search for the smallest page order to allocate, and if none is available, a larger page order will be split into two "buddies." When memory is freed, the kernel will attempt to merge the "buddies." If the only available pages are at lower orders, this indicates fragmentation, as buddy pages cannot be merged.
+
 
 ### Entropy
 
@@ -60,7 +92,7 @@ entropy will be out of a total pool size of 4096.
 
 ### Network summary
 
-The System `network_summary` dataset provides network IO metrics collected from the
+The linux `network_summary` dataset provides network IO metrics collected from the
 operating system. These events are global and sorted by protocol.
 
 **Exported fields**
@@ -239,7 +271,7 @@ This dataset is available on:
 
 This dataset requires kernel 2.6.14 or newer.
 
-The system `socket` dataset reports an event for each new TCP socket that it
+The linux `socket` dataset reports an event for each new TCP socket that it
 sees. It does this by polling the kernel periodically to get a dump of all
 sockets. You set the polling interval by configuring the `period` option.
 Specifying a short polling interval with this dataset is important to avoid
@@ -301,7 +333,7 @@ missing short-lived connections.
 
 ### Users
 
-The system/users dataset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the dataset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
+The linux/users dataset reports logged in users and associated sessions via dbus and logind, which is a systemd component. By default, the dataset will look in `/var/run/dbus/` for a system socket, although a new path can be selected with `DBUS_SYSTEM_BUS_ADDRESS`.
 
 **Exported fields**
 
