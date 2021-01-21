@@ -17,6 +17,42 @@ permissions can be blocked by
 The System datasets collect different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
 
+## Logs
+
+### Application
+
+The Windows `application` dataset provides events from the Windows
+`Application` event log.
+
+{{fields "application"}}
+
+### System
+
+The Windows `system` dataset provides events from the Windows `System`
+event log.
+
+{{fields "system"}}
+
+
+### Security
+
+The Windows `security` dataset provides events from the Windows
+`Security` event log.
+
+{{fields "security"}}
+
+### Auth
+
+The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
+
+{{fields "auth"}}
+
+### syslog
+
+The `syslog` dataset provides system logs on linux and MacOS.
+
+{{fields "syslog"}}
+
 ## Metrics
 
 ### Core
@@ -189,25 +225,3 @@ This dataset is available on:
 - Windows
 
 {{fields "uptime"}}
-
-### Application
-
-The Windows `application` dataset provides events from the Windows
-`Application` event log.
-
-{{fields "application"}}
-
-### System
-
-The Windows `system` dataset provides events from the Windows `System`
-event log.
-
-{{fields "system"}}
-
-
-### Security
-
-The Windows `security` dataset provides events from the Windows
-`Security` event log.
-
-{{fields "security"}}
