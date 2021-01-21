@@ -7,6 +7,7 @@ processors:
           value: '{{_ingest.timestamp}}'
     - grok:
           field: message
+          ignore_missing: true
           patterns:
               - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method})
       (?:-|%{NOTSPACE:url.path}) (?:-|%{NOTSPACE:url.query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
@@ -38,7 +39,6 @@ processors:
       (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NUMBER:http.response.status_code:long})
       (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long})
       (?:-|%{NUMBER:temp.duration:long})'
-          ignore_missing: true
     - remove:
           field: message
     - rename:
