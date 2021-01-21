@@ -15,6 +15,19 @@
       type: long
       format: string
       description: Port of the destination.
+    - name: domain
+      level: core
+      type: wildcard
+      description: Destination domain.
+    - name: ip
+      level: core
+      type: ip
+- name: related.user
+  type: keyword
+  description: All the user names seen in the event.
+- name: related.ip
+  type: ip
+  description: All of the IPs seen in the event.
 - name: http
   title: HTTP
   group: 2
@@ -39,6 +52,20 @@
       type: keyword
       description: HTTP version.
       ignore_above: 1024
+- name: source.as.number
+  description: Unique number allocated to the autonomous system.
+  example: 15169
+  type: long
+- name: source.as.organization.name
+  description: Organization name.
+  example: Google LLC
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: source.as.organization.name.text
+      name: text
+      norms: false
+      type: text
+  type: keyword
 - name: source
   title: Source
   group: 2
@@ -85,6 +112,14 @@
       type: long
       format: string
       description: Port of the source.
+    - name: ip
+      description: IP address of the source.
+      type: ip
+    - name: geo.country_name
+      description: Country name.
+      example: Canada
+      ignore_above: 1024
+      type: keyword
 - name: url
   title: URL
   group: 2
@@ -103,3 +138,9 @@
           type: text
           norms: false
           default_field: false
+- name: error.message
+  description: Error message
+  type: text
+- name: message
+  description: Message
+  type: text
