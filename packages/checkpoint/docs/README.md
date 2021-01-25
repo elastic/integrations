@@ -516,6 +516,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | log.file.path | Path to the log file. | wildcard |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| log.source.address | Source address of logs received over the network. | keyword |
 | message | Log message optimized for viewing in a log viewer. | text |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
