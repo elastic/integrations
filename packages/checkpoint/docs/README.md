@@ -426,18 +426,6 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.watermark | Reports whether watermark is added to the cleaned file. | keyword |
 | checkpoint.web_server_type | Web server detected in the HTTP response. | keyword |
 | checkpoint.word_list | Words matched by data type. | keyword |
-| client.bytes | Bytes sent from the client to the server. | long |
-| client.domain | Client domain. | wildcard |
-| client.ip | IP address of the client. | ip |
-| client.mac | MAC address of the client. | keyword |
-| client.nat.ip | Client NAT ip address | ip |
-| client.nat.port | Client NAT port | long |
-| client.packets | Packets sent from the client to the server. | long |
-| client.port | Port of the client. | long |
-| client.user.email | User email address. | wildcard |
-| client.user.group.name | Name of the group. | keyword |
-| client.user.id | Unique identifier of the user. | keyword |
-| client.user.name | Short name or login of the user. | wildcard |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -513,7 +501,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -558,13 +546,6 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | rule.name | Rule name | keyword |
 | rule.ruleset | Rule ruleset | keyword |
 | rule.uuid | Rule UUID | keyword |
-| server.bytes | Bytes sent from the server to the client. | long |
-| server.domain | Server domain. | wildcard |
-| server.ip | IP address of the server. | ip |
-| server.nat.ip | Server NAT ip | ip |
-| server.nat.port | Server NAT port | long |
-| server.packets | Packets sent from the server to the client. | long |
-| server.port | Port of the server. | long |
 | source.as.number | Unique number allocated to the autonomous system. | long |
 | source.as.organization.name | Organization name. | wildcard |
 | source.bytes | Bytes sent from the source to the destination. | long |
