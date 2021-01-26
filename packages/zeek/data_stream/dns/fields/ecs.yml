@@ -15,7 +15,7 @@
       norms: false
       type: text
   name: destination.as.organization.name
-  type: keyword
+  type: wildcard
 - description: City name.
   example: Montreal
   ignore_above: 1024
@@ -44,7 +44,7 @@
   example: boston-dc
   ignore_above: 1024
   name: destination.geo.name
-  type: keyword
+  type: wildcard
 - description: Region ISO code.
   example: CA-QC
   ignore_above: 1024
@@ -61,6 +61,33 @@
 - description: Port of the destination.
   name: destination.port
   type: long
+- description: Array of DNS answers.
+  name: dns.answers
+  type: object
+- description: The class of DNS data contained in this resource record.
+  example: IN
+  ignore_above: 1024
+  name: dns.answers.class
+  type: keyword
+- description: The data describing the resource.
+  example: 10.10.10.10
+  ignore_above: 1024
+  name: dns.answers.data
+  type: wildcard
+- description: The domain name to which this resource record pertains.
+  example: www.example.com
+  ignore_above: 1024
+  name: dns.answers.name
+  type: keyword
+- description: The time interval in seconds that this resource record may be cached before it should be discarded.
+  example: 180
+  name: dns.answers.ttl
+  type: long
+- description: The type of data contained in this resource record.
+  example: CNAME
+  ignore_above: 1024
+  name: dns.answers.type
+  type: keyword
 - description: Array of DNS header flags.
   example:
     - RD
@@ -82,7 +109,7 @@
   example: www.google.com
   ignore_above: 1024
   name: dns.question.name
-  type: keyword
+  type: wildcard
 - description: The highest registered domain, stripped of the subdomain.
   example: google.com
   ignore_above: 1024
@@ -92,6 +119,11 @@
   example: co.uk
   ignore_above: 1024
   name: dns.question.top_level_domain
+  type: keyword
+- description: The subdomain of the domain.
+  example: www
+  ignore_above: 1024
+  name: dns.question.subdomain
   type: keyword
 - description: The type of record being queried.
   example: AAAA
@@ -162,6 +194,9 @@
   ignore_above: 1024
   name: event.type
   type: keyword
+- description: Host ip addresses.
+  name: host.ip
+  type: ip
 - description: A hash of source and destination IPs and ports.
   example: 1:hO+sN4H+MG5MY/8hIrXPqc4ZQz0=
   ignore_above: 1024
@@ -192,7 +227,7 @@
       norms: false
       type: text
   name: source.as.organization.name
-  type: keyword
+  type: wildcard
 - description: City name.
   example: Montreal
   ignore_above: 1024
@@ -221,7 +256,7 @@
   example: boston-dc
   ignore_above: 1024
   name: source.geo.name
-  type: keyword
+  type: wildcard
 - description: Region ISO code.
   example: CA-QC
   ignore_above: 1024

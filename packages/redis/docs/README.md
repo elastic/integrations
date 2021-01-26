@@ -21,10 +21,39 @@ The `log` dataset collects the Redis standard logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.pid | Process id. | long |
@@ -40,10 +69,39 @@ The `slowlog` dataset collects the Redis slow logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.pid | Process id. | long |
@@ -61,197 +119,197 @@ An example event for `info` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-25T10:16:10.138Z",
-  "dataset": {
-    "name": "redis.info",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "redis.info",
-    "duration": 374411,
-    "module": "redis"
-  },
-  "metricset": {
-    "name": "info",
-    "period": 10000
-  },
-  "redis": {
-    "info": {
-      "clients": {
-        "biggest_input_buf": 0,
-        "blocked": 0,
-        "connected": 5,
-        "longest_output_list": 0,
-        "max_input_buffer": 0,
-        "max_output_buffer": 0
-      },
-      "cluster": {
-        "enabled": false
-      },
-      "cpu": {
-        "used": {
-          "sys": 1.66,
-          "sys_children": 0,
-          "user": 0.39,
-          "user_children": 0.01
-        }
-      },
-      "memory": {
-        "active_defrag": {},
-        "allocator": "jemalloc-4.0.3",
-        "allocator_stats": {
-          "fragmentation": {},
-          "rss": {}
-        },
-        "fragmentation": {
-          "ratio": 2.71
-        },
-        "max": {
-          "policy": "noeviction",
-          "value": 0
-        },
-        "used": {
-          "lua": 37888,
-          "peak": 945016,
-          "rss": 2453504,
-          "value": 904992
-        }
-      },
-      "persistence": {
-        "aof": {
-          "bgrewrite": {
-            "last_status": "ok"
-          },
-          "buffer": {},
-          "copy_on_write": {},
-          "enabled": false,
-          "fsync": {},
-          "rewrite": {
-            "buffer": {},
-            "current_time": {
-              "sec": -1
+    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "dataset": {
+        "name": "redis.info",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "redis": {
+        "info": {
+            "clients": {
+                "biggest_input_buf": 0,
+                "blocked": 0,
+                "connected": 5,
+                "longest_output_list": 0,
+                "max_input_buffer": 0,
+                "max_output_buffer": 0
             },
-            "in_progress": false,
-            "last_time": {
-              "sec": -1
+            "cluster": {
+                "enabled": false
             },
-            "scheduled": false
-          },
-          "size": {},
-          "write": {
-            "last_status": "ok"
-          }
-        },
-        "loading": false,
-        "rdb": {
-          "bgsave": {
-            "current_time": {
-              "sec": -1
+            "cpu": {
+                "used": {
+                    "sys": 1.66,
+                    "sys_children": 0,
+                    "user": 0.39,
+                    "user_children": 0.01
+                }
             },
-            "in_progress": false,
-            "last_status": "ok",
-            "last_time": {
-              "sec": -1
+            "memory": {
+                "active_defrag": {},
+                "allocator": "jemalloc-4.0.3",
+                "allocator_stats": {
+                    "fragmentation": {},
+                    "rss": {}
+                },
+                "fragmentation": {
+                    "ratio": 2.71
+                },
+                "max": {
+                    "policy": "noeviction",
+                    "value": 0
+                },
+                "used": {
+                    "lua": 37888,
+                    "peak": 945016,
+                    "rss": 2453504,
+                    "value": 904992
+                }
+            },
+            "persistence": {
+                "aof": {
+                    "bgrewrite": {
+                        "last_status": "ok"
+                    },
+                    "buffer": {},
+                    "copy_on_write": {},
+                    "enabled": false,
+                    "fsync": {},
+                    "rewrite": {
+                        "buffer": {},
+                        "current_time": {
+                            "sec": -1
+                        },
+                        "in_progress": false,
+                        "last_time": {
+                            "sec": -1
+                        },
+                        "scheduled": false
+                    },
+                    "size": {},
+                    "write": {
+                        "last_status": "ok"
+                    }
+                },
+                "loading": false,
+                "rdb": {
+                    "bgsave": {
+                        "current_time": {
+                            "sec": -1
+                        },
+                        "in_progress": false,
+                        "last_status": "ok",
+                        "last_time": {
+                            "sec": -1
+                        }
+                    },
+                    "copy_on_write": {},
+                    "last_save": {
+                        "changes_since": 35,
+                        "time": 1548663522
+                    }
+                }
+            },
+            "replication": {
+                "backlog": {
+                    "active": 0,
+                    "first_byte_offset": 0,
+                    "histlen": 0,
+                    "size": 1048576
+                },
+                "connected_slaves": 0,
+                "master": {
+                    "offset": 0,
+                    "sync": {}
+                },
+                "master_offset": 0,
+                "role": "master",
+                "slave": {}
+            },
+            "server": {
+                "arch_bits": "64",
+                "build_id": "b9a4cd86ce8027d3",
+                "config_file": "",
+                "gcc_version": "6.4.0",
+                "git_dirty": "0",
+                "git_sha1": "00000000",
+                "hz": 10,
+                "lru_clock": 5159690,
+                "mode": "standalone",
+                "multiplexing_api": "epoll",
+                "run_id": "0f681cb959aa47413ec40ff383715c923f9cbefd",
+                "tcp_port": 6379,
+                "uptime": 707
+            },
+            "slowlog": {
+                "count": 0
+            },
+            "stats": {
+                "active_defrag": {},
+                "commands_processed": 265,
+                "connections": {
+                    "received": 848,
+                    "rejected": 0
+                },
+                "instantaneous": {
+                    "input_kbps": 0.18,
+                    "ops_per_sec": 6,
+                    "output_kbps": 1.39
+                },
+                "keys": {
+                    "evicted": 0,
+                    "expired": 0
+                },
+                "keyspace": {
+                    "hits": 15,
+                    "misses": 0
+                },
+                "latest_fork_usec": 0,
+                "migrate_cached_sockets": 0,
+                "net": {
+                    "input": {
+                        "bytes": 7300
+                    },
+                    "output": {
+                        "bytes": 219632
+                    }
+                },
+                "pubsub": {
+                    "channels": 0,
+                    "patterns": 0
+                },
+                "sync": {
+                    "full": 0,
+                    "partial": {
+                        "err": 0,
+                        "ok": 0
+                    }
+                }
             }
-          },
-          "copy_on_write": {},
-          "last_save": {
-            "changes_since": 35,
-            "time": 1548663522
-          }
         }
-      },
-      "replication": {
-        "backlog": {
-          "active": 0,
-          "first_byte_offset": 0,
-          "histlen": 0,
-          "size": 1048576
-        },
-        "connected_slaves": 0,
-        "master": {
-          "offset": 0,
-          "sync": {}
-        },
-        "master_offset": 0,
-        "role": "master",
-        "slave": {}
-      },
-      "server": {
-        "arch_bits": "64",
-        "build_id": "b9a4cd86ce8027d3",
-        "config_file": "",
-        "gcc_version": "6.4.0",
-        "git_dirty": "0",
-        "git_sha1": "00000000",
-        "hz": 10,
-        "lru_clock": 5159690,
-        "mode": "standalone",
-        "multiplexing_api": "epoll",
-        "run_id": "0f681cb959aa47413ec40ff383715c923f9cbefd",
-        "tcp_port": 6379,
-        "uptime": 707
-      },
-      "slowlog": {
-        "count": 0
-      },
-      "stats": {
-        "active_defrag": {},
-        "commands_processed": 265,
-        "connections": {
-          "received": 848,
-          "rejected": 0
-        },
-        "instantaneous": {
-          "input_kbps": 0.18,
-          "ops_per_sec": 6,
-          "output_kbps": 1.39
-        },
-        "keys": {
-          "evicted": 0,
-          "expired": 0
-        },
-        "keyspace": {
-          "hits": 15,
-          "misses": 0
-        },
-        "latest_fork_usec": 0,
-        "migrate_cached_sockets": 0,
-        "net": {
-          "input": {
-            "bytes": 7300
-          },
-          "output": {
-            "bytes": 219632
-          }
-        },
-        "pubsub": {
-          "channels": 0,
-          "patterns": 0
-        },
-        "sync": {
-          "full": 0,
-          "partial": {
-            "err": 0,
-            "ok": 0
-          }
-        }
-      }
+    },
+    "event": {
+        "duration": 374411,
+        "dataset": "redis.info",
+        "module": "redis"
+    },
+    "stream": {
+        "dataset": "redis.info",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "metricset": {
+        "name": "info",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:6379",
+        "type": "redis"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
-  },
-  "service": {
-    "address": "localhost:6379",
-    "type": "redis"
-  },
-  "stream": {
-    "dataset": "redis.info",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
@@ -260,9 +318,38 @@ An example event for `info` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | os.full | Operating system name, including the version or code name. | keyword |
 | process.pid | Process id. | long |
 | redis.info.clients.biggest_input_buf | Biggest input buffer among current client connections (replaced by max_input_buffer). | long |
@@ -392,47 +479,47 @@ An example event for `key` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-25T10:16:10.138Z",
-  "dataset": {
-    "name": "redis.key",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "redis.key",
-    "duration": 374411,
-    "module": "redis"
-  },
-  "metricset": {
-    "name": "key",
-    "period": 10000
-  },
-  "redis": {
-    "key": {
-      "expire": {
-        "ttl": 360
-      },
-      "id": "0:foo",
-      "length": 3,
-      "name": "foo",
-      "type": "string"
+    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "dataset": {
+        "name": "redis.key",
+        "namespace": "default",
+        "type": "metrics"
     },
-    "keyspace": {
-      "id": "db0"
+    "redis": {
+        "key": {
+            "expire": {
+                "ttl": 360
+            },
+            "id": "0:foo",
+            "length": 3,
+            "name": "foo",
+            "type": "string"
+        },
+        "keyspace": {
+            "id": "db0"
+        }
+    },
+    "event": {
+        "duration": 374411,
+        "dataset": "redis.key",
+        "module": "redis"
+    },
+    "stream": {
+        "dataset": "redis.key",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "metricset": {
+        "name": "key",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:6379",
+        "type": "redis"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
-  },
-  "service": {
-    "address": "localhost:6379",
-    "type": "redis"
-  },
-  "stream": {
-    "dataset": "redis.key",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
@@ -441,9 +528,38 @@ An example event for `key` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | redis.key.expire.ttl | Seconds to expire. | long |
 | redis.key.id | Unique id for this key (With the form <keyspace>:<name>). | keyword |
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long |
@@ -460,41 +576,41 @@ An example event for `keyspace` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-25T10:16:10.138Z",
-  "dataset": {
-    "name": "redis.keyspace",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "redis.keyspace",
-    "duration": 374411,
-    "module": "redis"
-  },
-  "metricset": {
-    "name": "keyspace",
-    "period": 10000
-  },
-  "redis": {
-    "keyspace": {
-      "avg_ttl": 359459,
-      "expires": 0,
-      "id": "db0",
-      "keys": 1
+    "@timestamp": "2020-06-25T10:16:10.138Z",
+    "dataset": {
+        "name": "redis.keyspace",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "redis": {
+        "keyspace": {
+            "avg_ttl": 359459,
+            "expires": 0,
+            "id": "db0",
+            "keys": 1
+        }
+    },
+    "event": {
+        "duration": 374411,
+        "dataset": "redis.keyspace",
+        "module": "redis"
+    },
+    "stream": {
+        "dataset": "redis.keyspace",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "metricset": {
+        "name": "keyspace",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:6379",
+        "type": "redis"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
-  },
-  "service": {
-    "address": "localhost:6379",
-    "type": "redis"
-  },
-  "stream": {
-    "dataset": "redis.keyspace",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
@@ -503,9 +619,38 @@ An example event for `keyspace` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | redis.keyspace.avg_ttl | Average ttl. | long |
 | redis.keyspace.expires |  | long |
 | redis.keyspace.id | Keyspace identifier. | keyword |

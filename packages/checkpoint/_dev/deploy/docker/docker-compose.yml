@@ -1,0 +1,12 @@
+version: '2.3'
+services:
+  checkpoint-firewall-tcp:
+    image: akroh/stream:v0.0.1
+    volumes:
+      - ./test-checkpoint.log:/sample_logs/test-checkpoint.log:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/test-checkpoint.log
+  checkpoint-firewall-udp:
+    image: akroh/stream:v0.0.1
+    volumes:
+      - ./test-checkpoint.log:/sample_logs/test-checkpoint.log:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9515 -p=udp /sample_logs/test-checkpoint.log

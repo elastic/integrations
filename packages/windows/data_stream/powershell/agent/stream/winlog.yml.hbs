@@ -4,7 +4,7 @@ processors:
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.5.0
+        ecs.version: 1.6.0
   - script:
       lang: javascript
       id: security
@@ -16,7 +16,7 @@ processors:
         var powershell = (function () {
             var path = require("path");
             var processor = require("processor");
-            // var winlogbeat = require("winlogbeat");
+            var windows = require("windows");
 
             var normalizeCommonFieldNames = new processor.Convert({
                 fields: [
@@ -194,7 +194,7 @@ processors:
                 if (!commandLine) {
                     return;
                 }
-                // evt.Put(target, winlogbeat.splitCommandLine(commandLine));
+                evt.Put(target, windows.splitCommandLine(commandLine));
             };
 
             var addProcessArgs = function (evt) {

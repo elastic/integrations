@@ -47,10 +47,39 @@ The `log` dataset collects the MongoDB logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
@@ -75,114 +104,114 @@ An example event for `collstats` looks as following:
 
 ```$json
 {
-  "_id": "6hT0AXMB-2lnjH4qREj1",
-  "_index": ".ds-metrics-mongodb.collstats-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
-    "agent": {
-      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-      "name": "KaiyanMacBookPro",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "dataset": {
-      "name": "mongodb.collstats",
-      "namespace": "default",
-      "type": "metrics"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "mongodb.collstats",
-      "duration": 3378520,
-      "module": "mongodb"
-    },
-    "metricset": {
-      "name": "collstats",
-      "period": 10000
-    },
-    "mongodb": {
-      "collstats": {
-        "collection": "startup_log",
-        "commands": {
-          "count": 0,
-          "time": {
-            "us": 0
-          }
+    "_index": ".ds-metrics-mongodb.collstats-default-000001",
+    "_id": "6hT0AXMB-2lnjH4qREj1",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-06-29T21:20:51.459Z",
+        "metricset": {
+            "name": "collstats",
+            "period": 10000
         },
-        "db": "local",
-        "getmore": {
-          "count": 0,
-          "time": {
-            "us": 0
-          }
+        "service": {
+            "address": "localhost:27017",
+            "type": "mongodb"
         },
-        "insert": {
-          "count": 0,
-          "time": {
-            "us": 0
-          }
+        "stream": {
+            "dataset": "mongodb.collstats",
+            "namespace": "default",
+            "type": "metrics"
         },
-        "lock": {
-          "read": {
-            "count": 74,
-            "time": {
-              "us": 443
+        "agent": {
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+            "name": "KaiyanMacBookPro"
+        },
+        "event": {
+            "dataset": "mongodb.collstats",
+            "module": "mongodb",
+            "duration": 3378520
+        },
+        "mongodb": {
+            "collstats": {
+                "collection": "startup_log",
+                "commands": {
+                    "count": 0,
+                    "time": {
+                        "us": 0
+                    }
+                },
+                "db": "local",
+                "getmore": {
+                    "count": 0,
+                    "time": {
+                        "us": 0
+                    }
+                },
+                "insert": {
+                    "count": 0,
+                    "time": {
+                        "us": 0
+                    }
+                },
+                "lock": {
+                    "read": {
+                        "count": 74,
+                        "time": {
+                            "us": 443
+                        }
+                    },
+                    "write": {
+                        "count": 1,
+                        "time": {
+                            "us": 8
+                        }
+                    }
+                },
+                "name": "local.startup_log",
+                "queries": {
+                    "count": 0,
+                    "time": {
+                        "us": 0
+                    }
+                },
+                "remove": {
+                    "count": 0,
+                    "time": {
+                        "us": 0
+                    }
+                },
+                "total": {
+                    "count": 75,
+                    "time": {
+                        "us": 451
+                    }
+                },
+                "update": {
+                    "count": 0,
+                    "time": {
+                        "us": 0
+                    }
+                }
             }
-          },
-          "write": {
-            "count": 1,
-            "time": {
-              "us": 8
-            }
-          }
         },
-        "name": "local.startup_log",
-        "queries": {
-          "count": 0,
-          "time": {
-            "us": 0
-          }
+        "dataset": {
+            "namespace": "default",
+            "type": "metrics",
+            "name": "mongodb.collstats"
         },
-        "remove": {
-          "count": 0,
-          "time": {
-            "us": 0
-          }
-        },
-        "total": {
-          "count": 75,
-          "time": {
-            "us": 451
-          }
-        },
-        "update": {
-          "count": 0,
-          "time": {
-            "us": 0
-          }
+        "ecs": {
+            "version": "1.5.0"
         }
-      }
     },
-    "service": {
-      "address": "localhost:27017",
-      "type": "mongodb"
-    },
-    "stream": {
-      "dataset": "mongodb.collstats",
-      "namespace": "default",
-      "type": "metrics"
+    "fields": {
+        "@timestamp": [
+            "2020-06-29T21:20:51.459Z"
+        ]
     }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T21:20:51.459Z"
-    ]
-  }
 }
 ```
 
@@ -193,9 +222,38 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | mongodb.collstats.collection | Collection name. | keyword |
 | mongodb.collstats.commands.count | Number of database commands executed. | long |
 | mongodb.collstats.commands.time.us | Time executing database commands in microseconds. | long |
@@ -236,74 +294,74 @@ An example event for `dbstats` looks as following:
 
 ```$json
 {
-  "_id": "6hT0AXMB-2lnjH4qREj0",
-  "_index": ".ds-metrics-mongodb.dbstats-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
-    "agent": {
-      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-      "name": "KaiyanMacBookPro",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "dataset": {
-      "name": "mongodb.dbstats",
-      "namespace": "default",
-      "type": "metrics"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "mongodb.dbstats",
-      "duration": 3378520,
-      "module": "mongodb"
-    },
-    "metricset": {
-      "name": "dbstats",
-      "period": 10000
-    },
-    "mongodb": {
-      "dbstats": {
-        "avg_obj_size": {
-          "bytes": 59
+    "_index": ".ds-metrics-mongodb.dbstats-default-000001",
+    "_id": "6hT0AXMB-2lnjH4qREj0",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-06-29T21:20:51.459Z",
+        "metricset": {
+            "name": "dbstats",
+            "period": 10000
         },
-        "collections": 1,
-        "data_size": {
-          "bytes": 59
+        "service": {
+            "address": "localhost:27017",
+            "type": "mongodb"
         },
-        "db": "admin",
-        "file_size": {},
-        "index_size": {
-          "bytes": 20480
+        "stream": {
+            "dataset": "mongodb.dbstats",
+            "namespace": "default",
+            "type": "metrics"
         },
-        "indexes": 1,
-        "ns_size_mb": {},
-        "num_extents": 0,
-        "objects": 1,
-        "storage_size": {
-          "bytes": 20480
+        "agent": {
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+            "name": "KaiyanMacBookPro"
+        },
+        "event": {
+            "dataset": "mongodb.dbstats",
+            "module": "mongodb",
+            "duration": 3378520
+        },
+        "mongodb": {
+            "dbstats": {
+                "file_size": {},
+                "index_size": {
+                    "bytes": 20480
+                },
+                "ns_size_mb": {},
+                "storage_size": {
+                    "bytes": 20480
+                },
+                "num_extents": 0,
+                "collections": 1,
+                "objects": 1,
+                "db": "admin",
+                "data_size": {
+                    "bytes": 59
+                },
+                "indexes": 1,
+                "avg_obj_size": {
+                    "bytes": 59
+                }
+            }
+        },
+        "dataset": {
+            "namespace": "default",
+            "type": "metrics",
+            "name": "mongodb.dbstats"
+        },
+        "ecs": {
+            "version": "1.5.0"
         }
-      }
     },
-    "service": {
-      "address": "localhost:27017",
-      "type": "mongodb"
-    },
-    "stream": {
-      "dataset": "mongodb.dbstats",
-      "namespace": "default",
-      "type": "metrics"
+    "fields": {
+        "@timestamp": [
+            "2020-06-29T21:20:51.459Z"
+        ]
     }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T21:20:51.459Z"
-    ]
-  }
 }
 ```
 
@@ -314,9 +372,38 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | mongodb.dbstats.avg_obj_size.bytes |  | long |
 | mongodb.dbstats.collections |  | integer |
 | mongodb.dbstats.data_file_version.major |  | long |
@@ -346,266 +433,266 @@ An example event for `metrics` looks as following:
 
 ```$json
 {
-  "_id": "6RT0AXMB-2lnjH4qREj0",
-  "_index": ".ds-metrics-mongodb.metrics-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
-    "agent": {
-      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-      "name": "KaiyanMacBookPro",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "dataset": {
-      "name": "mongodb.metrics",
-      "namespace": "default",
-      "type": "metrics"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "mongodb.metrics",
-      "duration": 3039885,
-      "module": "mongodb"
-    },
-    "metricset": {
-      "name": "metrics",
-      "period": 10000
-    },
-    "mongodb": {
-      "metrics": {
-        "commands": {
-          "aggregate": {
-            "failed": 0,
-            "total": 0
-          },
-          "build_info": {
-            "failed": 0,
-            "total": 6
-          },
-          "coll_stats": {
-            "failed": 0,
-            "total": 0
-          },
-          "connection_pool_stats": {
-            "failed": 0,
-            "total": 0
-          },
-          "count": {
-            "failed": 0,
-            "total": 0
-          },
-          "db_stats": {
-            "failed": 0,
-            "total": 2044
-          },
-          "distinct": {
-            "failed": 0,
-            "total": 0
-          },
-          "find": {
-            "failed": 0,
-            "total": 94
-          },
-          "get_cmd_line_opts": {
-            "failed": 0,
-            "total": 2
-          },
-          "get_last_error": {
-            "failed": 0,
-            "total": 0
-          },
-          "get_log": {
-            "failed": 0,
-            "total": 2
-          },
-          "get_more": {
-            "failed": 0,
-            "total": 0
-          },
-          "get_parameter": {
-            "failed": 0,
-            "total": 0
-          },
-          "host_info": {
-            "failed": 0,
-            "total": 0
-          },
-          "insert": {
-            "failed": 0,
-            "total": 7
-          },
-          "is_master": {
-            "failed": 0,
-            "total": 2332
-          },
-          "is_self": {
-            "failed": 0,
-            "total": 0
-          },
-          "last_collections": {
-            "failed": 0,
-            "total": 458
-          },
-          "last_commands": {
-            "failed": 0,
-            "total": 0
-          },
-          "list_databased": {
-            "failed": 0,
-            "total": 466
-          },
-          "list_indexes": {
-            "failed": 0,
-            "total": 174
-          },
-          "ping": {
-            "failed": 0,
-            "total": 2290
-          },
-          "profile": {
-            "failed": 0,
-            "total": 0
-          },
-          "replset_get_rbid": {
-            "failed": 0,
-            "total": 0
-          },
-          "replset_get_status": {
-            "failed": 2,
-            "total": 2
-          },
-          "replset_heartbeat": {
-            "failed": 0,
-            "total": 0
-          },
-          "replset_update_position": {
-            "failed": 0,
-            "total": 0
-          },
-          "server_status": {
-            "failed": 0,
-            "total": 916
-          },
-          "update": {
-            "failed": 0,
-            "total": 5
-          },
-          "whatsmyuri": {
-            "failed": 0,
-            "total": 2
-          }
-        },
-        "cursor": {
-          "open": {
-            "no_timeout": 0,
-            "pinned": 0,
-            "total": 0
-          },
-          "timed_out": 0
-        },
-        "document": {
-          "deleted": 15,
-          "inserted": 19,
-          "returned": 465,
-          "updated": 2
-        },
-        "get_last_error": {
-          "write_timeouts": 0,
-          "write_wait": {
-            "count": 0,
-            "ms": 0
-          }
-        },
-        "operation": {
-          "scan_and_order": 0,
-          "write_conflicts": 0
-        },
-        "query_executor": {
-          "scanned_documents": {
-            "count": 24
-          },
-          "scanned_indexes": {
-            "count": 2
-          }
-        },
-        "replication": {
-          "apply": {
-            "attempts_to_become_secondary": 0,
-            "batches": {
-              "count": 0,
-              "time": {
-                "ms": 0
-              }
-            },
-            "ops": 0
-          },
-          "buffer": {
-            "count": 0,
-            "max_size": {
-              "bytes": 0
-            },
-            "size": {
-              "bytes": 0
+    "_index": ".ds-metrics-mongodb.metrics-default-000001",
+    "_id": "6RT0AXMB-2lnjH4qREj0",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-06-29T21:20:51.459Z",
+        "mongodb": {
+            "metrics": {
+                "replication": {
+                    "network": {
+                        "ops": 0,
+                        "reders_created": 0,
+                        "bytes": 0,
+                        "getmores": {
+                            "count": 0,
+                            "time": {
+                                "ms": 0
+                            }
+                        }
+                    },
+                    "executor": {
+                        "shutting_down": false,
+                        "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
+                        "queues": {
+                            "in_progress": {
+                                "network": 0
+                            },
+                            "sleepers": 0
+                        },
+                        "unsignaled_events": 0
+                    },
+                    "apply": {
+                        "attempts_to_become_secondary": 0,
+                        "batches": {
+                            "count": 0,
+                            "time": {
+                                "ms": 0
+                            }
+                        },
+                        "ops": 0
+                    },
+                    "buffer": {
+                        "max_size": {
+                            "bytes": 0
+                        },
+                        "size": {
+                            "bytes": 0
+                        },
+                        "count": 0
+                    },
+                    "initial_sync": {
+                        "completed": 0,
+                        "failed_attempts": 0,
+                        "failures": 0
+                    }
+                },
+                "ttl": {
+                    "passes": {
+                        "count": 433
+                    },
+                    "deleted_documents": {
+                        "count": 3
+                    }
+                },
+                "commands": {
+                    "replset_heartbeat": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "connection_pool_stats": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "host_info": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "aggregate": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "replset_update_position": {
+                        "total": 0,
+                        "failed": 0
+                    },
+                    "last_collections": {
+                        "failed": 0,
+                        "total": 458
+                    },
+                    "list_databased": {
+                        "total": 466,
+                        "failed": 0
+                    },
+                    "whatsmyuri": {
+                        "total": 2,
+                        "failed": 0
+                    },
+                    "profile": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "insert": {
+                        "failed": 0,
+                        "total": 7
+                    },
+                    "count": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "is_master": {
+                        "failed": 0,
+                        "total": 2332
+                    },
+                    "distinct": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "replset_get_status": {
+                        "failed": 2,
+                        "total": 2
+                    },
+                    "find": {
+                        "failed": 0,
+                        "total": 94
+                    },
+                    "replset_get_rbid": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "get_parameter": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "coll_stats": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "build_info": {
+                        "total": 6,
+                        "failed": 0
+                    },
+                    "last_commands": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "update": {
+                        "failed": 0,
+                        "total": 5
+                    },
+                    "is_self": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "db_stats": {
+                        "failed": 0,
+                        "total": 2044
+                    },
+                    "get_cmd_line_opts": {
+                        "failed": 0,
+                        "total": 2
+                    },
+                    "ping": {
+                        "total": 2290,
+                        "failed": 0
+                    },
+                    "server_status": {
+                        "total": 916,
+                        "failed": 0
+                    },
+                    "get_last_error": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "get_more": {
+                        "failed": 0,
+                        "total": 0
+                    },
+                    "get_log": {
+                        "failed": 0,
+                        "total": 2
+                    },
+                    "list_indexes": {
+                        "failed": 0,
+                        "total": 174
+                    }
+                },
+                "cursor": {
+                    "timed_out": 0,
+                    "open": {
+                        "pinned": 0,
+                        "total": 0,
+                        "no_timeout": 0
+                    }
+                },
+                "get_last_error": {
+                    "write_wait": {
+                        "ms": 0,
+                        "count": 0
+                    },
+                    "write_timeouts": 0
+                },
+                "operation": {
+                    "write_conflicts": 0,
+                    "scan_and_order": 0
+                },
+                "document": {
+                    "deleted": 15,
+                    "inserted": 19,
+                    "returned": 465,
+                    "updated": 2
+                },
+                "query_executor": {
+                    "scanned_indexes": {
+                        "count": 2
+                    },
+                    "scanned_documents": {
+                        "count": 24
+                    }
+                }
             }
-          },
-          "executor": {
-            "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
-            "queues": {
-              "in_progress": {
-                "network": 0
-              },
-              "sleepers": 0
-            },
-            "shutting_down": false,
-            "unsignaled_events": 0
-          },
-          "initial_sync": {
-            "completed": 0,
-            "failed_attempts": 0,
-            "failures": 0
-          },
-          "network": {
-            "bytes": 0,
-            "getmores": {
-              "count": 0,
-              "time": {
-                "ms": 0
-              }
-            },
-            "ops": 0,
-            "reders_created": 0
-          }
         },
-        "ttl": {
-          "deleted_documents": {
-            "count": 3
-          },
-          "passes": {
-            "count": 433
-          }
+        "metricset": {
+            "period": 10000,
+            "name": "metrics"
+        },
+        "stream": {
+            "type": "metrics",
+            "dataset": "mongodb.metrics",
+            "namespace": "default"
+        },
+        "agent": {
+            "name": "KaiyanMacBookPro",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a"
+        },
+        "service": {
+            "address": "localhost:27017",
+            "type": "mongodb"
+        },
+        "event": {
+            "dataset": "mongodb.metrics",
+            "module": "mongodb",
+            "duration": 3039885
+        },
+        "dataset": {
+            "type": "metrics",
+            "name": "mongodb.metrics",
+            "namespace": "default"
+        },
+        "ecs": {
+            "version": "1.5.0"
         }
-      }
     },
-    "service": {
-      "address": "localhost:27017",
-      "type": "mongodb"
-    },
-    "stream": {
-      "dataset": "mongodb.metrics",
-      "namespace": "default",
-      "type": "metrics"
+    "fields": {
+        "@timestamp": [
+            "2020-06-29T21:20:51.459Z"
+        ]
     }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T21:20:51.459Z"
-    ]
-  }
 }
 ```
 
@@ -616,9 +703,38 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | mongodb.metrics.commands.aggregate.failed |  | long |
 | mongodb.metrics.commands.aggregate.total |  | long |
 | mongodb.metrics.commands.build_info.failed |  | long |
@@ -753,57 +869,57 @@ An example event for `replstatus` looks as following:
 
 ```$json
 {
-  "_id": "3BT0AXMB-2lnjH4qREj0",
-  "_index": ".ds-metrics-mongodb.replstatus-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T21:20:51.457Z",
-    "agent": {
-      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-      "name": "KaiyanMacBookPro",
-      "type": "metricbeat",
-      "version": "8.0.0"
+    "_index": ".ds-metrics-mongodb.replstatus-default-000001",
+    "_id": "3BT0AXMB-2lnjH4qREj0",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-06-29T21:20:51.457Z",
+        "service": {
+            "address": "localhost:27017",
+            "type": "mongodb"
+        },
+        "error": {
+            "message": "error getting replication info: collection oplog.rs was not found"
+        },
+        "dataset": {
+            "name": "mongodb.replstatus",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "stream": {
+            "dataset": "mongodb.replstatus",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "event": {
+            "dataset": "mongodb.replstatus",
+            "module": "mongodb",
+            "duration": 1962467
+        },
+        "metricset": {
+            "name": "replstatus",
+            "period": 10000
+        },
+        "agent": {
+            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+            "name": "KaiyanMacBookPro",
+            "type": "metricbeat",
+            "version": "8.0.0"
+        }
     },
-    "dataset": {
-      "name": "mongodb.replstatus",
-      "namespace": "default",
-      "type": "metrics"
+    "fields": {
+        "@timestamp": [
+            "2020-06-29T21:20:51.457Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "error": {
-      "message": "error getting replication info: collection oplog.rs was not found"
-    },
-    "event": {
-      "dataset": "mongodb.replstatus",
-      "duration": 1962467,
-      "module": "mongodb"
-    },
-    "metricset": {
-      "name": "replstatus",
-      "period": 10000
-    },
-    "service": {
-      "address": "localhost:27017",
-      "type": "mongodb"
-    },
-    "stream": {
-      "dataset": "mongodb.replstatus",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T21:20:51.457Z"
+    "sort": [
+        1593465651457
     ]
-  },
-  "sort": [
-    1593465651457
-  ]
 }
 ```
 
@@ -814,9 +930,38 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | mongodb.replstatus.headroom.max | Difference between primary's oplog window and the replication lag of the fastest secondary | long |
 | mongodb.replstatus.headroom.min | Difference between primary's oplog window and the replication lag of the slowest secondary | long |
 | mongodb.replstatus.lag.max | Difference between optime of primary and slowest secondary | long |
@@ -864,235 +1009,235 @@ An example event for `status` looks as following:
 
 ```$json
 {
-  "_id": "ZxTzAXMB-2lnjH4qgUKh",
-  "_index": ".ds-metrics-mongodb.status-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-06-29T21:20:01.455Z",
-    "agent": {
-      "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-      "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-      "name": "KaiyanMacBookPro",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "dataset": {
-      "name": "mongodb.status",
-      "namespace": "default",
-      "type": "metrics"
-    },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "mongodb.status",
-      "duration": 3581045,
-      "module": "mongodb"
-    },
-    "metricset": {
-      "name": "status",
-      "period": 10000
-    },
-    "mongodb": {
-      "status": {
-        "asserts": {
-          "msg": 0,
-          "regular": 0,
-          "rollovers": 0,
-          "user": 9,
-          "warning": 0
+    "_index": ".ds-metrics-mongodb.status-default-000001",
+    "_id": "ZxTzAXMB-2lnjH4qgUKh",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-06-29T21:20:01.455Z",
+        "dataset": {
+            "type": "metrics",
+            "name": "mongodb.status",
+            "namespace": "default"
         },
-        "connections": {
-          "available": 3271,
-          "current": 5,
-          "total_created": 2266
+        "stream": {
+            "type": "metrics",
+            "dataset": "mongodb.status",
+            "namespace": "default"
         },
-        "extra_info": {
-          "heap_usage": {},
-          "page_faults": 0
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+            "name": "KaiyanMacBookPro",
+            "type": "metricbeat"
         },
-        "global_lock": {
-          "active_clients": {
-            "readers": 1,
-            "total": 1,
-            "writers": 0
-          },
-          "current_queue": {
-            "readers": 0,
-            "total": 0,
-            "writers": 0
-          },
-          "total_time": {
-            "us": 26003338000
-          }
+        "process": {
+            "name": "mongod"
         },
-        "local_time": "2020-06-29T21:20:01.457Z",
-        "locks": {
-          "collection": {
-            "acquire": {
-              "count": {
-                "W": 3,
-                "r": 8221,
-                "w": 450
-              }
-            },
-            "deadlock": {},
-            "wait": {}
-          },
-          "database": {
-            "acquire": {
-              "count": {
-                "W": 5,
-                "r": 5238,
-                "w": 453
-              }
-            },
-            "deadlock": {},
-            "wait": {}
-          },
-          "global": {
-            "acquire": {
-              "count": {
-                "W": 4,
-                "r": 56961,
-                "w": 458
-              }
-            },
-            "deadlock": {},
-            "wait": {}
-          }
+        "event": {
+            "duration": 3581045,
+            "dataset": "mongodb.status",
+            "module": "mongodb"
         },
-        "memory": {
-          "bits": 64,
-          "mapped": {},
-          "mapped_with_journal": {},
-          "resident": {
-            "mb": 44
-          },
-          "virtual": {
-            "mb": 6971
-          }
-        },
-        "network": {
-          "in": {
-            "bytes": 687306
-          },
-          "out": {
-            "bytes": 32519464
-          },
-          "requests": 11607
-        },
-        "ops": {
-          "counters": {
-            "command": 11314,
-            "delete": 3,
-            "getmore": 452,
-            "insert": 19,
-            "query": 94,
-            "update": 5
-          },
-          "latencies": {
-            "commands": {
-              "count": 11138,
-              "latency": 2055949
-            },
-            "reads": {
-              "count": 458,
-              "latency": 14259
-            },
-            "writes": {
-              "count": 9,
-              "latency": 103455
+        "mongodb": {
+            "status": {
+                "locks": {
+                    "global": {
+                        "acquire": {
+                            "count": {
+                                "w": 458,
+                                "W": 4,
+                                "r": 56961
+                            }
+                        },
+                        "wait": {},
+                        "deadlock": {}
+                    },
+                    "database": {
+                        "deadlock": {},
+                        "acquire": {
+                            "count": {
+                                "w": 453,
+                                "W": 5,
+                                "r": 5238
+                            }
+                        },
+                        "wait": {}
+                    },
+                    "collection": {
+                        "wait": {},
+                        "deadlock": {},
+                        "acquire": {
+                            "count": {
+                                "W": 3,
+                                "r": 8221,
+                                "w": 450
+                            }
+                        }
+                    }
+                },
+                "network": {
+                    "in": {
+                        "bytes": 687306
+                    },
+                    "out": {
+                        "bytes": 32519464
+                    },
+                    "requests": 11607
+                },
+                "extra_info": {
+                    "page_faults": 0,
+                    "heap_usage": {}
+                },
+                "local_time": "2020-06-29T21:20:01.457Z",
+                "storage_engine": {
+                    "name": "wiredTiger"
+                },
+                "asserts": {
+                    "user": 9,
+                    "rollovers": 0,
+                    "regular": 0,
+                    "warning": 0,
+                    "msg": 0
+                },
+                "global_lock": {
+                    "total_time": {
+                        "us": 26003338000
+                    },
+                    "current_queue": {
+                        "total": 0,
+                        "readers": 0,
+                        "writers": 0
+                    },
+                    "active_clients": {
+                        "total": 1,
+                        "readers": 1,
+                        "writers": 0
+                    }
+                },
+                "wired_tiger": {
+                    "log": {
+                        "syncs": 67,
+                        "size": {
+                            "bytes": 33554432
+                        },
+                        "write": {
+                            "bytes": 46976
+                        },
+                        "max_file_size": {
+                            "bytes": 104857600
+                        },
+                        "flushes": 152183,
+                        "writes": 140,
+                        "scans": 6
+                    },
+                    "concurrent_transactions": {
+                        "write": {
+                            "out": 0,
+                            "available": 128,
+                            "total_tickets": 128
+                        },
+                        "read": {
+                            "available": 128,
+                            "total_tickets": 128,
+                            "out": 0
+                        }
+                    },
+                    "cache": {
+                        "dirty": {
+                            "bytes": 0
+                        },
+                        "pages": {
+                            "evicted": 0,
+                            "read": 14,
+                            "write": 111
+                        },
+                        "maximum": {
+                            "bytes": 16642998272
+                        },
+                        "used": {
+                            "bytes": 89236
+                        }
+                    }
+                },
+                "memory": {
+                    "mapped_with_journal": {},
+                    "bits": 64,
+                    "resident": {
+                        "mb": 44
+                    },
+                    "virtual": {
+                        "mb": 6971
+                    },
+                    "mapped": {}
+                },
+                "connections": {
+                    "total_created": 2266,
+                    "current": 5,
+                    "available": 3271
+                },
+                "ops": {
+                    "counters": {
+                        "delete": 3,
+                        "getmore": 452,
+                        "command": 11314,
+                        "insert": 19,
+                        "query": 94,
+                        "update": 5
+                    },
+                    "replicated": {
+                        "delete": 0,
+                        "getmore": 0,
+                        "command": 0,
+                        "insert": 0,
+                        "query": 0,
+                        "update": 0
+                    },
+                    "latencies": {
+                        "writes": {
+                            "latency": 103455,
+                            "count": 9
+                        },
+                        "commands": {
+                            "latency": 2055949,
+                            "count": 11138
+                        },
+                        "reads": {
+                            "latency": 14259,
+                            "count": 458
+                        }
+                    }
+                },
+                "uptime": {
+                    "ms": 26003340
+                }
             }
-          },
-          "replicated": {
-            "command": 0,
-            "delete": 0,
-            "getmore": 0,
-            "insert": 0,
-            "query": 0,
-            "update": 0
-          }
         },
-        "storage_engine": {
-          "name": "wiredTiger"
+        "service": {
+            "version": "4.2.0",
+            "address": "localhost:27017",
+            "type": "mongodb"
         },
-        "uptime": {
-          "ms": 26003340
+        "metricset": {
+            "name": "status",
+            "period": 10000
         },
-        "wired_tiger": {
-          "cache": {
-            "dirty": {
-              "bytes": 0
-            },
-            "maximum": {
-              "bytes": 16642998272
-            },
-            "pages": {
-              "evicted": 0,
-              "read": 14,
-              "write": 111
-            },
-            "used": {
-              "bytes": 89236
-            }
-          },
-          "concurrent_transactions": {
-            "read": {
-              "available": 128,
-              "out": 0,
-              "total_tickets": 128
-            },
-            "write": {
-              "available": 128,
-              "out": 0,
-              "total_tickets": 128
-            }
-          },
-          "log": {
-            "flushes": 152183,
-            "max_file_size": {
-              "bytes": 104857600
-            },
-            "scans": 6,
-            "size": {
-              "bytes": 33554432
-            },
-            "syncs": 67,
-            "write": {
-              "bytes": 46976
-            },
-            "writes": 140
-          }
+        "ecs": {
+            "version": "1.5.0"
         }
-      }
     },
-    "process": {
-      "name": "mongod"
+    "fields": {
+        "@timestamp": [
+            "2020-06-29T21:20:01.455Z"
+        ],
+        "mongodb.status.local_time": [
+            "2020-06-29T21:20:01.457Z"
+        ]
     },
-    "service": {
-      "address": "localhost:27017",
-      "type": "mongodb",
-      "version": "4.2.0"
-    },
-    "stream": {
-      "dataset": "mongodb.status",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-06-29T21:20:01.455Z"
-    ],
-    "mongodb.status.local_time": [
-      "2020-06-29T21:20:01.457Z"
+    "sort": [
+        1593465601455
     ]
-  },
-  "sort": [
-    1593465601455
-  ]
 }
 ```
 
@@ -1103,9 +1248,38 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | mongodb.status.asserts.msg | Number of msg assertions produced by the server. | long |
 | mongodb.status.asserts.regular | Number of regular assertions produced by the server. | long |
 | mongodb.status.asserts.rollovers | Number of rollovers assertions produced by the server. | long |

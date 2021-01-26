@@ -190,7 +190,7 @@ func (r *packageRepository) createPackagesFromSource(beatsDir, beatName, beatTyp
 
 		// docs
 		if len(aPackage.docs) == 0 {
-			packageDocsPath := filepath.Join("dev/import-beats-resources", moduleDir.Name(), "docs")
+			packageDocsPath := filepath.Join("packages", moduleDir.Name(), "_dev", "build", "docs")
 			docs, err := createDocTemplates(packageDocsPath)
 			if err != nil {
 				return err
@@ -428,6 +428,9 @@ func writeDoc(docsPath string, doc docContent, aPackage packageContent) error {
 		t = template.Must(t.Parse("TODO"))
 	} else {
 		t, err = t.Funcs(template.FuncMap{
+			"event": func(dataStream string) (string, error) {
+				return "TODO", nil
+			},
 			"fields": func(dataStream string) (string, error) {
 				return renderExportedFields(dataStream, aPackage.dataStreams)
 			},

@@ -19,94 +19,94 @@ An example event for `webserver` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-07-08T11:42:12.102Z",
-  "agent": {
-    "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
-    "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
-    "name": "DESKTOP-RFOOE09",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.webserver",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "iis.webserver",
-    "duration": 1205854900,
-    "module": "iis"
-  },
-  "iis": {
-    "webserver": {
-      "asp_net": {
-        "application_restarts": 0,
-        "request_wait_time": 0
-      },
-      "asp_net_application": {
-        "errors_total/sec": 0,
-        "pipeline_instance_count": 2,
-        "requests/sec": 0,
-        "requests_executing": 0,
-        "requests_in_application_queue": 0
-      },
-      "cache": {
-        "current_file_cache_memory_usage": 696,
-        "current_files_cached": 2,
-        "current_uris_cached": 1,
-        "file_cache_hits": 18,
-        "file_cache_misses": 70,
-        "maximum_file_cache_memory_usage": 99453,
-        "output_cache_current_items": 0,
-        "output_cache_current_memory_usage": 0,
-        "output_cache_total_hits": 0,
-        "output_cache_total_misses": 76,
-        "total_files_cached": 15,
-        "total_uris_cached": 10,
-        "uri_cache_hits": 14,
-        "uri_cache_misses": 62
-      },
-      "network": {
-        "anonymous_users_per_sec": 0,
-        "bytes_received_per_sec": 0,
-        "bytes_sent_per_sec": 0,
-        "current_anonymous_users": 0,
-        "current_connections": 2,
-        "current_non_anonymous_users": 0,
-        "delete_requests_per_sec": 0,
-        "get_requests_per_sec": 0,
-        "maximum_connections": 6,
-        "post_requests_per_sec": 0,
-        "service_uptime": 1721919,
-        "total_anonymous_users": 52,
-        "total_bytes_received": 33151,
-        "total_bytes_sent": 903338,
-        "total_connection_attempts": 23,
-        "total_delete_requests": 0,
-        "total_get_requests": 52,
-        "total_non_anonymous_users": 0,
-        "total_post_requests": 0
-      },
-      "process": {
-        "io_read_operations_per_sec": 5.7271735422265,
-        "io_write_operations_per_sec": 5.7271735422265,
-        "page_faults_per_sec": 1.0738450391674688,
-        "private_bytes": 106692608,
-        "virtual_bytes": 2222663852032,
-        "worker_process_count": 2
-      }
+    "@timestamp": "2020-07-08T11:42:12.102Z",
+    "service": {
+        "type": "iis"
+    },
+    "dataset": {
+        "type": "metrics",
+        "name": "iis.webserver",
+        "namespace": "default"
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
+        "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c"
+    },
+    "iis": {
+        "webserver": {
+            "asp_net": {
+                "application_restarts": 0,
+                "request_wait_time": 0
+            },
+            "asp_net_application": {
+                "requests_in_application_queue": 0,
+                "pipeline_instance_count": 2,
+                "requests/sec": 0,
+                "requests_executing": 0,
+                "errors_total/sec": 0
+            },
+            "network": {
+                "total_get_requests": 52,
+                "total_anonymous_users": 52,
+                "current_connections": 2,
+                "anonymous_users_per_sec": 0,
+                "service_uptime": 1721919.0,
+                "total_post_requests": 0,
+                "total_non_anonymous_users": 0,
+                "bytes_received_per_sec": 0,
+                "total_delete_requests": 0,
+                "current_non_anonymous_users": 0,
+                "bytes_sent_per_sec": 0,
+                "total_bytes_received": 33151,
+                "current_anonymous_users": 0,
+                "post_requests_per_sec": 0,
+                "total_connection_attempts": 23,
+                "delete_requests_per_sec": 0,
+                "get_requests_per_sec": 0,
+                "maximum_connections": 6,
+                "total_bytes_sent": 903338
+            },
+            "process": {
+                "io_write_operations_per_sec": 5.7271735422265,
+                "worker_process_count": 2,
+                "private_bytes": 1.06692608E8,
+                "page_faults_per_sec": 1.0738450391674688,
+                "virtual_bytes": 2.222663852032E12,
+                "io_read_operations_per_sec": 5.7271735422265
+            },
+            "cache": {
+                "current_files_cached": 2,
+                "file_cache_misses": 70,
+                "total_files_cached": 15,
+                "output_cache_current_memory_usage": 0,
+                "file_cache_hits": 18,
+                "uri_cache_hits": 14,
+                "output_cache_total_hits": 0,
+                "output_cache_current_items": 0,
+                "current_file_cache_memory_usage": 696,
+                "current_uris_cached": 1,
+                "uri_cache_misses": 62,
+                "maximum_file_cache_memory_usage": 99453,
+                "output_cache_total_misses": 76,
+                "total_uris_cached": 10
+            }
+        }
+    },
+    "event": {
+        "dataset": "iis.webserver",
+        "module": "iis",
+        "duration": 1205854900
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "webserver"
     }
-  },
-  "metricset": {
-    "name": "webserver",
-    "period": 10000
-  },
-  "service": {
-    "type": "iis"
-  }
 }
 ```
 
@@ -117,10 +117,88 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| iis.webserver.*.* | webserver | object |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| iis.webserver.asp_net.application_restarts | Number of applications restarts. | float |
+| iis.webserver.asp_net.request_wait_time | Request wait time. | long |
+| iis.webserver.asp_net_application.errors_total_per_sec | Total number of errors per sec. | float |
+| iis.webserver.asp_net_application.pipeline_instance_count | The pipeline instance count. | float |
+| iis.webserver.asp_net_application.requests_executing | Number of requests executing. | float |
+| iis.webserver.asp_net_application.requests_in_application_queue | Number of requests in the application queue. | float |
+| iis.webserver.asp_net_application.requests_per_sec | Number of requests per sec. | float |
+| iis.webserver.cache.current_file_cache_memory_usage | The current file cache memory usage size. | float |
+| iis.webserver.cache.current_files_cached | The number of current files cached. | float |
+| iis.webserver.cache.current_uris_cached | The number of current uris cached. | float |
+| iis.webserver.cache.file_cache_hits | The number of file cache hits. | float |
+| iis.webserver.cache.file_cache_misses | The number of file cache misses. | float |
+| iis.webserver.cache.maximum_file_cache_memory_usage | The max file cache size. | float |
+| iis.webserver.cache.output_cache_current_items | The number of output cache current items. | float |
+| iis.webserver.cache.output_cache_current_memory_usage | The output cache memory usage size. | float |
+| iis.webserver.cache.output_cache_total_hits | The output cache total hits count. | float |
+| iis.webserver.cache.output_cache_total_misses | The output cache total misses count. | float |
+| iis.webserver.cache.total_files_cached | the total number of files cached. | float |
+| iis.webserver.cache.total_uris_cached | The total number of URIs cached. | float |
+| iis.webserver.cache.uri_cache_hits | The number of URIs cached hits. | float |
+| iis.webserver.cache.uri_cache_misses | The number of URIs cache misses. | float |
+| iis.webserver.network.anonymous_users_per_sec | The number of anonymous users per sec. | float |
+| iis.webserver.network.bytes_received_per_sec | The size of bytes received per sec. | float |
+| iis.webserver.network.bytes_sent_per_sec | The size of bytes sent per sec. | float |
+| iis.webserver.network.current_anonymous_users | The number of current anonymous users. | float |
+| iis.webserver.network.current_connections | The number of current connections. | float |
+| iis.webserver.network.current_non_anonymous_users | The number of current non anonymous users. | float |
+| iis.webserver.network.delete_requests_per_sec | Number of DELETE requests per sec. | float |
+| iis.webserver.network.get_requests_per_sec | Number of GET requests per sec. | float |
+| iis.webserver.network.maximum_connections | Number of maximum connections. | float |
+| iis.webserver.network.post_requests_per_sec | Number of POST requests per sec. | float |
+| iis.webserver.network.service_uptime | Service uptime. | float |
+| iis.webserver.network.total_anonymous_users | Total number of anonymous users. | float |
+| iis.webserver.network.total_bytes_received | Total size of bytes received. | float |
+| iis.webserver.network.total_bytes_sent | Total size of bytes sent. | float |
+| iis.webserver.network.total_connection_attempts | The total number of connection attempts. | float |
+| iis.webserver.network.total_delete_requests | The total number of DELETE requests. | float |
+| iis.webserver.network.total_get_requests | The total number of GET requests. | float |
+| iis.webserver.network.total_non_anonymous_users | The total number of non anonymous users. | float |
+| iis.webserver.network.total_post_requests | The total number of POST requests. | float |
+| iis.webserver.process.cpu_usage_perc | The CPU usage percentage. | float |
+| iis.webserver.process.handle_count | The number of handles. | float |
+| iis.webserver.process.io_read_operations_per_sec | IO read operations per sec. | float |
+| iis.webserver.process.io_write_operations_per_sec | IO write operations per sec. | float |
+| iis.webserver.process.page_faults_per_sec | Memory page faults. | float |
+| iis.webserver.process.private_bytes | Memory private bytes. | float |
+| iis.webserver.process.thread_count | The number of threads. | long |
+| iis.webserver.process.virtual_bytes | Memory virtual bytes. | float |
+| iis.webserver.process.worker_process_count | Number of worker processes running. | float |
+| iis.webserver.process.working_set | Memory working set. | float |
 
 
 ### website
@@ -130,51 +208,51 @@ An example event for `website` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-07-08T11:40:22.114Z",
-  "agent": {
-    "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
-    "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
-    "name": "DESKTOP-RFOOE09",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.website",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "iis.website",
-    "duration": 5008200,
-    "module": "iis"
-  },
-  "iis": {
-    "website": {
-      "name": "test2.local",
-      "network": {
-        "current_connections": 0,
-        "maximum_connections": 4,
-        "service_uptime": 1721807,
-        "total_bytes_received": 4250,
-        "total_bytes_sent": 135739,
-        "total_connection_attempts": 7,
-        "total_delete_requests": 0,
-        "total_get_requests": 11,
-        "total_post_requests": 0,
-        "total_put_requests": 0
-      }
+    "@timestamp": "2020-07-08T11:40:22.114Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "iis": {
+        "website": {
+            "name": "test2.local",
+            "network": {
+                "total_put_requests": 0,
+                "total_get_requests": 11,
+                "service_uptime": 1721807.0,
+                "total_bytes_sent": 135739,
+                "maximum_connections": 4,
+                "total_connection_attempts": 7,
+                "total_post_requests": 0,
+                "total_bytes_received": 4250,
+                "current_connections": 0,
+                "total_delete_requests": 0
+            }
+        }
+    },
+    "event": {
+        "dataset": "iis.website",
+        "module": "iis",
+        "duration": 5008200
+    },
+    "metricset": {
+        "name": "website",
+        "period": 10000
+    },
+    "service": {
+        "type": "iis"
+    },
+    "dataset": {
+        "name": "iis.website",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
+        "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
+        "name": "DESKTOP-RFOOE09"
     }
-  },
-  "metricset": {
-    "name": "website",
-    "period": 10000
-  },
-  "service": {
-    "type": "iis"
-  }
 }
 ```
 
@@ -185,10 +263,55 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | iis.website.name | website name | keyword |
+| iis.website.network.bytes_received_per_sec | The bytes received per sec size. | float |
+| iis.website.network.bytes_sent_per_sec | The bytes sent per sec size. | float |
+| iis.website.network.current_connections | The number of current connections. | float |
+| iis.website.network.delete_requests_per_sec | The number of DELETE requests per sec. | float |
+| iis.website.network.get_requests_per_sec | The number of GET requests per sec. | float |
+| iis.website.network.maximum_connections | The number of maximum connections. | float |
+| iis.website.network.post_requests_per_sec | The number of POST requests per sec. | float |
+| iis.website.network.put_requests_per_sec | The number of PUT requests per sec. | float |
+| iis.website.network.service_uptime | The service uptime. | float |
+| iis.website.network.total_bytes_received | The total number of bytes received. | float |
+| iis.website.network.total_bytes_sent | The  total number of bytes sent. | float |
+| iis.website.network.total_connection_attempts | The total number of connection attempts. | float |
+| iis.website.network.total_delete_requests | The total number of DELETE requests. | float |
+| iis.website.network.total_get_requests | The total number of GET requests. | float |
+| iis.website.network.total_post_requests | The total number of POST requests. | float |
+| iis.website.network.total_put_requests | The total number of PUT requests. | float |
 
 
 ### application_pool
@@ -198,50 +321,50 @@ An example event for `application_pool` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-07-08T11:41:31.048Z",
-  "agent": {
-    "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
-    "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c",
-    "name": "DESKTOP-RFOOE09",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.application_pool",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "iis.application_pool",
-    "duration": 397142600,
-    "module": "iis"
-  },
-  "iis": {
-    "application_pool": {
-      "name": "DefaultAppPool",
-      "net_clr": {
-        "total_exceptions_thrown": 0
-      },
-      "process": {
-        "handle_count": 466,
-        "private_bytes": 71516160,
-        "thread_count": 30
-      }
+    "@timestamp": "2020-07-08T11:41:31.048Z",
+    "process": {
+        "pid": 51224
+    },
+    "event": {
+        "dataset": "iis.application_pool",
+        "module": "iis",
+        "duration": 397142600
+    },
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "8ade3582-e6ab-4664-ba27-52b3d46953e3",
+        "id": "3b73ebb6-c6ea-4354-b1f3-240ac1aa072c"
+    },
+    "service": {
+        "type": "iis"
+    },
+    "iis": {
+        "application_pool": {
+            "name": "DefaultAppPool",
+            "net_clr": {
+                "total_exceptions_thrown": 0
+            },
+            "process": {
+                "thread_count": 30,
+                "handle_count": 466,
+                "private_bytes": 7.151616E7
+            }
+        }
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "application_pool"
+    },
+    "dataset": {
+        "namespace": "default",
+        "type": "metrics",
+        "name": "iis.application_pool"
     }
-  },
-  "metricset": {
-    "name": "application_pool",
-    "period": 10000
-  },
-  "process": {
-    "pid": 51224
-  },
-  "service": {
-    "type": "iis"
-  }
 }
 ```
 
@@ -252,10 +375,52 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | iis.application_pool.name | application pool name | keyword |
+| iis.application_pool.net_clr.filters_per_sec | Number of filters per sec. | float |
+| iis.application_pool.net_clr.finallys_per_sec | The number of finallys per sec. | float |
+| iis.application_pool.net_clr.throw_to_catch_depth_per_sec | Throw to catch depth count per sec. | float |
+| iis.application_pool.net_clr.total_exceptions_thrown | Total number of exceptions thrown. | long |
+| iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float |
+| iis.application_pool.process.handle_count | The number of handles. | long |
+| iis.application_pool.process.io_read_operations_per_sec | IO read operations per sec. | float |
+| iis.application_pool.process.io_write_operations_per_sec | IO write operations per sec. | float |
+| iis.application_pool.process.page_faults_per_sec | Memory page faults. | float |
+| iis.application_pool.process.private_bytes | Memory private bytes. | float |
+| iis.application_pool.process.thread_count | The number of threats. | long |
+| iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float |
+| iis.application_pool.process.working_set | Memory working set. | float |
 
 
 ## Logs
@@ -271,90 +436,90 @@ An example event for `access` looks as following:
 
 ```$json
 {
-  "@timestamp": "2018-11-19T15:24:54.000Z",
-  "agent": {
-    "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
-    "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
-    "name": "DESKTOP-RFOOE09",
-    "type": "filebeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.access",
-    "namespace": "default",
-    "type": "logs"
-  },
-  "destination": {
-    "address": "127.0.0.1",
-    "ip": "127.0.0.1",
-    "port": 80
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "category": [
-      "web",
-      "network"
-    ],
-    "created": "2020-07-08T11:40:14.112Z",
-    "duration": 725000000,
-    "kind": "event",
-    "outcome": "failure",
-    "type": [
-      "connection"
-    ]
-  },
-  "http": {
-    "request": {
-      "method": "GET"
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
+        "type": "filebeat",
+        "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
+        "version": "8.0.0"
     },
-    "response": {
-      "status_code": 401
+    "temp": {},
+    "log": {
+        "file": {
+            "path": "C:\\inetpub\\logs\\LogFiles\\W3SVC2\\u_ex181119.log"
+        },
+        "offset": 261
+    },
+    "destination": {
+        "address": "127.0.0.1",
+        "port": 80,
+        "ip": "127.0.0.1"
+    },
+    "source": {
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1"
+    },
+    "url": {
+        "path": "/"
+    },
+    "input": {
+        "type": "log"
+    },
+    "iis": {
+        "access": {
+            "sub_status": 3,
+            "win32_status": 5
+        }
+    },
+    "@timestamp": "2018-11-19T15:24:54.000Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1",
+            "127.0.0.1"
+        ]
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "status_code": 401
+        }
+    },
+    "event": {
+        "duration": 725000000,
+        "created": "2020-07-08T11:40:14.112Z",
+        "kind": "event",
+        "category": [
+            "web",
+            "network"
+        ],
+        "type": [
+            "connection"
+        ],
+        "outcome": "failure"
+    },
+    "dataset": {
+        "name": "iis.access",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "user_agent": {
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36",
+        "os": {
+            "name": "Windows",
+            "version": "10",
+            "full": "Windows 10"
+        },
+        "name": "Chrome",
+        "device": {
+            "name": "Other"
+        },
+        "version": "70.0.3538.102"
     }
-  },
-  "iis": {
-    "access": {
-      "sub_status": 3,
-      "win32_status": 5
-    }
-  },
-  "input": {
-    "type": "log"
-  },
-  "log": {
-    "file": {
-      "path": "C:\\inetpub\\logs\\LogFiles\\W3SVC2\\u_ex181119.log"
-    },
-    "offset": 261
-  },
-  "related": {
-    "ip": [
-      "127.0.0.1",
-      "127.0.0.1"
-    ]
-  },
-  "source": {
-    "address": "127.0.0.1",
-    "ip": "127.0.0.1"
-  },
-  "temp": {},
-  "url": {
-    "path": "/"
-  },
-  "user_agent": {
-    "device": {
-      "name": "Other"
-    },
-    "name": "Chrome",
-    "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36",
-    "os": {
-      "full": "Windows 10",
-      "name": "Windows",
-      "version": "10"
-    },
-    "version": "70.0.3538.102"
-  }
 }
 ```
 
@@ -365,12 +530,43 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.domain | Destination domain. | wildcard |
+| destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
+| error.message | Error message. | text |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -382,20 +578,30 @@ The fields reported are:
 | iis.access.site_name | The site name and instance number. | keyword |
 | iis.access.sub_status | The HTTP substatus code. | long |
 | iis.access.win32_status | The Windows status code. | long |
+| message | Message. | text |
+| related.ip | All of the IPs seen in the event. | ip |
+| related.user | All the user names seen in the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source. | ip |
 | url.path | Path of the request, such as "/search". | keyword |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version. | keyword |
+| user_agent.version | Version. | keyword |
 
 
 
@@ -407,63 +613,63 @@ An example event for `error` looks as following:
 
 ```$json
 {
-  "@timestamp": "2020-06-30T13:56:46.000Z",
-  "agent": {
-    "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
-    "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
-    "name": "DESKTOP-RFOOE09",
-    "type": "filebeat",
-    "version": "8.0.0"
-  },
-  "dataset": {
-    "name": "iis.error",
-    "namespace": "default",
-    "type": "logs"
-  },
-  "destination": {
-    "address": "::1%0",
-    "ip": "::1",
-    "port": 80
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "category": [
-      "web",
-      "network"
-    ],
-    "created": "2020-07-08T11:40:13.768Z",
-    "kind": "event",
-    "type": [
-      "connection"
-    ]
-  },
-  "iis": {
-    "error": {
-      "reason_phrase": "Timer_ConnectionIdle"
-    }
-  },
-  "input": {
-    "type": "log"
-  },
-  "log": {
-    "file": {
-      "path": "c:\\Windows\\System32\\LogFiles\\HTTPERR\\httperr1.log"
+    "agent": {
+        "name": "DESKTOP-RFOOE09",
+        "id": "db17f9fb-5bcb-4116-a009-79a1bb7d4820",
+        "type": "filebeat",
+        "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
+        "version": "8.0.0"
     },
-    "offset": 199
-  },
-  "related": {
-    "ip": [
-      "::1",
-      "::1"
-    ]
-  },
-  "source": {
-    "address": "::1%0",
-    "ip": "::1",
-    "port": 59827
-  }
+    "log": {
+        "file": {
+            "path": "c:\\Windows\\System32\\LogFiles\\HTTPERR\\httperr1.log"
+        },
+        "offset": 199
+    },
+    "destination": {
+        "address": "::1%0",
+        "port": 80,
+        "ip": "::1"
+    },
+    "source": {
+        "address": "::1%0",
+        "port": 59827,
+        "ip": "::1"
+    },
+    "input": {
+        "type": "log"
+    },
+    "iis": {
+        "error": {
+            "reason_phrase": "Timer_ConnectionIdle"
+        }
+    },
+    "@timestamp": "2020-06-30T13:56:46.000Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "related": {
+        "ip": [
+            "::1",
+            "::1"
+        ]
+    },
+    "event": {
+        "created": "2020-07-08T11:40:13.768Z",
+        "kind": "event",
+        "category": [
+            "web",
+            "network"
+        ],
+        "type": [
+            "connection"
+        ]
+    },
+    "dataset": {
+        "name": "iis.error",
+        "namespace": "default",
+        "type": "logs"
+    }
 }
 ```
 
@@ -474,22 +680,61 @@ The fields reported are:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.domain | Destination domain. | wildcard |
+| destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
+| error.message | Error message | text |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | iis.error.queue_name | The IIS application pool name. | keyword |
 | iis.error.reason_phrase | The HTTP reason phrase. | keyword |
+| message | Message | text |
+| related.ip | All of the IPs seen in the event. | ip |
+| related.user | All the user names seen in the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |

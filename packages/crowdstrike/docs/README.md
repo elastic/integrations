@@ -23,7 +23,19 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | agent.id | Unique identifier of this agent. | keyword |
 | agent.name | Custom name of the agent. | keyword |
 | agent.type | Type of the agent. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
 | crowdstrike.event.CommandLine | Executable path with command line arguments. | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
@@ -73,7 +85,19 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.ParentImageFileName | Path to the parent process. | keyword |
 | crowdstrike.event.ParentProcessId | Parent process ID related to the detection. | integer |
 | crowdstrike.event.PatternDispositionDescription | Action taken by Falcon. | keyword |
-| crowdstrike.event.PatternDispositionFlags | Flags indicating actions taken. | object |
+| crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.InddetMask |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.Indicator |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillParent |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillProcess |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.KillSubProcess |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.OperationBlocked |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.PolicyDisabled |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.ProcessBlocked |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.QuarantineFile |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.QuarantineMachine |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.Rooting |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.SensorOnly |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
 | crowdstrike.event.PolicyID | CrowdStrike policy id. | keyword |
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
@@ -133,7 +157,22 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
-| host.name | Name of the host. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |

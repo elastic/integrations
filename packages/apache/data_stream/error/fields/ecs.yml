@@ -29,6 +29,8 @@
       type: long
       format: bytes
       description: Size in bytes of the response body.
+      unit: byte
+      metric_type: gauge
     - name: response.status_code
       level: extended
       type: long
@@ -108,6 +110,21 @@
       type: keyword
       description: Region name.
       ignore_above: 1024
+    - name: port
+      type: keyword
+      description: Source port.
+    - name: as.organization.name
+      type: keyword
+      description: Organization name.
+    - name: as.number
+      type: long
+      description: Unique number allocated to the autonomous system.
+    - name: geo.country_name
+      type: keyword
+      description: Country name.
+    - name: ip
+      type: keyword
+      description: Source IP address.
 - name: url
   title: URL
   group: 2
@@ -175,3 +192,53 @@
           type: text
           norms: false
           default_field: false
+- name: ecs.version
+  type: keyword
+  description: ECS version
+- name: input.type
+  type: keyword
+  description: Input type
+- name: log.file.path
+  type: keyword
+  description: Log path
+- name: log.offset
+  type: long
+  description: Log offset
+- name: event
+  title: Event
+  group: 2
+  description: 'The event fields are used for context information about the log or metric event itself.
+
+    A log is defined as an event containing details of something that happened. Log events must include the time at which the thing happened. Examples of log events include a process starting on a host, a network packet being sent from a source to a destination, or a network connection between a client and a server being initiated or closed. A metric is defined as an event containing one or more numerical or categorical measurements and the time at which the measurement was taken. Examples of metric events include memory pressure measured on a host, or vulnerabilities measured on a scanned host.'
+  type: group
+  fields:
+    - name: category
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Event category.
+
+        This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution.'
+      example: user-management
+    - name: kind
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The kind of the event.
+
+        This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution.'
+      example: state
+    - name: timezone
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'This field should be populated when the event''s timestamp does not include timezone information already (e.g. default Syslog timestamps). It''s optional otherwise.
+
+        Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00").'
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Reserved for future usage.
+
+        Please avoid using this field for user data.'

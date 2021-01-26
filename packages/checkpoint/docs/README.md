@@ -63,8 +63,10 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.client_type_os | Client OS detected in the HTTP request. | keyword |
 | checkpoint.client_version | Build version of SandBlast Agent client installed on the computer. | keyword |
 | checkpoint.cluster_info | Cluster information. Possible options: Failover reason/cluster state changes/CP cluster or 3rd party. | keyword |
+| checkpoint.comment |  | keyword |
 | checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
 | checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
+| checkpoint.conn_direction | Connection direction | keyword |
 | checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
 | checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
 | checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
@@ -79,6 +81,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.cvpn_category | Mobile Access application type. | keyword |
 | checkpoint.cvpn_resource | Mobile Access application. | keyword |
 | checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
+| checkpoint.db_ver | Database version | keyword |
 | checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
@@ -388,6 +391,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
 | checkpoint.user_agent | String identifying requesting software user agent. | keyword |
@@ -422,32 +426,32 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | checkpoint.watermark | Reports whether watermark is added to the cleaned file. | keyword |
 | checkpoint.web_server_type | Web server detected in the HTTP response. | keyword |
 | checkpoint.word_list | Words matched by data type. | keyword |
-| client.bytes | Bytes sent from the client to the server. | long |
-| client.domain | Client domain. | keyword |
-| client.ip | IP address of the client. | ip |
-| client.mac | MAC address of the client. | keyword |
-| client.nat.ip | Client NAT ip address | ip |
-| client.nat.port | Client NAT port | long |
-| client.packets | Packets sent from the client to the server. | long |
-| client.port | Port of the client. | long |
-| client.user.email | User email address. | keyword |
-| client.user.group.name | Name of the group. | keyword |
-| client.user.id | Unique identifier of the user. | keyword |
-| client.user.name | Short name or login of the user. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
-| data_stream.dataset | Datastream dataset name. | constant_keyword |
-| data_stream.namespace | Datastream namespace. | constant_keyword |
-| data_stream.type | Datastream type. | constant_keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | Destination domain. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -457,19 +461,21 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | destination.service.name | Name of the service data is collected from. | keyword |
-| destination.user.email | User email address. | keyword |
+| destination.user.email | User email address. | wildcard |
 | destination.user.id | Unique identifier of the user. | keyword |
-| destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name | Short name or login of the user. | wildcard |
 | dns.id | The DNS packet identifier. | keyword |
-| dns.question.name | The name being queried. | keyword |
+| dns.question.name | The name being queried. | wildcard |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.type | The type of DNS event captured, query or answer. | keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. | keyword |
+| event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.end | Contains the date when the event ended. | date |
 | event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
 | event.outcome | The outcome of the event. | keyword |
@@ -488,15 +494,29 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | file.size | File size in bytes. | long |
 | file.type | File type (file, dir, or symlink). | keyword |
 | group.name | Name of the group. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. | keyword |
-| http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.request.referrer | Referrer for this HTTP request. | wildcard |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Path to the log file. | keyword |
+| log.file.path | Path to the log file. | wildcard |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| log.source.address | Source address of logs received over the network. | keyword |
 | message | Log message optimized for viewing in a log viewer. | text |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
@@ -515,9 +535,9 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
-| process.name | Process name. | keyword |
+| process.name | Process name. | wildcard |
 | process.parent.hash.md5 | MD5 hash. | keyword |
-| process.parent.name | Process name. | keyword |
+| process.parent.name | Process name. | wildcard |
 | related.hash | All the hashes seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
@@ -527,23 +547,16 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | rule.name | Rule name | keyword |
 | rule.ruleset | Rule ruleset | keyword |
 | rule.uuid | Rule UUID | keyword |
-| server.bytes | Bytes sent from the server to the client. | long |
-| server.domain | Server domain. | keyword |
-| server.ip | IP address of the server. | ip |
-| server.nat.ip | Server NAT ip | ip |
-| server.nat.port | Server NAT port | long |
-| server.packets | Packets sent from the server to the client. | long |
-| server.port | Port of the server. | long |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | Source domain. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -552,14 +565,14 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | source.nat.port | Source NAT port | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
-| source.user.email | User email address. | keyword |
+| source.user.email | User email address. | wildcard |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
+| source.user.name | Short name or login of the user. | wildcard |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url. | wildcard |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | user_agent.name | Name of the user agent. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original | Unparsed user_agent string. | wildcard |
 | vulnerability.id | ID of the vulnerability. | keyword |
 

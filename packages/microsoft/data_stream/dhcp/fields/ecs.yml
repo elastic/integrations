@@ -11,6 +11,7 @@
 
         This field is not indexed and doc_values are disabled so it can''t be queried but the value can be retrieved from `_source`.'
       example: Sep 19 08:26:10 localhost My log
+      index: false
     - name: level
       level: core
       type: keyword
@@ -86,16 +87,6 @@
 
         Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense.'
       example: success
-    - name: category
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.
-
-        `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory.
-
-        This field is an array. This will allow proper categorization of some events that fall in multiple categories.'
-      example: authentication
     - name: timezone
       level: extended
       type: keyword
@@ -103,6 +94,25 @@
       description: 'This field should be populated when the event''s timestamp does not include timezone information already (e.g. default Syslog timestamps). It''s optional otherwise.
 
         Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00").'
+    - name: ingested
+      level: core
+      type: date
+      description: 'Timestamp when an event arrived in the central data store.
+
+        This is different from `@timestamp`, which is when the event originally occurred.  It''s also different from `event.created`, which is meant to capture the first time an agent saw the event.
+
+        In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`.'
+      example: '2016-05-23T08:05:35.101Z'
+      default_field: false
+    - name: original
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Raw text message of entire event. Used to demonstrate log integrity.
+
+        This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`.'
+      example: Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232
+      index: false
 - name: '@timestamp'
   level: core
   required: true
@@ -115,6 +125,25 @@
 
     Required field for all events.'
   example: '2016-05-23T08:05:34.853Z'
+- name: related
+  type: group
+  fields:
+    - name: user
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All the user names seen on your event.
+      default_field: false
+    - name: hosts
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
+      default_field: false
+    - name: ip
+      level: extended
+      type: ip
+      description: All of the IPs seen on your event.
 - name: user
   type: group
   fields:
@@ -151,7 +180,7 @@
       level: core
       type: keyword
       ignore_above: 1024
-      description: Unique identifiers of the user.
+      description: Unique identifier of the user.
 - name: message
   level: core
   type: text
@@ -167,9 +196,7 @@
     - name: ip
       level: core
       type: ip
-      description: 'IP address of the source.
-
-        Can be one or multiple IPv4 or IPv6 addresses.'
+      description: IP address of the source (IPv4 or IPv6).
     - name: port
       level: core
       type: long
@@ -214,6 +241,32 @@
       type: keyword
       ignore_above: 1024
       description: Source domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
     - name: geo
       type: group
       fields:
@@ -236,6 +289,28 @@
           ignore_above: 1024
           description: City name.
           example: Montreal
+    - name: as
+      type: group
+      fields:
+        - name: number
+          level: extended
+          type: long
+          description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+          example: 15169
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              multi_fields:
+                - name: text
+                  type: text
+                  norms: false
+                  default_field: false
+              description: Organization name.
+              example: Google LLC
 - name: host
   type: group
   fields:
@@ -268,9 +343,7 @@
     - name: ip
       level: core
       type: ip
-      description: 'IP address of the destination.
-
-        Can be one or multiple IPv4 or IPv6 addresses.'
+      description: IP address of the destination (IPv4 or IPv6).
     - name: port
       level: core
       type: long
@@ -315,6 +388,32 @@
       type: keyword
       ignore_above: 1024
       description: Destination domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
     - name: geo
       type: group
       fields:
@@ -337,6 +436,28 @@
           ignore_above: 1024
           description: City name.
           example: Montreal
+    - name: as
+      type: group
+      fields:
+        - name: number
+          level: extended
+          type: long
+          description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+          example: 15169
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              level: extended
+              type: keyword
+              ignore_above: 1024
+              multi_fields:
+                - name: text
+                  type: text
+                  norms: false
+                  default_field: false
+              description: Organization name.
+              example: Google LLC
 - name: network
   type: group
   fields:
@@ -373,7 +494,7 @@
       level: core
       type: keyword
       ignore_above: 1024
-      description: "Direction of the network traffic.\nRecommended values are:\n  * inbound\n  * outbound\n  * internal\n  * external\n  * unknown\n\nWhen mapping events from a host-based monitoring context, populate this field from the host's point of view.\nWhen mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter."
+      description: "Direction of the network traffic.\nRecommended values are:\n  * ingress\n  * egress\n  * inbound\n  * outbound\n  * internal\n  * external\n  * unknown\n\nWhen mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values \"ingress\" or \"egress\".\nWhen mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values \"inbound\", \"outbound\", \"internal\" or \"external\".\nNote that \"internal\" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that \"external\" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers."
       example: inbound
     - name: packets
       level: core
@@ -427,6 +548,20 @@
               description: Interface name as reported by the system.
               example: eth0
               default_field: false
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'The type of the observer the data is coming from.
+
+        There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`.'
+      example: firewall
+    - name: vendor
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Vendor name of the observer.
+      example: Symantec
 - name: file
   type: group
   fields:
@@ -459,7 +594,9 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: File extension.
+      description: 'File extension, excluding the leading dot.
+
+        Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz").'
       example: png
     - name: path
       level: extended
@@ -512,7 +649,9 @@
       ignore_above: 1024
       description: 'Domain of the url, such as "www.elastic.co".
 
-        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.'
+        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
+
+        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
       example: www.elastic.co
     - name: path
       level: extended
@@ -523,7 +662,7 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for google.com is "com".
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
 
         This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
       example: co.uk
@@ -533,10 +672,10 @@
       ignore_above: 1024
       description: 'The highest registered url domain, stripped of the subdomain.
 
-        For example, the registered domain for "foo.google.com" is "google.com".
+        For example, the registered domain for "foo.example.com" is "example.com".
 
         This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
-      example: google.com
+      example: example.com
 - name: service
   type: group
   fields:
@@ -550,6 +689,40 @@
 
         In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified.'
       example: elasticsearch-metrics
+- name: client
+  type: group
+  fields:
+    - name: domain
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Server domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
 - name: server
   type: group
   fields:
@@ -558,6 +731,45 @@
       type: keyword
       ignore_above: 1024
       description: Server domain.
+    - name: registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered source domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+- name: group
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+    - name: id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
 - name: process
   type: group
   fields:
@@ -652,23 +864,6 @@
 - name: http
   type: group
   fields:
-    - name: response
-      type: group
-      fields:
-        - name: body
-          type: group
-          fields:
-            - name: content
-              level: extended
-              type: keyword
-              ignore_above: 1024
-              multi_fields:
-                - name: text
-                  type: text
-                  norms: false
-                  default_field: false
-              description: The full HTTP response body.
-              example: Hello world
     - name: request
       type: group
       fields:
@@ -684,8 +879,12 @@
           ignore_above: 1024
           description: 'HTTP request method.
 
-            The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".'
-          example: get, post, put
+            Prior to ECS 1.6.0 the following guidance was provided:
+
+            "The field value must be normalized to lowercase for querying."
+
+            As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0'
+          example: GET, POST, PUT, PoST
 - name: geo
   type: group
   fields:
@@ -729,6 +928,37 @@
           ignore_above: 1024
           description: The type of record being queried.
           example: AAAA
+        - name: domain
+          level: core
+          type: keyword
+          ignore_above: 1024
+          description: Server domain.
+        - name: registered_domain
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The highest registered source domain, stripped of the subdomain.
+
+            For example, the registered domain for "foo.example.com" is "example.com".
+
+            This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+          example: example.com
+        - name: subdomain
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+            For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+          example: east
+        - name: top_level_domain
+          level: extended
+          type: keyword
+          ignore_above: 1024
+          description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+            This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+          example: co.uk
     - name: answers
       type: group
       fields:
@@ -739,10 +969,26 @@
           description: 'The domain name to which this resource record pertains.
 
             If a chain of CNAME is being resolved, each answer''s `name` should be the one that corresponds with the answer''s `data`. It should not simply be the original `question.name` repeated.'
-          example: www.google.com
+          example: www.example.com
         - name: type
           level: extended
           type: keyword
           ignore_above: 1024
           description: The type of data contained in this resource record.
           example: CNAME
+- name: error
+  type: group
+  fields:
+    - name: message
+      level: core
+      type: text
+      description: Error message.
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+  example: '["production", "env2"]'
+- name: ecs.version
+  type: keyword
+  description: ECS version this event conforms to.

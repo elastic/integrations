@@ -2,6 +2,21 @@
 
 This integration is for Microsoft Office 365. It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
 
+## Configuration
+
+To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
+
+Once this application is registered note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+
+To use client-secret authentication, add you secret to the _Client Secret (API key)_ field.
+
+To use certificate-based authentication, set the paths to the certificate and private key files. If the key file is protected with a passphrase, set this passphrase in the _Private key passphrase_ field. Paths must be absolute and files must exist in the host where _Elastic Agent_ is running.
+
+
+Add your tenant ID(s) to the _Directory (tenant) IDs_ field, then add the hostname that this tenant identifies to the _Directory (tenant) domains_ field. For example:
+- Directory IDs: `my-id-a` `my-id-b`
+- Directory domains: `a.onmicrosoft.com` `b.onmicrosoft.com`
+
 ## Compatibility
 
 The `ingest-geoip` and `ingest-user_agent` Elasticsearch plugins are required to run this module.
@@ -20,7 +35,19 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | client.address | Client network address. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.port | Port of the client. | long |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -45,8 +72,22 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.owner | File owner's username. | keyword |
 | group.name | Name of the group. | keyword |
-| host.id | Unique host id. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
@@ -75,7 +116,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Comments |  | text |
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |
-| o365.audit.CustomUniqueId |  | keyword |
+| o365.audit.CustomUniqueId |  | boolean |
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
@@ -84,7 +125,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.ExceptionInfo.* |  | object |
 | o365.audit.ExchangeMetaData.* |  | object |
 | o365.audit.ExtendedProperties.* |  | object |
-| o365.audit.ExternalAccess |  | keyword |
+| o365.audit.ExternalAccess |  | boolean |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
 | o365.audit.ImplicitShare |  | keyword |
@@ -119,7 +160,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
 | o365.audit.ResultStatus |  | keyword |
-| o365.audit.SensitiveInfoDetectionIsIncluded |  | keyword |
+| o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
 | o365.audit.SharePointMetaData.* |  | object |

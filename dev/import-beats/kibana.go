@@ -164,6 +164,8 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 	kibana := kibanaContent{
 		files: map[string]map[string][]byte{},
 	}
+
+	dashboardIDMap := make(map[string]string, 0)
 	for _, moduleDashboard := range moduleDashboards {
 		log.Printf("\tdashboard found: %s", moduleDashboard.Name())
 
@@ -180,9 +182,13 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 				dashboardFilePath)
 		}
 
-		extracted, err := convertToKibanaObjects(migrated, moduleName, dataStreamNames)
+		extracted, tmpDashboardIDMap, err := convertToKibanaObjects(migrated, moduleName, dataStreamNames)
 		if err != nil {
 			return kibanaContent{}, errors.Wrapf(err, "extracting kibana dashboards failed")
+		}
+
+		for origID, newID := range tmpDashboardIDMap {
+			dashboardIDMap[origID] = newID
 		}
 
 		for objectType, objects := range extracted {
@@ -196,70 +202,147 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 			}
 		}
 	}
+
+	// Make a pass over all asset files and replace dashboard links in them
+	for objectType, files := range kibana.files {
+		for filename, data := range files {
+			for origID, newID := range dashboardIDMap {
+				data = updateDashboardLinks(data, origID, newID)
+				kibana.files[objectType][filename] = data
+			}
+		}
+	}
+
 	return kibana, nil
 }
 
-func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, error) {
+func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
 	var documents kibanaDocuments
 
 	err := json.Unmarshal(dashboardFile, &documents)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unmarshalling migrated dashboard file failed")
+		return nil, nil, errors.Wrapf(err, "unmarshalling migrated dashboard file failed")
 	}
+
+	dashboardIDMap := make(map[string]string, 0)
 
 	extracted := map[string]map[string][]byte{}
 	for _, object := range documents.Objects {
 		err = object.delete("updated_at")
 		if err != nil {
-			return nil, errors.Wrapf(err, "removing field updated_at failed")
+			return nil, nil, errors.Wrapf(err, "removing field updated_at failed")
 		}
 
 		err = object.delete("version")
 		if err != nil {
-			return nil, errors.Wrapf(err, "removing field version failed")
+			return nil, nil, errors.Wrapf(err, "removing field version failed")
 		}
 
 		object, err = decodeFields(object)
 		if err != nil {
-			return nil, errors.Wrapf(err, "decoding fields failed")
+			return nil, nil, errors.Wrapf(err, "decoding fields failed")
 		}
 
 		object, err = stripReferencesToEventModule(object, moduleName, dataStreamNames)
 		if err != nil {
-			return nil, errors.Wrapf(err, "stripping references to event module failed")
+			return nil, nil, errors.Wrapf(err, "stripping references to event module failed")
 		}
 
 		aType, err := object.getValue("type")
 		if err != nil {
-			return nil, errors.Wrapf(err, "retrieving type failed")
-		}
-
-		data, err := json.MarshalIndent(object, "", "    ")
-		if err != nil {
-			return nil, errors.Wrapf(err, "marshalling object failed")
-		}
-
-		data = replaceBlacklistedWords(
-			replaceFieldEventDataStreamWithStreamDataStream(
-				data))
-
-		err = verifyKibanaObjectConvertion(data)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Kibana object convertion failed")
+			return nil, nil, errors.Wrapf(err, "retrieving type failed")
 		}
 
 		id, err := object.getValue("id")
 		if err != nil {
-			return nil, errors.Wrapf(err, "retrieving id failed")
+			return nil, nil, errors.Wrapf(err, "retrieving id failed")
+		}
+
+		origID, ok := id.(string)
+		if !ok {
+			return nil, nil, errors.New("expected id to be a string")
+		}
+
+		newID := updateObjectID(origID, moduleName)
+
+		_, err = object.put("id", newID)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "putting new ID failed")
+		}
+
+		// Update any references to other objects in this object
+		refs, err := object.getValue("references")
+		if err != nil {
+			return nil, nil, errors.Wrap(err, "retrieving references failed")
+		}
+
+		references, ok := refs.([]interface{})
+		if !ok {
+			return nil, nil, errors.New("expected references to be an array of objects")
+		}
+
+		for _, r := range references {
+			ref, ok := r.(map[string]interface{})
+			if !ok {
+				return nil, nil, errors.New("expected reference to be an object")
+			}
+
+			reference := mapStr(ref)
+
+			// Exclude index pattern references
+			rt, err := reference.getValue("type")
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "retrieving reference type failed")
+			}
+			refType, ok := rt.(string)
+			if !ok {
+				return nil, nil, errors.New("expected reference type to be a string")
+			}
+
+			if refType == "index-pattern" {
+				continue
+			}
+
+			refID, err := reference.getValue("id")
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "retrieving reference id failed")
+			}
+
+			origRefID, ok := refID.(string)
+			if !ok {
+				return nil, nil, errors.New("expected reference id to be a string")
+			}
+
+			newRefID := updateObjectID(origRefID, moduleName)
+
+			if _, err := reference.put("id", newRefID); err != nil {
+				return nil, nil, errors.Wrapf(err, "putting new reference ID failed")
+			}
+		}
+
+		data, err := json.MarshalIndent(object, "", "    ")
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "marshalling object failed")
+		}
+
+		data = replaceFieldEventDatasetWithDataStreamDataset(data)
+		data = replaceBlacklistedWords(data)
+		data = removeECSTextualSuffixes(data)
+		dashboardIDMap[origID] = newID
+
+		err = verifyKibanaObjectConvertion(data)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "Kibana object convertion failed")
 		}
 
 		if _, ok := extracted[aType.(string)]; !ok {
 			extracted[aType.(string)] = map[string][]byte{}
 		}
-		extracted[aType.(string)][id.(string)+".json"] = data
+
+		extracted[aType.(string)][newID+".json"] = data
 	}
 
-	return extracted, nil
+	return extracted, dashboardIDMap, nil
 }
 
 func decodeFields(ms mapStr) (mapStr, error) {
@@ -449,7 +532,7 @@ func stripReferencesToEventModuleInQuery(object mapStr, objectKey, moduleName st
 	return object, nil
 }
 
-func replaceFieldEventDataStreamWithStreamDataStream(data []byte) []byte {
+func replaceFieldEventDatasetWithDataStreamDataset(data []byte) []byte {
 	return bytes.ReplaceAll(data, []byte("event.dataset"), []byte("data_stream.dataset"))
 }
 
@@ -461,6 +544,39 @@ func replaceBlacklistedWords(data []byte) []byte {
 	data = bytes.ReplaceAll(data, []byte("Module"), []byte("Integration"))
 	data = bytes.ReplaceAll(data, []byte("module"), []byte("integration"))
 	return data
+}
+
+func updateDashboardLinks(data []byte, origID, newID string) []byte {
+	return bytes.ReplaceAll(data, []byte("#/dashboard/"+origID), []byte("#/dashboard/"+newID))
+}
+
+func removeECSTextualSuffixes(data []byte) []byte {
+	return bytes.ReplaceAll(data, []byte(" ECS"), []byte(""))
+}
+
+func updateObjectID(origID, moduleName string) string {
+	// If object ID starts with the module name, make sure that module name is all lowercase
+	// Else, prefix an all-lowercase module name to the object ID.
+	newID := origID
+	prefix := moduleName + "-"
+	if strings.HasPrefix(strings.ToLower(newID), prefix) {
+		newID = newID[len(prefix):]
+	}
+	newID = prefix + newID
+
+	// If object ID ends with "-ecs", trim it off.
+	ecsSuffix := "-ecs"
+	if strings.HasSuffix(newID, "-ecs") {
+		newID = strings.TrimSuffix(newID, ecsSuffix)
+	}
+
+	// Finally, if after all transformations if the new ID is the same as the
+	// original one, to avoid a collision, we suffix "-pkg"
+	if newID == origID {
+		newID += "-pkg"
+	}
+
+	return newID
 }
 
 func verifyKibanaObjectConvertion(data []byte) error {

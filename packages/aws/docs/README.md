@@ -122,7 +122,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.flattened.response_elements | The response element for actions that make changes (create, update, or delete actions). | flattened |
 | aws.cloudtrail.flattened.service_event_details | Identifies the service event, including what triggered the event and the result. | flattened |
 | aws.cloudtrail.management_event | A Boolean value that identifies whether the event is a management event. | keyword |
-| aws.cloudtrail.read_only | Identifies whether this operation is a read-only operation. | keyword |
+| aws.cloudtrail.read_only | Identifies whether this operation is a read-only operation. | boolean |
 | aws.cloudtrail.recipient_account_id | Represents the account ID that received this event. | keyword |
 | aws.cloudtrail.request_id | The value that identifies the request. The service being called generates this value. | keyword |
 | aws.cloudtrail.request_parameters | The parameters, if any, that were sent with the request. | keyword |
@@ -144,15 +144,44 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.user_identity.type | The type of the identity | keyword |
 | aws.cloudtrail.vpc_endpoint_id | Identifies the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -170,6 +199,10 @@ events for the account. If user creates a trail, it delivers those events as log
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
 
 
 ### cloudwatch
@@ -185,9 +218,38 @@ setup already.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### ec2
@@ -203,9 +265,38 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.ec2.ip_address | The internet address of the requester. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | process.name | Process name. | keyword |
 
 
@@ -229,12 +320,14 @@ For network load balancer, please follow [enable access log for network load bal
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.elb.action_executed | The action executed when processing the request (forward, fixed-response, authenticate...). It can contain several values. | keyword |
-| aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | keyword |
+| aws.elb.backend.http.response.status_code | The status code from the backend (status code sent to the client from ELB is stored in `http.response.status_code` | long |
 | aws.elb.backend.ip | The IP address of the backend processing this connection. | keyword |
 | aws.elb.backend.port | The port in the backend processing this connection. | keyword |
 | aws.elb.backend_processing_time.sec | The total time in seconds since the connection is sent to the backend till the backend starts responding. | float |
 | aws.elb.chosen_cert.arn | The ARN of the chosen certificate presented to the client in TLS/SSL connections. | keyword |
 | aws.elb.chosen_cert.serial | The serial number of the chosen certificate presented to the client in TLS/SSL connections. | keyword |
+| aws.elb.classification | The classification for desync mitigation. | keyword |
+| aws.elb.classification_reason | The classification reason code. | keyword |
 | aws.elb.connection_time.ms | The total time of the connection in milliseconds, since it is opened till it is closed. | long |
 | aws.elb.error.reason | The error reason if the executed action failed. | keyword |
 | aws.elb.incoming_tls_alert | The integer value of TLS alerts received by the load balancer from the client, if present. | keyword |
@@ -248,11 +341,25 @@ For network load balancer, please follow [enable access log for network load bal
 | aws.elb.ssl_cipher | The SSL cipher used in TLS/SSL connections. | keyword |
 | aws.elb.ssl_protocol | The SSL protocol used in TLS/SSL connections. | keyword |
 | aws.elb.target_group.arn | The ARN of the target group handling the request. | keyword |
+| aws.elb.target_port | List of IP addresses and ports for the targets that processed this request. | keyword |
+| aws.elb.target_status_code | List of status codes from the responses of the targets. | keyword |
 | aws.elb.tls_handshake_time.ms | The total time for the TLS handshake to complete in milliseconds once the connection has been established. | long |
 | aws.elb.tls_named_group | The TLS named group. | keyword |
 | aws.elb.trace_id | The contents of the `X-Amzn-Trace-Id` header. | keyword |
 | aws.elb.type | The type of the load balancer for v2 Load Balancers. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -263,6 +370,22 @@ For network load balancer, please follow [enable access log for network load bal
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, sig | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.method | HTTP request method. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
@@ -278,7 +401,7 @@ For network load balancer, please follow [enable access log for network load bal
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
-| source.port | Port of the source. | long |
+| source.port | Port of the source. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
@@ -325,7 +448,19 @@ for sending server access logs to S3 bucket.
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.user.id | Unique identifiers of the user. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -341,6 +476,22 @@ for sending server access logs to S3 bucket.
 | geo.location | Longitude and latitude. | geo_point |
 | geo.region_iso_code | Region ISO code. | keyword |
 | geo.region_name | Region name. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -377,8 +528,18 @@ for sending server access logs to S3 bucket.
 | aws.vpcflow.version | The VPC Flow Logs version. If you use the default format, the version is 2. If you specify a custom format, the version is 3. | keyword |
 | aws.vpcflow.vpc_id | The ID of the VPC that contains the network interface for which the traffic is recorded. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -397,6 +558,22 @@ for sending server access logs to S3 bucket.
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | Event severity (e.g. info, error) | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
@@ -427,71 +604,71 @@ An example event for `billing` looks as following:
 
 ```$json
 {
-  "_id": "IMxJXHIBpGMSUzkZo-s0",
-  "_index": "metrics-aws.billing-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:17:06.212Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "billing": {
-        "metrics": {
-          "EstimatedCharges": {
-            "max": 1625.41
-          }
+    "_index": "metrics-aws.billing-default-000001",
+    "_id": "IMxJXHIBpGMSUzkZo-s0",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:17:06.212Z",
+        "cloud": {
+            "provider": "aws",
+            "region": "us-east-1",
+            "account": {
+                "id": "428152502467",
+                "name": "elastic-beats"
+            }
+        },
+        "event": {
+            "dataset": "aws.billing",
+            "module": "aws",
+            "duration": 1938760247
+        },
+        "metricset": {
+            "name": "billing",
+            "period": 43200000
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "aws": {
+            "billing": {
+                "metrics": {
+                    "EstimatedCharges": {
+                        "max": 1625.41
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/Billing"
+            },
+            "dimensions": {
+                "Currency": "USD"
+            }
+        },
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "type": "metrics",
+            "dataset": "aws.billing",
+            "namespace": "default"
+        },
+        "agent": {
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
         }
-      },
-      "cloudwatch": {
-        "namespace": "AWS/Billing"
-      },
-      "dimensions": {
-        "Currency": "USD"
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-east-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:17:06.212Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "aws.billing",
-      "duration": 1938760247,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "billing",
-      "period": 43200000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.billing",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:17:06.212Z"
+    "sort": [
+        1590686226212
     ]
-  },
-  "sort": [
-    1590686226212
-  ]
 }
 ```
 
@@ -510,13 +687,36 @@ An example event for `billing` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### cloudwatch
@@ -525,76 +725,76 @@ An example event for `cloudwatch` looks as following:
 
 ```$json
 {
-  "_id": "-sxJXHIBpGMSUzkZxex8",
-  "_index": "metrics-aws.cloudwatch_metrics-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:17:02.812Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/EC2"
-      },
-      "dimensions": {
-        "InstanceId": "i-0830bfecfa7173cbe"
-      },
-      "ec2": {
-        "metrics": {
-          "CPUUtilization": {
-            "avg": 0.7661943132361363,
-            "max": 0.833333333333333
-          },
-          "DiskWriteOps": {
-            "avg": 0,
-            "max": 0
-          }
+    "_index": "metrics-aws.cloudwatch_metrics-default-000001",
+    "_id": "-sxJXHIBpGMSUzkZxex8",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:17:02.812Z",
+        "event": {
+            "duration": 14119105951,
+            "dataset": "aws.cloudwatch",
+            "module": "aws"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "agent": {
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0"
+        },
+        "stream": {
+            "dataset": "aws.cloudwatch_metrics",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "service": {
+            "type": "aws"
+        },
+        "cloud": {
+            "provider": "aws",
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            }
+        },
+        "aws": {
+            "dimensions": {
+                "InstanceId": "i-0830bfecfa7173cbe"
+            },
+            "ec2": {
+                "metrics": {
+                    "DiskWriteOps": {
+                        "avg": 0,
+                        "max": 0
+                    },
+                    "CPUUtilization": {
+                        "avg": 0.7661943132361363,
+                        "max": 0.833333333333333
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/EC2"
+            }
+        },
+        "metricset": {
+            "period": 300000,
+            "name": "cloudwatch"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:17:02.812Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "aws.cloudwatch",
-      "duration": 14119105951,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "cloudwatch",
-      "period": 300000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.cloudwatch_metrics",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:17:02.812Z"
+    "sort": [
+        1590686222812
     ]
-  },
-  "sort": [
-    1590686222812
-  ]
 }
 ```
 
@@ -611,13 +811,36 @@ An example event for `cloudwatch` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### dynamodb
@@ -626,82 +849,82 @@ An example event for `dynamodb` looks as following:
 
 ```$json
 {
-  "_id": "YMxJXHIBpGMSUzkZzO0_",
-  "_index": "metrics-aws.dynamodb-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:17:08.666Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/DynamoDB"
-      },
-      "dimensions": {
-        "TableName": "TryDaxTable3"
-      },
-      "dynamodb": {
-        "metrics": {
-          "ConsumedReadCapacityUnits": {
-            "avg": 0,
-            "sum": 0
-          },
-          "ConsumedWriteCapacityUnits": {
-            "avg": 0,
-            "sum": 0
-          },
-          "ProvisionedReadCapacityUnits": {
-            "avg": 1
-          },
-          "ProvisionedWriteCapacityUnits": {
-            "avg": 1
-          }
+    "_index": "metrics-aws.dynamodb-default-000001",
+    "_id": "YMxJXHIBpGMSUzkZzO0_",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:17:08.666Z",
+        "agent": {
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0"
+        },
+        "event": {
+            "dataset": "aws.dynamodb",
+            "module": "aws",
+            "duration": 10266182336
+        },
+        "stream": {
+            "type": "metrics",
+            "dataset": "aws.dynamodb",
+            "namespace": "default"
+        },
+        "service": {
+            "type": "aws"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "cloud": {
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws",
+            "region": "eu-central-1"
+        },
+        "aws": {
+            "dimensions": {
+                "TableName": "TryDaxTable3"
+            },
+            "dynamodb": {
+                "metrics": {
+                    "ProvisionedWriteCapacityUnits": {
+                        "avg": 1
+                    },
+                    "ProvisionedReadCapacityUnits": {
+                        "avg": 1
+                    },
+                    "ConsumedWriteCapacityUnits": {
+                        "avg": 0,
+                        "sum": 0
+                    },
+                    "ConsumedReadCapacityUnits": {
+                        "avg": 0,
+                        "sum": 0
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/DynamoDB"
+            }
+        },
+        "metricset": {
+            "name": "dynamodb",
+            "period": 300000
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "eu-central-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:17:08.666Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "aws.dynamodb",
-      "duration": 10266182336,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "dynamodb",
-      "period": 300000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.dynamodb",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:17:08.666Z"
+    "sort": [
+        1590686228666
     ]
-  },
-  "sort": [
-    1590686228666
-  ]
 }
 ```
 
@@ -744,13 +967,36 @@ An example event for `dynamodb` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### ebs
@@ -759,94 +1005,94 @@ An example event for `ebs` looks as following:
 
 ```$json
 {
-  "_id": "_89uXHIBpGMSUzkZoRoL",
-  "_index": "metrics-aws.ebs-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:57:22.450Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/EBS"
-      },
-      "dimensions": {
-        "VolumeId": "vol-03370a204cc8b0a2f"
-      },
-      "ebs": {
-        "metrics": {
-          "BurstBalance": {
-            "avg": 100
-          },
-          "VolumeIdleTime": {
-            "sum": 299.98
-          },
-          "VolumeQueueLength": {
-            "avg": 0.0000666666666666667
-          },
-          "VolumeReadOps": {
-            "avg": 0
-          },
-          "VolumeTotalWriteTime": {
-            "sum": 0.02
-          },
-          "VolumeWriteBytes": {
-            "avg": 14406.620689655172
-          },
-          "VolumeWriteOps": {
-            "avg": 29
-          }
+    "_index": "metrics-aws.ebs-default-000001",
+    "_id": "_89uXHIBpGMSUzkZoRoL",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:57:22.450Z",
+        "service": {
+            "type": "aws"
+        },
+        "aws": {
+            "ebs": {
+                "metrics": {
+                    "VolumeReadOps": {
+                        "avg": 0
+                    },
+                    "VolumeQueueLength": {
+                        "avg": 0.0000666666666666667
+                    },
+                    "VolumeWriteOps": {
+                        "avg": 29
+                    },
+                    "VolumeTotalWriteTime": {
+                        "sum": 0.02
+                    },
+                    "BurstBalance": {
+                        "avg": 100
+                    },
+                    "VolumeWriteBytes": {
+                        "avg": 14406.620689655172
+                    },
+                    "VolumeIdleTime": {
+                        "sum": 299.98
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/EBS"
+            },
+            "dimensions": {
+                "VolumeId": "vol-03370a204cc8b0a2f"
+            }
+        },
+        "agent": {
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "cloud": {
+            "provider": "aws",
+            "region": "eu-central-1",
+            "account": {
+                "id": "428152502467",
+                "name": "elastic-beats"
+            }
+        },
+        "event": {
+            "dataset": "aws.ebs",
+            "module": "aws",
+            "duration": 10488314037
+        },
+        "metricset": {
+            "period": 300000,
+            "name": "ebs"
+        },
+        "stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "aws.ebs"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "eu-central-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:57:22.450Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.ebs@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.ebs",
-      "duration": 10488314037,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "ebs",
-      "period": 300000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.ebs",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:57:22.450Z"
+    "sort": [
+        1590688642450
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.ebs@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688642450
-  ]
 }
 ```
 
@@ -874,13 +1120,36 @@ An example event for `ebs` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### ec2
@@ -889,138 +1158,138 @@ An example event for `ec2` looks as following:
 
 ```$json
 {
-  "_id": "b89uXHIBpGMSUzkZHxPP",
-  "_index": "metrics-aws.ec2_metrics-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:56:37.255Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "ec2": {
-        "cpu": {
-          "credit_balance": 144,
-          "credit_usage": 0.004566,
-          "surplus_credit_balance": 0,
-          "surplus_credits_charged": 0,
-          "total": {
-            "pct": 0.0999999999997574
-          }
+    "_index": "metrics-aws.ec2_metrics-default-000001",
+    "_id": "b89uXHIBpGMSUzkZHxPP",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:56:37.255Z",
+        "aws": {
+            "ec2": {
+                "network": {
+                    "in": {
+                        "packets": 448.4,
+                        "bytes_per_sec": 103.10266666666666,
+                        "packets_per_sec": 1.4946666666666666,
+                        "bytes": 30930.8
+                    },
+                    "out": {
+                        "packets": 233.6,
+                        "bytes_per_sec": 51.754666666666665,
+                        "packets_per_sec": 0.7786666666666666,
+                        "bytes": 15526.4
+                    }
+                },
+                "status": {
+                    "check_failed": 0,
+                    "check_failed_instance": 0,
+                    "check_failed_system": 0
+                },
+                "cpu": {
+                    "credit_usage": 0.004566,
+                    "credit_balance": 144,
+                    "surplus_credit_balance": 0,
+                    "surplus_credits_charged": 0,
+                    "total": {
+                        "pct": 0.0999999999997574
+                    }
+                },
+                "diskio": {
+                    "read": {
+                        "bytes_per_sec": 0,
+                        "count_per_sec": 0,
+                        "bytes": 0,
+                        "count": 0
+                    },
+                    "write": {
+                        "count": 0,
+                        "bytes_per_sec": 0,
+                        "count_per_sec": 0,
+                        "bytes": 0
+                    }
+                },
+                "instance": {
+                    "core": {
+                        "count": 1
+                    },
+                    "threads_per_core": 1,
+                    "public": {
+                        "ip": "3.122.204.80",
+                        "dns_name": ""
+                    },
+                    "private": {
+                        "ip": "10.0.0.122",
+                        "dns_name": "ip-10-0-0-122.eu-central-1.compute.internal"
+                    },
+                    "image": {
+                        "id": "ami-0b418580298265d5c"
+                    },
+                    "state": {
+                        "name": "running",
+                        "code": 16
+                    },
+                    "monitoring": {
+                        "state": "disabled"
+                    }
+                }
+            }
         },
-        "diskio": {
-          "read": {
-            "bytes": 0,
-            "bytes_per_sec": 0,
-            "count": 0,
-            "count_per_sec": 0
-          },
-          "write": {
-            "bytes": 0,
-            "bytes_per_sec": 0,
-            "count": 0,
-            "count_per_sec": 0
-          }
+        "agent": {
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
         },
-        "instance": {
-          "core": {
-            "count": 1
-          },
-          "image": {
-            "id": "ami-0b418580298265d5c"
-          },
-          "monitoring": {
-            "state": "disabled"
-          },
-          "private": {
-            "dns_name": "ip-10-0-0-122.eu-central-1.compute.internal",
-            "ip": "10.0.0.122"
-          },
-          "public": {
-            "dns_name": "",
-            "ip": "3.122.204.80"
-          },
-          "state": {
-            "code": 16,
-            "name": "running"
-          },
-          "threads_per_core": 1
+        "ecs": {
+            "version": "1.5.0"
         },
-        "network": {
-          "in": {
-            "bytes": 30930.8,
-            "bytes_per_sec": 103.10266666666666,
-            "packets": 448.4,
-            "packets_per_sec": 1.4946666666666666
-          },
-          "out": {
-            "bytes": 15526.4,
-            "bytes_per_sec": 51.754666666666665,
-            "packets": 233.6,
-            "packets_per_sec": 0.7786666666666666
-          }
+        "event": {
+            "module": "aws",
+            "duration": 23217499283,
+            "dataset": "aws.ec2"
         },
-        "status": {
-          "check_failed": 0,
-          "check_failed_instance": 0,
-          "check_failed_system": 0
+        "metricset": {
+            "period": 300000,
+            "name": "ec2"
+        },
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "aws.ec2_metrics"
+        },
+        "cloud": {
+            "provider": "aws",
+            "region": "eu-central-1",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "instance": {
+                "id": "i-04c1a32c2aace6b40"
+            },
+            "machine": {
+                "type": "t2.micro"
+            },
+            "availability_zone": "eu-central-1a"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "availability_zone": "eu-central-1a",
-      "instance": {
-        "id": "i-04c1a32c2aace6b40"
-      },
-      "machine": {
-        "type": "t2.micro"
-      },
-      "provider": "aws",
-      "region": "eu-central-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:56:37.255Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.ec2@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.ec2",
-      "duration": 23217499283,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "ec2",
-      "period": 300000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.ec2_metrics",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:56:37.255Z"
+    "sort": [
+        1590688597255
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.ec2@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688597255
-  ]
 }
 ```
 
@@ -1074,13 +1343,43 @@ An example event for `ec2` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | long |
+| host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | long |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### elb
@@ -1089,91 +1388,91 @@ An example event for `elb` looks as following:
 
 ```$json
 {
-  "_id": "i89vXHIBpGMSUzkZuSyO",
-  "_index": "metrics-aws.elb_metrics-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:30.211Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/ELB"
-      },
-      "dimensions": {
-        "LoadBalancerName": "filebeat-aws-elb-test-elb"
-      },
-      "elb": {
-        "metrics": {
-          "EstimatedALBActiveConnectionCount": {
-            "avg": 5
-          },
-          "EstimatedALBConsumedLCUs": {
-            "avg": 0.00035000000000000005
-          },
-          "EstimatedALBNewConnectionCount": {
-            "avg": 32
-          },
-          "EstimatedProcessedBytes": {
-            "avg": 967
-          },
-          "HealthyHostCount": {
-            "max": 2
-          },
-          "UnHealthyHostCount": {
-            "max": 0
-          }
+    "_index": "metrics-aws.elb_metrics-default-000001",
+    "_id": "i89vXHIBpGMSUzkZuSyO",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:30.211Z",
+        "agent": {
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "cloud": {
+            "provider": "aws",
+            "region": "eu-central-1",
+            "account": {
+                "id": "428152502467",
+                "name": "elastic-beats"
+            }
+        },
+        "aws": {
+            "elb": {
+                "metrics": {
+                    "EstimatedALBNewConnectionCount": {
+                        "avg": 32
+                    },
+                    "EstimatedALBConsumedLCUs": {
+                        "avg": 0.00035000000000000005
+                    },
+                    "EstimatedProcessedBytes": {
+                        "avg": 967
+                    },
+                    "EstimatedALBActiveConnectionCount": {
+                        "avg": 5
+                    },
+                    "HealthyHostCount": {
+                        "max": 2
+                    },
+                    "UnHealthyHostCount": {
+                        "max": 0
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/ELB"
+            },
+            "dimensions": {
+                "LoadBalancerName": "filebeat-aws-elb-test-elb"
+            }
+        },
+        "metricset": {
+            "name": "elb",
+            "period": 60000
+        },
+        "event": {
+            "dataset": "aws.elb",
+            "module": "aws",
+            "duration": 15044430616
+        },
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "type": "metrics",
+            "dataset": "aws.elb_metrics",
+            "namespace": "default"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "eu-central-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:30.211Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.elb@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.elb",
-      "duration": 15044430616,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "elb",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.elb_metrics",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:30.211Z"
+    "sort": [
+        1590688710211
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.elb@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688710211
-  ]
 }
 ```
 
@@ -1246,13 +1545,36 @@ An example event for `elb` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### lambda
@@ -1261,81 +1583,81 @@ An example event for `lambda` looks as following:
 
 ```$json
 {
-  "_id": "YMxJXHIBpGMSUzkZzO0_",
-  "_index": "metrics-aws.lambda-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:17:08.666Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/Lambda"
-      },
-      "dimensions": {
-        "FunctionName": "ec2-owner-tagger-serverless",
-        "Resource": "ec2-owner-tagger-serverless"
-      },
-      "lambda": {
-        "metrics": {
-          "Duration": {
-            "avg": 8218.073333333334
-          },
-          "Errors": {
-            "avg": 1
-          },
-          "Invocations": {
-            "avg": 1
-          },
-          "Throttles": {
-            "avg": 0
-          }
+    "_index": "metrics-aws.lambda-default-000001",
+    "_id": "YMxJXHIBpGMSUzkZzO0_",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:17:08.666Z",
+        "agent": {
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0"
+        },
+        "event": {
+            "dataset": "aws.dynamodb",
+            "module": "aws",
+            "duration": 10266182336
+        },
+        "stream": {
+            "type": "metrics",
+            "dataset": "aws.lambda",
+            "namespace": "default"
+        },
+        "service": {
+            "type": "aws"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "cloud": {
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws",
+            "region": "eu-central-1"
+        },
+        "aws": {
+            "cloudwatch": {
+                "namespace": "AWS/Lambda"
+            },
+            "dimensions": {
+                "FunctionName": "ec2-owner-tagger-serverless",
+                "Resource": "ec2-owner-tagger-serverless"
+            },
+            "lambda": {
+                "metrics": {
+                    "Duration": {
+                        "avg": 8218.073333333334
+                    },
+                    "Errors": {
+                        "avg": 1
+                    },
+                    "Invocations": {
+                        "avg": 1
+                    },
+                    "Throttles": {
+                        "avg": 0
+                    }
+                }
+            }
+        },
+        "metricset": {
+            "name": "dynamodb",
+            "period": 300000
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "eu-central-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:17:08.666Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
-    },
-    "event": {
-      "dataset": "aws.dynamodb",
-      "duration": 10266182336,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "dynamodb",
-      "period": 300000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.lambda",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:17:08.666Z"
+    "sort": [
+        1590686228666
     ]
-  },
-  "sort": [
-    1590686228666
-  ]
 }
 ```
 
@@ -1367,13 +1689,36 @@ An example event for `lambda` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### natgateway
@@ -1382,112 +1727,112 @@ An example event for `natgateway` looks as following:
 
 ```$json
 {
-  "_id": "Ds9vXHIBpGMSUzkZmyod",
-  "_index": "metrics-aws.natgateway-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/NATGateway"
-      },
-      "dimensions": {
-        "NatGatewayId": "nat-0a5cb7b9807908cc0"
-      },
-      "natgateway": {
-        "metrics": {
-          "ActiveConnectionCount": {
-            "max": 0
-          },
-          "BytesInFromDestination": {
-            "sum": 0
-          },
-          "BytesInFromSource": {
-            "sum": 0
-          },
-          "BytesOutToDestination": {
-            "sum": 0
-          },
-          "BytesOutToSource": {
-            "sum": 0
-          },
-          "ConnectionAttemptCount": {
-            "sum": 0
-          },
-          "ConnectionEstablishedCount": {
-            "sum": 0
-          },
-          "ErrorPortAllocation": {
-            "sum": 0
-          },
-          "PacketsDropCount": {
-            "sum": 0
-          },
-          "PacketsInFromDestination": {
-            "sum": 0
-          },
-          "PacketsInFromSource": {
-            "sum": 0
-          },
-          "PacketsOutToDestination": {
-            "sum": 0
-          },
-          "PacketsOutToSource": {
-            "sum": 0
-          }
+    "_index": "metrics-aws.natgateway-default-000001",
+    "_id": "Ds9vXHIBpGMSUzkZmyod",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:27.154Z",
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "dataset": "aws.natgateway",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "aws": {
+            "cloudwatch": {
+                "namespace": "AWS/NATGateway"
+            },
+            "dimensions": {
+                "NatGatewayId": "nat-0a5cb7b9807908cc0"
+            },
+            "natgateway": {
+                "metrics": {
+                    "ActiveConnectionCount": {
+                        "max": 0
+                    },
+                    "BytesInFromDestination": {
+                        "sum": 0
+                    },
+                    "BytesInFromSource": {
+                        "sum": 0
+                    },
+                    "BytesOutToDestination": {
+                        "sum": 0
+                    },
+                    "BytesOutToSource": {
+                        "sum": 0
+                    },
+                    "ConnectionAttemptCount": {
+                        "sum": 0
+                    },
+                    "ConnectionEstablishedCount": {
+                        "sum": 0
+                    },
+                    "ErrorPortAllocation": {
+                        "sum": 0
+                    },
+                    "PacketsDropCount": {
+                        "sum": 0
+                    },
+                    "PacketsInFromDestination": {
+                        "sum": 0
+                    },
+                    "PacketsInFromSource": {
+                        "sum": 0
+                    },
+                    "PacketsOutToDestination": {
+                        "sum": 0
+                    },
+                    "PacketsOutToSource": {
+                        "sum": 0
+                    }
+                }
+            }
+        },
+        "event": {
+            "dataset": "aws.natgateway",
+            "module": "aws",
+            "duration": 10418157072
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "natgateway"
+        },
+        "cloud": {
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws"
+        },
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:27.154Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.natgateway@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.natgateway",
-      "duration": 10418157072,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "natgateway",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.natgateway",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:27.154Z"
+    "sort": [
+        1590688707154
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.natgateway@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688707154
-  ]
 }
 ```
 
@@ -1518,13 +1863,36 @@ An example event for `natgateway` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### rds
@@ -1533,117 +1901,117 @@ An example event for `rds` looks as following:
 
 ```$json
 {
-  "_id": "k89vXHIBpGMSUzkZuSyO",
-  "_index": "metrics-aws.rds-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:34.537Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "rds": {
-        "aurora_bin_log_replica_lag": 0,
-        "aurora_replica.lag.ms": 19.576,
-        "cache_hit_ratio.buffer": 100,
-        "cache_hit_ratio.result_set": 0,
-        "cpu": {
-          "total": {
-            "pct": 0.03
-          }
+    "_index": "metrics-aws.rds-default-000001",
+    "_id": "k89vXHIBpGMSUzkZuSyO",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:34.537Z",
+        "ecs": {
+            "version": "1.5.0"
         },
-        "database_connections": 0,
-        "db_instance": {
-          "arn": "arn:aws:rds:eu-west-1:428152502467:db:database-1-instance-1-eu-west-1a",
-          "class": "db.r5.large",
-          "identifier": "database-1-instance-1-eu-west-1a",
-          "status": "available"
+        "service": {
+            "type": "aws"
         },
-        "db_instance.identifier": "database-1-instance-1-eu-west-1a",
-        "deadlocks": 0,
-        "disk_usage": {
-          "bin_log.bytes": 0
+        "aws": {
+            "rds": {
+                "latency": {
+                    "dml": 0,
+                    "insert": 0,
+                    "update": 0,
+                    "commit": 0,
+                    "ddl": 0,
+                    "delete": 0,
+                    "select": 0.21927814569536422
+                },
+                "queries": 6.197934021992669,
+                "aurora_bin_log_replica_lag": 0,
+                "transactions": {
+                    "blocked": 0,
+                    "active": 0
+                },
+                "deadlocks": 0,
+                "login_failures": 0,
+                "throughput": {
+                    "network": 1.399813358218904,
+                    "insert": 0,
+                    "ddl": 0,
+                    "select": 2.5165408396246853,
+                    "delete": 0,
+                    "commit": 0,
+                    "network_transmit": 0.699906679109452,
+                    "update": 0,
+                    "dml": 0,
+                    "network_receive": 0.699906679109452
+                },
+                "cpu": {
+                    "total": {
+                        "pct": 0.03
+                    }
+                },
+                "db_instance": {
+                    "arn": "arn:aws:rds:eu-west-1:428152502467:db:database-1-instance-1-eu-west-1a",
+                    "class": "db.r5.large",
+                    "identifier": "database-1-instance-1-eu-west-1a",
+                    "status": "available"
+                },
+                "cache_hit_ratio.result_set": 0,
+                "aurora_replica.lag.ms": 19.576,
+                "free_local_storage.bytes": 32431271936,
+                "cache_hit_ratio.buffer": 100,
+                "disk_usage": {
+                    "bin_log.bytes": 0
+                },
+                "db_instance.identifier": "database-1-instance-1-eu-west-1a",
+                "freeable_memory.bytes": 4436537344,
+                "engine_uptime.sec": 10463030,
+                "database_connections": 0
+            }
         },
-        "engine_uptime.sec": 10463030,
-        "free_local_storage.bytes": 32431271936,
-        "freeable_memory.bytes": 4436537344,
-        "latency": {
-          "commit": 0,
-          "ddl": 0,
-          "delete": 0,
-          "dml": 0,
-          "insert": 0,
-          "select": 0.21927814569536422,
-          "update": 0
+        "cloud": {
+            "provider": "aws",
+            "region": "eu-west-1",
+            "account": {
+                "id": "428152502467",
+                "name": "elastic-beats"
+            },
+            "availability_zone": "eu-west-1a"
         },
-        "login_failures": 0,
-        "queries": 6.197934021992669,
-        "throughput": {
-          "commit": 0,
-          "ddl": 0,
-          "delete": 0,
-          "dml": 0,
-          "insert": 0,
-          "network": 1.399813358218904,
-          "network_receive": 0.699906679109452,
-          "network_transmit": 0.699906679109452,
-          "select": 2.5165408396246853,
-          "update": 0
+        "event": {
+            "dataset": "aws.rds",
+            "module": "aws",
+            "duration": 10777919184
         },
-        "transactions": {
-          "active": 0,
-          "blocked": 0
+        "metricset": {
+            "name": "rds",
+            "period": 60000
+        },
+        "stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "aws.rds"
+        },
+        "agent": {
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "availability_zone": "eu-west-1a",
-      "provider": "aws",
-      "region": "eu-west-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:34.537Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.rds@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.rds",
-      "duration": 10777919184,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "rds",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.rds",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:34.537Z"
+    "sort": [
+        1590688714537
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.rds@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688714537
-  ]
 }
 ```
 
@@ -1740,13 +2108,36 @@ An example event for `rds` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### s3_daily_storage
@@ -1755,76 +2146,76 @@ An example event for `s3_daily_storage` looks as following:
 
 ```$json
 {
-  "_id": "Ds9vXHIBpGMSUzkZmyod",
-  "_index": "metrics-aws.s3_daily_storage-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "s3": {
-        "bucket": {
-          "name": "test-s3-ks-2"
-        }
-      },
-      "s3_daily_storage": {
-        "bucket": {
-          "size": {
-            "bytes": 207372
-          }
+    "_index": "metrics-aws.s3_daily_storage-default-000001",
+    "_id": "Ds9vXHIBpGMSUzkZmyod",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:27.154Z",
+        "service": {
+            "type": "aws"
         },
-        "number_of_objects": 128
-      }
+        "stream": {
+            "dataset": "aws.s3_daily_storage",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "aws": {
+            "s3": {
+                "bucket": {
+                    "name": "test-s3-ks-2"
+                }
+            },
+            "s3_daily_storage": {
+                "bucket": {
+                    "size": {
+                        "bytes": 207372
+                    }
+                },
+                "number_of_objects": 128
+            }
+        },
+        "event": {
+            "dataset": "aws.s3_daily_storage",
+            "module": "aws",
+            "duration": 10418157072
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "s3_daily_storage"
+        },
+        "cloud": {
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws"
+        },
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat"
+        }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:27.154Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.s3_daily_storage@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.s3_daily_storage",
-      "duration": 10418157072,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "s3_daily_storage",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.s3_daily_storage",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:27.154Z"
+    "sort": [
+        1590688707154
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.s3_daily_storage@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688707154
-  ]
 }
 ```
 
@@ -1845,13 +2236,36 @@ An example event for `s3_daily_storage` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### s3_request
@@ -1860,89 +2274,89 @@ An example event for `s3_request` looks as following:
 
 ```$json
 {
-  "_id": "Ds9vXHIBpGMSUzkZmyod",
-  "_index": "metrics-aws.s3_request-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "s3": {
-        "bucket": {
-          "name": "test-s3-ks-2"
+    "_index": "metrics-aws.s3_request-default-000001",
+    "_id": "Ds9vXHIBpGMSUzkZmyod",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:27.154Z",
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "dataset": "aws.s3_request",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "aws": {
+            "s3": {
+                "bucket": {
+                    "name": "test-s3-ks-2"
+                }
+            },
+            "s3_request": {
+                "downloaded": {
+                    "bytes": 534
+                },
+                "errors": {
+                    "4xx": 0,
+                    "5xx": 0
+                },
+                "latency": {
+                    "first_byte.ms": 214,
+                    "total_request.ms": 533
+                },
+                "requests": {
+                    "list": 2,
+                    "put": 10,
+                    "total": 12
+                },
+                "uploaded": {
+                    "bytes": 13572
+                }
+            }
+        },
+        "event": {
+            "dataset": "aws.s3_request",
+            "module": "aws",
+            "duration": 10418157072
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "s3_request"
+        },
+        "cloud": {
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws"
+        },
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat"
         }
-      },
-      "s3_request": {
-        "downloaded": {
-          "bytes": 534
-        },
-        "errors": {
-          "4xx": 0,
-          "5xx": 0
-        },
-        "latency": {
-          "first_byte.ms": 214,
-          "total_request.ms": 533
-        },
-        "requests": {
-          "list": 2,
-          "put": 10,
-          "total": 12
-        },
-        "uploaded": {
-          "bytes": 13572
-        }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:27.154Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.s3_request@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.s3_request",
-      "duration": 10418157072,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "s3_request",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.s3_request",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:27.154Z"
+    "sort": [
+        1590688707154
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.s3_request@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688707154
-  ]
 }
 ```
 
@@ -1977,13 +2391,36 @@ An example event for `s3_request` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### sns
@@ -1992,85 +2429,85 @@ An example event for `sns` looks as following:
 
 ```$json
 {
-  "_id": "Ds9vXHIBpGMSUzkZmyod",
-  "_index": "metrics-aws.sns-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/SNS"
-      },
-      "dimensions": {
-        "TopicName": "test-sns-ks"
-      },
-      "sns": {
-        "metrics": {
-          "NumberOfMessagesPublished": {
-            "sum": 1
-          },
-          "NumberOfNotificationsFailed": {
-            "sum": 1
-          },
-          "PublishSize": {
-            "avg": 5
-          }
+    "_index": "metrics-aws.sns-default-000001",
+    "_id": "Ds9vXHIBpGMSUzkZmyod",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:27.154Z",
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "dataset": "aws.sns",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "aws": {
+            "cloudwatch": {
+                "namespace": "AWS/SNS"
+            },
+            "dimensions": {
+                "TopicName": "test-sns-ks"
+            },
+            "sns": {
+                "metrics": {
+                    "NumberOfMessagesPublished": {
+                        "sum": 1
+                    },
+                    "NumberOfNotificationsFailed": {
+                        "sum": 1
+                    },
+                    "PublishSize": {
+                        "avg": 5
+                    }
+                }
+            },
+            "tags": {
+                "created-by": "ks"
+            }
+        },
+        "event": {
+            "dataset": "aws.sns",
+            "module": "aws",
+            "duration": 10418157072
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "sns"
+        },
+        "cloud": {
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws"
+        },
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat"
         }
-      },
-      "tags": {
-        "created-by": "ks"
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:27.154Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.sns@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.sns",
-      "duration": 10418157072,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "sns",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.sns",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:27.154Z"
+    "sort": [
+        1590688707154
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.sns@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688707154
-  ]
 }
 ```
 
@@ -2103,13 +2540,36 @@ An example event for `sns` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### sqs
@@ -2118,81 +2578,81 @@ An example event for `sqs` looks as following:
 
 ```$json
 {
-  "_id": "Ds9vXHIBpGMSUzkZmyod",
-  "_index": "metrics-aws.sqs-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "sqs": {
-        "empty_receives": 0,
-        "messages": {
-          "delayed": 0,
-          "deleted": 0,
-          "not_visible": 0,
-          "received": 0,
-          "sent": 0,
-          "visible": 2
+    "_index": "metrics-aws.sqs-default-000001",
+    "_id": "Ds9vXHIBpGMSUzkZmyod",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:27.154Z",
+        "service": {
+            "type": "aws"
         },
-        "oldest_message_age": {
-          "sec": 78494
+        "stream": {
+            "dataset": "aws.sqs",
+            "namespace": "default",
+            "type": "metrics"
         },
-        "queue": {
-          "name": "test-s3-notification"
+        "ecs": {
+            "version": "1.5.0"
         },
-        "sent_message_size": {}
-      }
+        "aws": {
+            "sqs": {
+                "empty_receives": 0,
+                "messages": {
+                    "delayed": 0,
+                    "deleted": 0,
+                    "not_visible": 0,
+                    "received": 0,
+                    "sent": 0,
+                    "visible": 2
+                },
+                "oldest_message_age": {
+                    "sec": 78494
+                },
+                "queue": {
+                    "name": "test-s3-notification"
+                },
+                "sent_message_size": {}
+            }
+        },
+        "event": {
+            "dataset": "aws.sqs",
+            "module": "aws",
+            "duration": 10418157072
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "sqs"
+        },
+        "cloud": {
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws"
+        },
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat"
+        }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:27.154Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.sqs@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.sqs",
-      "duration": 10418157072,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "sqs",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.sqs",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:27.154Z"
+    "sort": [
+        1590688707154
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.sqs@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688707154
-  ]
 }
 ```
 
@@ -2219,13 +2679,36 @@ An example event for `sqs` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### transitgateway
@@ -2234,91 +2717,91 @@ An example event for `transitgateway` looks as following:
 
 ```$json
 {
-  "_id": "WNToXHIBpGMSUzkZaeVh",
-  "_index": "metrics-aws.transitgateway-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T20:10:20.953Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/TransitGateway"
-      },
-      "dimensions": {
-        "TransitGateway": "tgw-0630672a32f12808a"
-      },
-      "transitgateway": {
-        "metrics": {
-          "BytesIn": {
-            "sum": 0
-          },
-          "BytesOut": {
-            "sum": 0
-          },
-          "PacketDropCountBlackhole": {
-            "sum": 0
-          },
-          "PacketDropCountNoRoute": {
-            "sum": 0
-          },
-          "PacketsIn": {
-            "sum": 0
-          },
-          "PacketsOut": {
-            "sum": 0
-          }
+    "_index": "metrics-aws.transitgateway-default-000001",
+    "_id": "WNToXHIBpGMSUzkZaeVh",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T20:10:20.953Z",
+        "cloud": {
+            "provider": "aws",
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            }
+        },
+        "aws": {
+            "transitgateway": {
+                "metrics": {
+                    "PacketsIn": {
+                        "sum": 0
+                    },
+                    "BytesIn": {
+                        "sum": 0
+                    },
+                    "BytesOut": {
+                        "sum": 0
+                    },
+                    "PacketsOut": {
+                        "sum": 0
+                    },
+                    "PacketDropCountBlackhole": {
+                        "sum": 0
+                    },
+                    "PacketDropCountNoRoute": {
+                        "sum": 0
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/TransitGateway"
+            },
+            "dimensions": {
+                "TransitGateway": "tgw-0630672a32f12808a"
+            }
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "agent": {
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+        },
+        "event": {
+            "dataset": "aws.transitgateway",
+            "module": "aws",
+            "duration": 12762825681
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "transitgateway"
+        },
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "namespace": "default",
+            "type": "metrics",
+            "dataset": "aws.transitgateway"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T20:10:20.953Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.transitgateway@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.transitgateway",
-      "duration": 12762825681,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "transitgateway",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.transitgateway",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T20:10:20.953Z"
+    "sort": [
+        1590696620953
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.transitgateway@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590696620953
-  ]
 }
 ```
 
@@ -2342,13 +2825,36 @@ An example event for `transitgateway` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### usage
@@ -2357,79 +2863,79 @@ An example event for `usage` looks as following:
 
 ```$json
 {
-  "_id": "YM9vXHIBpGMSUzkZiSlC",
-  "_index": "metrics-aws.usage-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:30.929Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/Usage"
-      },
-      "dimensions": {
-        "Class": "None",
-        "Resource": "GetMetricData",
-        "Service": "CloudWatch",
-        "Type": "API"
-      },
-      "usage": {
-        "metrics": {
-          "CallCount": {
-            "sum": 1
-          }
+    "_index": "metrics-aws.usage-default-000001",
+    "_id": "YM9vXHIBpGMSUzkZiSlC",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:30.929Z",
+        "aws": {
+            "usage": {
+                "metrics": {
+                    "CallCount": {
+                        "sum": 1
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/Usage"
+            },
+            "dimensions": {
+                "Type": "API",
+                "Resource": "GetMetricData",
+                "Service": "CloudWatch",
+                "Class": "None"
+            }
+        },
+        "event": {
+            "duration": 1191329839,
+            "dataset": "aws.usage",
+            "module": "aws"
+        },
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "type": "metrics",
+            "dataset": "aws.usage",
+            "namespace": "default"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "cloud": {
+            "provider": "aws",
+            "region": "eu-north-1",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            }
+        },
+        "metricset": {
+            "name": "usage",
+            "period": 60000
+        },
+        "agent": {
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat",
+            "version": "8.0.0"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "eu-north-1"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:30.929Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.usage@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.usage",
-      "duration": 1191329839,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "usage",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.usage",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:30.929Z"
+    "sort": [
+        1590688710929
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.usage@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688710929
-  ]
 }
 ```
 
@@ -2451,13 +2957,36 @@ An example event for `usage` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
 
 ### vpn
@@ -2466,79 +2995,79 @@ An example event for `vpn` looks as following:
 
 ```$json
 {
-  "_id": "Ds9vXHIBpGMSUzkZmyod",
-  "_index": "metrics-aws.vpn-default-000001",
-  "_score": null,
-  "_source": {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "agent": {
-      "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-      "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-      "name": "MacBook-Elastic.local",
-      "type": "metricbeat",
-      "version": "8.0.0"
-    },
-    "aws": {
-      "cloudwatch": {
-        "namespace": "AWS/VPN"
-      },
-      "vpn": {
-        "metrics": {
-          "TunnelDataIn": {
-            "sum": 0
-          },
-          "TunnelDataOut": {
-            "sum": 0
-          },
-          "TunnelState": {
-            "avg": 0
-          }
+    "_index": "metrics-aws.vpn-default-000001",
+    "_id": "Ds9vXHIBpGMSUzkZmyod",
+    "_version": 1,
+    "_score": null,
+    "_source": {
+        "@timestamp": "2020-05-28T17:58:27.154Z",
+        "service": {
+            "type": "aws"
+        },
+        "stream": {
+            "dataset": "aws.vpn",
+            "namespace": "default",
+            "type": "metrics"
+        },
+        "ecs": {
+            "version": "1.5.0"
+        },
+        "aws": {
+            "vpn": {
+                "metrics": {
+                    "TunnelState": {
+                        "avg": 0
+                    },
+                    "TunnelDataIn": {
+                        "sum": 0
+                    },
+                    "TunnelDataOut": {
+                        "sum": 0
+                    }
+                }
+            },
+            "cloudwatch": {
+                "namespace": "AWS/VPN"
+            }
+        },
+        "event": {
+            "dataset": "aws.vpn",
+            "module": "aws",
+            "duration": 10418157072
+        },
+        "metricset": {
+            "period": 60000,
+            "name": "vpn"
+        },
+        "cloud": {
+            "region": "us-west-2",
+            "account": {
+                "name": "elastic-beats",
+                "id": "428152502467"
+            },
+            "provider": "aws"
+        },
+        "agent": {
+            "version": "8.0.0",
+            "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
+            "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
+            "name": "MacBook-Elastic.local",
+            "type": "metricbeat"
         }
-      }
     },
-    "cloud": {
-      "account": {
-        "id": "428152502467",
-        "name": "elastic-beats"
-      },
-      "provider": "aws",
-      "region": "us-west-2"
+    "fields": {
+        "@timestamp": [
+            "2020-05-28T17:58:27.154Z"
+        ]
     },
-    "ecs": {
-      "version": "1.5.0"
+    "highlight": {
+        "event.dataset": [
+            "@kibana-highlighted-field@aws.vpn@/kibana-highlighted-field@"
+        ]
     },
-    "event": {
-      "dataset": "aws.vpn",
-      "duration": 10418157072,
-      "module": "aws"
-    },
-    "metricset": {
-      "name": "vpn",
-      "period": 60000
-    },
-    "service": {
-      "type": "aws"
-    },
-    "stream": {
-      "dataset": "aws.vpn",
-      "namespace": "default",
-      "type": "metrics"
-    }
-  },
-  "_version": 1,
-  "fields": {
-    "@timestamp": [
-      "2020-05-28T17:58:27.154Z"
+    "sort": [
+        1590688707154
     ]
-  },
-  "highlight": {
-    "event.dataset": [
-      "@kibana-highlighted-field@aws.vpn@/kibana-highlighted-field@"
-    ]
-  },
-  "sort": [
-    1590688707154
-  ]
 }
 ```
 
@@ -2559,11 +3088,34 @@ An example event for `vpn` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 
