@@ -677,10 +677,25 @@ An example event for `billing` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
-| aws.billing.metrics.EstimatedCharges.max | Maximum estimated charges for AWS acccount. | long |
+| aws.billing.AmortizedCost.amount | Amortized cost amount. | double |
+| aws.billing.AmortizedCost.unit | Amortized cost unit. | keyword |
+| aws.billing.BlendedCost.amount | Blended cost amount. | double |
+| aws.billing.BlendedCost.unit | Blended cost unit. | keyword |
+| aws.billing.Currency | Currency name. | keyword |
+| aws.billing.EstimatedCharges.max | Maximum estimated charges for AWS acccount. | long |
+| aws.billing.NormalizedUsageAmount.amount | Normalized usage amount. | double |
+| aws.billing.NormalizedUsageAmount.unit | Normalized usage amount unit. | keyword |
+| aws.billing.ServiceName | AWS service name. | keyword |
+| aws.billing.UnblendedCost.amount | Unblended cost amount. | double |
+| aws.billing.UnblendedCost.unit | Unblended cost unit. | keyword |
+| aws.billing.UsageQuantity.amount | Usage quantity amount. | double |
+| aws.billing.UsageQuantity.unit | Usage quantity unit. | keyword |
+| aws.billing.end_date | End date for retrieving AWS costs. | keyword |
+| aws.billing.group_by | Cost explorer group by key values. | object |
+| aws.billing.group_definition.key | The string that represents a key for a specified group. | keyword |
+| aws.billing.group_definition.type | The string that represents the type of group. | keyword |
+| aws.billing.start_date | Start date for retrieving AWS costs. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
-| aws.dimensions.Currency | Currency name. | keyword |
-| aws.dimensions.ServiceName | AWS service name. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.* | Tag key value pairs from aws resources. | object |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
