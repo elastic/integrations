@@ -14,101 +14,96 @@ The Nats package is tested with Nats 1.3.0, 2.0.4 and 2.1.4
 
 The `log` dataset collects the NATS logs.
 
-An example event for `stats` looks as following:
+An example event for `log` looks as following:
 
 ```$json
 {
-    "@timestamp": "2020-11-25T11:55:12.889Z",
-    "agent": {
-        "version": "7.11.0",
-        "hostname": "5706c620a165",
-        "ephemeral_id": "faba036b-68bf-4ea8-a1f1-78c6e61dce6c",
-        "id": "5f6fe0bb-58aa-43bb-99ef-385eb36c0e8a",
-        "name": "5706c620a165",
-        "type": "metricbeat"
+    "nats": {
+        "log": {
+            "msg": {
+                "type": "payload"
+            },
+            "client": {
+                "id": "86"
+            }
+        }
     },
+    "agent": {
+        "hostname": "5706c620a165",
+        "name": "5706c620a165",
+        "id": "25c804ef-d8c8-4a2e-9228-64213daef566",
+        "type": "filebeat",
+        "ephemeral_id": "4f1426bb-db10-4b5d-9e1c-ba6da401dc34",
+        "version": "7.11.0"
+    },
+    "process": {
+        "pid": "6"
+    },
+    "log": {
+        "file": {
+            "path": "/var/log/nats/nats.log"
+        },
+        "offset": 36865655,
+        "level": "trace"
+    },
+    "elastic_agent": {
+        "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+        "version": "7.11.0",
+        "snapshot": true
+    },
+    "network": {
+        "direction": "inbound"
+    },
+    "input": {
+        "type": "log"
+    },
+    "@timestamp": "2020-11-25T11:50:17.759Z",
     "ecs": {
         "version": "1.6.0"
     },
-    "host": {
+    "related": {
         "ip": [
-            "192.168.192.8"
-        ],
-        "mac": [
-            "02:42:c0:a8:c0:08"
-        ],
-        "hostname": "5706c620a165",
-        "architecture": "x86_64",
-        "os": {
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.9.184-linuxkit",
-            "codename": "Core",
-            "platform": "centos"
-        },
-        "id": "06c26569966fd125c15acac5d7feffb6",
-        "name": "5706c620a165",
-        "containerized": true
-    },
-    "metricset": {
-        "name": "stats",
-        "period": 10000
-    },
-    "nats": {
-        "stats": {
-            "cores": 8,
-            "cpu": 0,
-            "total_connections": 158,
-            "out": {
-                "messages": 0,
-                "bytes": 0
-            },
-            "in": {
-                "messages": 136883,
-                "bytes": 2190128
-            },
-            "slow_consumers": 0,
-            "mem": {
-                "bytes": 12308480
-            },
-            "uptime": 780,
-            "remotes": 1,
-            "http": {
-                "req_stats": {
-                    "uri": {
-                        "subsz": 65,
-                        "varz": 65,
-                        "root": 0,
-                        "connz": 130,
-                        "routez": 130
-                    }
-                }
-            }
-        },
-        "server": {
-            "id": "NAOMPZQ3UW6A57N3UKBKFVTZLNWZCCS6OUGV3XXEQPFZ5BE5M52CDGVL",
-            "time": "2020-11-25T11:55:12.8894258Z"
-        }
-    },
-    "elastic_agent": {
-        "version": "7.11.0",
-        "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
-        "snapshot": true
-    },
-    "event": {
-        "dataset": "nats.stats",
-        "module": "nats",
-        "duration": 1323200
-    },
-    "service": {
-        "address": "http://nats:8222/varz",
-        "type": "nats"
+            "192.168.192.3"
+        ]
     },
     "data_stream": {
         "namespace": "default",
-        "type": "metrics",
-        "dataset": "nats.stats"
+        "type": "logs",
+        "dataset": "nats.log"
+    },
+    "host": {
+        "hostname": "5706c620a165",
+        "os": {
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.192.8"
+        ],
+        "name": "5706c620a165",
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "mac": [
+            "02:42:c0:a8:c0:08"
+        ],
+        "architecture": "x86_64"
+    },
+    "client": {
+        "port": "53482",
+        "ip": "192.168.192.3"
+    },
+    "event": {
+        "ingested": "2020-11-25T11:53:10.021181400Z",
+        "created": "2020-11-25T11:53:04.192Z",
+        "kind": "event",
+        "type": [
+            "info"
+        ],
+        "dataset": "nats.log"
     }
 }
 ```
