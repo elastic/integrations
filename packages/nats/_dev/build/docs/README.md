@@ -14,7 +14,7 @@ The Nats package is tested with Nats 1.3.0, 2.0.4 and 2.1.4
 
 The `log` dataset collects the NATS logs.
 
-{{event "stats"}}
+{{event "log"}}
 
 {{fields "log"}}
 
