@@ -12,15 +12,15 @@
 
 3. If you're happy with the package, tested with Kibana and generally it's fine - promote your packages to the staging or production:
 
-```bash
-elastic-package promote
-```
-
-The tool will open 2 PRs (promote and delete) to the package-storage: target and source branches.
-
-Please review both PRs on your own, check if CI is happy and merge - first target, then source. Once any PR is merged,
-the CI will kick off a job to bake a new Docker image of package-storage ([tracking](https://beats-ci.elastic.co/job/Ingest-manager/job/package-storage/)).
-Ideally the "delete" PR should be merged once the CI job for "promote" is done, as the Docker image of previous stage
-[depends on the later one](https://github.com/elastic/package-storage/blob/snapshot/Dockerfile#L5).
+    ```bash
+    elastic-package promote
+    ```
+    
+    The tool will open 2 PRs (promote and delete) to the package-storage: target and source branches.
+    
+    Please review both PRs on your own, check if CI is happy and merge - first target, then source. Once any PR is merged,
+    the CI will kick off a job to bake a new Docker image of package-storage ([tracking](https://beats-ci.elastic.co/job/Ingest-manager/job/package-storage/)).
+    Ideally the "delete" PR should be merged once the CI job for "promote" is done, as the Docker image of previous stage
+    [depends on the later one](https://github.com/elastic/package-storage/blob/snapshot/Dockerfile#L5).
 
 4. Use the 1-click from point 2. to release new revision of the package-storage.
