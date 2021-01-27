@@ -7,12 +7,13 @@ This page is intended for contributors to the [Package Registry](https://github.
 ### Integrations
 
 * [Definitions](/docs/definitions.md)
-* [Sample package - Nginx](/packages/nginx) - use as an inspiration for new packages
+* [Sample package - Nginx](/packages/nginx) - use as an inspiration for new packages, look at files, folders, test resources
 * [Fine-tune integration](/docs/fine_tune_integration.md) - fill missing items, correct structure, review manifests
 * [Testing and validation](/docs/testing_and_validation.md) - run the Elastic stack, use test runners
 * [Tips for building integrations](/docs/tips_for_building_integrations.md) - see your local changes in Kibana, follow best practices
 
 ### Package Spec
+* [Explore the package-spec now](https://github.com/elastic/package-spec/tree/master/versions/1) - review the current version of the package specification
 * [Suggest changes in package spec](https://github.com/elastic/package-spec/issues/new) - open a new issue in the (Package Spec)(https://github.com/elastic/package-spec)
   repository. Let's discuss any spec extensions together. 
 
