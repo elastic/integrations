@@ -1,4 +1,4 @@
-### Import from existing modules
+# Import from Beats modules
 
 The import procedure heavily uses on the _import-beats_ script. If you are interested how does it work internally,
 feel free to review the script's [README](https://github.com/elastic/integrations/tree/master/dev/import-beats/README.md).
