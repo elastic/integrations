@@ -12,7 +12,7 @@ for discussions/extending the specification (with proposals).
 The Elastic Integrations are distributed with the [Package Storage](https://github.com/elastic/package-storage)
 and exposed for [Kibana](https://github.com/elastic/kibana) via the [Package Registry](https://github.com/elastic/package-registry/).
 
-The official builder tool for the Elastic Integrations is the [elastic package](https://github.com/elastic/elastic-package).
+The official builder tool for the Elastic Integrations is the [elastic-package](https://github.com/elastic/elastic-package).
 
 ## Contributing
 

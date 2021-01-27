@@ -79,3 +79,19 @@ elastic-package export
 
 The `elastic-package` tool supports multiple levels of testing - pipeline, system, assets. Follow up on the specific topic
 using the tool's [documentation](https://github.com/elastic/elastic-package/tree/master/docs/howto).
+
+### Remember to bump up the version
+
+When the PR is merged, the CI will kick off a build job for the master branch, which can release your integration to
+the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
+the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
+
+Long story short - if you want your changes in the integration to be released, remember to bump up the package version.
+
+### Open a PR
+
+If you think that you've finished works on your integration, you've verified that it collects data, wrote some tests,
+you can [open a PR](https://github.com/elastic/integrations/compare) to include your integration in the [Integrations](https://github.com/elastic/integrations) repository.
+The CI will verify if your integration is correct (`elastic-package check`) - a green status is a must.
+
+Feel free to merge the PR once you receive an approval from the Integrations team.
