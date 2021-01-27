@@ -1,6 +1,6 @@
-### Fine-tune the integration
+# Fine-tune the integration
 
-#### Motivation
+## Motivation
 
 Most of migration work has been done by the `import-beats` script, but there're tasks that require developer's
 interaction.
@@ -8,7 +8,7 @@ interaction.
 It may happen that your integration misses a screenshot or an icon, it's a good moment to add missing resources to
 Beats/Kibana repositories and re-import the integration (idempotent).
 
-#### Checklist
+## Checklist
 
 The order of action items on the checklist is advised to prevent the contributor from repeating some actions (fixing
 what's been already fixed, as the script has overridden part of it).
@@ -43,8 +43,8 @@ what's been already fixed, as the script has overridden part of it).
     The README template is used to render the final README file including exported fields. The template should be placed
     in the `package/<integration-name>/_dev/build/docs/README.md`. If the directory doesn't exist, please create it.
 
-    Review the MySQL docs template to see how to use template functions (e.g. `{{fields "dataset-name"}}`).
-    If the same dataset name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a dataset for log and also a dataset for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
+    Review the MySQL docs template to see how to use template functions (e.g. `{{fields "data-stream-name"}}`).
+    If the same data stream name is used in both metrics and logs, please add `-metrics` and `-logs` in the template. For example, `elb` is a data stream for log and also a data stream for metrics. In README.md template, `{{fields "elb_logs"}}` and `{{fields "elb_metrics"}}` are used to separate them.
 
 5. Review fields file and exported fields in docs.
 
@@ -61,9 +61,9 @@ what's been already fixed, as the script has overridden part of it).
 
     The fields for an integration package are divided into the following three files:
 
-    - ecs.yml: ECS compliant fields that are used by this particular dataset.
-    - package-fields.yml: Package level fields that are used by this particular dataset, which does not exist under `<integration-package-name>.<dataset-name>`.
-    - fields.yml: Dataset level fields that are specific to this particular dataset, and non ECS compliant.
+    - ecs.yml: ECS compliant fields that are used by this particular data stream.
+    - package-fields.yml: Package level fields that are used by this particular data stream, which does not exist under `<integration-package-name>.<data-stream-name>`.
+    - fields.yml: Dataset level fields that are specific to this particular data stream, and non ECS compliant.
 
 
     See the PR https://github.com/elastic/beats/pull/17895 to understand how to add them to Beats (e.g. `event.code`,
@@ -86,14 +86,14 @@ what's been already fixed, as the script has overridden part of it).
 8. Compact configuration options (vars).
 
     Currently, all configuration options are set by the `import-beats` script on the stream level
-    (path: `dataset/<dataset-name>/manifest.yml`).
+    (path: `data stream/<data-stream-name>/manifest.yml`).
 
-    It may happen that some of them in different datasets are simply duplicates or concern the same setting, which
-    will be always equal (e.g. MySQL username, password). Keep in mind that two datasets may have the same configuration
+    It may happen that some of them in different data streams are simply duplicates or concern the same setting, which
+    will be always equal (e.g. MySQL username, password). Keep in mind that two data streams may have the same configuration
     option, but different values (e.g. `period`, `paths`), hence can't be compacted.
 
     To sum up, compacting takes down from the user the necessity to setup the same configuration option few times (one
-    per dataset).
+    per data stream).
 
 9. Define all variable properties.
 
@@ -137,8 +137,8 @@ what's been already fixed, as the script has overridden part of it).
     content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/packages/mysql/_dev/build/docs/README.md))
     or copy them once managed to run whole setup with real agent.
 
-12. Kibana: use `stream.dataset` field instead of `event.dataset`.
+12. Kibana: use `stream.data stream` field instead of `event.data stream`.
 
-    Using `stream.dataset` instead of `event.dataset` also makes queries a lot more efficient as this is a
-    `constant_keyword`. Make sure that dashboards in your package don't use the `event.dataset` field. If so,
+    Using `stream.data stream` instead of `event.data stream` also makes queries a lot more efficient as this is a
+    `constant_keyword`. Make sure that dashboards in your package don't use the `event.data stream` field. If so,
     simply replace them with the more efficient one.
