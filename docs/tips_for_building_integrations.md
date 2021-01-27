@@ -1,10 +1,10 @@
-## Tips for building integrations
+# Tips for building integrations
 
 The section offers a set of tips for developers to improve integrations that they're working on. It combines hints, guidelines,
 recommendations and tricks. Please consider this section as a live document that may evolve in the future, depending
 on the business or technical requirements for the entire platform (Elastic Package Registry, Elastic Agent and Kibana).
 
-### elastic-package
+## elastic-package
 
 [elastic-package](https://github.com/elastic/elastic-package) is a command line tool, written in Go, used for developing Elastic packages. It can help you lint,
 format, test, build, and promote your packages. This is the official builder tool to develop Integrations. See the
@@ -18,9 +18,9 @@ $ go build github.com/elastic/elastic-package
 $ ./elastic-package help
 ```
 
-### New integrations
+## New integrations
 
-#### Manifest files
+### Manifest files
 
 1. Set the initial version to `0.1.0`.
 
@@ -47,9 +47,9 @@ $ ./elastic-package help
 
    Good candidates for a team: `elastic/integrations-platforms`, `elastic/integrations-services`
 
-### All integrations
+## All integrations
 
-#### Development
+### Development
 
 1. When you're developing integrations and you'd like to propagate your changes to the package registry, first rebuild the package:
 
@@ -69,29 +69,7 @@ $ ./elastic-package help
    Explanation: it's much faster to rebuild and restart the container with the Package Registry, than work with
    mounted volumes.
 
-#### Testing
-
-`elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
-to learn about the various methods for testing packages.
-
-The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
-If you're using the Elastic stack created with `elastic-package`, you can use export endpoints with `elastic-package stack shellinit`:
-
-```bash
-$ eval "$(elastic-package stack shellinit)"
-```
-
-To preview environment variables:
-
-```bash
-$ elastic-package stack shellinit
-export ELASTIC_PACKAGE_ELASTICSEARCH_HOST=http://127.0.0.1:9200
-export ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic
-export ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme
-export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
-```
-
-#### Code reviewers
+### Code reviewers
 
 1. Ping "Team:Integrations".
 

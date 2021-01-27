@@ -77,3 +77,24 @@ instance of the Elastic Agent
 
 8. Navigate with Kibana UI to freshly installed dashboards, verify the metrics/logs flow.
 
+## Use test runners
+
+`elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
+to learn about the various methods for testing packages.
+
+The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
+If you're using the Elastic stack created with `elastic-package`, you can use export endpoints with `elastic-package stack shellinit`:
+
+```bash
+$ eval "$(elastic-package stack shellinit)"
+```
+
+To preview environment variables:
+
+```bash
+$ elastic-package stack shellinit
+export ELASTIC_PACKAGE_ELASTICSEARCH_HOST=http://127.0.0.1:9200
+export ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic
+export ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme
+export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
+```
