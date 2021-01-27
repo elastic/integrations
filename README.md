@@ -1,6 +1,6 @@
-# Elastic Integrations
-
 [![Build Status](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/badge/icon)](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/)
+
+# Elastic Integrations
 
 This repository contains sources of the Elastic Integrations - packages defining data streams to observe the same product (logs, metrics, traces).
 A package may contain configuration of the [Elastic-Agent](https://github.com/elastic/beats/tree/master/x-pack/elastic-agent), dashboards, visualizations,
