@@ -2,7 +2,7 @@
 
 This page is intended for contributors to the [Package Registry](https://github.com/elastic/package-registry/) and Elastic Integrations.
 
-## Table of contents
+## Table of Contents
 
 ### Integrations
 
@@ -15,7 +15,7 @@ This page is intended for contributors to the [Package Registry](https://github.
 ### Package Spec
 * [Explore the package-spec now](https://github.com/elastic/package-spec/tree/master/versions/1) - review the current version of the package specification
 * [Suggest changes in package spec](https://github.com/elastic/package-spec/issues/new) - open a new issue in the (Package Spec)(https://github.com/elastic/package-spec)
-  repository. Let's discuss any spec extensions together. 
+  repository. Let's discuss any spec extensions together
 
 ### Package Registry
 * [Create a new release](https://github.com/elastic/package-registry/#release) - release latest changes introduced to the [Package Registry](https://github.com/elastic/package-registry)
