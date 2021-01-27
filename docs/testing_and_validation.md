@@ -2,10 +2,6 @@
 
 ## Run the whole setup
 
-The `elastic-package stack` provides an enrolled instance of the Elastic Agent. Use that one instead of a local application
-if you can run the service (you're integrating with) in the Docker network. The service Docker image can be used for [system
-testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md).
-
 1. Build the package you'd like to verify (e.g. `apache`):
    ```bash
    $ cd apache
@@ -55,24 +51,12 @@ testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/syste
     ]
     ```
 
-4. (Optional) Build agent code:
-    ```bash
-   $ cd $GOPATH/src/github.com/elastic/beats/x-pack/elastic-agent
-   $ PLATFORMS=darwin mage package
-    ```
+The `elastic-package stack` provides an enrolled instance of the Elastic Agent. Use that one instead of a local application
+if you can run the service (you're integrating with) in the Docker network. The service Docker image can be used for [system
+testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md). If you prefer to use a local
+instance of the Elastic Agent
 
-   If your are building on a Mac and you get the following error, you may ignore it. The package has built successfully anyway.
-
-    ```
-    xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instanceError: running "xcodebuild build -project beats-preference-pane.xcodeproj -alltargets -configuration Release CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO" failed with exit code 1
-    ```
-
-   Unpack the distribution you'd like to use (e.g. tar.gz):
-   ```bash
-   $ cd build/distributions/
-   $ tar xzf elastic-agent-8.0.0-darwin-x86_64.tar.gz
-   $ cd elastic-agent-8.0.0-darwin-x86_64/
-   ```
+4. Download the Elastic-Agent from https://www.elastic.co/downloads/elastic-agent
 
 5. Enroll the agent and start it:
 
