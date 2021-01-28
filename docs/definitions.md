@@ -33,7 +33,7 @@ The data stream consists of:
 * Zero or more ingest pipelines
 * An Elastic Agent policy template
 
-## Migration from Beats
+## Migration from Beats Modules
 
 Filebeat and Metricbeat modules can be migrated over to Elastic Integrations. When migrating over, the same module in Filebeat and Metricbeat, related to the same observed product, can be combined into a single Elastic Integration. 
 
