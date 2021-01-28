@@ -86,7 +86,7 @@ When the PR is merged, the CI will kick off a build job for the master branch, w
 the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
 the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
 
-Long story short - if you want your changes in the integration to be released, remember to bump up the package version.
+When you are ready for your changes in the integration to be released, remember to bump up the package version. It is up to you, as the package developer, to decide how many changes you want to release in a single version. For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could implement several changes across multiple PRs and then bump up the package version in the last of these PRs or in a separate follow up PR.
 
 ### Open a PR
 
