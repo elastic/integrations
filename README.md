@@ -3,8 +3,8 @@
 # Elastic Integrations
 
 This repository contains sources for Elastic Integrations. Each Elastic Integration is an Elastic Package that defines how to observe a specific product with the Elastic Stack.
-A package may contain configuration of the [Elastic-Agent](https://github.com/elastic/beats/tree/master/x-pack/elastic-agent), dashboards, visualizations,
-images, tests, documentation, etc.
+```suggestion
+An Elastic Package may define configuration for the [Elastic Agent](https://github.com/elastic/beats/tree/master/x-pack/elastic-agent) as well as assets (such as Kibana dashboards and Elasticsearch index templates) for the Elastic Stack. It should also define documentation about the package. Finally, a package may also define tests to ensure that it is functioning as expected.
 
 The package format is described in the [Package Spec](https://github.com/elastic/package-spec). The repository is also used
 for discussions/extending the specification (with proposals).
