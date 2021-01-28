@@ -15,7 +15,7 @@ The package is versioned.
 
 ## Integration
 
-An integration is a specific type of a _package_ defining data streams used to observe the same product (logs and metrics).
+An integration is a specific type of a _package_ defining data streams used to observe a product using logs, metrics, and traces.
 
 ## Data stream
 
