@@ -9,7 +9,7 @@ The package consists of:
 * Name
 * Zero or more dashboards and visualisations and Canvas workpads
 * Zero or more ML job definitions
-* Zero or more data stream templates
+* Zero or more data stream index templates
 
 The package is versioned.
 
