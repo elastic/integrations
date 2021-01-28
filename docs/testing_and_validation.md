@@ -52,13 +52,14 @@
     ```
 
 The `elastic-package stack` provides an enrolled instance of the Elastic Agent. Use that one instead of a local application
-if you can run the service (you're integrating with) in the Docker network. The service Docker image can be used for [system
+if you can run the service (you're integrating with) in the Docker network and you don't need to rebuild the Elastic-Agent
+or it's subprocesses (e.g. Filebeat or Metricbeat). The service Docker image can be used for [system
 testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md). If you prefer to use a local
-instance of the Elastic Agent
+instance of the Elastic Agent, proceed with steps 4 an 5:
 
-4. Download the Elastic-Agent from https://www.elastic.co/downloads/elastic-agent
+4. (Optional) Download the Elastic-Agent from https://www.elastic.co/downloads/elastic-agent
 
-5. Enroll the agent and start it:
+5. (Optional) Enroll the agent and start it:
 
    Use the "Enroll new agent" option in the Kibana UI (Ingest Manager -> Fleet -> Create user and enable Fleet) and run a similar command:
 
