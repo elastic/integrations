@@ -14,7 +14,6 @@ AWS credentials are required for running AWS integration.
 * *shared_credential_file*: directory of the shared credentials file.
 * *endpoint*: URL of the entry point for an AWS web service.
 * *role_arn*: AWS IAM Role to assume.
-* *aws_partition*: AWS region partition name, value is one of `aws, aws-cn, aws-us-gov`, default is `aws`.
 
 ### Credential Types
 There are three types of AWS credentials can be used: access keys, temporary
