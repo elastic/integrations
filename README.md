@@ -16,5 +16,5 @@ The official builder tool for the Elastic Integrations is the [elastic-package](
 
 ## Contributing
 
-Please review the [CONTRIBUTING](CONTRIBUTING.md) guide to learn how to build and develop packages, understand the release procedure and
+Please review the [Contributing Guide](CONTRIBUTING.md) to learn how to build and develop packages, understand the release procedure and
 explore the builder tools.
