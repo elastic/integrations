@@ -8,7 +8,8 @@
 ## Steps
 
 I assume that you've selected a product or service from which you'd like to collect logs and metrics. If this is your
-first interaction with Integrations or packages, I suggest to review existing Integrations in the Fleet UI.
+first interaction with Integrations or packages, I suggest to review existing Integrations in the Fleet UI and focus on
+available UI controls, labels, icons, screenshots. 
 
 Let's bring up the Elastic stack:
 
