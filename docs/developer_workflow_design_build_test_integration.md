@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* `elastic-package` (builder tool) installed - follow the [Getting started](https://github.com/elastic/elastic-package#getting-started) guide to install the tool. 
+* `elastic-package` (builder tool) installed - follow the [Getting Started Guide](https://github.com/elastic/elastic-package#getting-started) guide to install the tool. 
 * If you don't understand the `elastic-package` command or would like to learn more about it, try the `help` switch, e.g. `elastic-package stack up --help`.
 
 ## Steps
