@@ -2,7 +2,7 @@
 
 # Elastic Integrations
 
-This repository contains sources of the Elastic Integrations - packages defining data streams to observe the same product (logs, metrics, traces).
+This repository contains sources for Elastic Integrations. Each Elastic Integration is an Elastic Package that defines how to observe a specific product with the Elastic Stack.
 A package may contain configuration of the [Elastic-Agent](https://github.com/elastic/beats/tree/master/x-pack/elastic-agent), dashboards, visualizations,
 images, tests, documentation, etc.
 
