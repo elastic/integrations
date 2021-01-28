@@ -310,7 +310,7 @@ An example event for `log` looks as following:
 | cef.name |  | keyword |
 | cef.severity |  | keyword |
 | cef.version |  | keyword |
-| checkpoint.app_risk |  | keyword |
+| checkpoint.app_risk | Application risk. | keyword |
 | checkpoint.app_severity | Application threat severity. | keyword |
 | checkpoint.app_sig_id | The signature ID which the application was detected by. | keyword |
 | checkpoint.auth_method | Password authentication protocol used. | keyword |
@@ -319,7 +319,7 @@ An example event for `log` looks as following:
 | checkpoint.connectivity_state | Connectivity state. | keyword |
 | checkpoint.cookie | IKE cookie. | keyword |
 | checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
-| checkpoint.email_control |  | keyword |
+| checkpoint.email_control | Engine name. | keyword |
 | checkpoint.email_id | Internal email ID. | keyword |
 | checkpoint.email_recipients_num | Number of recipients. | long |
 | checkpoint.email_session_id | Internal email session ID. | keyword |
@@ -340,7 +340,7 @@ An example event for `log` looks as following:
 | checkpoint.protection_type | Type of protection used to detect the attack. | keyword |
 | checkpoint.scan_result | Scan result. | keyword |
 | checkpoint.sensor_mode | Sensor mode. | keyword |
-| checkpoint.severity |  | keyword |
+| checkpoint.severity | Threat severity. | keyword |
 | checkpoint.spyware_name | Spyware name. | keyword |
 | checkpoint.spyware_status | Spyware status. | keyword |
 | checkpoint.subs_exp | The expiration date of the subscription. | date |
@@ -389,8 +389,11 @@ An example event for `log` looks as following:
 | destination.user.name | Short name or login of the user. | keyword |
 | ecs.version | ECS version | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| file.group | Primary group name of the file. | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
+| file.inode | Inode representing the file in the filesystem. | keyword |
+| file.type | File type (file, dir, or symlink). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -412,6 +415,7 @@ An example event for `log` looks as following:
 | input.type | Input type | keyword |
 | log.file.path | Log path | keyword |
 | log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. | keyword |
@@ -455,4 +459,5 @@ An example event for `log` looks as following:
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
 
