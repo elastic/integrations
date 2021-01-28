@@ -35,6 +35,6 @@ The data stream consists of:
 
 ## Migration from Beats
 
-A defined importing procedure used to transform both Filebeat and Metricbeat modules, related to
-the same observed product, into a single integration. The integration contains extracted configuration of beat
-modules, hence no modules are required to exist anymore.
+Filebeat and Metricbeat modules can be migrated over to Elastic Integrations. When migrating over, the same module in Filebeat and Metricbeat, related to the same observed product, can be combined into a single Elastic Integration. 
+
+[Learn more](/docs/import_from_beats.md) about how to migrate Filebeat and Metricbeat modules to Elastic Integrations.
