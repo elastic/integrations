@@ -3,7 +3,7 @@
 ## Prerequisites
 
 * `elastic-package` (builder tool) installed - follow the [Getting started](https://github.com/elastic/elastic-package#getting-started) guide to install the tool.
-* There is a PR open to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with your built integration.
+* There is a PR open to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with your built integration. This will be done automatically by the Integrations repository CI when it detects an unreleased version of your package in the Integrations repository.
 
 ## Steps
 
