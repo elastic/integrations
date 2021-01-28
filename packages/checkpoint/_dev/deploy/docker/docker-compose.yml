@@ -1,5 +1,11 @@
 version: '2.3'
 services:
+  checkpoint-firewall-log:
+    image: alpine
+    volumes:
+      - ./test-checkpoint.log:/sample_logs/test-checkpoint.log:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
   checkpoint-firewall-tcp:
     image: akroh/stream:v0.0.1
     volumes:
