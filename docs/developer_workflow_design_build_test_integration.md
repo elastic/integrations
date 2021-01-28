@@ -77,7 +77,7 @@ elastic-package export
 
 ### Test
 
-The `elastic-package` tool supports multiple levels of testing - pipeline, system, assets. Follow up on the specific topic
+The `elastic-package` tool supports multiple types of tests - pipeline, system, assets. Follow up on the specific topic
 using the tool's [documentation](https://github.com/elastic/elastic-package/tree/master/docs/howto).
 
 ### Remember to bump up the version
