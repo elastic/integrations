@@ -1,4 +1,4 @@
-# Contributing
+# Contributing Guide
 
 This page is intended for contributors to the [Package Registry](https://github.com/elastic/package-registry/) and Elastic Integrations.
 
