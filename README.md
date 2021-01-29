@@ -27,4 +27,4 @@ explore the builder tools.
 
 ### Package Storage
 * [Update Package-Registry for a distribution](https://github.com/elastic/package-storage#update-package-registry-for-a-distribution) - update Docker images 
-  of Package Storage to include latest release of the Package-Registry
+  of Package Storage to include latest release of the Package Registry](https://github.com/elastic/package-storage#update-package-registry-for-a-distribution)
