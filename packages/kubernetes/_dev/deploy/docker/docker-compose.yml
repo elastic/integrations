@@ -7,6 +7,7 @@ services:
       - 25000
       - 10252
       - 10251
+      - 10249
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
@@ -14,6 +15,7 @@ services:
       - apiserver
       - controllermanager
       - scheduler
+      - proxy
   kube-state-metrics:
     image: chanjarster/prometheus-mock-data:latest
     ports:
@@ -38,3 +40,9 @@ services:
       - 8080
     volumes:
       - ./scheduler_metrics.1.17.txt:/home/java-app/etc/scrape-data.txt
+  proxy:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+    - ./proxy_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt
