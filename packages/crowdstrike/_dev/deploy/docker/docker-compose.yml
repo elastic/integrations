@@ -1,8 +1,8 @@
 version: '2.3'
 services:
-  crowdstrike:
-    tty: true
-    build: .
+  crowdstrike-logfile:
+    image: alpine
     volumes:
-      - ${SERVICE_LOGS_DIR}:/logs
-    command: -c "cp /sample_logs/*.log /logs/"
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
