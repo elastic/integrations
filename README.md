@@ -17,7 +17,7 @@ explore the builder tools.
 
 ## External links
 
-### Package Spec
+### Package Specification
 * [Explore the package-spec now](https://github.com/elastic/package-spec/tree/master/versions/1) - review the current version of the package specification
 * [Suggest changes in package spec](https://github.com/elastic/package-spec/issues/new) - open a new issue in the (Package Spec)(https://github.com/elastic/package-spec)
   repository. Let's discuss any spec extensions together
