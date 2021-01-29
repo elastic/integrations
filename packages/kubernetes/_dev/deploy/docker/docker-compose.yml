@@ -5,11 +5,13 @@ services:
     ports:
       - 8080
       - 25000
+      - 10252
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - kube-state-metrics
       - apiserver
+      - controllermanager
   kube-state-metrics:
     image: chanjarster/prometheus-mock-data:latest
     ports:
@@ -22,3 +24,9 @@ services:
       - 8080
     volumes:
       - ./apiserver_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt
+  controllermanager:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./controllermanager_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt
