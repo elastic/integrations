@@ -1,11 +1,24 @@
 version: '2.3'
 services:
+  kubernetes:
+    image: nginx:alpine
+    ports:
+      - 8080
+      - 25000
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - kube-state-metrics
+      - apiserver
   kube-state-metrics:
-    # Commented out `image:` below until we have a process to refresh the hosted images from
-    # Dockerfiles in this repo. Until then, we build the image locally using `build:` below.
-    # image: docker.elastic.co/integrations-ci/beats-apache:${SERVICE_VERSION:-2.4.20}-1
     image: chanjarster/prometheus-mock-data:latest
     ports:
       - 8080
     volumes:
-      - ./scrape-data.txt:/home/java-app/etc/scrape-data.txt
+      - ./kube_state_metrics_data.1.8.txt:/home/java-app/etc/scrape-data.txt
+  apiserver:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./apiserver_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt

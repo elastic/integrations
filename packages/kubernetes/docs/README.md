@@ -216,9 +216,11 @@ An example event for `apiserver` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -278,6 +280,8 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.subresource | Requested subresource | keyword |
 | kubernetes.apiserver.request.verb | HTTP verb | keyword |
 | kubernetes.apiserver.request.version | version for the group | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### container
@@ -2001,9 +2005,11 @@ An example event for `state_container` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2020,17 +2026,31 @@ An example event for `state_container` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
 | kubernetes.container.cpu.limit.cores | Container CPU cores limit | float |
 | kubernetes.container.cpu.limit.nanocores | Container CPU nanocores limit | long |
 | kubernetes.container.cpu.request.cores | Container CPU requested cores | float |
 | kubernetes.container.cpu.request.nanocores | Container CPU requested nanocores | long |
 | kubernetes.container.id | Container id | keyword |
+| kubernetes.container.image | Kubernetes container image | keyword |
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long |
+| kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.container.status.phase | Container phase (running, waiting, terminated) | keyword |
 | kubernetes.container.status.ready | Container ready status | boolean |
 | kubernetes.container.status.reason | Waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or termination (Completed, ContainerCannotRun, Error, OOMKilled) reason. | keyword |
 | kubernetes.container.status.restarts | Container restarts count | integer |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_cronjob
@@ -2154,6 +2174,7 @@ An example event for `state_cronjob` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2170,6 +2191,9 @@ An example event for `state_cronjob` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.cronjob.active.count | Number of active pods for the cronjob | long |
 | kubernetes.cronjob.concurrency | Concurrency policy | keyword |
 | kubernetes.cronjob.created.sec | Epoch seconds since the cronjob was created | double |
@@ -2179,6 +2203,17 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.cronjob.name | Cronjob name | keyword |
 | kubernetes.cronjob.next_schedule.sec | Epoch seconds for next cronjob run | double |
 | kubernetes.cronjob.schedule | Cronjob schedule | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_daemonset
@@ -2298,6 +2333,7 @@ An example event for `state_daemonset` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2314,11 +2350,25 @@ An example event for `state_daemonset` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.daemonset.name |  | keyword |
 | kubernetes.daemonset.replicas.available | The number of available replicas per DaemonSet | long |
 | kubernetes.daemonset.replicas.desired | The desired number of replicas per DaemonSet | long |
 | kubernetes.daemonset.replicas.ready | The number of ready replicas per DaemonSet | long |
 | kubernetes.daemonset.replicas.unavailable | The number of unavailable replicas per DaemonSet | long |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_deployment
@@ -2439,6 +2489,7 @@ An example event for `state_deployment` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2455,11 +2506,25 @@ An example event for `state_deployment` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.deployment.paused | Kubernetes deployment paused status | boolean |
 | kubernetes.deployment.replicas.available | Deployment available replicas | integer |
 | kubernetes.deployment.replicas.desired | Deployment number of desired replicas (spec) | integer |
 | kubernetes.deployment.replicas.unavailable | Deployment unavailable replicas | integer |
 | kubernetes.deployment.replicas.updated | Deployment updated replicas | integer |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_node
@@ -2605,6 +2670,7 @@ An example event for `state_node` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2621,14 +2687,28 @@ An example event for `state_node` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.memory.allocatable.bytes | Node allocatable memory in bytes | long |
 | kubernetes.node.memory.capacity.bytes | Node memory capacity in bytes | long |
+| kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.node.pod.allocatable.total | Node allocatable pods | long |
 | kubernetes.node.pod.capacity.total | Node pod capacity | long |
 | kubernetes.node.status.ready | Node ready status (true, false or unknown) | keyword |
 | kubernetes.node.status.unschedulable | Node unschedulable status | boolean |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_persistentvolume
@@ -2746,6 +2826,7 @@ An example event for `state_persistentvolume` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2762,10 +2843,24 @@ An example event for `state_persistentvolume` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.persistentvolume.capacity.bytes | Volume capacity | long |
 | kubernetes.persistentvolume.name | Volume name. | keyword |
 | kubernetes.persistentvolume.phase | Volume phase according to kubernetes | keyword |
 | kubernetes.persistentvolume.storage_class | Storage class for the volume | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_persistentvolumeclaim
@@ -2883,6 +2978,7 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2899,12 +2995,26 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |
 | kubernetes.persistentvolumeclaim.name | PVC name. | keyword |
 | kubernetes.persistentvolumeclaim.phase | PVC phase. | keyword |
 | kubernetes.persistentvolumeclaim.request_storage.bytes | Requested capacity. | long |
 | kubernetes.persistentvolumeclaim.storage_class | Storage class for the PVC. | keyword |
 | kubernetes.persistentvolumeclaim.volume_name | Binded volume name. | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_pod
@@ -3028,9 +3138,11 @@ An example event for `state_pod` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3047,11 +3159,25 @@ An example event for `state_pod` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.host_ip | Kubernetes pod host IP | ip |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |
 | kubernetes.pod.status.ready | Kubernetes pod ready status (true, false or unknown) | keyword |
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_replicaset
@@ -3178,6 +3304,7 @@ An example event for `state_replicaset` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3194,11 +3321,25 @@ An example event for `state_replicaset` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.replicaset.replicas.available | The number of replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.desired | The number of replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.labeled | The number of fully labeled replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.observed | The generation observed by the ReplicaSet controller | long |
 | kubernetes.replicaset.replicas.ready | The number of ready replicas per ReplicaSet | long |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_resourcequota
@@ -3312,6 +3453,7 @@ An example event for `state_resourcequota` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3328,11 +3470,25 @@ An example event for `state_resourcequota` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.resourcequota.created.sec | Epoch seconds since the ResourceQuota was created | double |
 | kubernetes.resourcequota.name | ResourceQuota name | keyword |
 | kubernetes.resourcequota.quota | Quota informed (hard or used) for the resource | double |
 | kubernetes.resourcequota.resource | Resource name the quota applies to | keyword |
 | kubernetes.resourcequota.type | Quota information type, `hard` or `used` | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_service
@@ -3455,6 +3611,7 @@ An example event for `state_service` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3471,6 +3628,17 @@ An example event for `state_service` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.service.cluster_ip | Internal IP for the service. | ip |
 | kubernetes.service.created | Service creation date | date |
 | kubernetes.service.external_ip | Service external IP | keyword |
@@ -3480,6 +3648,9 @@ An example event for `state_service` looks as following:
 | kubernetes.service.load_balancer_ip | Load Balancer service IP | keyword |
 | kubernetes.service.name | Service name. | keyword |
 | kubernetes.service.type | Service type | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_statefulset
@@ -3601,6 +3772,7 @@ An example event for `state_statefulset` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3617,11 +3789,25 @@ An example event for `state_statefulset` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.statefulset.created | The creation timestamp (epoch) for StatefulSet | long |
 | kubernetes.statefulset.generation.desired | The desired generation per StatefulSet | long |
 | kubernetes.statefulset.generation.observed | The observed generation per StatefulSet | long |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.statefulset.replicas.desired | The number of desired replicas per StatefulSet | long |
 | kubernetes.statefulset.replicas.observed | The number of observed replicas per StatefulSet | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_storageclass
@@ -3741,6 +3927,7 @@ An example event for `state_storageclass` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3757,11 +3944,25 @@ An example event for `state_storageclass` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.storageclass.created | Storage class creation date | date |
 | kubernetes.storageclass.name | Storage class name. | keyword |
 | kubernetes.storageclass.provisioner | Volume provisioner for the storage class. | keyword |
 | kubernetes.storageclass.reclaim_policy | Reclaim policy for dynamically created volumes | keyword |
 | kubernetes.storageclass.volume_binding_mode | Mode for default provisioning and binding | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### system
