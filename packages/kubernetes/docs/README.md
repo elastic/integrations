@@ -216,7 +216,6 @@ An example event for `apiserver` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -681,6 +680,7 @@ An example event for `controllermanager` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -729,6 +729,8 @@ An example event for `controllermanager` looks as following:
 | kubernetes.controllermanager.workqueue.retries.count | Workqueue number of retries | long |
 | kubernetes.controllermanager.workqueue.unfinished.sec | Unfinished processors | double |
 | kubernetes.controllermanager.zone | Infrastructure zone | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### event
@@ -1823,6 +1825,7 @@ An example event for `scheduler` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1870,7 +1873,11 @@ An example event for `scheduler` looks as following:
 | kubernetes.scheduler.scheduling.e2e.duration.us.count | End to end scheduling count | long |
 | kubernetes.scheduler.scheduling.e2e.duration.us.sum | End to end scheduling duration microseconds sum | long |
 | kubernetes.scheduler.scheduling.pod.attempts.count | Pod attempts count | long |
-| kubernetes.scheduler.scheduling.pod.preemption.victims.count | Pod preemption victims | long |
+| kubernetes.scheduler.scheduling.pod.preemption.victims.bucket.* | Pod preemption victims | long |
+| kubernetes.scheduler.scheduling.pod.preemption.victims.count | Pod preemption victims count | long |
+| kubernetes.scheduler.scheduling.pod.preemption.victims.sum | Pod preemption victims sum | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### state_container
