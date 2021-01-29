@@ -8,10 +8,7 @@ An Elastic Package may define configuration for the [Elastic Agent](https://gith
 
 Elastic Packages have a certain, well-defined structure. This structure is described by the [Package Specification](https://github.com/elastic/package-spec). The repository is also used for discussions about extending the specification (with proposals).
 
-The Elastic Integrations are distributed with the [Package Storage](https://github.com/elastic/package-storage)
-and exposed for [Kibana](https://github.com/elastic/kibana) via the [Package Registry](https://github.com/elastic/package-registry/).
-
-The official builder tool for Elastic Integrations is [`elastic-package`](https://github.com/elastic/elastic-package).
+While this repository contains _sources_ for Elastic Integrations, _built_ Elastic Integrations are stored in the [Package Storage](https://github.com/elastic/package-storage) repository and served up via the [Package Registry](https://github.com/elastic/package-registry/). The Fleet UI in Kibana connects to the Package Registry and allows users to discover, install, and configure Elastic Packages.
 
 ## Contributing
 
