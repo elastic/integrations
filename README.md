@@ -19,7 +19,7 @@ explore the builder tools.
 
 ### Package Specification
 * [Explore the current version of the package specification](https://github.com/elastic/package-spec/tree/master/versions/1)
-* [Suggest changes in package spec](https://github.com/elastic/package-spec/issues/new) - open a new issue in the (Package Spec)(https://github.com/elastic/package-spec)
+* [Suggest changes to the package specification](https://github.com/elastic/package-spec/issues/new)
   repository. Let's discuss any spec extensions together
 
 ### Package Registry
