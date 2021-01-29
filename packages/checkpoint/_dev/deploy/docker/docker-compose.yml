@@ -1,12 +1,18 @@
 version: '2.3'
 services:
+  checkpoint-firewall-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
   checkpoint-firewall-tcp:
     image: akroh/stream:v0.0.1
     volumes:
-      - ./test-checkpoint.log:/sample_logs/test-checkpoint.log:ro
+      - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/test-checkpoint.log
   checkpoint-firewall-udp:
     image: akroh/stream:v0.0.1
     volumes:
-      - ./test-checkpoint.log:/sample_logs/test-checkpoint.log:ro
+      - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9515 -p=udp /sample_logs/test-checkpoint.log
