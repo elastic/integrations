@@ -491,6 +491,7 @@ An example event for `container` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -507,10 +508,12 @@ An example event for `container` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
 | kubernetes.container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |
 | kubernetes.container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float |
 | kubernetes.container.cpu.usage.nanocores | CPU used nanocores | long |
 | kubernetes.container.cpu.usage.node.pct | CPU usage as a percentage of the total node allocatable CPU | scaled_float |
+| kubernetes.container.image | Kubernetes container image | keyword |
 | kubernetes.container.logs.available.bytes | Logs available capacity in bytes | long |
 | kubernetes.container.logs.capacity.bytes | Logs total capacity in bytes | long |
 | kubernetes.container.logs.inodes.count | Total available inodes | long |
@@ -525,11 +528,23 @@ An example event for `container` looks as following:
 | kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float |
 | kubernetes.container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float |
 | kubernetes.container.memory.workingset.bytes | Working set memory usage | long |
+| kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.container.rootfs.available.bytes | Root filesystem total available in bytes | long |
 | kubernetes.container.rootfs.capacity.bytes | Root filesystem total capacity in bytes | long |
 | kubernetes.container.rootfs.inodes.used | Used inodes | long |
 | kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long |
 | kubernetes.container.start_time | Start time | date |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### controllermanager
@@ -1119,6 +1134,7 @@ An example event for `node` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1135,6 +1151,12 @@ An example event for `node` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.cpu.usage.core.ns | Node CPU Core usage nanoseconds | long |
 | kubernetes.node.cpu.usage.nanocores | CPU used nanocores | long |
 | kubernetes.node.fs.available.bytes | Filesystem total available in bytes | long |
@@ -1143,12 +1165,14 @@ An example event for `node` looks as following:
 | kubernetes.node.fs.inodes.free | Number of free inodes | long |
 | kubernetes.node.fs.inodes.used | Number of used inodes | long |
 | kubernetes.node.fs.used.bytes | Filesystem total used in bytes | long |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.memory.available.bytes | Total available memory | long |
 | kubernetes.node.memory.majorpagefaults | Number of major page faults | long |
 | kubernetes.node.memory.pagefaults | Number of page faults | long |
 | kubernetes.node.memory.rss.bytes | RSS memory usage | long |
 | kubernetes.node.memory.usage.bytes | Total memory usage | long |
 | kubernetes.node.memory.workingset.bytes | Working set memory usage | long |
+| kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.node.network.rx.bytes | Received bytes | long |
 | kubernetes.node.network.rx.errors | Rx errors | long |
 | kubernetes.node.network.tx.bytes | Transmitted bytes | long |
@@ -1157,6 +1181,12 @@ An example event for `node` looks as following:
 | kubernetes.node.runtime.imagefs.capacity.bytes | Image filesystem total capacity in bytes | long |
 | kubernetes.node.runtime.imagefs.used.bytes | Image filesystem total used in bytes | long |
 | kubernetes.node.start_time | Start time | date |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### pod
@@ -1342,6 +1372,7 @@ An example event for `pod` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1358,6 +1389,14 @@ An example event for `pod` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float |
 | kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long |
 | kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float |
@@ -1369,11 +1408,17 @@ An example event for `pod` looks as following:
 | kubernetes.pod.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float |
 | kubernetes.pod.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float |
 | kubernetes.pod.memory.working_set.bytes | Total working set memory | long |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.network.rx.bytes | Received bytes | long |
 | kubernetes.pod.network.rx.errors | Rx errors | long |
 | kubernetes.pod.network.tx.bytes | Transmitted bytes | long |
 | kubernetes.pod.network.tx.errors | Tx errors | long |
 | kubernetes.pod.start_time | Start time | date |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### proxy
@@ -4134,6 +4179,7 @@ An example event for `system` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -4150,6 +4196,18 @@ An example event for `system` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.system.container | Container name | keyword |
 | kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |
 | kubernetes.system.cpu.usage.nanocores | CPU used nanocores | long |
@@ -4159,6 +4217,8 @@ An example event for `system` looks as following:
 | kubernetes.system.memory.usage.bytes | Total memory usage | long |
 | kubernetes.system.memory.workingset.bytes | Working set memory usage | long |
 | kubernetes.system.start_time | Start time | date |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### volume
@@ -4315,6 +4375,7 @@ An example event for `volume` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -4331,6 +4392,18 @@ An example event for `volume` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long |
 | kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long |
 | kubernetes.volume.fs.inodes.count | Total inodes | long |
@@ -4338,3 +4411,5 @@ An example event for `volume` looks as following:
 | kubernetes.volume.fs.inodes.used | Used inodes | long |
 | kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long |
 | kubernetes.volume.name | Volume name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
