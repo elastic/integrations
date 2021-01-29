@@ -1,8 +1,8 @@
 version: '2.3'
 services:
   auditd:
-    tty: true
-    build: .
+    image: alpine
     volumes:
-      - ${SERVICE_LOGS_DIR}:/var/log/audit
-    command: -c "cp /audit.log /var/log/audit"
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
