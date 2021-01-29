@@ -23,7 +23,7 @@ explore the builder tools.
   repository. Let's discuss any spec extensions together
 
 ### Package Registry
-* [Create a new release](https://github.com/elastic/package-registry/#release) - release latest changes introduced to the [Package Registry](https://github.com/elastic/package-registry)
+* [Release latest changes introduced to the Package Registry](https://github.com/elastic/package-registry/#release)
 
 ### Package Storage
 * [Update Package-Registry for a distribution](https://github.com/elastic/package-storage#update-package-registry-for-a-distribution) - update Docker images 
