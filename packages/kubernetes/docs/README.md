@@ -1647,6 +1647,7 @@ An example event for `proxy` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1689,6 +1690,8 @@ An example event for `proxy` looks as following:
 | kubernetes.proxy.sync.rules.duration.us.bucket.* | SyncProxyRules duration, histogram buckets | object |
 | kubernetes.proxy.sync.rules.duration.us.count | SyncProxyRules duration, number of operations | long |
 | kubernetes.proxy.sync.rules.duration.us.sum | SyncProxyRules duration, sum of durations in microseconds | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### scheduler
