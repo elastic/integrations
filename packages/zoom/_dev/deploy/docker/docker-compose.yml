@@ -1,0 +1,11 @@
+version: '2.3'
+services:
+  zoom-webhook:
+    image: akroh/stream:v0.1.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9080/zoom
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/account-ndjson.log
