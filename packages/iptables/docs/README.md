@@ -165,6 +165,7 @@ An example event for `log` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| hostname | Hostname from syslog header. | keyword |
 | input.type | Input type | keyword |
 | iptables.ether_type | Value of the ethernet type field identifying the network layer protocol. | long |
 | iptables.flow_label | IPv6 flow label. | integer |
@@ -197,12 +198,14 @@ An example event for `log` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. | keyword |
 | log.offset | Log offset | long |
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. | keyword |
+| log.source.address | Source address of the syslog message. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress  traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress  traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
+| process.program | Process from syslog header. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
