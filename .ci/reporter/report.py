@@ -667,8 +667,8 @@ def render(
             package_frequency_all=freq_all,
             package_frequency_system=freq_system,
             package_frequency_pipeline=freq_pipeline,
-            fail_frequency_system=fail_system,
-            fail_frequency_pipeline=fail_pipeline,
+            package_fail_frequency_system=fail_system,
+            package_fail_frequency_pipeline=fail_pipeline,
             frequency_limit=freq_limit
             )
 
