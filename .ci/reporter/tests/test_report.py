@@ -99,21 +99,21 @@ def test_status_geometric(test_fixture_status_geometric):
          'fake_aws': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_azure': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_cef': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
-         'fake_checkpoint': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
+         'fake_checkpoint': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},  # noqa E501
          'fake_cisco': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
-         'fake_crowdstrike': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
-         'fake_elastic_agent': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
+         'fake_crowdstrike': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},  # noqa E501
+         'fake_elastic_agent': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},  # noqa E501
          'fake_fortinet': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
-         'fake_google_workspace': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
+         'fake_google_workspace': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},  # noqa E501
          'fake_haproxy': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_iis': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_iptables': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_juniper': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_kafka': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
-         'fake_kubernetes': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
+         'fake_kubernetes': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},  # noqa E501
          'fake_linux': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
          'fake_log': {'ERROR': 0, 'FAILED': 0, 'PASSED': 3, 'UNKNOWN': 0},
-         'fake_microsoft': {'ERROR': 0, 'FAILED': 1, 'PASSED': 2, 'UNKNOWN': 0},
+         'fake_microsoft': {'ERROR': 0, 'FAILED': 1, 'PASSED': 2, 'UNKNOWN': 0},  # noqa E501
          'fake_mongodb': {'ERROR': 0, 'FAILED': 3, 'PASSED': 0, 'UNKNOWN': 0},
          'fake_mysql': {'ERROR': 0, 'FAILED': 3, 'PASSED': 0, 'UNKNOWN': 0},
          'fake_nats': {'ERROR': 0, 'FAILED': 3, 'PASSED': 0, 'UNKNOWN': 0},
@@ -127,8 +127,8 @@ def test_status_geometric(test_fixture_status_geometric):
          'fake_okta': {'ERROR': 0, 'FAILED': 3, 'PASSED': 0, 'UNKNOWN': 0},
          'fake_osquery': {'ERROR': 0, 'FAILED': 3, 'PASSED': 0, 'UNKNOWN': 0},
          'fake_panw': {'ERROR': 0, 'FAILED': 3, 'PASSED': 0, 'UNKNOWN': 0},
-         'fake_postgresql': {'ERROR': 1, 'FAILED': 2, 'PASSED': 0, 'UNKNOWN': 0},
-         'fake_prometheus': {'ERROR': 3, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 0},
+         'fake_postgresql': {'ERROR': 1, 'FAILED': 2, 'PASSED': 0, 'UNKNOWN': 0},  # noqa E501
+         'fake_prometheus': {'ERROR': 3, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 0},  # noqa E501
          'fake_rabbitmq': {'ERROR': 3, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 0},
          'fake_redis': {'ERROR': 3, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 0},
          'fake_santa': {'ERROR': 3, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 0},
@@ -136,10 +136,11 @@ def test_status_geometric(test_fixture_status_geometric):
          'fake_system': {'ERROR': 0, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 3},
          'fake_windows': {'ERROR': 0, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 3},
          'fake_zeek': {'ERROR': 0, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 3},
-         'fake_zookeeper': {'ERROR': 0, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 3},
+         'fake_zookeeper': {'ERROR': 0, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 3},  # noqa E501
          'fake_zoom': {'ERROR': 0, 'FAILED': 0, 'PASSED': 0, 'UNKNOWN': 3}}
     got = report.test_status(test_fixture_status_geometric)
     assert got == want
+
 
 def test_frequency_linear(test_fixture_freq_linear, packages_fixture):
     want = \
@@ -263,15 +264,16 @@ def test_frequency(tests_fixture_even, packages_fixture):
     got = report.test_frequency(tests_fixture_even, packages_fixture, limit=-1)
     assert got == want
 
+
 @pytest.mark.parametrize("requested_limit", range(0, 20))
-def test_frequency_limit_range(requested_limit, tests_fixture_even, packages_fixture):
+def test_frequency_limit_range(requested_limit, tests_fixture_even, packages_fixture):  # noqa E501
     """
     GIVEN a set of tests and a set of packages
     WHEN those tests and packages are provided to the test_frequency algorithm
          and the requested limit is not the default
     THEN the correct number of results are returned
     """
-    got = report.test_frequency(tests_fixture_even, packages_fixture, limit=requested_limit)
+    got = report.test_frequency(tests_fixture_even, packages_fixture, limit=requested_limit)  # noqa E501
     assert len(got.keys()) == requested_limit
 
 

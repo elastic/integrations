@@ -157,6 +157,7 @@ def mock_es_return():
         es_ret = json.load(fh_)
     return es_ret
 
+
 @pytest.fixture
 def test_fixture_status_failure_distributed():
     """
@@ -217,8 +218,6 @@ def test_fixture_status_failure_distributed():
             )
             tests.append(test)
     return tests
-
-
 
 
 @pytest.fixture
