@@ -45,10 +45,12 @@ processors:
     if: ctx?.zoom?.chat_channel?.timestamp != null
 - foreach:
     field: zoom.chat_channel.members
+    ignore_missing: true
     processor:
       append:
         field: related.user
-        value: "{{_ingest._value.id}}"
+        value: ["{{_ingest._value.display_name}}", "{{_ingest._value.id}}"]
+        allow_duplicates: false
 # Removing to prevent nested values, added to related.user above
 - remove:
     field: zoom.chat_channel.members
