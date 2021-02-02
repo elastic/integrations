@@ -10,6 +10,7 @@ streams:
       - name: listen_address
         type: text
         title: Listen Address
+        description: Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
         multi: false
         required: true
         show_user: true
@@ -21,84 +22,38 @@ streams:
         required: true
         show_user: true
         default: 8181
-      - name: content_type
+      - name: url
         type: text
-        title: Content Type
-        multi: false
-        required: false
-        show_user: true
-        default: ""
-      - name: prefix
-        type: text
-        title: Prefix
+        title: Webhook path
+        description: URL path where the webhook will accept requests.
         multi: false
         required: true
         show_user: true
-        default: zoom
-      - name: basic_auth
-        type: bool
-        title: Basic Auth
-        multi: false
-        required: true
-        show_user: true
-        default: false
-      - name: username
-        type: text
-        title: Username
-        multi: false
-        required: false
-        show_user: true
-        default: ""
-      - name: password
-        type: password
-        title: Password
-        multi: false
-        required: false
-        show_user: true
-        default: ""
-      - name: secret_header
-        type: text
-        title: Secret header
-        multi: false
-        required: false
-        show_user: true
-        default: Authorization
+        default: /zoom-webhook
       - name: secret_value
         type: text
-        title: Secret value
+        title: Zoom verification token
+        description: Verification token used to validate the authenticity of incoming Zoom POST requests. Zoom sends this as the Authorization header.
+        multi: false
+        required: true
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. Zoom requires webhooks listen on HTTPS. You must either provide a valid TLS certificate or use a reverse proxy in front of the integration. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
         multi: false
         required: false
-        show_user: true
-        default: ""
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
       - name: tags
         type: text
         title: Tags
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - zoom-webhook
           - forwarded
-  - input: logfile
-    enabled: false
-    vars:
-      - name: paths
-        type: text
-        title: Paths
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - /var/log/zoom-webhook.log
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - zoom-webhook
-          - forwarded
-    template_path: log.yml.hbs
-    title: Zoom webhook logs via file
-    description: Read Zoom webhook logs from a file
