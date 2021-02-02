@@ -3,10 +3,10 @@ description: Pipeline for normalizing Zeek conn.log
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.created
-      value: '{{@timestamp}}'
+      value: "{{@timestamp}}"
   - date:
       field: zeek.connection.ts
       formats:
@@ -15,7 +15,7 @@ processors:
       field: zeek.connection.ts
   - set:
       field: event.id
-      value: '{{zeek.session_id}}'
+      value: "{{zeek.session_id}}"
       if: ctx.zeek.session_id != null
   - script:
       source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
@@ -33,11 +33,11 @@ processors:
       if: ctx.zeek.connection.local_resp != null
   - append:
       field: related.ip
-      value: '{{source.ip}}'
+      value: "{{source.ip}}"
       if: ctx?.source?.ip != null
   - append:
       field: related.ip
-      value: '{{destination.ip}}'
+      value: "{{destination.ip}}"
       if: ctx?.destination?.ip != null
   - script:
       source: ctx.network.packets = ctx.source.packets + ctx.destination.packets
@@ -46,19 +46,30 @@ processors:
       source: ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes
       ignore_failure: true
   - script:
-      source: >-
-        if (ctx?.zeek?.connection?.local_orig == true) {
-          if (ctx?.zeek?.connection?.local_resp == true) {
-            ctx.network.direction = "internal";
-          } else {
-            ctx.network.direction = "outbound";
-          }
-        } else {
-          if (ctx?.zeek?.connection?.local_resp == true) {
-            ctx.network.direction = "inbound";
-          } else {
-            ctx.network.direction = "external";
-          }
+      source: |-
+        if (ctx?.zeek?.connection?.local_orig == null ||
+            ctx?.zeek?.connection?.local_resp == null) {
+          return;
+        }
+        if (ctx.zeek.connection.local_orig == true &&
+            ctx.zeek.connection.local_resp == true) {
+          ctx.network.direction = "internal";
+          return;
+        }
+        if (ctx.zeek.connection.local_orig == true &&
+            ctx.zeek.connection.local_resp == false) {
+          ctx.network.direction = "outbound";
+          return;
+        }
+        if (ctx.zeek.connection.local_orig == false &&
+            ctx.zeek.connection.local_resp == true) {
+          ctx.network.direction = "inbound";
+          return;
+        }
+        if (ctx.zeek.connection.local_orig == false &&
+            ctx.zeek.connection.local_resp == false) {
+          ctx.network.direction = "external";
+          return;
         }
   - geoip:
       field: destination.ip
@@ -116,23 +127,19 @@ processors:
             - connection
             - start
             - end
-        REG:
+        REJ:
           conn_str: "Connection attempt rejected."
           types:
             - connection
             - start
             - denied
         S2:
-          conn_str: >-
-            Connection established and close attempt by originator
-            seen (but no reply from responder).
+          conn_str: "Connection established and close attempt by originator seen (but no reply from responder)."
           types:
             - connection
             - info
         S3:
-          conn_str: >-
-            Connection established and close attempt by responder seen
-            (but no reply from originator).
+          conn_str: "Connection established and close attempt by responder seen (but no reply from originator)."
           types:
             - connection
             - info
@@ -147,38 +154,27 @@ processors:
             - connection
             - info
         RSTOS0:
-          conn_str: >-
-            Originator sent a SYN followed by a RST, we never saw a
-            SYN-ACK from the responder.
+          conn_str: "Originator sent a SYN followed by a RST, we never saw a SYN-ACK from the responder."
           types:
             - connection
             - info
         RSTRH:
-          conn_str: >-
-            Responder sent a SYN ACK followed by a RST, we never saw a
-            SYN from the (purported) originator.
+          conn_str: "Responder sent a SYN ACK followed by a RST, we never saw a SYN from the (purported) originator."
           types:
             - connection
             - info
         SH:
-          conn_str: >-
-            Originator sent a SYN followed by a FIN, we never saw a
-            SYN ACK from the responder (hence the connection was
-            'half' open).
+          conn_str: "Originator sent a SYN followed by a FIN, we never saw a SYN ACK from the responder (hence the connection was 'half' open)."
           types:
             - connection
             - info
         SHR:
-          conn_str: >-
-            Responder sent a SYN ACK followed by a FIN, we never saw a
-            SYN from the originator.
+          conn_str: "Responder sent a SYN ACK followed by a FIN, we never saw a SYN from the originator."
           types:
             - connection
             - info
         OTH:
-          conn_str: >-
-            No SYN seen, just midstream traffic (a 'partial
-            connection' that was not later closed).
+          conn_str: "No SYN seen, just midstream traffic (a 'partial connection' that was not later closed)."
           types:
             - connection
             - info
@@ -193,4 +189,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"

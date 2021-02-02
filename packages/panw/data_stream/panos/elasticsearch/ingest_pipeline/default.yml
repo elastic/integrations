@@ -104,6 +104,8 @@ processors:
        container_page: 0x00008000
        temporary_match: 0x00002000
        symmetric_return: 0x00000800
+     # TODO: Remove the workaround for https://github.com/elastic/kibana/issues/85486
+     # that converts the param values from string to Long.
      source: >
        def labels = ctx?.labels;
        if (labels == null) {
@@ -112,7 +114,11 @@ processors:
        }
        long value = ctx._temp_.labels;
        for (entry in params.entrySet()) {
-          if ((value & entry.getValue()) != 0) {
+          def flag = entry.getValue();
+          if (flag instanceof String) {
+              flag = Long.decode(flag);
+          }
+          if ((value & flag) != 0) {
               labels[entry.getKey()] = true;
           }
        }
@@ -135,23 +141,62 @@ processors:
  - set:
      field: network.direction
      value: inbound
-     if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ctx?.panw?.panos?.source?.zone == "untrust" && ctx?.panw?.panos?.destination?.zone == "trust"'
+     if: >
+       ctx?.panw?.panos?.type == "TRAFFIC" &&
+       ctx?._temp_?.external_zones != null &&
+       ctx?._temp_?.internal_zones != null &&
+       ctx?.observer?.ingress?.zone != null &&
+       ctx?.observer?.egress?.zone != null &&
+       ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
+       ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
  - set:
      field: network.direction
      value: outbound
-     if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ctx?.panw?.panos?.source?.zone == "trust" && ctx?.panw?.panos?.destination?.zone == "untrust"'
+     if: >
+       ctx?.panw?.panos?.type == "TRAFFIC" &&
+       ctx?._temp_?.external_zones != null &&
+       ctx?._temp_?.internal_zones != null &&
+       ctx?.observer?.ingress?.zone != null &&
+       ctx?.observer?.egress?.zone != null &&
+       ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+       ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
  - set:
      field: network.direction
      value: internal
-     if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ctx?.panw?.panos?.source?.zone == "trust" && ctx?.panw?.panos?.destination?.zone == "trust"'
+     if: >
+       ctx?.panw?.panos?.type == "TRAFFIC" &&
+       ctx?._temp_?.internal_zones != null &&
+       ctx?.observer?.ingress?.zone != null &&
+       ctx?.observer?.egress?.zone != null &&
+       ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
+       ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
  - set:
      field: network.direction
      value: external
-     if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ctx?.panw?.panos?.source?.zone == "untrust" && ctx?.panw?.panos?.destination?.zone == "untrust"'
+     if: >
+       ctx?.panw?.panos?.type == "TRAFFIC" &&
+       ctx?._temp_?.external_zones != null &&
+       ctx?.observer?.ingress?.zone != null &&
+       ctx?.observer?.egress?.zone != null &&
+       ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+       ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
  - set:
      field: network.direction
      value: unknown
-     if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ((ctx?.panw?.panos?.source?.zone != "trust" && ctx?.panw?.panos?.source?.zone != "untrust") || (ctx?.panw?.panos?.destination?.zone != "trust" && ctx?.panw?.panos?.destination?.zone != "untrust"))'
+     if: >
+       ctx?.panw?.panos?.type == "TRAFFIC" &&
+       ctx?._temp_?.external_zones != null &&
+       ctx?._temp_?.internal_zones != null &&
+       (
+         (
+           !ctx._temp_.external_zones.contains(ctx?.observer?.egress?.zone) &&
+           !ctx._temp_.internal_zones.contains(ctx?.observer?.egress?.zone)
+         ) ||
+         (
+           !ctx._temp_.external_zones.contains(ctx?.observer?.ingress?.zone) &&
+           !ctx._temp_.internal_zones.contains(ctx?.observer?.ingress?.zone)
+         )
+       )
 
 # Set network.direction from threat direction (Threat logs).
  - set:

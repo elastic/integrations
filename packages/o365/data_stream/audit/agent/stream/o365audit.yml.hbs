@@ -1,20 +1,16 @@
 {{#if application_id}}application_id: {{application_id}}{{/if}}
 tenant_id:
 {{#each tenants}}
- - {{id}}
+ - "{{this}}"
 {{/each}}
 {{#if certificate}}certificate: {{certificate}}{{/if}}
 {{#if key}}key: {{key}}{{/if}}
 {{#if key_passphrase}}key_passphrase: {{key_passphrase}}{{/if}}
 {{#if client_secret}}client_secret: {{client_secret}}{{/if}}
-{{#if eq "string" (printf "%T" .content_type)}}
-content_type: {{content_type}}
-{{else}}
 content_type:
 {{#each content_type}}
- - {{this}}
+ - "{{this}}"
 {{/each}}
-{{/if}}
 {{#if api}}
 api: {{api}}
 {{/if}}
@@ -28,6 +24,13 @@ publisher_pipeline.disable_host: true
 processors:
   - script:
       when.has_fields: ['o365audit']
+      params:
+        debug: false
+        tenants:
+          {{#each tenants}}
+          - id: "{{.}}"
+            name: "{{lookup ../tenant_names @index}}"
+          {{/each}}
       lang: javascript
       id: o365audit_script
       source: |
@@ -759,20 +762,20 @@ processors:
             }));
 
             builder.Add("extractClientIPPortBrackets", new processor.Dissect({
-                tokenizer: '[%{_ip}]:%{port}',
+                tokenizer: '[%{_ip}]:%{_port}',
                 field: 'client.address',
                 target_prefix: 'client',
                 'when.and': [
-                    {'not.has_fields': ['client._ip', 'client.port']},
+                    {'not.has_fields': ['client._ip', 'client._port']},
                     {'contains.client.address': ']:'},
                 ],
             }));
             builder.Add("extractClientIPv4Port", new processor.Dissect({
-                tokenizer: '%{_ip}:%{port}',
+                tokenizer: '%{_ip}:%{_port}',
                 field: 'client.address',
                 target_prefix: 'client',
                 'when.and': [
-                    {'not.has_fields': ['client._ip', 'client.port']},
+                    {'not.has_fields': ['client._ip', 'client._port']},
                     {'contains.client.address': '.'},
                     {'contains.client.address': ':'},
                     // Best effort to avoid parsing IPv6-mapped IPv4 as ip:port.
@@ -787,12 +790,14 @@ processors:
                     {from: "client.address", to: "client.ip", type: "ip"},
                     {from: "server.address", to: "server.ip", type: "ip"},
                     {from: "client._ip",     to: "client.ip", type: "ip"},
+                    {from: "client._port",   to: "client.port", type: "long"},
                 ],
                 ignore_missing: true,
                 fail_on_error: false
             }));
             builder.Add("removeTempIP", function (evt) {
                 evt.Delete("client._ip");
+                evt.Delete("client._port");
             });
             builder.Add("setSrcDstFields", new processor.Convert({
                 fields: [
@@ -890,13 +895,6 @@ processors:
         function process(evt) {
             return audit.process(evt);
         }
-      params:
-        debug: false
-        tenants:
-          {{#each tenants}}
-          - id: "{{id}}"
-            name: "{{name}}"
-          {{/each}}
   - add_fields:
       target: ''
       fields:

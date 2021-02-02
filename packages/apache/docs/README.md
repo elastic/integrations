@@ -5,8 +5,8 @@ logs created by the Apache server.
 
 ## Compatibility
 
-The Apache datasets were tested with Apache 2.4.12 and 2.4.20 and are expected to work with
-all versions >= 2.2.31 and >= 2.4.16.
+The Apache datasets were tested with Apache 2.4.12 and 2.4.46 and are expected to work with
+all versions >= 2.2.31 and >= 2.4.16 (independent from operating system).
 
 ## Logs
 
@@ -37,7 +37,12 @@ Access logs collects the Apache access logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | Destination domain | keyword |
 | ecs.version | ECS version | keyword |
+| event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |
+| event.outcome | The outcome of the event. If the event describes an action, this fields contains the outcome of that action. Examples outcomes are `success` and `failure`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -67,21 +72,29 @@ Access logs collects the Apache access logs.
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.domain | Source domain | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source | ip |
+| tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
-| user_agent.version | Version of the user agent. | keyword |
+| user_agent.os.version | Operating system version as a raw string | keyword |
+| user_agent.version | Version of the user agent | keyword |
 
 
 ### Error Logs
@@ -111,6 +124,10 @@ Error logs collects the Apache error logs.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |
+| event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| event.type | Reserved for future usage. Please avoid using this field for user data. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -140,12 +157,17 @@ Error logs collects the Apache error logs.
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | Source IP address. | keyword |
+| source.port | Source port. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -165,98 +187,105 @@ An example event for `status` looks as following:
 
 ```$json
 {
-  "@metadata": {
-    "beat": "metricbeat",
-    "raw_index": "metrics-apache.status-default",
-    "type": "_doc",
-    "version": "8.0.0"
-  },
-  "@timestamp": "2020-06-24T10:19:48.005Z",
-  "agent": {
-    "ephemeral_id": "685f03e4-76e7-4d05-b398-8454b8964681",
-    "id": "a74466da-3ea4-44f9-aea0-11c5e4b920be",
-    "name": "MacBook-Elastic.local",
-    "type": "metricbeat",
-    "version": "8.0.0"
-  },
-  "apache": {
-    "status": {
-      "bytes_per_request": 94.0933,
-      "bytes_per_sec": 83.6986,
-      "connections": {
-        "async": {
-          "closing": 0,
-          "keep_alive": 0,
-          "writing": 0
+    "@timestamp": "2020-12-03T16:31:04.445Z",
+    "data_stream": {
+        "type": "metrics",
+        "dataset": "apache.status",
+        "namespace": "ep"
+    },
+    "elastic_agent": {
+        "version": "7.11.0",
+        "id": "6c69e2bc-7bb3-4bac-b7e9-41f22558321c",
+        "snapshot": true
+    },
+    "host": {
+        "os": {
+            "platform": "centos",
+            "version": "7 (Core)",
+            "family": "redhat",
+            "name": "CentOS Linux",
+            "kernel": "4.9.184-linuxkit",
+            "codename": "Core"
         },
-        "total": 0
-      },
-      "cpu": {
-        "children_system": 0,
-        "children_user": 0,
-        "load": 0.185185,
-        "system": 1.79,
-        "user": 1.11
-      },
-      "hostname": "127.0.0.1:8088",
-      "load": {
-        "1": 3.58,
-        "15": 2.79,
-        "5": 3.54
-      },
-      "requests_per_sec": 0.889527,
-      "scoreboard": {
-        "closing_connection": 0,
-        "dns_lookup": 0,
-        "gracefully_finishing": 0,
-        "idle_cleanup": 0,
-        "keepalive": 0,
-        "logging": 0,
-        "open_slot": 325,
-        "reading_request": 0,
-        "sending_reply": 1,
-        "starting_up": 0,
-        "total": 400,
-        "waiting_for_connection": 74
-      },
-      "total_accesses": 1393,
-      "total_kbytes": 128,
-      "uptime": {
-        "server_uptime": 1566,
-        "uptime": 1566
-      },
-      "workers": {
-        "busy": 1,
-        "idle": 74
-      }
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "name": "4942ef7a8cfc",
+        "containerized": true,
+        "ip": [
+            "192.168.0.4"
+        ],
+        "mac": [
+            "02:42:c0:a8:00:04"
+        ],
+        "hostname": "4942ef7a8cfc",
+        "architecture": "x86_64"
+    },
+    "agent": {
+        "hostname": "4942ef7a8cfc",
+        "ephemeral_id": "8371d3a3-5321-4436-9fd5-cafcabfe4c57",
+        "id": "af6f66ef-d7d0-4784-b9bb-3fddbcc151b5",
+        "name": "4942ef7a8cfc",
+        "type": "metricbeat",
+        "version": "7.11.0"
+    },
+    "metricset": {
+        "name": "status",
+        "period": 30000
+    },
+    "service": {
+        "address": "http://elastic-package-service_apache_1:80/server-status?auto=",
+        "type": "apache"
+    },
+    "apache": {
+        "status": {
+            "load": {
+                "5": 1.89,
+                "15": 1.07,
+                "1": 1.53
+            },
+            "total_accesses": 11,
+            "connections": {
+                "total": 0,
+                "async": {
+                    "closing": 0,
+                    "writing": 0,
+                    "keep_alive": 0
+                }
+            },
+            "requests_per_sec": 0.916667,
+            "scoreboard": {
+                "starting_up": 0,
+                "keepalive": 0,
+                "sending_reply": 1,
+                "logging": 0,
+                "gracefully_finishing": 0,
+                "dns_lookup": 0,
+                "closing_connection": 0,
+                "open_slot": 325,
+                "total": 400,
+                "idle_cleanup": 0,
+                "waiting_for_connection": 74,
+                "reading_request": 0
+            },
+            "bytes_per_sec": 0,
+            "bytes_per_request": 0,
+            "uptime": {
+                "server_uptime": 12,
+                "uptime": 12
+            },
+            "total_bytes": 0,
+            "workers": {
+                "busy": 1,
+                "idle": 74
+            },
+            "cpu": {
+                "load": 0.583333,
+                "user": 0.03,
+                "system": 0.04,
+                "children_user": 0,
+                "children_system": 0
+            }
+        }
     }
-  },
-  "dataset": {
-    "name": "apache.status",
-    "namespace": "default",
-    "type": "metrics"
-  },
-  "ecs": {
-    "version": "1.5.0"
-  },
-  "event": {
-    "dataset": "apache.status",
-    "duration": 2381832,
-    "module": "apache"
-  },
-  "metricset": {
-    "name": "status",
-    "period": 10000
-  },
-  "service": {
-    "address": "127.0.0.1:8088",
-    "type": "apache"
-  },
-  "stream": {
-    "dataset": "apache.status",
-    "namespace": "default",
-    "type": "metrics"
-  }
 }
 ```
 
@@ -276,7 +305,6 @@ An example event for `status` looks as following:
 | apache.status.cpu.load | CPU Load. | scaled_float |
 | apache.status.cpu.system | System cpu. | scaled_float |
 | apache.status.cpu.user | CPU user load. | scaled_float |
-| apache.status.hostname | Apache hostname. | keyword |
 | apache.status.load.1 | Load average for the last minute. | scaled_float |
 | apache.status.load.15 | Load average for the last 15 minutes. | scaled_float |
 | apache.status.load.5 | Load average for the last 5 minutes. | scaled_float |
@@ -294,7 +322,7 @@ An example event for `status` looks as following:
 | apache.status.scoreboard.total | Total. | long |
 | apache.status.scoreboard.waiting_for_connection | Waiting for connections. | long |
 | apache.status.total_accesses | Total number of access requests. | long |
-| apache.status.total_kbytes | Total number of kilobytes served. | long |
+| apache.status.total_bytes | Total number of bytes served. | long |
 | apache.status.uptime.server_uptime | Server uptime in seconds. | long |
 | apache.status.uptime.uptime | Server uptime. | long |
 | apache.status.workers.busy | Number of busy workers. | long |

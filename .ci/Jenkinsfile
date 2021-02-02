@@ -9,8 +9,8 @@ pipeline {
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
-    PIPELINE_LOG_LEVEL='INFO'
-    TEST_RUNNER_CMD_ARGS='--report-format xUnit --report-output file'
+    AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
+    HOME = "${env.WORKSPACE}"
   }
   options {
     timeout(time: 1, unit: 'HOURS')
@@ -26,48 +26,83 @@ pipeline {
     issueCommentTrigger('(?i).*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*')
   }
   stages {
-    /**
-     Checkout the code and stash it, to use it on other stages.
-     */
-    stage('Checkout') {
+    stage('Prepare workspace') {
       steps {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
-        stash allowEmpty: true, name: 'source', useDefaultExcludes: false
       }
     }
-    /**
-     Checks source code
-     */
-    stage('Check') {
+    stage('Check Go sources') {
       steps {
-        cleanup()
         withMageEnv(){
           dir("${BASE_DIR}"){
-            sh(label: 'Checks and builds integration sources', script: 'mage -debug check')
-          }
-        }
-      }
-      post {
-        always {
-          dir("${BASE_DIR}") {
-          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-          junit(allowEmptyResults: false,
-                keepLongStdio: true,
-                testResults: "build/test-results/*.xml")
+            sh(label: 'Checks and builds Go sources', script: 'mage -debug check')
+            checkGitDiff()
           }
         }
       }
     }
-    /**
-     Update Package Storage
-     */
+    stage('Check integrations') {
+      steps {
+        script {
+          dir("${BASE_DIR}/packages") {
+            def integrations = [:]
+            // Include hack to skip temporary files with "@tmp" suffix.
+            // For reference: https://issues.jenkins.io/browse/JENKINS-52750
+            findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
+              if (isPrAffected("${it}")) {
+                integrations["${it}"] = {
+                  node('ubuntu && immutable') {
+                    stage("${it}: check") {
+                      deleteDir()
+                      gitCheckout(basedir: "${BASE_DIR}")
+                      useElasticPackage()
+                      try {
+                        dir("${BASE_DIR}/packages/${it}") {
+                          sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                          sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                          withCloudTestEnv() {
+                            sh(label: "Test integration: ${it}", script: '''
+                              eval "$(../../build/elastic-package stack shellinit)"
+                              ../../build/elastic-package test -v --report-format xUnit --report-output file
+                              ''')
+                          }
+                        }
+                      } finally {
+                        dir("${BASE_DIR}") {
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
+                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            parallel integrations
+          }
+        }
+      }
+    }
     stage('Update Package Storage') {
       when {
         branch 'master'
       }
       steps {
-        cleanup()
+        useElasticPackage()
+        dir("${BASE_DIR}/packages") {
+          sh(label: "Build packages", script: '''
+            for d in *; do
+              (
+                cd $d
+                ../../build/elastic-package build -v
+              )
+            done
+            ''')
+        }
         gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
         dir("${PACKAGE_STORAGE_BASE_DIR}"){
           sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
@@ -99,5 +134,66 @@ def cleanup(){
   dir("${BASE_DIR}"){
     deleteDir()
   }
-  unstash 'source'
+}
+
+def useElasticPackage() {
+  withGoEnv() {
+    dir("${BASE_DIR}/build") {
+      sh(label: 'Install elastic-package', script: 'go build github.com/elastic/elastic-package')
+    }
+  }
+}
+
+// Check if there are non-versioned local changes.
+// For reference: https://stackoverflow.com/questions/34807971/why-does-git-diff-index-head-result-change-for-touched-files-after-git-diff-or-g
+def checkGitDiff() {
+  dir("${BASE_DIR}") {
+    sh(label: "git update-index", script: 'git update-index --refresh')
+    sh(label: "git diff-index", script: 'git diff-index --exit-code HEAD --')
+  }
+}
+
+def isPrAffected(integrationName) {
+  if (env.BRANCH_NAME == "master") {
+    echo "[${integrationName}] PR is affected: running on master branch"
+    return true
+  }
+
+  // Source: https://github.com/elastic/apm-pipeline-library/blob/721115cf0fdb2b5a4e1cb6a576bfbb7035d14485/vars/getGitMatchingGroup.groovy#L40-L41
+  def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
+  def to = env.GIT_BASE_COMMIT
+
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only ${from}..${to} | egrep -v '^packages/'", returnStatus: true)
+  if (r == 0) {
+    echo "[${integrationName}] PR is affected: found non-package files"
+    return true
+  }
+
+  r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only ${from}..${to} | egrep '^packages/${integrationName}/'", returnStatus: true)
+  if (r == 0) {
+    echo "[${integrationName}] PR is affected: found package files"
+    return true
+  }
+
+  echo "[${integrationName}] PR is not affected"
+  return false
+}
+
+def withCloudTestEnv(Closure body) {
+  def maskedVars = []
+  // AWS
+  def aws = getVaultSecret(secret: "${AWS_ACCOUNT_SECRET}").data
+  if (!aws.containsKey('access_key')) {
+    error("${AWS_ACCOUNT_SECRET} doesn't contain 'access_key'")
+  }
+  if (!aws.containsKey('secret_key')) {
+    error("${AWS_ACCOUNT_SECRET} doesn't contain 'secret_key'")
+  }
+  maskedVars.addAll([
+    [var: "AWS_ACCESS_KEY_ID", password: aws.access_key],
+    [var: "AWS_SECRET_ACCESS_KEY", password: aws.secret_key],
+  ])
+  withEnvMask(vars: maskedVars) {
+    body()
+  }
 }

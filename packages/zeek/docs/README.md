@@ -48,7 +48,7 @@ which contains packet loss rate data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -57,12 +57,12 @@ which contains packet loss rate data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from. | keyword |
+| log.file.path | Full path to the log file this event came from. | wildcard |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -102,14 +102,14 @@ contains TCP/UDP/ICMP connection data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -128,7 +128,7 @@ contains TCP/UDP/ICMP connection data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -137,12 +137,12 @@ contains TCP/UDP/ICMP connection data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from. | keyword |
+| log.file.path | Full path to the log file this event came from. | wildcard |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.bytes | Total bytes transferred in both directions. | long |
@@ -154,14 +154,14 @@ contains TCP/UDP/ICMP connection data.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -210,14 +210,14 @@ contains Distributed Computing Environment/RPC data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -234,7 +234,7 @@ contains Distributed Computing Environment/RPC data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -243,7 +243,7 @@ contains Distributed Computing Environment/RPC data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -252,17 +252,19 @@ contains Distributed Computing Environment/RPC data.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -316,7 +318,7 @@ DHCP lease data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -325,7 +327,7 @@ DHCP lease data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -335,6 +337,8 @@ DHCP lease data.
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | server.address | Server network address. | keyword |
 | source.address | Source network address. | keyword |
@@ -391,14 +395,14 @@ requests and replies.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -415,7 +419,7 @@ requests and replies.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -424,7 +428,7 @@ requests and replies.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -433,17 +437,19 @@ requests and replies.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -483,22 +489,29 @@ activity.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
+| dns.answers | Array of DNS answers. | object |
+| dns.answers.class | The class of DNS data contained in this resource record. | keyword |
+| dns.answers.data | The data describing the resource. | wildcard |
+| dns.answers.name | The domain name to which this resource record pertains. | keyword |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. | long |
+| dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.header_flags | Array of DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
-| dns.question.name | The name being queried. | keyword |
+| dns.question.name | The name being queried. | wildcard |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
+| dns.question.subdomain | The subdomain of the domain. | keyword |
 | dns.question.top_level_domain | The effective top level domain (com, org, net, co.uk). | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
@@ -518,7 +531,7 @@ activity.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -527,7 +540,7 @@ activity.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -540,13 +553,13 @@ activity.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -603,13 +616,13 @@ protocol detection failures.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -625,7 +638,7 @@ protocol detection failures.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -634,7 +647,7 @@ protocol detection failures.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -647,13 +660,13 @@ protocol detection failures.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -709,7 +722,7 @@ file analysis results.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -718,7 +731,7 @@ file analysis results.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -786,13 +799,13 @@ activity.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -811,7 +824,7 @@ activity.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -820,7 +833,7 @@ activity.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -833,19 +846,19 @@ activity.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.ftp.arg | Argument for the command if one is given. | keyword |
 | zeek.ftp.capture_password | Determines if the password will be captured for this request. | boolean |
 | zeek.ftp.cmdarg.arg | Argument for the command if one was given. | keyword |
@@ -898,13 +911,13 @@ HTTP requests and replies.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -922,7 +935,7 @@ HTTP requests and replies.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -931,13 +944,13 @@ HTTP requests and replies.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.method | HTTP request method. | keyword |
-| http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.request.referrer | Referrer for this HTTP request. | wildcard |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
@@ -946,34 +959,35 @@ HTTP requests and replies.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url. | wildcard |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | url.password | Password of the request. | keyword |
 | url.port | Port of the request, such as 443. | long |
 | url.username | Username of the request. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original | Unparsed user_agent string. | wildcard |
 | user_agent.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | wildcard |
 | user_agent.os.kernel | Operating system kernel version as a raw string. | keyword |
-| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name | Operating system name, without the version. | wildcard |
 | user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
@@ -1027,13 +1041,13 @@ intelligence data matches.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1048,7 +1062,7 @@ intelligence data matches.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1057,7 +1071,7 @@ intelligence data matches.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1069,13 +1083,13 @@ intelligence data matches.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -1126,13 +1140,13 @@ commands and responses.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1152,7 +1166,7 @@ commands and responses.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1161,7 +1175,7 @@ commands and responses.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1176,19 +1190,19 @@ commands and responses.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.irc.addl | Any additional data for the command. | keyword |
 | zeek.irc.command | Command given by the client. | keyword |
 | zeek.irc.dcc.file.name | Present if base/protocols/irc/dcc-send.bro is loaded. DCC filename requested. | keyword |
@@ -1230,13 +1244,13 @@ contains kerberos data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1254,7 +1268,7 @@ contains kerberos data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1263,7 +1277,7 @@ contains kerberos data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1272,18 +1286,20 @@ contains kerberos data.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | server.address | Server network address. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -1302,7 +1318,7 @@ contains kerberos data.
 | tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
 | tls.server.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.kerberos.cert.client.fuid | File unique ID of client cert. | keyword |
 | zeek.kerberos.cert.client.subject | Subject of client certificate. | keyword |
 | zeek.kerberos.cert.client.value | Client certificate. | keyword |
@@ -1354,13 +1370,13 @@ modbus commands and responses.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1378,7 +1394,7 @@ modbus commands and responses.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1387,7 +1403,7 @@ modbus commands and responses.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1396,16 +1412,18 @@ modbus commands and responses.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -1445,13 +1463,13 @@ MySQL data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1469,7 +1487,7 @@ MySQL data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1478,7 +1496,7 @@ MySQL data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1487,16 +1505,18 @@ MySQL data.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -1538,13 +1558,13 @@ Zeek notices.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1562,7 +1582,7 @@ Zeek notices.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1571,7 +1591,7 @@ Zeek notices.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1586,13 +1606,13 @@ Zeek notices.
 | rule.name | Rule name | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -1653,13 +1673,13 @@ LAN Manager(NTLM) data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1676,7 +1696,7 @@ LAN Manager(NTLM) data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1685,7 +1705,7 @@ LAN Manager(NTLM) data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1700,20 +1720,20 @@ LAN Manager(NTLM) data.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.ntlm.domain | Domain name given by the client. | keyword |
 | zeek.ntlm.hostname | Hostname given by the client. | keyword |
 | zeek.ntlm.server.name.dns | DNS name given by the server in a CHALLENGE. | keyword |
@@ -1758,7 +1778,7 @@ Online Certificate Status Protocol (OCSP) data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1767,7 +1787,7 @@ Online Certificate Status Protocol (OCSP) data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1827,7 +1847,7 @@ portable executable data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1836,7 +1856,7 @@ portable executable data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1893,13 +1913,13 @@ RADIUS authentication attempts.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -1916,7 +1936,7 @@ RADIUS authentication attempts.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -1925,7 +1945,7 @@ RADIUS authentication attempts.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1940,19 +1960,19 @@ RADIUS authentication attempts.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.radius.connect_info | Connect info, if present. | keyword |
 | zeek.radius.framed_addr | The address given to the network access server, if present. This is only a hint from the RADIUS server and the network access server is not required to honor the address. | ip |
 | zeek.radius.logged | Whether this has already been logged and can be ignored. | boolean |
@@ -1993,13 +2013,13 @@ data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2015,7 +2035,7 @@ data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2024,7 +2044,7 @@ data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2032,18 +2052,19 @@ data.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| network.community_id | A hash of source and destination IPs and ports. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -2098,13 +2119,13 @@ Remote Framebuffer (RFB) data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2120,7 +2141,7 @@ Remote Framebuffer (RFB) data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2129,7 +2150,7 @@ Remote Framebuffer (RFB) data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2143,13 +2164,13 @@ Remote Framebuffer (RFB) data.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -2196,13 +2217,13 @@ data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2220,7 +2241,7 @@ data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2229,7 +2250,7 @@ data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2243,19 +2264,19 @@ data.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.full | Full unparsed URL. | keyword |
+| url.full | Full unparsed URL. | wildcard |
 | zeek.session_id | A unique identifier of the session | keyword |
 | zeek.sip.call_id | Contents of the Call-ID: header from the client. | keyword |
 | zeek.sip.content_type | Contents of the Content-Type: header from the server. | keyword |
@@ -2308,13 +2329,13 @@ contains SMB commands.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2332,7 +2353,7 @@ contains SMB commands.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2341,7 +2362,7 @@ contains SMB commands.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2356,19 +2377,19 @@ contains SMB commands.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.session_id | A unique identifier of the session | keyword |
 | zeek.smb_cmd.argument | Command argument sent by the client, if any. | keyword |
 | zeek.smb_cmd.command | The command sent by the client. | keyword |
@@ -2416,13 +2437,13 @@ contains SMB file data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2441,12 +2462,12 @@ contains SMB file data.
 | file.ctime | Last time the file attributes or metadata changed. | date |
 | file.mtime | Last time the file content was modified. | date |
 | file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. | keyword |
+| file.path | Full path to the file, including the file name. | wildcard |
 | file.size | File size in bytes. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2455,7 +2476,7 @@ contains SMB file data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2470,13 +2491,13 @@ contains SMB file data.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -2524,13 +2545,13 @@ which contains SMB trees.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2546,7 +2567,7 @@ which contains SMB trees.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2555,7 +2576,7 @@ which contains SMB trees.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2569,13 +2590,13 @@ which contains SMB trees.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -2616,13 +2637,13 @@ SMTP transactions..
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2638,7 +2659,7 @@ SMTP transactions..
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2647,7 +2668,7 @@ SMTP transactions..
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2661,13 +2682,13 @@ SMTP transactions..
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -2728,13 +2749,13 @@ SNMP messages.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2750,7 +2771,7 @@ SNMP messages.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2759,7 +2780,7 @@ SNMP messages.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2773,13 +2794,13 @@ SNMP messages.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -2825,13 +2846,13 @@ SOCKS proxy requests.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2847,7 +2868,7 @@ SOCKS proxy requests.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2856,7 +2877,7 @@ SOCKS proxy requests.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2871,19 +2892,19 @@ SOCKS proxy requests.
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
+| user.name | Short name or login of the user. | wildcard |
 | zeek.session_id | A unique identifier of the session | keyword |
 | zeek.socks.bound.host | Server bound address. Could be an address, a name or both. | keyword |
 | zeek.socks.bound.port | Server bound port. | integer |
@@ -2924,13 +2945,13 @@ connection data.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -2947,7 +2968,7 @@ connection data.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -2956,7 +2977,7 @@ connection data.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2970,13 +2991,13 @@ connection data.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -3026,13 +3047,13 @@ SSL/TLS handshake info.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -3048,7 +3069,7 @@ SSL/TLS handshake info.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3057,7 +3078,7 @@ SSL/TLS handshake info.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3071,20 +3092,20 @@ SSL/TLS handshake info.
 | server.address | Server network address. | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
-| tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
+| tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | wildcard |
 | tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.client.x509.subject.country | List of country (C) code | keyword |
 | tls.client.x509.subject.locality | List of locality names (L) | keyword |
@@ -3094,7 +3115,15 @@ SSL/TLS handshake info.
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
-| tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
+| tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | wildcard |
+| tls.server.subject | Subject of the x.509 certificate presented by the server. | wildcard |
+| tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.country | List of country (C) codes | keyword |
+| tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | wildcard |
+| tls.server.x509.issuer.locality | List of locality names (L) | keyword |
+| tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.server.x509.subject.country | List of country (C) code | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
@@ -3178,7 +3207,7 @@ memory/event/packet/lag statistics.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3187,7 +3216,7 @@ memory/event/packet/lag statistics.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3252,13 +3281,13 @@ syslog messages.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -3272,7 +3301,7 @@ syslog messages.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3281,7 +3310,7 @@ syslog messages.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3297,13 +3326,13 @@ syslog messages.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -3343,13 +3372,13 @@ contains traceroute detections.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -3363,7 +3392,7 @@ contains traceroute detections.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3372,7 +3401,7 @@ contains traceroute detections.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3384,13 +3413,13 @@ contains traceroute detections.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -3426,13 +3455,13 @@ tunneling protocol events.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -3449,7 +3478,7 @@ tunneling protocol events.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3458,7 +3487,7 @@ tunneling protocol events.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3469,13 +3498,13 @@ tunneling protocol events.
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -3514,13 +3543,13 @@ unexpected network-level activity.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name | Organization name. | wildcard |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location. | wildcard |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -3535,7 +3564,7 @@ unexpected network-level activity.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3544,7 +3573,7 @@ unexpected network-level activity.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3556,13 +3585,13 @@ unexpected network-level activity.
 | rule.name | Rule name | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name | Organization name. | wildcard |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location. | wildcard |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -3612,18 +3641,22 @@ X.509 certificate info.
 | file.x509.alternative_names | List of subject alternative names (SAN). | keyword |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | file.x509.issuer.country | List of country (C) codes | keyword |
+| file.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | wildcard |
 | file.x509.issuer.locality | List of locality names (L) | keyword |
 | file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
 | file.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
 | file.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
 | file.x509.not_before | Time at which the certificate is first considered valid. | date |
+| file.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
+| file.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
 | file.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
 | file.x509.public_key_size | The size of the public key space in bits. | long |
 | file.x509.serial_number | Unique serial number issued by the certificate authority. | keyword |
 | file.x509.signature_algorithm | Identifier for certificate signature algorithm. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | wildcard |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | file.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
@@ -3632,7 +3665,7 @@ X.509 certificate info.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -3641,7 +3674,7 @@ X.509 certificate info.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name | Operating system name, without the version. | wildcard |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

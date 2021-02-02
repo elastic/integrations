@@ -1,0 +1,56 @@
+version: '2.3'
+services:
+  kubernetes:
+    image: nginx:alpine
+    ports:
+      - 8080
+      - 25000
+      - 10252
+      - 10251
+      - 10249
+      - 10250
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - kube-state-metrics
+      - apiserver
+      - controllermanager
+      - scheduler
+      - proxy
+      - kubelet
+  kube-state-metrics:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./kube_state_metrics_data.1.8.txt:/home/java-app/etc/scrape-data.txt
+  apiserver:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./apiserver_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt
+  controllermanager:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./controllermanager_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt
+  scheduler:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./scheduler_metrics.1.17.txt:/home/java-app/etc/scrape-data.txt
+  proxy:
+    image: chanjarster/prometheus-mock-data:latest
+    ports:
+      - 8080
+    volumes:
+      - ./proxy_metrics.1.14.txt:/home/java-app/etc/scrape-data.txt
+  kubelet:
+    image: clue/json-server
+    ports:
+      - 80
+    volumes:
+      - ./stats_summary.json:/data/db.json

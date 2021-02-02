@@ -2,6 +2,21 @@
 
 This integration is for Microsoft Office 365. It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
 
+## Configuration
+
+To use this package you need to enable _Audit Log Search_ and register an application in Azure AD.
+
+Once this application is registered note the _Application (client) ID_ and the _Directory (tenant) ID._ Then configure the authentication in the _Certificates & Secrets_ section.
+
+To use client-secret authentication, add you secret to the _Client Secret (API key)_ field.
+
+To use certificate-based authentication, set the paths to the certificate and private key files. If the key file is protected with a passphrase, set this passphrase in the _Private key passphrase_ field. Paths must be absolute and files must exist in the host where _Elastic Agent_ is running.
+
+
+Add your tenant ID(s) to the _Directory (tenant) IDs_ field, then add the hostname that this tenant identifies to the _Directory (tenant) domains_ field. For example:
+- Directory IDs: `my-id-a` `my-id-b`
+- Directory domains: `a.onmicrosoft.com` `b.onmicrosoft.com`
+
 ## Compatibility
 
 The `ingest-geoip` and `ingest-user_agent` Elasticsearch plugins are required to run this module.
@@ -101,7 +116,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Comments |  | text |
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |
-| o365.audit.CustomUniqueId |  | keyword |
+| o365.audit.CustomUniqueId |  | boolean |
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
@@ -110,7 +125,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.ExceptionInfo.* |  | object |
 | o365.audit.ExchangeMetaData.* |  | object |
 | o365.audit.ExtendedProperties.* |  | object |
-| o365.audit.ExternalAccess |  | keyword |
+| o365.audit.ExternalAccess |  | boolean |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
 | o365.audit.ImplicitShare |  | keyword |
@@ -145,7 +160,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
 | o365.audit.ResultStatus |  | keyword |
-| o365.audit.SensitiveInfoDetectionIsIncluded |  | keyword |
+| o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
 | o365.audit.SharePointMetaData.* |  | object |
