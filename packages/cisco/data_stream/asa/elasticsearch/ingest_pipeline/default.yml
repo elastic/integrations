@@ -15,7 +15,7 @@ processors:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:log.original}"
       pattern_definitions:
         SYSLOG_HEADER: "(?:%{SYSLOGFACILITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
-        SYSLOGFACILITY: "<%{NONNEGINT:syslog.facility:int}(?:.%{NONNEGINT:syslog.priority:int})?>"
+        SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.facility.code:int}(?:.%{NONNEGINT:log.syslog.priority:int})?>"
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ})?"
@@ -1269,8 +1269,22 @@ processors:
       ignore_failure: true
   - convert:
       field: "network.iana_number"
-      type: integer
+      type: string
       ignore_failure: true
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: file.size
+  - convert:
+      field: http.response.status_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: file.size
 
   #
   # Assign ECS .ip fields from .address is a valid IP address is found,
@@ -1401,7 +1415,7 @@ processors:
   - convert:
       field: _temp_.cisco.message_id
       target_field: event.code
-      type: integer
+      type: string
       ignore_failure: true
 
   - remove:

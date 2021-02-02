@@ -60,7 +60,7 @@ processors:
     pattern_definitions:
       UBIQUITI_FIELD: '[^-]*'
 - date:
-    if: ctx.event.timezone == null
+    if: ctx?.event?.timezone == null && ctx?.iptables?.raw_date != null
     field: iptables.raw_date
     formats:
     - MMM  d HH:mm:ss
@@ -70,7 +70,7 @@ processors:
         field: error.message
         value: '{{ _ingest.on_failure_message }}'
 - date:
-    if: ctx.event.timezone != null
+    if: ctx?.event?.timezone != null && ctx?.iptables?.raw_date != null
     field: iptables.raw_date
     formats:
     - MMM  d HH:mm:ss

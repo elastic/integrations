@@ -63,6 +63,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | dns.question.name | The name being queried. | wildcard |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
+| ecs.version | ECS version this event conforms to. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
@@ -532,6 +533,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | log.flags | Flags for the log file. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | Log message optimized for viewing in a log viewer. | text |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
