@@ -664,9 +664,9 @@ def render(
         The rendered HTML, ready for consumption
     """
     return template.render(
-            test_frequency_all=freq_all,
-            test_frequency_system=freq_system,
-            test_frequency_pipeline=freq_pipeline,
+            package_frequency_all=freq_all,
+            package_frequency_system=freq_system,
+            package_frequency_pipeline=freq_pipeline,
             fail_frequency_system=fail_system,
             fail_frequency_pipeline=fail_pipeline,
             frequency_limit=freq_limit
