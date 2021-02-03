@@ -39,11 +39,15 @@ running Docker containers.
 
 {{fields "container"}}
 
+{{event "container"}}
+
 ### CPU 
 
 The Docker `cpu` data stream collects runtime CPU metrics.
 
 {{fields "cpu"}}
+
+{{event "cpu"}}
 
 ### Diskio
 
@@ -51,11 +55,15 @@ The Docker `diskio` data stream collects disk I/O metrics.
 
 {{fields "diskio"}}
 
+{{event "diskio"}}
+
 ### Event
 
 The Docker `event` data stream collects docker events
 
 {{fields "event"}}
+
+{{event "event"}}
 
 ### Healthcheck
 
@@ -67,11 +75,15 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 
 {{fields "healthcheck"}}
 
+{{event "healthcheck"}}
+
 ### Image
 
 The Docker `image` data stream collects metrics on docker images
 
 {{fields "image"}}
+
+{{event "image"}}
 
 ### Info 
 
@@ -80,11 +92,15 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 
 {{fields "info"}}
 
+{{event "info"}}
+
 ### Memory
 
 The Docker `memory` data stream collects memory metrics from docker.
 
 {{fields "memory"}}
+
+{{event "memory"}}
 
 
 ### Network
@@ -92,3 +108,5 @@ The Docker `memory` data stream collects memory metrics from docker.
 The Docker `network` data stream collects network metrics.
 
 {{fields "network"}}
+
+{{event "network"}}
