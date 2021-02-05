@@ -43,6 +43,7 @@ running Docker containers.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -142,6 +143,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -311,6 +313,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -420,6 +423,7 @@ The Docker `event` data stream collects docker events
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -493,6 +497,7 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -591,6 +596,7 @@ The Docker `image` data stream collects metrics on docker images
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -674,6 +680,7 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -741,6 +748,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -860,6 +868,7 @@ The Docker `network` data stream collects network metrics.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Container runtime. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
