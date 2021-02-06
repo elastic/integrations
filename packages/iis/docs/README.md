@@ -547,7 +547,7 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| destination.domain | Destination domain. | wildcard |
+| destination.domain | Destination domain. | keyword |
 | destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
 | error.message | Error message. | text |
@@ -697,7 +697,7 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| destination.domain | Destination domain. | wildcard |
+| destination.domain | Destination domain. | keyword |
 | destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
 | error.message | Error message | text |

@@ -114,13 +114,13 @@ An example event for `result` looks as following:
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | file.accessed | Last time the file was accessed. | date |
 | file.created | File creation time. | date |
-| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | wildcard |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.gid | Primary group ID (GID) of the file. | keyword |
 | file.inode | Inode representing the file in the filesystem. | keyword |
 | file.mode | Mode of the file in octal representation. | keyword |
 | file.mtime | Last time the file content was modified. | date |
 | file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | wildcard |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.size | File size in bytes. | long |
 | file.type | File type (file, dir, or symlink). | keyword |
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
@@ -318,10 +318,10 @@ An example event for `result` looks as following:
 | osquery.result.host_identifier | The identifier for the host on which the osquery agent is running. Normally the hostname. | keyword |
 | osquery.result.name | The name of the query that generated this event. | keyword |
 | osquery.result.unix_time | Unix timestamp of the event, in seconds since the epoch. Used for computing the `@timestamp` column. | keyword |
-| process.name | Process name. | wildcard |
+| process.name | Process name. | keyword |
 | related.hosts |  | keyword |
 | related.user |  | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| url.full |  | wildcard |
-| user.name | Short name or login of the user. | wildcard |
+| url.full |  | keyword |
+| user.name | Short name or login of the user. | keyword |
 
