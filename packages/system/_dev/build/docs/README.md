@@ -12,9 +12,6 @@ and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 [AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
 
-In addition, when running inside a container the proc filesystem directory of the host
-should be set using `system.hostfs` setting to `/hostfs`.  
-
 ## Compatibility
 
 The System datasets collect different kinds of metric data, which may require dedicated permissions
