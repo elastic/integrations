@@ -12,49 +12,10 @@ and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 [AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
 
-In addition, when running inside a container the proc filesystem directory of the host
-should be set using `system.hostfs` setting to `/hostfs`.  
-
 ## Compatibility
 
 The System datasets collect different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
-
-## Logs
-
-### Application
-
-The Windows `application` dataset provides events from the Windows
-`Application` event log.
-
-{{fields "application"}}
-
-### System
-
-The Windows `system` dataset provides events from the Windows `System`
-event log.
-
-{{fields "system"}}
-
-
-### Security
-
-The Windows `security` dataset provides events from the Windows
-`Security` event log.
-
-{{fields "security"}}
-
-### Auth
-
-The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
-
-{{fields "auth"}}
-
-### syslog
-
-The `syslog` dataset provides system logs on linux and MacOS.
-
-{{fields "syslog"}}
 
 ## Metrics
 
@@ -228,3 +189,4 @@ This dataset is available on:
 - Windows
 
 {{fields "uptime"}}
+
