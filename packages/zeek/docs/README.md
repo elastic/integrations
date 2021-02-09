@@ -842,6 +842,8 @@ activity.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. | keyword |
+| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
@@ -1802,8 +1804,8 @@ Online Certificate Status Protocol (OCSP) data.
 | zeek.ocsp.hash.algorithm | Hash algorithm used to generate issuerNameHash and issuerKeyHash. | keyword |
 | zeek.ocsp.hash.issuer.key | Hash of the issuer's public key. | keyword |
 | zeek.ocsp.hash.issuer.name | Hash of the issuer's distingueshed name. | keyword |
+| zeek.ocsp.revoke.date | Time at which the certificate was revoked. | date |
 | zeek.ocsp.revoke.reason | Reason for which the certificate was revoked. | keyword |
-| zeek.ocsp.revoke.time | Time at which the certificate was revoked. | date |
 | zeek.ocsp.serial_number | Serial number of the affected certificate. | keyword |
 | zeek.ocsp.status | Status of the affected certificate. | keyword |
 | zeek.ocsp.update.next | The latest time at which new information about the status of the certificate will be available. | date |
