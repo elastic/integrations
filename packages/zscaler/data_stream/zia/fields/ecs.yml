@@ -851,6 +851,18 @@
 - name: user_agent
   type: group
   fields:
+    - name: device.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the device.
+      example: iPhone
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the user agent.
+      example: Safari
     - name: original
       level: extended
       type: keyword
@@ -861,6 +873,73 @@
           norms: false
       description: Unparsed user_agent string.
       example: Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1
+    - name: os.family
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: OS family (such as redhat, debian, freebsd, windows).
+      example: debian
+    - name: os.full
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+      - name: text
+        type: text
+        norms: false
+        default_field: false
+      description: Operating system name, including the version or code name.
+      example: Mac OS Mojave
+    - name: os.kernel
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system kernel version as a raw string.
+      example: 4.4.0-112-generic
+    - name: os.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+      - name: text
+        type: text
+        norms: false
+        default_field: false
+      description: Operating system name, without the version.
+      example: Mac OS X
+    - name: os.platform
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system platform (such centos, ubuntu, windows).
+      example: darwin
+    - name: os.type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Use the `os.type` field to categorize the operating system into
+        one of the broad commercial families.
+
+        One of these following values should be used (lowercase): linux, macos, unix,
+        windows.
+
+        If the OS you''re dealing with is not in the list, the field should not be
+        populated. Please let us know by opening an issue with ECS, to propose its
+        addition.'
+      example: macos
+      default_field: false
+    - name: os.version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system version as a raw string.
+      example: 10.14.1
+    - name: version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of the user agent.
+      example: 12.0
 - name: http
   type: group
   fields:
