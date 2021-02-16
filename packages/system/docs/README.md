@@ -645,6 +645,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pid | Process id. | long |
+| related.hosts | All the host names seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
@@ -669,6 +670,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | system.auth.sudo.user | The target user to which the sudo command is switching. | keyword |
 | system.auth.useradd.home | The home folder for the new user. | keyword |
 | system.auth.useradd.shell | The default shell for the new user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | version | Operating system version as a raw string. | keyword |
