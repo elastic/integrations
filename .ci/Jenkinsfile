@@ -203,7 +203,12 @@ def withKubernetes(Closure body) {
           ''') }
         sh(label: "Create kind cluster", script: 'kind create cluster')
       }
+
       body()
+
+      if (r == 0) {
+        sh(label: "Delete kind cluster", script: 'kind delete cluster')
+      }
     }
 }
 
