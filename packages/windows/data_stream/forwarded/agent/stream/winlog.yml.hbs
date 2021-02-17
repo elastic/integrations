@@ -14,12 +14,10 @@ processors:
         // Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
         // or more contributor license agreements. Licensed under the Elastic License;
         // you may not use this file except in compliance with the Elastic License.
-
         var security = (function () {
             var path = require("path");
             var processor = require("processor");
             var windows = require("windows");
-
             // Logon Types
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/basic-audit-logon-events
             var logonTypes = {
@@ -33,7 +31,6 @@ processors:
                 "10": "RemoteInteractive",
                 "11": "CachedInteractive",
             };
-
             // User Account Control Attributes Table
             // https://support.microsoft.com/es-us/help/305144/how-to-use-useraccountcontrol-to-manipulate-user-account-properties
             var uacFlags = [
@@ -60,7 +57,6 @@ processors:
                 [0x1000000, 'TRUSTED_TO_AUTH_FOR_DELEGATION'],
                 [0x04000000, 'PARTIAL_SECRETS_ACCOUNT'],
             ];
-
             // Kerberos TGT and TGS Ticket Options
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4769
@@ -97,7 +93,6 @@ processors:
                 "Unused",
                 "Renew",
                 "Validate"];
-
             // Kerberos Encryption Types
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
@@ -109,8 +104,7 @@ processors:
                 "0x17": "RC4-HMAC",
                 "0x18": "RC4-HMAC-EXP",
                 "0xffffffff": "FAIL",
-        };
-
+           };
             // Kerberos Result Status Codes
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
@@ -174,7 +168,6 @@ processors:
                 "0x43": "KRB_AP_ERR_NO_TGT",
                 "0x44": "KDC_ERR_WRONG_REALM",
             };
-
             // event.category, event.type, event.action
             var eventActionTypes = {
                 "1100": [["process"], ["end"], "logging-service-shutdown"],
@@ -285,7 +278,6 @@ processors:
                 "5034": [["driver"], ["end"], "windows-firewall-driver-stopped"],
                 "5037": [["driver"], ["end"], "windows-firewall-driver-error"],
             };
-
             // Services Types
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4697
             var serviceTypes = {
@@ -297,8 +289,6 @@ processors:
                 "0x110": "Interactive Own Process",
                 "0x120": "Interactive Share Process",
             };
-
-
             // Audit Categories Description
             // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpac/77878370-0712-47cd-997d-b07053429f6d
             var auditDescription = {
@@ -360,11 +350,9 @@ processors:
                 "0CCE9241-69AE-11D9-BED3-505054503030":["Other Account Logon Events","Account Logon"],
                 "0CCE9242-69AE-11D9-BED3-505054503030":["Kerberos Authentication Service","Account Logon"],
             };
-
-
             // Descriptions of failure status codes.
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4625
-        //  https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4776
+           //  https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4776
             var logonFailureStatus = {
                 "0xc000005e": "There are currently no logon servers available to service the logon request.",
                 "0xc0000064": "User logon with misspelled or bad user account",
@@ -389,7 +377,6 @@ processors:
                 "0xc0000371": "The local account store does not contain secret material for the specified account",
                 "0x0": "Status OK.",
             };
-
             // Message table extracted from msobjs.dll on Windows 2019.
             // https://gist.github.com/andrewkroh/665dca0682bd0e4daf194ab291694012
             var msobjsMessageTable = {
@@ -1363,7 +1350,6 @@ processors:
                 "16902": "Subscribe",
                 "16903": "Publish",
             };
-
             // Trust Types
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4706
             var trustTypes = {
@@ -1372,7 +1358,6 @@ processors:
                 "3": "TRUST_TYPE_MIT",
                 "4": "TRUST_TYPE_DCE"
             }
-
             // Trust Direction
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4706
             var trustDirection = {
@@ -1381,7 +1366,6 @@ processors:
                 "2": "TRUST_DIRECTION_OUTBOUND",
                 "3": "TRUST_DIRECTION_BIDIRECTIONAL"
             }
-
             // Trust Attributes
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4706
             var trustAttributes = {
@@ -1397,7 +1381,6 @@ processors:
                 "512": "TRUST_ATTRIBUTE_CROSS_ORGANIZATION_NO_TGT_DELEGATION",
                 "1024": "TRUST_ATTRIBUTE_PIM_TRUST"
             }
-
             // SDDL Ace Types
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4715
             // https://docs.microsoft.com/en-us/windows/win32/secauthz/ace-strings
@@ -1414,7 +1397,6 @@ processors:
                 "ML": "System Mandatory Label",
                 "SP": "Central Policy ID"
             }
-
             // SDDL Permissions
             // https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4715
             // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/f4296d69-1c0f-491f-9587-a960b292d070
@@ -1445,7 +1427,6 @@ processors:
                 "KW": "KEY WRITE",
                 "KX": "KEY EXECUTE"
             }
-
             // Known SIDs
             // https://support.microsoft.com/en-au/help/243330/well-known-security-identifier"S-in-window"S-operating-systems
             // https://docs.microsoft.com/en-us/windows/win32/secauthz/sid-strings
@@ -1566,7 +1547,6 @@ processors:
                 "S-1-5-9": "Enterprise Domain Controllers",
                 "S-1-5-90-0": "Windows Manager\Windows Manager Group"
             }
-
             // Domain-specific SIDs
             // https://support.microsoft.com/en-au/help/243330/well-known-security-identifiers-in-windows-operating-systems
             var domainSpecificSID = {
@@ -1591,7 +1571,6 @@ processors:
                 "571": "Allowed RODC Password Replication Group",
                 "572": "Denied RODC Password Replication Group"
             }
-
             // Object Permission Flags
             // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/7a53f60e-e730-4dfe-bbe9-b21b62eb790b
             var permsFlags = [
@@ -1607,7 +1586,6 @@ processors:
                 [0x00020000, 'Read Control'],
                 [0x00010000, 'Delete']
             ];
-
             // lookupMessageCode returns the string associated with the code. key should
             // be the name of the field in evt containing the code (e.g. %%2313).
             var lookupMessageCode = function (evt, key) {
@@ -1618,7 +1596,6 @@ processors:
                 code = code.replace("%%", "");
                 return msobjsMessageTable[code];
             };
-
             var addEventFields = function(evt){
                 var code = evt.Get("event.code");
                 if (!code) {
@@ -1626,12 +1603,11 @@ processors:
                 }
                 var eventActionDescription = eventActionTypes[code][2];
                 if (eventActionDescription) {
-                    evt.Put("event.category", eventActionTypes[code][0]);
-                    evt.Put("event.type", eventActionTypes[code][1]);
+                    evt.AppendTo("event.category", eventActionTypes[code][0]);
+                    evt.AppendTo("event.type", eventActionTypes[code][1]);
                     evt.Put("event.action", eventActionTypes[code][2]);
                 }
             };
-
             var addLogonType = function(evt) {
                 var code = evt.Get("winlog.event_data.LogonType");
                 if (!code) {
@@ -1643,7 +1619,6 @@ processors:
                 }
                 evt.Put("winlog.logon.type", descriptiveLogonType);
             };
-
             var addFailureCode = function(evt) {
                 var msg = lookupMessageCode(evt, "winlog.event_data.FailureReason");
                 if (!msg) {
@@ -1651,7 +1626,6 @@ processors:
                 }
                 evt.Put("winlog.logon.failure.reason", msg);
             };
-
             var addFailureStatus = function(evt) {
                 var code = evt.Get("winlog.event_data.Status");
                 if (!code) {
@@ -1663,7 +1637,6 @@ processors:
                 }
                 evt.Put("winlog.logon.failure.status", descriptiveFailureStatus);
             };
-
             var addFailureSubStatus = function(evt) {
                 var code = evt.Get("winlog.event_data.SubStatus");
                 if (!code) {
@@ -1675,7 +1648,6 @@ processors:
                 }
                 evt.Put("winlog.logon.failure.sub_status", descriptiveFailureStatus);
             };
-
             var addUACDescription = function(evt) {
                 var code = evt.Get("winlog.event_data.NewUacValue");
                 if (!code) {
@@ -1696,8 +1668,7 @@ processors:
                     return;
                 }
                 evt.Put("winlog.event_data.UserAccountControl", uacList);
-            };
-
+              };
             var addAuditInfo = function(evt) {
                 var subcategoryGuid = evt.Get("winlog.event_data.SubcategoryGuid").replace("{", '').replace("}", '').toUpperCase();
                 if (!subcategoryGuid) {
@@ -1716,7 +1687,6 @@ processors:
                 }
                 evt.Put("winlog.event_data.AuditPolicyChangesDescription", actionResults);
             };
-
             var addTicketOptionsDescription = function(evt) {
                 var code = evt.Get("winlog.event_data.TicketOptions");
                 if (!code) {
@@ -1734,7 +1704,6 @@ processors:
                     evt.Put("winlog.event_data.TicketOptionsDescription", tktResult);
                 }
             };
-
             var addTicketEncryptionType = function(evt) {
                 var code = evt.Get("winlog.event_data.TicketEncryptionType");
                 if (!code) {
@@ -1743,7 +1712,6 @@ processors:
                 var encTypeCode = code.toLowerCase();
                 evt.Put("winlog.event_data.TicketEncryptionTypeDescription", ticketEncryptionTypes[encTypeCode]);
             };
-
             var addTicketStatus = function(evt) {
                 var code = evt.Get("winlog.event_data.Status");
                 if (!code) {
@@ -1751,7 +1719,6 @@ processors:
                 }
                 evt.Put("winlog.event_data.StatusDescription", kerberosTktStatusCodes[code]);
             };
-
             var translateSID = function(sid){
                 var translatedSID = accountSIDDescription[sid];
                     if (translatedSID == undefined) {
@@ -1767,7 +1734,6 @@ processors:
                     }
                 return translatedSID;
             }
-
             var translatePermissionMask = function(mask) {
                 if (!mask) {
                     return;
@@ -1785,7 +1751,6 @@ processors:
                     return mask;
                 }
             };
-
             var translateACL = function(dacl) {
                 var aceArray = dacl.split(";");
                 var aceResult = [];
@@ -1813,7 +1778,6 @@ processors:
                 }
                 return aceResult;
             };
-
             var enrichSDDL = function(evt, sddl) {
                 var sddlStr = evt.Get(sddl);
                 if (!sddlStr) {
@@ -1875,7 +1839,6 @@ processors:
                     evt.AppendTo('related.user', user);
                 })
                 .Build();
-
             var addServiceFields = new processor.Chain()
                 .Convert({
                     fields: [
@@ -1891,7 +1854,6 @@ processors:
                     evt.Put("service.type", serviceTypes[code]);
                 })
                 .Build();
-
             var addTrustInformation = new processor.Chain()
                 .Add(function(evt) {
                     var code = evt.Get("winlog.event_data.TdoType");
@@ -1966,7 +1928,6 @@ processors:
                     evt.Put("user.target.group.domain", evt.Get("group.domain"));
                 })
                 .Build();
-
             var copyTargetUserToComputerObject = new processor.Chain()
                 .Convert({
                     fields: [
@@ -1977,7 +1938,6 @@ processors:
                     ignore_missing: true,
                 })
                 .Build();
-
             var copyTargetUserLogonId  = new processor.Chain()
                 .Convert({
                     fields: [
@@ -1986,7 +1946,6 @@ processors:
                     ignore_missing: true,
                 })
                 .Build();
-
             var copySubjectUser  = new processor.Chain()
                 .Convert({
                     fields: [
@@ -2001,7 +1960,6 @@ processors:
                     evt.AppendTo('related.user', user);
                 })
                 .Build();
-
             var copySubjectUserFromUserData  = new processor.Chain()
                 .Convert({
                     fields: [
@@ -2016,7 +1974,6 @@ processors:
                     evt.AppendTo('related.user', user);
                 })
                 .Build();
-
             var copySubjectUserLogonId  = new processor.Chain()
                 .Convert({
                     fields: [
@@ -2025,7 +1982,6 @@ processors:
                     ignore_missing: true,
                 })
                 .Build();
-
             var copySubjectUserLogonIdFromUserData  = new processor.Chain()
                 .Convert({
                     fields: [
@@ -2034,7 +1990,6 @@ processors:
                     ignore_missing: true,
                 })
                 .Build();
-
             var renameCommonAuthFields = new processor.Chain()
                 .Convert({
                     fields: [
@@ -2061,7 +2016,6 @@ processors:
                     evt.Put("process.name", path.basename(exe));
                 })
                 .Build();
-
             var renameNewProcessFields = new processor.Chain()
                 .Convert({
                     fields: [
@@ -2104,7 +2058,6 @@ processors:
                     evt.Put("process.command_line", cl);
                 })
                 .Build();
-
             // Handles 4634 and 4647.
             var logoff = new processor.Chain()
                 .Add(copyTargetUser)
@@ -2112,7 +2065,6 @@ processors:
                 .Add(addLogonType)
                 .Add(addEventFields)
                 .Build();
-
             // Handles both 4624
             var logonSuccess = new processor.Chain()
                 .Add(copyTargetUser)
@@ -2128,9 +2080,8 @@ processors:
                             evt.AppendTo('related.user', user);
                         }
                     }
-                })
+                 })
                 .Build();
-
             // Handles both 4648
             var event4648 = new processor.Chain()
                 .Add(copyTargetUser)
@@ -2145,9 +2096,8 @@ processors:
                             evt.AppendTo('related.user', user);
                         }
                     }
-                })
+                 })
                 .Build();
-
             var event4625 = new processor.Chain()
                 .Add(copyTargetUser)
                 .Add(copySubjectUserLogonId)
@@ -2158,7 +2108,6 @@ processors:
                 .Add(renameCommonAuthFields)
                 .Add(addEventFields)
                 .Build();
-
             var event4672 = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2171,7 +2120,6 @@ processors:
                 })
                 .Add(addEventFields)
                 .Build();
-
             var event4688 = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2187,14 +2135,12 @@ processors:
                     }
                 })
                 .Build();
-
             var event4689 = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
                 .Add(renameCommonAuthFields)
                 .Add(addEventFields)
                 .Build();
-
             var event4697 = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2202,7 +2148,6 @@ processors:
                 .Add(addServiceFields)
                 .Add(addEventFields)
                 .Build();
-
             var userMgmtEvts = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2214,7 +2159,6 @@ processors:
                     evt.AppendTo('related.user', user);
                 })
                 .Build();
-
             var userRenamed = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2226,7 +2170,6 @@ processors:
                     evt.AppendTo('related.user', userOld);
                 })
                 .Build();
-
             var groupMgmtEvts = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2235,14 +2178,12 @@ processors:
                 .Add(renameCommonAuthFields)
                 .Add(addEventFields)
                 .Build();
-
             var auditLogCleared = new processor.Chain()
                 .Add(copySubjectUserFromUserData)
                 .Add(copySubjectUserLogonIdFromUserData)
                 .Add(renameCommonAuthFields)
                 .Add(addEventFields)
                 .Build();
-
             var auditChanged = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2250,12 +2191,10 @@ processors:
                 .Add(addAuditInfo)
                 .Add(addEventFields)
                 .Build();
-
             var auditLogMgmt = new processor.Chain()
                 .Add(renameCommonAuthFields)
                 .Add(addEventFields)
                 .Build();
-
             var computerMgmtEvts = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2271,18 +2210,15 @@ processors:
                     evt.Put("winlog.event_data.PrivilegeList", privs.split(/\s+/));
                 })
                 .Build();
-
             var sessionEvts = new processor.Chain()
                 .Add(addSessionData)
                 .Add(addEventFields)
                 .Build();
-
-            var event4964 = new processor.Chain()
+             var event4964 = new processor.Chain()
                 .Add(copyTargetUser)
                 .Add(copyTargetUserLogonId)
                 .Add(addEventFields)
                 .Build();
-
             var kerberosTktEvts = new processor.Chain()
                 .Add(copyTargetUser)
                 .Add(renameCommonAuthFields)
@@ -2293,26 +2229,23 @@ processors:
                 .Add(function(evt) {
                     var ip = evt.Get("source.ip");
                     if (ip) {
-                    if (/::ffff:/.test(ip)) {
-                        evt.Put("source.ip", ip.replace("::ffff:", ""));
-                        evt.Put("related.ip", ip.replace("::ffff:", ""));
-                    }
+                        if (/::ffff:/.test(ip)) {
+                            evt.Put("source.ip", ip.replace("::ffff:", ""));
+                            evt.AppendTo("related.ip", ip.replace("::ffff:", ""));
+                        }
                     }
                 })
                 .Build();
-
-            var event4776 = new processor.Chain()
+             var event4776 = new processor.Chain()
                 .Add(copyTargetUser)
                 .Add(addFailureStatus)
                 .Add(addEventFields)
                 .Build();
-
             var  scheduledTask = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
                 .Add(addEventFields)
                 .Build();
-
             var sensitivePrivilege = new processor.Chain()
                 .Add(copySubjectUser)
                 .Add(copySubjectUserLogonId)
@@ -2406,283 +2339,190 @@ processors:
                 .Build();
 
             return {
-
                 // 1100 - The event logging service has shut down.
                 1100: auditLogMgmt.Run,
-
                 // 1102 - The audit log was cleared.
                 1102: auditLogCleared.Run,
-
                 // 1104 - The security log is now full.
                 1104: auditLogMgmt.Run,
-
                 // 1105 - Event log automatic backup.
                 1105: auditLogMgmt.Run,
-
                 // 1108 - The event logging service encountered an error while processing an incoming event published from %1
                 1108: auditLogMgmt.Run,
-
                 // 4624 - An account was successfully logged on.
                 4624: logonSuccess.Run,
-
                 // 4625 - An account failed to log on.
                 4625: event4625.Run,
-
                 // 4634 - An account was logged off.
                 4634: logoff.Run,
-
                 // 4647 - User initiated logoff.
                 4647: logoff.Run,
-
                 // 4648 - A logon was attempted using explicit credentials.
                 4648: event4648.Run,
-
                 // 4670 - Permissions on an object were changed.
                 4670: objectPolicyChange.Run,
-
                 // 4672 - Special privileges assigned to new logon.
                 4672: event4672.Run,
-
                 // 4673 - A privileged service was called.
                 4673: sensitivePrivilege.Run,
-
                 // 4674 - An operation was attempted on a privileged object.
                 4674: sensitivePrivilege.Run,
-
                 // 4688 - A new process has been created.
                 4688: event4688.Run,
-
                 // 4689 - A process has exited.
                 4689: event4689.Run,
-
                 // 4697 - A service was installed in the system.
                 4697: event4697.Run,
-
                 // 4698 - A scheduled task was created.
                 4698: scheduledTask.Run,
-
                 // 4699 - A scheduled task was deleted.
                 4699: scheduledTask.Run,
-
                 // 4700 - A scheduled task was enabled.
                 4700: scheduledTask.Run,
-
                 // 4701 - A scheduled task was disabled.
                 4701: scheduledTask.Run,
-
                 // 4702 - A scheduled task was updated.
                 4702: scheduledTask.Run,
-
                 // 4706 - A new trust was created to a domain.
                 4706: trustDomainMgmtEvts.Run,
-
                 // 4707 - A trust to a domain was removed.
                 4707: trustDomainMgmtEvts.Run,
-
                 // 4713 - Kerberos policy was changed.
                 4713: policyChange.Run,
-
                 // 4716 - Trusted domain information was modified.
                 4716: trustDomainMgmtEvts.Run,
-
                 // 4717 - System security access was granted to an account.
                 4717: policyChange.Run,
-
                 // 4718 - System security access was removed from an account.
                 4718: policyChange.Run,
-
                 // 4719 -  System audit policy was changed.
                 4719: auditChanged.Run,
-
                 // 4720 - A user account was created
                 4720: userMgmtEvts.Run,
-
                 // 4722 - A user account was enabled
                 4722: userMgmtEvts.Run,
-
                 // 4723 - An attempt was made to change an account's password
                 4723: userMgmtEvts.Run,
-
                 // 4724 - An attempt was made to reset an account's password
                 4724: userMgmtEvts.Run,
-
                 // 4725 - A user account was disabled.
                 4725: userMgmtEvts.Run,
-
                 // 4726 - An user account was deleted.
                 4726: userMgmtEvts.Run,
-
                 // 4727 - A security-enabled global group was created.
                 4727: groupMgmtEvts.Run,
-
                 // 4728 - A member was added to a security-enabled global group.
                 4728: groupMgmtEvts.Run,
-
                 // 4729 - A member was removed from a security-enabled global group.
                 4729: groupMgmtEvts.Run,
-
                 // 4730 - A security-enabled global group was deleted.
                 4730: groupMgmtEvts.Run,
-
                 // 4731 - A security-enabled local group was created.
                 4731: groupMgmtEvts.Run,
-
                 // 4732 - A member was added to a security-enabled local group.
                 4732: groupMgmtEvts.Run,
-
                 // 4733 - A member was removed from a security-enabled local group.
                 4733: groupMgmtEvts.Run,
-
                 // 4734 - A security-enabled local group was deleted.
                 4734: groupMgmtEvts.Run,
-
                 // 4735 - A security-enabled local group was changed.
                 4735: groupMgmtEvts.Run,
-
                 // 4737 - A security-enabled global group was changed.
                 4737: groupMgmtEvts.Run,
-
                 // 4739 - A security-enabled global group was changed.
                 4739: policyChange.Run,
-
                 // 4738 - An user account was changed.
                 4738: userMgmtEvts.Run,
-
                 // 4740 - An account was locked out
                 4740: userMgmtEvts.Run,
-
                 // 4741 - A computer account was created.
                 4741: computerMgmtEvts.Run,
-
                 // 4742 -  A computer account was changed.
                 4742: computerMgmtEvts.Run,
-
                 // 4743 -  A computer account was deleted.
                 4743: computerMgmtEvts.Run,
-
                 // 4744 -  A security-disabled local group was created.
                 4744: groupMgmtEvts.Run,
-
                 // 4745 -  A security-disabled local group was changed.
                 4745: groupMgmtEvts.Run,
-
                 // 4746 -  A member was added to a security-disabled local group.
                 4746: groupMgmtEvts.Run,
-
                 // 4747 -  A member was removed from a security-disabled local group.
                 4747: groupMgmtEvts.Run,
-
                 // 4748 -  A security-disabled local group was deleted.
                 4748: groupMgmtEvts.Run,
-
                 // 4749 - A security-disabled global group was created.
                 4749: groupMgmtEvts.Run,
-
                 // 4750 - A security-disabled global group was changed.
                 4750: groupMgmtEvts.Run,
-
                 // 4751 - A member was added to a security-disabled global group.
                 4751: groupMgmtEvts.Run,
-
                 // 4752 - A member was removed from a security-disabled global group.
                 4752: groupMgmtEvts.Run,
-
                 // 4753 - A security-disabled global group was deleted.
                 4753: groupMgmtEvts.Run,
-
                 // 4754 -  A security-enabled universal group was created.
                 4754: groupMgmtEvts.Run,
-
                 // 4755 - A security-enabled universal group was changed.
                 4755: groupMgmtEvts.Run,
-
                 // 4756 - A member was added to a security-enabled universal group.
                 4756: groupMgmtEvts.Run,
-
                 // 4757 - A member was removed from a security-enabled universal group.
                 4757: groupMgmtEvts.Run,
-
                 // 4758 - A security-enabled universal group was deleted.
                 4758: groupMgmtEvts.Run,
-
                 // 4759 - A security-disabled universal group was created.
                 4759: groupMgmtEvts.Run,
-
                 // 4760 - A security-disabled universal group was changed.
                 4760: groupMgmtEvts.Run,
-
                 // 4761 - A member was added to a security-disabled universal group.
                 4761: groupMgmtEvts.Run,
-
                 // 4762 - A member was removed from a security-disabled universal group.
                 4762: groupMgmtEvts.Run,
-
                 // 4763 - A security-disabled global group was deleted.
                 4763: groupMgmtEvts.Run,
-
                 // 4764 - A group\'s type was changed.
                 4764: groupMgmtEvts.Run,
-
                 // 4767 - A user account was unlocked.
                 4767: userMgmtEvts.Run,
-
                 // 4768 - A Kerberos authentication ticket TGT was requested.
                 4768: kerberosTktEvts.Run,
-
                 // 4769 - A Kerberos service ticket was requested.
                 4769: kerberosTktEvts.Run,
-
                 // 4770 - A Kerberos service ticket was renewed.
                 4770: kerberosTktEvts.Run,
-
                 // 4771 - Kerberos pre-authentication failed.
                 4771: kerberosTktEvts.Run,
-
                 // 4776 - The computer attempted to validate the credentials for an account.
                 4776: event4776.Run,
-
                 // 4778 - A session was reconnected to a Window Station.
                 4778: sessionEvts.Run,
-
                 // 4779 - A session was disconnected from a Window Station.
                 4779: sessionEvts.Run,
-
                 // 4781 - The name of an account was changed.
                 4781: userRenamed.Run,
-
                 // 4798 - A user's local group membership was enumerated.
                 4798: userMgmtEvts.Run,
-
                 // 4799 - A security-enabled local group membership was enumerated.
                 4799: groupMgmtEvts.Run,
-
                 // 4817 - Auditing settings on object were changed.
                 4817: objectPolicyChange.Run,
-
                 // 4902 - The Per-user audit policy table was created.
                 4902: genericAuditChange.Run,
-
                 // 4904 - An attempt was made to register a security event source.
                 4904: securityEventSource.Run,
-
                 // 4905 - An attempt was made to unregister a security event source.
                 4905: securityEventSource.Run,
-
                 // 4906 - The CrashOnAuditFail value has changed.
                 4906: genericAuditChange.Run,
-
                 // 4907 - Auditing settings on object were changed.
                 4907: objectPolicyChange.Run,
-
                 // 4908 - Special Groups Logon table modified.
                 4908: event4908.Run,
-
                 // 4912 -   Per User Audit Policy was changed.
                 4912: auditChanged.Run,
-
                 // 4964 - Special groups have been assigned to a new logon.
                 4964: event4964.Run,
-
                 process: function(evt) {
                     var eventId = evt.Get("winlog.event_id");
                     var processor = this[eventId];
@@ -2694,7 +2534,6 @@ processors:
                 },
             };
         })();
-
         function process(evt) {
             return security.process(evt);
         }
@@ -5102,4 +4941,3 @@ processors:
         function process(evt) {
             return powershell.process(evt);
         }
-
