@@ -1,131 +1,221 @@
-- description: Array of process arguments.
-  example:
-    - /usr/bin/ssh
-    - -l
-    - user
-    - 10.0.0.16
-  ignore_above: 1024
-  name: process.args
-  type: keyword
-- description: Length of the process.args array.
-  example: 4
-  name: process.args_count
-  type: long
-- description: Length of the process.args array.
-  example: 4
-  name: process.args_count
-  type: long
-- description: Full path to the file, including the file name.
-  example: /home/alice/example.png
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: file.path.text
-      name: text
-      norms: false
-      type: text
-  name: file.path
-  type: keyword
-- description: Name of the file including the extension, without the directory.
-  example: example.png
-  ignore_above: 1024
-  name: file.name
-  type: keyword
-- description: Directory where the file is located.
-  example: /home/alice
-  ignore_above: 1024
-  name: file.directory
-  type: keyword
-- description: File extension.
-  example: png
-  ignore_above: 1024
-  name: file.extension
-  type: keyword
-- description: Name of the directory the user is a member of.
-  ignore_above: 1024
-  name: user.domain
-  type: keyword
-- description: Short name or login of the user.
-  example: albert
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: user.name.text
-      name: text
-      norms: false
-      type: text
-  name: user.name
-  type: keyword
-- description: All the user names seen on your event.
-  ignore_above: 1024
-  name: related.user
-  type: keyword
-- description: Sequence number of the event.
-  name: event.sequence
-  type: long
-- description: Unique identifier for the process.
-  example: c2c455d9f99375d
-  ignore_above: 1024
-  name: process.entity_id
-  type: keyword
-- description: Full command line that started the process.
-  example: /usr/bin/ssh -l user 10.0.0.16
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: process.command_line.text
-      name: text
-      norms: false
-      type: text
-  name: process.command_line
-  type: keyword
-- description: Process title.
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: process.title.text
-      name: text
-      norms: false
-      type: text
-  name: process.title
-  type: keyword
-- description: Event category. The second categorization field in the hierarchy.
-  example: authentication
-  ignore_above: 1024
-  name: event.category
-  type: keyword
-- description: Event type. The third categorization field in the hierarchy.
-  ignore_above: 1024
-  name: event.type
-  type: keyword
-- description: Name of the module this data is coming from.
-  example: apache
-  ignore_above: 1024
-  name: event.module
-  type: keyword
-- description: Time when the event was first read by an agent or by your pipeline.
-  example: '2016-05-23T08:05:34.857Z'
-  name: event.created
-  type: date
-- description: Timestamp when an event arrived in the central data store.
-  example: '2016-05-23T08:05:35.101Z'
-  name: event.ingested
-  type: date
-- description: Raw text message of entire event.
-  example: Sep 19 08:26:10 host CEF:0&#124;Security&#124; threatmanager&#124;1.0&#124;100&#124; worm successfully stopped&#124;10&#124;src=10.0.0.1 dst=2.1.2.2spt=1232
-  ignore_above: 1024
-  name: event.original
-  type: keyword
-- description: Error message.
-  name: error.message
-  type: text
-- description: Identification code for this event.
-  example: 4648
-  ignore_above: 1024
-  name: event.code
-  type: keyword
-- description: Log level of the log event.
-  name: log.level
-  type: keyword
-- description: Host ip addresses.
-  name: host.ip
-  type: ip
-- description: The outcome of the event. The lowest level categorization field in the hierarchy.
-  name: event.outcome
-  type: keyword
+- name: event
+  title: Event
+  type: group
+  fields:
+    - name: action
+      type: keyword
+      ignore_above: 1024
+      description: 'The action captured by the event.'
+    - name: category
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
+    - name: code
+      type: keyword
+      ignore_above: 1024
+      description: 'Identification code for this event, if one exists.'
+    - name: created
+      type: date
+      description: 'event.created contains the date/time when the event was first read by an agent, or by your pipeline.'
+    - name: ingested
+      type: date
+      description: 'Timestamp when an event arrived in the central data store.'
+      default_field: false
+    - name: kind
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.'
+    - name: module
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the module this data is coming from.'
+    - name: outcome
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.'
+    - name: provider
+      type: keyword
+      ignore_above: 1024
+      description: 'Source of the event.'
+    - name: sequence
+      type: long
+      format: string
+      description: 'Sequence number of the event.'
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
+- name: host
+  title: Host
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the host.'
+- name: log
+  title: Log
+  type: group
+  fields:
+    - name: level
+      type: keyword
+      ignore_above: 1024
+      description: 'Original log level of the log event.'
+- name: process
+  title: Process
+  type: group
+  fields:
+    - name: args
+      type: keyword
+      ignore_above: 1024
+      description: 'Array of process arguments, starting with the absolute path to the executable.'
+    - name: args_count
+      type: long
+      description: 'Length of the process.args array.'
+      default_field: false
+    - name: command_line
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: 'Full command line that started the process, including the absolute path to the executable, and all arguments.'
+      default_field: false
+    - name: entity_id
+      type: keyword
+      ignore_above: 1024
+      description: 'Unique identifier for the process.'
+      default_field: false
+    - name: executable
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Absolute path to the process executable.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Process name.'
+    - name: title
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Process title.'
+    - name: pid
+      type: long
+      description: Process PID.
+- name: file
+  title: File
+  type: group
+  fields:
+    - name: directory
+      type: keyword
+      ignore_above: 1024
+      description: Directory where the file is located. It should include the drive letter, when appropriate.
+    - name: extension
+      type: keyword
+      ignore_above: 1024
+      description: 'File extension, excluding the leading dot.'
+    - name: path
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+- name: user
+  title: User
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+- name: source
+  title: Source
+  type: group
+  fields:
+    - name: user.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: user.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: user.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+- name: destination
+  title: Destination
+  type: group
+  fields:
+    - name: user.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: user.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: user.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+- name: related
+  title: Related
+  type: group
+  fields:
+    - name: hash
+      type: keyword
+      ignore_above: 1024
+      default_field: false
+    - name: hosts
+      type: keyword
+      ignore_above: 1024
+      default_field: false
+    - name: ip
+      type: ip
+    - name: user
+      type: keyword
+      ignore_above: 1024
+      default_field: false
