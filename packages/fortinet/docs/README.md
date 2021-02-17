@@ -549,6 +549,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | observer.type | The type of the observer the data is coming from. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
+| related.hosts | All the host names seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | rule.category | Rule category | keyword |
