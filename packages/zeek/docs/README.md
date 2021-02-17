@@ -983,6 +983,7 @@ HTTP requests and replies.
 | url.password | Password of the request. | keyword |
 | url.port | Port of the request, such as 443. | long |
 | url.username | Username of the request. | keyword |
+| user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
