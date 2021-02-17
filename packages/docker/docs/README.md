@@ -52,7 +52,7 @@ running Docker containers.
 | docker.container.command | Command that was executed in the Docker container. | keyword |
 | docker.container.created | Date when the container was created. | date |
 | docker.container.ip_addresses | Container IP addresses. | ip |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.container.size.root_fs | Total size of all the files in the container. | long |
 | docker.container.size.rw | Size of the files that have been created or changed since creation. | long |
 | docker.container.status | Container status. | keyword |
@@ -153,7 +153,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.cpu.core.*.norm.pct | Percentage of CPU time in this core, normalized by the number of CPU cores. | object |
 | docker.cpu.core.*.pct | Percentage of CPU time in this core. | object |
 | docker.cpu.core.*.ticks | Number of CPU ticks in this core. | object |
@@ -327,7 +327,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.diskio.read.bytes | Bytes read during the life of the container | long |
 | docker.diskio.read.ops | Number of reads during the life of the container | long |
 | docker.diskio.read.queued | Total number of queued requests | long |
@@ -441,7 +441,7 @@ The Docker `event` data stream collects docker events
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.event.action | The type of event | keyword |
 | docker.event.actor.attributes | Various key/value attributes of the object, depending on its type | flattened |
 | docker.event.actor.id | The ID of the object emitting the event | keyword |
@@ -519,7 +519,7 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.healthcheck.event.end_date | Healthcheck end date | date |
 | docker.healthcheck.event.exit_code | Healthcheck status code | integer |
 | docker.healthcheck.event.output | Healthcheck output | keyword |
@@ -625,7 +625,7 @@ The Docker `image` data stream collects metrics on docker images
 | docker.image.created | Date and time when the image was created. | date |
 | docker.image.id.current | Unique image identifier given upon its creation. | keyword |
 | docker.image.id.parent | Identifier of the image, if it exists, from which the current image directly descends. | keyword |
-| docker.image.labels | Image labels. | flattened |
+| docker.image.labels.* | Image labels. | object |
 | docker.image.size.regular | Total size of the all cached images associated to the current image. | long |
 | docker.image.size.virtual | Size of the image. | long |
 | docker.image.tags | Image tags. | keyword |
@@ -780,7 +780,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.memory.commit.peak | Peak committed bytes on Windows | long |
 | docker.memory.commit.total | Total bytes | long |
 | docker.memory.fail.count | Fail counter. | scaled_float |
@@ -904,7 +904,7 @@ The Docker `network` data stream collects network metrics.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| docker.container.labels | Container labels | flattened |
+| docker.container.labels.* | Container labels | object |
 | docker.network.in.bytes | Total number of incoming bytes. | long |
 | docker.network.in.dropped | Total number of dropped incoming packets. | scaled_float |
 | docker.network.in.errors | Total errors on incoming packets. | long |
