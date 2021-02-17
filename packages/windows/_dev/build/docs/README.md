@@ -35,6 +35,13 @@ The Windows `forwarded` dataset provides events from the Windows
 
 {{fields "forwarded"}}
 
+### Security
+
+The Windows `security` dataset provides events from the Windows
+`Security` event log.
+
+{{fields "security"}}
+
 ### Powershell
 
 The Windows `powershell` dataset provides events from the Windows
