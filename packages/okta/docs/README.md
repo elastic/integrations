@@ -148,6 +148,19 @@ The Okta System Log records system events related to your organization in order 
 | source.user.full_name | User’s full name, if available. | keyword |
 | source.user.id | Unique identifiers of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
