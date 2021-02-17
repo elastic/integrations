@@ -105,6 +105,7 @@
           norms: false
           default_field: false
       description: 'Process name.'
+      example: ssh
     - name: title
       type: keyword
       ignore_above: 1024
@@ -117,27 +118,24 @@
     - name: pid
       type: long
       description: Process PID.
-- name: file
-  title: File
-  type: group
-  fields:
-    - name: directory
-      type: keyword
-      ignore_above: 1024
-      description: Directory where the file is located. It should include the drive letter, when appropriate.
-    - name: extension
-      type: keyword
-      ignore_above: 1024
-      description: 'File extension, excluding the leading dot.'
-    - name: path
+    - name: parent.executable
       type: keyword
       ignore_above: 1024
       multi_fields:
         - name: text
           type: text
           norms: false
-          default_field: false
-      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+      description: Absolute path to the process executable.
+      default_field: false
+    - name: parent.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: 'Process name.'
+      default_field: false
 - name: user
   title: User
   type: group
@@ -159,48 +157,73 @@
           norms: false
           default_field: false
       description: Short name or login of the user.
+    - name: target.group.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+      default_field: false
+    - name: target.group.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+      default_field: false
+    - name: target.group.name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+    - name: target.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Short name or login of the user.
+      default_field: false
+- name: group
+  title: Group
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+- name: service
+  title: Service
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the service data is collected from.'
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: 'The type of the service data is collected from.'
 - name: source
   title: Source
   type: group
   fields:
-    - name: user.domain
+    - name: domain
+      level: core
       type: keyword
       ignore_above: 1024
-      description: 'Name of the directory the user is a member of.'
-    - name: user.id
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier of the user.
-    - name: user.name
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
-- name: destination
-  title: Destination
-  type: group
-  fields:
-    - name: user.domain
-      type: keyword
-      ignore_above: 1024
-      description: 'Name of the directory the user is a member of.'
-    - name: user.id
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier of the user.
-    - name: user.name
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
+      description: Source domain.
+    - name: ip
+      type: ip
+      description: IP address of the source (IPv4 or IPv6).
+    - name: port
+      type: long
+      format: string
+      description: Port of the source.
 - name: related
   title: Related
   type: group
