@@ -14,7 +14,7 @@ processors:
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.7.0
+        ecs.version: 1.8.0
   - script:
       lang: javascript
       id: gworkspace-common
@@ -71,7 +71,10 @@ processors:
                     return;
                 }
 
+                evt.Put("user.id", evt.Get("source.user.id"));
+                evt.Put("user.name", data[0]);
                 evt.Put("source.user.name", data[0]);
+                evt.Put("user.domain", data[1]);
                 evt.Put("source.user.domain", data[1]);
             };
 
@@ -531,6 +534,17 @@ processors:
                 }
 
                 evt.AppendTo("related.user", data[0]);
+                evt.Put("user.target.name", data[0]);
+                evt.Put("user.target.domain", data[1]);
+                evt.Put("user.target.email", email);
+                var groupName = evt.Get("group.name");
+                if (groupName) {
+                    evt.Put("user.target.group.name", groupName);
+                }
+                var groupDomain = evt.Get("group.domain");
+                if (groupDomain) {
+                    evt.Put("user.target.group.domain", groupDomain);
+                }
             };
 
             var setEventDuration = function(evt) {

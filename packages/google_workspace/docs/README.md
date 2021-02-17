@@ -256,6 +256,17 @@ An example event for `saml` looks as following:
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### User Accounts
@@ -455,6 +466,17 @@ An example event for `user_accounts` looks as following:
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Login Accounts
@@ -663,6 +685,17 @@ An example event for `login` looks as following:
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Admin
@@ -980,6 +1013,17 @@ An example event for `admin` looks as following:
 | url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
 | url.username | Username of the request. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Drive
@@ -1229,6 +1273,17 @@ An example event for `drive` looks as following:
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Groups
@@ -1454,4 +1509,15 @@ An example event for `groups` looks as following:
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 

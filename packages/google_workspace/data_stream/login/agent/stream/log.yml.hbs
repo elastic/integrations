@@ -71,7 +71,10 @@ processors:
                     return;
                 }
 
+                evt.Put("user.id", evt.Get("source.user.id"));
+                evt.Put("user.name", data[0]);
                 evt.Put("source.user.name", data[0]);
+                evt.Put("user.domain", data[1]);
                 evt.Put("source.user.domain", data[1]);
             };
 
@@ -105,7 +108,7 @@ processors:
 
   - script:
       lang: javascript
-      id: gworkspace-admin
+      id: gworkspace-login
       source: |
         // Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
         // or more contributor license agreements. Licensed under the Elastic License;
@@ -118,14 +121,17 @@ processors:
                 evt.Put("event.category", ["authentication"]);
                 switch (evt.Get("event.action")) {
                     case "login_failure":
+                        evt.AppendTo("event.category", "session");
                         evt.Put("event.type", ["start"]);
                         evt.Put("event.outcome", "failure");
                         break;
                     case "login_success":
+                        evt.AppendTo("event.category", "session");
                         evt.Put("event.type", ["start"]);
                         evt.Put("event.outcome", "success");
                         break;
                     case "logout":
+                        evt.AppendTo("event.category", "session");
                         evt.Put("event.type", ["end"]);
                         break;
                     case "account_disabled_generic":
@@ -192,9 +198,25 @@ processors:
                 evt.Delete("json.events.parameters");
             };
 
+            var addTargetUser = function(evt) {
+                var affectedEmail = evt.Get("google_workspace.login.affected_email_address");
+                if (affectedEmail) {
+                    evt.Put("user.target.email", affectedEmail);
+                    var data = affectedEmail.split("@");
+                    if (data.length !== 2) {
+                        return;
+                    }
+
+                    evt.Put("user.target.name", data[0]);
+                    evt.Put("user.target.domain", data[1]);
+                    evt.AppendTo("related.user", data[0]);
+                }
+            };
+
             var pipeline = new processor.Chain()
                 .Add(categorizeEvent)
                 .Add(processParams)
+                .Add(addTargetUser)
                 .Build();
 
             return {
