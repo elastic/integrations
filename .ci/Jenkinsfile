@@ -11,9 +11,11 @@ pipeline {
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
+    KIND_VERSION = "v0.10.0"
+    K8S_VERSION = "v1.20.2"
   }
   options {
-    timeout(time: 1, unit: 'HOURS')
+    timeout(time: 2, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -61,11 +63,13 @@ pipeline {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
-                          withCloudTestEnv() {
-                            sh(label: "Test integration: ${it}", script: '''
-                              eval "$(../../build/elastic-package stack shellinit)"
-                              ../../build/elastic-package test -v --report-format xUnit --report-output file
-                              ''')
+                          withKubernetes() {
+                            withCloudTestEnv() {
+                              sh(label: "Test integration: ${it}", script: '''
+                                eval "$(../../build/elastic-package stack shellinit)"
+                                ../../build/elastic-package test -v --report-format xUnit --report-output file
+                                ''')
+                            }
                           }
                         }
                       } finally {
@@ -177,6 +181,35 @@ def isPrAffected(integrationName) {
 
   echo "[${integrationName}] PR is not affected"
   return false
+}
+
+def withKubernetes(Closure body) {
+    def r = sh(label: "git-diff: check if Kubernetes service deployer is used",
+               script: "find . -type d | egrep '_dev/deploy/k8s\$'",
+               returnStatus: true)
+    withEnv(["PATH=${env.WORKSPACE}/bin:${env.PATH}"]) {
+      if (r == 0) {
+        retryWithSleep(retries: 2, seconds: 5, backoff: true) { sh(label: "Install kind", script: '''
+          mkdir -p ${HOME}/bin
+          curl -sSLo ${HOME}/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+          chmod +x ${HOME}/bin/kind
+          kind version
+          ''') }
+        retryWithSleep(retries: 2, seconds: 5, backoff: true) { sh(label: "Install kubectl", script: '''
+          mkdir -p ${HOME}/bin
+          curl -sSLo ${HOME}/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
+          chmod +x ${HOME}/bin/kubectl
+          kubectl version --client
+          ''') }
+        sh(label: "Create kind cluster", script: 'kind create cluster')
+      }
+
+      body()
+
+      if (r == 0) {
+        sh(label: "Delete kind cluster", script: 'kind delete cluster')
+      }
+    }
 }
 
 def withCloudTestEnv(Closure body) {
