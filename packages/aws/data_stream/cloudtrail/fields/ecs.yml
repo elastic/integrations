@@ -16,6 +16,50 @@
 - name: user.id
   type: keyword
   description: Unique identifier of the user.
+- name: user.target.name
+  type: keyword
+  description: Short name or login of the user.
+- name: user.target.id
+  type: keyword
+  description: Unique identifier of the user.
+- name: user.changes.name
+  type: keyword
+  description: Short name or login of the user.
+- name: group.id
+  type: keyword
+  description: Unique identifier for the group on the system/platform.
+- name: group.name
+  type: keyword
+  description: Name of the group.
+- name: file
+  title: File
+  type: group
+  fields:
+    - name: path
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+    - name: hash.md5
+      type: keyword
+      ignore_above: 1024
+      description: MD5 hash.
+    - name: hash.sha1
+      type: keyword
+      ignore_above: 1024
+      description: SHA1 hash.
+    - name: hash.sha256
+      type: keyword
+      ignore_above: 1024
+      description: SHA256 hash.
+    - name: hash.sha512
+      type: keyword
+      ignore_above: 1024
+      description: SHA512 hash.
 - name: cloud.account.id
   type: keyword
   description: The cloud account or organization id used to identify different entities in a multi-tenant environment.
@@ -55,6 +99,9 @@
 - name: related.user
   type: keyword
   description: All the user names seen on your event.
+- name: related.hash
+  type: keyword
+  description: All the hashes seen on your event.
 - name: event.kind
   type: keyword
   description: Event kind (e.g. event, alert, metric, state, pipeline_error, signal)
