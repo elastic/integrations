@@ -187,24 +187,21 @@ def withKubernetes(Closure body) {
     def r = sh(label: "git-diff: check if Kubernetes service deployer is used",
                script: "find . -type d | egrep '_dev/deploy/k8s\$'",
                returnStatus: true)
-    if (r != 0) {
-      body()
-      return
-    }
-
     withEnv(["PATH=${env.WORKSPACE}/bin:${env.PATH}"]) {
-      retryWithSleep(retries: 2, seconds: 5, backoff: true) { sh(label: "Install kind", script: '''
-        mkdir -p ${HOME}/bin
-        curl -sSLo ${HOME}/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
-        chmod +x ${HOME}/bin/kind
-        kind version
-        ''') }
-      retryWithSleep(retries: 2, seconds: 5, backoff: true) { sh(label: "Install kubectl", script: '''
-        mkdir -p ${HOME}/bin
-        curl -sSLo ${HOME}/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
-        chmod +x ${HOME}/bin/kubectl
-        kubectl version --client
-        ''') }
+      if (r == 0) {
+        retryWithSleep(retries: 2, seconds: 5, backoff: true) { sh(label: "Install kind", script: '''
+          mkdir -p ${HOME}/bin
+          curl -sSLo ${HOME}/bin/kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+          chmod +x ${HOME}/bin/kind
+          kind version
+          ''') }
+        retryWithSleep(retries: 2, seconds: 5, backoff: true) { sh(label: "Install kubectl", script: '''
+          mkdir -p ${HOME}/bin
+          curl -sSLo ${HOME}/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl"
+          chmod +x ${HOME}/bin/kubectl
+          kubectl version --client
+          ''') }
+      }
       body()
     }
 }
