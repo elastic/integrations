@@ -4413,6 +4413,7 @@ An example event for `volume` looks as following:
 | kubernetes.volume.fs.inodes.free | Free inodes | long |
 | kubernetes.volume.fs.inodes.used | Used inodes | long |
 | kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long |
+| kubernetes.volume.fs.used.pct | Percentage of filesystem total used | long |
 | kubernetes.volume.name | Volume name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
