@@ -142,9 +142,10 @@ processors:
     target_field: http.request.referrer
     ignore_missing: true
     if: "ctx.sophos?.xg?.referer != null"
-- rename:
+- convert:
     field: sophos.xg.status_code
     target_field: http.response.status_code
+    type: long
     ignore_missing: true
     if: "ctx.sophos?.xg?.status_code != null && ctx.sophos?.xg?.status_code != ''"
 - rename:
@@ -238,14 +239,17 @@ processors:
 - append:
     field: related.ip
     value: '{{source.ip}}'
+    allow_duplicates: false
     if: 'ctx?.source?.ip != null'
 - append:
     field: related.ip
     value: '{{destination.ip}}'
+    allow_duplicates: false
     if: 'ctx?.destination?.ip != null'
 - append:
     field: related.user
     value: "{{source.user.name}}"
+    allow_duplicates: false
     if: "ctx.source?.user?.name != null"
 
 #############
