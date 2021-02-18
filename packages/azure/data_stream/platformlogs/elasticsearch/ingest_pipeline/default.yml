@@ -16,23 +16,6 @@ processors:
   - json:
       field: message
       target_field: azure.platformlogs
-      on_failure:
-        - grok:
-            field: message
-            patterns:
-              - "resourceId\": \"%{DATA:azure.platformlogs.resourceId}\""
-            ignore_failure: true
-            ignore_missing: true
-        - grok:
-            field: message
-            patterns:
-              - "category\": \"%{DATA:azure.platformlogs.category}\""
-            ignore_failure: true
-            ignore_missing: true
-        - set:
-            field: error.message
-            value: 'invalid json log'
-            ignore_failure: true
   - date:
       field: azure.platformlogs.time
       target_field: '@timestamp'
@@ -46,14 +29,11 @@ processors:
       formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
+  - rename:
+      field: message
+      target_field: event.original
   - remove:
-      if: "ctx.error?.message != 'invalid json log'"
-      field:
-        - message
-      ignore_missing: true
-  - remove:
-      field:
-        - azure.platformlogs.time
+      field: azure.platformlogs.time
       ignore_missing: true
   - rename:
       field: azure.platformlogs.resourceId
@@ -84,6 +64,15 @@ processors:
       field: azure.platformlogs.callerIpAddress
       target_field: source.ip
       ignore_missing: true
+  - set:
+      field: client.ip
+      value: '{{source.ip}}'
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{source.ip}}'
+      allow_duplicates: false
+      if: 'ctx.source?.ip != null'
   - rename:
       field: azure.platformlogs.level
       target_field: log.level
@@ -124,19 +113,16 @@ processors:
       field: azure.platformlogs.result_type
       target_field: event.outcome
       type: string
-      ignore_missing: true
       if: "ctx?.azure?.platformlogs?.result_type != null && ctx.azure.platformlogs.result_type instanceof String && (ctx.azure.platformlogs.result_type.toLowerCase() == 'success' || ctx.azure.platformlogs.result_type.toLowerCase() == 'failure')"
   - convert:
       field: azure.platformlogs.properties.result
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.platformlogs?.properties?.result != null && ctx?.azure?.platformlogs?.properties?.result instanceof String && ['success', 'failure', 'unknown'].contains(ctx.azure?.platformlogs?.properties?.result)"
-      ignore_missing: true
   - convert:
       field: azure.platformlogs.Status
       target_field: event.outcome
       type: string
-      ignore_missing: true
       if: "ctx?.event?.outcome == null && ctx?.azure?.platformlogs?.Status != null && ctx?.azure?.platformlogs?.Status instanceof String && ['success', 'failure', 'unknown', 'Succeeded', 'Failed'].contains(ctx.azure?.platformlogs?.Status)"
   - rename:
       field: azure.platformlogs.operationName
@@ -212,11 +198,9 @@ processors:
   - set:
       field: event.kind
       value: event
-      ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:
-  - set:
-      field: error.message
-      value: '{{ _ingest.on_failure_message }}'
-      ignore_failure: true
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
