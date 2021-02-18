@@ -1,0 +1,339 @@
+- name: message
+  level: core
+  type: text
+  description: 'For log events the message field contains the log message, optimized for viewing in a log viewer.'
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+- name: container
+  title: Container
+  group: 2
+  type: group
+  fields:
+    - name: id
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Unique container id.
+    - name: image.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the image the container was built on.
+    - name: image.tag
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Container image tags.
+    - name: labels
+      level: extended
+      type: object
+      object_type: keyword
+      description: Image labels.
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Container name.
+    - name: runtime
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Runtime managing this container.
+- name: ecs
+  title: ECS
+  group: 2
+  type: group
+  fields:
+    - name: version
+      level: core
+      required: true
+      type: keyword
+      ignore_above: 1024
+- name: error
+  title: Error
+  group: 2
+  type: group
+  fields:
+    - name: message
+      level: core
+      type: text
+      description: Error message.
+- name: event
+  title: Event
+  group: 2
+  type: group
+  fields:
+    - name: action
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'The action captured by the event.'
+    - name: category
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
+    - name: created
+      level: core
+      type: date
+      description: 'event.created contains the date/time when the event was first read by an agent, or by your pipeline.'
+    - name: dataset
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the dataset.'
+    - name: duration
+      level: core
+      type: long
+      format: duration
+      input_format: nanoseconds
+      output_format: asMilliseconds
+      output_precision: 1
+      description: 'Duration of the event in nanoseconds.'
+    - name: end
+      level: extended
+      type: date
+      description: event.end contains the date when the event ended or when the activity was last observed.
+    - name: id
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Unique ID to describe the event.
+    - name: ingested
+      level: core
+      type: date
+      description: 'Timestamp when an event arrived in the central data store.'
+      default_field: false
+    - name: kind
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.'
+      index: false
+    - name: provider
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Source of the event.'
+    - name: severity
+      level: core
+      type: long
+      format: string
+      description: 'The numeric severity of the event according to your event source.'
+    - name: start
+      level: extended
+      type: date
+      description: event.start contains the date when the event started or when the activity was first observed.
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
+- name: file
+  title: File
+  group: 2
+  type: group
+  fields:
+    - name: extension
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'File extension, excluding the leading dot.'
+    - name: hash.md5
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: MD5 hash.
+    - name: hash.sha1
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: SHA1 hash.
+    - name: hash.sha256
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: SHA256 hash.
+    - name: hash.sha512
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: SHA512 hash.
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the file including the extension, without the directory.
+    - name: path
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+- name: log
+  title: Log
+  group: 2
+  type: group
+  fields:
+    - name: file.path
+      level: extended
+      type: wildcard
+      description: 'Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate.
+
+        If the event wasn''t read from a log file, do not populate this field.'
+      example: /var/log/fun-times.log
+      default_field: false
+    - name: logger
+      level: core
+      type: wildcard
+      description: The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name.
+      example: org.elasticsearch.bootstrap.Bootstrap
+    - name: offset
+      level: extender
+      type: long
+- name: observer
+  title: Observer
+  group: 2
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Custom name of the observer.'
+    - name: product
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The product name of the observer.
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'The type of the observer the data is coming from.'
+    - name: vendor
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Vendor name of the observer.
+- name: input.type
+  type: keyword
+- name: process
+  title: Process
+  group: 2
+  type: group
+  fields:
+    - name: command_line
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: 'Full command line that started the process, including the absolute path to the executable, and all arguments.'
+      default_field: false
+    - name: parent.pid
+      level: core
+      type: long
+      format: string
+      description: Process id.
+      default_field: false
+    - name: parent.start
+      level: extended
+      type: date
+      description: The time the process started.
+      default_field: false
+    - name: pid
+      level: core
+      type: long
+      format: string
+      description: Process id.
+    - name: start
+      level: extended
+      type: date
+      description: The time the process started.
+- name: related
+  title: Related
+  group: 2
+  type: group
+  fields:
+    - name: hash
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search).
+      default_field: false
+    - name: hosts
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
+      default_field: false
+    - name: ip
+      level: extended
+      type: ip
+      description: All of the IPs seen on your event.
+    - name: user
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: All the user names seen on your event.
+      default_field: false
+- name: rule
+  title: Rule
+  group: 2
+  type: group
+  fields:
+    - name: description
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The description of the rule generating the event.
+      default_field: false
+- name: threat
+  title: Threat
+  group: 2
+  type: group
+  fields:
+    - name: framework
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events.
+    - name: technique.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: "The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/)"
+- name: user
+  title: User
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
