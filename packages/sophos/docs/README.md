@@ -15,6 +15,7 @@ The syslog format choosen should be `Default`.
 
 This module has been tested against SFOS version 17.5.x and 18.0.x.
 Versions above this are expected to work but have not been tested.
+
 ## Logs
 
 ### Utm log
