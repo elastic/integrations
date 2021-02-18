@@ -1,25 +1,9 @@
 type: logs
-title: Microsoft defender_atp logs
+title: Microsoft Defender ATP logs
 release: experimental
 streams:
   - input: httpjson
     vars:
-      - name: interval
-        type: text
-        title: Interval
-        multi: false
-        required: true
-        show_user: true
-        default: 5m
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - defender-atp
-          - forwarded
       - name: client_id
         type: text
         title: Client ID
@@ -41,9 +25,26 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+        description: The interval between requests to the HTTP API.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - defender-atp
+          - forwarded
     template_path: httpjson.yml.hbs
     title: Microsoft Defender ATP logs
-    description: Collect Microsoft Defender ATP logs using httpjson input
+    description: Collect Microsoft Defender ATP logs
   - input: logfile
     vars:
       - name: paths
@@ -57,10 +58,10 @@ streams:
         title: Tags
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - defender-atp
           - forwarded
     template_path: log.yml.hbs
     title: Microsoft Defender ATP logs
-    description: Collect Microsoft Defender ATP logs using log input
+    description: Collect Microsoft Defender ATP logs

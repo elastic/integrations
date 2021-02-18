@@ -58,92 +58,56 @@ An example event for `defender_atp` looks as following:
 
 ```$json
 {
-    "agent": {
-        "hostname": "d68c6f7ecc48",
-        "name": "d68c6f7ecc48",
-        "id": "b6cfcdf8-e48a-47a1-8daf-a34e2894d55d",
-        "ephemeral_id": "1e7ef22d-9a70-4713-a5a0-c0cc0039f61e",
-        "type": "filebeat",
-        "version": "7.11.0"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/defender_atp-test.json.log"
-        },
-        "offset": 0
-    },
-    "elastic_agent": {
-        "id": "7c4033a0-3ee4-11eb-a86f-999d88784499",
-        "version": "7.11.0",
-        "snapshot": true
-    },
     "rule": {
         "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nA malware is considered active if it is found running on the machine or it already has persistence mechanisms in place. Active malware detections are assigned higher severity ratings.\n\nBecause this malware was active, take precautionary measures and check for residual signs of infection."
     },
     "message": "An active 'Exeselrun' malware was detected",
     "microsoft": {
         "defender_atp": {
+            "investigationId": "9",
             "evidence": {
                 "entityType": "File"
             },
             "resolvedTime": "2020-06-30T11:13:12.2680434Z",
-            "assignedTo": "elastic@elasticuser.com",
-            "investigationId": 9,
             "investigationState": "Benign",
-            "incidentId": 12,
+            "incidentId": "12",
+            "assignedTo": "elastic@elasticuser.com",
             "lastUpdateTime": "2020-07-03T15:15:39.13Z",
             "status": "Resolved"
         }
     },
-    "tags": [
-        "defender-atp",
-        "forwarded"
-    ],
     "cloud": {
-        "instance": {
-            "id": "c5a964f417c11f6277d5bf9489f0d"
-        },
         "provider": "azure",
         "account": {
             "id": "123543-d66c-4c7e-9e30-40034eb7c6f3"
+        },
+        "instance": {
+            "id": "c5a964f417c11f6277d5bf9489f0d"
         }
     },
-    "input": {
-        "type": "log"
-    },
     "observer": {
-        "product": "Defender ATP",
-        "vendor": "Microsoft",
         "name": "WindowsDefenderAv",
-        "type": "Application"
+        "product": "Defender ATP",
+        "vendor": "Microsoft"
     },
-    "@timestamp": "2020-12-15T15:07:59.468Z",
     "file": {
-        "path": "C:\\Windows\\Temp\\sb-sim-temp-ikyxqi\\sb_10554_bs_h4qpk5",
-        "name": "SB.xsl"
-    },
-    "ecs": {
-        "version": "1.7.0"
+        "name": "SB.xsl",
+        "path": "C:\\Windows\\Temp\\sb-sim-temp-ikyxqi\\sb_10554_bs_h4qpk5"
     },
     "related": {
         "hosts": [
             "testserver4"
         ]
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "microsoft.defender_atp"
-    },
     "host": {
-        "hostname": "testserver4",
-        "name": "testserver4"
+        "name": "testserver4",
+        "hostname": "testserver4"
     },
     "threat": {
-        "framework": "MITRE ATT\u0026CK",
         "technique": {
             "name": "Malware"
-        }
+        },
+        "framework": "MITRE ATT\u0026CK"
     },
     "event": {
         "severity": 2,
@@ -155,7 +119,7 @@ An example event for `defender_atp` looks as following:
             "end"
         ],
         "duration": 0,
-        "ingested": "2020-12-15T15:08:00.493919683Z",
+        "ingested": "2021-02-18T13:34:35.126958300Z",
         "provider": "defender_atp",
         "action": "Malware",
         "end": "2020-06-30T10:07:44.333733Z",
@@ -163,8 +127,7 @@ An example event for `defender_atp` looks as following:
         "category": [
             "host",
             "malware"
-        ],
-        "dataset": "microsoft.defender_atp"
+        ]
     }
 }
 ```
@@ -269,6 +232,9 @@ An example event for `defender_atp` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
 
 ### DHCP
 
