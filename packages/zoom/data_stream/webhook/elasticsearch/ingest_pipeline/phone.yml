@@ -66,7 +66,7 @@ processors:
 # Calculates duration when duration is unknown but start and end time is known (with ringing_start_time)
 - script:
     lang: painless
-    if: "ctx?.zoom?.phone?.ringing_start_time != null && ctx?.zoom?.phone?.answer_start_time == null && ctx?.zoom?.phone?.call_end_time != null && ctx?.zoom?.duration == null"
+    if: "ctx?.zoom?.phone?.ringing_start_time != null && ctx?.zoom?.phone?.answer_start_time == null && ctx?.zoom?.phone?.call_end_time != null && ctx?.zoom?.phone?.duration == null"
     source: >-
       ctx.event.start = ctx.zoom.phone.ringing_start_time;
       ctx.event.end = ctx.zoom.phone.call_end_time;
@@ -77,7 +77,7 @@ processors:
 # Calculates duration when duration is unknown but start and end time is known (with answer_start_time)
 - script:
     lang: painless
-    if: "ctx?.zoom?.phone?.ringing_start_time == null && ctx?.zoom?.phone?.answer_start_time != null && ctx?.zoom?.phone?.call_end_time != null && ctx?.zoom?.duration == null"
+    if: "ctx?.zoom?.phone?.ringing_start_time == null && ctx?.zoom?.phone?.answer_start_time != null && ctx?.zoom?.phone?.call_end_time != null && ctx?.zoom?.phone?.duration == null"
     source: >-
       ctx.event.start = ctx.zoom.phone.answer_start_time;
       ctx.event.end = ctx.zoom.phone.call_end_time;
@@ -90,7 +90,7 @@ processors:
     lang: painless
     if: ctx?.zoom?.duration != null
     source: >-
-      ctx.event.duration = Integer.parseInt(ctx.zoom.duration) * 60L * 1000000000L;
+      ctx.event.duration = ctx.zoom.phone.duration * 60L * 1000000000L;
 
 # Moving all voicemail related fields to their proper nested fields
 # that already exists for all other phone webhooks
