@@ -60,11 +60,9 @@ processors:
     if: ctx?.event?.action == 'phone.voicemail_received'
     ignore_failure: true
 - convert:
-    description: Convert phone duration to long.
     field: zoom.phone.duration
     type: long
-    ignore_missing: true
-
+    ignore_failure: true
 # Calculates duration when duration is unknown but start and end time is known (with ringing_start_time)
 - script:
     lang: painless
@@ -90,7 +88,7 @@ processors:
 # Duration is in minutes, so multiply by seconds and then multiply again to convert seconds to nano
 - script:
     lang: painless
-    if: ctx?.zoom?.phone?.duration != null
+    if: ctx?.zoom?.duration != null
     source: >-
       ctx.event.duration = ctx.zoom.phone.duration * 60L * 1000000000L;
 
@@ -147,19 +145,30 @@ processors:
 - append:
     field: related.user
     value: "{{zoom.phone.callee.user_id}}"
+    allow_duplicates: false
     if: ctx?.zoom?.phone?.callee?.user_id != null
 - append:
     field: related.user
     value: "{{zoom.phone.callee_user_id}}"
+    allow_duplicates: false
     if: ctx?.zoom?.phone?.callee_user_id != null
 - append:
     field: related.user
     value: "{{zoom.phone.caller.user_id}}"
+    allow_duplicates: false
     if: ctx?.zoom?.phone?.caller?.user_id != null
 - remove:
     field: zoom.phone.date_time
     ignore_missing: true
     if: ctx?.event?.action == 'phone.voicemail_received'
+- set:
+    field: source.user.id
+    value: '{{zoom.phone.caller.user_id}}'
+    ignore_empty_value: true
+- set:
+    field: destination.user.id
+    value: '{{zoom.phone.callee.user_id}}'
+    ignore_empty_value: true
 on_failure:
 - set:
     field: error.message
