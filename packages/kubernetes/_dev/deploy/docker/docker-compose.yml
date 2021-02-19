@@ -5,7 +5,6 @@ services:
     depends_on:
       kubernetes:
         condition: service_healthy
-
   kubernetes:
     image: nginx:alpine
     ports:
@@ -25,14 +24,13 @@ services:
       interval: 1s
       retries: 120
       timeout: 120s
-      test: >
+      test: |-
         curl -f -s http://localhost:8080/metrics -o /dev/null &&
         curl -f -s http://localhost:10249/metrics -o /dev/null &&
         curl -f -s http://localhost:10250/stats/summary -o /dev/null &&
         curl -f -s http://localhost:10251/metrics -o /dev/null &&
         curl -f -s http://localhost:10252/metrics -o /dev/null &&
         curl -f -s http://localhost:25000/metrics -o /dev/null
-
   kube-state-metrics:
     image: chanjarster/prometheus-mock-data:latest
     ports:
