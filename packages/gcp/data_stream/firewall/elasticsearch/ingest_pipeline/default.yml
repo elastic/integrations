@@ -2,6 +2,19 @@
 description: Pipeline for Google Cloud Firewall Logs
 
 processors:
+  - json:
+      field: message
+      target_field: json
+  - community_id:
+      source_ip: json.jsonPayload.connection.src_ip
+      source_port: json.jsonPayload.connection.src_port
+      destination_ip: json.jsonPayload.connection.dest_ip
+      destination_port: json.jsonPayload.connection.dest_port
+      iana_number: json.jsonPayload.connection.protocol
+  - set:
+      field: ecs.version
+      value: "1.8.0"
+
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"

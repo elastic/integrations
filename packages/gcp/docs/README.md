@@ -13,25 +13,8 @@ An example event for `audit` looks as following:
 
 ```$json
 {
-    "agent": {
-        "hostname": "66e0c5b04237",
-        "name": "66e0c5b04237",
-        "id": "af0969e5-9921-47c0-9e5c-6df9e9639e00",
-        "ephemeral_id": "0f15c646-60bd-4364-9ddc-b54df5e13bd9",
-        "type": "filebeat",
-        "version": "7.11.0"
-    },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/audit.log"
-        },
-        "offset": 7530,
         "logger": "projects/foo/logs/cloudaudit.googleapis.com%2Factivity"
-    },
-    "elastic_agent": {
-        "id": "1f564e30-3eb3-11eb-bc02-cf42f57e2460",
-        "version": "7.11.0",
-        "snapshot": true
     },
     "source": {
         "geo": {
@@ -48,20 +31,14 @@ An example event for `audit` looks as following:
         },
         "ip": "1.2.3.4"
     },
-    "tags": [
-        "forwarded"
-    ],
     "cloud": {
         "project": {
             "id": "foo"
         }
     },
-    "input": {
-        "type": "log"
-    },
     "@timestamp": "2020-08-05T21:59:26.456Z",
     "ecs": {
-        "version": "1.7.0"
+        "version": "1.8.0"
     },
     "gcp": {
         "audit": {
@@ -87,12 +64,12 @@ An example event for `audit` looks as following:
             "type": "type.googleapis.com/google.cloud.audit.AuditLog",
             "authorization_info": [
                 {
-                    "permission": "compute.images.create",
                     "resource_attributes": {
-                        "service": "compute",
                         "name": "projects/foo/global/images/windows-server-2016-v20200805",
-                        "type": "compute.images"
+                        "type": "compute.images",
+                        "service": "compute"
                     },
+                    "permission": "compute.images.create",
                     "granted": true
                 }
             ],
@@ -104,37 +81,28 @@ An example event for `audit` looks as following:
             }
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "gcp.audit"
-    },
     "service": {
         "name": "compute.googleapis.com"
     },
-    "host": {
-        "name": "66e0c5b04237"
-    },
     "event": {
-        "ingested": "2020-12-15T08:58:03.857033913Z",
-        "original": "{\"insertId\":\"v2spcwdzmc2\",\"logName\":\"projects/foo/logs/cloudaudit.googleapis.com%2Factivity\",\"operation\":{\"first\":true,\"id\":\"operation-1596664766354-5ac287c395484-fa3923bd-543e018e\",\"producer\":\"compute.googleapis.com\"},\"protoPayload\":{\"@type\":\"type.googleapis.com/google.cloud.audit.AuditLog\",\"authenticationInfo\":{\"principalEmail\":\"user@mycompany.com\"},\"authorizationInfo\":[{\"granted\":true,\"permission\":\"compute.images.create\",\"resourceAttributes\":{\"name\":\"projects/foo/global/images/windows-server-2016-v20200805\",\"service\":\"compute\",\"type\":\"compute.images\"}}],\"methodName\":\"v1.compute.images.insert\",\"request\":{\"@type\":\"type.googleapis.com/compute.images.insert\",\"family\":\"windows-server-2016\",\"guestOsFeatures\":[{\"type\":\"VIRTIO_SCSI_MULTIQUEUE\"},{\"type\":\"WINDOWS\"}],\"name\":\"windows-server-2016-v20200805\",\"rawDisk\":{\"source\":\"https://storage.googleapis.com/storage/v1/b/foo/o/windows-server-2016-v20200805.tar.gz\"},\"sourceType\":\"RAW\"},\"requestMetadata\":{\"callerIp\":\"1.2.3.4\",\"callerSuppliedUserAgent\":\"google-cloud-sdk gcloud/290.0.1 command/gcloud.compute.images.create invocation-id/032752ad0fa44b4ea951951d2deef6a3 environment/None environment-version/None interactive/True from-script/False python/2.7.17 term/xterm-256color (Macintosh; Intel Mac OS X 19.6.0),gzip(gfe)\",\"destinationAttributes\":{},\"requestAttributes\":{\"auth\":{},\"time\":\"2020-08-05T21:59:27.515Z\"}},\"resourceLocation\":{\"currentLocations\":[\"eu\"]},\"resourceName\":\"projects/foo/global/images/windows-server-2016-v20200805\",\"response\":{\"@type\":\"type.googleapis.com/operation\",\"id\":\"44919313\",\"insertTime\":\"2020-08-05T14:59:27.259-07:00\",\"name\":\"operation-1596664766354-5ac287c395484-fa3923bd-543e018e\",\"operationType\":\"insert\",\"progress\":\"0\",\"selfLink\":\"https://www.googleapis.com/compute/v1/projects/foo/global/operations/operation-1596664766354-5ac287c395484-fa3923bd-543e018e\",\"selfLinkWithId\":\"https://www.googleapis.com/compute/v1/projects/foo/global/operations/4491931805423146320\",\"startTime\":\"2020-08-05T14:59:27.274-07:00\",\"status\":\"RUNNING\",\"targetId\":\"12345\",\"targetLink\":\"https://www.googleapis.com/compute/v1/projects/foo/global/images/windows-server-2016-v20200805\",\"user\":\"user@mycompany.com\"},\"serviceName\":\"compute.googleapis.com\"},\"receiveTimestamp\":\"2020-08-05T21:59:27.822546978Z\",\"resource\":{\"labels\":{\"image_id\":\"771879043\",\"project_id\":\"foo\"},\"type\":\"gce_image\"},\"severity\":\"NOTICE\",\"timestamp\":\"2020-08-05T21:59:26.456Z\"}",
-        "kind": "event",
         "action": "v1.compute.images.insert",
+        "ingested": "2021-02-19T09:19:47.732239800Z",
+        "original": "{\"insertId\":\"v2spcwdzmc2\",\"logName\":\"projects/foo/logs/cloudaudit.googleapis.com%2Factivity\",\"operation\":{\"first\":true,\"id\":\"operation-1596664766354-5ac287c395484-fa3923bd-543e018e\",\"producer\":\"compute.googleapis.com\"},\"protoPayload\":{\"@type\":\"type.googleapis.com/google.cloud.audit.AuditLog\",\"authenticationInfo\":{\"principalEmail\":\"user@mycompany.com\"},\"authorizationInfo\":[{\"granted\":true,\"permission\":\"compute.images.create\",\"resourceAttributes\":{\"name\":\"projects/foo/global/images/windows-server-2016-v20200805\",\"service\":\"compute\",\"type\":\"compute.images\"}}],\"methodName\":\"v1.compute.images.insert\",\"request\":{\"@type\":\"type.googleapis.com/compute.images.insert\",\"family\":\"windows-server-2016\",\"guestOsFeatures\":[{\"type\":\"VIRTIO_SCSI_MULTIQUEUE\"},{\"type\":\"WINDOWS\"}],\"name\":\"windows-server-2016-v20200805\",\"rawDisk\":{\"source\":\"https://storage.googleapis.com/storage/v1/b/foo/o/windows-server-2016-v20200805.tar.gz\"},\"sourceType\":\"RAW\"},\"requestMetadata\":{\"callerIp\":\"1.2.3.4\",\"callerSuppliedUserAgent\":\"google-cloud-sdk gcloud/290.0.1 command/gcloud.compute.images.create invocation-id/032752ad0fa44b4ea951951d2deef6a3 environment/None environment-version/None interactive/True from-script/False python/2.7.17 term/xterm-256color (Macintosh; Intel Mac OS X 19.6.0),gzip(gfe)\",\"destinationAttributes\":{},\"requestAttributes\":{\"auth\":{},\"time\":\"2020-08-05T21:59:27.515Z\"}},\"resourceLocation\":{\"currentLocations\":[\"eu\"]},\"resourceName\":\"projects/foo/global/images/windows-server-2016-v20200805\",\"response\":{\"@type\":\"type.googleapis.com/operation\",\"id\":\"44919313\",\"insertTime\":\"2020-08-05T14:59:27.259-07:00\",\"name\":\"operation-1596664766354-5ac287c395484-fa3923bd-543e018e\",\"operationType\":\"insert\",\"progress\":\"0\",\"selfLink\":\"https://www.googleapis.com/compute/v1/projects/foo/global/operations/operation-1596664766354-5ac287c395484-fa3923bd-543e018e\",\"selfLinkWithId\":\"https://www.googleapis.com/compute/v1/projects/foo/global/operations/4491931805423146320\",\"startTime\":\"2020-08-05T14:59:27.274-07:00\",\"status\":\"RUNNING\",\"targetId\":\"12345\",\"targetLink\":\"https://www.googleapis.com/compute/v1/projects/foo/global/images/windows-server-2016-v20200805\",\"user\":\"user@mycompany.com\"},\"serviceName\":\"compute.googleapis.com\"},\"receiveTimestamp\":\"2020-08-05T21:59:27.822546978Z\",\"resource\":{\"labels\":{\"image_id\":\"771879043\",\"project_id\":\"foo\"},\"type\":\"gce_image\"},\"severity\":\"NOTICE\",\"timestamp\":\"2020-08-05T21:59:26.456Z\"}",
         "id": "v2spcwdzmc2",
-        "dataset": "gcp.audit",
+        "kind": "event",
         "outcome": "success"
     },
     "user": {
         "email": "user@mycompany.com"
     },
     "user_agent": {
+        "name": "Other",
         "original": "google-cloud-sdk gcloud/290.0.1 command/gcloud.compute.images.create invocation-id/032752ad0fa44b4ea951951d2deef6a3 environment/None environment-version/None interactive/True from-script/False python/2.7.17 term/xterm-256color (Macintosh; Intel Mac OS X 19.6.0),gzip(gfe)",
         "os": {
             "name": "Mac OS X",
             "version": "19.6.0",
             "full": "Mac OS X 19.6.0"
         },
-        "name": "Other",
         "device": {
             "name": "Mac"
         }
@@ -263,35 +231,18 @@ An example event for `firewall` looks as following:
 
 ```$json
 {
-    "agent": {
-        "hostname": "66e0c5b04237",
-        "name": "66e0c5b04237",
-        "id": "af0969e5-9921-47c0-9e5c-6df9e9639e00",
-        "ephemeral_id": "0f15c646-60bd-4364-9ddc-b54df5e13bd9",
-        "type": "filebeat",
-        "version": "7.11.0"
-    },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/firewall.log"
-        },
-        "offset": 15731,
         "logger": "projects/test-beats/logs/compute.googleapis.com%2Ffirewall"
-    },
-    "elastic_agent": {
-        "id": "1f564e30-3eb3-11eb-bc02-cf42f57e2460",
-        "version": "7.11.0",
-        "snapshot": true
     },
     "destination": {
         "geo": {
             "continent_name": "North America",
-            "country_iso_code": "US",
             "country_name": "United States",
             "location": {
                 "lon": -97.822,
                 "lat": 37.751
-            }
+            },
+            "country_iso_code": "US"
         },
         "as": {
             "number": 15169,
@@ -300,52 +251,51 @@ An example event for `firewall` looks as following:
             }
         },
         "address": "8.8.8.8",
-        "port": 80,
+        "port": 53,
         "ip": "8.8.8.8"
     },
     "rule": {
         "name": "network:default/firewall:adrian-test-1"
     },
     "source": {
-        "address": "10.28.0.16",
-        "port": 58725,
+        "address": "10.128.0.16",
+        "port": 60094,
         "domain": "adrian-test",
-        "ip": "10.28.0.16"
+        "ip": "10.128.0.16"
     },
     "network": {
-        "community_id": "1:c7bqGkBTPmOmWydHv/uxpk1qOjc=",
         "name": "default",
+        "community_id": "1:iiDdIEXnxwSiz/hJbVnseQ4SZVE=",
         "transport": "udp",
         "type": "ipv4",
         "iana_number": "17",
         "direction": "outbound"
     },
-    "tags": [
-        "forwarded"
-    ],
     "cloud": {
+        "region": "us-central1",
         "availability_zone": "us-central1-a",
         "project": {
             "id": "test-beats"
-        },
-        "region": "us-central1"
+        }
     },
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2019-11-12T12:42:26.505Z",
+    "@timestamp": "2019-11-12T12:35:17.214Z",
     "ecs": {
-        "version": "1.7.0"
+        "version": "1.8.0"
     },
     "related": {
         "ip": [
-            "10.28.0.16",
+            "10.128.0.16",
             "8.8.8.8"
         ]
     },
     "gcp": {
         "firewall": {
             "rule_details": {
+                "action": "DENY",
+                "target_tag": [
+                    "adrian-test"
+                ],
+                "priority": 1000,
                 "destination_range": [
                     "8.8.8.0/24"
                 ],
@@ -354,44 +304,30 @@ An example event for `firewall` looks as following:
                         "ip_protocol": "ALL"
                     }
                 ],
-                "action": "DENY",
-                "target_tag": [
-                    "adrian-test"
-                ],
-                "priority": 1000,
                 "direction": "EGRESS"
             }
         },
         "source": {
-            "instance": {
-                "project_id": "test-beats",
-                "zone": "us-central1-a",
-                "region": "us-central1"
-            },
             "vpc": {
-                "vpc_name": "default",
                 "project_id": "test-beats",
-                "subnetwork_name": "default"
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            },
+            "instance": {
+                "region": "us-central1",
+                "project_id": "test-beats",
+                "zone": "us-central1-a"
             }
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "gcp.firewall"
-    },
-    "host": {
-        "name": "66e0c5b04237"
-    },
     "event": {
-        "ingested": "2020-12-15T09:00:38.139240274Z",
-        "original": "{\"insertId\":\"1k2b7kefsnhzq7\",\"jsonPayload\":{\"connection\":{\"dest_ip\":\"8.8.8.8\",\"dest_port\":80,\"protocol\":17,\"src_ip\":\"10.28.0.16\",\"src_port\":58725},\"disposition\":\"DENIED\",\"instance\":{\"project_id\":\"test-beats\",\"region\":\"us-central1\",\"vm_name\":\"adrian-test\",\"zone\":\"us-central1-a\"},\"remote_location\":{\"continent\":\"America\",\"country\":\"usa\"},\"rule_details\":{\"action\":\"DENY\",\"destination_range\":[\"8.8.8.0/24\"],\"direction\":\"EGRESS\",\"ip_port_info\":[{\"ip_protocol\":\"ALL\"}],\"priority\":1000,\"reference\":\"network:default/firewall:adrian-test-1\",\"target_tag\":[\"adrian-test\"]},\"vpc\":{\"project_id\":\"test-beats\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"}},\"logName\":\"projects/test-beats/logs/compute.googleapis.com%2Ffirewall\",\"receiveTimestamp\":\"2019-11-12T12:42:33.671883883Z\",\"resource\":{\"labels\":{\"location\":\"us-central1-a\",\"project_id\":\"test-beats\",\"subnetwork_id\":\"1266623735137648253\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-11-12T12:42:26.50532921Z\"}",
+        "ingested": "2021-02-19T09:19:48.040375200Z",
+        "original": "{\"insertId\":\"4zuj4nfn4llkb\",\"jsonPayload\":{\"connection\":{\"dest_ip\":\"8.8.8.8\",\"dest_port\":53,\"protocol\":17,\"src_ip\":\"10.128.0.16\",\"src_port\":60094},\"disposition\":\"DENIED\",\"instance\":{\"project_id\":\"test-beats\",\"region\":\"us-central1\",\"vm_name\":\"adrian-test\",\"zone\":\"us-central1-a\"},\"remote_location\":{\"continent\":\"America\",\"country\":\"usa\"},\"rule_details\":{\"action\":\"DENY\",\"destination_range\":[\"8.8.8.0/24\"],\"direction\":\"EGRESS\",\"ip_port_info\":[{\"ip_protocol\":\"ALL\"}],\"priority\":1000,\"reference\":\"network:default/firewall:adrian-test-1\",\"target_tag\":[\"adrian-test\"]},\"vpc\":{\"project_id\":\"test-beats\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"}},\"logName\":\"projects/test-beats/logs/compute.googleapis.com%2Ffirewall\",\"receiveTimestamp\":\"2019-11-12T12:35:24.466374097Z\",\"resource\":{\"labels\":{\"location\":\"us-central1-a\",\"project_id\":\"test-beats\",\"subnetwork_id\":\"1266623735137648253\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-11-12T12:35:17.214711274Z\"}",
         "kind": "event",
         "action": "firewall-rule",
-        "id": "1k2b7kefsnhzq7",
+        "id": "4zuj4nfn4llkb",
         "category": "network",
-        "type": "connection",
-        "dataset": "gcp.firewall"
+        "type": "connection"
     }
 }
 ```
@@ -516,27 +452,16 @@ An example event for `vpcflow` looks as following:
 
 ```$json
 {
-    "agent": {
-        "hostname": "66e0c5b04237",
-        "name": "66e0c5b04237",
-        "id": "af0969e5-9921-47c0-9e5c-6df9e9639e00",
-        "ephemeral_id": "0f15c646-60bd-4364-9ddc-b54df5e13bd9",
-        "type": "filebeat",
-        "version": "7.11.0"
-    },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/vpcflow.log"
-        },
-        "offset": 291194,
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
-    "elastic_agent": {
-        "id": "1f564e30-3eb3-11eb-bc02-cf42f57e2460",
-        "version": "7.11.0",
-        "snapshot": true
-    },
     "destination": {
+        "address": "10.87.40.76",
+        "port": 33970,
+        "domain": "kibana",
+        "ip": "10.87.40.76"
+    },
+    "source": {
         "geo": {
             "continent_name": "America",
             "country_name": "usa"
@@ -544,81 +469,81 @@ An example event for `vpcflow` looks as following:
         "as": {
             "number": 15169
         },
-        "address": "198.51.100.107",
-        "port": 56410,
-        "ip": "198.51.100.107"
+        "address": "198.51.100.248",
+        "port": 9200,
+        "bytes": 173663,
+        "domain": "elasticsearch",
+        "ip": "198.51.100.248",
+        "packets": 68
     },
-    "source": {
-        "address": "10.87.40.76",
-        "port": 5601,
-        "bytes": 1780,
-        "domain": "kibana",
-        "ip": "10.87.40.76",
-        "packets": 7
-    },
-    "tags": [
-        "forwarded"
-    ],
     "network": {
-        "community_id": "1:0c52Gpv2d5YT01CRixtDXpBMSJQ=",
-        "bytes": 1780,
+        "community_id": "1:e5cZeUPf9fWSqRY+SUSG302spGE=",
+        "bytes": 173663,
+        "name": "default",
         "transport": "tcp",
         "type": "ipv4",
         "iana_number": "6",
-        "packets": 7,
-        "direction": "outbound"
+        "packets": 68,
+        "direction": "internal"
     },
-    "input": {
-        "type": "log"
+    "cloud": {
+        "region": "us-east1",
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "my-sample-project"
+        }
     },
-    "@timestamp": "2019-06-14T03:50:19.219Z",
+    "@timestamp": "2019-06-14T03:50:10.845Z",
     "ecs": {
-        "version": "1.7.0"
+        "version": "1.8.0"
     },
     "related": {
         "ip": [
-            "10.87.40.76",
-            "198.51.100.107"
+            "198.51.100.248",
+            "10.87.40.76"
         ]
     },
     "gcp": {
-        "vpcflow": {
-            "rtt": {
-                "ms": 37
+        "destination": {
+            "vpc": {
+                "project_id": "my-sample-project",
+                "subnetwork_name": "default",
+                "vpc_name": "default"
             },
-            "reporter": "SRC"
+            "instance": {
+                "region": "us-east1",
+                "project_id": "my-sample-project",
+                "zone": "us-east1-b"
+            }
+        },
+        "vpcflow": {
+            "reporter": "DEST",
+            "rtt": {
+                "ms": 1
+            }
         },
         "source": {
-            "instance": {
-                "zone": "us-east1-b",
-                "project_id": "my-sample-project",
-                "region": "us-east1"
-            },
             "vpc": {
-                "vpc_name": "default",
                 "project_id": "my-sample-project",
-                "subnetwork_name": "default"
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            },
+            "instance": {
+                "region": "us-east1",
+                "project_id": "my-sample-project",
+                "zone": "us-east1-b"
             }
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "gcp.vpcflow"
-    },
-    "host": {
-        "name": "66e0c5b04237"
-    },
     "event": {
-        "ingested": "2020-12-15T09:01:48.796925509Z",
-        "original": "{\"insertId\":\"14iipwlfd8t01n\",\"jsonPayload\":{\"bytes_sent\":\"1780\",\"connection\":{\"dest_ip\":\"198.51.100.107\",\"dest_port\":56410,\"protocol\":6,\"src_ip\":\"10.87.40.76\",\"src_port\":5601},\"dest_location\":{\"asn\":15169,\"continent\":\"America\",\"country\":\"usa\"},\"end_time\":\"2019-06-14T03:47:10.630345069Z\",\"packets_sent\":\"7\",\"reporter\":\"SRC\",\"rtt_msec\":\"37\",\"src_instance\":{\"project_id\":\"my-sample-project\",\"region\":\"us-east1\",\"vm_name\":\"kibana\",\"zone\":\"us-east1-b\"},\"src_vpc\":{\"project_id\":\"my-sample-project\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"},\"start_time\":\"2019-06-14T03:47:10.514594429Z\"},\"logName\":\"projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows\",\"receiveTimestamp\":\"2019-06-14T03:50:19.219174745Z\",\"resource\":{\"labels\":{\"location\":\"us-east1-b\",\"project_id\":\"my-sample-project\",\"subnetwork_id\":\"758019854043528829\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-06-14T03:50:19.219174745Z\"}",
+        "ingested": "2021-02-19T09:19:49.051077900Z",
+        "original": "{\"insertId\":\"ut8lbrffooxzb\",\"jsonPayload\":{\"bytes_sent\":\"173663\",\"connection\":{\"dest_ip\":\"10.87.40.76\",\"dest_port\":33970,\"protocol\":6,\"src_ip\":\"198.51.100.248\",\"src_port\":9200},\"dest_instance\":{\"project_id\":\"my-sample-project\",\"region\":\"us-east1\",\"vm_name\":\"kibana\",\"zone\":\"us-east1-b\"},\"dest_vpc\":{\"project_id\":\"my-sample-project\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"},\"end_time\":\"2019-06-14T03:49:51.821302149Z\",\"packets_sent\":\"68\",\"reporter\":\"DEST\",\"rtt_msec\":\"1\",\"src_instance\":{\"project_id\":\"my-sample-project\",\"region\":\"us-east1\",\"vm_name\":\"elasticsearch\",\"zone\":\"us-east1-b\"},\"src_location\":{\"asn\":15169,\"continent\":\"America\",\"country\":\"usa\"},\"src_vpc\":{\"project_id\":\"my-sample-project\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"},\"start_time\":\"2019-06-14T03:40:08.466657665Z\"},\"logName\":\"projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows\",\"receiveTimestamp\":\"2019-06-14T03:50:10.845445834Z\",\"resource\":{\"labels\":{\"location\":\"us-east1-b\",\"project_id\":\"my-sample-project\",\"subnetwork_id\":\"758019854043528829\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-06-14T03:50:10.845445834Z\"}",
         "kind": "event",
-        "start": "2019-06-14T03:47:10.514594429Z",
-        "end": "2019-06-14T03:47:10.630345069Z",
-        "id": "14iipwlfd8t01n",
+        "start": "2019-06-14T03:40:08.466657665Z",
+        "end": "2019-06-14T03:49:51.821302149Z",
+        "id": "ut8lbrffooxzb",
         "category": "network",
-        "type": "connection",
-        "dataset": "gcp.vpcflow"
+        "type": "connection"
     }
 }
 ```
