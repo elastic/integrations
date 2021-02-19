@@ -1,0 +1,150 @@
+type: logs
+title: Sophos XG logs
+release: experimental
+streams:
+  - input: tcp
+    vars:
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        description: The interface to listen on for syslog data. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        description: The port to listen on for syslog data.
+        multi: false
+        required: true
+        show_user: true
+        default: 9005
+      - name: default_host_name
+        type: text
+        title: Default Host Name
+        description: Host name / Observer name, since Sophos XG does not provide this in the syslog file.
+        multi: false
+        required: true
+        show_user: true
+        default: firewall.localgroup.local
+      - name: known_devices
+        type: yaml
+        title: Known Devices
+        description: |
+          The Sophos XG firewalls do not include hostname in either the syslog header or body, and the only unique identifier for each firewall is the related serial number.
+          This will match every known device serial number to a hostname. If no serial number appears the `default_host_name` will be used.
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - hostname: my_fancy_host
+            serial_number: "1234567890123456"
+          - hostname: some_other_host.local
+            serial_number: "1234567890123457"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - sophos-xg
+          - forwarded
+    template_path: tcp.yml.hbs
+    title: Sophos XG logs
+    description: Collect Sophos XG logs
+  - input: udp
+    vars:
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        description: The interface to listen on for syslog data. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        description: The port to listen on for syslog data.
+        multi: false
+        required: true
+        show_user: true
+        default: 9005
+      - name: default_host_name
+        type: text
+        title: Default Host Name
+        description: Host name / Observer name, since Sophos XG does not provide this in the syslog file.
+        multi: false
+        required: true
+        show_user: true
+        default: firewall.localgroup.local
+      - name: known_devices
+        type: yaml
+        title: Known Devices
+        description: |
+          The Sophos XG firewalls do not include hostname in either the syslog header or body, and the only unique identifier for each firewall is the related serial number.
+          This will match every known device serial number to a hostname. If no serial number appears the `default_host_name` will be used.
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - hostname: my_fancy_host
+            serial_number: "1234567890123456"
+          - hostname: some_other_host.local
+            serial_number: "1234567890123457"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - sophos-xg
+          - forwarded
+    template_path: udp.yml.hbs
+    title: Sophos XG logs
+    description: Collect Sophos XG logs
+  - input: logfile
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+      - name: default_host_name
+        type: text
+        title: Default Host Name
+        description: Host name / Observer name, since Sophos XG does not provide this in the syslog file.
+        multi: false
+        required: true
+        show_user: true
+        default: firewall.localgroup.local
+      - name: known_devices
+        type: yaml
+        title: Known Devices
+        description: |
+          The Sophos XG firewalls do not include hostname in either the syslog header or body, and the only unique identifier for each firewall is the related serial number.
+          This will match every known device serial number to a hostname. If no serial number appears the `default_host_name` will be used.
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - hostname: my_fancy_host
+            serial_number: "1234567890123456"
+          - hostname: some_other_host.local
+            serial_number: "1234567890123457"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - sophos-xg
+          - forwarded
+    template_path: log.yml.hbs
+    title: Sophos XG logs
+    description: Collect Sophos XG logs
