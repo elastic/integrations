@@ -10,7 +10,7 @@ RUN chmod +x /scripts/entrypoint.sh
 
 WORKDIR /scripts/python-pubsub
 
-COPY ./logs /sample_logs
+COPY ./sample_logs /sample_logs
 
 RUN virtualenv env
 RUN . env/bin/activate
