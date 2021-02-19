@@ -4,11 +4,9 @@ processors:
 - grok:
     field: message
     patterns:
-    - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:
-      %{GREEDYMULTILINE:system.syslog.message}'
+    - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
     - '%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{GREEDYMULTILINE:system.syslog.message}'
-    - '%{TIMESTAMP_ISO8601:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?:
-      %{GREEDYMULTILINE:system.syslog.message}'
+    - '%{TIMESTAMP_ISO8601:system.syslog.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYMULTILINE:system.syslog.message}'
     pattern_definitions:
       GREEDYMULTILINE: |-
         (.|
@@ -49,9 +47,6 @@ processors:
         value: '{{ _ingest.on_failure_message }}'
 - remove:
     field: system.syslog.timestamp
-- set:
-    field: event.type
-    value: event
 on_failure:
 - set:
     field: error.message
