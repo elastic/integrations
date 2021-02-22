@@ -413,15 +413,17 @@ The Windows `security` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
-| event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
+| event.code | Identification code for this event, if one exists. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
+| event.provider | Source of the event. | keyword |
+| event.sequence | Sequence number of the event. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
 | group.domain | Name of the directory the group is a member of. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -441,21 +443,33 @@ The Windows `security` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Log level of the log event. | keyword |
-| process.command_line | Full command line that started the process. | keyword |
+| log.level | Original log level of the log event. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
+| process.args_count | Length of the process.args array. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
-| process.pid | Process id. | long |
-| related.user | All the user names seen on your event. | keyword |
-| service.name | Name of the service. | keyword |
-| service.type | The type of the service. | keyword |
+| process.parent.name | Process name. | keyword |
+| process.pid | Process PID. | long |
+| process.title | Process title. | keyword |
+| related.hash |  | keyword |
+| related.hosts |  | keyword |
+| related.ip |  | ip |
+| related.user |  | keyword |
+| service.name | Name of the service data is collected from. | keyword |
+| service.type | The type of the service data is collected from. | keyword |
 | source.domain | Source domain. | keyword |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
@@ -512,12 +526,10 @@ The Windows `security` dataset provides events from the Windows
 | winlog.event_data.NewProcessId |  | keyword |
 | winlog.event_data.NewProcessName |  | keyword |
 | winlog.event_data.NewSchemeGuid |  | keyword |
-| winlog.event_data.NewTargetUserName |  | keyword |
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NominalFrequency |  | keyword |
 | winlog.event_data.Number |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
-| winlog.event_data.OldTargetUserName |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.Path |  | keyword |
