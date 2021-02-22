@@ -1,147 +1,244 @@
-- description: Error message.
-  name: error.message
-  type: text
-- description: The action captured by the event.
-  example: user-password-change
-  ignore_above: 1024
-  name: event.action
-  type: keyword
-- description: Event category. The second categorization field in the hierarchy.
-  example: authentication
-  ignore_above: 1024
-  name: event.category
-  type: keyword
-- description: Identification code for this event.
-  example: 4648
-  ignore_above: 1024
-  name: event.code
-  type: keyword
-- description: Time when the event was first read by an agent or by your pipeline.
-  example: '2016-05-23T08:05:34.857Z'
-  name: event.created
-  type: date
-- description: Timestamp when an event arrived in the central data store.
-  example: '2016-05-23T08:05:35.101Z'
-  name: event.ingested
-  type: date
-- description: Name of the module this data is coming from.
-  example: apache
-  ignore_above: 1024
-  name: event.module
-  type: keyword
-- description: Event type. The third categorization field in the hierarchy.
-  ignore_above: 1024
-  name: event.type
-  type: keyword
-- description: Name of the directory the group is a member of.
-  ignore_above: 1024
-  name: group.domain
-  type: keyword
-- description: Unique identifier for the group on the system/platform.
-  ignore_above: 1024
-  name: group.id
-  type: keyword
-- description: Name of the group.
-  ignore_above: 1024
-  name: group.name
-  type: keyword
-- description: Full command line that started the process.
-  example: /usr/bin/ssh -l user 10.0.0.16
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: process.command_line.text
-      name: text
-      norms: false
-      type: text
-  name: process.command_line
-  type: keyword
-- description: Absolute path to the process executable.
-  example: /usr/bin/ssh
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: process.executable.text
-      name: text
-      norms: false
-      type: text
-  name: process.executable
-  type: keyword
-- description: Process name.
-  example: ssh
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: process.name.text
-      name: text
-      norms: false
-      type: text
-  name: process.name
-  type: keyword
-- description: Absolute path to the process executable.
-  example: /usr/bin/ssh
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: process.parent.executable.text
-      name: text
-      norms: false
-      type: text
-  name: process.parent.executable
-  type: keyword
-- description: Process id.
-  example: 4242
-  name: process.pid
-  type: long
-- description: All the user names seen on your event.
-  ignore_above: 1024
-  name: related.user
-  type: keyword
-- description: Name of the service.
-  example: elasticsearch-metrics
-  ignore_above: 1024
-  name: service.name
-  type: keyword
-- description: The type of the service.
-  example: elasticsearch
-  ignore_above: 1024
-  name: service.type
-  type: keyword
-- description: Source domain.
-  ignore_above: 1024
-  name: source.domain
-  type: keyword
-- description: IP address of the source.
-  name: source.ip
-  type: ip
-- description: Port of the source.
-  name: source.port
-  type: long
-- description: Name of the directory the user is a member of.
-  ignore_above: 1024
-  name: user.domain
-  type: keyword
-- description: Unique identifier of the user.
-  ignore_above: 1024
-  name: user.id
-  type: keyword
-- description: Short name or login of the user.
-  example: albert
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: user.name.text
-      name: text
-      norms: false
-      type: text
-  name: user.name
-  type: keyword
-- description: Identification code for this event.
-  example: 4648
-  ignore_above: 1024
-  name: event.code
-  type: keyword
-- description: Log level of the log event.
-  name: log.level
-  type: keyword
-- description: Host ip addresses.
-  name: host.ip
-  type: ip
-- description: The outcome of the event. The lowest level categorization field in the hierarchy.
-  name: event.outcome
-  type: keyword
+- name: event
+  title: Event
+  type: group
+  fields:
+    - name: action
+      type: keyword
+      ignore_above: 1024
+      description: 'The action captured by the event.'
+    - name: category
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
+    - name: code
+      type: keyword
+      ignore_above: 1024
+      description: 'Identification code for this event, if one exists.'
+    - name: created
+      type: date
+      description: 'event.created contains the date/time when the event was first read by an agent, or by your pipeline.'
+    - name: ingested
+      type: date
+      description: 'Timestamp when an event arrived in the central data store.'
+      default_field: false
+    - name: kind
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.'
+    - name: module
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the module this data is coming from.'
+    - name: outcome
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.'
+    - name: provider
+      type: keyword
+      ignore_above: 1024
+      description: 'Source of the event.'
+    - name: sequence
+      type: long
+      format: string
+      description: 'Sequence number of the event.'
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
+- name: host
+  title: Host
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the host.'
+- name: log
+  title: Log
+  type: group
+  fields:
+    - name: level
+      type: keyword
+      ignore_above: 1024
+      description: 'Original log level of the log event.'
+- name: process
+  title: Process
+  type: group
+  fields:
+    - name: args
+      type: keyword
+      ignore_above: 1024
+      description: 'Array of process arguments, starting with the absolute path to the executable.'
+    - name: args_count
+      type: long
+      description: 'Length of the process.args array.'
+      default_field: false
+    - name: command_line
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: 'Full command line that started the process, including the absolute path to the executable, and all arguments.'
+      default_field: false
+    - name: entity_id
+      type: keyword
+      ignore_above: 1024
+      description: 'Unique identifier for the process.'
+      default_field: false
+    - name: executable
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Absolute path to the process executable.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Process name.'
+      example: ssh
+    - name: title
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: 'Process title.'
+    - name: pid
+      type: long
+      description: Process PID.
+    - name: parent.executable
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Absolute path to the process executable.
+      default_field: false
+    - name: parent.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: 'Process name.'
+      default_field: false
+- name: user
+  title: User
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+    - name: target.group.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+      default_field: false
+    - name: target.group.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+      default_field: false
+    - name: target.group.name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+    - name: target.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Short name or login of the user.
+      default_field: false
+- name: group
+  title: Group
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+- name: service
+  title: Service
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the service data is collected from.'
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: 'The type of the service data is collected from.'
+- name: source
+  title: Source
+  type: group
+  fields:
+    - name: domain
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Source domain.
+    - name: ip
+      type: ip
+      description: IP address of the source (IPv4 or IPv6).
+    - name: port
+      type: long
+      format: string
+      description: Port of the source.
+- name: related
+  title: Related
+  type: group
+  fields:
+    - name: hash
+      type: keyword
+      ignore_above: 1024
+      default_field: false
+    - name: hosts
+      type: keyword
+      ignore_above: 1024
+      default_field: false
+    - name: ip
+      type: ip
+    - name: user
+      type: keyword
+      ignore_above: 1024
+      default_field: false
