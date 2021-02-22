@@ -1,22 +1,43 @@
-FROM google/cloud-sdk
+FROM golang:1.15 AS build
+WORKDIR /src
+COPY ./publisher .
+RUN go build -o /out/publisher .
 
-RUN apt-get install python3 python3-pip
+FROM debian:stretch AS run
+ARG SDK_VERSION
 
-RUN pip3 install virtualenv
+RUN \
+    apt-get update \
+	&& apt-get install -y \
+	    apt-transport-https \
+	    ca-certificates \
+	    curl \
+		python \
+		openjdk-8-jre \
+		gnupg2 \
+	&& rm -rf /var/lib/apt/lists/*
 
-COPY ./scripts /scripts
+RUN \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+        >> /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+        | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
 
-RUN chmod +x /scripts/entrypoint.sh
+RUN \
+    apt-get update \
+    && apt-get install -y \
+        google-cloud-sdk=${SDK_VERSION} \
+        google-cloud-sdk-pubsub-emulator=${SDK_VERSION} \
+	&& rm -rf /var/lib/apt/lists/*
 
-WORKDIR /scripts/python-pubsub
+RUN \
+    mkdir /data
 
+COPY --from=build /out/publisher /
+COPY ./entrypoint.sh .
+RUN chmod u+x ./entrypoint.sh
 COPY ./sample_logs /sample_logs
 
-RUN virtualenv env
-RUN . env/bin/activate
+# HEALTHCHECK --interval=1s --retries=90 CMD curl -s -f http://localhost:8432/
 
-RUN pip3 install -r requirements.txt
-
-EXPOSE 8538
-
-ENTRYPOINT [ "/scripts/entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]

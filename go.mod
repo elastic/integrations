@@ -3,6 +3,7 @@ module github.com/elastic/integrations
 go 1.12
 
 require (
+	cloud.google.com/go/pubsub v1.3.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/elastic/elastic-package v0.0.0-20210304090610-3b20737c0a81
 	github.com/elastic/package-registry v0.17.0
