@@ -13,6 +13,9 @@ pipeline {
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.10.0"
     K8S_VERSION = "v1.20.2"
+
+    ELASTIC_STACK_VERSION_PREV = "7.12.0"
+    ELASTIC_STACK_VERSION_PREV_PREV = "7.11.0"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -76,12 +79,39 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                         }
                       }
-                    }
+
+                      // Check the previous stack
+                      try {
+                        dir("${BASE_DIR}/packages/${it}") {
+                          sh(label: "Boot up the Elastic stack (${ELASTIC_STACK_VERSION_PREV})", script: "../../build/elastic-package stack up -d -v --version ${ELASTIC_STACK_VERSION_PREV}")
+                          sh(label: "Install integration: ${it}", script: "../../build/elastic-package install -v")
+                        }
+                      } finally {
+                        dir("${BASE_DIR}") {
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${ELASTIC_STACK_VERSION_PREV}/${it}")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${ELASTIC_STACK_VERSION_PREV}/${it}/logs/*.log")
+                          sh(label: "Take down the Elastic stack (${ELASTIC_STACK_VERSION_PREV})", script: 'build/elastic-package stack down -v')
+                        }
+                      }
+
+                      // Check the previous-previous stack
+                      try {
+                        dir("${BASE_DIR}/packages/${it}") {
+                          sh(label: "Boot up the Elastic stack (${ELASTIC_STACK_VERSION_PREV_PREV})", script: "../../build/elastic-package stack up -d -v --version ${ELASTIC_STACK_VERSION_PREV_PREV}")
+                          sh(label: "Install integration: ${it}", script: "../../build/elastic-package install -v")
+                        }
+                      } finally {
+                        dir("${BASE_DIR}") {
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${ELASTIC_STACK_VERSION_PREV_PREV}/${it}")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${ELASTIC_STACK_VERSION_PREV_PREV}/${it}/logs/*.log")
+                          sh(label: "Take down the Elastic stack (${ELASTIC_STACK_VERSION_PREV_PREV})", script: 'build/elastic-package stack down -v')
+                        }
+                      }                    }
                   }
                 }
               }
