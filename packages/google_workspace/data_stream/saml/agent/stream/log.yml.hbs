@@ -14,7 +14,7 @@ processors:
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.7.0
+        ecs.version: 1.8.0
   - script:
       lang: javascript
       id: gworkspace-common
@@ -71,7 +71,10 @@ processors:
                     return;
                 }
 
+                evt.Put("user.id", evt.Get("source.user.id"));
+                evt.Put("user.name", data[0]);
                 evt.Put("source.user.name", data[0]);
+                evt.Put("user.domain", data[1]);
                 evt.Put("source.user.domain", data[1]);
             };
 
@@ -105,7 +108,7 @@ processors:
 
   - script:
       lang: javascript
-      id: gworkspace-admin
+      id: gworkspace-saml
       source: |
         // Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
         // or more contributor license agreements. Licensed under the Elastic License;
@@ -116,7 +119,7 @@ processors:
 
             var categorizeEvent = function(evt) {
                 evt.Put("event.type", ["start"]);
-                evt.Put("event.category", ["authentication"]);
+                evt.Put("event.category", ["authentication", "session"]);
                 switch (evt.Get("event.action")) {
                     case "login_failure":
                         evt.Put("event.outcome", "failure");

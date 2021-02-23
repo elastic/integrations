@@ -144,37 +144,35 @@ The Windows `forwarded` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
-| destination.ip | IP address of the destination. | ip |
-| destination.port | Port of the destination. | long |
-| dns.answers | Array of DNS answers. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. | object |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. | keyword |
-| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. | long |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
+| dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
+| dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
-| dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
-| error.code | Error code describing the error. | keyword |
-| error.message | Error message. | text |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.resolved_ip | Array containing all IPs seen in `answers.data`. | ip |
+| dns.response_code | The DNS response code. | keyword |
+| dns.type | The type of DNS event captured, query or answer. | keyword |
 | event.action | The action captured by the event. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
-| event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
+| event.code | Identification code for this event, if one exists. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
-| event.original | Raw text message of entire event. | keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
+| event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
-| file.code_signature.status | Additional information about the certificate status. | keyword |
-| file.code_signature.subject_name | Subject name of the code signer | keyword |
-| file.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. | boolean |
-| file.directory | Directory where the file is located. | keyword |
-| file.extension | File extension. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
 | group.domain | Name of the directory the group is a member of. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -185,7 +183,7 @@ The Windows `forwarded` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -194,41 +192,81 @@ The Windows `forwarded` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Log level of the log event. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
-| process.args | Array of process arguments. | keyword |
+| log.level | Original log level of the log event. | keyword |
+| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. | keyword |
+| powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
+| powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
+| powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
+| powershell.command.invocation_details.type | The type of detail. | keyword |
+| powershell.command.invocation_details.value | The value of the detail. The meaning of it will depend on the detail type. | text |
+| powershell.command.name | Name of the executed command. | keyword |
+| powershell.command.path | Path of the executed command. | keyword |
+| powershell.command.type | Type of the executed command. | keyword |
+| powershell.command.value | The invoked command. | text |
+| powershell.connected_user.domain | User domain. | keyword |
+| powershell.connected_user.name | User name. | keyword |
+| powershell.engine.new_state | New state of the PowerShell engine. | keyword |
+| powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
+| powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
+| powershell.file.script_block_id | Id of the executed script block. | keyword |
+| powershell.file.script_block_text | Text of the executed script block. | text |
+| powershell.id | Shell Id. | keyword |
+| powershell.pipeline_id | Pipeline id. | keyword |
+| powershell.process.executable_version | Version of the engine hosting process executable. | keyword |
+| powershell.provider.name | Provider name. | keyword |
+| powershell.provider.new_state | New state of the PowerShell provider. | keyword |
+| powershell.runspace_id | Runspace id. | keyword |
+| powershell.sequence | Sequence number of the powershell execution. | long |
+| powershell.total | Total number of messages in the sequence. | long |
+| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.hash.md5 | MD5 hash. | keyword |
+| process.hash.sha1 | SHA1 hash. | keyword |
+| process.hash.sha256 | SHA256 hash. | keyword |
+| process.hash.sha512 | SHA512 hash. | keyword |
 | process.name | Process name. | keyword |
-| process.parent.args | Array of process arguments. | keyword |
+| process.parent.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.parent.args_count | Length of the process.args array. | long |
-| process.parent.command_line | Full command line that started the process. | keyword |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.parent.entity_id | Unique identifier for the process. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.hash.md5 | MD5 hash. | keyword |
+| process.parent.hash.sha1 | SHA1 hash. | keyword |
+| process.parent.hash.sha256 | SHA256 hash. | keyword |
+| process.parent.hash.sha512 | SHA512 hash. | keyword |
 | process.parent.name | Process name. | keyword |
+| process.parent.pe.architecture | CPU architecture target for the file. | keyword |
+| process.parent.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| process.parent.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| process.parent.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| process.parent.pe.imphash | A hash of the imports in a PE file. | keyword |
+| process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.parent.pid | Process id. | long |
+| process.parent.start | The time the process started. | date |
+| process.parent.title | Process title. | keyword |
+| process.pe.architecture | CPU architecture target for the file. | keyword |
+| process.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| process.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| process.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| process.pe.imphash | A hash of the imports in a PE file. | keyword |
+| process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.pid | Process id. | long |
-| process.title | Process title. | keyword |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.working_directory | The working directory of the process. | keyword |
-| registry.data.strings | List of strings representing what was written to the registry. | keyword |
-| registry.data.type | Standard registry type for encoding contents | keyword |
-| registry.hive | Abbreviated name for the hive. | keyword |
-| registry.key | Hive-relative path of keys. | keyword |
-| registry.path | Full path, including hive, key and value | keyword |
-| registry.value | Name of the value written. | keyword |
-| related.hash | All the hashes seen on your event. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
-| rule.name | Rule name | keyword |
-| service.name | Name of the service. | keyword |
-| service.type | The type of the service. | keyword |
+| related.hash |  | keyword |
+| related.hosts |  | keyword |
+| related.ip |  | ip |
+| related.user |  | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| service.name | Name of the service data is collected from. | keyword |
+| service.type | The type of the service data is collected from. | keyword |
 | source.domain | Source domain. | keyword |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | sysmon.dns.status | Windows status code returned for the DNS query. | keyword |
 | sysmon.file.archived | Indicates if the deleted file was archived. | boolean |
@@ -236,6 +274,10 @@ The Windows `forwarded` dataset provides events from the Windows
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
@@ -354,6 +396,11 @@ The Windows `forwarded` dataset provides events from the Windows
 | winlog.event_data.param8 |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
+| winlog.logon.failure.reason | The reason the logon failed. | keyword |
+| winlog.logon.failure.status | The reason the logon failed. This is textual description based on the value of the hexadecimal `Status` field. | keyword |
+| winlog.logon.failure.sub_status | Additional information about the logon failure. This is a textual description based on the value of the hexidecimal `SubStatus` field. | keyword |
+| winlog.logon.id | Logon ID that can be used to associate this logon with other events related to the same logon session. | keyword |
+| winlog.logon.type | Logon type name. This is the descriptive version of the `winlog.event_data.LogonType` ordinal. This is an enrichment added by the Security module. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
 | winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
 | winlog.process.thread.id |  | long |
@@ -368,6 +415,7 @@ The Windows `forwarded` dataset provides events from the Windows
 | winlog.user.type | The type of account associated with this event. | keyword |
 | winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
 | winlog.version | The version number of the event's definition. | long |
+
 
 
 ### Powershell
@@ -399,20 +447,23 @@ The Windows `powershell` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| error.message | Error message. | text |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
-| event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| destination.user.domain | Name of the directory the user is a member of. | keyword |
+| destination.user.id | Unique identifier of the user. | keyword |
+| destination.user.name | Short name or login of the user. | keyword |
+| event.action | The action captured by the event. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
+| event.code | Identification code for this event, if one exists. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
-| event.original | Raw text message of entire event. | keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
+| event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
-| file.directory | Directory where the file is located. | keyword |
-| file.extension | File extension. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.extension | File extension, excluding the leading dot. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -429,7 +480,7 @@ The Windows `powershell` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Log level of the log event. | keyword |
+| log.level | Original log level of the log event. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
@@ -454,13 +505,23 @@ The Windows `powershell` dataset provides events from the Windows
 | powershell.runspace_id | Runspace id. | keyword |
 | powershell.sequence | Sequence number of the powershell execution. | long |
 | powershell.total | Total number of messages in the sequence. | long |
-| process.args | Array of process arguments. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.entity_id | Unique identifier for the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | Process name. | keyword |
+| process.pid | Process PID. | long |
 | process.title | Process title. | keyword |
-| related.user | All the user names seen on your event. | keyword |
+| related.hash |  | keyword |
+| related.hosts |  | keyword |
+| related.ip |  | ip |
+| related.user |  | keyword |
+| source.user.domain | Name of the directory the user is a member of. | keyword |
+| source.user.id | Unique identifier of the user. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
@@ -625,20 +686,23 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| error.message | Error message. | text |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
-| event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| destination.user.domain | Name of the directory the user is a member of. | keyword |
+| destination.user.id | Unique identifier of the user. | keyword |
+| destination.user.name | Short name or login of the user. | keyword |
+| event.action | The action captured by the event. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
+| event.code | Identification code for this event, if one exists. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
-| event.original | Raw text message of entire event. | keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
+| event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
-| file.directory | Directory where the file is located. | keyword |
-| file.extension | File extension. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.extension | File extension, excluding the leading dot. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -655,7 +719,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Log level of the log event. | keyword |
+| log.level | Original log level of the log event. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
@@ -680,13 +744,23 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | powershell.runspace_id | Runspace id. | keyword |
 | powershell.sequence | Sequence number of the powershell execution. | long |
 | powershell.total | Total number of messages in the sequence. | long |
-| process.args | Array of process arguments. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.entity_id | Unique identifier for the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | Process name. | keyword |
+| process.pid | Process PID. | long |
 | process.title | Process title. | keyword |
-| related.user | All the user names seen on your event. | keyword |
+| related.hash |  | keyword |
+| related.hosts |  | keyword |
+| related.ip |  | ip |
+| related.user |  | keyword |
+| source.user.domain | Name of the directory the user is a member of. | keyword |
+| source.user.id | Unique identifier of the user. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
@@ -851,33 +925,38 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
-| destination.ip | IP address of the destination. | ip |
-| destination.port | Port of the destination. | long |
-| dns.answers | Array of DNS answers. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. | object |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. | keyword |
 | dns.answers.name | The domain name to which this resource record pertains. | keyword |
-| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. | long |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
+| dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
+| dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
-| dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
-| error.code | Error code describing the error. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
-| event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.resolved_ip | Array containing all IPs seen in `answers.data`. | ip |
+| dns.response_code | The DNS response code. | keyword |
+| dns.type | The type of DNS event captured, query or answer. | keyword |
+| event.action | The action captured by the event. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
+| event.code | Identification code for this event, if one exists. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
-| file.code_signature.status | Additional information about the certificate status. | keyword |
-| file.code_signature.subject_name | Subject name of the code signer | keyword |
-| file.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. | boolean |
-| file.directory | Directory where the file is located. | keyword |
-| file.extension | File extension. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
+| event.provider | Source of the event. | keyword |
+| event.sequence | Sequence number of the event. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| group.domain | Name of the directory the group is a member of. | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -885,7 +964,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -894,44 +973,68 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Log level of the log event. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
-| process.args | Array of process arguments. | keyword |
+| log.level | Original log level of the log event. | keyword |
+| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.hash.md5 | MD5 hash. | keyword |
+| process.hash.sha1 | SHA1 hash. | keyword |
+| process.hash.sha256 | SHA256 hash. | keyword |
+| process.hash.sha512 | SHA512 hash. | keyword |
 | process.name | Process name. | keyword |
-| process.parent.args | Array of process arguments. | keyword |
+| process.parent.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.parent.args_count | Length of the process.args array. | long |
-| process.parent.command_line | Full command line that started the process. | keyword |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.parent.entity_id | Unique identifier for the process. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.hash.md5 | MD5 hash. | keyword |
+| process.parent.hash.sha1 | SHA1 hash. | keyword |
+| process.parent.hash.sha256 | SHA256 hash. | keyword |
+| process.parent.hash.sha512 | SHA512 hash. | keyword |
 | process.parent.name | Process name. | keyword |
+| process.parent.pe.architecture | CPU architecture target for the file. | keyword |
+| process.parent.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| process.parent.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| process.parent.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| process.parent.pe.imphash | A hash of the imports in a PE file. | keyword |
+| process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.parent.pid | Process id. | long |
+| process.parent.start | The time the process started. | date |
+| process.parent.title | Process title. | keyword |
+| process.pe.architecture | CPU architecture target for the file. | keyword |
+| process.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| process.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| process.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| process.pe.imphash | A hash of the imports in a PE file. | keyword |
+| process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.pid | Process id. | long |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.working_directory | The working directory of the process. | keyword |
-| registry.data.strings | List of strings representing what was written to the registry. | keyword |
-| registry.data.type | Standard registry type for encoding contents | keyword |
-| registry.hive | Abbreviated name for the hive. | keyword |
-| registry.key | Hive-relative path of keys. | keyword |
-| registry.path | Full path, including hive, key and value | keyword |
-| registry.value | Name of the value written. | keyword |
-| related.hash | All the hashes seen on your event. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
-| rule.name | Rule name | keyword |
+| related.hash |  | keyword |
+| related.hosts |  | keyword |
+| related.ip |  | ip |
+| related.user |  | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| service.name | Name of the service data is collected from. | keyword |
+| service.type | The type of the service data is collected from. | keyword |
 | source.domain | Source domain. | keyword |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | sysmon.dns.status | Windows status code returned for the DNS query. | keyword |
 | sysmon.file.archived | Indicates if the deleted file was archived. | boolean |
 | sysmon.file.is_executable | Indicates if the deleted file was an executable. | boolean |
 | user.domain | Name of the directory the user is a member of. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |

@@ -252,10 +252,21 @@ An example event for `saml` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### User Accounts
@@ -451,10 +462,21 @@ An example event for `user_accounts` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Login Accounts
@@ -659,10 +681,21 @@ An example event for `login` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Admin
@@ -962,24 +995,35 @@ An example event for `admin` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". | wildcard |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.original | Unmodified original url as seen in the event source. | wildcard |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
 | url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | wildcard |
+| url.path | Path of the request, such as "/search". | keyword |
 | url.port | Port of the request, such as 443. | long |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
-| url.registered_domain | The highest registered url domain, stripped of the subdomain. | wildcard |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
 | url.scheme | Scheme of the request, such as "https". | keyword |
 | url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
 | url.username | Username of the request. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Drive
@@ -1154,7 +1198,7 @@ An example event for `drive` looks as following:
 | file.extension | File extension, excluding the leading dot. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.owner | File owner's username. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | wildcard |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.type | File type (file, dir, or symlink). | keyword |
 | google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
 | google_workspace.actor.type | The type of actor. Values can be:   *USER*: Another user in the same domain.   *EXTERNAL_USER*: A user outside the domain.   *KEY*: A non-human actor. | keyword |
@@ -1225,10 +1269,21 @@ An example event for `drive` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 ### Groups
@@ -1450,8 +1505,19 @@ An example event for `groups` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
