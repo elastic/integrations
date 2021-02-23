@@ -35,6 +35,7 @@ The Windows `forwarded` dataset provides events from the Windows
 
 {{fields "forwarded"}}
 
+
 ### Powershell
 
 The Windows `powershell` dataset provides events from the Windows

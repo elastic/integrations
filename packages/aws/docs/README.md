@@ -114,9 +114,12 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.console_login.additional_eventdata.mobile_version | Identifies whether ConsoleLogin was from mobile version | boolean |
 | aws.cloudtrail.error_code | The AWS service error if the request returns an error. | keyword |
 | aws.cloudtrail.error_message | If the request returns an error, the description of the error. | keyword |
+| aws.cloudtrail.event_category | The CloudTrail event category. | keyword |
 | aws.cloudtrail.event_type | Identifies the type of event that generated the event record. | keyword |
 | aws.cloudtrail.event_version | The CloudTrail version of the log event format. | keyword |
 | aws.cloudtrail.flattened.additional_eventdata | Additional data about the event that was not part of the request or response. | flattened |
+| aws.cloudtrail.flattened.digest | Additional digest information. | flattened |
+| aws.cloudtrail.flattened.insight_details | Additional insight details. | flattened |
 | aws.cloudtrail.flattened.request_parameters | The parameters, if any, that were sent with the request. | flattened |
 | aws.cloudtrail.flattened.response_elements | The response element for actions that make changes (create, update, or delete actions). | flattened |
 | aws.cloudtrail.flattened.service_event_details | Identifies the service event, including what triggered the event and the result. | flattened |
@@ -142,7 +145,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | aws.cloudtrail.user_identity.session_context.session_issuer.type | The source of the temporary security credentials, such as Root, IAMUser, or Role. | keyword |
 | aws.cloudtrail.user_identity.type | The type of the identity | keyword |
 | aws.cloudtrail.vpc_endpoint_id | Identifies the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -165,6 +168,13 @@ events for the account. If user creates a trail, it delivers those events as log
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
+| file.hash.md5 | MD5 hash. | keyword |
+| file.hash.sha1 | SHA1 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.hash.sha512 | SHA512 hash. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -181,6 +191,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| related.hash | All the hashes seen on your event. | keyword |
 | related.user | All the user names seen on your event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -193,8 +204,11 @@ events for the account. If user creates a trail, it delivers those events as log
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| user.changes.name | Short name or login of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
@@ -472,6 +486,7 @@ for sending server access logs to S3 bucket.
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
 | geo.country_iso_code | Country ISO code. | keyword |
+| geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
 | geo.region_iso_code | Region ISO code. | keyword |
 | geo.region_name | Region name. | keyword |
@@ -491,13 +506,19 @@ for sending server access logs to S3 bucket.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.method | HTTP request method. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
+| http.version | HTTP version. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |

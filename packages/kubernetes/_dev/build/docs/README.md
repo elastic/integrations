@@ -50,6 +50,8 @@ deployment are available [here](https://github.com/kubernetes/kube-state-metrics
 Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
 `kube-system` namespace, which will be the service to use in our configuration.
 
+state_* datasets are not enabled by default.
+
 #### apiserver
 
 The apiserver dataset requires access to the Kubernetes API, which should be easily available in all Kubernetes
@@ -71,6 +73,7 @@ available for its configuration:
  the datasets to point to these services as part of an `Agent Deployment`.
 - Run these datasets as part an `Agent Daemonset` (with HostNetwork setting) with a `nodeSelector` to only run on Master nodes.
 
+These datasets are not enabled by default.
 
 Note: In some "As a Service" Kubernetes implementations, like `GKE`, the master nodes or even the pods running on
 the masters won't be visible. In these cases it won't be possible to use `scheduler` and `controllermanager` metricsets.

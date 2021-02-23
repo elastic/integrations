@@ -1,0 +1,17 @@
+tcp:
+host: "{{syslog_host}}:{{syslog_port}}"
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+  - add_locale: ~
+  - add_fields:
+      target: '_conf'
+      fields:
+          default: {{default_host_name}}
+          mappings:
+{{#each known_devices as |entry i|}}
+            - serial: {{entry.serial_number}}
+              hostname: {{entry.hostname}}
+{{/each}}

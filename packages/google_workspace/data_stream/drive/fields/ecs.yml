@@ -32,17 +32,17 @@
       level: core
       type: keyword
       ignore_above: 1024
-      description: 'The action captured by the event.'
+      description: "The action captured by the event."
     - name: category
       level: core
       type: keyword
       ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
+      description: "This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy."
     - name: dataset
       level: core
       type: keyword
       ignore_above: 1024
-      description: 'Name of the dataset.'
+      description: "Name of the dataset."
     - name: duration
       level: core
       type: long
@@ -50,7 +50,7 @@
       input_format: nanoseconds
       output_format: asMilliseconds
       output_precision: 1
-      description: 'Duration of the event in nanoseconds.'
+      description: "Duration of the event in nanoseconds."
     - name: end
       level: extended
       type: date
@@ -63,24 +63,24 @@
     - name: ingested
       level: core
       type: date
-      description: 'Timestamp when an event arrived in the central data store.'
+      description: "Timestamp when an event arrived in the central data store."
       default_field: false
     - name: original
       level: core
       type: keyword
       ignore_above: 1024
-      description: 'Raw text message of entire event. Used to demonstrate log integrity.'
+      description: "Raw text message of entire event. Used to demonstrate log integrity."
       index: false
     - name: outcome
       level: core
       type: keyword
       ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.'
+      description: "This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy."
     - name: provider
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'Source of the event.'
+      description: "Source of the event."
     - name: start
       level: extended
       type: date
@@ -89,7 +89,7 @@
       level: core
       type: keyword
       ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
+      description: "This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy."
 - name: input.type
   type: keyword
   description: Input type
@@ -199,12 +199,10 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'Name of the directory the user is a member of.
-
-        For example, an LDAP or Active Directory domain name.'
+      description: "Name of the directory the user is a member of.\nFor example, an LDAP or Active Directory domain name."
     - name: user.email
       level: extended
-      type: wildcard
+      type: keyword
       description: User email address.
     - name: user.id
       level: core
@@ -213,7 +211,7 @@
       description: Unique identifier of the user.
     - name: user.name
       level: core
-      type: wildcard
+      type: keyword
       multi_fields:
         - name: text
           type: text
@@ -239,9 +237,7 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'Name of the directory the group is a member of.
-
-        For example, an LDAP or Active Directory domain name.'
+      description: "Name of the directory the group is a member of.\nFor example, an LDAP or Active Directory domain name."
     - name: id
       level: extended
       type: keyword
@@ -261,7 +257,7 @@
       level: extended
       type: keyword
       ignore_above: 1024
-      description: 'File extension, excluding the leading dot.'
+      description: "File extension, excluding the leading dot."
     - name: name
       level: extended
       type: keyword
@@ -274,7 +270,7 @@
       description: File owner's username.
     - name: path
       level: extended
-      type: wildcard
+      type: keyword
       multi_fields:
         - name: text
           type: text
@@ -286,3 +282,67 @@
       type: keyword
       ignore_above: 1024
       description: File type (file, dir, or symlink).
+- name: user
+  title: User
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: email
+      type: keyword
+      ignore_above: 1024
+      description: User email address.
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+    - name: target.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+      default_field: false
+    - name: target.email
+      type: keyword
+      ignore_above: 1024
+      description: User email address.
+      default_field: false
+    - name: target.group.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+      default_field: false
+    - name: target.group.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+      default_field: false
+    - name: target.group.name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+      default_field: false
+    - name: target.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+      default_field: false
+    - name: target.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Short name or login of the user.
+      default_field: false

@@ -13,11 +13,11 @@ request.transforms:
   - set:
       target: url.params.startTime
       value: "[[.cursor.last_execution_datetime]]"
-      default: '[[now (parseDuration "-{{initial_interval}}")]]'
+      default: '[[parseDate now (parseDuration "-{{initial_interval}}")]]'
 response.split:
   target: body.items
   split:
-    target: events
+    target: body.events
     keep_parent: true
 response.pagination:
   - set:
@@ -37,7 +37,7 @@ processors:
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.7.0
+        ecs.version: 1.8.0
   - script:
       lang: javascript
       id: gworkspace-common
@@ -94,7 +94,10 @@ processors:
                     return;
                 }
 
+                evt.Put("user.id", evt.Get("source.user.id"));
+                evt.Put("user.name", data[0]);
                 evt.Put("source.user.name", data[0]);
+                evt.Put("user.domain", data[1]);
                 evt.Put("source.user.domain", data[1]);
             };
 
@@ -128,5 +131,29 @@ processors:
 
   - script:
       lang: javascript
-      id: gworkspace-admin
-      file: ${path.home}/module/google_workspace/user_accounts/config/pipeline.js
+      id: gworkspace-user-accounts
+      source: |
+        // Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+        // or more contributor license agreements. Licensed under the Elastic License;
+        // you may not use this file except in compliance with the Elastic License.
+
+        var userAccounts = (function () {
+            var processor = require("processor");
+
+            var categorizeEvent = function(evt) {
+                evt.Put("event.type", ["change", "user"]);
+                evt.Put("event.category", ["iam"]);
+            };
+
+            var pipeline = new processor.Chain()
+                .Add(categorizeEvent)
+                .Build();
+
+            return {
+                process: pipeline.Run,
+            };
+        }());
+
+        function process(evt) {
+            return userAccounts.process(evt);
+        }
