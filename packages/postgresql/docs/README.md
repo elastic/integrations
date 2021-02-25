@@ -89,10 +89,8 @@ persistent connections, so enable with care.
 | postgresql.log.client_port | Port where the connection originated from. | keyword |
 | postgresql.log.command_tag | Type of session's current command. The complete list can be found at: src/include/tcop/cmdtaglist.h | keyword |
 | postgresql.log.context | Error context. | keyword |
-| postgresql.log.core_id | Core id. (deprecated, there is no core_id in PostgreSQL logs, this is actually session_line_number). | alias |
 | postgresql.log.database | Name of database. | keyword |
 | postgresql.log.detail | More information about the message, parameters in case of a parametrized query. e.g. 'Role \"user\" does not exist.', 'parameters: $1 = 42', etc. | keyword |
-| postgresql.log.error.code | Error code returned by Postgres (if any). Deprecated: errors can have letters. Use sql_state_code instead. | alias |
 | postgresql.log.hint | A possible solution to solve an error. | keyword |
 | postgresql.log.internal_query | Internal query that led to the error (if any). | keyword |
 | postgresql.log.internal_query_pos | Character count of the internal query (if any). | long |
