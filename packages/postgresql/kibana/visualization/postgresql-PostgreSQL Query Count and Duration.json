@@ -3,25 +3,30 @@
         "description": "",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": []
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
             }
         },
         "savedSearchRefName": "search_0",
-        "title": "Logs by level over time [Logs PostgreSQL]",
-        "uiStateJSON": {},
+        "title": "Query count and cumulated duration [Logs PostgreSQL]",
+        "uiStateJSON": {
+            "vis": {
+                "colors": {
+                    "Number of queries": "#0A437C",
+                    "Sum of query duration": "#6ED0E0"
+                },
+                "legendOpen": true
+            }
+        },
         "version": 1,
         "visState": {
             "aggs": [
                 {
                     "enabled": true,
-                    "id": "1",
-                    "params": {},
-                    "schema": "metric",
-                    "type": "count"
-                },
-                {
-                    "enabled": true,
-                    "id": "2",
+                    "id": "3",
                     "params": {
                         "extended_bounds": {},
                         "field": "@timestamp",
@@ -33,15 +38,22 @@
                 },
                 {
                     "enabled": true,
-                    "id": "3",
+                    "id": "4",
                     "params": {
-                        "field": "log.level",
-                        "order": "desc",
-                        "orderBy": "1",
-                        "size": 5
+                        "customLabel": "Number of queries"
                     },
-                    "schema": "group",
-                    "type": "terms"
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "customLabel": "Sum of query duration",
+                        "field": "event.duration"
+                    },
+                    "schema": "metric",
+                    "type": "sum"
                 }
             ],
             "params": {
@@ -62,7 +74,7 @@
                         "show": true,
                         "style": {},
                         "title": {
-                            "text": "@timestamp per month"
+                            "text": "@timestamp per 3 hours"
                         },
                         "type": "category"
                     }
@@ -77,12 +89,28 @@
                 "seriesParams": [
                     {
                         "data": {
-                            "id": "1",
-                            "label": "Count"
+                            "id": "4",
+                            "label": "Number of queries"
                         },
                         "drawLinesBetweenPoints": true,
-                        "mode": "stacked",
-                        "show": "true",
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "histogram",
+                        "valueAxis": "ValueAxis-1"
+                    },
+                    {
+                        "data": {
+                            "id": "2",
+                            "label": "Sum of query duration"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
                         "showCircles": true,
                         "type": "histogram",
                         "valueAxis": "ValueAxis-1"
@@ -108,17 +136,17 @@
                         "show": true,
                         "style": {},
                         "title": {
-                            "text": "Count"
+                            "text": ""
                         },
                         "type": "value"
                     }
                 ]
             },
-            "title": "Logs by level over time [Logs PostgreSQL]",
+            "title": "Query count and cumulated duration [Logs PostgreSQL]",
             "type": "histogram"
         }
     },
-    "id": "postgresql-3dbd5370-87f3-11e7-ad9c-db80de0bf8d3",
+    "id": "postgresql-PostgreSQL Query Count and Duration",
     "migrationVersion": {
         "visualization": "7.11.0"
     },
@@ -127,7 +155,7 @@
     ],
     "references": [
         {
-            "id": "postgresql-PostgreSQL All Logs",
+            "id": "postgresql-PostgreSQL Query Durations",
             "name": "search_0",
             "type": "search"
         }
