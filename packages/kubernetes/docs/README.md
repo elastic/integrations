@@ -2759,6 +2759,10 @@ An example event for `state_node` looks as following:
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.node.pod.allocatable.total | Node allocatable pods | long |
 | kubernetes.node.pod.capacity.total | Node pod capacity | long |
+| kubernetes.node.status.disk_pressure | Node DiskPressure status (true, false or unknown) | keyword |
+| kubernetes.node.status.memory_pressure | Node MemoryPressure status (true, false or unknown) | keyword |
+| kubernetes.node.status.out_of_disk | Node OutOfDisk status (true, false or unknown) | keyword |
+| kubernetes.node.status.pid_pressure | Node PIDPressure status (true, false or unknown) | keyword |
 | kubernetes.node.status.ready | Node ready status (true, false or unknown) | keyword |
 | kubernetes.node.status.unschedulable | Node unschedulable status | boolean |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
