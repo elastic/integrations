@@ -261,8 +261,8 @@ def isPackageCompatible(integrationName, stackVersion) {
   dir("${BASE_DIR}/packages/${integrationName}") {
     def r = sh(label: "Check compatibility with ${stackVersion}", script: '''
       eval "$(../../build/elastic-package stack shellinit)"
-      ../../build/elastic-package install -c kibana.version=${stackVersion} -v
-      ''', returnStatus: true)
+      ../../build/elastic-package install -v -c kibana.version=''' + stackVersion,
+      returnStatus: true)
     if (r == 0) {
       echo "Package should be compatible"
       return true
