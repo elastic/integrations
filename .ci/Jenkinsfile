@@ -3,7 +3,7 @@
 @Library('apm@current') _
 
 pipeline {
-  agent { label 'ubuntu && immutable' }
+  agent { label 'ubuntu-20 && immutable' }
   environment {
     BASE_DIR="src/github.com/elastic/integrations"
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
@@ -54,7 +54,8 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected("${it}")) {
                 integrations["${it}"] = {
-                  node('ubuntu && immutable') {
+                  sleep(randomNumber(min: 1, max: 5))
+                  node('ubuntu-20 && immutable') {
                     stage("${it}: check") {
                       deleteDir()
                       gitCheckout(basedir: "${BASE_DIR}")
