@@ -1,9 +1,12 @@
 version: '2.3'
 services:
-  gcp:
-    build:
-      context: .
-      args:
-        SDK_VERSION: ${SDK_VERSION:-293.0.0-0}
-    ports:
-      - 8432
+  gcppubsub-emulator:
+    image: google/cloud-sdk:emulators
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8681
+  gcppubsub-audit:
+    image: akroh/stream:latest
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --retry=30 --delay=5s --addr "gcppubsub-emulator:8681" -p=gcppubsub --gcppubsub-clear=false /sample_logs/audit.log
+    depends_on:
+      - gcppubsub-emulator
