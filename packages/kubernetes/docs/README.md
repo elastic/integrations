@@ -153,16 +153,6 @@ An example event for `apiserver` looks as following:
         "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
         "type": "metricbeat"
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.apiserver"
-    },
-    "stream": {
-        "dataset": "kubernetes.apiserver",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "host": {
         "id": "b0e83d397c054b8a99a431072fe4617b",
         "containerized": false,
@@ -361,16 +351,6 @@ An example event for `container` looks as following:
             }
         }
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.container"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.container"
-    },
     "host": {
         "containerized": false,
         "ip": [
@@ -556,11 +536,6 @@ An example event for `controllermanager` looks as following:
         "module": "kubernetes",
         "duration": 8893806
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.controllermanager"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -623,11 +598,6 @@ An example event for `controllermanager` looks as following:
     "service": {
         "address": "localhost:10252",
         "type": "kubernetes"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.controllermanager"
     }
 }
 ```
@@ -719,11 +689,6 @@ An example event for `event` looks as following:
     "metricset": {
         "name": "event"
     },
-    "stream": {
-        "dataset": "kubernetes.event",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "agent": {
         "type": "metricbeat",
         "version": "8.0.0",
@@ -775,11 +740,6 @@ An example event for `event` looks as following:
             }
         }
     },
-    "dataset": {
-        "name": "kubernetes.event",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "host": {
         "id": "b0e83d397c054b8a99a431072fe4617b",
         "containerized": false,
@@ -825,6 +785,7 @@ An example event for `event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -861,6 +822,7 @@ An example event for `event` looks as following:
 | kubernetes.event.timestamp.first_occurrence | Timestamp of first occurrence of event | date |
 | kubernetes.event.timestamp.last_occurrence | Timestamp of last occurrence of event | date |
 | kubernetes.event.type | Type of the given event | keyword |
+| service.type | Service type | keyword |
 
 
 ### node
@@ -1007,16 +969,6 @@ An example event for `node` looks as following:
                 }
             }
         }
-    },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.node"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.node"
     },
     "agent": {
         "name": "minikube",
@@ -1176,11 +1128,6 @@ An example event for `pod` looks as following:
         "dataset": "kubernetes.pod",
         "module": "kubernetes"
     },
-    "stream": {
-        "dataset": "kubernetes.pod",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -1191,11 +1138,6 @@ An example event for `pod` looks as following:
     "service": {
         "type": "kubernetes",
         "address": "minikube:10250"
-    },
-    "dataset": {
-        "type": "metrics",
-        "name": "kubernetes.pod",
-        "namespace": "default"
     },
     "host": {
         "name": "minikube",
@@ -1338,16 +1280,6 @@ An example event for `proxy` looks as following:
         "version": "8.0.0",
         "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
         "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a"
-    },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.proxy"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.proxy",
-        "namespace": "default"
     },
     "host": {
         "ip": [
@@ -1643,16 +1575,6 @@ An example event for `scheduler` looks as following:
         "name": "minikube",
         "type": "metricbeat"
     },
-    "dataset": {
-        "name": "kubernetes.scheduler",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.scheduler"
-    },
     "host": {
         "hostname": "minikube",
         "architecture": "x86_64",
@@ -1866,16 +1788,6 @@ An example event for `state_container` looks as following:
         },
         "namespace": "kube-system"
     },
-    "dataset": {
-        "name": "kubernetes.state_container",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_container",
-        "namespace": "default"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -2033,16 +1945,6 @@ An example event for `state_cronjob` looks as following:
             }
         }
     },
-    "dataset": {
-        "type": "metrics",
-        "name": "kubernetes.state_cronjob",
-        "namespace": "default"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.state_cronjob"
-    },
     "agent": {
         "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
         "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
@@ -2156,16 +2058,6 @@ An example event for `state_daemonset` looks as following:
             "k8s-app": "metricbeat"
         },
         "namespace": "kube-system"
-    },
-    "dataset": {
-        "type": "metrics",
-        "name": "kubernetes.state_daemonset",
-        "namespace": "default"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_daemonset",
-        "namespace": "default"
     },
     "host": {
         "mac": [
@@ -2299,16 +2191,6 @@ An example event for `state_deployment` looks as following:
         },
         "namespace": "kube-system"
     },
-    "dataset": {
-        "type": "metrics",
-        "name": "kubernetes.state_deployment",
-        "namespace": "default"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_deployment",
-        "namespace": "default"
-    },
     "host": {
         "mac": [
             "02:42:ac:11:00:0b"
@@ -2432,16 +2314,6 @@ An example event for `state_node` looks as following:
         "ip": [
             "172.17.0.11"
         ]
-    },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.state_node"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.state_node"
     },
     "metricset": {
         "name": "state_node",
@@ -2611,16 +2483,6 @@ An example event for `state_persistentvolume` looks as following:
             "type": "local"
         }
     },
-    "dataset": {
-        "name": "kubernetes.state_persistentvolume",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_persistentvolume",
-        "namespace": "default"
-    },
     "host": {
         "ip": [
             "172.17.0.11"
@@ -2747,22 +2609,12 @@ An example event for `state_persistentvolumeclaim` looks as following:
             "access_mode": "ReadWriteOnce"
         }
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.state_persistentvolumeclaim"
-    },
     "agent": {
         "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
         "type": "metricbeat",
         "version": "8.0.0",
         "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
         "id": "a6147a6e-6626-4a84-9907-f372f6c61eee"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_persistentvolumeclaim",
-        "namespace": "default"
     },
     "ecs": {
         "version": "1.5.0"
@@ -2861,16 +2713,6 @@ An example event for `state_pod` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T12:38:34.469Z",
-    "dataset": {
-        "name": "kubernetes.state_pod",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.state_pod"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -3018,16 +2860,6 @@ An example event for `state_replicaset` looks as following:
         "period": 10000,
         "name": "state_replicaset"
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.state_replicaset"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_replicaset",
-        "namespace": "default"
-    },
     "event": {
         "module": "kubernetes",
         "duration": 5456128,
@@ -3162,11 +2994,6 @@ An example event for `state_resourcequota` looks as following:
         "name": "state_resourcequota",
         "period": 10000
     },
-    "dataset": {
-        "type": "metrics",
-        "name": "kubernetes.state_resourcequota",
-        "namespace": "default"
-    },
     "host": {
         "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
         "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
@@ -3215,11 +3042,6 @@ An example event for `state_resourcequota` looks as following:
             "type": "hard",
             "quota": 1
         }
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kubernetes.state_resourcequota",
-        "namespace": "default"
     }
 }
 ```
@@ -3351,16 +3173,6 @@ An example event for `state_service` looks as following:
     "service": {
         "address": "kube-state-metrics:8080",
         "type": "kubernetes"
-    },
-    "dataset": {
-        "name": "kubernetes.state_service",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "dataset": "kubernetes.state_service",
-        "namespace": "default",
-        "type": "metrics"
     }
 }
 ```
@@ -3495,16 +3307,6 @@ An example event for `state_statefulset` looks as following:
     "service": {
         "address": "kube-state-metrics:8080",
         "type": "kubernetes"
-    },
-    "dataset": {
-        "name": "kubernetes.state_statefulset",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "dataset": "kubernetes.state_statefulset",
-        "namespace": "default",
-        "type": "metrics"
     }
 }
 ```
@@ -3596,16 +3398,6 @@ An example event for `state_storageclass` looks as following:
         "labels": {
             "addonmanager_kubernetes_io_mode": "EnsureExists"
         }
-    },
-    "dataset": {
-        "name": "kubernetes.state_storageclass",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "dataset": "kubernetes.state_storageclass",
-        "namespace": "default",
-        "type": "metrics"
     },
     "host": {
         "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
@@ -3716,11 +3508,6 @@ An example event for `system` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T12:39:59.647Z",
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "kubernetes.system"
-    },
     "service": {
         "address": "minikube:10250",
         "type": "kubernetes"
@@ -3729,11 +3516,6 @@ An example event for `system` looks as following:
         "duration": 20012905,
         "dataset": "kubernetes.system",
         "module": "kubernetes"
-    },
-    "stream": {
-        "dataset": "kubernetes.system",
-        "namespace": "default",
-        "type": "metrics"
     },
     "ecs": {
         "version": "1.5.0"
@@ -3938,16 +3720,6 @@ An example event for `volume` looks as following:
         "node": {
             "name": "minikube"
         }
-    },
-    "dataset": {
-        "type": "metrics",
-        "name": "kubernetes.volume",
-        "namespace": "default"
-    },
-    "stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "kubernetes.volume"
     },
     "host": {
         "architecture": "x86_64",
