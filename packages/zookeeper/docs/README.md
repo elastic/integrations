@@ -63,6 +63,8 @@ An example event for `connection` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip | IP address of the client. | ip |
+| client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -79,6 +81,7 @@ An example event for `connection` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -95,6 +98,8 @@ An example event for `connection` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 | zookeeper.connection.interest_ops | Interest ops | long |
 | zookeeper.connection.queued | Queued connections | long |
 | zookeeper.connection.received | Received connections | long |
@@ -183,6 +188,7 @@ An example event for `mntr` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -199,7 +205,9 @@ An example event for `mntr` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
+| service.version | Service version | keyword |
 | zookeeper.mntr.approximate_data_size | Approximate size of ZooKeeper data. | long |
 | zookeeper.mntr.ephemerals_count | Number of ephemeral znodes. | long |
 | zookeeper.mntr.followers | Number of followers seen by the current host. | long |
@@ -299,6 +307,7 @@ An example event for `server` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -315,6 +324,9 @@ An example event for `server` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
+| service.version | Service version | keyword |
 | zookeeper.server.connections | Number of clients currently connected to the server | long |
 | zookeeper.server.count | Total transactions of the leader in epoch | long |
 | zookeeper.server.epoch | Epoch value of the Zookeeper transaction ID. An epoch signifies the period in which a server is a leader | long |
