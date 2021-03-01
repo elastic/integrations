@@ -65,21 +65,8 @@ An example event for `activitylogs` looks as following:
     "log": {
         "level": "Information"
     },
-    "azure-eventhub": {
-        "sequence_number": 643,
-        "consumer_group": "$Default",
-        "offset": 107374182400,
-        "eventhub": "insights-activity-logs",
-        "enqueued_time": "2020-11-02T08:59:38.905Z"
-    },
-    "tags": [
-        "forwarded"
-    ],
     "cloud": {
         "provider": "azure"
-    },
-    "input": {
-        "type": "azure-eventhub"
     },
     "@timestamp": "2020-11-02T08:51:36.997Z",
     "ecs": {
@@ -157,13 +144,7 @@ An example event for `activitylogs` looks as following:
             },
             "category": "Administrative",
             "event_category": "Administrative",
-            "result_signature": "Succeeded.",
-            "properties": {
-                "eventCategory": "Administrative",
-                "hierarchy": "",
-                "message": "Microsoft.Resources/deployments/write",
-                "entity": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace"
-            }
+            "result_signature": "Succeeded."
         }
     }
 }
@@ -310,22 +291,9 @@ An example event for `platformlogs` looks as following:
         "version": "7.10.0",
         "snapshot": false
     },
-    "azure-eventhub": {
-        "sequence_number": 15,
-        "consumer_group": "$Default",
-        "offset": 4294976088,
-        "eventhub": "insights-logs-operationallogs",
-        "enqueued_time": "2020-11-05T14:08:28.137Z"
-    },
-    "tags": [
-        "forwarded"
-    ],
     "cloud": {
         "provider": "azure",
         "region": "West Europe"
-    },
-    "input": {
-        "type": "azure-eventhub"
     },
     "@timestamp": "2020-11-05T14:07:32.000Z",
     "ecs": {
@@ -349,8 +317,6 @@ An example event for `platformlogs` looks as following:
     "azure": {
         "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA",
         "platformlogs": {
-            "Status": "Succeeded",
-            "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
             "Caller": "Portal",
             "ActivityId": "5890c6fc-fc6b-47cd-971a-2366a1641d99",
             "EventTimeString": "11/5/2020 2:07:32 PM +00:00",
@@ -498,21 +464,8 @@ An example event for `auditlogs` looks as following:
     "log": {
         "level": "Information"
     },
-    "azure-eventhub": {
-        "sequence_number": 643,
-        "consumer_group": "$Default",
-        "offset": 107374182400,
-        "eventhub": "insights-auditlogs-logs",
-        "enqueued_time": "2020-11-02T08:59:38.905Z"
-    },
-    "tags": [
-        "forwarded"
-    ],
     "cloud": {
         "provider": "azure"
-    },
-    "input": {
-        "type": "azure-eventhub"
     },
     "@timestamp": "2020-11-02T08:51:36.997Z",
     "ecs": {
@@ -544,18 +497,14 @@ An example event for `auditlogs` looks as following:
     "azure.auditlogs.properties.category": "Device",
     "azure.auditlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
     "azure.auditlogs.properties.id": "Directory_ESQ",
-    "azure.auditlogs.properties.initiated_by.app.appId": null,
     "azure.auditlogs.properties.initiated_by.app.displayName": "Device Registration Service",
     "azure.auditlogs.properties.initiated_by.app.servicePrincipalId": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.auditlogs.properties.initiated_by.app.servicePrincipalName": null,
     "azure.auditlogs.properties.logged_by_service": "Core Directory",
     "azure.auditlogs.properties.operation_type": "Update",
     "azure.auditlogs.properties.result_reason": "",
     "azure.auditlogs.properties.target_resources.0.display_name": "LAPTOP-12",
     "azure.auditlogs.properties.target_resources.0.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.auditlogs.properties.target_resources.0.modified_properties.0.display_name": "Included Updated Properties",
     "azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value": "\"\"",
-    "azure.auditlogs.properties.target_resources.0.modified_properties.0.old_value": null,
     "azure.auditlogs.properties.target_resources.0.type": "Device",
     "azure.auditlogs.result_signature": "None"
 }
@@ -701,21 +650,8 @@ An example event for `signinlogs` looks as following:
     "log": {
         "level": "Information"
     },
-    "azure-eventhub": {
-        "sequence_number": 643,
-        "consumer_group": "$Default",
-        "offset": 107374182400,
-        "eventhub": "insights-signinlogs-logs",
-        "enqueued_time": "2020-11-02T08:59:38.905Z"
-    },
-    "tags": [
-        "forwarded"
-    ],
     "cloud": {
         "provider": "azure"
-    },
-    "input": {
-        "type": "azure-eventhub"
     },
     "@timestamp": "2020-11-02T08:51:36.997Z",
     "ecs": {
