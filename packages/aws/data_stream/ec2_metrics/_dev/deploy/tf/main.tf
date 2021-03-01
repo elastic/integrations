@@ -18,6 +18,6 @@ data "aws_ami" "latest-amzn" {
   owners = [ "amazon" ] # AWS
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*"]
+    values = ["amzn2-ami-minimal-hvm-*-ebs"]
   }
 }
