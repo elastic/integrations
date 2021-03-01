@@ -16,55 +16,44 @@ An example event for `connection` looks as following:
 
 ```$json
 {
-    "_index": "metricbeat-8.0.0-2020.07.06-000001",
-    "_id": "5KTmJHMB--B0K1AVImYo",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-07-06T16:12:07.612Z",
-        "host": {
-            "name": "zookeeper-01"
-        },
-        "metricset": {
-            "name": "connection",
-            "period": 10000
-        },
-        "service": {
-            "address": "localhost:2181",
-            "type": "zookeeper"
-        },
-        "zookeeper": {
-            "connection": {
-                "received": 1,
-                "sent": 0,
-                "interest_ops": 0,
-                "queued": 0
-            }
-        },
-        "client": {
-            "ip": "172.28.0.1",
-            "port": 44338
-        },
-        "event": {
-            "dataset": "zookeeper.connection",
-            "module": "zookeeper",
-            "duration": 3093417
-        },
-        "agent": {
-            "name": "zookeeper-01",
-            "type": "metricbeat",
-            "version": "8.0.0",
-            "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
-            "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
-        },
-        "ecs": {
-            "version": "1.5.0"
+    "@timestamp": "2020-07-06T16:12:07.612Z",
+    "host": {
+        "name": "zookeeper-01"
+    },
+    "metricset": {
+        "name": "connection",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:2181",
+        "type": "zookeeper"
+    },
+    "zookeeper": {
+        "connection": {
+            "received": 1,
+            "sent": 0,
+            "interest_ops": 0,
+            "queued": 0
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-07-06T16:12:07.612Z"
-        ]
+    "client": {
+        "ip": "172.28.0.1",
+        "port": 44338
+    },
+    "event": {
+        "dataset": "zookeeper.connection",
+        "module": "zookeeper",
+        "duration": 3093417
+    },
+    "agent": {
+        "name": "zookeeper-01",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
+        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
 }
 ```
@@ -120,66 +109,55 @@ An example event for `mntr` looks as following:
 
 ```$json
 {
-    "_index": "metricbeat-8.0.0-2020.07.06-000001",
-    "_id": "5aTmJHMB--B0K1AVImYo",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-07-06T16:12:08.494Z",
-        "zookeeper": {
-            "mntr": {
-                "open_file_descriptor_count": 49,
-                "watch_count": 0,
-                "server_state": "standalone",
-                "max_file_descriptor_count": 1048576,
-                "znode_count": 5,
-                "outstanding_requests": 0,
-                "ephemerals_count": 0,
-                "packets": {
-                    "received": 152,
-                    "sent": 151
-                },
-                "num_alive_connections": 1,
-                "approximate_data_size": 44,
-                "latency": {
-                    "max": 0,
-                    "avg": 0,
-                    "min": 0
-                }
+    "@timestamp": "2020-07-06T16:12:08.494Z",
+    "zookeeper": {
+        "mntr": {
+            "open_file_descriptor_count": 49,
+            "watch_count": 0,
+            "server_state": "standalone",
+            "max_file_descriptor_count": 1048576,
+            "znode_count": 5,
+            "outstanding_requests": 0,
+            "ephemerals_count": 0,
+            "packets": {
+                "received": 152,
+                "sent": 151
+            },
+            "num_alive_connections": 1,
+            "approximate_data_size": 44,
+            "latency": {
+                "max": 0,
+                "avg": 0,
+                "min": 0
             }
-        },
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "host": {
-            "name": "zookeeper-01"
-        },
-        "agent": {
-            "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
-            "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651",
-            "name": "zookeeper-01",
-            "type": "metricbeat",
-            "version": "8.0.0"
-        },
-        "service": {
-            "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653, built on 05/03/2019 12:07 GMT",
-            "address": "localhost:2181",
-            "type": "zookeeper"
-        },
-        "event": {
-            "duration": 15795652,
-            "dataset": "zookeeper.mntr",
-            "module": "zookeeper"
-        },
-        "metricset": {
-            "name": "mntr",
-            "period": 10000
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-07-06T16:12:08.494Z"
-        ]
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "host": {
+        "name": "zookeeper-01"
+    },
+    "agent": {
+        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
+        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651",
+        "name": "zookeeper-01",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "service": {
+        "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653, built on 05/03/2019 12:07 GMT",
+        "address": "localhost:2181",
+        "type": "zookeeper"
+    },
+    "event": {
+        "duration": 15795652,
+        "dataset": "zookeeper.mntr",
+        "module": "zookeeper"
+    },
+    "metricset": {
+        "name": "mntr",
+        "period": 10000
     }
 }
 ```
@@ -250,66 +228,52 @@ An example event for `server` looks as following:
 
 ```$json
 {
-    "_index": "metricbeat-8.0.0-2020.07.06-000001",
-    "_id": "QKTmJHMB--B0K1AVNGfq",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-07-06T16:12:12.409Z",
-        "event": {
-            "module": "zookeeper",
-            "duration": 3001938,
-            "dataset": "zookeeper.server"
-        },
-        "metricset": {
-            "name": "server",
-            "period": 10000
-        },
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "host": {
-            "name": "zookeeper-01"
-        },
-        "agent": {
-            "name": "zookeeper-01",
-            "type": "metricbeat",
-            "version": "8.0.0",
-            "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
-            "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
-        },
-        "zookeeper": {
-            "server": {
-                "zxid": "0x0",
-                "count": 0,
-                "version_date": "2019-05-03T12:07:00Z",
-                "received": 156,
-                "mode": "standalone",
-                "latency": {
-                    "avg": 0,
-                    "max": 0,
-                    "min": 0
-                },
-                "sent": 155,
-                "epoch": 0,
-                "node_count": 5,
-                "connections": 1,
-                "outstanding": 0
-            }
-        },
-        "service": {
-            "address": "localhost:2181",
-            "type": "zookeeper",
-            "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653"
+    "@timestamp": "2020-07-06T16:12:12.409Z",
+    "event": {
+        "module": "zookeeper",
+        "duration": 3001938,
+        "dataset": "zookeeper.server"
+    },
+    "metricset": {
+        "name": "server",
+        "period": 10000
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "host": {
+        "name": "zookeeper-01"
+    },
+    "agent": {
+        "name": "zookeeper-01",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "4d221f8f-7147-4855-8ea3-b4d2a5b80ae0",
+        "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
+    },
+    "zookeeper": {
+        "server": {
+            "zxid": "0x0",
+            "count": 0,
+            "version_date": "2019-05-03T12:07:00Z",
+            "received": 156,
+            "mode": "standalone",
+            "latency": {
+                "avg": 0,
+                "max": 0,
+                "min": 0
+            },
+            "sent": 155,
+            "epoch": 0,
+            "node_count": 5,
+            "connections": 1,
+            "outstanding": 0
         }
     },
-    "fields": {
-        "zookeeper.server.version_date": [
-            "2019-05-03T12:07:00.000Z"
-        ],
-        "@timestamp": [
-            "2020-07-06T16:12:12.409Z"
-        ]
+    "service": {
+        "address": "localhost:2181",
+        "type": "zookeeper",
+        "version": "3.5.5-390fe37ea45dee01bf87dc1c042b5e3dcce88653"
     }
 }
 ```

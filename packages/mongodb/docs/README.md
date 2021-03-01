@@ -104,113 +104,102 @@ An example event for `collstats` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-mongodb.collstats-default-000001",
-    "_id": "6hT0AXMB-2lnjH4qREj1",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T21:20:51.459Z",
-        "metricset": {
-            "name": "collstats",
-            "period": 10000
-        },
-        "service": {
-            "address": "localhost:27017",
-            "type": "mongodb"
-        },
-        "stream": {
-            "dataset": "mongodb.collstats",
-            "namespace": "default",
-            "type": "metrics"
-        },
-        "agent": {
-            "type": "metricbeat",
-            "version": "8.0.0",
-            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-            "name": "KaiyanMacBookPro"
-        },
-        "event": {
-            "dataset": "mongodb.collstats",
-            "module": "mongodb",
-            "duration": 3378520
-        },
-        "mongodb": {
-            "collstats": {
-                "collection": "startup_log",
-                "commands": {
-                    "count": 0,
+    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "metricset": {
+        "name": "collstats",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:27017",
+        "type": "mongodb"
+    },
+    "stream": {
+        "dataset": "mongodb.collstats",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+        "name": "KaiyanMacBookPro"
+    },
+    "event": {
+        "dataset": "mongodb.collstats",
+        "module": "mongodb",
+        "duration": 3378520
+    },
+    "mongodb": {
+        "collstats": {
+            "collection": "startup_log",
+            "commands": {
+                "count": 0,
+                "time": {
+                    "us": 0
+                }
+            },
+            "db": "local",
+            "getmore": {
+                "count": 0,
+                "time": {
+                    "us": 0
+                }
+            },
+            "insert": {
+                "count": 0,
+                "time": {
+                    "us": 0
+                }
+            },
+            "lock": {
+                "read": {
+                    "count": 74,
                     "time": {
-                        "us": 0
+                        "us": 443
                     }
                 },
-                "db": "local",
-                "getmore": {
-                    "count": 0,
+                "write": {
+                    "count": 1,
                     "time": {
-                        "us": 0
-                    }
-                },
-                "insert": {
-                    "count": 0,
-                    "time": {
-                        "us": 0
-                    }
-                },
-                "lock": {
-                    "read": {
-                        "count": 74,
-                        "time": {
-                            "us": 443
-                        }
-                    },
-                    "write": {
-                        "count": 1,
-                        "time": {
-                            "us": 8
-                        }
-                    }
-                },
-                "name": "local.startup_log",
-                "queries": {
-                    "count": 0,
-                    "time": {
-                        "us": 0
-                    }
-                },
-                "remove": {
-                    "count": 0,
-                    "time": {
-                        "us": 0
-                    }
-                },
-                "total": {
-                    "count": 75,
-                    "time": {
-                        "us": 451
-                    }
-                },
-                "update": {
-                    "count": 0,
-                    "time": {
-                        "us": 0
+                        "us": 8
                     }
                 }
+            },
+            "name": "local.startup_log",
+            "queries": {
+                "count": 0,
+                "time": {
+                    "us": 0
+                }
+            },
+            "remove": {
+                "count": 0,
+                "time": {
+                    "us": 0
+                }
+            },
+            "total": {
+                "count": 75,
+                "time": {
+                    "us": 451
+                }
+            },
+            "update": {
+                "count": 0,
+                "time": {
+                    "us": 0
+                }
             }
-        },
-        "dataset": {
-            "namespace": "default",
-            "type": "metrics",
-            "name": "mongodb.collstats"
-        },
-        "ecs": {
-            "version": "1.5.0"
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T21:20:51.459Z"
-        ]
+    "dataset": {
+        "namespace": "default",
+        "type": "metrics",
+        "name": "mongodb.collstats"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
 }
 ```
@@ -294,73 +283,62 @@ An example event for `dbstats` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-mongodb.dbstats-default-000001",
-    "_id": "6hT0AXMB-2lnjH4qREj0",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T21:20:51.459Z",
-        "metricset": {
-            "name": "dbstats",
-            "period": 10000
-        },
-        "service": {
-            "address": "localhost:27017",
-            "type": "mongodb"
-        },
-        "stream": {
-            "dataset": "mongodb.dbstats",
-            "namespace": "default",
-            "type": "metrics"
-        },
-        "agent": {
-            "type": "metricbeat",
-            "version": "8.0.0",
-            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-            "name": "KaiyanMacBookPro"
-        },
-        "event": {
-            "dataset": "mongodb.dbstats",
-            "module": "mongodb",
-            "duration": 3378520
-        },
-        "mongodb": {
-            "dbstats": {
-                "file_size": {},
-                "index_size": {
-                    "bytes": 20480
-                },
-                "ns_size_mb": {},
-                "storage_size": {
-                    "bytes": 20480
-                },
-                "num_extents": 0,
-                "collections": 1,
-                "objects": 1,
-                "db": "admin",
-                "data_size": {
-                    "bytes": 59
-                },
-                "indexes": 1,
-                "avg_obj_size": {
-                    "bytes": 59
-                }
+    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "metricset": {
+        "name": "dbstats",
+        "period": 10000
+    },
+    "service": {
+        "address": "localhost:27017",
+        "type": "mongodb"
+    },
+    "stream": {
+        "dataset": "mongodb.dbstats",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+        "name": "KaiyanMacBookPro"
+    },
+    "event": {
+        "dataset": "mongodb.dbstats",
+        "module": "mongodb",
+        "duration": 3378520
+    },
+    "mongodb": {
+        "dbstats": {
+            "file_size": {},
+            "index_size": {
+                "bytes": 20480
+            },
+            "ns_size_mb": {},
+            "storage_size": {
+                "bytes": 20480
+            },
+            "num_extents": 0,
+            "collections": 1,
+            "objects": 1,
+            "db": "admin",
+            "data_size": {
+                "bytes": 59
+            },
+            "indexes": 1,
+            "avg_obj_size": {
+                "bytes": 59
             }
-        },
-        "dataset": {
-            "namespace": "default",
-            "type": "metrics",
-            "name": "mongodb.dbstats"
-        },
-        "ecs": {
-            "version": "1.5.0"
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T21:20:51.459Z"
-        ]
+    "dataset": {
+        "namespace": "default",
+        "type": "metrics",
+        "name": "mongodb.dbstats"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
 }
 ```
@@ -433,265 +411,254 @@ An example event for `metrics` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-mongodb.metrics-default-000001",
-    "_id": "6RT0AXMB-2lnjH4qREj0",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T21:20:51.459Z",
-        "mongodb": {
-            "metrics": {
-                "replication": {
-                    "network": {
-                        "ops": 0,
-                        "reders_created": 0,
-                        "bytes": 0,
-                        "getmores": {
-                            "count": 0,
-                            "time": {
-                                "ms": 0
-                            }
+    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "mongodb": {
+        "metrics": {
+            "replication": {
+                "network": {
+                    "ops": 0,
+                    "reders_created": 0,
+                    "bytes": 0,
+                    "getmores": {
+                        "count": 0,
+                        "time": {
+                            "ms": 0
+                        }
+                    }
+                },
+                "executor": {
+                    "shutting_down": false,
+                    "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
+                    "queues": {
+                        "in_progress": {
+                            "network": 0
+                        },
+                        "sleepers": 0
+                    },
+                    "unsignaled_events": 0
+                },
+                "apply": {
+                    "attempts_to_become_secondary": 0,
+                    "batches": {
+                        "count": 0,
+                        "time": {
+                            "ms": 0
                         }
                     },
-                    "executor": {
-                        "shutting_down": false,
-                        "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
-                        "queues": {
-                            "in_progress": {
-                                "network": 0
-                            },
-                            "sleepers": 0
-                        },
-                        "unsignaled_events": 0
-                    },
-                    "apply": {
-                        "attempts_to_become_secondary": 0,
-                        "batches": {
-                            "count": 0,
-                            "time": {
-                                "ms": 0
-                            }
-                        },
-                        "ops": 0
-                    },
-                    "buffer": {
-                        "max_size": {
-                            "bytes": 0
-                        },
-                        "size": {
-                            "bytes": 0
-                        },
-                        "count": 0
-                    },
-                    "initial_sync": {
-                        "completed": 0,
-                        "failed_attempts": 0,
-                        "failures": 0
-                    }
+                    "ops": 0
                 },
-                "ttl": {
-                    "passes": {
-                        "count": 433
+                "buffer": {
+                    "max_size": {
+                        "bytes": 0
                     },
-                    "deleted_documents": {
-                        "count": 3
-                    }
+                    "size": {
+                        "bytes": 0
+                    },
+                    "count": 0
                 },
-                "commands": {
-                    "replset_heartbeat": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "connection_pool_stats": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "host_info": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "aggregate": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "replset_update_position": {
-                        "total": 0,
-                        "failed": 0
-                    },
-                    "last_collections": {
-                        "failed": 0,
-                        "total": 458
-                    },
-                    "list_databased": {
-                        "total": 466,
-                        "failed": 0
-                    },
-                    "whatsmyuri": {
-                        "total": 2,
-                        "failed": 0
-                    },
-                    "profile": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "insert": {
-                        "failed": 0,
-                        "total": 7
-                    },
-                    "count": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "is_master": {
-                        "failed": 0,
-                        "total": 2332
-                    },
-                    "distinct": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "replset_get_status": {
-                        "failed": 2,
-                        "total": 2
-                    },
-                    "find": {
-                        "failed": 0,
-                        "total": 94
-                    },
-                    "replset_get_rbid": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "get_parameter": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "coll_stats": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "build_info": {
-                        "total": 6,
-                        "failed": 0
-                    },
-                    "last_commands": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "update": {
-                        "failed": 0,
-                        "total": 5
-                    },
-                    "is_self": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "db_stats": {
-                        "failed": 0,
-                        "total": 2044
-                    },
-                    "get_cmd_line_opts": {
-                        "failed": 0,
-                        "total": 2
-                    },
-                    "ping": {
-                        "total": 2290,
-                        "failed": 0
-                    },
-                    "server_status": {
-                        "total": 916,
-                        "failed": 0
-                    },
-                    "get_last_error": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "get_more": {
-                        "failed": 0,
-                        "total": 0
-                    },
-                    "get_log": {
-                        "failed": 0,
-                        "total": 2
-                    },
-                    "list_indexes": {
-                        "failed": 0,
-                        "total": 174
-                    }
+                "initial_sync": {
+                    "completed": 0,
+                    "failed_attempts": 0,
+                    "failures": 0
+                }
+            },
+            "ttl": {
+                "passes": {
+                    "count": 433
                 },
-                "cursor": {
-                    "timed_out": 0,
-                    "open": {
-                        "pinned": 0,
-                        "total": 0,
-                        "no_timeout": 0
-                    }
+                "deleted_documents": {
+                    "count": 3
+                }
+            },
+            "commands": {
+                "replset_heartbeat": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "connection_pool_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "host_info": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "aggregate": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_update_position": {
+                    "total": 0,
+                    "failed": 0
+                },
+                "last_collections": {
+                    "failed": 0,
+                    "total": 458
+                },
+                "list_databased": {
+                    "total": 466,
+                    "failed": 0
+                },
+                "whatsmyuri": {
+                    "total": 2,
+                    "failed": 0
+                },
+                "profile": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "insert": {
+                    "failed": 0,
+                    "total": 7
+                },
+                "count": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "is_master": {
+                    "failed": 0,
+                    "total": 2332
+                },
+                "distinct": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_get_status": {
+                    "failed": 2,
+                    "total": 2
+                },
+                "find": {
+                    "failed": 0,
+                    "total": 94
+                },
+                "replset_get_rbid": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_parameter": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "coll_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "build_info": {
+                    "total": 6,
+                    "failed": 0
+                },
+                "last_commands": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "update": {
+                    "failed": 0,
+                    "total": 5
+                },
+                "is_self": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "db_stats": {
+                    "failed": 0,
+                    "total": 2044
+                },
+                "get_cmd_line_opts": {
+                    "failed": 0,
+                    "total": 2
+                },
+                "ping": {
+                    "total": 2290,
+                    "failed": 0
+                },
+                "server_status": {
+                    "total": 916,
+                    "failed": 0
                 },
                 "get_last_error": {
-                    "write_wait": {
-                        "ms": 0,
-                        "count": 0
-                    },
-                    "write_timeouts": 0
+                    "failed": 0,
+                    "total": 0
                 },
-                "operation": {
-                    "write_conflicts": 0,
-                    "scan_and_order": 0
+                "get_more": {
+                    "failed": 0,
+                    "total": 0
                 },
-                "document": {
-                    "deleted": 15,
-                    "inserted": 19,
-                    "returned": 465,
-                    "updated": 2
+                "get_log": {
+                    "failed": 0,
+                    "total": 2
                 },
-                "query_executor": {
-                    "scanned_indexes": {
-                        "count": 2
-                    },
-                    "scanned_documents": {
-                        "count": 24
-                    }
+                "list_indexes": {
+                    "failed": 0,
+                    "total": 174
+                }
+            },
+            "cursor": {
+                "timed_out": 0,
+                "open": {
+                    "pinned": 0,
+                    "total": 0,
+                    "no_timeout": 0
+                }
+            },
+            "get_last_error": {
+                "write_wait": {
+                    "ms": 0,
+                    "count": 0
+                },
+                "write_timeouts": 0
+            },
+            "operation": {
+                "write_conflicts": 0,
+                "scan_and_order": 0
+            },
+            "document": {
+                "deleted": 15,
+                "inserted": 19,
+                "returned": 465,
+                "updated": 2
+            },
+            "query_executor": {
+                "scanned_indexes": {
+                    "count": 2
+                },
+                "scanned_documents": {
+                    "count": 24
                 }
             }
-        },
-        "metricset": {
-            "period": 10000,
-            "name": "metrics"
-        },
-        "stream": {
-            "type": "metrics",
-            "dataset": "mongodb.metrics",
-            "namespace": "default"
-        },
-        "agent": {
-            "name": "KaiyanMacBookPro",
-            "type": "metricbeat",
-            "version": "8.0.0",
-            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a"
-        },
-        "service": {
-            "address": "localhost:27017",
-            "type": "mongodb"
-        },
-        "event": {
-            "dataset": "mongodb.metrics",
-            "module": "mongodb",
-            "duration": 3039885
-        },
-        "dataset": {
-            "type": "metrics",
-            "name": "mongodb.metrics",
-            "namespace": "default"
-        },
-        "ecs": {
-            "version": "1.5.0"
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T21:20:51.459Z"
-        ]
+    "metricset": {
+        "period": 10000,
+        "name": "metrics"
+    },
+    "stream": {
+        "type": "metrics",
+        "dataset": "mongodb.metrics",
+        "namespace": "default"
+    },
+    "agent": {
+        "name": "KaiyanMacBookPro",
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a"
+    },
+    "service": {
+        "address": "localhost:27017",
+        "type": "mongodb"
+    },
+    "event": {
+        "dataset": "mongodb.metrics",
+        "module": "mongodb",
+        "duration": 3039885
+    },
+    "dataset": {
+        "type": "metrics",
+        "name": "mongodb.metrics",
+        "namespace": "default"
+    },
+    "ecs": {
+        "version": "1.5.0"
     }
 }
 ```
@@ -869,57 +836,43 @@ An example event for `replstatus` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-mongodb.replstatus-default-000001",
-    "_id": "3BT0AXMB-2lnjH4qREj0",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T21:20:51.457Z",
-        "service": {
-            "address": "localhost:27017",
-            "type": "mongodb"
-        },
-        "error": {
-            "message": "error getting replication info: collection oplog.rs was not found"
-        },
-        "dataset": {
-            "name": "mongodb.replstatus",
-            "namespace": "default",
-            "type": "metrics"
-        },
-        "stream": {
-            "dataset": "mongodb.replstatus",
-            "namespace": "default",
-            "type": "metrics"
-        },
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "event": {
-            "dataset": "mongodb.replstatus",
-            "module": "mongodb",
-            "duration": 1962467
-        },
-        "metricset": {
-            "name": "replstatus",
-            "period": 10000
-        },
-        "agent": {
-            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-            "name": "KaiyanMacBookPro",
-            "type": "metricbeat",
-            "version": "8.0.0"
-        }
+    "@timestamp": "2020-06-29T21:20:51.457Z",
+    "service": {
+        "address": "localhost:27017",
+        "type": "mongodb"
     },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T21:20:51.457Z"
-        ]
+    "error": {
+        "message": "error getting replication info: collection oplog.rs was not found"
     },
-    "sort": [
-        1593465651457
-    ]
+    "dataset": {
+        "name": "mongodb.replstatus",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "stream": {
+        "dataset": "mongodb.replstatus",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "event": {
+        "dataset": "mongodb.replstatus",
+        "module": "mongodb",
+        "duration": 1962467
+    },
+    "metricset": {
+        "name": "replstatus",
+        "period": 10000
+    },
+    "agent": {
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+        "name": "KaiyanMacBookPro",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    }
 }
 ```
 
@@ -1009,235 +962,218 @@ An example event for `status` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-mongodb.status-default-000001",
-    "_id": "ZxTzAXMB-2lnjH4qgUKh",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T21:20:01.455Z",
-        "dataset": {
-            "type": "metrics",
-            "name": "mongodb.status",
-            "namespace": "default"
-        },
-        "stream": {
-            "type": "metrics",
-            "dataset": "mongodb.status",
-            "namespace": "default"
-        },
-        "agent": {
-            "version": "8.0.0",
-            "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-            "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-            "name": "KaiyanMacBookPro",
-            "type": "metricbeat"
-        },
-        "process": {
-            "name": "mongod"
-        },
-        "event": {
-            "duration": 3581045,
-            "dataset": "mongodb.status",
-            "module": "mongodb"
-        },
-        "mongodb": {
-            "status": {
-                "locks": {
-                    "global": {
-                        "acquire": {
-                            "count": {
-                                "w": 458,
-                                "W": 4,
-                                "r": 56961
-                            }
-                        },
-                        "wait": {},
-                        "deadlock": {}
-                    },
-                    "database": {
-                        "deadlock": {},
-                        "acquire": {
-                            "count": {
-                                "w": 453,
-                                "W": 5,
-                                "r": 5238
-                            }
-                        },
-                        "wait": {}
-                    },
-                    "collection": {
-                        "wait": {},
-                        "deadlock": {},
-                        "acquire": {
-                            "count": {
-                                "W": 3,
-                                "r": 8221,
-                                "w": 450
-                            }
-                        }
-                    }
-                },
-                "network": {
-                    "in": {
-                        "bytes": 687306
-                    },
-                    "out": {
-                        "bytes": 32519464
-                    },
-                    "requests": 11607
-                },
-                "extra_info": {
-                    "page_faults": 0,
-                    "heap_usage": {}
-                },
-                "local_time": "2020-06-29T21:20:01.457Z",
-                "storage_engine": {
-                    "name": "wiredTiger"
-                },
-                "asserts": {
-                    "user": 9,
-                    "rollovers": 0,
-                    "regular": 0,
-                    "warning": 0,
-                    "msg": 0
-                },
-                "global_lock": {
-                    "total_time": {
-                        "us": 26003338000
-                    },
-                    "current_queue": {
-                        "total": 0,
-                        "readers": 0,
-                        "writers": 0
-                    },
-                    "active_clients": {
-                        "total": 1,
-                        "readers": 1,
-                        "writers": 0
-                    }
-                },
-                "wired_tiger": {
-                    "log": {
-                        "syncs": 67,
-                        "size": {
-                            "bytes": 33554432
-                        },
-                        "write": {
-                            "bytes": 46976
-                        },
-                        "max_file_size": {
-                            "bytes": 104857600
-                        },
-                        "flushes": 152183,
-                        "writes": 140,
-                        "scans": 6
-                    },
-                    "concurrent_transactions": {
-                        "write": {
-                            "out": 0,
-                            "available": 128,
-                            "total_tickets": 128
-                        },
-                        "read": {
-                            "available": 128,
-                            "total_tickets": 128,
-                            "out": 0
+    "@timestamp": "2020-06-29T21:20:01.455Z",
+    "dataset": {
+        "type": "metrics",
+        "name": "mongodb.status",
+        "namespace": "default"
+    },
+    "stream": {
+        "type": "metrics",
+        "dataset": "mongodb.status",
+        "namespace": "default"
+    },
+    "agent": {
+        "version": "8.0.0",
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+        "name": "KaiyanMacBookPro",
+        "type": "metricbeat"
+    },
+    "process": {
+        "name": "mongod"
+    },
+    "event": {
+        "duration": 3581045,
+        "dataset": "mongodb.status",
+        "module": "mongodb"
+    },
+    "mongodb": {
+        "status": {
+            "locks": {
+                "global": {
+                    "acquire": {
+                        "count": {
+                            "w": 458,
+                            "W": 4,
+                            "r": 56961
                         }
                     },
-                    "cache": {
-                        "dirty": {
-                            "bytes": 0
-                        },
-                        "pages": {
-                            "evicted": 0,
-                            "read": 14,
-                            "write": 111
-                        },
-                        "maximum": {
-                            "bytes": 16642998272
-                        },
-                        "used": {
-                            "bytes": 89236
+                    "wait": {},
+                    "deadlock": {}
+                },
+                "database": {
+                    "deadlock": {},
+                    "acquire": {
+                        "count": {
+                            "w": 453,
+                            "W": 5,
+                            "r": 5238
+                        }
+                    },
+                    "wait": {}
+                },
+                "collection": {
+                    "wait": {},
+                    "deadlock": {},
+                    "acquire": {
+                        "count": {
+                            "W": 3,
+                            "r": 8221,
+                            "w": 450
                         }
                     }
-                },
-                "memory": {
-                    "mapped_with_journal": {},
-                    "bits": 64,
-                    "resident": {
-                        "mb": 44
-                    },
-                    "virtual": {
-                        "mb": 6971
-                    },
-                    "mapped": {}
-                },
-                "connections": {
-                    "total_created": 2266,
-                    "current": 5,
-                    "available": 3271
-                },
-                "ops": {
-                    "counters": {
-                        "delete": 3,
-                        "getmore": 452,
-                        "command": 11314,
-                        "insert": 19,
-                        "query": 94,
-                        "update": 5
-                    },
-                    "replicated": {
-                        "delete": 0,
-                        "getmore": 0,
-                        "command": 0,
-                        "insert": 0,
-                        "query": 0,
-                        "update": 0
-                    },
-                    "latencies": {
-                        "writes": {
-                            "latency": 103455,
-                            "count": 9
-                        },
-                        "commands": {
-                            "latency": 2055949,
-                            "count": 11138
-                        },
-                        "reads": {
-                            "latency": 14259,
-                            "count": 458
-                        }
-                    }
-                },
-                "uptime": {
-                    "ms": 26003340
                 }
+            },
+            "network": {
+                "in": {
+                    "bytes": 687306
+                },
+                "out": {
+                    "bytes": 32519464
+                },
+                "requests": 11607
+            },
+            "extra_info": {
+                "page_faults": 0,
+                "heap_usage": {}
+            },
+            "local_time": "2020-06-29T21:20:01.457Z",
+            "storage_engine": {
+                "name": "wiredTiger"
+            },
+            "asserts": {
+                "user": 9,
+                "rollovers": 0,
+                "regular": 0,
+                "warning": 0,
+                "msg": 0
+            },
+            "global_lock": {
+                "total_time": {
+                    "us": 26003338000
+                },
+                "current_queue": {
+                    "total": 0,
+                    "readers": 0,
+                    "writers": 0
+                },
+                "active_clients": {
+                    "total": 1,
+                    "readers": 1,
+                    "writers": 0
+                }
+            },
+            "wired_tiger": {
+                "log": {
+                    "syncs": 67,
+                    "size": {
+                        "bytes": 33554432
+                    },
+                    "write": {
+                        "bytes": 46976
+                    },
+                    "max_file_size": {
+                        "bytes": 104857600
+                    },
+                    "flushes": 152183,
+                    "writes": 140,
+                    "scans": 6
+                },
+                "concurrent_transactions": {
+                    "write": {
+                        "out": 0,
+                        "available": 128,
+                        "total_tickets": 128
+                    },
+                    "read": {
+                        "available": 128,
+                        "total_tickets": 128,
+                        "out": 0
+                    }
+                },
+                "cache": {
+                    "dirty": {
+                        "bytes": 0
+                    },
+                    "pages": {
+                        "evicted": 0,
+                        "read": 14,
+                        "write": 111
+                    },
+                    "maximum": {
+                        "bytes": 16642998272
+                    },
+                    "used": {
+                        "bytes": 89236
+                    }
+                }
+            },
+            "memory": {
+                "mapped_with_journal": {},
+                "bits": 64,
+                "resident": {
+                    "mb": 44
+                },
+                "virtual": {
+                    "mb": 6971
+                },
+                "mapped": {}
+            },
+            "connections": {
+                "total_created": 2266,
+                "current": 5,
+                "available": 3271
+            },
+            "ops": {
+                "counters": {
+                    "delete": 3,
+                    "getmore": 452,
+                    "command": 11314,
+                    "insert": 19,
+                    "query": 94,
+                    "update": 5
+                },
+                "replicated": {
+                    "delete": 0,
+                    "getmore": 0,
+                    "command": 0,
+                    "insert": 0,
+                    "query": 0,
+                    "update": 0
+                },
+                "latencies": {
+                    "writes": {
+                        "latency": 103455,
+                        "count": 9
+                    },
+                    "commands": {
+                        "latency": 2055949,
+                        "count": 11138
+                    },
+                    "reads": {
+                        "latency": 14259,
+                        "count": 458
+                    }
+                }
+            },
+            "uptime": {
+                "ms": 26003340
             }
-        },
-        "service": {
-            "version": "4.2.0",
-            "address": "localhost:27017",
-            "type": "mongodb"
-        },
-        "metricset": {
-            "name": "status",
-            "period": 10000
-        },
-        "ecs": {
-            "version": "1.5.0"
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T21:20:01.455Z"
-        ],
-        "mongodb.status.local_time": [
-            "2020-06-29T21:20:01.457Z"
-        ]
+    "service": {
+        "version": "4.2.0",
+        "address": "localhost:27017",
+        "type": "mongodb"
     },
-    "sort": [
-        1593465601455
-    ]
+    "metricset": {
+        "name": "status",
+        "period": 10000
+    },
+    "ecs": {
+        "version": "1.5.0"
+    }
 }
 ```
 
