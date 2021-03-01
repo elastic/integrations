@@ -13,6 +13,9 @@ pipeline {
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.10.0"
     K8S_VERSION = "v1.20.2"
+
+    ELASTIC_STACK_VERSION_PREV = "7.11.1"
+    ELASTIC_STACK_VERSION_PREV_PREV = "7.10.0"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -52,8 +55,8 @@ pipeline {
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              if (isPrAffected("${it}")) {
-                integrations["${it}"] = {
+              if (isPrAffected(it)) {
+                integrations[it] = {
                   sleep(randomNumber(min: 1, max: 5))
                   node('ubuntu-20 && immutable') {
                     stage("${it}: check") {
@@ -77,11 +80,15 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                         }
                       }
+
+                      // Check compatibility with previous stacks
+                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
+                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
@@ -229,5 +236,41 @@ def withCloudTestEnv(Closure body) {
   ])
   withEnvMask(vars: maskedVars) {
     body()
+  }
+}
+
+def checkPackageCompatibility(integrationName, stackVersion) {
+  if (!isPackageCompatible(integrationName, stackVersion)) {
+    return // the package doesn't have to be supported by this stack
+  }
+
+  try {
+    dir("${BASE_DIR}/packages/${integrationName}") {
+      sh(label: "Boot up the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack up -d -v --version ${stackVersion}")
+      sh(label: "Install integration: ${integrationName}", script: '''
+        eval "$(../../build/elastic-package stack shellinit)"
+        ../../build/elastic-package install -v''')
+    }
+  } finally {
+    dir("${BASE_DIR}") {
+      sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${stackVersion}/${integrationName}")
+      archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/*.log")
+      sh(label: "Take down the Elastic stack (${stackVersion})", script: 'build/elastic-package stack down -v')
+    }
+  }
+}
+
+def isPackageCompatible(integrationName, stackVersion) {
+  dir("${BASE_DIR}/packages/${integrationName}") {
+    def r = sh(label: "Check compatibility with ${stackVersion}",
+      script: "../../build/elastic-package install -v -c kibana.version=${stackVersion}",
+      returnStatus: true)
+    if (r == 0) {
+      echo "Package should be compatible"
+      return true
+    }
+
+    echo "Package is not compatible. Skipping."
+    return false
   }
 }
