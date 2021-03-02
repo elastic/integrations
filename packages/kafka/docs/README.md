@@ -97,11 +97,6 @@ An example event for `broker` looks as following:
         "period": 10000,
         "name": "broker"
     },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kafka.broker",
-        "namespace": "default"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -136,6 +131,7 @@ An example event for `broker` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -180,6 +176,8 @@ An example event for `broker` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### consumergroup
@@ -244,11 +242,6 @@ An example event for `consumergroup` looks as following:
     "service": {
         "address": "localhost:9092",
         "type": "kafka"
-    },
-    "stream": {
-        "dataset": "kafka.consumergroup",
-        "namespace": "default",
-        "type": "metrics"
     }
 }
 ```
@@ -274,6 +267,7 @@ An example event for `consumergroup` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -309,6 +303,8 @@ An example event for `consumergroup` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### partition
@@ -358,11 +354,6 @@ An example event for `partition` looks as following:
             "name": "messages"
         }
     },
-    "stream": {
-        "type": "metrics",
-        "dataset": "kafka.partition",
-        "namespace": "default"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -402,6 +393,7 @@ An example event for `partition` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -438,3 +430,5 @@ An example event for `partition` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
