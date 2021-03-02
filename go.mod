@@ -4,9 +4,8 @@ go 1.12
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.0.0-20210301151806-9253ee3cdcfe
+	github.com/elastic/elastic-package v0.0.0-20210302155343-7a8f99157a71
 	github.com/elastic/package-registry v0.17.0
-	github.com/elastic/package-spec/code/go v0.0.0-20210302092944-28bc03fffa83 // indirect
 	github.com/magefile/mage v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
