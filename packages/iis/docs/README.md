@@ -23,11 +23,6 @@ An example event for `webserver` looks as following:
     "service": {
         "type": "iis"
     },
-    "dataset": {
-        "type": "metrics",
-        "name": "iis.webserver",
-        "namespace": "default"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -47,9 +42,7 @@ An example event for `webserver` looks as following:
             "asp_net_application": {
                 "requests_in_application_queue": 0,
                 "pipeline_instance_count": 2,
-                "requests/sec": 0,
-                "requests_executing": 0,
-                "errors_total/sec": 0
+                "requests_executing": 0
             },
             "network": {
                 "total_get_requests": 52,
@@ -133,6 +126,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -199,6 +193,8 @@ The fields reported are:
 | iis.webserver.process.virtual_bytes | Memory virtual bytes. | float |
 | iis.webserver.process.worker_process_count | Number of worker processes running. | float |
 | iis.webserver.process.working_set | Memory working set. | float |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### website
@@ -241,11 +237,6 @@ An example event for `website` looks as following:
     "service": {
         "type": "iis"
     },
-    "dataset": {
-        "name": "iis.website",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "agent": {
         "type": "metricbeat",
         "version": "8.0.0",
@@ -279,6 +270,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -312,6 +304,7 @@ The fields reported are:
 | iis.website.network.total_get_requests | The total number of GET requests. | float |
 | iis.website.network.total_post_requests | The total number of POST requests. | float |
 | iis.website.network.total_put_requests | The total number of PUT requests. | float |
+| service.type | Service type | keyword |
 
 
 ### application_pool
@@ -322,9 +315,6 @@ An example event for `application_pool` looks as following:
 ```$json
 {
     "@timestamp": "2020-07-08T11:41:31.048Z",
-    "process": {
-        "pid": 51224
-    },
     "event": {
         "dataset": "iis.application_pool",
         "module": "iis",
@@ -359,11 +349,6 @@ An example event for `application_pool` looks as following:
     "metricset": {
         "period": 10000,
         "name": "application_pool"
-    },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "iis.application_pool"
     }
 }
 ```
@@ -391,6 +376,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -421,6 +407,8 @@ The fields reported are:
 | iis.application_pool.process.thread_count | The number of threats. | long |
 | iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float |
 | iis.application_pool.process.working_set | Memory working set. | float |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ## Logs
@@ -444,12 +432,6 @@ An example event for `access` looks as following:
         "version": "8.0.0"
     },
     "temp": {},
-    "log": {
-        "file": {
-            "path": "C:\\inetpub\\logs\\LogFiles\\W3SVC2\\u_ex181119.log"
-        },
-        "offset": 261
-    },
     "destination": {
         "address": "127.0.0.1",
         "port": 80,
@@ -461,9 +443,6 @@ An example event for `access` looks as following:
     },
     "url": {
         "path": "/"
-    },
-    "input": {
-        "type": "log"
     },
     "iis": {
         "access": {
@@ -501,11 +480,6 @@ An example event for `access` looks as following:
             "connection"
         ],
         "outcome": "failure"
-    },
-    "dataset": {
-        "name": "iis.access",
-        "namespace": "default",
-        "type": "logs"
     },
     "user_agent": {
         "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36",
@@ -550,6 +524,7 @@ The fields reported are:
 | destination.domain | Destination domain. | keyword |
 | destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
+| ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -620,12 +595,6 @@ An example event for `error` looks as following:
         "ephemeral_id": "3f65b650-b6a3-4694-83b3-0c324a60809d",
         "version": "8.0.0"
     },
-    "log": {
-        "file": {
-            "path": "c:\\Windows\\System32\\LogFiles\\HTTPERR\\httperr1.log"
-        },
-        "offset": 199
-    },
     "destination": {
         "address": "::1%0",
         "port": 80,
@@ -635,9 +604,6 @@ An example event for `error` looks as following:
         "address": "::1%0",
         "port": 59827,
         "ip": "::1"
-    },
-    "input": {
-        "type": "log"
     },
     "iis": {
         "error": {
@@ -664,11 +630,6 @@ An example event for `error` looks as following:
         "type": [
             "connection"
         ]
-    },
-    "dataset": {
-        "name": "iis.error",
-        "namespace": "default",
-        "type": "logs"
     }
 }
 ```
@@ -700,6 +661,7 @@ The fields reported are:
 | destination.domain | Destination domain. | keyword |
 | destination.ip |  | ip |
 | destination.port | Port of the destination. | long |
+| ecs.version | ECS version | keyword |
 | error.message | Error message | text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |

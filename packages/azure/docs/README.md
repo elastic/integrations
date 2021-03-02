@@ -62,114 +62,89 @@ An example event for `activitylogs` looks as following:
 
 ```$json
 {
-    "_index": ".ds-logs-azure.activitylogs-default-000001",
-    "_type": "_doc",
-    "_id": "bQlEe3UBm_qs2Y3aNZPq",
-    "_score": null,
-    "_source": {
-        "log": {
-            "level": "Information"
+    "log": {
+        "level": "Information"
+    },
+    "cloud": {
+        "provider": "azure"
+    },
+    "@timestamp": "2020-11-02T08:51:36.997Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "azure.activitylogs"
+    },
+    "event": {
+        "duration": "0",
+        "ingested": "2020-10-30T20:47:48.123859400Z",
+        "kind": "event",
+        "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
+        "dataset": "azure.activitylogs",
+        "outcome": "success"
+    },
+    "azure": {
+        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
+        "resource": {
+            "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS",
+            "name": "NOMARKETPLACE",
+            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
+            "group": "OBS-TEST"
         },
-        "azure-eventhub": {
-            "sequence_number": 643,
-            "consumer_group": "$Default",
-            "offset": 107374182400,
-            "eventhub": "insights-activity-logs",
-            "enqueued_time": "2020-11-02T08:59:38.905Z"
-        },
-        "tags": [
-            "forwarded"
-        ],
-        "cloud": {
-            "provider": "azure"
-        },
-        "input": {
-            "type": "azure-eventhub"
-        },
-        "@timestamp": "2020-11-02T08:51:36.997Z",
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "data_stream": {
-            "namespace": "default",
-            "type": "logs",
-            "dataset": "azure.activitylogs"
-        },
-        "event": {
-            "duration": "0",
-            "ingested": "2020-10-30T20:47:48.123859400Z",
-            "kind": "event",
-            "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-            "dataset": "azure.activitylogs",
-            "outcome": "success"
-        },
-        "azure": {
-            "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
-            "resource": {
-                "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS",
-                "name": "NOMARKETPLACE",
-                "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
-                "group": "OBS-TEST"
-            },
-            "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
-            "activitylogs": {
-                "operation_name": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-                "result_type": "Success",
-                "identity": {
-                    "authorization": {
-                        "evidence": {
-                            "role_definition_id": "8e3af657a8ff443ca75c2fe8c4bcb635",
-                            "role": "Owner",
-                            "role_assignment_scope": "/providers/Microsoft.Management/managementGroups/5341238b-665c-4eb4-b259-b250371ae430",
-                            "role_assignment_id": "7f06f09dd6764b44930adbec3f10e92b",
-                            "principal_type": "User",
-                            "principal_id": "68b1adf93eb744b08eb8ce96522a08d3"
-                        },
-                        "scope": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace",
-                        "action": "Microsoft.Resources/deployments/write"
+        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
+        "activitylogs": {
+            "operation_name": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
+            "result_type": "Success",
+            "identity": {
+                "authorization": {
+                    "evidence": {
+                        "role_definition_id": "8e3af657a8ff443ca75c2fe8c4bcb635",
+                        "role": "Owner",
+                        "role_assignment_scope": "/providers/Microsoft.Management/managementGroups/5341238b-665c-4eb4-b259-b250371ae430",
+                        "role_assignment_id": "7f06f09dd6764b44930adbec3f10e92b",
+                        "principal_type": "User",
+                        "principal_id": "68b1adf93eb744b08eb8ce96522a08d3"
                     },
-                    "claims": {
-                        "xms_tcdt": "1469565974",
-                        "aio": "ATQAy/8RAAAAsL67UQMOHZv3izTDRJfvJN5UyON9ktUszzPj08K8aURsbhxhR0niz9s1Pxm9U1lI",
-                        "iss": "https://sts.windows.net/4fa94b7d-a743-486f-abcc-6c276c44cf4b/",
-                        "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/nameidentifier": "a9L2WR3XZN5ANzAqwLx_4aamU49JG6kqaE5JZkXdeNs",
-                        "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname": "Doe",
-                        "http://schemas_microsoft_com/identity/claims/scope": "user_impersonation",
-                        "http://schemas_microsoft_com/identity/claims/tenantid": "4fa94b7d-a743-486f-abcc-6c276c44cf4b",
-                        "puid": "1003200045B17AD4",
-                        "wids": "5d6b6bb7-de71-4623-b4af-96380a352509",
-                        "http://schemas_microsoft_com/claims/authnclassreference": "1",
-                        "exp": "1604310019",
-                        "ipaddr": "77.170.179.229",
-                        "iat": "1604306119",
-                        "http://schemas_microsoft_com/identity/claims/objectidentifier": "68b1adf9-3eb7-44b0-8eb8-ce96522a08d3",
-                        "http://schemas_microsoft_com/claims/authnmethodsreferences": "pwd",
-                        "ver": "1.0",
-                        "groups": "644c6686-9ef1-4b69-9410-107664a9e1f0,9ed1993c-ce9c-4915-a04d-58c6f5f7ee12",
-                        "uti": "rqr63RW_Kk6ztuomENMQAA",
-                        "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/upn": "john@gmail.com",
-                        "aud": "https://management.core.windows.net/",
-                        "nbf": "1604306119",
-                        "appidacr": "2",
-                        "rh": "0.AAAAfUupT0Onb0irzGwnbETPS4NAS8SwO8FJtH2XTlPL3zxRAA8.",
-                        "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c",
-                        "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname": "John",
-                        "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name": "john@gmail.com"
-                    },
-                    "claims_initiated_by_user": {
-                        "schema": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims"
-                    }
+                    "scope": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace",
+                    "action": "Microsoft.Resources/deployments/write"
                 },
-                "category": "Administrative",
-                "event_category": "Administrative",
-                "result_signature": "Succeeded.",
-                "properties": {
-                    "eventCategory": "Administrative",
-                    "hierarchy": "",
-                    "message": "Microsoft.Resources/deployments/write",
-                    "entity": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace"
+                "claims": {
+                    "xms_tcdt": "1469565974",
+                    "aio": "ATQAy/8RAAAAsL67UQMOHZv3izTDRJfvJN5UyON9ktUszzPj08K8aURsbhxhR0niz9s1Pxm9U1lI",
+                    "iss": "https://sts.windows.net/4fa94b7d-a743-486f-abcc-6c276c44cf4b/",
+                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/nameidentifier": "a9L2WR3XZN5ANzAqwLx_4aamU49JG6kqaE5JZkXdeNs",
+                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname": "Doe",
+                    "http://schemas_microsoft_com/identity/claims/scope": "user_impersonation",
+                    "http://schemas_microsoft_com/identity/claims/tenantid": "4fa94b7d-a743-486f-abcc-6c276c44cf4b",
+                    "puid": "1003200045B17AD4",
+                    "wids": "5d6b6bb7-de71-4623-b4af-96380a352509",
+                    "http://schemas_microsoft_com/claims/authnclassreference": "1",
+                    "exp": "1604310019",
+                    "ipaddr": "77.170.179.229",
+                    "iat": "1604306119",
+                    "http://schemas_microsoft_com/identity/claims/objectidentifier": "68b1adf9-3eb7-44b0-8eb8-ce96522a08d3",
+                    "http://schemas_microsoft_com/claims/authnmethodsreferences": "pwd",
+                    "ver": "1.0",
+                    "groups": "644c6686-9ef1-4b69-9410-107664a9e1f0,9ed1993c-ce9c-4915-a04d-58c6f5f7ee12",
+                    "uti": "rqr63RW_Kk6ztuomENMQAA",
+                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/upn": "john@gmail.com",
+                    "aud": "https://management.core.windows.net/",
+                    "nbf": "1604306119",
+                    "appidacr": "2",
+                    "rh": "0.AAAAfUupT0Onb0irzGwnbETPS4NAS8SwO8FJtH2XTlPL3zxRAA8.",
+                    "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c",
+                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname": "John",
+                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name": "john@gmail.com"
+                },
+                "claims_initiated_by_user": {
+                    "schema": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims"
                 }
-            }
+            },
+            "category": "Administrative",
+            "event_category": "Administrative",
+            "result_signature": "Succeeded."
         }
     }
 }
@@ -303,85 +278,64 @@ An example event for `platformlogs` looks as following:
 
 ```$json
 {
-    "_index": ".ds-logs-azure.platformlogs-default-000001",
-    "_type": "_doc",
-    "_id": "BHSwg3UBWgbgrXIaDOF-",
-    "_score": null,
-    "_source": {
-        "agent": {
-            "hostname": "DESKTOP-RFOOE09",
-            "name": "DESKTOP-RFOOE09",
-            "id": "c1118415-bcb7-4cf9-b64d-a6c6e8ebcfac",
-            "type": "filebeat",
-            "ephemeral_id": "d3c4d56c-e7c7-489e-9d25-683452d16ec9",
-            "version": "7.10.0"
-        },
-        "elastic_agent": {
-            "id": "02f4e39d-8a1b-4506-a531-b45d0f492ee7",
-            "version": "7.10.0",
-            "snapshot": false
-        },
-        "azure-eventhub": {
-            "sequence_number": 15,
-            "consumer_group": "$Default",
-            "offset": 4294976088,
-            "eventhub": "insights-logs-operationallogs",
-            "enqueued_time": "2020-11-05T14:08:28.137Z"
-        },
-        "tags": [
-            "forwarded"
-        ],
-        "cloud": {
-            "provider": "azure",
-            "region": "West Europe"
-        },
-        "input": {
-            "type": "azure-eventhub"
-        },
-        "@timestamp": "2020-11-05T14:07:32.000Z",
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "data_stream": {
-            "namespace": "default",
-            "type": "logs",
-            "dataset": "azure.platformlogs"
-        },
-        "host": {
-            "name": "DESKTOP-RFOOE09"
-        },
-        "event": {
-            "ingested": "2020-11-01T12:02:34.237205200Z",
-            "kind": "event",
-            "action": "Retreive Namespace",
-            "dataset": "azure.platformlogs",
-            "outcome": "succeeded"
-        },
-        "azure": {
-            "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA",
-            "platformlogs": {
-                "Status": "Succeeded",
+    "agent": {
+        "hostname": "DESKTOP-RFOOE09",
+        "name": "DESKTOP-RFOOE09",
+        "id": "c1118415-bcb7-4cf9-b64d-a6c6e8ebcfac",
+        "type": "filebeat",
+        "ephemeral_id": "d3c4d56c-e7c7-489e-9d25-683452d16ec9",
+        "version": "7.10.0"
+    },
+    "elastic_agent": {
+        "id": "02f4e39d-8a1b-4506-a531-b45d0f492ee7",
+        "version": "7.10.0",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "azure",
+        "region": "West Europe"
+    },
+    "@timestamp": "2020-11-05T14:07:32.000Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "azure.platformlogs"
+    },
+    "host": {
+        "name": "DESKTOP-RFOOE09"
+    },
+    "event": {
+        "ingested": "2020-11-01T12:02:34.237205200Z",
+        "kind": "event",
+        "action": "Retreive Namespace",
+        "dataset": "azure.platformlogs",
+        "outcome": "succeeded"
+    },
+    "azure": {
+        "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA",
+        "platformlogs": {
+            "Caller": "Portal",
+            "ActivityId": "5890c6fc-fc6b-47cd-971a-2366a1641d99",
+            "EventTimeString": "11/5/2020 2:07:32 PM +00:00",
+            "Environment": "PROD",
+            "category": "OperationalLogs",
+            "event_category": "Administrative",
+            "ScaleUnit": "PROD-AM3-AZ501",
+            "properties": {
                 "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
-                "Caller": "Portal",
-                "ActivityId": "5890c6fc-fc6b-47cd-971a-2366a1641d99",
-                "EventTimeString": "11/5/2020 2:07:32 PM +00:00",
-                "Environment": "PROD",
-                "category": "OperationalLogs",
-                "event_category": "Administrative",
-                "ScaleUnit": "PROD-AM3-AZ501",
-                "properties": {
-                    "SubscriptionId": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
-                    "TrackingId": "5890c6fc-fc6b-47cd-971a-2366a1641d99_M8CH3_M8CH3_G8S3",
-                    "Namespace": "obstesteventhubs",
-                    "Via": "https://obstesteventhubs.servicebus.windows.net/$Resources/eventhubs?api-version=2017-04\u0026$skip=0\u0026$top=100"
-                }
-            },
-            "resource": {
-                "provider": "MICROSOFT.EVENTHUB/NAMESPACES",
-                "name": "OBSTESTEVENTHUBS",
-                "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
-                "group": "OBS-TEST"
+                "TrackingId": "5890c6fc-fc6b-47cd-971a-2366a1641d99_M8CH3_M8CH3_G8S3",
+                "Namespace": "obstesteventhubs",
+                "Via": "https://obstesteventhubs.servicebus.windows.net/$Resources/eventhubs?api-version=2017-04\u0026$skip=0\u0026$top=100"
             }
+        },
+        "resource": {
+            "provider": "MICROSOFT.EVENTHUB/NAMESPACES",
+            "name": "OBSTESTEVENTHUBS",
+            "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
+            "group": "OBS-TEST"
         }
     }
 }
@@ -507,75 +461,52 @@ An example event for `auditlogs` looks as following:
 
 ```$json
 {
-    "_index": ".ds-logs-azure.auditlogs-default-000001",
-    "_type": "_doc",
-    "_id": "bQlEe3UBm_qs2Y3aNZPq",
-    "_score": null,
-    "_source": {
-        "log": {
-            "level": "Information"
-        },
-        "azure-eventhub": {
-            "sequence_number": 643,
-            "consumer_group": "$Default",
-            "offset": 107374182400,
-            "eventhub": "insights-auditlogs-logs",
-            "enqueued_time": "2020-11-02T08:59:38.905Z"
-        },
-        "tags": [
-            "forwarded"
-        ],
-        "cloud": {
-            "provider": "azure"
-        },
-        "input": {
-            "type": "azure-eventhub"
-        },
-        "@timestamp": "2020-11-02T08:51:36.997Z",
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "data_stream": {
-            "namespace": "default",
-            "type": "logs",
-            "dataset": "azure.auditlogs"
-        },
-        "event": {
-            "duration": "0",
-            "ingested": "2020-10-30T20:47:48.123859400Z",
-            "kind": "event",
-            "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-            "dataset": "azure.auditlogs",
-            "outcome": "success"
-        },
-        "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
-        "azure.resource.provider": "Microsoft.aadiam",
-        "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.auditlogs.category": "AuditLogs",
-        "azure.auditlogs.identity": "Device Registration Service",
-        "azure.auditlogs.operation_name": "Update device",
-        "azure.auditlogs.operation_version": "1.0",
-        "azure.auditlogs.properties.activity_datetime": "2019-10-18T15:30:51.0273716+00:00",
-        "azure.auditlogs.properties.activity_display_name": "Update device",
-        "azure.auditlogs.properties.category": "Device",
-        "azure.auditlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.auditlogs.properties.id": "Directory_ESQ",
-        "azure.auditlogs.properties.initiated_by.app.appId": null,
-        "azure.auditlogs.properties.initiated_by.app.displayName": "Device Registration Service",
-        "azure.auditlogs.properties.initiated_by.app.servicePrincipalId": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.auditlogs.properties.initiated_by.app.servicePrincipalName": null,
-        "azure.auditlogs.properties.logged_by_service": "Core Directory",
-        "azure.auditlogs.properties.operation_type": "Update",
-        "azure.auditlogs.properties.result_reason": "",
-        "azure.auditlogs.properties.target_resources.0.display_name": "LAPTOP-12",
-        "azure.auditlogs.properties.target_resources.0.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.auditlogs.properties.target_resources.0.modified_properties.0.display_name": "Included Updated Properties",
-        "azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value": "\"\"",
-        "azure.auditlogs.properties.target_resources.0.modified_properties.0.old_value": null,
-        "azure.auditlogs.properties.target_resources.0.type": "Device",
-        "azure.auditlogs.result_signature": "None"
-    }
+    "log": {
+        "level": "Information"
+    },
+    "cloud": {
+        "provider": "azure"
+    },
+    "@timestamp": "2020-11-02T08:51:36.997Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "azure.auditlogs"
+    },
+    "event": {
+        "duration": "0",
+        "ingested": "2020-10-30T20:47:48.123859400Z",
+        "kind": "event",
+        "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
+        "dataset": "azure.auditlogs",
+        "outcome": "success"
+    },
+    "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
+    "azure.resource.provider": "Microsoft.aadiam",
+    "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.category": "AuditLogs",
+    "azure.auditlogs.identity": "Device Registration Service",
+    "azure.auditlogs.operation_name": "Update device",
+    "azure.auditlogs.operation_version": "1.0",
+    "azure.auditlogs.properties.activity_datetime": "2019-10-18T15:30:51.0273716+00:00",
+    "azure.auditlogs.properties.activity_display_name": "Update device",
+    "azure.auditlogs.properties.category": "Device",
+    "azure.auditlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.properties.id": "Directory_ESQ",
+    "azure.auditlogs.properties.initiated_by.app.displayName": "Device Registration Service",
+    "azure.auditlogs.properties.initiated_by.app.servicePrincipalId": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.properties.logged_by_service": "Core Directory",
+    "azure.auditlogs.properties.operation_type": "Update",
+    "azure.auditlogs.properties.result_reason": "",
+    "azure.auditlogs.properties.target_resources.0.display_name": "LAPTOP-12",
+    "azure.auditlogs.properties.target_resources.0.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value": "\"\"",
+    "azure.auditlogs.properties.target_resources.0.type": "Device",
+    "azure.auditlogs.result_signature": "None"
 }
 ```
 
@@ -716,81 +647,62 @@ An example event for `signinlogs` looks as following:
 
 ```$json
 {
-    "_index": ".ds-logs-azure.signinlogs-default-000001",
-    "_type": "_doc",
-    "_id": "bQlEe3UBm_qs2Y3aNZPq",
-    "_score": null,
-    "_source": {
-        "log": {
-            "level": "Information"
-        },
-        "azure-eventhub": {
-            "sequence_number": 643,
-            "consumer_group": "$Default",
-            "offset": 107374182400,
-            "eventhub": "insights-signinlogs-logs",
-            "enqueued_time": "2020-11-02T08:59:38.905Z"
-        },
-        "tags": [
-            "forwarded"
-        ],
-        "cloud": {
-            "provider": "azure"
-        },
-        "input": {
-            "type": "azure-eventhub"
-        },
-        "@timestamp": "2020-11-02T08:51:36.997Z",
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "data_stream": {
-            "namespace": "default",
-            "type": "logs",
-            "dataset": "azure.auditlogs"
-        },
-        "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
-        "azure.resource.provider": "Microsoft.aadiam",
-        "azure.signinlogs.category": "SignInLogs",
-        "azure.signinlogs.identity": "Test LTest",
-        "azure.signinlogs.operation_name": "Sign-in activity",
-        "azure.signinlogs.operation_version": "1.0",
-        "azure.signinlogs.properties.app_display_name": "Office 365",
-        "azure.signinlogs.properties.app_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.signinlogs.properties.client_app_used": "Browser",
-        "azure.signinlogs.properties.conditional_access_status": "notApplied",
-        "azure.signinlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.signinlogs.properties.created_at": "2019-10-18T04:45:48.0729893-05:00",
-        "azure.signinlogs.properties.device_detail.browser": "Chrome 77.0.3865",
-        "azure.signinlogs.properties.device_detail.device_id": "",
-        "azure.signinlogs.properties.device_detail.operating_system": "MacOs",
-        "azure.signinlogs.properties.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.signinlogs.properties.ip_address": "81.171.241.231",
-        "azure.signinlogs.properties.is_interactive": false,
-        "azure.signinlogs.properties.original_request_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.signinlogs.properties.processing_time_ms": 239,
-        "azure.signinlogs.properties.risk_detail": "none",
-        "azure.signinlogs.properties.risk_level_aggregated": "none",
-        "azure.signinlogs.properties.risk_level_during_signin": "none",
-        "azure.signinlogs.properties.risk_state": "none",
-        "azure.signinlogs.properties.service_principal_id": "",
-        "azure.signinlogs.properties.status.error_code": 50140,
-        "azure.signinlogs.properties.token_issuer_name": "",
-        "azure.signinlogs.properties.token_issuer_type": "AzureAD",
-        "azure.signinlogs.properties.user_display_name": "Test LTest",
-        "azure.signinlogs.properties.user_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "azure.signinlogs.properties.user_principal_name": "test@elastic.co",
-        "azure.signinlogs.result_description": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.",
-        "azure.signinlogs.result_signature": "None",
-        "azure.signinlogs.result_type": "50140",
-        "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "cloud.provider": "azure",
-        "event.action": "Sign-in activity",
-        "event.category": [
-            "authentication"
-        ]
-    }
+    "log": {
+        "level": "Information"
+    },
+    "cloud": {
+        "provider": "azure"
+    },
+    "@timestamp": "2020-11-02T08:51:36.997Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "azure.auditlogs"
+    },
+    "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
+    "azure.resource.provider": "Microsoft.aadiam",
+    "azure.signinlogs.category": "SignInLogs",
+    "azure.signinlogs.identity": "Test LTest",
+    "azure.signinlogs.operation_name": "Sign-in activity",
+    "azure.signinlogs.operation_version": "1.0",
+    "azure.signinlogs.properties.app_display_name": "Office 365",
+    "azure.signinlogs.properties.app_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.signinlogs.properties.client_app_used": "Browser",
+    "azure.signinlogs.properties.conditional_access_status": "notApplied",
+    "azure.signinlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.signinlogs.properties.created_at": "2019-10-18T04:45:48.0729893-05:00",
+    "azure.signinlogs.properties.device_detail.browser": "Chrome 77.0.3865",
+    "azure.signinlogs.properties.device_detail.device_id": "",
+    "azure.signinlogs.properties.device_detail.operating_system": "MacOs",
+    "azure.signinlogs.properties.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.signinlogs.properties.ip_address": "81.171.241.231",
+    "azure.signinlogs.properties.is_interactive": false,
+    "azure.signinlogs.properties.original_request_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.signinlogs.properties.processing_time_ms": 239,
+    "azure.signinlogs.properties.risk_detail": "none",
+    "azure.signinlogs.properties.risk_level_aggregated": "none",
+    "azure.signinlogs.properties.risk_level_during_signin": "none",
+    "azure.signinlogs.properties.risk_state": "none",
+    "azure.signinlogs.properties.service_principal_id": "",
+    "azure.signinlogs.properties.status.error_code": 50140,
+    "azure.signinlogs.properties.token_issuer_name": "",
+    "azure.signinlogs.properties.token_issuer_type": "AzureAD",
+    "azure.signinlogs.properties.user_display_name": "Test LTest",
+    "azure.signinlogs.properties.user_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.signinlogs.properties.user_principal_name": "test@elastic.co",
+    "azure.signinlogs.result_description": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.",
+    "azure.signinlogs.result_signature": "None",
+    "azure.signinlogs.result_type": "50140",
+    "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "cloud.provider": "azure",
+    "event.action": "Sign-in activity",
+    "event.category": [
+        "authentication"
+    ]
 }
 ```
 
