@@ -313,6 +313,8 @@ The fields reported are:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | process.pid | Process id. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### stat
@@ -536,4 +538,6 @@ The fields reported are:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | process.pid | Process id. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
