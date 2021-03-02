@@ -156,11 +156,6 @@ An example event for `collector` looks as following:
             "instance": "localhost:9090"
         }
     },
-    "dataset": {
-        "type": "metrics",
-        "name": "prometheus.collector",
-        "namespace": "default"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -191,6 +186,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -213,6 +209,8 @@ The fields reported are:
 | prometheus.*.value | Prometheus gauge metric | object |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 
@@ -310,11 +308,6 @@ An example event for `remote_write` looks as following:
     "event": {
         "dataset": "prometheus.remote_write",
         "module": "prometheus"
-    },
-    "dataset": {
-        "type": "metrics",
-        "name": "prometheus.remote_write",
-        "namespace": "default"
     }
 }
 ```
@@ -342,6 +335,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -364,6 +358,8 @@ The fields reported are:
 | prometheus.*.value | Prometheus gauge metric | object |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 #### Histograms and types [x-pack]
@@ -506,16 +502,6 @@ An example event for `query` looks as following:
         "name": "query",
         "period": 10000
     },
-    "dataset": {
-        "type": "metrics",
-        "name": "prometheus.query",
-        "namespace": "default"
-    },
-    "stream": {
-        "dataset": "prometheus.query",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -555,6 +541,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -573,3 +560,5 @@ The fields reported are:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.query.* | Prometheus value resulted from PromQL | object |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
