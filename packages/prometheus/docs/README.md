@@ -130,60 +130,36 @@ An example event for `collector` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-prometheus.collector-default-000001",
-    "_id": "xhalI3MBp-HYgBGo7zEW",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-07-06T10:22:23.034Z",
-        "agent": {},
-        "event": {
-            "dataset": "prometheus.collector",
-            "module": "prometheus",
-            "duration": 13290705
-        },
-        "metricset": {
-            "name": "collector",
-            "period": 10000
-        },
-        "service": {
-            "address": "localhost:9090",
-            "type": "prometheus"
-        },
-        "prometheus": {
-            "metrics": {
-                "prometheus_wal_watcher_records_read_total": 74
-            },
-            "labels": {
-                "job": "prometheus",
-                "consumer": "ee9cb2",
-                "type": "series",
-                "instance": "localhost:9090"
-            }
-        },
-        "dataset": {
-            "type": "metrics",
-            "name": "prometheus.collector",
-            "namespace": "default"
-        },
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "host": {}
+    "@timestamp": "2020-07-06T10:22:23.034Z",
+    "agent": {},
+    "event": {
+        "dataset": "prometheus.collector",
+        "module": "prometheus",
+        "duration": 13290705
     },
-    "fields": {
-        "@timestamp": [
-            "2020-07-06T10:22:23.034Z"
-        ]
+    "metricset": {
+        "name": "collector",
+        "period": 10000
     },
-    "highlight": {
-        "event.dataset": [
-            "@kibana-highlighted-field@prometheus.collector@/kibana-highlighted-field@"
-        ]
+    "service": {
+        "address": "localhost:9090",
+        "type": "prometheus"
     },
-    "sort": [
-        1594030943034
-    ]
+    "prometheus": {
+        "metrics": {
+            "prometheus_wal_watcher_records_read_total": 74
+        },
+        "labels": {
+            "job": "prometheus",
+            "consumer": "ee9cb2",
+            "type": "series",
+            "instance": "localhost:9090"
+        }
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "host": {}
 }
 ```
 
@@ -210,6 +186,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -232,6 +209,8 @@ The fields reported are:
 | prometheus.*.value | Prometheus gauge metric | object |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 
@@ -297,58 +276,39 @@ An example event for `remote_write` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-prometheus.remote_write-default-000001",
-    "_id": "dJf5AHMBA2PIMpu1O4DQ",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T16:46:40.018Z",
-        "ecs": {
-            "version": "1.5.0"
+    "@timestamp": "2020-06-29T16:46:40.018Z",
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "host": {},
+    "agent": {
+        "version": "8.0.0",
+        "ephemeral_id": "cb348102-0121-4c5b-8fcd-10ea27d25f77",
+        "id": "3bdc7670-9ced-4c70-bba9-00d7e183ae4b",
+        "name": "Christoss-MBP",
+        "type": "metricbeat"
+    },
+    "metricset": {
+        "name": "remote_write"
+    },
+    "prometheus": {
+        "metrics": {
+            "container_fs_reads_bytes_total": 1196032,
+            "container_fs_reads_total": 27
         },
-        "host": {},
-        "agent": {
-            "version": "8.0.0",
-            "ephemeral_id": "cb348102-0121-4c5b-8fcd-10ea27d25f77",
-            "id": "3bdc7670-9ced-4c70-bba9-00d7e183ae4b",
-            "name": "Christoss-MBP",
-            "type": "metricbeat"
-        },
-        "metricset": {
-            "name": "remote_write"
-        },
-        "prometheus": {
-            "metrics": {
-                "container_fs_reads_bytes_total": 1196032,
-                "container_fs_reads_total": 27
-            },
-            "labels": {
-                "instance": "cadvisor:8080",
-                "job": "cadvisor",
-                "id": "/systemreserved/acpid"
-            }
-        },
-        "service": {
-            "type": "prometheus"
-        },
-        "event": {
-            "dataset": "prometheus.remote_write",
-            "module": "prometheus"
-        },
-        "dataset": {
-            "type": "metrics",
-            "name": "prometheus.remote_write",
-            "namespace": "default"
+        "labels": {
+            "instance": "cadvisor:8080",
+            "job": "cadvisor",
+            "id": "/systemreserved/acpid"
         }
     },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T16:46:40.018Z"
-        ]
+    "service": {
+        "type": "prometheus"
     },
-    "sort": [
-        1593449200018
-    ]
+    "event": {
+        "dataset": "prometheus.remote_write",
+        "module": "prometheus"
+    }
 }
 ```
 
@@ -375,6 +335,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -397,6 +358,8 @@ The fields reported are:
 | prometheus.*.value | Prometheus gauge metric | object |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.metrics.* | Prometheus metric | object |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 #### Histograms and types [x-pack]
@@ -521,66 +484,37 @@ An example event for `query` looks as following:
 
 ```$json
 {
-    "_index": ".ds-metrics-prometheus.query-default-000001",
-    "_id": "IlG5AHMBeyDc0b9rYc28",
-    "_version": 1,
-    "_score": null,
-    "_source": {
-        "@timestamp": "2020-06-29T15:36:54.000Z",
-        "host": {},
-        "agent": {
-            "type": "metricbeat",
-            "version": "8.0.0",
-            "ephemeral_id": "98420e91-ee6d-4883-8ad3-02fa8d47f5c1",
-            "id": "9fc3e975-6789-4738-a11a-ba7108b0a92c",
-            "name": "minikube"
-        },
-        "event": {
-            "module": "prometheus",
-            "duration": 2123733,
-            "dataset": "prometheus.query"
-        },
-        "metricset": {
-            "name": "query",
-            "period": 10000
-        },
-        "dataset": {
-            "type": "metrics",
-            "name": "prometheus.query",
-            "namespace": "default"
-        },
-        "stream": {
-            "dataset": "prometheus.query",
-            "namespace": "default",
-            "type": "metrics"
-        },
-        "ecs": {
-            "version": "1.5.0"
-        },
-        "service": {
-            "address": "localhost:9090",
-            "type": "prometheus"
-        },
-        "prometheus": {
-            "labels": {},
-            "query": {
-                "prometheus_http_requests_total_rate": 0.3818181818181818
-            }
+    "@timestamp": "2020-06-29T15:36:54.000Z",
+    "host": {},
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.0.0",
+        "ephemeral_id": "98420e91-ee6d-4883-8ad3-02fa8d47f5c1",
+        "id": "9fc3e975-6789-4738-a11a-ba7108b0a92c",
+        "name": "minikube"
+    },
+    "event": {
+        "module": "prometheus",
+        "duration": 2123733,
+        "dataset": "prometheus.query"
+    },
+    "metricset": {
+        "name": "query",
+        "period": 10000
+    },
+    "ecs": {
+        "version": "1.5.0"
+    },
+    "service": {
+        "address": "localhost:9090",
+        "type": "prometheus"
+    },
+    "prometheus": {
+        "labels": {},
+        "query": {
+            "prometheus_http_requests_total_rate": 0.3818181818181818
         }
-    },
-    "fields": {
-        "@timestamp": [
-            "2020-06-29T15:36:54.000Z"
-        ]
-    },
-    "highlight": {
-        "event.dataset": [
-            "@kibana-highlighted-field@prometheus.query@/kibana-highlighted-field@"
-        ]
-    },
-    "sort": [
-        1593445014000
-    ]
+    }
 }
 ```
 
@@ -607,6 +541,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -625,3 +560,5 @@ The fields reported are:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | prometheus.labels.* | Prometheus metric labels | object |
 | prometheus.query.* | Prometheus value resulted from PromQL | object |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |

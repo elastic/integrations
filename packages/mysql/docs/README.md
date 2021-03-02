@@ -233,13 +233,6 @@ An example event for `galera_status` looks as following:
             }
         }
     },
-    "fields": {
-        "stream": {
-            "type": "metrics",
-            "dataset": "mysql.galera_status",
-            "namespace": "default"
-        }
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -287,6 +280,7 @@ An example event for `galera_status` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -344,6 +338,8 @@ An example event for `galera_status` looks as following:
 | mysql.galera_status.repl.keys | Total number of keys replicated. | long |
 | mysql.galera_status.repl.keys_bytes | Total size of keys replicated. | long |
 | mysql.galera_status.repl.other_bytes | Total size of other bits replicated. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### status
@@ -465,13 +461,6 @@ An example event for `status` looks as following:
         "name": "status",
         "period": 10000
     },
-    "fields": {
-        "stream": {
-            "type": "metrics",
-            "dataset": "mysql.status",
-            "namespace": "default"
-        }
-    },
     "ecs": {
         "version": "1.5.0"
     },
@@ -510,6 +499,7 @@ An example event for `status` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -591,4 +581,6 @@ An example event for `status` looks as following:
 | mysql.status.threads.connected | The number of connected threads. | long |
 | mysql.status.threads.created | The number of created threads. | long |
 | mysql.status.threads.running | The number of running threads. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 

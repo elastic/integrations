@@ -37,7 +37,7 @@ An example event for `log` looks as following:
         "version": "7.11.0"
     },
     "process": {
-        "pid": "6"
+        "pid": 6
     },
     "log": {
         "file": {
@@ -93,7 +93,7 @@ An example event for `log` looks as following:
         "architecture": "x86_64"
     },
     "client": {
-        "port": "53482",
+        "port": 53482,
         "ip": "192.168.192.3"
     },
     "event": {

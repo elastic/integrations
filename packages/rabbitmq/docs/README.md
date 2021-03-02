@@ -69,11 +69,6 @@ An example event for `connection` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
-    "dataset": {
-        "name": "rabbitmq.connection",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "rabbitmq": {
         "vhost": "/",
         "connection": {
@@ -107,11 +102,6 @@ An example event for `connection` looks as following:
         "duration": 374411,
         "dataset": "rabbitmq.connection",
         "module": "rabbitmq"
-    },
-    "stream": {
-        "dataset": "rabbitmq.connection",
-        "namespace": "default",
-        "type": "metrics"
     },
     "metricset": {
         "name": "connection",
@@ -148,6 +138,7 @@ An example event for `connection` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -181,6 +172,8 @@ An example event for `connection` looks as following:
 | rabbitmq.connection.state | Connection state. | keyword |
 | rabbitmq.connection.type | Type of the connection. | keyword |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -191,16 +184,10 @@ An example event for `exchange` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
-    "dataset": {
-        "name": "rabbitmq.exchange",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "rabbitmq": {
         "vhost": "/",
         "exchange": {
             "arguments": {},
-            "type": "direct",
             "durable": true,
             "auto_delete": false,
             "name": "",
@@ -211,11 +198,6 @@ An example event for `exchange` looks as following:
         "duration": 4078507,
         "dataset": "rabbitmq.exchange",
         "module": "rabbitmq"
-    },
-    "stream": {
-        "dataset": "rabbitmq.exchange",
-        "namespace": "default",
-        "type": "metrics"
     },
     "metricset": {
         "name": "exchange",
@@ -255,6 +237,7 @@ An example event for `exchange` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -280,6 +263,8 @@ An example event for `exchange` looks as following:
 | rabbitmq.exchange.messages.publish_out.details.rate | How much the exchange publish-out count has changed per second in the most recent sampling interval. | float |
 | rabbitmq.exchange.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -297,36 +282,132 @@ An example event for `node` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "rabbitmq.exchange"
-    },
     "rabbitmq": {
         "vhost": "/",
-        "exchange": {
-            "type": "fanout",
-            "durable": true,
-            "auto_delete": false,
-            "internal": false,
-            "name": "amq.fanout",
-            "arguments": {}
+        "node": {
+            "disk": {
+                "free": {
+                    "bytes": 485213712384,
+                    "limit": {
+                        "bytes": 50000000
+                    }
+                }
+            },
+            "fd": {
+                "total": 1048576,
+                "used": 54
+            },
+            "gc": {
+                "num": {
+                    "count": 5724
+                },
+                "reclaimed": {
+                    "bytes": 294021640
+                }
+            },
+            "io": {
+                "file_handle": {
+                    "open_attempt": {
+                        "avg": {
+                            "ms": 0
+                        },
+                        "count": 10
+                    }
+                },
+                "read": {
+                    "avg": {
+                        "ms": 0
+                    },
+                    "bytes": 1,
+                    "count": 1
+                },
+                "reopen": {
+                    "count": 1
+                },
+                "seek": {
+                    "avg": {
+                        "ms": 0
+                    },
+                    "count": 0
+                },
+                "sync": {
+                    "avg": {
+                        "ms": 0
+                    },
+                    "count": 0
+                },
+                "write": {
+                    "avg": {
+                        "ms": 0
+                    },
+                    "bytes": 0,
+                    "count": 0
+                }
+            },
+            "mem": {
+                "limit": {
+                    "bytes": 13340778496
+                },
+                "used": {
+                    "bytes": 71448312
+                }
+            },
+            "mnesia": {
+                "disk": {
+                    "tx": {
+                        "count": 0
+                    }
+                },
+                "ram": {
+                    "tx": {
+                        "count": 43
+                    }
+                }
+            },
+            "msg": {
+                "store_read": {
+                    "count": 0
+                },
+                "store_write": {
+                    "count": 0
+                }
+            },
+            "name": "rabbit@my-rabbit",
+            "proc": {
+                "total": 1048576,
+                "used": 234
+            },
+            "processors": 12,
+            "queue": {
+                "index": {
+                    "journal_write": {
+                        "count": 0
+                    },
+                    "read": {
+                        "count": 0
+                    },
+                    "write": {
+                        "count": 0
+                    }
+                }
+            },
+            "run": {
+                "queue": 0
+            },
+            "socket": {
+                "total": 943626,
+                "used": 0
+            },
+            "type": "disc",
+            "uptime": 155275
         }
     },
     "metricset": {
         "name": "exchange",
         "period": 10000
     },
-    "user": {
-        "name": "rmq-internal"
-    },
     "ecs": {
         "version": "1.5.0"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "rabbitmq.exchange",
-        "namespace": "default"
     },
     "service": {
         "address": "localhost:15672",
@@ -361,6 +442,7 @@ An example event for `node` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -415,6 +497,8 @@ An example event for `node` looks as following:
 | rabbitmq.node.type | Node type. | keyword |
 | rabbitmq.node.uptime | Node uptime. | long |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### Queue Metrics
@@ -424,15 +508,7 @@ An example event for `queue` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:15:10.955Z",
-    "dataset": {
-        "type": "metrics",
-        "name": "rabbitmq.queue",
-        "namespace": "default"
-    },
     "rabbitmq": {
-        "node": {
-            "name": "rabbit@047b9c4733f5"
-        },
         "queue": {
             "auto_delete": false,
             "state": "running",
@@ -490,11 +566,6 @@ An example event for `queue` looks as following:
         "type": "rabbitmq",
         "address": "localhost:15672"
     },
-    "stream": {
-        "dataset": "rabbitmq.queue",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "ecs": {
         "version": "1.5.0"
     }
@@ -522,6 +593,7 @@ An example event for `queue` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -557,3 +629,5 @@ An example event for `queue` looks as following:
 | rabbitmq.queue.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |
 | rabbitmq.queue.state | The state of the queue. Normally 'running', but may be "{syncing, MsgCount}" if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'. | keyword |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
