@@ -178,6 +178,8 @@ An example event for `activity` looks as following:
 | postgresql.activity.user.id | OID of the user logged into this backend. | long |
 | postgresql.activity.user.name | Name of the user logged into this backend. | keyword |
 | postgresql.activity.waiting | True if this backend is currently waiting on a lock. | boolean |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### bgwriter
@@ -281,6 +283,8 @@ An example event for `bgwriter` looks as following:
 | postgresql.bgwriter.checkpoints.times.sync.ms | Total amount of time that has been spent in the portion of checkpoint processing where files are synchronized to disk, in milliseconds. | float |
 | postgresql.bgwriter.checkpoints.times.write.ms | Total amount of time that has been spent in the portion of checkpoint processing where files are written to disk, in milliseconds. | float |
 | postgresql.bgwriter.stats_reset | Time at which these statistics were last reset. | date |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### database
@@ -292,10 +296,6 @@ An example event for `database` looks as following:
 ```$json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
-    "beat": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
-    },
     "metricset": {
         "host": "postgresql:5432",
         "module": "postgresql",
@@ -397,6 +397,8 @@ An example event for `database` looks as following:
 | postgresql.database.temporary.files | Number of temporary files created by queries in this database. All temporary files are counted, regardless of why the temporary file was created (e.g., sorting or hashing), and regardless of the log_temp_files setting. | long |
 | postgresql.database.transactions.commit | Number of transactions in this database that have been committed. | long |
 | postgresql.database.transactions.rollback | Number of transactions in this database that have been rolled back. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### statement
@@ -427,7 +429,7 @@ An example event for `statement` looks as following:
             },
             "query": {
                 "calls": 2,
-                "id": "1592910677",
+                "id": 159291067,
                 "memory": {
                     "local": {
                         "dirtied": 0,
@@ -536,3 +538,5 @@ An example event for `statement` looks as following:
 | postgresql.statement.query.time.stddev.ms | Population standard deviation of time spent running query, in milliseconds. | long |
 | postgresql.statement.query.time.total.ms | Total number of milliseconds spent running query. | float |
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
