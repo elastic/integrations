@@ -63,6 +63,7 @@ The `log` dataset collects the MongoDB logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -85,6 +86,8 @@ The `log` dataset collects the MongoDB logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | mongodb.log.component | Functional categorization of message | keyword |
 | mongodb.log.context | Context of message | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ## Metrics
@@ -112,11 +115,6 @@ An example event for `collstats` looks as following:
     "service": {
         "address": "localhost:27017",
         "type": "mongodb"
-    },
-    "stream": {
-        "dataset": "mongodb.collstats",
-        "namespace": "default",
-        "type": "metrics"
     },
     "agent": {
         "type": "metricbeat",
@@ -193,11 +191,6 @@ An example event for `collstats` looks as following:
             }
         }
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "mongodb.collstats"
-    },
     "ecs": {
         "version": "1.5.0"
     }
@@ -227,6 +220,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -265,6 +259,7 @@ The fields reported are:
 | mongodb.collstats.update.count | Number of document update events. | long |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long |
 | service.address | Address of the machine where the service is running. | keyword |
+| service.type | Service type | keyword |
 
 
 ### dbstats
@@ -291,11 +286,6 @@ An example event for `dbstats` looks as following:
     "service": {
         "address": "localhost:27017",
         "type": "mongodb"
-    },
-    "stream": {
-        "dataset": "mongodb.dbstats",
-        "namespace": "default",
-        "type": "metrics"
     },
     "agent": {
         "type": "metricbeat",
@@ -332,11 +322,6 @@ An example event for `dbstats` looks as following:
             }
         }
     },
-    "dataset": {
-        "namespace": "default",
-        "type": "metrics",
-        "name": "mongodb.dbstats"
-    },
     "ecs": {
         "version": "1.5.0"
     }
@@ -366,6 +351,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -398,6 +384,7 @@ The fields reported are:
 | mongodb.dbstats.objects |  | long |
 | mongodb.dbstats.storage_size.bytes |  | long |
 | service.address | Address of the machine where the service is running. | keyword |
+| service.type | Service type | keyword |
 
 
 ### metrics
@@ -631,11 +618,6 @@ An example event for `metrics` looks as following:
         "period": 10000,
         "name": "metrics"
     },
-    "stream": {
-        "type": "metrics",
-        "dataset": "mongodb.metrics",
-        "namespace": "default"
-    },
     "agent": {
         "name": "KaiyanMacBookPro",
         "type": "metricbeat",
@@ -651,11 +633,6 @@ An example event for `metrics` looks as following:
         "dataset": "mongodb.metrics",
         "module": "mongodb",
         "duration": 3039885
-    },
-    "dataset": {
-        "type": "metrics",
-        "name": "mongodb.metrics",
-        "namespace": "default"
     },
     "ecs": {
         "version": "1.5.0"
@@ -686,6 +663,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -821,7 +799,8 @@ The fields reported are:
 | mongodb.metrics.storage.free_list.search.scanned | The number of available record allocations mongod has searched. | long |
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long |
-| service.address | Address of the machine where the service is running. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### replstatus
@@ -841,18 +820,59 @@ An example event for `replstatus` looks as following:
         "address": "localhost:27017",
         "type": "mongodb"
     },
-    "error": {
-        "message": "error getting replication info: collection oplog.rs was not found"
-    },
-    "dataset": {
-        "name": "mongodb.replstatus",
-        "namespace": "default",
-        "type": "metrics"
-    },
-    "stream": {
-        "dataset": "mongodb.replstatus",
-        "namespace": "default",
-        "type": "metrics"
+    "mongodb": {
+        "replstatus": {
+            "members": {
+                "arbiter": {
+                    "count": 0
+                },
+                "down": {
+                    "count": 0
+                },
+                "primary": {
+                    "host": "22b4e1fb8197:27017",
+                    "optime": 1550700559
+                },
+                "recovering": {
+                    "count": 0
+                },
+                "rollback": {
+                    "count": 0
+                },
+                "secondary": {
+                    "count": 0
+                },
+                "startup2": {
+                    "count": 0
+                },
+                "unhealthy": {
+                    "count": 0
+                },
+                "unknown": {
+                    "count": 0
+                }
+            },
+            "oplog": {
+                "first": {
+                    "timestamp": 1550700557
+                },
+                "last": {
+                    "timestamp": 1550700559
+                },
+                "size": {
+                    "allocated": 40572728934,
+                    "used": 180
+                },
+                "window": 2
+            },
+            "optimes": {
+                "applied": 1550700559,
+                "durable": 1550700559,
+                "last_committed": 1550700559
+            },
+            "server_date": "2019-02-20T23:09:23.733+01:00",
+            "set_name": "beats"
+        }
     },
     "ecs": {
         "version": "1.5.0"
@@ -899,6 +919,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -949,6 +970,7 @@ The fields reported are:
 | mongodb.replstatus.server_date | Reflects the current time according to the server that processed the replSetGetStatus command. | date |
 | mongodb.replstatus.set_name | The name of the replica set. | keyword |
 | service.address | Address of the machine where the service is running. | keyword |
+| service.type | Service type | keyword |
 
 
 ### status
@@ -963,16 +985,6 @@ An example event for `status` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-29T21:20:01.455Z",
-    "dataset": {
-        "type": "metrics",
-        "name": "mongodb.status",
-        "namespace": "default"
-    },
-    "stream": {
-        "type": "metrics",
-        "dataset": "mongodb.status",
-        "namespace": "default"
-    },
     "agent": {
         "version": "8.0.0",
         "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
@@ -1200,6 +1212,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1382,5 +1395,6 @@ The fields reported are:
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | service.address | Address of the machine where the service is running. | keyword |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| service.type | Service type | keyword |
+| service.version | Service version | keyword |
 
