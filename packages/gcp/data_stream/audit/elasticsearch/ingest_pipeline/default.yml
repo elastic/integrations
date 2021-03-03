@@ -27,10 +27,11 @@ processors:
       field: json.logName
       target_field: log.logger
       ignore_missing: true
-  - rename: 
-      field: json.insertId
-      target_field: event.id
-      ignore_missing: true
+  - set: 
+      field: event.id
+      copy_from: json.insertId
+      ignore_empty_value: true
+      ignore_failure: true
   - convert: 
       field: json.resource.labels.project_id
       target_field: cloud.project.id

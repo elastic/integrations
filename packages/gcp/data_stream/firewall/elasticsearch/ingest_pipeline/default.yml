@@ -48,10 +48,11 @@ processors:
       field: json.resource.labels.subnetwork_name
       target_field: network.name
       ignore_missing: true
-  - rename:
-      field: json.insertId
-      target_field: event.id
-      ignore_missing: true
+  - set: 
+      field: event.id
+      copy_from: json.insertId
+      ignore_empty_value: true
+      ignore_failure: true
   - rename:
       field: json.jsonPayload.disposition
       target_field: event.type
