@@ -60,6 +60,9 @@ persistent connections, so enable with care.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.kind | Event kind (e.g. event) | keyword |
@@ -106,6 +109,8 @@ persistent connections, so enable with care.
 | postgresql.log.timestamp | The timestamp from the log line. | keyword |
 | postgresql.log.transaction_id | The id of current transaction. | long |
 | postgresql.log.virtual_transaction_id | Backend local transaction id. | keyword |
+| process.pid | Process id. | long |
+| related.user | All the user names seen on your event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -580,3 +585,4 @@ An example event for `statement` looks as following:
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
+
