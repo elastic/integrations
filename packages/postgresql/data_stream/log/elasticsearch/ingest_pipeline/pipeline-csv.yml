@@ -38,12 +38,18 @@ processors:
    field: tempcsv.connection_from
    ignore_missing: true
    patterns:
-    - '^%{DATA:postgresql.log.client_addr}(:%{NUMBER:postgresql.log.client_port:int})?$'
+     - '^%{DATA:postgresql.log.client_addr}(:%{NUMBER:postgresql.log.client_port:int})?$'
 
 - convert:
     field: "postgresql.log.session_line_num"
     type: long
     ignore_missing: true
+
+- convert:
+    field: "process.pid"
+    type: long
+    ignore_missing: true
+
 - date:
     field: tempcsv.session_start_time
     target_field: postgresql.log.session_start_time

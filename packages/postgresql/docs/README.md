@@ -89,7 +89,7 @@ persistent connections, so enable with care.
 | postgresql.log.application_name | Name of the application of this event. It is defined by the client. | keyword |
 | postgresql.log.backend_type | Type of backend of this event. Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, startup, walreceiver, walsender and walwriter. In addition, background workers registered by extensions may have additional types. | keyword |
 | postgresql.log.client_addr | Host where the connection originated from. | keyword |
-| postgresql.log.client_port | Port where the connection originated from. | keyword |
+| postgresql.log.client_port | Port where the connection originated from. | long |
 | postgresql.log.command_tag | Type of session's current command. The complete list can be found at: src/include/tcop/cmdtaglist.h | keyword |
 | postgresql.log.context | Error context. | keyword |
 | postgresql.log.database | Name of database. | keyword |
