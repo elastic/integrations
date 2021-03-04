@@ -205,7 +205,7 @@ The `log` dataset collects netflow logs.
 | host.geo.region_name | Region name. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip address. | ip |
+| host.ip | Host ip addresses. | ip |
 | host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -263,14 +263,14 @@ The `log` dataset collects netflow logs.
 | netflow.anonymization_flags |  | integer |
 | netflow.anonymization_technique |  | integer |
 | netflow.application_business-relevance |  | long |
-| netflow.application_category_name |  | long |
+| netflow.application_category_name |  | keyword |
 | netflow.application_description |  | keyword |
 | netflow.application_group_name |  | keyword |
 | netflow.application_http_uri_statistics |  | short |
 | netflow.application_http_user-agent |  | short |
 | netflow.application_id |  | short |
 | netflow.application_name |  | keyword |
-| netflow.application_sub_category_name |  | long |
+| netflow.application_sub_category_name |  | keyword |
 | netflow.application_traffic-class |  | long |
 | netflow.art_client_network_time_maximum |  | long |
 | netflow.art_client_network_time_minimum |  | long |
