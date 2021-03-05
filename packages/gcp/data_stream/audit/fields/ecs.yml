@@ -1,0 +1,202 @@
+- name: message
+  level: core
+  type: text
+  description: |-
+    For log events the message field contains the log message, optimized for viewing in a log viewer.
+    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
+    If multiple messages exist, they can be combined into one message.
+- name: container
+  title: Container
+  group: 2
+  type: group
+  fields:
+    - name: name
+      level: extended
+      type: keyword
+      description: Container name.
+      ignore_above: 1024
+    - name: runtime
+      level: extended
+      type: keyword
+      description: Runtime managing this container.
+      ignore_above: 1024
+- name: ecs.version
+  type: keyword
+  description: ECS version
+- name: event
+  title: Event
+  group: 2
+  type: group
+  fields:
+    - name: action
+      level: core
+      type: keyword
+      description: |-
+        The action captured by the event.
+        This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer.
+      ignore_above: 1024
+    - name: ingested
+      level: core
+      type: date
+      description: 'Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It''s also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`.'
+    - name: outcome
+      level: core
+      type: keyword
+      description: |-
+        This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.
+        `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event.
+        Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective.
+        Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer.
+        Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense.
+      ignore_above: 1024
+- name: input.type
+  type: keyword
+  description: Input type
+- name: log.file.path
+  type: keyword
+  description: Log path
+- name: log.offset
+  type: long
+  description: Log offset
+- name: log.logger
+  type: keyword
+- name: source
+  title: Source
+  group: 2
+  type: group
+  fields:
+    - name: as.number
+      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+      level: extended
+      type: long
+    - name: as.organization.name
+      description: Organization name.
+      ignore_above: 1024
+      level: extended
+      type: keyword
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: geo.city_name
+      level: core
+      type: keyword
+      description: City name.
+      ignore_above: 1024
+    - name: geo.continent_name
+      level: core
+      type: keyword
+      description: Name of the continent.
+      ignore_above: 1024
+    - name: geo.country_iso_code
+      level: core
+      type: keyword
+      description: Country ISO code.
+      ignore_above: 1024
+    - name: geo.country_name
+      description: Country name.
+      ignore_above: 1024
+      level: core
+      type: keyword
+    - name: geo.location
+      level: core
+      type: geo_point
+      description: Longitude and latitude.
+    - name: geo.region_iso_code
+      level: core
+      type: keyword
+      description: Region ISO code.
+      ignore_above: 1024
+    - name: geo.region_name
+      level: core
+      type: keyword
+      description: Region name.
+      ignore_above: 1024
+    - name: ip
+      level: core
+      type: ip
+      description: IP address of the source (IPv4 or IPv6).
+- name: service.name
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: Name of the service data is collected from.
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+- name: user.email
+  level: extended
+  type: wildcard
+  description: User email address.
+- name: user_agent
+  title: User agent
+  group: 2
+  description: 'The user_agent fields normally come from a browser request.
+
+    They often show up in web service logs coming from the parsed user agent string.'
+  type: group
+  fields:
+    - name: device.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the device.
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the user agent.
+    - name: original
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Unparsed user_agent string.
+    - name: os.family
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: OS family (such as redhat, debian, freebsd, windows).
+    - name: os.full
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Operating system name, including the version or code name.
+    - name: os.kernel
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system kernel version as a raw string.
+    - name: os.name
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Operating system name, without the version.
+    - name: os.platform
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system platform (such centos, ubuntu, windows).
+    - name: os.version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system version as a raw string.
+    - name: version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of the user agent.

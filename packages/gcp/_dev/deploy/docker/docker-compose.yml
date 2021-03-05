@@ -1,0 +1,49 @@
+version: '2.3'
+services:
+  gcppubsub-emulator:
+    image: google/cloud-sdk:emulators
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8681
+    ports:
+      - "8681/tcp"
+  gcppubsub-audit:
+    image: akroh/stream:v0.3.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=audit
+      - /sample_logs/audit.log
+    depends_on:
+      - gcppubsub-emulator
+  gcppubsub-firewall:
+    image: akroh/stream:v0.3.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=firewall
+      - /sample_logs/firewall.log
+    depends_on:
+      - gcppubsub-emulator
+  gcppubsub-vpcflow:
+    image: akroh/stream:v0.3.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=vpcflow
+      - /sample_logs/vpcflow.log
+    depends_on:
+      - gcppubsub-emulator
