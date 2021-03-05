@@ -1,0 +1,357 @@
+---
+description: Pipeline for Google Cloud VPC Flow Logs
+
+processors:
+  - json:
+      field: message
+      target_field: json
+  - community_id:
+      source_ip: json.jsonPayload.connection.src_ip
+      source_port: json.jsonPayload.connection.src_port
+      destination_ip: json.jsonPayload.connection.dest_ip
+      destination_port: json.jsonPayload.connection.dest_port
+      iana_number: json.jsonPayload.connection.protocol
+  - set:
+      field: ecs.version
+      value: "1.8.0"
+
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+
+  - date:
+      field: json.timestamp
+      timezone: UTC
+      formats:
+        - ISO8601
+
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: network
+  - set:
+      field: event.type
+      value: connection
+  - set: 
+      field: event.id
+      copy_from: json.insertId
+      ignore_empty_value: true
+      ignore_failure: true
+  - rename:
+      field: json.logName
+      target_field: log.logger
+      ignore_missing: true
+
+  - rename:
+      field: json.jsonPayload.connection.dest_ip
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.connection.dest_port
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.connection.protocol
+      target_field: network.iana_number
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.connection.src_ip
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.connection.src_port
+      target_field: source.port
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_instance.vm_name
+      target_field: source.domain
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_instance.vm_name
+      target_field: destination.domain
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.bytes_sent
+      target_field: source.bytes
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.packets_sent
+      target_field: source.packets
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.start_time
+      target_field: event.start
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.end_time
+      target_field: event.end
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_location.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_location.continent
+      target_field: destination.geo.continent_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_location.country
+      target_field: destination.geo.country_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_location.region
+      target_field: destination.geo.region_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_location.city
+      target_field: destination.geo.city_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_location.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_location.continent
+      target_field: source.geo.continent_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_location.country
+      target_field: source.geo.country_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_location.region
+      target_field: source.geo.region_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_location.city
+      target_field: source.geo.city_name
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_instance
+      target_field: gcp.destination.instance
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.dest_vpc
+      target_field: gcp.destination.vpc
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_instance
+      target_field: gcp.source.instance
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.src_vpc
+      target_field: gcp.source.vpc
+      ignore_missing: true
+  - convert:
+      field: json.jsonPayload.rtt_msec
+      target_field: json.jsonPayload.rtt.ms
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload
+      target_field: gcp.vpcflow
+      ignore_missing: true
+  - convert:
+      field: source.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: source.packets
+      type: long
+      ignore_missing: true
+  - convert:
+      field: network.iana_number
+      type: string
+      ignore_missing: true
+  
+  - remove:
+      field:
+        - gcp.vpcflow.rtt_msec
+        - gcp.vpcflow.connection
+        - gcp.vpcflow.dest_location
+        - gcp.vpcflow.src_location
+        - json
+      ignore_missing: true
+
+  - set:
+      field: source.ip
+      value: "{{source.address}}"
+      ignore_failure: true
+      if: ctx?.source?.address != null
+
+  - set:
+      field: destination.ip
+      value: "{{destination.address}}"
+      ignore_failure: true
+      if: ctx?.destination?.address != null
+
+  - convert:
+      field: gcp.source.instance.project_id
+      target_field: cloud.project.id
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "DEST"
+  - convert:
+      field: gcp.source.instance.vm_name
+      target_field: cloud.instance.name
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "DEST"
+  - convert:
+      field: gcp.source.instance.region
+      target_field: cloud.region
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "DEST"
+  - convert:
+      field: gcp.source.instance.zone
+      target_field: cloud.availability_zone
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "DEST"
+  - convert:
+      field: gcp.source.vpc.subnetwork_name
+      target_field: network.name
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.gcp?.vpcflow?.reporter == "DEST"
+  - convert:
+      field: gcp.destination.instance.project_id
+      target_field: cloud.project.id
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "SRC"
+  - convert:
+      field: gcp.destination.instance.vm_name
+      target_field: cloud.instance.name
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "SRC"
+  - convert:
+      field: gcp.destination.instance.region
+      target_field: cloud.region
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "SRC"
+  - convert:
+      field: gcp.destination.instance.zone
+      target_field: cloud.availability_zone
+      type: string
+      ignore_missing: true
+      if: ctx?.gcp?.vpcflow?.reporter == "SRC"
+  - convert:
+      field: gcp.destination.vpc.subnetwork_name
+      target_field: network.name
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.gcp?.vpcflow?.reporter == "SRC"
+  - convert:
+      field: source.bytes
+      type: long
+      target_field: network.bytes
+      ignore_missing: true
+  - convert:
+      field: source.packets
+      type: long
+      target_field: network.packets
+      ignore_missing: true
+  - set:
+      field: network.transport
+      value: tcp
+      if: ctx?.network?.iana_number == "6"
+  - set:
+      field: network.transport
+      value: udp
+      if: ctx?.network?.iana_number == "17"
+  - set: 
+      field: network.direction
+      value: internal
+      if: ctx?.gcp?.source?.instance != null && ctx?.gcp?.destination?.instance != null
+  - set: 
+      field: network.direction
+      value: outbound
+      if: ctx?.gcp?.source?.instance != null && ctx?.gcp?.destination?.instance == null
+  - set: 
+      field: network.direction
+      value: inbound
+      if: ctx?.gcp?.source?.instance == null && ctx?.gcp?.destination?.instance != null
+  - set: 
+      field: network.direction
+      value: unknown
+      if: ctx?.network?.direction == null
+  - set:
+      field: network.type
+      value: ipv4
+      if: ctx?.source?.ip != null && ctx?.source?.ip.contains(".") 
+  - set:
+      field: network.type
+      value: ipv6
+      if: ctx?.source?.ip != null && !ctx?.source?.ip.contains(".")
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx?.source?.ip != null && ctx?.source?.ip != ""
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx?.destination?.ip != null && ctx?.destination?.ip != ""
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
