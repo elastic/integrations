@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Traefik Integration
 
 This integration periodically fetches metrics from [Traefik](https://traefik.io/) servers. It also ingests access
@@ -235,3 +236,6 @@ An example event for `health` looks as following:
 | traefik.health.response.status_codes.* | Number of responses per status code | object |
 | traefik.health.uptime.sec | Uptime of Traefik instance in seconds | long |
 
+=======
+TODO
+>>>>>>> Migrating traefik module
