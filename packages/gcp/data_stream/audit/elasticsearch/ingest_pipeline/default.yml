@@ -1,0 +1,227 @@
+---
+description: Pipeline for Google Cloud audit logs
+
+processors:
+  - json:
+      field: message
+      target_field: json
+  - set:
+      field: ecs.version
+      value: "1.8.0"
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.kind
+      value: event
+  - date:
+      field: json.timestamp
+      timezone: UTC
+      formats:
+        - ISO8601
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: json.logName
+      target_field: log.logger
+      ignore_missing: true
+  - set: 
+      field: event.id
+      copy_from: json.insertId
+      ignore_empty_value: true
+      ignore_failure: true
+  - convert: 
+      field: json.resource.labels.project_id
+      target_field: cloud.project.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert: 
+      field: json.resource.labels.instance_id
+      target_field: cloud.instance.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: "json.protoPayload.@type"
+      target_field: gcp.audit.type
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.principalEmail
+      target_field: gcp.audit.authentication_info.principal_email
+      ignore_missing: true
+  - set:
+      field: user.email
+      value: "{{gcp.audit.authentication_info.principal_email}}"
+      if: ctx?.gcp?.audit?.authentication_info?.principal_email != null
+  - rename:
+      field: json.protoPayload.authenticationInfo.authoritySelector
+      target_field: gcp.audit.authentication_info.authority_selector
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.authorizationInfo
+      target_field: gcp.audit.authorization_info
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.methodName
+      target_field: gcp.audit.method_name
+      ignore_missing: true
+  - set:
+      field: event.action
+      value: "{{gcp.audit.method_name}}"
+      if: ctx?.gcp?.audit?.method_name != null
+  - convert:
+      field: json.protoPayload.numResponseItems
+      target_field: gcp.audit.num_response_items
+      type: long
+      ignore_missing: true
+  - rename:
+      field: "json.protoPayload.request.@type"
+      target_field: gcp.audit.request.proto_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.request.filter
+      target_field: gcp.audit.request.filter
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.request.name
+      target_field: gcp.audit.request.name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.request.resourceName
+      target_field: gcp.audit.request.resource_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.requestMetadata.callerIp
+      target_field: gcp.audit.request_metadata.caller_ip
+      ignore_missing: true
+  - set:
+      field: source.ip
+      value: "{{gcp.audit.request_metadata.caller_ip}}"
+      if: ctx?.gcp?.audit?.request_metadata?.caller_ip != null
+  - rename:
+      field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
+      target_field: gcp.audit.request_metadata.caller_supplied_user_agent
+      ignore_missing: true
+  - set:
+      field: user_agent.original
+      value: "{{gcp.audit.request_metadata.caller_supplied_user_agent}}"
+      if: ctx?.gcp?.audit?.request_metadata?.caller_supplied_user_agent != null
+  - rename:
+      field: "json.protoPayload.response.@type"
+      target_field: gcp.audit.response.proto_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.response.status
+      target_field: gcp.audit.response.status
+      ignore_missing: true
+  - rename:
+      field: gcp.audit.response.status
+      target_field: gcp.audit.response.status.value
+      if: ctx?.gcp?.audit?.response?.status instanceof String
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.response.details.group
+      target_field: gcp.audit.response.details.group
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.response.details.kind
+      target_field: gcp.audit.response.details.kind
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.response.details.name
+      target_field: gcp.audit.response.details.name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.response.details.uid
+      target_field: gcp.audit.response.details.uid
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.resourceName
+      target_field: gcp.audit.resource_name
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.resourceLocation.currentLocations
+      target_field: gcp.audit.resource_location.current_locations
+      ignore_missing: true
+  - rename:
+      field: json.protoPayload.serviceName
+      target_field: gcp.audit.service_name
+      ignore_missing: true
+  - set:
+      field: service.name
+      value: "{{gcp.audit.service_name}}"
+      if: ctx?.gcp?.audit?.service_name != null
+  - convert:
+      field: json.protoPayload.status.code
+      target_field: gcp.audit.status.code
+      type: long
+      ignore_missing: true
+  - foreach:
+      field: gcp.audit.authorization_info
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.resourceAttributes
+          target_field: _ingest._value.resource_attributes
+      if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List
+  - set: 
+      field: event.outcome
+      value: success
+      if: ctx?.gcp?.audit?.status?.code != null && ctx?.gcp?.audit?.status?.code == 0
+  - set: 
+      field: event.outcome
+      value: failure
+      if: ctx?.gcp?.audit?.status?.code != null && ctx?.gcp?.audit?.status?.code != 0
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0].granted
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && !ctx?.gcp?.audit?.authorization_info[0].granted
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx?.event?.outcome == null
+  - rename:
+      field: json.protoPayload.status.message
+      target_field: gcp.audit.status.message
+      ignore_missing: true    
+  - remove:
+      field: json
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
