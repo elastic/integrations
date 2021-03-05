@@ -110,6 +110,8 @@ An example event for `log` looks as following:
 | auditd.log.proctitle |  | keyword |
 | auditd.log.rdev |  | keyword |
 | auditd.log.reason |  | keyword |
+| auditd.log.record_type |  | keyword |
+| auditd.log.reset |  | keyword |
 | auditd.log.root_dir |  | keyword |
 | auditd.log.rport |  | long |
 | auditd.log.saddr |  | keyword |
@@ -125,6 +127,7 @@ An example event for `log` looks as following:
 | auditd.log.syscall |  | keyword |
 | auditd.log.table |  | keyword |
 | auditd.log.tty |  | keyword |
+| auditd.log.uid |  | keyword |
 | auditd.log.unit |  | keyword |
 | auditd.log.uuid |  | keyword |
 | auditd.log.ver |  | keyword |
@@ -153,6 +156,8 @@ An example event for `log` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -173,6 +178,7 @@ An example event for `log` looks as following:
 | log.file.path | Log path | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| network.direction | Direction of the network traffic. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.executable | Absolute path to the process executable. | keyword |
@@ -215,5 +221,9 @@ An example event for `log` looks as following:
 | user.saved.group.name | Name of the group. | keyword |
 | user.saved.id | One or multiple unique identifiers of the user. | keyword |
 | user.saved.name | Short name or login of the user. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 | user.terminal | Terminal or tty device on which the user is performing the observed activity. | keyword |
 

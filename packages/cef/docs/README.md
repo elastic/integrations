@@ -432,6 +432,7 @@ An example event for `log` looks as following:
 | observer.version | Observer version. | keyword |
 | original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
+| related.hosts | All the host names seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |

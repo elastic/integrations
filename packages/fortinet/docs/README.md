@@ -40,15 +40,15 @@ Contains log entries from Fortinet FortiGate applicances.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
-| destination.as.organization.name | Organization name. | wildcard |
+| destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | wildcard |
+| destination.domain | Destination domain. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | wildcard |
+| destination.geo.name | User-defined description of a location. | keyword |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination. | ip |
@@ -56,11 +56,11 @@ Contains log entries from Fortinet FortiGate applicances.
 | destination.nat.port | Destination NAT Port | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
-| destination.user.email | User email address. | wildcard |
-| destination.user.name | Short name or login of the user. | wildcard |
+| destination.user.email | User email address. | keyword |
+| destination.user.name | Short name or login of the user. | keyword |
 | dns.id | DNS packet identifier. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
-| dns.question.name | The name being queried. | wildcard |
+| dns.question.name | The name being queried. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
 | ecs.version | ECS version this event conforms to. | keyword |
@@ -515,7 +515,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | wildcard |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
@@ -524,12 +524,12 @@ Contains log entries from Fortinet FortiGate applicances.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | wildcard |
+| host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Path to the log file. | wildcard |
+| log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -549,6 +549,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | observer.type | The type of the observer the data is coming from. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
+| related.hosts | All the host names seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | rule.category | Rule category | keyword |
@@ -559,14 +560,14 @@ Contains log entries from Fortinet FortiGate applicances.
 | rule.uuid | Rule UUID | keyword |
 | source.address | Source network address. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. | long |
-| source.as.organization.name | Organization name. | wildcard |
+| source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | wildcard |
+| source.geo.name | User-defined description of a location. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
@@ -575,19 +576,19 @@ Contains log entries from Fortinet FortiGate applicances.
 | source.nat.port | Source NAT port | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
-| source.user.email | User email address. | wildcard |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
-| source.user.name | Short name or login of the user. | wildcard |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| tls.client.issuer | Distinguished name of subject of the issuer. | wildcard |
+| tls.client.issuer | Distinguished name of subject of the issuer. | keyword |
 | tls.client.server_name | Hostname the client is trying to connect to. Also called the SNI. | keyword |
 | tls.client.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | wildcard |
+| tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| url.domain | Domain of the url. | wildcard |
-| url.path | Path of the request, such as "/search". | wildcard |
-| user_agent.original | Unparsed user_agent string. | wildcard |
+| url.domain | Domain of the url. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
 | vulnerability.category | Category of a vulnerability. | keyword |
 
 

@@ -1,5 +1,4 @@
 - name: message
-  level: core
   type: text
   description: |-
     For log events the message field contains the log message, optimized for viewing in a log viewer.
@@ -11,12 +10,10 @@
   type: group
   fields:
     - name: name
-      level: extended
       type: keyword
       description: Container name.
       ignore_above: 1024
     - name: runtime
-      level: extended
       type: keyword
       description: Runtime managing this container.
       ignore_above: 1024
@@ -26,24 +23,20 @@
   type: group
   fields:
     - name: domain
-      level: extended
-      type: wildcard
+      type: keyword
       description: 'Domain of the url, such as "www.elastic.co".'
     - name: extension
-      level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The field contains the file extension from the original request url, excluding the leading dot.'
+      description: "The field contains the file extension from the original request url, excluding the leading dot."
     - name: fragment
-      level: extended
       type: keyword
       ignore_above: 1024
       description: 'Portion of the url after the `#`, such as "top".
 
         The `#` is not part of the fragment.'
     - name: full
-      level: extended
-      type: wildcard
+      type: keyword
       multi_fields:
         - name: text
           type: text
@@ -51,55 +44,45 @@
           default_field: false
       description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
     - name: original
-      level: extended
-      type: wildcard
+      type: keyword
       multi_fields:
         - name: text
           type: text
           norms: false
           default_field: false
-      description: 'Unmodified original url as seen in the event source.'
+      description: "Unmodified original url as seen in the event source."
     - name: password
-      level: extended
       type: keyword
       ignore_above: 1024
       description: Password of the request.
     - name: path
-      level: extended
-      type: wildcard
+      type: keyword
       description: Path of the request, such as "/search".
     - name: port
-      level: extended
       type: long
       format: string
       description: Port of the request, such as 443.
     - name: query
-      level: extended
       type: keyword
       ignore_above: 1024
       description: 'The query field describes the query string of the request, such as "q=elasticsearch".'
     - name: registered_domain
-      level: extended
-      type: wildcard
-      description: 'The highest registered url domain, stripped of the subdomain.'
+      type: keyword
+      description: "The highest registered url domain, stripped of the subdomain."
     - name: scheme
-      level: extended
       type: keyword
       ignore_above: 1024
       description: 'Scheme of the request, such as "https".'
     - name: subdomain
-      level: extended
       type: keyword
       ignore_above: 1024
-      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.'
+      description: "The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain."
       default_field: false
     - name: top_level_domain
-      level: extended
       type: keyword
       ignore_above: 1024
       description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".'
     - name: username
-      level: extended
       type: keyword
       ignore_above: 1024
       description: Username of the request.
@@ -109,7 +92,6 @@
   type: group
   fields:
     - name: name
-      level: extended
       type: keyword
       ignore_above: 1024
       description: Name given by operators to sections of their network.
@@ -122,67 +104,55 @@
   type: group
   fields:
     - name: action
-      level: core
       type: keyword
       ignore_above: 1024
-      description: 'The action captured by the event.'
+      description: "The action captured by the event."
     - name: category
-      level: core
       type: keyword
       ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
+      description: "This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy."
     - name: dataset
-      level: core
       type: keyword
       ignore_above: 1024
-      description: 'Name of the dataset.'
+      description: "Name of the dataset."
     - name: duration
-      level: core
       type: long
       format: duration
       input_format: nanoseconds
       output_format: asMilliseconds
       output_precision: 1
-      description: 'Duration of the event in nanoseconds.'
+      description: "Duration of the event in nanoseconds."
     - name: end
-      level: extended
       type: date
       description: event.end contains the date when the event ended or when the activity was last observed.
     - name: id
-      level: core
       type: keyword
       ignore_above: 1024
       description: Unique ID to describe the event.
     - name: ingested
-      level: core
       type: date
-      description: 'Timestamp when an event arrived in the central data store.'
+      description: "Timestamp when an event arrived in the central data store."
       default_field: false
     - name: original
-      level: core
       type: keyword
       ignore_above: 1024
-      description: 'Raw text message of entire event. Used to demonstrate log integrity.'
+      description: "Raw text message of entire event. Used to demonstrate log integrity."
       index: false
     - name: outcome
-      level: core
       type: keyword
       ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.'
+      description: "This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy."
     - name: provider
-      level: extended
       type: keyword
       ignore_above: 1024
-      description: 'Source of the event.'
+      description: "Source of the event."
     - name: start
-      level: extended
       type: date
       description: event.start contains the date when the event started or when the activity was first observed.
     - name: type
-      level: core
       type: keyword
       ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
+      description: "This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy."
 - name: input.type
   type: keyword
   description: Input type
@@ -193,7 +163,6 @@
   type: long
   description: Log offset
 - name: tags
-  level: core
   type: keyword
   ignore_above: 1024
   description: List of keywords used to tag each event.
@@ -203,23 +172,19 @@
   type: group
   fields:
     - name: hash
-      level: extended
       type: keyword
       ignore_above: 1024
       description: All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search).
       default_field: false
     - name: hosts
-      level: extended
       type: keyword
       ignore_above: 1024
       description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
       default_field: false
     - name: ip
-      level: extended
       type: ip
       description: All of the IPs seen on your event.
     - name: user
-      level: extended
       type: keyword
       ignore_above: 1024
       description: All the user names seen on your event.
@@ -230,7 +195,6 @@
   type: group
   fields:
     - name: address
-      level: extended
       type: keyword
       description: |-
         Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
@@ -238,12 +202,10 @@
       ignore_above: 1024
     - name: as.number
       description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-      level: extended
       type: long
     - name: as.organization.name
       description: Organization name.
       ignore_above: 1024
-      level: extended
       type: keyword
       multi_fields:
         - name: text
@@ -251,62 +213,48 @@
           norms: false
           default_field: false
     - name: geo.city_name
-      level: core
       type: keyword
       description: City name.
       ignore_above: 1024
     - name: geo.continent_name
-      level: core
       type: keyword
       description: Name of the continent.
       ignore_above: 1024
     - name: geo.country_iso_code
-      level: core
       type: keyword
       description: Country ISO code.
       ignore_above: 1024
     - name: geo.country_name
       description: Country name.
       ignore_above: 1024
-      level: core
       type: keyword
     - name: geo.location
-      level: core
       type: geo_point
       description: Longitude and latitude.
     - name: geo.region_iso_code
-      level: core
       type: keyword
       description: Region ISO code.
       ignore_above: 1024
     - name: geo.region_name
-      level: core
       type: keyword
       description: Region name.
       ignore_above: 1024
     - name: ip
-      level: core
       type: ip
       description: IP address of the source (IPv4 or IPv6).
     - name: user.domain
-      level: extended
       type: keyword
       ignore_above: 1024
-      description: 'Name of the directory the user is a member of.
-
-        For example, an LDAP or Active Directory domain name.'
+      description: "Name of the directory the user is a member of.\nFor example, an LDAP or Active Directory domain name."
     - name: user.email
-      level: extended
-      type: wildcard
+      type: keyword
       description: User email address.
     - name: user.id
-      level: core
       type: keyword
       ignore_above: 1024
       description: Unique identifier of the user.
     - name: user.name
-      level: core
-      type: wildcard
+      type: keyword
       multi_fields:
         - name: text
           type: text
@@ -319,7 +267,6 @@
   type: group
   fields:
     - name: id
-      level: extended
       type: keyword
       ignore_above: 1024
       description: Unique identifier for the organization.
@@ -329,19 +276,78 @@
   type: group
   fields:
     - name: domain
-      level: extended
       type: keyword
       ignore_above: 1024
-      description: 'Name of the directory the group is a member of.
-
-        For example, an LDAP or Active Directory domain name.'
+      description: "Name of the directory the group is a member of.\nFor example, an LDAP or Active Directory domain name."
     - name: id
-      level: extended
       type: keyword
       ignore_above: 1024
       description: Unique identifier for the group on the system/platform.
     - name: name
-      level: extended
       type: keyword
       ignore_above: 1024
       description: Name of the group.
+- name: user
+  title: User
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: email
+      type: keyword
+      ignore_above: 1024
+      description: User email address.
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+    - name: target.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+      default_field: false
+    - name: target.email
+      type: keyword
+      ignore_above: 1024
+      description: User email address.
+      default_field: false
+    - name: target.group.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+      default_field: false
+    - name: target.group.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+      default_field: false
+    - name: target.group.name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+      default_field: false
+    - name: target.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+      default_field: false
+    - name: target.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Short name or login of the user.
+      default_field: false
