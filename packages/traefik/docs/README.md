@@ -69,28 +69,6 @@ An example event for `access` looks as following:
         "type": "logs",
         "dataset": "traefik.access"
     },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "4.19.121-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "192.168.144.6"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "5ba08d9c439ed90a7d598120c9df7cd0",
-        "mac": [
-            "02:42:c0:a8:90:06"
-        ],
-        "architecture": "x86_64"
-    },
     "http": {
         "request": {
             "referrer": "-",
@@ -213,28 +191,6 @@ An example event for `health` looks as following:
     },
     "ecs": {
         "version": "1.8.0"
-    },
-    "host": {
-        "ip": [
-            "172.20.0.6"
-        ],
-        "mac": [
-            "02:42:ac:14:00:06"
-        ],
-        "name": "docker-fleet-agent",
-        "hostname": "docker-fleet-agent",
-        "architecture": "x86_64",
-        "os": {
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.121-linuxkit",
-            "codename": "Core",
-            "type": "linux",
-            "platform": "centos"
-        },
-        "id": "5ba08d9c439ed90a7d598120c9df7cd0",
-        "containerized": true
     },
     "service": {
         "name": "traefik",
