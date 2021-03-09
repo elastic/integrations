@@ -4,198 +4,145 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.8.0"
+  - json:
+      field: message
+      target_field: crowdstrike
+  - remove:
+      field:
+        - message
+        - host.name
+      ignore_missing: true
+  - remove:
+      field: crowdstrike.event.ProcessStartTime
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.ProcessStartTime == 0
   - date:
       field: crowdstrike.event.ProcessStartTime
       target_field: crowdstrike.event.ProcessStartTime
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.ProcessStartTime != null &&
         !(ctx.crowdstrike.event.ProcessStartTime instanceof String) &&
-        ctx.crowdstrike.event.ProcessStartTime != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.ProcessStartTime) + 1) >= 12
+  - remove:
+      field: crowdstrike.event.ProcessEndTime
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.ProcessEndTime == 0
   - date:
       field: crowdstrike.event.ProcessEndTime
       target_field: crowdstrike.event.ProcessEndTime
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.ProcessEndTime != null &&
         !(ctx.crowdstrike.event.ProcessEndTime instanceof String) &&
-        ctx.crowdstrike.event.ProcessEndTime != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.ProcessEndTime) + 1) >= 12
+  - remove:
+      field: crowdstrike.event.IncidentStartTime
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.IncidentStartTime == 0
   - date:
       field: crowdstrike.event.IncidentStartTime
       target_field: crowdstrike.event.IncidentStartTime
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.IncidentStartTime != null &&
         !(ctx.crowdstrike.event.IncidentStartTime instanceof String) &&
-        ctx.crowdstrike.event.IncidentStartTime != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.IncidentStartTime) + 1) >= 12
+  - remove:
+      field: crowdstrike.event.IncidentEndTime
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.IncidentEndTime == 0
   - date:
       field: crowdstrike.event.IncidentEndTime
       target_field: crowdstrike.event.IncidentEndTime
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.IncidentEndTime != null &&
         !(ctx.crowdstrike.event.IncidentEndTime instanceof String) &&
-        ctx.crowdstrike.event.IncidentEndTime != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.IncidentEndTime) + 1) >= 12
+  - remove:
+      field: crowdstrike.event.StartTimestamp
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.StartTimestamp == 0
   - date:
       field: crowdstrike.event.StartTimestamp
       target_field: crowdstrike.event.StartTimestamp
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.StartTimestamp != null &&
         !(ctx.crowdstrike.event.StartTimestamp instanceof String) &&
-        ctx.crowdstrike.event.StartTimestamp != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.StartTimestamp) + 1) >= 12
+  - remove:
+      field: crowdstrike.event.EndTimestamp
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.EndTimestamp == 0
   - date:
       field: crowdstrike.event.EndTimestamp
       target_field: crowdstrike.event.EndTimestamp
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.EndTimestamp != null &&
         !(ctx.crowdstrike.event.EndTimestamp instanceof String) &&
-        ctx.crowdstrike.event.EndTimestamp != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.EndTimestamp) + 1) >= 12
+  - remove:
+      field: crowdstrike.event.UTCTimestamp
+      ignore_missing: true
+      if: ctx?.crowdstrike?.event?.UTCTimestamp == 0
   - date:
       field: crowdstrike.event.UTCTimestamp
       target_field: crowdstrike.event.UTCTimestamp
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.UTCTimestamp != null &&
         !(ctx.crowdstrike.event.UTCTimestamp instanceof String) &&
-        ctx.crowdstrike.event.UTCTimestamp != 0 &&
         (int)(Math.log10(ctx.crowdstrike.event.UTCTimestamp) + 1) >= 12
+  - remove:
+      field: crowdstrike.metadata.eventCreationTime
+      ignore_missing: true
+      if: ctx?.crowdstrike?.metadata?.eventCreationTime == 0
   - date:
       field: crowdstrike.metadata.eventCreationTime
       target_field: crowdstrike.metadata.eventCreationTime
       timezone: UTC
       formats:
         - UNIX_MS
+        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.metadata?.eventCreationTime != null &&
         !(ctx.crowdstrike.metadata.eventCreationTime instanceof String) &&
-        ctx.crowdstrike.metadata.eventCreationTime != 0 &&
         (int)(Math.log10(ctx.crowdstrike.metadata.eventCreationTime) + 1) >= 12
-  - date:
-      field: crowdstrike.event.ProcessStartTime
-      target_field: crowdstrike.event.ProcessStartTime
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.ProcessStartTime != null &&
-        !(ctx.crowdstrike.event.ProcessStartTime instanceof String) &&
-        ctx.crowdstrike.event.ProcessStartTime != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.ProcessStartTime) + 1) < 12
-  - date:
-      field: crowdstrike.event.ProcessEndTime
-      target_field: crowdstrike.event.ProcessEndTime
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.ProcessEndTime != null &&
-        !(ctx.crowdstrike.event.ProcessEndTime instanceof String) &&
-        ctx.crowdstrike.event.ProcessEndTime != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.ProcessEndTime) + 1) < 12
-  - date:
-      field: crowdstrike.event.IncidentStartTime
-      target_field: crowdstrike.event.IncidentStartTime
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.IncidentStartTime != null &&
-        !(ctx.crowdstrike.event.IncidentStartTime instanceof String) &&
-        ctx.crowdstrike.event.IncidentStartTime != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.IncidentStartTime) + 1) < 12
-  - date:
-      field: crowdstrike.event.IncidentEndTime
-      target_field: crowdstrike.event.IncidentEndTime
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.IncidentEndTime != null &&
-        !(ctx.crowdstrike.event.IncidentEndTime instanceof String) &&
-        ctx.crowdstrike.event.IncidentEndTime != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.IncidentEndTime) + 1) < 12
-  - date:
-      field: crowdstrike.event.StartTimestamp
-      target_field: crowdstrike.event.StartTimestamp
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.StartTimestamp != null &&
-        !(ctx.crowdstrike.event.StartTimestamp instanceof String) &&
-        ctx.crowdstrike.event.StartTimestamp != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.StartTimestamp) + 1) < 12
-  - date:
-      field: crowdstrike.event.EndTimestamp
-      target_field: crowdstrike.event.EndTimestamp
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.EndTimestamp != null &&
-        !(ctx.crowdstrike.event.EndTimestamp instanceof String) &&
-        ctx.crowdstrike.event.EndTimestamp != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.EndTimestamp) + 1) < 12
-  - date:
-      field: crowdstrike.event.UTCTimestamp
-      target_field: crowdstrike.event.UTCTimestamp
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.event?.UTCTimestamp != null &&
-        !(ctx.crowdstrike.event.UTCTimestamp instanceof String) &&
-        ctx.crowdstrike.event.UTCTimestamp != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.event.UTCTimestamp) + 1) < 12
-  - date:
-      field: crowdstrike.metadata.eventCreationTime
-      target_field: crowdstrike.metadata.eventCreationTime
-      timezone: UTC
-      formats:
-        - UNIX
-      ignore_failure: true
-      if: |
-        ctx?.crowdstrike?.metadata?.eventCreationTime != null &&
-        !(ctx.crowdstrike.metadata.eventCreationTime instanceof String) &&
-        ctx.crowdstrike.metadata.eventCreationTime != 0 &&
-        (int)(Math.log10(ctx.crowdstrike.metadata.eventCreationTime) + 1) < 12
   - set:
       field: event.outcome
       value: success
