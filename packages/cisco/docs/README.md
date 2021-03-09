@@ -390,6 +390,7 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | elastic.agent.id |  | keyword |
 | elastic.agent.snapshot |  | boolean |
 | elastic.agent.version |  | keyword |
+| error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
