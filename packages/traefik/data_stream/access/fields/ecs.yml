@@ -73,6 +73,28 @@
       type: keyword
       description: Region name.
       ignore_above: 1024
+    - name: ip
+      description: IP address of the source.
+      type: ip
+    - name: as.number
+      description: Unique number allocated to the autonomous system.
+      example: 15169
+      type: long
+    - name: as.organization.name
+      description: Organization name.
+      example: Google LLC
+      ignore_above: 1024
+      multi_fields:
+        - flat_name: source.as.organization.name.text
+          name: text
+          norms: false
+          type: text
+      type: keyword
+    - name: geo.country_name
+      description: Country name.
+      example: Canada
+      ignore_above: 1024
+      type: keyword
 - name: url
   title: URL
   group: 2
@@ -130,6 +152,9 @@
         - name: text
           type: text
           norms: false
+    - name: os.full
+      type: keyword
+      description: Operating system name, including the version or code name.
     - name: os.name
       level: extended
       type: keyword
@@ -140,3 +165,20 @@
           type: text
           norms: false
           default_field: false
+    - name: os.version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system version as a raw string
+    - name: version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of the user agent
+- description: All of the IPs seen on your event.
+  name: related.ip
+  type: ip
+- description: All the user names seen on your event.
+  ignore_above: 1024
+  name: related.user
+  type: keyword
