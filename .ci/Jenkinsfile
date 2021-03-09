@@ -14,8 +14,8 @@ pipeline {
     KIND_VERSION = "v0.10.0"
     K8S_VERSION = "v1.20.2"
 
-    ELASTIC_STACK_VERSION_PREV = "7.11.1"
-    ELASTIC_STACK_VERSION_PREV_PREV = "7.10.0"
+    ELASTIC_STACK_VERSION_PREV = "7.12.0-SNAPSHOT"
+    ELASTIC_STACK_VERSION_PREV_PREV = "7.11.2-SNAPSHOT"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -87,9 +87,8 @@ pipeline {
                       }
 
                       // Check compatibility with previous stacks
-                      // FIXME Disable compatibility checks due to https://github.com/elastic/beats/issues/24310
-                      //checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
-                      //checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
+                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
+                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
