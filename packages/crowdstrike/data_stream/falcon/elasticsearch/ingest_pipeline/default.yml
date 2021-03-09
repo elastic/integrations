@@ -25,7 +25,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.ProcessStartTime != null &&
@@ -41,7 +40,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.ProcessEndTime != null &&
@@ -57,7 +55,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.IncidentStartTime != null &&
@@ -73,7 +70,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.IncidentEndTime != null &&
@@ -89,7 +85,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.StartTimestamp != null &&
@@ -105,7 +100,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.EndTimestamp != null &&
@@ -121,7 +115,6 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.event?.UTCTimestamp != null &&
@@ -137,12 +130,99 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-        - UNIX
       ignore_failure: true
       if: |
         ctx?.crowdstrike?.metadata?.eventCreationTime != null &&
         !(ctx.crowdstrike.metadata.eventCreationTime instanceof String) &&
         (int)(Math.log10(ctx.crowdstrike.metadata.eventCreationTime) + 1) >= 12
+  - date:
+      field: crowdstrike.event.ProcessStartTime
+      target_field: crowdstrike.event.ProcessStartTime
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.ProcessStartTime != null &&
+        !(ctx.crowdstrike.event.ProcessStartTime instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.ProcessStartTime) + 1) < 12
+  - date:
+      field: crowdstrike.event.ProcessEndTime
+      target_field: crowdstrike.event.ProcessEndTime
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.ProcessEndTime != null &&
+        !(ctx.crowdstrike.event.ProcessEndTime instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.ProcessEndTime) + 1) < 12
+  - date:
+      field: crowdstrike.event.IncidentStartTime
+      target_field: crowdstrike.event.IncidentStartTime
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.IncidentStartTime != null &&
+        !(ctx.crowdstrike.event.IncidentStartTime instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.IncidentStartTime) + 1) < 12
+  - date:
+      field: crowdstrike.event.IncidentEndTime
+      target_field: crowdstrike.event.IncidentEndTime
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.IncidentEndTime != null &&
+        !(ctx.crowdstrike.event.IncidentEndTime instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.IncidentEndTime) + 1) < 12
+  - date:
+      field: crowdstrike.event.StartTimestamp
+      target_field: crowdstrike.event.StartTimestamp
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.StartTimestamp != null &&
+        !(ctx.crowdstrike.event.StartTimestamp instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.StartTimestamp) + 1) < 12
+  - date:
+      field: crowdstrike.event.EndTimestamp
+      target_field: crowdstrike.event.EndTimestamp
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.EndTimestamp != null &&
+        !(ctx.crowdstrike.event.EndTimestamp instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.EndTimestamp) + 1) < 12
+  - date:
+      field: crowdstrike.event.UTCTimestamp
+      target_field: crowdstrike.event.UTCTimestamp
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.event?.UTCTimestamp != null &&
+        !(ctx.crowdstrike.event.UTCTimestamp instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.event.UTCTimestamp) + 1) < 12
+  - date:
+      field: crowdstrike.metadata.eventCreationTime
+      target_field: crowdstrike.metadata.eventCreationTime
+      timezone: UTC
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: |
+        ctx?.crowdstrike?.metadata?.eventCreationTime != null &&
+        !(ctx.crowdstrike.metadata.eventCreationTime instanceof String) &&
+        (int)(Math.log10(ctx.crowdstrike.metadata.eventCreationTime) + 1) < 12
   - set:
       field: event.outcome
       value: success
@@ -238,25 +318,25 @@ processors:
           }
         }
   - pipeline:
-      name: '{< IngestPipeline "detection_summary" >}'
+      name: '{{ IngestPipeline "detection_summary" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
   - pipeline:
-      name: '{< IngestPipeline "incident_summary" >}'
+      name: '{{ IngestPipeline "incident_summary" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "IncidentSummaryEvent"
   - pipeline:
-      name: '{< IngestPipeline "user_activity_audit" >}'
+      name: '{{ IngestPipeline "user_activity_audit" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "UserActivityAuditEvent"
   - pipeline:
-      name: '{< IngestPipeline "auth_activity_audit" >}'
+      name: '{{ IngestPipeline "auth_activity_audit" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "AuthActivityAuditEvent"
   - pipeline:
-      name: '{< IngestPipeline "firewall_match" >}'
+      name: '{{ IngestPipeline "firewall_match" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "FirewallMatchEvent"
   - pipeline:
-      name: '{< IngestPipeline "remote_response_session_start" >}'
+      name: '{{ IngestPipeline "remote_response_session_start" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "RemoteResponseSessionStartEvent"
   - pipeline:
-      name: '{< IngestPipeline "remote_response_session_end" >}'
+      name: '{{ IngestPipeline "remote_response_session_end" }}'
       if: ctx?.crowdstrike?.metadata?.eventType == "RemoteResponseSessionEndEvent"
   - script:
       lang: painless
