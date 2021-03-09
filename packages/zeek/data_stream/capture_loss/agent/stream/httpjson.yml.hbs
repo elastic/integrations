@@ -5,19 +5,9 @@ auth.basic.password: {{password}}
 cursor:
   index_earliest:
     value: '[[.last_event.result.max_indextime]]'
-{{#if ssl.enabled}}
-request.url: https://{{server}}:{{port}}/services/search/jobs/export
-{{#if ssl.verification_mode}}
-ssl.verification_mode: {{ssl.verification_mode}}
-{{/if}}
-{{#if ssl.certificate_authorities}}
-ssl.certificate_authorites:
-{{#each ssl.certificate_authorities}}
-  - {{this}}
-{{/each}}
-{{/if}}
-{{else}}
-request.url: http://{{server}}:{{port}}/services/search/jobs/export
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
 {{/if}}
 request.method: POST
 request.transforms:

@@ -33,22 +33,16 @@ policy_templates:
         title: Collect logs from Apache instances
         description: Collecting Apache access and error logs
       - type: httpjson
-        title: Collect Apache logs from third-party REST API
-        description: Collecting Apache logs via third-party REST API
+        title: Collect logs from third-party REST API (experimental)
+        description: Collect logs from third-party REST API (experimental)
         vars:
-          - name: server
+          - name: url
             type: text
-            title: Address of Splunk Enterprise Server
-            description: hostname or IP
+            title: URL of Splunk Enterprise Server
+            description: i.e. scheme://host:port,  path is automatic
             show_user: true
             required: true
-            default: server.example.com
-          - name: port
-            type: text
-            title: Port number of Splunk Enterprise REST API
-            show_user: true
-            required: true
-            default: 8089
+            default: https://server.example.com:8089
           - name: username
             type: text
             title: Splunk REST API Username
@@ -59,26 +53,11 @@ policy_templates:
             title: Splunk REST API Password
             required: true
             show_user: true
-          - name: ssl.enabled
-            type: bool
-            title: SSL enabled
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
             multi: false
-            required: false
-            show_user: false
-            default: true
-          - name: ssl.verification_mode
-            type: text
-            title: Mode of server verification
-            description: "valid values: none, strict, certificate or full"
-            multi: false
-            required: false
-            show_user: false
-            default: full
-          - name: ssl.certificate_authorities
-            type: text
-            title: List of root certificates for TLS server verification
-            description: PEM encoded
-            multi: true
             required: false
             show_user: false
       - type: apache/metrics
