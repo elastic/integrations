@@ -175,13 +175,13 @@ def isPrAffected(integrationName) {
   def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
   def to = env.GIT_BASE_COMMIT
 
-  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only ${from}..${to} | egrep -v '^packages/'", returnStatus: true)
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) | egrep -v '^packages/'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found non-package files"
     return true
   }
 
-  r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only ${from}..${to} | egrep '^packages/${integrationName}/'", returnStatus: true)
+  r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) | egrep '^packages/${integrationName}/'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found package files"
     return true
