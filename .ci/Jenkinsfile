@@ -57,8 +57,7 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
                 integrations[it] = {
-                  sleep(randomNumber(min: 1, max: 5))
-                  node('ubuntu-20 && immutable') {
+                  withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
                       deleteDir()
                       gitCheckout(basedir: "${BASE_DIR}")
