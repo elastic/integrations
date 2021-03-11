@@ -1,0 +1,126 @@
+config_version: 2
+interval: {{interval}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+cursor:
+  index_earliest:
+    value: '[[.last_event.result.max_indextime]]'
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.transforms:
+  - set:
+      target: url.params.search
+      value: {{search}} | streamstats max(_indextime) AS max_indextime
+  - set:
+      target: url.params.output_mode
+      value: "json"
+  - set:
+      target: url.params.index_earliest
+      value: '[[ .cursor.index_earliest ]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: url.params.index_latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: header.Content-Type
+      value: application/x-www-form-urlencoded
+response.decode_as: application/x-ndjson
+response.split:
+  target: body.result._raw
+  type: string
+  delimiter: "\n"
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+  - decode_json_fields:
+      fields: message
+      target: json
+      add_error_key: true
+  - drop_event:
+      when:
+        not:
+          has_fields: ['json.result']
+  - fingerprint:
+      fields:
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: "@metadata._id"
+  - rename:
+      fields:
+        - from: json.result._raw
+          to: event.original
+        - from: json.result.host
+          to: host.name
+        - from: json.result.source
+          to: file.path
+  - decode_json_fields:
+      fields: event.original
+      target: zeek.intel
+  - convert:
+      ignore_missing: true
+      fields:
+        - {from: zeek.intel.id.orig_h, to: source.address}
+        - {from: zeek.intel.id.orig_h, to: source.ip, type: ip}
+        - {from: zeek.intel.id.orig_p, to: source.port, type: long}
+        - {from: zeek.intel.id.resp_h, to: destination.address}
+        - {from: zeek.intel.id.resp_h, to: destination.ip, type: ip}
+        - {from: zeek.intel.id.resp_p, to: destination.port, type: long}
+  - rename:
+      ignore_missing: true
+      fields:
+        - from: zeek.intel.uid
+          to: zeek.session_id
+        # Expand field names containing dots.
+        - from: zeek.intel.seen.indicator
+          to: seen.indicator
+        - from: zeek.intel.seen.indicator_type
+          to: seen.indicator_type
+        - from: zeek.intel.seen.host
+          to: seen.host
+        - from: zeek.intel.seen.where
+          to: seen.where
+        - from: zeek.intel.seen.node
+          to: seen.node
+        - from: zeek.intel.seen.conn
+          to: seen.conn
+        - from: zeek.intel.seen.uid
+          to: seen.uid
+        - from: zeek.intel.seen.f
+          to: seen.f
+        - from: zeek.intel.seen.fuid
+          to: seen.fuid
+        - from: seen
+          to: zeek.intel.seen
+  - drop_fields:
+      ignore_missing: true
+      fields:
+        - zeek.intel.id.orig_h
+        - zeek.intel.id.orig_p
+        - zeek.intel.id.resp_h
+        - zeek.intel.id.resp_p
+  - add_fields:
+      target: event
+      fields:
+        kind: alert
+        type:
+          - info
+  - community_id:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
+  - drop_fields:
+      fields: ["json","message"]
+      ignore_missing: true
