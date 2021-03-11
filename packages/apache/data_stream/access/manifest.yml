@@ -17,3 +17,29 @@ streams:
     template_path: log.yml.hbs
     title: Apache access logs
     description: Collect Apache access logs
+  - input: httpjson
+    title: Apache access logs via Splunk Enterprise REST API
+    description: Collect apache access logs via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: true
+        required: true
+        default: "search sourcetype=\"access*\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded

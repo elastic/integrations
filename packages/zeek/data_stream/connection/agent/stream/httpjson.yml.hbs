@@ -1,0 +1,143 @@
+config_version: 2
+interval: {{interval}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+cursor:
+  index_earliest:
+    value: '[[.last_event.result.max_indextime]]'
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.transforms:
+  - set:
+      target: url.params.search
+      value: {{search}} | streamstats max(_indextime) AS max_indextime
+  - set:
+      target: url.params.output_mode
+      value: "json"
+  - set:
+      target: url.params.index_earliest
+      value: '[[ .cursor.index_earliest ]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: url.params.index_latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: header.Content-Type
+      value: application/x-www-form-urlencoded
+response.decode_as: application/x-ndjson
+response.split:
+  target: body.result._raw
+  type: string
+  delimiter: "\n"
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+  - decode_json_fields:
+      fields: message
+      target: json
+      add_error_key: true
+  - drop_event:
+      when:
+        not:
+          has_fields: ['json.result']
+  - fingerprint:
+      fields:
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: "@metadata._id"
+  - rename:
+      fields:
+        - from: json.result._raw
+          to: event.original
+        - from: json.result.host
+          to: host.name
+        - from: json.result.source
+          to: file.path
+  - decode_json_fields:
+      fields: event.original
+      target: zeek.connection
+  - rename:
+      fields:
+        - from: zeek.connection.duration
+          to: temp.duration
+        - from: zeek.connection.id.orig_h
+          to: source.address
+        - from: zeek.connection.id.orig_p
+          to: source.port
+        - from: zeek.connection.id.resp_h
+          to: destination.address
+        - from: zeek.connection.id.resp_p
+          to: destination.port
+        - from: zeek.connection.proto
+          to: network.transport
+        - from: zeek.connection.service
+          to: network.protocol
+        - from: zeek.connection.uid
+          to: zeek.session_id
+        - from: zeek.connection.orig_ip_bytes
+          to: source.bytes
+        - from: zeek.connection.resp_ip_bytes
+          to: destination.bytes
+        - from: zeek.connection.orig_pkts
+          to: source.packets
+        - from: zeek.connection.resp_pkts
+          to: destination.packets
+        - from: zeek.connection.conn_state
+          to: zeek.connection.state
+        - from: zeek.connection.orig_l2_addr
+          to: source.mac
+        - from: zeek.connection.resp_l2_addr
+          to: destination.mac
+      ignore_missing: true
+      fail_on_error: false
+  - rename:
+      when.equals.network.transport: icmp
+      fields:
+        - from: source.port
+          to: zeek.connection.icmp.type
+        - from: destination.port
+          to: zeek.connection.icmp.code
+      ignore_missing: true
+      fail_on_error: false
+  - convert:
+      fields:
+        - {from: "zeek.session_id", to: "event.id"}
+        - {from: "source.address", to: "source.ip", type: "ip"}
+        - {from: "destination.address", to: "destination.ip", type: "ip"}
+      ignore_missing: true
+      fail_on_error: false
+  - add_fields:
+      target: event
+      fields:
+        kind: event
+        category:
+          - network
+  - if:
+      equals.network.transport: icmp
+    then:
+      community_id:
+        fields:
+          icmp_type: zeek.connection.icmp.type
+          icmp_code: zeek.connection.icmp.code
+    else:
+      community_id:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
+  - drop_fields:
+      fields: ["zeek.connection.orig_bytes","zeek.connection.resp_bytes","zeek.connection.tunnel_parents","json","message"]
+      ignore_missing: true
+

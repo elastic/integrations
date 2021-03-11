@@ -3,6 +3,9 @@ title: Zeek connection logs
 release: experimental
 streams:
   - input: logfile
+    template_path: log.yml.hbs
+    title: Zeek conn.log
+    description: Collect Zeek connection logs
     vars:
       - name: filenames
         type: text
@@ -20,6 +23,29 @@ streams:
         show_user: true
         default:
           - zeek.connection
-    template_path: log.yml.hbs
-    title: Zeek conn.log
-    description: Collect Zeek connection logs
+  - input: httpjson
+    title: Zeek connection logs via Splunk Enterprise REST API
+    description: Collect Zeek connection logs via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: true
+        required: true
+        default: "search sourcetype=\"conn-*\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded

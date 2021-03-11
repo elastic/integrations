@@ -23,3 +23,29 @@ streams:
     template_path: log.yml.hbs
     title: Zeek ssl.log
     description: Collect Zeek ssl logs
+  - input: httpjson
+    title: Zeek ssl logs via Splunk Enterprise REST API
+    description: Collect Zeek ssl logs via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: true
+        required: true
+        default: "search sourcetype=\"ssl-*\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded

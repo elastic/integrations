@@ -14,3 +14,29 @@ streams:
           - /var/log/nginx/error.log*
     title: Nginx error logs
     description: Collect Nginx error logs
+  - input: httpjson
+    title: Nginx error logs via Splunk REST API
+    description: Collect Nginx error logs via Splunk REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Search String
+        show_user: true
+        required: true
+        default: search sourcetype=nginx:plus:error
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded

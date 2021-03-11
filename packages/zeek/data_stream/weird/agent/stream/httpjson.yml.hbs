@@ -1,0 +1,109 @@
+config_version: 2
+interval: {{interval}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+cursor:
+  index_earliest:
+    value: '[[.last_event.result.max_indextime]]'
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.transforms:
+  - set:
+      target: url.params.search
+      value: {{search}} | streamstats max(_indextime) AS max_indextime
+  - set:
+      target: url.params.output_mode
+      value: "json"
+  - set:
+      target: url.params.index_earliest
+      value: '[[ .cursor.index_earliest ]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: url.params.index_latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: header.Content-Type
+      value: application/x-www-form-urlencoded
+response.decode_as: application/x-ndjson
+response.split:
+  target: body.result._raw
+  type: string
+  delimiter: "\n"
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+  - decode_json_fields:
+      fields: message
+      target: json
+      add_error_key: true
+  - drop_event:
+      when:
+        not:
+          has_fields: ['json.result']
+  - fingerprint:
+      fields:
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: "@metadata._id"
+  - rename:
+      fields:
+        - from: json.result._raw
+          to: event.original
+        - from: json.result.host
+          to: host.name
+        - from: json.result.source
+          to: file.path
+  - decode_json_fields:
+      fields: event.original
+      target: zeek.weird
+  - rename:
+      fields:
+        - from: "zeek.weird.id.orig_h"
+          to: "source.address"
+        - from: "zeek.weird.id.orig_p"
+          to: "source.port"
+        - from: "zeek.weird.id.resp_h"
+          to: "destination.address"
+        - from: "zeek.weird.id.resp_p"
+          to: "destination.port"
+        - from: "zeek.weird.uid"
+          to: "zeek.session_id"
+        - from: "zeek.weird.addl"
+          to: "zeek.weird.additional_info"
+      ignore_missing: true
+      fail_on_error: false
+  - convert:
+      fields:
+        - {from: "zeek.session_id", to: "event.id"}
+        - {from: "source.address", to: "source.ip", type: "ip"}
+        - {from: "destination.address", to: "destination.ip", type: "ip"}
+        - {from: "zeek.weird.name", to: "rule.name"}
+      ignore_missing: true
+      fail_on_error: false
+  - add_fields:
+      target: event
+      fields:
+        kind: alert
+        category:
+          - network
+        type:
+          - info
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
+  - drop_fields:
+      fields: ["json","message"]
+      ignore_missing: true
