@@ -3,10 +3,13 @@ chmod a+wx /var/log/postgresql
 
 cat <<-EOF >> $PGDATA/postgresql.conf
 # Enable some log facilities.
-log_statement = 'all'
 log_duration = 'on'
 log_connections = 'on'
 log_disconnections = 'on'
+
+# Ensure that statements are logged, with their durations.
+log_statement = 'none'
+log_min_duration_statement = 0
 
 # Give agent read permissions. In NO case for production usage.
 log_file_mode = '0666'
