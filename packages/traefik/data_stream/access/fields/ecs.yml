@@ -1,0 +1,196 @@
+- name: http
+  title: HTTP
+  group: 2
+  type: group
+  fields:
+    - name: request.method
+      level: extended
+      type: keyword
+      description: |-
+        HTTP request method.
+        Prior to ECS 1.6.0 the following guidance was provided:
+        "The field value must be normalized to lowercase for querying."
+        As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0
+      ignore_above: 1024
+    - name: request.referrer
+      level: extended
+      type: keyword
+      description: Referrer for this HTTP request.
+      ignore_above: 1024
+    - name: response.body.bytes
+      level: extended
+      type: long
+      format: bytes
+      description: Size in bytes of the response body.
+    - name: response.status_code
+      level: extended
+      type: long
+      format: string
+      description: HTTP response status code.
+    - name: version
+      level: extended
+      type: keyword
+      description: HTTP version.
+      ignore_above: 1024
+- name: source
+  title: Source
+  group: 2
+  type: group
+  fields:
+    - name: address
+      level: extended
+      type: keyword
+      description: |-
+        Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
+        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
+      ignore_above: 1024
+    - name: geo.city_name
+      level: core
+      type: keyword
+      description: City name.
+      ignore_above: 1024
+    - name: geo.continent_name
+      level: core
+      type: keyword
+      description: Name of the continent.
+      ignore_above: 1024
+    - name: geo.country_iso_code
+      level: core
+      type: keyword
+      description: Country ISO code.
+      ignore_above: 1024
+    - name: geo.location
+      level: core
+      type: geo_point
+      description: Longitude and latitude.
+    - name: geo.region_iso_code
+      level: core
+      type: keyword
+      description: Region ISO code.
+      ignore_above: 1024
+    - name: geo.region_name
+      level: core
+      type: keyword
+      description: Region name.
+      ignore_above: 1024
+    - name: ip
+      description: IP address of the source.
+      type: ip
+    - name: as.number
+      description: Unique number allocated to the autonomous system.
+      example: 15169
+      type: long
+    - name: as.organization.name
+      description: Organization name.
+      example: Google LLC
+      ignore_above: 1024
+      multi_fields:
+        - flat_name: source.as.organization.name.text
+          name: text
+          norms: false
+          type: text
+      type: keyword
+    - name: geo.country_name
+      description: Country name.
+      example: Canada
+      ignore_above: 1024
+      type: keyword
+- name: url
+  title: URL
+  group: 2
+  type: group
+  fields:
+    - name: original
+      level: extended
+      type: keyword
+      description: |-
+        Unmodified original url as seen in the event source.
+        Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path.
+        This field is meant to represent the URL as it was observed, complete or not.
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+- name: user
+  title: User
+  group: 2
+  type: group
+  fields:
+    - name: name
+      level: core
+      type: keyword
+      description: Short name or login of the user.
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+- name: user_agent
+  title: User agent
+  group: 2
+  type: group
+  fields:
+    - name: device.name
+      level: extended
+      type: keyword
+      description: Name of the device.
+      ignore_above: 1024
+    - name: name
+      level: extended
+      type: keyword
+      description: Name of the user agent.
+      ignore_above: 1024
+    - name: original
+      level: extended
+      type: keyword
+      description: Unparsed user_agent string.
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+    - name: os.full
+      type: keyword
+      description: Operating system name, including the version or code name.
+    - name: os.name
+      level: extended
+      type: keyword
+      description: Operating system name, without the version.
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: os.version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system version as a raw string
+    - name: version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of the user agent
+- description: All of the IPs seen on your event.
+  name: related.ip
+  type: ip
+- description: All the user names seen on your event.
+  ignore_above: 1024
+  name: related.user
+  type: keyword
+- name: log.file.path
+  type: keyword
+  description: Log path
+- name: log.offset
+  type: long
+  description: Log offset
+- name: ecs.version
+  type: keyword
+  description: ECS version
+- name: input.type
+  type: keyword
+  description: Input type

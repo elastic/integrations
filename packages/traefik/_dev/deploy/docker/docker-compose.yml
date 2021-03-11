@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  traefik:
+    # Commented out `image:` below until we have a process to refresh the hosted images from
+    # Dockerfiles in this repo. Until then, we build the image locally using `build:` below.
+    # image: docker.elastic.co/integrations-ci/beats-traefik:${TRAEFIK_VERSION:-1.6}-1
+    build:
+      context: .
+      args:
+        TRAEFIK_VERSION: ${SERVICE_VERSION:-1.7}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${SERVICE_LOGS_DIR}:/var/log
+    ports:
+      - 8080
+      - 80
+    depends_on:
+      - backend
+  backend:
+    ## Backend service for traefik to proxy to
+    image: containous/whoami
