@@ -23,3 +23,29 @@ streams:
     template_path: log.yml.hbs
     title: Zeek dnp3.log
     description: Collect Zeek dnp3 logs
+  - input: httpjson
+    title: Zeek dnp3 logs via Splunk Enterprise REST API
+    description: Collect Zeek dnp3 logs via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: true
+        required: true
+        default: "search sourcetype=\"dnp3-*\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
