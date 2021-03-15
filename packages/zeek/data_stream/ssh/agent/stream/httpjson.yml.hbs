@@ -1,0 +1,122 @@
+config_version: 2
+interval: {{interval}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+cursor:
+  index_earliest:
+    value: '[[.last_event.result.max_indextime]]'
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.transforms:
+  - set:
+      target: url.params.search
+      value: {{search}} | streamstats max(_indextime) AS max_indextime
+  - set:
+      target: url.params.output_mode
+      value: "json"
+  - set:
+      target: url.params.index_earliest
+      value: '[[ .cursor.index_earliest ]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: url.params.index_latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: header.Content-Type
+      value: application/x-www-form-urlencoded
+response.decode_as: application/x-ndjson
+response.split:
+  target: body.result._raw
+  type: string
+  delimiter: "\n"
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+  - decode_json_fields:
+      fields: message
+      target: json
+      add_error_key: true
+  - drop_event:
+      when:
+        not:
+          has_fields: ['json.result']
+  - fingerprint:
+      fields:
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: "@metadata._id"
+  - rename:
+      fields:
+        - from: json.result._raw
+          to: event.original
+        - from: json.result.host
+          to: host.name
+        - from: json.result.source
+          to: file.path
+  - decode_json_fields:
+      fields: event.original
+      target: zeek.ssh
+  - rename:
+      fields:
+        - from: "zeek.ssh.id.orig_h"
+          to: "source.address"
+        - from: "zeek.ssh.id.orig_p"
+          to: "source.port"
+        - from: "zeek.ssh.id.resp_h"
+          to: "destination.address"
+        - from: "zeek.ssh.id.resp_p"
+          to: "destination.port"
+        - from: "zeek.ssh.uid"
+          to: "zeek.session_id"
+        - from: "zeek.ssh.auth_attempts"
+          to: "zeek.ssh.auth.attempts"
+        - from: "zeek.ssh.auth_success"
+          to: "zeek.ssh.auth.success"
+        - from: "zeek.ssh.cipher_alg"
+          to: "zeek.ssh.algorithm.cipher"
+        - from: "zeek.ssh.mac_alg"
+          to: "zeek.ssh.algorithm.mac"
+        - from: "zeek.ssh.compression_alg"
+          to: "zeek.ssh.algorithm.compression"
+        - from: "zeek.ssh.kex_alg"
+          to: "zeek.ssh.algorithm.key_exchange"
+        - from: "zeek.ssh.host_key_alg"
+          to: "zeek.ssh.algorithm.host_key"
+      ignore_missing: true
+      fail_on_error: false
+  - convert:
+      fields:
+        - {from: "zeek.session_id", to: "event.id"}
+        - {from: "source.address", to: "source.ip", type: "ip"}
+        - {from: "destination.address", to: "destination.ip", type: "ip"}
+  - add_fields:
+      target: event
+      fields:
+        kind: event
+        category:
+          - network
+        type:
+          - connection
+          - protocol
+  - community_id:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
+        network.transport: tcp
+        network.protocol: ssh
+  - drop_fields:
+      fields: ["json","message"]
+      ignore_missing: true
