@@ -1,0 +1,157 @@
+config_version: 2
+interval: {{interval}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+cursor:
+  index_earliest:
+    value: '[[.last_event.result.max_indextime]]'
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.transforms:
+  - set:
+      target: url.params.search
+      value: {{search}} | streamstats max(_indextime) AS max_indextime
+  - set:
+      target: url.params.output_mode
+      value: "json"
+  - set:
+      target: url.params.index_earliest
+      value: '[[ .cursor.index_earliest ]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: url.params.index_latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: header.Content-Type
+      value: application/x-www-form-urlencoded
+response.decode_as: application/x-ndjson
+response.split:
+  target: body.result._raw
+  type: string
+  delimiter: "\n"
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+  - decode_json_fields:
+      fields: message
+      target: json
+      add_error_key: true
+  - drop_event:
+      when:
+        not:
+          has_fields: ['json.result']
+  - fingerprint:
+      fields:
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: "@metadata._id"
+  - rename:
+      fields:
+        - from: json.result._raw
+          to: event.original
+        - from: json.result.host
+          to: host.name
+        - from: json.result.source
+          to: file.path
+  - decode_json_fields:
+      fields: event.original
+      target: zeek.dhcp
+  - rename:
+      fields:
+        - from: "zeek.dhcp.uids"
+          to: "zeek.session_id"
+        - from: "zeek.dhcp.assigned_addr"
+          to: "zeek.dhcp.address.assigned"
+        - from: "zeek.dhcp.client_addr"
+          to: "zeek.dhcp.address.client"
+        - from: "zeek.dhcp.mac"
+          to: "zeek.dhcp.address.mac"
+        - from: "zeek.dhcp.requested_addr"
+          to: "zeek.dhcp.address.requested"
+        - from: "zeek.dhcp.server_addr"
+          to: "zeek.dhcp.address.server"
+        - from: "zeek.dhcp.host_name"
+          to: "zeek.dhcp.hostname"
+        - from: "zeek.dhcp.client_message"
+          to: "zeek.dhcp.msg.client"
+        - from: "zeek.dhcp.server_message"
+          to: "zeek.dhcp.msg.server"
+        - from: "zeek.dhcp.msg_types"
+          to: "zeek.dhcp.msg.types"
+        - from: "zeek.dhcp.msg_orig"
+          to: "zeek.dhcp.msg.origin"
+        - from: "zeek.dhcp.client_software"
+          to: "zeek.dhcp.software.client"
+        - from: "zeek.dhcp.server_software"
+          to: "zeek.dhcp.software.server"
+        - from: "zeek.dhcp.circuit_id"
+          to: "zeek.dhcp.id.circuit"
+        - from: "zeek.dhcp.agent_remote_id"
+          to: "zeek.dhcp.id.remote_agent"
+        - from: "zeek.dhcp.subscriber_id"
+          to: "zeek.dhcp.id.subscriber"
+        - from: "zeek.dhcp.client_port"
+          to: "source.port"
+        - from: "zeek.dhcp.server_port"
+          to: "destination.port"
+      ignore_missing: true
+      fail_on_error: false
+  - if:
+      not:
+        has_fields: ["source.port"]
+    then:
+      - add_fields:
+          target: source
+          fields:
+            port: 68
+  - if:
+      not:
+        has_fields: ["destination.port"]
+    then:
+      - add_fields:
+          target: destination
+          fields:
+            port: 67
+  - convert:
+      fields:
+        - {from: "zeek.dhcp.address.client", to: "source.address"}
+        - {from: "zeek.dhcp.address.client", to: "source.ip", type: "ip"}
+        - {from: "zeek.dhcp.address.client", to: "client.address"}
+        - {from: "zeek.dhcp.address.server", to: "destination.address"}
+        - {from: "zeek.dhcp.address.server", to: "destination.ip", type: "ip"}
+        - {from: "zeek.dhcp.address.server", to: "server.address"}
+        - {from: "zeek.dhcp.domain", to: "network.name"}
+      ignore_missing: true
+      fail_on_error: false
+  - add_fields:
+      target: event
+      fields:
+        kind: event
+        category:
+          - network
+        type:
+          - connection
+          - protocol
+          - info
+  - community_id:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
+        network.transport: udp
+        network.protocol: dhcp
+  - drop_fields:
+      fields: ["json","message"]
+      ignore_missing: true
