@@ -13,7 +13,8 @@ pipeline {
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.10.0"
     K8S_VERSION = "v1.20.2"
-
+    JOB_GCS_BUCKET = 'beats-ci-temp'
+    JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     ELASTIC_STACK_VERSION_PREV = "7.12.0-SNAPSHOT"
     ELASTIC_STACK_VERSION_PREV_PREV = "7.11.2-SNAPSHOT"
   }
@@ -35,6 +36,7 @@ pipeline {
       steps {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
+        stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
       }
     }
     stage('Check Go sources') {
@@ -60,7 +62,7 @@ pipeline {
                   withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
                       deleteDir()
-                      gitCheckout(basedir: "${BASE_DIR}")
+                      unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
                       useElasticPackage()
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
