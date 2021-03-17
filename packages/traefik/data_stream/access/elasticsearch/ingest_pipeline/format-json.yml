@@ -1,0 +1,103 @@
+---
+description: Pipeline for parsing Traefik's access logs in JSON format. Requires the geoip and user_agent
+  plugins.
+processors:
+  - json:
+      field: message
+      target_field: temp
+  - rename:
+      field: temp.ClientUsername
+      target_field: user.name
+  - rename:
+      field: temp.FrontendName
+      target_field: traefik.access.frontend_name
+  - rename:
+      field: temp.BackendAddr
+      target_field: traefik.access.backend_url
+  - rename:
+      field: temp.RequestCount
+      target_field: traefik.access.request_count
+  - rename:
+      field: temp.ClientHost
+      target_field: source.ip
+  - rename:
+      field: temp.ClientHost
+      target_field: source.address
+  - rename:
+      field: temp.ClientPort
+      target_field: source.port
+  # TODO: destionation.ip/address
+  # TODO: destionation.port
+  - rename:
+      field: temp.RequestPath
+      target_field: url.original
+  - rename:
+      field: temp.RequestMethod
+      target_field: http.request.method
+  - rename:
+      field: temp.DownstreamStatus
+      target_field: http.response.status_code
+  - rename:
+      field: temp.DownstreamContentSize
+      target_field: http.response.body.bytes
+  # TODO: http.version: 1.1
+  - rename:
+      field: request_User-Agent
+      target_field: user_agent.original
+  - remove:
+      field: temp
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
+  - append:
+      field: event.type
+      value: access
+      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+  - set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: "ctx?.source?.ip != null"
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      if: "ctx?.user?.name != null && ctx.user.name != '-'"
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
