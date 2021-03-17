@@ -21,11 +21,14 @@ processors:
       field: temp.ClientHost
       target_field: source.ip
   - rename:
-      field: temp.ClientHost
+      field: source.ip
       target_field: source.address
   - rename:
       field: temp.ClientPort
       target_field: source.port
+  - convert:
+      field: source.port
+      type: long
   # TODO: destionation.ip/address
   # TODO: destionation.port
   - rename:
@@ -42,10 +45,13 @@ processors:
       target_field: http.response.body.bytes
   # TODO: http.version: 1.1
   - rename:
-      field: request_User-Agent
+      field: temp.request_User-Agent
       target_field: user_agent.original
   - remove:
       field: temp
+      ignore_missing: true
+  - remove:
+      field: message
       ignore_missing: true
   - user_agent:
       field: user_agent.original
