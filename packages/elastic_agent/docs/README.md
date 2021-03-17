@@ -1,8 +1,8 @@
 # Elastic Agent Integration
 
-The Elastic Agent Integration allow you to explore the monitoring data for your Elastic Agents, by installing Kibana dashboards.
+This integration provides observability for Elastic Agent metrics. It provides a dashboard to visualize the status of your agents so you can troubleshoot problems and determine when to add capacity.
 
-Collecting monitoring data for an Agent is controlled by the monitoring settings of the Agent Policy.
+You can enable or disable agent monitoring in the agent policy settings.
 
 ## Metrics
 
