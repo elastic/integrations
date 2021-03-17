@@ -20,17 +20,27 @@ processors:
   - rename:
       field: temp.ClientHost
       target_field: source.ip
-  - rename:
-      field: source.ip
-      target_field: source.address
+  - set:
+      field: source.address
+      copy_from: source.ip
   - rename:
       field: temp.ClientPort
       target_field: source.port
   - convert:
       field: source.port
       type: long
-  # TODO: destionation.ip/address
-  # TODO: destionation.port
+  - dissect:
+      field: temp.BackendAddr
+      pattern: "%{destination.ip}:%{destination.port}"
+      if: "ctx?.temp?.BackendAddr != null"
+  - convert:
+      field: destination.port
+      type: long
+      if: "ctx?.destination?.port != null"
+  - set:
+      field: destination.address
+      copy_from: destination.ip
+      if: "ctx?.destination?.ip != null"
   - rename:
       field: temp.RequestPath
       target_field: url.original
@@ -43,7 +53,9 @@ processors:
   - rename:
       field: temp.DownstreamContentSize
       target_field: http.response.body.bytes
-  # TODO: http.version: 1.1
+  - dissect:
+      field: temp.RequestProtocol
+      pattern: "HTTP/%{http.version}"
   - rename:
       field: temp.request_User-Agent
       target_field: user_agent.original
@@ -99,6 +111,10 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: "ctx?.destination?.ip != null"
   - append:
       field: related.user
       value: "{{user.name}}"
