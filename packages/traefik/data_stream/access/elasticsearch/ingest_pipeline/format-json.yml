@@ -5,6 +5,9 @@ processors:
   - json:
       field: message
       target_field: temp
+  - remove:
+      field: message
+      ignore_missing: true
   - rename:
       field: temp.ClientUsername
       target_field: user.name
@@ -59,66 +62,7 @@ processors:
   - rename:
       field: temp.request_User-Agent
       target_field: user_agent.original
-  - remove:
-      field: temp
-      ignore_missing: true
-  - remove:
-      field: message
-      ignore_missing: true
-  - user_agent:
-      field: user_agent.original
-      ignore_failure: true
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-        - asn
-        - organization_name
-      ignore_missing: true
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.category
-      value: web
-      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
-  - append:
-      field: event.type
-      value: access
-      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
-  - set:
-      field: event.outcome
-      value: success
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
-  - set:
-      field: event.outcome
-      value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
-  - append:
-      field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
-  - append:
-      field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
-  - append:
-      field: related.user
-      value: "{{user.name}}"
-      if: "ctx?.user?.name != null && ctx.user.name != '-'"
+  # TODO: event.duration (in nanoseconds; original field in JSON: Duration - what's the units?)
 on_failure:
   - set:
       field: error.message
