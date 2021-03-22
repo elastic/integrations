@@ -5,29 +5,94 @@
       type: keyword
       description: |
         The timestamp from the log line.
-    - name: core_id
+    - name: client_addr
+      type: keyword
+      description: |
+        Host where the connection originated from.
+    - name: client_port
       type: long
       description: |
-        Core id
+        Port where the connection originated from.
+    - name: session_id
+      type: keyword
+      description: |
+        PostgreSQL session.
+    - name: session_line_number
+      type: long
+      description: |
+        Line number inside a session. (%l in `log_line_prefix`).
     - name: database
       type: keyword
       description: |
-        Name of database
+        Name of database.
     - name: query
       type: keyword
       description: |
-        Query statement.
+        Query statement. In the case of CSV parse, look at command_tag to get more context.
     - name: query_step
       type: keyword
       description: |
-        Statement step when using extended query protocol (one of statement, parse, bind or execute)
+        Statement step when using extended query protocol (one of statement, parse, bind or execute).
     - name: query_name
       type: keyword
       description: |
         Name given to a query when using extended query protocol. If it is "<unnamed>", or not present, this field is ignored.
-    - name: error.code
+    - name: command_tag
+      type: keyword
+      description: |
+        Type of session's current command. The complete list can be found at: src/include/tcop/cmdtaglist.h
+    - name: session_start_time
+      type: date
+      description: |
+        Time when this session started.
+    - name: virtual_transaction_id
+      type: keyword
+      description: |
+        Backend local transaction id.
+    - name: transaction_id
       type: long
-      description: Error code returned by Postgres (if any)
+      description: |
+        The id of current transaction.
+    - name: sql_state_code
+      type: keyword
+      description: |
+        State code returned by Postgres (if any). See also https://www.postgresql.org/docs/current/errcodes-appendix.html
+    - name: detail
+      type: keyword
+      description: |
+        More information about the message, parameters in case of a parametrized query. e.g. 'Role \"user\" does not exist.', 'parameters: $1 = 42', etc.
+    - name: hint
+      type: keyword
+      description: |
+        A possible solution to solve an error.
+    - name: internal_query
+      type: keyword
+      description: |
+        Internal query that led to the error (if any).
+    - name: internal_query_pos
+      type: long
+      description: |
+        Character count of the internal query (if any).
+    - name: context
+      type: keyword
+      description: |
+        Error context.
+    - name: query_pos
+      type: long
+      description: |
+        Character count of the error position (if any).
+    - name: location
+      type: keyword
+      description: |
+        Location of the error in the PostgreSQL source code (if log_error_verbosity is set to verbose).
+    - name: application_name
+      type: keyword
+      description: |
+        Name of the application of this event. It is defined by the client.
+    - name: backend_type
+      type: keyword
+      description: |
+        Type of backend of this event. Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, startup, walreceiver, walsender and walwriter. In addition, background workers registered by extensions may have additional types.
 - name: event.kind
   type: keyword
   description: Event kind (e.g. event)
