@@ -67,6 +67,7 @@ events for the account. If user creates a trail, it delivers those events as log
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |

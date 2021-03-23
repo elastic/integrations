@@ -26,7 +26,7 @@
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
@@ -40,9 +40,12 @@
 | destination.as.organization.name | Organization name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Name of the country. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
+| ecs.version | ECS version this event conforms to. | keyword |
+| error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
@@ -80,6 +83,7 @@
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Name of the country. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
