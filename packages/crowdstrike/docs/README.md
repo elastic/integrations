@@ -85,7 +85,10 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.ParentImageFileName | Path to the parent process. | keyword |
 | crowdstrike.event.ParentProcessId | Parent process ID related to the detection. | integer |
 | crowdstrike.event.PatternDispositionDescription | Action taken by Falcon. | keyword |
+| crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.FsOperationBlocked |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.InddetMask |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Indicator |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.KillParent |  | boolean |
@@ -96,6 +99,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | crowdstrike.event.PatternDispositionFlags.ProcessBlocked |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.QuarantineFile |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.QuarantineMachine |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.RegistryOperationBlocked |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Rooting |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.SensorOnly |  | boolean |
 | crowdstrike.event.PatternDispositionValue | Unique ID associated with action taken. | integer |
@@ -164,7 +168,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
