@@ -76,6 +76,11 @@
     - name: ip
       description: IP address of the source.
       type: ip
+    - name: port
+      level: core
+      type: long
+      format: string
+      description: Port of the source.
     - name: as.number
       description: Unique number allocated to the autonomous system.
       example: 15169
@@ -95,6 +100,83 @@
       example: Canada
       ignore_above: 1024
       type: keyword
+- name: destination
+  title: Destination
+  group: 2
+  type: group
+  fields:
+    - name: address
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
+
+        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.'
+    - name: as.number
+      level: extended
+      type: long
+      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
+      example: 15169
+    - name: as.organization.name
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Organization name.
+    - name: domain
+      level: core
+      type: wildcard
+      description: Destination domain.
+    - name: geo.city_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: City name.
+    - name: geo.continent_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Name of the continent.
+    - name: geo.country_iso_code
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Country ISO code.
+    - name: geo.country_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Country name.
+    - name: geo.location
+      level: core
+      type: geo_point
+      description: Longitude and latitude.
+    - name: geo.name
+      level: extended
+      type: wildcard
+      description: 'User-defined description of a location, at the level of granularity they care about.'
+    - name: geo.region_iso_code
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Region ISO code.
+    - name: geo.region_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Region name.
+    - name: ip
+      level: core
+      type: ip
+      description: IP address of the destination (IPv4 or IPv6).
+    - name: port
+      level: core
+      type: long
+      format: string
+      description: Port of the destination.
 - name: url
   title: URL
   group: 2
@@ -113,6 +195,16 @@
           type: text
           norms: false
           default_field: false
+    - name: domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Domain of the url, such as "www.elastic.co".
+
+        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
+
+        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
+      example: www.elastic.co
 - name: user
   title: User
   group: 2
@@ -175,6 +267,24 @@
       type: keyword
       ignore_above: 1024
       description: Version of the user agent
+- name: network
+  title: Network
+  group: 2
+  description: 'The network is defined as the communication path over which a host or network event happens.
+
+    The network.* fields should be populated with details about the network activity associated with an event.'
+  type: group
+  fields:
+    - name: transport
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)'
+    - name: community_id
+      description: A hash of source and destination IPs and ports.
+      example: 1:hO+sN4H+MG5MY/8hIrXPqc4ZQz0=
+      ignore_above: 1024
+      type: keyword
 - description: All of the IPs seen on your event.
   name: related.ip
   type: ip
