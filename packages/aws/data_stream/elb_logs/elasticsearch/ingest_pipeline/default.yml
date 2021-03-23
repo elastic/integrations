@@ -2,6 +2,12 @@
 description: "Pipeline for ELB logs"
 
 processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.8.0'
   - grok:
       field: message
       # Classic ELB patterns documented in https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html

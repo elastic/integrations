@@ -3,14 +3,17 @@ description: "Pipeline for s3 server access logs"
 
 processors:
   - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.8.0'
+  - set:
       field: event.category
       value: web
   - append:
       field: event.type
       value: access
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - grok:
       field: message
       patterns:
