@@ -130,27 +130,57 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | observer.type | The type of the observer the data is coming from. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | panw.panos.action | Action taken for the session. | keyword |
+| panw.panos.action_flags | 32-bit field that provides details on session, details about specific values is found in the Palo Alto Traffic Field documentation. | keyword |
+| panw.panos.action_source | Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session. | keyword |
+| panw.panos.content_version | Applications and Threats version on your firewall when the log was generated. | keyword |
 | panw.panos.destination.interface | Destination interface for this session. | keyword |
 | panw.panos.destination.nat.ip | Post-NAT destination IP. | ip |
 | panw.panos.destination.nat.port | Post-NAT destination port. | long |
 | panw.panos.destination.zone | Destination zone for this session. | keyword |
+| panw.panos.destination_vm_uuid | Identifies the destination universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
+| panw.panos.device_group_hierarchy1 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
+| panw.panos.device_group_hierarchy2 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
+| panw.panos.device_group_hierarchy3 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
+| panw.panos.device_group_hierarchy4 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.endreason | The reason a session terminated. | keyword |
 | panw.panos.file.hash | Binary hash for a threat file sent to be analyzed by the WildFire service. | keyword |
 | panw.panos.flow_id | Internal numeric identifier for each session. | keyword |
+| panw.panos.http_content_type | Content type of the HTTP response data | keyword |
+| panw.panos.http_headers | Indicates the inserted HTTP header in the URL log entries on the firewall. | keyword |
+| panw.panos.imei | International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment. | keyword |
+| panw.panos.imsi | International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system | keyword |
+| panw.panos.log_profile | Log Forwarding Profile that was applied to the session. | keyword |
 | panw.panos.network.nat.community_id | Community ID flow-hash for the NAT 5-tuple. | keyword |
 | panw.panos.network.pcap_id | Packet capture ID for a threat. | keyword |
+| panw.panos.parent_session.id | ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only. | keyword |
+| panw.panos.parent_session.start_time | Date that the parent tunnel session began. | date |
+| panw.panos.payload_protocol_id | ID of the protocol for the payload in the data portion of the data chunk. | keyword |
+| panw.panos.related_vsys | Virtual System associated with the session. | keyword |
+| panw.panos.repeat_count | Number of sessions with same Source IP, Destination IP, Application, and Subtype seen within 5 seconds. | long |
 | panw.panos.ruleset | Name of the rule that matched this session. | keyword |
+| panw.panos.scp.assoc_id | Number that identifies all connections for an association between two SCTP endpoints. | keyword |
+| panw.panos.scp.chunks | Sum of SCTP chunks sent and received for an association. | long |
+| panw.panos.scp.chunks_received | Number of SCTP chunks received for an association. | long |
+| panw.panos.scp.chunks_sent | Number of SCTP chunks sent for an association. | long |
 | panw.panos.sequence_number | Log entry identifier that is incremented sequentially. Unique for each log type. | long |
 | panw.panos.source.interface | Source interface for this session. | keyword |
 | panw.panos.source.nat.ip | Post-NAT source IP. | ip |
 | panw.panos.source.nat.port | Post-NAT source port. | long |
 | panw.panos.source.zone | Source zone for this session. | keyword |
-| panw.panos.sub_type | Specifies the sub type of the log | keyword |
+| panw.panos.source_vm_uuid | Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
+| panw.panos.sub_type | Specifies the sub type of the log. | keyword |
 | panw.panos.threat.id | Palo Alto Networks identifier for the threat. | keyword |
 | panw.panos.threat.name | Palo Alto Networks name for the threat. | keyword |
 | panw.panos.threat.resource | URL or file name for a threat. | keyword |
-| panw.panos.type | Specifies the type of the log | keyword |
+| panw.panos.threat_category | Describes threat categories used to classify different types of threat signatures. | keyword |
+| panw.panos.tunnel_type | Type of tunnel, such as GRE or IPSec. | keyword |
+| panw.panos.type | Specifies the type of the log. | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
+| panw.panos.url_idx | When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session. | keyword |
+| panw.panos.vsys_name | The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems. | keyword |
+| panw.panos.wildfire.name | Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis. | keyword |
+| panw.panos.wildfire.report_id | Identifies the analysis request on the WildFire cloud or the WildFire appliance. | keyword |
+| panw.panos.wildfire_name | Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis. | keyword |
 | related.hash | All the hashes seen on your event. | keyword |
 | related.hosts | All the host identifiers seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
