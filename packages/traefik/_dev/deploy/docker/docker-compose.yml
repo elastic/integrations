@@ -1,13 +1,33 @@
 version: '2.3'
 services:
-  traefik:
+  traefik_format_common:
     # Commented out `image:` below until we have a process to refresh the hosted images from
     # Dockerfiles in this repo. Until then, we build the image locally using `build:` below.
     # image: docker.elastic.co/integrations-ci/beats-traefik:${TRAEFIK_VERSION:-1.6}-1
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         TRAEFIK_VERSION: ${SERVICE_VERSION:-1.7}
+        TRAEFIK_LOG_FORMAT: common
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${SERVICE_LOGS_DIR}:/var/log
+    ports:
+      - 8080
+      - 80
+    depends_on:
+      - backend
+  traefik_format_json:
+    # Commented out `image:` below until we have a process to refresh the hosted images from
+    # Dockerfiles in this repo. Until then, we build the image locally using `build:` below.
+    # image: docker.elastic.co/integrations-ci/beats-traefik:${TRAEFIK_VERSION:-1.6}-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        TRAEFIK_VERSION: ${TRAEFIK_VERSION:-1.7}
+        TRAEFIK_LOG_FORMAT: json
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${SERVICE_LOGS_DIR}:/var/log
