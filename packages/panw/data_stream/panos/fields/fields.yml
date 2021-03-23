@@ -103,13 +103,145 @@
         Palo Alto Networks name for the threat.
     - name: action
       type: keyword
-      description: Action taken for the session.
+      description: |
+        Action taken for the session.
     - name: type
       type: keyword
-      description: Specifies the type of the log
+      description: |
+        Specifies the type of the log.
     - name: sub_type
       type: keyword
-      description: Specifies the sub type of the log
+      description: |
+        Specifies the sub type of the log.
+    - name: related_vsys
+      type: keyword
+      description: |
+        Virtual System associated with the session.
+    - name: vsys_name
+      type: keyword
+      description: |
+        The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems.
+    - name: log_profile
+      type: keyword
+      description: |
+        Log Forwarding Profile that was applied to the session.
+    - name: repeat_count
+      type: long
+      description: |
+        Number of sessions with same Source IP, Destination IP, Application, and Subtype seen within 5 seconds.
+    - name: action_flags
+      type: keyword
+      description: |
+        32-bit field that provides details on session, details about specific values is found in the Palo Alto Traffic Field documentation.
+    - name: action_source
+      type: keyword
+      description: |
+        Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session.
+    - name: source_vm_uuid
+      type: keyword
+      description: |
+        Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment.
+    - name: destination_vm_uuid
+      type: keyword
+      description: |
+        Identifies the destination universal unique identifier for a guest virtual machine in the VMware NSX environment.
+    - name: imsi
+      type: keyword
+      description: |
+        International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system
+    - name: imei
+      type: keyword
+      description: |
+        International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment.
+    - name: http_content_type
+      type: keyword
+      description: |
+        Content type of the HTTP response data
+    - name: content_version
+      type: keyword
+      description: |
+        Applications and Threats version on your firewall when the log was generated.
+    - name: threat_category
+      type: keyword
+      description: |
+        Describes threat categories used to classify different types of threat signatures.
+    - name: payload_protocol_id
+      type: keyword
+      description: |
+        ID of the protocol for the payload in the data portion of the data chunk.
+    - name: http_headers
+      type: keyword
+      description: |
+        Indicates the inserted HTTP header in the URL log entries on the firewall.
+    - name: wildfire_name
+      type: keyword
+      description: |
+        Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis.
+    - name: url_idx
+      type: keyword
+      description: |
+        When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session.
+    - name: wildfire
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis.
+        - name: report_id
+          type: keyword
+          description: |
+            Identifies the analysis request on the WildFire cloud or the WildFire appliance.
+    - name: parent_session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only.
+        - name: start_time
+          type: date
+          description: |
+            Date that the parent tunnel session began.
+    - name: tunnel_type
+      type: keyword
+      description: |
+        Type of tunnel, such as GRE or IPSec.
+    - name: device_group_hierarchy1
+      type: keyword
+      description: |
+        A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure.
+    - name: device_group_hierarchy2
+      type: keyword
+      description: |
+        A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure.
+    - name: device_group_hierarchy3
+      type: keyword
+      description: |
+        A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure.
+    - name: device_group_hierarchy4
+      type: keyword
+      description: |
+        A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure.
+    - name: scp
+      type: group
+      fields:
+        - name: assoc_id
+          type: keyword
+          description: |
+            Number that identifies all connections for an association between two SCTP endpoints.
+        - name: chunks
+          type: long
+          description: |
+            Sum of SCTP chunks sent and received for an association.
+        - name: chunks_sent
+          type: long
+          description: |
+            Number of SCTP chunks sent for an association.
+        - name: chunks_received
+          type: long
+          description: |
+            Number of SCTP chunks received for an association.
 - name: labels.pcap_included
   type: boolean
 - name: labels.ipv6_session

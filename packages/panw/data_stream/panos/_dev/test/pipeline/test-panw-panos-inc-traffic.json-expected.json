@@ -1,19 +1,11 @@
 {
     "expected": [
         {
-            "server": {
-                "nat": {},
-                "port": 80,
-                "bytes": 0,
-                "packets": 0,
-                "ip": "204.232.231.46"
-            },
             "log": {
                 "offset": 0,
                 "file": {
                     "path": "/go/src/github.com/elastic/beats/x-pack/filebeat/module/panw/panos/test/pan_inc_traffic.log"
-                },
-                "original": "Oct 30 09:46:12 1,2012/10/30 09:46:12,01606001116,TRAFFIC,start,1,2012/04/10 04:39:58,192.168.0.2,204.232.231.46,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:59,11449,1,59324,80,0,0,0x200000,tcp,allow,78,78,0,1,2012/04/10 04:39:59,0,any,0,0,0x0,192.168.0.0-192.168.255.255,United States,0,1,0"
+                }
             },
             "destination": {
                 "nat": {},
@@ -23,6 +15,7 @@
                     "city_name": "Fort Lauderdale",
                     "country_iso_code": "US",
                     "country_name": "United States",
+                    "name": "United States",
                     "region_name": "Florida",
                     "location": {
                         "lon": -80.1749,
@@ -35,7 +28,6 @@
                         "name": "Rackspace Hosting"
                     }
                 },
-                "address": "204.232.231.46",
                 "port": 80,
                 "bytes": 0,
                 "ip": "204.232.231.46",
@@ -46,7 +38,9 @@
             },
             "source": {
                 "nat": {},
-                "address": "192.168.0.2",
+                "geo": {
+                    "name": "192.168.0.0-192.168.255.255"
+                },
                 "port": 59324,
                 "bytes": 78,
                 "ip": "192.168.0.2",
@@ -57,49 +51,47 @@
             },
             "panw": {
                 "panos": {
-                    "sequence_number": 0,
-                    "sub_type": "start",
-                    "flow_id": "11449",
+                    "ruleset": "rule1",
                     "destination": {
                         "nat": {
                             "port": 0,
                             "ip": "0.0.0.0"
-                        },
-                        "interface": "ethernet1/1",
-                        "zone": "untrust"
+                        }
                     },
-                    "ruleset": "rule1",
-                    "action": "allow",
+                    "repeat_count": 1,
+                    "action_flags": "0x0",
                     "source": {
                         "nat": {
                             "port": 0,
                             "ip": "0.0.0.0"
-                        },
-                        "interface": "ethernet1/2",
-                        "zone": "trust"
+                        }
                     },
                     "type": "TRAFFIC",
                     "url": {
                         "category": "any"
-                    }
+                    },
+                    "sequence_number": 0,
+                    "log_profile": "forwardAll",
+                    "sub_type": "start",
+                    "flow_id": "11449",
+                    "action": "allow",
+                    "related_vsys": "vsys1"
                 }
-            },
-            "network": {
-                "community_id": "1:MaqerLAYuvMg6JWjWKmIMO6QJ6s=",
-                "application": "web-browsing",
-                "bytes": 78,
-                "transport": "tcp",
-                "type": "ipv4",
-                "packets": 1,
-                "direction": "outbound"
             },
             "tags": [
                 "pan-os",
                 "forwarded"
             ],
+            "network": {
+                "community_id": "1:MaqerLAYuvMg6JWjWKmIMO6QJ6s=",
+                "transport": "tcp",
+                "application": "web-browsing",
+                "type": "ipv4",
+                "bytes": 78,
+                "packets": 1
+            },
             "labels": {
-                "nat_translated": true,
-                "temporary_match": true
+                "captive_portal": true
             },
             "observer": {
                 "ingress": {
@@ -119,7 +111,10 @@
                     "zone": "untrust"
                 }
             },
-            "@timestamp": "2012-04-10T04:39:58.000-02:00",
+            "@timestamp": "2012-04-10T04:39:58.000Z",
+            "ecs": {
+                "version": "1.8.0"
+            },
             "related": {
                 "user": [
                     "crusher"
@@ -130,36 +125,23 @@
                     "0.0.0.0"
                 ]
             },
-            "client": {
-                "nat": {},
-                "port": 59324,
-                "user": {
-                    "name": "crusher"
-                },
-                "bytes": 78,
-                "packets": 1,
-                "ip": "192.168.0.2"
-            },
             "event": {
-                "created": "2012-10-30T09:46:12.000-02:00",
-                "timezone": "-02:00",
+                "duration": 0,
+                "ingested": "2021-03-15T09:39:27.478598Z",
+                "created": "2012-10-30T09:46:12.000Z",
                 "kind": "event",
-                "module": "panw",
-                "start": "2012-04-10T04:39:59.000-02:00",
+                "start": "2012-04-10T04:39:59.000Z",
+                "action": "flow_started",
+                "end": "2012-04-10T04:39:59.000Z",
+                "category": [
+                    "network_traffic",
+                    "network"
+                ],
                 "type": [
                     "allowed",
                     "start",
                     "connection"
                 ],
-                "duration": 0,
-                "ingested": "2021-02-16T11:52:00.983547200Z",
-                "action": "flow_started",
-                "end": "2012-04-10T04:39:59.000-02:00",
-                "category": [
-                    "network_traffic",
-                    "network"
-                ],
-                "dataset": "panw.panos",
                 "outcome": "success"
             }
         }
