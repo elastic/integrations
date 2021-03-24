@@ -1,4 +1,4 @@
 # Elastic Synthetics Integration
 
-This integration sets up required assets for Synthetics to use central management.
+Run lightweight synthetic checks on a schedule to ensure your HTTP, TCP, and ICMP services are up. Pairs with the Uptime Kibana UI.
 
