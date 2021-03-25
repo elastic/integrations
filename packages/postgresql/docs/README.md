@@ -4,7 +4,7 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 ## Compatibility
 
-The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3.
+The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
 
 The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions >= 9.
 
@@ -12,7 +12,32 @@ The `activity`, `bgwriter`, `database` and `statement` datasets were tested with
 
 ### log
 
-The `log` dataset collects the PostgreSQL logs.
+The `log` dataset collects the PostgreSQL logs in plain text format or CSV.
+
+#### Using CSV logs
+
+Since the PostgreSQL CSV log file is a well-defined format,
+there is almost no configuration to be done in Fleet, just the filepath.
+
+On the other hand, it's necessary to configure PostgreSQL to emit `.csv` logs.
+
+The recommended parameters are:
+```
+logging_collector = 'on';
+log_destination = 'csvlog';
+log_statement = 'none';
+log_checkpoints = on;
+log_connections = on;
+log_disconnections = on;
+log_lock_waits = on;
+log_min_duration_statement = 0;
+```
+
+In busy servers, `log_min_duration_statement` can cause contention, so you can assign
+a value greater than 0.
+
+Both `log_connections` and `log_disconnections` can cause a lot of events if you don't have
+persistent connections, so enable with care.
 
 **Exported fields**
 
@@ -35,8 +60,13 @@ The `log` dataset collects the PostgreSQL logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
 | event.kind | Event kind (e.g. event) | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
@@ -58,14 +88,31 @@ The `log` dataset collects the PostgreSQL logs.
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
-| postgresql.log.core_id | Core id | long |
-| postgresql.log.database | Name of database | keyword |
-| postgresql.log.error.code | Error code returned by Postgres (if any) | long |
-| postgresql.log.query | Query statement. | keyword |
+| postgresql.log.application_name | Name of the application of this event. It is defined by the client. | keyword |
+| postgresql.log.backend_type | Type of backend of this event. Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, startup, walreceiver, walsender and walwriter. In addition, background workers registered by extensions may have additional types. | keyword |
+| postgresql.log.client_addr | Host where the connection originated from. | keyword |
+| postgresql.log.client_port | Port where the connection originated from. | long |
+| postgresql.log.command_tag | Type of session's current command. The complete list can be found at: src/include/tcop/cmdtaglist.h | keyword |
+| postgresql.log.context | Error context. | keyword |
+| postgresql.log.database | Name of database. | keyword |
+| postgresql.log.detail | More information about the message, parameters in case of a parametrized query. e.g. 'Role \"user\" does not exist.', 'parameters: $1 = 42', etc. | keyword |
+| postgresql.log.hint | A possible solution to solve an error. | keyword |
+| postgresql.log.internal_query | Internal query that led to the error (if any). | keyword |
+| postgresql.log.internal_query_pos | Character count of the internal query (if any). | long |
+| postgresql.log.location | Location of the error in the PostgreSQL source code (if log_error_verbosity is set to verbose). | keyword |
+| postgresql.log.query | Query statement. In the case of CSV parse, look at command_tag to get more context. | keyword |
 | postgresql.log.query_name | Name given to a query when using extended query protocol. If it is "<unnamed>", or not present, this field is ignored. | keyword |
-| postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute) | keyword |
+| postgresql.log.query_pos | Character count of the error position (if any). | long |
+| postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
+| postgresql.log.session_id | PostgreSQL session. | keyword |
+| postgresql.log.session_line_number | Line number inside a session. (%l in `log_line_prefix`). | long |
+| postgresql.log.session_start_time | Time when this session started. | date |
+| postgresql.log.sql_state_code | State code returned by Postgres (if any). See also https://www.postgresql.org/docs/current/errcodes-appendix.html | keyword |
 | postgresql.log.timestamp | The timestamp from the log line. | keyword |
+| postgresql.log.transaction_id | The id of current transaction. | long |
+| postgresql.log.virtual_transaction_id | Backend local transaction id. | keyword |
 | process.pid | Process id. | long |
+| related.user | All the user names seen on your event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -146,6 +193,11 @@ An example event for `activity` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -256,6 +308,11 @@ An example event for `bgwriter` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -362,6 +419,8 @@ An example event for `database` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -501,6 +560,11 @@ An example event for `statement` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -540,3 +604,4 @@ An example event for `statement` looks as following:
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
+

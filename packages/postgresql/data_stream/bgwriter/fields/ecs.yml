@@ -1,3 +1,67 @@
+- name: ecs
+  title: ECS
+  group: 2
+  description: Meta-information specific to ECS.
+  type: group
+  fields:
+    - name: version
+      level: core
+      required: true
+      type: keyword
+      ignore_above: 1024
+      description: 'ECS version this event conforms to. `ecs.version` is a required field and must exist in all events.
+
+        When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events.'
+      example: 1.0.0
+- name: error
+  title: Error
+  group: 2
+  description: |-
+    These fields can represent errors of any kind.
+    Use them for errors that happen while fetching events or in cases where the
+    event itself contains an error.
+  type: group
+  fields:
+    - name: message
+      level: core
+      type: text
+      description: Error message.
+- name: event
+  title: Event
+  group: 2
+  description: 'The event fields are used for context information about the log or metric event itself.
+
+    A log is defined as an event containing details of something that happened. Log events must include the time at which the thing happened. Examples of log events include a process starting on a host, a network packet being sent from a source to a destination, or a network connection between a client and a server being initiated or closed. A metric is defined as an event containing one or more numerical measurements and the time at which the measurement was taken. Examples of metric events include memory pressure measured on a host and device temperature. See the `event.kind` definition in this section for additional details about metric and state events.'
+  type: group
+  fields:
+    - name: dataset
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the dataset.
+
+        If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from.
+
+        It''s recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name.'
+      example: apache.access
+    - name: duration
+      level: core
+      type: long
+      format: duration
+      input_format: nanoseconds
+      output_format: asMilliseconds
+      output_precision: 1
+      description: 'Duration of the event in nanoseconds.
+
+        If event.start and event.end are known this value should be the difference between the end and start time.'
+    - name: module
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the module this data is coming from.
+
+        If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module.'
+      example: apache
 - name: service.address
   type: keyword
   description: Service address
