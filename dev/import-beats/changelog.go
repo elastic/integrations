@@ -16,7 +16,7 @@ type entry struct {
 type change struct {
 	Description string
 	Type        string
-	Link        string
+	Link        string `yaml:",omitempty"`
 }
 
 func newChangelog(initVersion string) *changelog {
@@ -28,7 +28,7 @@ func newChangelog(initVersion string) *changelog {
 					{
 						"initial release",
 						"enhancement",
-						"",
+						"", // deliberately empty so user has to specify a real link
 					},
 				},
 			},
