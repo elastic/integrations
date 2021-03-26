@@ -412,19 +412,18 @@ func (r *packageRepository) save(outputDir string) error {
 
 		// changelog
 		changelog := newChangelog(manifest.Version)
-		log.Println("changelog:", changelog)
 
-		contents, err := yaml.Marshal(changelog)
+		c, err := yaml.Marshal(changelog)
 		if err != nil {
 			return errors.Wrap(err, "marshalling changelog failed")
 		}
 
-		header := []byte("# newer versions go on top\n")
-		contents = append(header, contents...)
-		log.Println("contents:", string(contents))
+		header := "# newer versions go on top"
+		contents := strings.Replace(string(c),"entries:", header, 1) // HACK: cannot marshal sequence at root level!
+		c = []byte(contents)
 
 		changelogPath := filepath.Join(packagePath, "changelog.yml")
-		if err := ioutil.WriteFile(changelogPath, contents, 0644); err != nil {
+		if err := ioutil.WriteFile(changelogPath, c, 0644); err != nil {
 			return errors.Wrap(err, "writing changelog file failed")
 		}
 	}

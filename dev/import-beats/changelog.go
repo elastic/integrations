@@ -1,18 +1,18 @@
 package main
 
 type changelog struct {
-	entries []entry
+	Entries []entry
 }
 
 type entry struct {
-	version string
-	changes []change
+	Version string
+	Changes []change
 }
 
 type change struct {
-	description string
-	typ string `yaml:"type"`
-	link string
+	Description string
+	Type string
+	Link string
 }
 
 func newChangelog(initVersion string) *changelog {
