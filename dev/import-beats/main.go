@@ -136,6 +136,5 @@ func build(options importerOptions) error {
 			return errors.Wrap(err, "creating from metrics source failed")
 		}
 	}
-
 	return repository.save(options.outputDir)
 }
