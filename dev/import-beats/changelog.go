@@ -11,8 +11,8 @@ type entry struct {
 
 type change struct {
 	Description string
-	Type string
-	Link string
+	Type        string
+	Link        string
 }
 
 func newChangelog(initVersion string) *changelog {

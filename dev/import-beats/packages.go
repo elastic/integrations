@@ -419,7 +419,7 @@ func (r *packageRepository) save(outputDir string) error {
 		}
 
 		header := "# newer versions go on top"
-		contents := strings.Replace(string(c),"entries:", header, 1) // HACK: cannot marshal sequence at root level!
+		contents := strings.Replace(string(c), "entries:", header, 1) // HACK: cannot marshal sequence at root level!
 		c = []byte(contents)
 
 		changelogPath := filepath.Join(packagePath, "changelog.yml")
