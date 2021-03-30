@@ -76,6 +76,13 @@ pipeline {
                                 ''')
                             }
                           }
+
+                          // Publish package to the Package Storage
+                          if (env.BRANCH_NAME != 'master') {
+                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
+                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v')
+                            }
+                          }
                         }
                       } finally {
                         dir("${BASE_DIR}") {
