@@ -1,10 +1,12 @@
-# OSQuery Integration
+# Osquery Log Collection
 
-The OSQuery integration collects and decodes the result logs written by
+The Osquery Log Collection integration collects and decodes the result logs written by
 [`osqueryd`](https://osquery.readthedocs.io/en/latest/introduction/using-osqueryd/)
 in the JSON format. To set up `osqueryd` follow the osquery installation
 instructions for your operating system and configure the `filesystem` logging
 driver (the default). Make sure UTC timestamps are enabled.
+
+For a automatic `osqueryd` installation use the Osquery Manager integration. 
 
 ## Compatibility
 
