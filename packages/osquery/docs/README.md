@@ -10,7 +10,7 @@ For a automatic `osqueryd` installation use the Osquery Manager integration.
 
 ## Compatibility
 
-The  OSQuery integration was tested with logs from osquery version 2.10.2.
+The Osquery Log Collection was tested with logs from osquery version 2.10.2.
 Since the results are written in the JSON format, it is likely that this module
 works with any version of osquery.
 
