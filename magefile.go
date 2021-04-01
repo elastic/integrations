@@ -46,20 +46,8 @@ func ImportBeats() error {
 	return sh.Run("go", args...)
 }
 
-func UpdatePackageStorage() error {
-	args := []string{"run", "./dev/update-package-storage/"}
-	if os.Getenv("SKIP_PULL_REQUEST") == "true" {
-		args = append(args, "-skipPullRequest")
-	}
-	if os.Getenv("PACKAGES_SOURCE_DIR") != "" {
-		args = append(args, "-packagesSourceDir", os.Getenv("PACKAGES_SOURCE_DIR"))
-	}
-	args = append(args, "*.go")
-	return sh.Run("go", args...)
-}
-
 func build() error {
-	mg.Deps(buildImportBeats, buildUpdatePackageStorage)
+	mg.Deps(buildImportBeats)
 	return nil
 }
 
@@ -67,14 +55,6 @@ func buildImportBeats() error {
 	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/import-beats")
 	if err != nil {
 		return errors.Wrap(err, "building import-beats failed")
-	}
-	return nil
-}
-
-func buildUpdatePackageStorage() error {
-	err := sh.Run("go", "build", "-o", "/dev/null", "./dev/update-package-storage")
-	if err != nil {
-		return errors.Wrap(err, "building update-package-storage failed")
 	}
 	return nil
 }
