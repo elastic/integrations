@@ -103,5 +103,3 @@ The `firewall` dataset collects Sonicwall-FW logs.
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
-
