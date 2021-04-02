@@ -63,6 +63,14 @@ processors:
     target_field: rule.id
     ignore_missing: true
 - rename:
+    field: sonicwall.firewall.m
+    target_field: event.code
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.fw_action
+    target_field: event.action
+    ignore_missing: true
+- rename:
     field: sonicwall.firewall.srcMac
     target_field: source.mac
     ignore_missing: true
@@ -141,6 +149,23 @@ processors:
     lang: painless
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
     if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
+    ignore_failure: true
+- convert:
+    field: sonicwall.firewall.spkt
+    target_field: source.packets
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: sonicwall.firewall.rpkt
+    target_field: destination.packets
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
+    if: "ctx?.source?.packets != null && ctx?.destination?.packets != null"
     ignore_failure: true
 - remove:
     field:
