@@ -2,63 +2,180 @@
 description: Pipeline for Sonicwall-FW
 
 processors:
-  # ECS event.ingested
-  - set:
-        field: event.ingested
-        value: '{{_ingest.timestamp}}'
-  # User agent
-  - user_agent:
-        field: user_agent.original
-        ignore_missing: true
-  # IP Geolocation Lookup
-  - geoip:
-        field: source.ip
-        target_field: source.geo
-        ignore_missing: true
-  - geoip:
-        field: destination.ip
-        target_field: destination.geo
-        ignore_missing: true
-
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-        database_file: GeoLite2-ASN.mmdb
-        field: source.ip
-        target_field: source.as
-        properties:
-            - asn
-            - organization_name
-        ignore_missing: true
-  - geoip:
-        database_file: GeoLite2-ASN.mmdb
-        field: destination.ip
-        target_field: destination.as
-        properties:
-            - asn
-            - organization_name
-        ignore_missing: true
-  - rename:
-        field: source.as.asn
-        target_field: source.as.number
-        ignore_missing: true
-  - rename:
-        field: source.as.organization_name
-        target_field: source.as.organization.name
-        ignore_missing: true
-  - rename:
-        field: destination.as.asn
-        target_field: destination.as.number
-        ignore_missing: true
-  - rename:
-        field: destination.as.organization_name
-        target_field: destination.as.organization.name
-        ignore_missing: true
-  - append:
-        field: related.hosts
-        value: '{{host.name}}'
-        allow_duplicates: false
-        if: ctx.host?.name != null && ctx.host?.name != ''
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- grok:
+    field: message
+    patterns:
+    - '%{SYSLOG5424PRI}\s+%{GREEDYDATA:syslog5424_sd}$'
+- kv:
+    field: syslog5424_sd
+    field_split: " (?=[a-zA-Z\\_\\-]+=)"
+    value_split: "="
+    prefix: "sonicwall.tmp."
+    ignore_missing: true
+    ignore_failure: false
+    trim_value: "\""
+- rename:
+    field: sonicwall.tmp
+    target_field: sonicwall.firewall
+    ignore_missing: true
+- script:
+    lang: painless
+    source: |
+      def fw = ctx?.sonicwall?.firewall;
+      if (fw != null) {
+        fw.entrySet().removeIf(entry -> entry.getValue() == "N/A");
+      }
+- set:
+    field: observer.vendor
+    value: Sonicwall
+- set:
+    field: observer.product
+    value: SonicOS
+- set:
+    field: observer.type
+    value: firewall
+- set:
+    field: event.module
+    value: sonicwall
+- set:
+    field: event.dataset
+    value: sonicwall.firewall
+- set:
+    field: _temp.time
+    value: "{{sonicwall.firewall.time}}"
+- date:
+    field: _temp.time
+    target_field: "@timestamp"
+    formats:
+    - yyyy-MM-dd HH:mm:ss
+    - yyyy-MM-dd HH:mm:ss Z
+    - yyyy-MM-dd HH:mm:ss z
+    - ISO8601
+- rename:
+    field: sonicwall.firewall.sn
+    target_field: observer.serial_number
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.rule
+    target_field: rule.id
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.srcMac
+    target_field: source.mac
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.dstMac
+    target_field: destination.mac
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.dstname
+    target_field: url.domain
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.Category
+    target_field: rule.category
+    ignore_missing: true
+- rename:
+    field: sonicwall.firewall.arg
+    target_field: url.path
+    ignore_missing: true
+- gsub:
+    field: rule.category
+    pattern: "\\."
+    replacement: "-"
+    ignore_missing: true
+    if: "ctx.rule?.category != null"
+- grok:
+    field: sonicwall.firewall.dst
+    patterns:
+      - '%{IP:dstIP}:%{POSINT:dstPort}(:%{GREEDYDATA:dstintf})?'
+- rename:
+    field: dstIP
+    target_field:  destination.ip
+    ignore_missing: true
+- rename:
+    field: dstPort
+    target_field: destination.port
+    ignore_missing: true
+- rename:
+    field: dstintf
+    target_field: observer.egress.interface.name
+    if: "ctx.dstintf != null"
+- grok:
+    field: sonicwall.firewall.src
+    patterns:
+      - '%{IP:srcIP}:%{POSINT:srcPort}(:%{GREEDYDATA:srcintf})?'
+- rename:
+    field: srcIP
+    target_field:  source.ip
+    ignore_missing: true
+- rename:
+    field: srcPort
+    target_field: source.port
+    ignore_missing: true
+- rename:
+    field: srcintf
+    target_field: observer.ingress.interface.name
+    if: "ctx.srcintf != null"
+- grok:
+    field: sonicwall.firewall.proto
+    patterns:
+      - '%{DATA:network.transport}\/%{GREEDYDATA:network.protocol}'
+    ignore_missing: true
+- convert:
+    field: sonicwall.firewall.sent
+    target_field: source.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: sonicwall.firewall.rcvd
+    target_field: destination.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+    if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
+    ignore_failure: true
+- remove:
+    field:
+      - _temp.time
+      - _temp
+      - syslog5424_sd
+      - syslog5424_pri
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+    if: "ctx.source?.geo == null"
+- geoip:
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+    if: "ctx.destination?.geo == null"
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
 on_failure:
-  - append:
-        field: error.message
-        value: "{{ _ingest.on_failure_message }}"
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
