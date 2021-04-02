@@ -75,12 +75,6 @@ The `firewall` dataset collects Sonicwall-FW logs.
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
-| process.parent.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
-| process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
-| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
 | server.domain | Server domain. | keyword |
