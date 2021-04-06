@@ -12,6 +12,8 @@ processors:
       target_field: json
       ignore_failure: true
       if: ctx?.message != null
+  - drop:
+      if: 'ctx?.json?.result == null && ctx?.json?.ts == null' 
   - rename:
       field: json
       target_field: zeek.capture_loss
@@ -24,7 +26,7 @@ processors:
         - json.result._time
         - json.result.host
         - json.result.source
-      target_field: '@metadata._id'
+      target_field: '_id'
       if: ctx?.json?.result != null
   - rename:
       field: json.result._raw
