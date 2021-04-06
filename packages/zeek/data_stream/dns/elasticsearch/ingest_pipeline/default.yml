@@ -7,6 +7,189 @@ processors:
   - set:
       field: event.created
       value: "{{@timestamp}}"
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: ecs.version
+      value: '1.8.0'
+  - append:
+      field: event.category
+      value: network
+  - append:
+      field: event.type
+      value: connection
+  - append:
+      field: event.type
+      value: protocol
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: network.protocol
+      value: dns
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+      if: ctx?.message != null
+  - drop:
+      if: 'ctx?.json?.result == null && ctx?.json?.ts == null'
+  - rename:
+      field: json
+      target_field: zeek.dns
+      if: 'ctx?.json?.result == null && ctx?.json?.ts != null'
+  - fingerprint:
+      fields: 
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: '_id'
+      if: ctx?.json?.result != null
+  - rename:
+      field: json.result._raw
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: json.result.host
+      target_field: host.name
+      ignore_missing: true
+  - rename:
+      field: json.result.source
+      target_field: file.path
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: zeek.dns
+      ignore_failure: true
+      if: ctx?.event?.original != null
+  - dot_expander:
+      path: zeek.dns
+      field: id.orig_p
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.dns
+      field: id.orig_h
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.dns
+      field: id.resp_h
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.dns
+      field: id.resp_p
+      ignore_failure: true
+  - rename:
+      field: zeek.dns.id.orig_h
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      field: zeek.dns.id.orig_p
+      target_field: source.port
+      ignore_missing: true
+  - rename:
+      field: zeek.dns.id.resp_h
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      field: zeek.dns.id.resp_p
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      field: zeek.dns.uid
+      target_field: zeek.session_id
+      ignore_missing: true
+  - rename:
+      field: zeek.dns.proto
+      target_field: network.transport
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: zeek.session_id
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      copy_from: source.address
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      copy_from: destination.address
+      ignore_empty_value: true
+  - append:
+      field: dns.header_flags
+      value: AA
+      if: ctx?.zeek?.dns?.AA != null
+  - append:
+      field: dns.header_flags
+      value: TC
+      if: ctx?.zeek?.dns?.TC != null
+  - append:
+      field: dns.header_flags
+      value: RD
+      if: ctx?.zeek?.dns?.RD != null
+  - append:
+      field: dns.header_flags
+      value: RA
+      if: ctx?.zeek?.dns?.RA != null
+  - set:
+      field: dns.question.class
+      value: IN
+      if: ctx?.zeek?.dns?.qclass == 1
+  - set:
+      field: dns.question.class
+      value: CH
+      if: ctx?.zeek?.dns?.qclass == 3
+  - set:
+      field: dns.question.class
+      value: HS
+      if: ctx?.zeek?.dns?.qclass == 4
+  - set:
+      field: dns.question.class
+      value: NONE
+      if: ctx?.zeek?.dns?.qclass == 254
+  - set:
+      field: dns.question.class
+      value: ANY
+      if: ctx?.zeek?.dns?.qclass == 255
+  - set:
+      field: dns.type
+      value: answer
+      if: ctx?.zeek?.dns?.rcode_name != null
+  - set:
+      field: dns.type
+      value: query
+      if: ctx?.dns?.type == null
+  - script:
+      lang: painless
+      source: "ctx.event.duration = Long.parseLong(ctx.zeek.dns.rtt) * 1000000000"
+      if: "ctx?.zeek?.dns?.rtt != null"
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.dns?.rcode == 0
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.event?.outcome == null
+  - set:
+      field: dns.id
+      copy_from: zeek.dns.trans_id
+      ignore_empty_value: true
+  - set:
+      field: dns.question.name
+      copy_from: zeek.dns.query
+      ignore_empty_value: true
+  - set:
+      field: dns.question.type
+      copy_from: zeek.dns.qtype_name
+      ignore_empty_value: true
+  - set:
+      field: dns.response_code
+      copy_from: zeek.dns.rcode_name
+      ignore_empty_value: true
   - date:
       field: zeek.dns.ts
       formats:
@@ -57,7 +240,27 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
+  - community_id:
+      target_field: network.community_id
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: ctx?.destination?.ip != null
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      field: 
+        - json
+        - zeek.dns.Z
+        - zeek.dns.auth
+        - zeek.dns.addl
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
