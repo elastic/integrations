@@ -20,9 +20,10 @@ processors:
   - remove:
       field: message
       ignore_missing: true
-  - dissect:
+  - grok:
       field: _temp_.message
-      pattern: "%{cisco.ios.facility}-%{event.severity}-%{event.code}: %{message}"
+      patterns:
+        - "%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}: %{GREEDYDATA:message}"
   - convert:
       field: event.severity
       type: long
@@ -47,7 +48,19 @@ processors:
       field: message
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx?.event?.code)"
-
+  - dissect:
+      field: message
+      pattern: "%{cisco.ios.action} %{_temp_.event.outcome} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
+      if: "ctx?.event?.code == 'LOGIN_SUCCESS'"
+  - dissect:
+      field: message
+      pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
+      if: "ctx?.event?.code == 'LOGOUT'"
+  - grok:
+      field: message
+      patterns: 
+        - 'Received \(%{DATA:cisco.ios.tree}, %{DATA:cisco.ios.multicast.group}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
+      if: "ctx?.event?.code == 'INVALID_RP_JOIN'"
   - set:
       field: destination.ip
       value: '{{ destination.address }}'
@@ -165,7 +178,24 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
   - remove:
       field: _temp_
       ignore_missing: true
