@@ -63,17 +63,17 @@ processors:
         - from: json.result.host
           to: host.name
         - from: json.result.source
-          to: file.path
+          to: event.provider
       ignore_missing: true
       fail_on_error: false
   - drop_fields:
       fields: json
   - decode_xml:
       field: event.original
-      target: winlog
+      target_field: winlog
       schema: wineventlog
       ignore_missing: true
-      fail_on_error: false
+      ignore_failure: true
   - timestamp:
       field: winlog.time_created
       layouts:
