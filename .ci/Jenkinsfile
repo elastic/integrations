@@ -76,6 +76,15 @@ pipeline {
                                 ''')
                             }
                           }
+
+                          // Publish package to the Package Storage
+                          if (env.BRANCH_NAME == 'master') {
+                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
+                              sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
+                              sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
+                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
+                            }
+                          }
                         }
                       } finally {
                         dir("${BASE_DIR}") {
@@ -96,41 +105,6 @@ pipeline {
               }
             }
             parallel integrations
-          }
-        }
-      }
-    }
-    stage('Update Package Storage') {
-      when {
-        branch 'master'
-      }
-      steps {
-        useElasticPackage()
-        dir("${BASE_DIR}/packages") {
-          sh(label: "Build packages", script: '''
-            for d in *; do
-              (
-                cd $d
-                ../../build/elastic-package build -v
-              )
-            done
-            ''')
-        }
-        gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
-        dir("${PACKAGE_STORAGE_BASE_DIR}"){
-          sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
-          sh(label: 'Configure Git user.email', script: 'git config user.email "elasticmachine@users.noreply.github.com"')
-          sh(label: 'Add upstream to tracked repositories', script: 'git remote add upstream https://github.com/elastic/package-storage')
-          sh(label: 'Fetch upstream', script: 'git fetch upstream')
-          sh(label: 'Track snapshot', script: 'git checkout -b snapshot -t upstream/snapshot')
-          sh(label: 'Track staging', script: 'git checkout -b staging -t upstream/staging')
-          sh(label: 'Track production', script: 'git checkout -b production -t upstream/production')
-        }
-        withMageEnv(){
-          dir("${BASE_DIR}"){
-            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
-              sh(label: 'Updates Package Storage', script: 'mage -debug updatePackageStorage')
-            }
           }
         }
       }

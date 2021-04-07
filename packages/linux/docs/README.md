@@ -374,6 +374,8 @@ The linux/users data stream reports logged in users and associated sessions via 
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
 | system.users.id | The ID of the session | keyword |
 | system.users.leader | The root PID of the session | long |
 | system.users.path | The DBus object path of the session | keyword |
