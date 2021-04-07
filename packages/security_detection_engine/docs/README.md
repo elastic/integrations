@@ -1,4 +1,4 @@
-# Security detection engine rules
+# Prebuilt Security Detection Rules
 
-The security detection engine rules package stores all the security rules for the detection engine within the Elastic Security solution.
+This integration is for prebuilt detection rules for Elastic Security.
 
