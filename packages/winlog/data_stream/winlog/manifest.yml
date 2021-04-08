@@ -46,13 +46,6 @@ streams:
     enabled: false
     template_path: httpjson.yml.hbs
     vars:
-      - name: initial_interval
-        type: text
-        title: Initial interval from which events will be requested
-        description: The first request will fetch events starting from this interval. Go Duration syntax (eg. 24h)
-        show_user: true
-        required: true
-        default: 24h
       - name: interval
         type: text
         title: Interval to query Splunk Enterprise REST API
@@ -66,6 +59,14 @@ streams:
         show_user: true
         required: true
         default: "search sourcetype=\"XmlWinEventLog:ChannelName\""
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: >-
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: windows_custom
+        required: true
+        show_user: true
       - name: tags
         type: text
         title: Tags
