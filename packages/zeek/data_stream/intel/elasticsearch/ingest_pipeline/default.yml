@@ -30,7 +30,7 @@ processors:
   - rename:
       field: json
       target_field: zeek.intel
-      if: 'ctx?.json?.result == null && ctx?.json?.ts != null'
+      if: ctx?.json?.ts != null
   - fingerprint:
       fields: 
         - json.result._cd
@@ -40,7 +40,7 @@ processors:
         - json.result.host
         - json.result.source
       target_field: '_id'
-      if: ctx?.json?.result != null
+      if: 'ctx?.json?.result != null && ctx?.json?.ts == null'
   - rename:
       field: json.result._raw
       target_field: event.original
@@ -51,7 +51,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.result.source
-      target_field: file.path
+      target_field: log.file.path
       ignore_missing: true
   - json:
       field: event.original

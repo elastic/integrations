@@ -30,7 +30,7 @@ processors:
   - rename:
       field: json
       target_field: zeek.notice
-      if: 'ctx?.json?.result == null && ctx?.json?.ts != null'
+      if: ctx?.json?.ts != null
   - fingerprint:
       fields: 
         - json.result._cd
@@ -40,7 +40,7 @@ processors:
         - json.result.host
         - json.result.source
       target_field: '_id'
-      if: ctx?.json?.result != null
+      if: 'ctx?.json?.result != null && ctx?.json?.ts == null'
   - rename:
       field: json.result._raw
       target_field: event.original
@@ -51,7 +51,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.result.source
-      target_field: file.path
+      target_field: log.file.path
       ignore_missing: true
   - json:
       field: event.original
@@ -103,16 +103,28 @@ processors:
       target_field: source.address
       ignore_missing: true
       if: ctx?.source?.address == null
+  - remove:
+      field: zeek.notice.src
+      ignore_missing: true
+      if: ctx?.zeek?.notice?.src == ctx?.source?.address
   - rename:
       field: zeek.notice.dst
       target_field: destination.address
       ignore_missing: true
       if: ctx?.destination?.address == null
+  - remove:
+      field: zeek.notice.dst
+      ignore_missing: true
+      if: ctx?.zeek?.notice?.dst == ctx?.destination?.address
   - rename:
       field: zeek.notice.p
       target_field: destination.port
       ignore_missing: true
       if: ctx?.destination?.port == null
+  - remove:
+      field: zeek.notice.p
+      ignore_missing: true
+      if: ctx?.zeek?.notice?.p == ctx?.destination?.port
   - rename:
       field: zeek.notice.conn
       target_field: zeek.notice.connnection_id

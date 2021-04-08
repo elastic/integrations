@@ -37,7 +37,7 @@ processors:
         - json.result.host
         - json.result.source
       target_field: '_id'
-      if: 'ctx?.json?.result != null && ctx?.json?.ts != null'
+      if: 'ctx?.json?.result != null && ctx?.json?.ts == null'
   - rename:
       field: json.result._raw
       target_field: event.original
@@ -428,6 +428,11 @@ processors:
       field: file.x509.subject.state_or_province
       value: "{{zeek.x509.certificate.subject.state}}"
       ignore_empty_value: true
+  - remove:
+      field: 
+        - message
+        - json
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
