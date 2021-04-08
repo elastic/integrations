@@ -1,0 +1,39 @@
+- name: tls
+  type: group
+  description: >
+    TLS layer related fields.
+
+  fields:
+    - name: certificate_not_valid_before
+      type: date
+      deprecated: 7.8.0
+      description: Deprecated in favor of `tls.server.x509.not_before`. Earliest time at which the connection's certificates are valid.
+    - name: certificate_not_valid_after
+      deprecated: 7.8.0
+      type: date
+      description: Deprecated in favor of `tls.server.x509.not_after`. Latest time at which the connection's certificates are valid.
+    - name: rtt
+      type: group
+      description: >
+        TLS layer round trip times.
+
+      fields:
+        - name: handshake
+          type: group
+          description: >
+            Time required to finish TLS handshake based on already available network connection.
+
+          fields:
+            - name: us
+              type: long
+              description: Duration in microseconds
+    - name: server
+      type: group
+      description: Detailed x509 certificate metadata
+      fields:
+        - name: version_number
+          type: keyword
+          ignore_above: 1024
+          description: Version of x509 format.
+          example: 3
+          default_field: false
