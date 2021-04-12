@@ -6,3 +6,29 @@ streams:
     template_path: winlog.yml.hbs
     title: Security
     description: 'Security channel'
+  - input: httpjson
+    title: Windows Security Events via Splunk Enterprise REST API
+    description: Collect Security Events via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: false
+        required: true
+        default: "search sourcetype=\"XmlWinEventLog:Security\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
