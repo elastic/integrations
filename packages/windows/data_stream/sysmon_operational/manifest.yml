@@ -6,3 +6,29 @@ streams:
     template_path: winlog.yml.hbs
     title: Sysmon Operational
     description: 'Collect Microsoft-Windows-Sysmon/Operational channel logs'
+  - input: httpjson
+    title: Windows Sysmon Operational Events via Splunk Enterprise REST API
+    description: Collect Sysmon Operational Events via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: false
+        required: true
+        default: "search sourcetype=\"XmlWinEventLog:Microsoft-Windows-Sysmon/Operational\""
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded

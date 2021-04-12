@@ -8,6 +8,13 @@ always applies to the local server, the `hosts` config option is not needed. Not
 The Windows datasets collect different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
 
+## Configuration
+
+### Splunk Enterprise
+
+To configure Splunk Enterprise to be able to pull events from it, please visit
+[Splunk docs](https://docs.splunk.com/Documentation/SplunkCloud/latest/Data/MonitorWindowseventlogdata) for details. **The integration requires events in XML format, for this `renderXml` option needs to be set to `1` in your `inputs.conf`.**
+
 ## Metrics
 
 ### Service
