@@ -40,7 +40,7 @@ were taken from 'CEF Connector Configuration Guide' dated December 5, 2011.
 
 ### Check Point devices
 
-This module will parse CEF data form Check Point devices as documented in [Log
+This module will parse CEF data from Check Point devices as documented in [Log
 Exporter CEF Field
 Mappings](https://community.checkpoint.com/t5/Logging-and-Reporting/Log-Exporter-CEF-Field-Mappings/td-p/41060).
 
