@@ -6,6 +6,12 @@ log channels by running Get-EventLog * in PowerShell.  Custom ingest
 pipelines may be added by setting one up in
 [Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
 
+## Configuration
+
+### Splunk Enterprise
+
+To configure Splunk Enterprise to be able to pull events from it, please visit
+[Splunk docs](https://docs.splunk.com/Documentation/SplunkCloud/latest/Data/MonitorWindowseventlogdata) for details. **The integration requires events in XML format, for this `renderXml` option needs to be set to `1` in your `inputs.conf`.**
 
 **Exported fields**
 
@@ -143,6 +149,7 @@ pipelines may be added by setting one up in
 | winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
+| winlog.time_created | The event creation time. | date |
 | winlog.user.domain | The domain that the account associated with this event is a member of. | keyword |
 | winlog.user.identifier | The Windows security identifier (SID) of the account associated with this event. If Winlogbeat cannot resolve the SID to a name, then the `user.name`, `user.domain`, and `user.type` fields will be omitted from the event. If you discover Winlogbeat not resolving SIDs, review the log for clues as to what the problem may be. | keyword |
 | winlog.user.name | Name of the user associated with this event. | keyword |

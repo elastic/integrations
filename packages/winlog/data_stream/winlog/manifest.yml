@@ -40,3 +40,37 @@ streams:
           #  - drop_event.when.not.or:
           #    - equals.winlog.event_id: 903
           #    - equals.winlog.event_id: 1024
+  - input: httpjson
+    title: Windows ForwardedEvents via Splunk Enterprise REST API
+    description: Collect ForwardedEvents via Splunk Enterprise REST API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval to query Splunk Enterprise REST API
+        description: Go Duration syntax (eg. 10s)
+        show_user: true
+        required: true
+        default: 10s
+      - name: search
+        type: text
+        title: Splunk search string
+        show_user: true
+        required: true
+        default: "search sourcetype=\"XmlWinEventLog:ChannelName\""
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: >-
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: windows_custom
+        required: true
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
