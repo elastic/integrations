@@ -21,25 +21,15 @@ streams:
         description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - cef
           - forwarded
-  - input: syslog
-    template_path: syslog.yml.hbs
+  - input: udp
+    template_path: udp.yml.hbs
     title: CEF logs
-    description: Collect CEF logs using syslog input
+    description: Collect CEF logs using udp input
     vars:
-      - name: tags
-        type: text
-        title: Tags
-        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - cef
-          - forwarded
       - name: syslog_host
         type: text
         title: Syslog Host
@@ -51,8 +41,18 @@ streams:
       - name: syslog_port
         type: integer
         title: Syslog Port
-        description: The UDP port to listen for syslog traffic. Ports below 1024 require Filebeat to run as root.
+        description: The UDP port to listen for syslog traffic.
         multi: false
         required: true
         show_user: true
         default: 9003
+      - name: tags
+        type: text
+        title: Tags
+        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - cef
+          - forwarded

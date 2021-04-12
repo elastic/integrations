@@ -1,23 +1,48 @@
 # Common Event Format (CEF) Integration
 
-This is an integration for receiving Common Event Format (CEF) data over Syslog. When messages are received over the syslog protocol the syslog input will parse the
-header and set the timestamp value. Then the `decode_cef` processor is applied to parse the CEF encoded data. The decoded data is written into a `cef` object field. Lastly any
-Elastic Common Schema (ECS) fields that can be populated with the CEF data are populated.
+This is an integration for parsing Common Event Format (CEF) data. It can accept
+data over syslog or read it from a file.
+
+CEF data is a format like
+
+`CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 msg=hello`
+
+When syslog is used as the transport the CEF data becomes the message that is
+contained in the syslog envelope. This integration will parse the syslog
+timestamp if it is present. Depending on the syslog RFC used the message will
+have a format like one of these:
+
+`<189> Jun 18 10:55:50 host CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 msg=hello`
+
+`<189>1 2021-06-18T10:55:50.000003Z host app - - - CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 msg=hello`
+
+In both cases the integration will use the syslog timestamp as the `@timestamp`
+unless the CEF data contains a device receipt timestamp.
+
+The Elastic Agent's `decode_cef` processor is applied to parse the CEF encoded
+data. The decoded data is written into a `cef` object field. Lastly any Elastic
+Common Schema (ECS) fields that can be populated with the CEF data are
+populated.
 
 ## Compatibility
 
 ### Forcepoint NGFW Security Management Center
 
-This module will process CEF data from Forcepoint NGFW Security Management Center (SMC).  In the SMC configure the logs to be forwarded to the address set in `var.syslog_host` in format CEF and
-service UDP on `var.syslog_port`.  Instructions can be found in [KB 15002](https://support.forcepoint.com/KBArticle?id=000015002) for
-configuring the SMC.  
+This module will process CEF data from Forcepoint NGFW Security Management
+Center (SMC).  In the SMC configure the logs to be forwarded to the address set
+in `var.syslog_host` in format CEF and service UDP on `var.syslog_port`.
+Instructions can be found in [KB
+15002](https://support.forcepoint.com/KBArticle?id=000015002) for configuring
+the SMC.  
 
-Testing was done with CEF logs from SMC version 6.6.1 and custom string mappings were taken from 'CEF Connector Configuration Guide' dated December 5, 2011.
+Testing was done with CEF logs from SMC version 6.6.1 and custom string mappings
+were taken from 'CEF Connector Configuration Guide' dated December 5, 2011.
 
 ### Check Point devices
 
-This module will parse CEF data form Check Point devices as documented in
-[Log Exporter CEF Field Mappings](https://community.checkpoint.com/t5/Logging-and-Reporting/Log-Exporter-CEF-Field-Mappings/td-p/41060).
+This module will parse CEF data from Check Point devices as documented in [Log
+Exporter CEF Field
+Mappings](https://community.checkpoint.com/t5/Logging-and-Reporting/Log-Exporter-CEF-Field-Mappings/td-p/41060).
 
 Check Point CEF extensions are mapped as follows:
 
@@ -416,6 +441,7 @@ An example event for `log` looks as following:
 | log.file.path | Log path | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. | keyword |
