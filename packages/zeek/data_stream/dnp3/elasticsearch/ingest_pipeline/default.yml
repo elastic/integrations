@@ -113,11 +113,11 @@ processors:
   - set:
       field: source.ip
       copy_from: source.address
-      ignore_empty_value: true
+      if: ctx?.source?.address != null
   - set:
       field: destination.ip
       copy_from: destination.address
-      ignore_empty_value: true
+      if: ctx?.destination?.address != null
   - rename:
       field: zeek.dnp3.fc_request
       target_field: zeek.dnp3.function.request
@@ -189,16 +189,19 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: ctx?.source?.ip != null
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: ctx?.destination?.ip != null
+      allow_duplicates: false
   - community_id:
       target_field: network.community_id
   - remove:
       field: 
         - message
         - json
+        - zeek.dnp3.id
       ignore_missing: true
 on_failure:
   - set:

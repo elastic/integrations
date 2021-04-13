@@ -142,17 +142,17 @@ processors:
       field: zeek.dhcp.server_port
       target_field: destination.port
       ignore_missing: true
-  - rename:
-      field: zeek.dhcp.domain
-      target_field: network.name
-      ignore_missing: true
+  - set:
+      field: network.name
+      copy_from: zeek.dhcp.domain
+      if: ctx?.zeek?.dhcp?.domain != null
   - set:
       field: source.port
       value: 68
       if: ctx?.source?.port == null
   - set:
       field: destination.port
-      value: 68
+      value: 67
       if: ctx?.destination?.port == null
   - set:
       field: source.address
@@ -192,10 +192,12 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - community_id:
       target_field: network.community_id
   - remove:

@@ -136,10 +136,12 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -184,12 +186,14 @@ processors:
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
+      allow_duplicates: false
   - community_id:
       target_field: network.community_id
   - remove:
       field: 
         - message
         - json
+        - zeek.radius.id
       ignore_missing: true
 on_failure:
   - set:

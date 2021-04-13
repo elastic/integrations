@@ -229,10 +229,12 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - append:
       field: event.type
       value: error
@@ -251,6 +253,7 @@ processors:
       field: 
         - message
         - json
+        - zeek.sip.id
       ignore_missing: true
 on_failure:
   - set:

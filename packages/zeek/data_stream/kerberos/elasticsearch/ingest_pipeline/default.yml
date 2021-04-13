@@ -280,14 +280,17 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
+      allow_duplicates: false
   - gsub:
       field: zeek.kerberos.cert.client.subject
       pattern: \\,
@@ -370,6 +373,7 @@ processors:
       field: 
         - message
         - json
+        - zeek.kerberos.id
       ignore_missing: true
 on_failure:
   - set:

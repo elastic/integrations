@@ -118,14 +118,14 @@ processors:
       field: destination.ip
       copy_from: destination.address
       if: ctx?.destination?.address != null
-  - rename:
-      field: zeek.ftp.user
-      target_field: user.name
-      ignore_missing: true
-  - rename:
-      field: zeek.ftp.command
-      target_field: event.action
-      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: zeek.ftp.user
+      if: ctx?.zeek?.ftp?.user != null
+  - set:
+      field: event.action
+      copy_from: zeek.ftp.command
+      if: ctx?.zeek?.ftp?.command != null
   - rename:
       field: zeek.ftp.file_size
       target_field: file.size
@@ -191,14 +191,17 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
+      allow_duplicates: false
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -243,6 +246,7 @@ processors:
       field: 
         - message
         - json
+        - zeek.ftp.id
       ignore_missing: true
 on_failure:
   - set:

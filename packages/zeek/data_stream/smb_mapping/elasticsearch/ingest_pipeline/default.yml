@@ -165,16 +165,19 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - community_id:
       target_field: network.community_id
   - remove:
       field: 
         - message
         - json
+        - zeek.smb_mapping.id
       ignore_missing: true
 on_failure:
   - set:

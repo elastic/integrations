@@ -62,10 +62,10 @@ processors:
       field: zeek.files.conn_uids
       target_field: zeek.files.session_ids
       ignore_missing: true
-  - rename:
-      field: zeek.files.mime_type
-      target_field: file.mime_type
-      ignore_missing: true
+  - set:
+      field: file.mime_type
+      copy_from: zeek.files.mime_type
+      if: ctx?.zeek?.files?.mime_type != null
   - rename:
       field: zeek.files.filename
       target_field: file.name
@@ -74,18 +74,18 @@ processors:
       field: zeek.files.total_bytes
       target_field: file.size
       ignore_missing: true
-  - rename:
-      field: zeek.files.md5
-      target_field: file.hash.md5
-      ignore_missing: true
-  - rename:
-      field: zeek.files.sha1
-      target_field: file.hash.sha1
-      ignore_missing: true
-  - rename:
-      field: zeek.files.sha256
-      target_field: file.hash.sha256
-      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      copy_from: zeek.files.md5
+      if: ctx?.zeek?.files?.md5 != null
+  - set:
+      field: file.hash.sha1
+      copy_from: zeek.files.sha1
+      if: ctx?.zeek?.files?.sha1 != null
+  - set:
+      field: file.hash.sha256
+      copy_from: zeek.files.sha256
+      if: ctx?.zeek?.files?.sha256 != null
   - date:
       field: zeek.files.ts
       formats:
@@ -99,7 +99,7 @@ processors:
       ignore_failure: true
   - set:
       field: event.id
-      value: "{{zeek.session_id}}"
+      copy_from: zeek.session_id
       if: ctx.zeek.session_id != null
   - foreach:
       field: zeek.files.tx_hosts
@@ -114,7 +114,7 @@ processors:
       ignore_failure: true
   - set:
       field: server.ip
-      value: "{{zeek.files.tx_host}}"
+      copy_from: zeek.files.tx_host
       if: "ctx?.zeek?.files?.tx_host != null"
   - foreach:
       field: zeek.files.rx_hosts
@@ -135,14 +135,17 @@ processors:
       field: related.hash
       value: "{{file.hash.md5}}"
       if: "ctx?.file?.hash?.md5 != null"
+      allow_duplicates: false
   - append:
       field: related.hash
       value: "{{file.hash.sha1}}"
       if: "ctx?.file?.hash?.sha1 != null"
+      allow_duplicates: false
   - append:
       field: related.hash
       value: "{{file.hash.sha256}}"
       if: "ctx?.file?.hash?.sha256 != null"
+      allow_duplicates: false
   - remove:
       field: 
         - message

@@ -137,6 +137,30 @@ processors:
       field: zeek.notice.proto
       target_field: network.transport
       ignore_missing: true
+  - dot_expander:
+      path: zeek.notice
+      field: f.id
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.notice
+      field: f.parent_id
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.notice
+      field: f.source
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.notice
+      field: f.is_orig
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.notice
+      field: f.seen_bytes
+      ignore_failure: true
+  - dot_expander:
+      path: zeek.notice
+      field: f.total_bytes
+      ignore_failure: true
   - rename:
       field: zeek.notice.f.id
       target_field: zeek.notice.file.id
@@ -239,10 +263,12 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - append:
       field: event.type
       value: allowed

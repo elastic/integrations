@@ -188,16 +188,24 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
   - community_id:
       target_field: network.community_id
   - remove:
       field: 
+        - zeek.smtp.fuids
+      ignore_missing: true
+      if: 'ctx?.zeek?.smtp?.fuids == null || ctx?.zeek?.smtp?.isEmpty()'
+  - remove:
+      field: 
         - message
         - json
+        - zeek.smtp.id
       ignore_missing: true
 on_failure:
   - set:

@@ -115,6 +115,10 @@ processors:
       field: zeek.x509.id
       target_field: zeek.session_id
       ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: zeek.session_id
+      if: ctx?.zeek?.session_id != null
   - rename:
       field: zeek.x509.certificate.not_valid_before
       target_field: zeek.x509.certificate.valid.from
