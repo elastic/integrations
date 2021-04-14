@@ -185,7 +185,18 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster')
+        sh(label: "Create kind cluster", script: '''
+          kind create cluster --config - <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+            - role: control-plane
+              kubeadmConfigPatches:
+                - |
+                  kind: KubeProxyConfiguration
+                  metricsBindAddress: "0.0.0.0"
+          EOF
+        ''')
       }
 
       body()
