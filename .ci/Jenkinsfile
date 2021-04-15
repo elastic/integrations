@@ -185,7 +185,9 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster --config - ${BASE_DIR}/testing/environments/kubernetes/kind-config.yaml')
+        dir("${BASE_DIR}") {
+          sh(label: "Create kind cluster", script: 'kind create cluster --config - testing/environments/kubernetes/kind-config.yaml')
+        }
       }
 
       body()
