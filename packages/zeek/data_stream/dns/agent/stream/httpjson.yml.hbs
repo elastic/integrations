@@ -39,28 +39,3 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
-  - script:
-      lang: javascript
-        function addDnsAnswers(evt) {
-            var answers = evt.Get("zeek.dns.answers");
-            var ttls = evt.Get("zeek.dns.TTLs");
-            if (!answers || !ttls || answers.length != ttls.length) {
-                return;
-            }
-            var resolvedIps = [];
-            var answersObjs = [];
-            for (var i = 0; i < answers.length; i++) {
-                var answer = answers[i];
-                answersObjs.push({
-                    data: answer,
-                    ttl: ttls[i],
-                })
-                if (net.isIP(answer)) {
-                    resolvedIps.push(answer);
-                }
-            }
-            evt.Put("dns.answers", answersObjs);
-            if (resolvedIps.length > 0) {
-                evt.Put("dns.resolved_ip", resolvedIps);
-            }
-        }
