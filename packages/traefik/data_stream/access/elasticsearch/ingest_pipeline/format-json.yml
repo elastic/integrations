@@ -1,0 +1,77 @@
+---
+description: Pipeline for parsing Traefik's access logs in JSON format. Requires the geoip and user_agent
+  plugins.
+processors:
+  - json:
+      field: message
+      target_field: temp
+  - remove:
+      field: message
+      ignore_missing: true
+  - rename:
+      field: temp.time
+      target_field: "@timestamp"
+  - rename:
+      field: temp.ClientUsername
+      target_field: user.name
+  - rename:
+      field: temp.FrontendName
+      target_field: traefik.access.frontend_name
+  - rename:
+      field: temp.BackendAddr
+      target_field: traefik.access.backend_url
+  - rename:
+      field: temp.RequestCount
+      target_field: traefik.access.request_count
+  - rename:
+      field: temp.ClientHost
+      target_field: source.ip
+  - set:
+      field: source.address
+      copy_from: source.ip
+  - rename:
+      field: temp.ClientPort
+      target_field: source.port
+  - convert:
+      field: source.port
+      type: long
+  - dissect:
+      field: traefik.access.backend_url
+      pattern: "%{destination.ip}:%{destination.port}"
+      if: 'ctx?.traefik?.access?.backend_url != ""'
+  - convert:
+      field: destination.port
+      type: long
+      if: "ctx?.destination?.port != null"
+  - set:
+      field: destination.address
+      copy_from: destination.ip
+      if: "ctx?.destination?.ip != null"
+  - rename:
+      field: temp.RequestPath
+      target_field: url.original
+  - rename:
+      field: temp.RequestMethod
+      target_field: http.request.method
+  - rename:
+      field: temp.RequestAddr
+      target_field: url.domain
+  - rename:
+      field: temp.DownstreamStatus
+      target_field: http.response.status_code
+  - rename:
+      field: temp.DownstreamContentSize
+      target_field: http.response.body.bytes
+  - dissect:
+      field: temp.RequestProtocol
+      pattern: "HTTP/%{http.version}"
+  - rename:
+      field: temp.request_User-Agent
+      target_field: user_agent.original
+  - rename:
+      field: temp.Duration
+      target_field: event.duration
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -1,10 +1,13 @@
 ---
-description: Pipeline for Filebeat CEF
+description: Pipeline for CEF logs. CEF decoding happens in the Agent. This performs additional enrichment and vendor specific transformations.
 
 processors:
   - set:
-        field: event.ingested
-        value: '{{_ingest.timestamp}}'
+      field: ecs.version
+      value: 1.9.0
+  - set:
+      field: event.ingested
+      value: '{{{_ingest.timestamp}}}'
 
   # IP Geolocation Lookup
   - geoip:
@@ -99,7 +102,44 @@ processors:
   - pipeline:
         name: '{{ IngestPipeline "cp-pipeline" }}'
         if: "ctx.cef?.device?.vendor == 'Check Point'"
+  - community_id: {}
+
+  #
+  # Timestamp parsing.
+  #
+  - grok:
+      # decode_cef sets @timestamp when deviceReceiptTime is provided.
+      description: Extract timestamp from log header when deviceReceiptTime not given.
+      if: ctx?.cef?.extensions?.deviceReceiptTime == null
+      field: event.original
+      patterns:
+        - '^%{SYSLOG_TIMESTAMP} '
+        - '^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} ' # RFC3164
+        - '^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} ' # RFC5224
+      pattern_definitions:
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+        SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
+      ignore_failure: true
+  - date:
+      if: ctx?._tmp?.timestamp8601 != null
+      field: _tmp.timestamp8601
+      formats:
+        - ISO8601
+  - date:
+      if: ctx?._tmp?.timestamp != null
+      field: _tmp.timestamp
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+  - remove:
+      field:
+        - _tmp
+      ignore_failure: true
 on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_failure: true
   - set:
         field: error.message
         value: "{{ _ingest.on_failure_message }}"
