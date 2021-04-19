@@ -509,6 +509,7 @@ activity.
 | dns.header_flags | Array of DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
+| dns.question.domain | The domain being queried. | keyword |
 | dns.question.name | The name being queried. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
 | dns.question.subdomain | The subdomain of the domain. | keyword |
@@ -549,6 +550,7 @@ activity.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |

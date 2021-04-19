@@ -122,19 +122,19 @@ processors:
   - append:
       field: dns.header_flags
       value: AA
-      if: ctx?.zeek?.dns?.AA != null
+      if: ctx?.zeek?.dns?.AA == true
   - append:
       field: dns.header_flags
       value: TC
-      if: ctx?.zeek?.dns?.TC != null
+      if: ctx?.zeek?.dns?.TC == true
   - append:
       field: dns.header_flags
       value: RD
-      if: ctx?.zeek?.dns?.RD != null
+      if: ctx?.zeek?.dns?.RD == true
   - append:
       field: dns.header_flags
       value: RA
-      if: ctx?.zeek?.dns?.RA != null
+      if: ctx?.zeek?.dns?.RA == true
   - set:
       field: dns.question.class
       value: IN
@@ -165,8 +165,52 @@ processors:
       if: ctx?.dns?.type == null
   - script:
       lang: painless
-      source: "ctx.event.duration = Long.parseLong(ctx.zeek.dns.rtt) * 1000000000"
+      source: >-
+        ctx.event.duration = ctx.zeek.dns.rtt * 1000000000L;
       if: "ctx?.zeek?.dns?.rtt != null"
+  - script:
+      lang: painless
+      source: >-
+        def answers = ctx.zeek.dns.answers;
+        def ttls = ctx.zeek.dns.TTLs;
+        if (answers.isEmpty() || ttls.isEmpty() || answers.length != ttls.length) {
+          return;
+        }
+        def lst = new ArrayList();
+        for (def i = 0; i < answers.length; i++) {
+          lst.add([
+            "data": answers[i],
+            "ttl": (int)ttls[i]
+          ])
+        }
+        if (ctx?.dns == null) {
+          ctx.dns = new HashMap();
+        }
+        ctx.dns.answers = lst;
+      if: "ctx?.zeek?.dns?.answers != null && ctx?.zeek?.dns?.TTLs != null"
+  - foreach:
+      field: dns.answers
+      processor:
+        convert:
+          field: _ingest._value.data
+          target_field: _ingest._value.tmpip
+          type: ip
+          ignore_failure: true
+          ignore_missing: true
+      if: 'ctx?.dns?.answers != null && !ctx?.dns?.answers.isEmpty()'
+  - script:
+      lang: painless
+      source: >-
+        def answers = ctx.dns.answers;
+        def iplist = new ArrayList();
+        for (def i = 0; i < ctx.dns.answers.length; i++) {
+          if (answers[i].containsKey("tmpip")) {
+            iplist.add(answers[i].tmpip);
+            answers[i].remove("tmpip");
+          }
+        }
+        ctx.dns.resolved_ip = iplist;
+      if: 'ctx?.dns?.answers != null && !ctx?.dns?.answers.isEmpty()'
   - set:
       field: event.outcome
       value: success
@@ -175,13 +219,13 @@ processors:
       field: event.outcome
       value: success
       if: ctx?.event?.outcome == null
+  - convert:
+      field: zeek.dns.trans_id
+      type: string
+      ignore_missing: true
   - set:
       field: dns.id
       copy_from: zeek.dns.trans_id
-      ignore_empty_value: true
-  - set:
-      field: dns.question.name
-      copy_from: zeek.dns.query
       ignore_empty_value: true
   - set:
       field: dns.question.type
@@ -191,6 +235,10 @@ processors:
       field: dns.response_code
       copy_from: zeek.dns.rcode_name
       ignore_empty_value: true
+  - registered_domain:
+      field: zeek.dns.query
+      target_field: dns.question
+      ignore_missing: true
   - date:
       field: zeek.dns.ts
       formats:
@@ -257,12 +305,14 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx?.event?.original == null
   - remove:
       field: 
         - json
         - zeek.dns.Z
         - zeek.dns.auth
         - zeek.dns.addl
+        - message
       ignore_missing: true
 on_failure:
   - set:
