@@ -62,10 +62,6 @@ processors:
       formats:
         - ISO8601
       ignore_failure: true
-  - remove:
-      field: '@timestamp'
-      ignore_missing: true
-      if: ctx?.event?.created != null
   - date:
       field: suricata.eve.timestamp
       formats:
@@ -73,12 +69,10 @@ processors:
   - community_id:
       target_field: network.community_id
       ignore_failure: true
-      if: ctx?.source?.port != null && ctx?.destination?.port != null
   - registered_domain:
       field: suricata.eve.dns.rrname
       target_field: dns.question
       ignore_missing: true
-      if: 'ctx?.suricata?.eve?.dns?.type == "query" || ctx?.suricata?.eve?.dns?.version == 2'
   # Handle the different Suricata event types.
   - lowercase:
       field: suricata.eve.event_type
@@ -191,13 +185,17 @@ processors:
       ignore_empty_value: true
   ## HTTP
   - set:
-      if: ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status < 400
+      if: 'ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status != null && ctx?.suricata?.eve?.http?.status < 400'
       field: event.outcome
       value: success
   - set:
-      if: ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status >= 400
+      if: 'ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status != null && ctx?.suricata?.eve?.http?.status >= 400'
       field: event.outcome
       value: failure
+  - convert:
+      field: suricata.eve.http.http_port
+      type: integer
+      if: ctx?.suricata?.eve?.http?.http_port != null
   ## DNS
   - pipeline:
       if: >-
@@ -218,8 +216,6 @@ processors:
       field: event.type
       value:
         - end
-
-
   - set:
       value: "{{suricata.eve.http.http_method}}"
       field: http.request.method
