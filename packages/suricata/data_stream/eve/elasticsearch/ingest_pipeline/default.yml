@@ -7,13 +7,21 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.8.0'
+      value: '1.9.0'
   - rename:
       field: message
       target_field: event.original
   - json:
       field: event.original
       target_field: suricata.eve
+  - rename:
+      field: suricata.eve.ether.dest_mac
+      target_field: destination.mac
+      ignore_missing: true
+  - rename:
+      field: suricata.eve.ether.src_mac
+      target_field: source.mac
+      ignore_missing: true
   - rename:
       field: suricata.eve.src_ip
       target_field: source.address
@@ -26,6 +34,7 @@ processors:
       field: suricata.eve.src_port
       type: integer
       target_field: source.port
+      if: ctx?.suricata?.eve?.src_port != null
   - rename:
       field: suricata.eve.dest_ip
       target_field: destination.address
@@ -38,6 +47,7 @@ processors:
       field: suricata.eve.dest_port
       type: integer
       target_field: destination.port
+      if: ctx?.suricata?.eve?.dest_port != null
   - rename:
       field: suricata.eve.proto
       target_field: network.transport
@@ -60,8 +70,11 @@ processors:
       target_field: network.community_id
       ignore_failure: true
       if: ctx?.source?.port != null && ctx?.destination?.port != null
-
-
+  - registered_domain:
+      field: suricata.eve.dns.rrname
+      target_field: dns.question
+      ignore_missing: true
+      if: 'ctx?.suricata?.eve?.dns?.type == "query" || ctx?.suricata?.eve?.dns?.version == 2'
   # Handle the different Suricata event types.
   - lowercase:
       field: suricata.eve.event_type
@@ -444,6 +457,7 @@ processors:
         - suricata.eve.timestamp
         - suricata.eve.src_port
         - suricata.eve.dest_port
+        - dns.question.domain
       ignore_missing: true
 on_failure:
   - set:
