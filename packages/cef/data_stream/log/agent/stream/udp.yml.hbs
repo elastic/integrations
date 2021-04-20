@@ -1,0 +1,15 @@
+host: "{{syslog_host}}:{{syslog_port}}"
+tags:
+  {{#each tags as |tag i|}}
+  - {{tag}}
+  {{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+- decode_cef:
+    field: event.original
+{{processors}}
