@@ -495,7 +495,7 @@ An example event for `container` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -686,7 +686,7 @@ An example event for `controllermanager` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -850,7 +850,7 @@ An example event for `event` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.type | Service type | keyword |
 
@@ -1085,7 +1085,7 @@ An example event for `node` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -1292,7 +1292,7 @@ An example event for `pod` looks as following:
 | kubernetes.pod.start_time | Start time | date |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -1765,7 +1765,7 @@ An example event for `scheduler` looks as following:
 | kubernetes.scheduler.scheduling.pod.preemption.victims.bucket.* | Pod preemption victims | long |
 | kubernetes.scheduler.scheduling.pod.preemption.victims.count | Pod preemption victims count | long |
 | kubernetes.scheduler.scheduling.pod.preemption.victims.sum | Pod preemption victims sum | long |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -1923,7 +1923,7 @@ An example event for `state_container` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2064,7 +2064,7 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2197,7 +2197,7 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2331,7 +2331,7 @@ An example event for `state_deployment` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2497,7 +2497,7 @@ An example event for `state_node` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2627,7 +2627,7 @@ An example event for `state_persistentvolume` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2759,7 +2759,7 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2899,7 +2899,7 @@ An example event for `state_pod` looks as following:
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -3039,7 +3039,7 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.replicaset.replicas.labeled | The number of fully labeled replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.observed | The generation observed by the ReplicaSet controller | long |
 | kubernetes.replicaset.replicas.ready | The number of ready replicas per ReplicaSet | long |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -3166,7 +3166,7 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.resourcequota.quota | Quota informed (hard or used) for the resource | double |
 | kubernetes.resourcequota.resource | Resource name the quota applies to | keyword |
 | kubernetes.resourcequota.type | Quota information type, `hard` or `used` | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -3294,6 +3294,7 @@ An example event for `state_service` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.service.cluster_ip | Internal IP for the service. | ip |
 | kubernetes.service.created | Service creation date | date |
 | kubernetes.service.external_ip | Service external IP | keyword |
@@ -3302,7 +3303,6 @@ An example event for `state_service` looks as following:
 | kubernetes.service.ingress_ip | Ingress IP | keyword |
 | kubernetes.service.load_balancer_ip | Load Balancer service IP | keyword |
 | kubernetes.service.name | Service name. | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.service.type | Service type | keyword |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
@@ -3430,7 +3430,7 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.created | The creation timestamp (epoch) for StatefulSet | long |
 | kubernetes.statefulset.generation.desired | The desired generation per StatefulSet | long |
 | kubernetes.statefulset.generation.observed | The observed generation per StatefulSet | long |
@@ -3560,7 +3560,7 @@ An example event for `state_storageclass` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.storageclass.created | Storage class creation date | date |
 | kubernetes.storageclass.name | Storage class name. | keyword |
@@ -3732,7 +3732,7 @@ An example event for `system` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.system.container | Container name | keyword |
 | kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |
@@ -3906,7 +3906,7 @@ An example event for `volume` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long |
 | kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long |
