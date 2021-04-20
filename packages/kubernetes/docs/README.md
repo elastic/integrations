@@ -491,9 +491,11 @@ An example event for `container` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -640,6 +642,9 @@ An example event for `controllermanager` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.controllermanager.client.request.count | Number of requests as client | long |
 | kubernetes.controllermanager.code | HTTP code | keyword |
 | kubernetes.controllermanager.handler | Request handler | keyword |
@@ -672,6 +677,17 @@ An example event for `controllermanager` looks as following:
 | kubernetes.controllermanager.workqueue.retries.count | Workqueue number of retries | long |
 | kubernetes.controllermanager.workqueue.unfinished.sec | Unfinished processors | double |
 | kubernetes.controllermanager.zone | Infrastructure zone | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -802,6 +818,10 @@ An example event for `event` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.event.count | Count field records the number of times the particular event has occurred | long |
 | kubernetes.event.involved_object.api_version | API version of the object | keyword |
 | kubernetes.event.involved_object.kind | API kind of the object | keyword |
@@ -822,6 +842,16 @@ An example event for `event` looks as following:
 | kubernetes.event.timestamp.first_occurrence | Timestamp of first occurrence of event | date |
 | kubernetes.event.timestamp.last_occurrence | Timestamp of last occurrence of event | date |
 | kubernetes.event.type | Type of the given event | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.type | Service type | keyword |
 
 
@@ -1051,9 +1081,11 @@ An example event for `node` looks as following:
 | kubernetes.node.runtime.imagefs.capacity.bytes | Image filesystem total capacity in bytes | long |
 | kubernetes.node.runtime.imagefs.used.bytes | Image filesystem total used in bytes | long |
 | kubernetes.node.start_time | Start time | date |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -1243,6 +1275,7 @@ An example event for `pod` looks as following:
 | kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float |
 | kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long |
 | kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.memory.available.bytes | Total memory available | long |
 | kubernetes.pod.memory.major_page_faults | Total major page faults | long |
 | kubernetes.pod.memory.page_faults | Total page faults | long |
@@ -1259,6 +1292,7 @@ An example event for `pod` looks as following:
 | kubernetes.pod.start_time | Start time | date |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -1685,6 +1719,18 @@ An example event for `scheduler` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| kubernetes.annotations.* | Kubernetes annotations map | object |
+| kubernetes.container.image | Kubernetes container image | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.labels.* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes Pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.scheduler.client.request.count | Number of requests as client | long |
 | kubernetes.scheduler.code | HTTP code | keyword |
 | kubernetes.scheduler.handler | Request handler | keyword |
@@ -1719,6 +1765,8 @@ An example event for `scheduler` looks as following:
 | kubernetes.scheduler.scheduling.pod.preemption.victims.bucket.* | Pod preemption victims | long |
 | kubernetes.scheduler.scheduling.pod.preemption.victims.count | Pod preemption victims count | long |
 | kubernetes.scheduler.scheduling.pod.preemption.victims.sum | Pod preemption victims sum | long |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -1871,9 +1919,11 @@ An example event for `state_container` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2010,9 +2060,11 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2141,9 +2193,11 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2273,9 +2327,11 @@ An example event for `state_deployment` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2437,9 +2493,11 @@ An example event for `state_node` looks as following:
 | kubernetes.node.status.pid_pressure | Node PIDPressure status (true, false or unknown) | keyword |
 | kubernetes.node.status.ready | Node ready status (true, false or unknown) | keyword |
 | kubernetes.node.status.unschedulable | Node unschedulable status | boolean |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2565,9 +2623,11 @@ An example event for `state_persistentvolume` looks as following:
 | kubernetes.persistentvolume.name | Volume name. | keyword |
 | kubernetes.persistentvolume.phase | Volume phase according to kubernetes | keyword |
 | kubernetes.persistentvolume.storage_class | Storage class for the volume | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2695,9 +2755,11 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.persistentvolumeclaim.request_storage.bytes | Requested capacity. | long |
 | kubernetes.persistentvolumeclaim.storage_class | Storage class for the PVC. | keyword |
 | kubernetes.persistentvolumeclaim.volume_name | Binded volume name. | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2837,6 +2899,7 @@ An example event for `state_pod` looks as following:
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -2967,6 +3030,7 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
@@ -2975,6 +3039,7 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.replicaset.replicas.labeled | The number of fully labeled replicas per ReplicaSet | long |
 | kubernetes.replicaset.replicas.observed | The generation observed by the ReplicaSet controller | long |
 | kubernetes.replicaset.replicas.ready | The number of ready replicas per ReplicaSet | long |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -3092,6 +3157,7 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
@@ -3100,6 +3166,7 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.resourcequota.quota | Quota informed (hard or used) for the resource | double |
 | kubernetes.resourcequota.resource | Resource name the quota applies to | keyword |
 | kubernetes.resourcequota.type | Quota information type, `hard` or `used` | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
@@ -3223,6 +3290,7 @@ An example event for `state_service` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
@@ -3234,6 +3302,7 @@ An example event for `state_service` looks as following:
 | kubernetes.service.ingress_ip | Ingress IP | keyword |
 | kubernetes.service.load_balancer_ip | Load Balancer service IP | keyword |
 | kubernetes.service.name | Service name. | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.service.type | Service type | keyword |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | service.address | Service address | keyword |
@@ -3357,9 +3426,11 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.created | The creation timestamp (epoch) for StatefulSet | long |
 | kubernetes.statefulset.generation.desired | The desired generation per StatefulSet | long |
 | kubernetes.statefulset.generation.observed | The observed generation per StatefulSet | long |
@@ -3485,9 +3556,11 @@ An example event for `state_storageclass` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.storageclass.created | Storage class creation date | date |
 | kubernetes.storageclass.name | Storage class name. | keyword |
@@ -3655,9 +3728,11 @@ An example event for `system` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.system.container | Container name | keyword |
 | kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |
@@ -3827,9 +3902,11 @@ An example event for `volume` looks as following:
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.uid | Kubernetes Pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
+| kubernetes.service.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long |
 | kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long |
