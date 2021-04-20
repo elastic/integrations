@@ -9,7 +9,7 @@ replace (
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.0.0-20210420080015-cbb8d59c0204
+	github.com/elastic/elastic-package v0.0.0-20210420104243-4ec40d7c5404
 	github.com/elastic/package-registry v0.17.0
 	github.com/magefile/mage v1.11.0
 	github.com/pkg/errors v0.9.1
