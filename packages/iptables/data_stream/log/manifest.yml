@@ -2,23 +2,15 @@ type: logs
 title: Iptables log logs
 release: experimental
 streams:
-  - input: syslog
-    template_path: syslog.yml.hbs
+  - input: udp
+    template_path: udp.yml.hbs
     title: Iptables syslog logs
-    description: Collect iptables logs using syslog input
+    description: Collect iptables logs using udp input
     vars:
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - iptables
-          - forwarded
       - name: syslog_host
         type: text
         title: Syslog Host
+        description: The interface to listen to UDP based syslog traffic. Set to `0.0.0.0` to bind to all available interfaces.
         multi: false
         required: true
         show_user: true
@@ -26,18 +18,31 @@ streams:
       - name: syslog_port
         type: integer
         title: Syslog Port
+        description: The UDP port to listen for syslog traffic. Ports below 1024 require Filebeat to run as root.
         multi: false
         required: true
         show_user: true
         default: 9001
-      - name: community_id
-        type: bool
-        title: Community Id
-        multi: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
         required: true
-        show_user: true
-        default: true
+        show_user: false
+        default:
+          - iptables
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
   - input: logfile
+    enabled: false
     vars:
       - name: paths
         type: text
@@ -52,17 +57,19 @@ streams:
         title: Tags
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - iptables
           - forwarded
-      - name: community_id
-        type: bool
-        title: Community Id
+      - name: processors
+        type: yaml
+        title: Processors
         multi: false
-        required: true
-        show_user: true
-        default: true
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. Changes made to event data can break processing that happens in Ingest Node. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
     template_path: log.yml.hbs
     title: Iptables log logs
     description: Collect iptables logs using log input
