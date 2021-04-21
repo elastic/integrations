@@ -68,7 +68,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "syslog": {
-            "priority": "5"
+            "priority": 5
         }
     },
     "observer": {
