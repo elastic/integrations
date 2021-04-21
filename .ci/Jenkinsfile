@@ -67,6 +67,7 @@ pipeline {
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                          sh(label: "Update the Elastic stack", script: '../../build/elastic-package stack update -v')
                           sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                           withKubernetes() {
                             withCloudTestEnv() {
@@ -222,6 +223,7 @@ def checkPackageCompatibility(integrationName, stackVersion) {
 
   try {
     dir("${BASE_DIR}/packages/${integrationName}") {
+      sh(label: "Update the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack update -v --version ${stackVersion}")
       sh(label: "Boot up the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack up -d -v --version ${stackVersion}")
       sh(label: "Install integration: ${integrationName}", script: '''
         eval "$(../../build/elastic-package stack shellinit)"
