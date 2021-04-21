@@ -1,12 +1,12 @@
 # Iptables Integration
 
-This is an integration for `iptables` and `ip6tables` logs. It parses logs received
-over the network via `syslog` or from a file. Also, it understands the prefix added
-by some Ubiquiti firewalls, which includes the rule set name, rule number and
-the action performed on the traffic (allow/deny).
+This is an integration for `iptables` and `ip6tables` logs. It parses logs
+received over the network via syslog (UDP) or from a file. Also, it understands
+the prefix added by some Ubiquiti firewalls, which includes the rule set name,
+rule number, and the action performed on the traffic (allow/deny).
 
-The module is by default configured to run via `syslog` on port `9001`. However
-it can also be configured to read from a file path.
+The module is by default configured to run with the `udp` input on port `9001`.
+However, it can also be configured to read from a file path.
 
 ## Logs
 
@@ -18,7 +18,38 @@ An example event for `log` looks as following:
 
 ```$json
 {
+    "@timestamp": "2021-03-12T14:10:18.000Z",
+    "destination": {
+        "ip": "10.4.0.5",
+        "mac": "90:10:20:76:8d:20",
+        "port": 443
+    },
+    "ecs": {
+        "version": "1.8.0"
+    },
+    "event": {
+        "action": "drop",
+        "category": [
+            "network"
+        ],
+        "ingested": "2021-03-26T14:16:07.526797365Z",
+        "kind": "event",
+        "original": "\u003c6\u003e2021-03-12T14:10:18Z Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=158.109.0.1 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0",
+        "type": [
+            "denied",
+            "connection"
+        ]
+    },
     "iptables": {
+        "ether_type": 2048,
+        "fragment_flags": [
+            "DF"
+        ],
+        "id": 0,
+        "input_device": "eth0",
+        "length": 52,
+        "output_device": "",
+        "precedence_bits": 0,
         "tcp": {
             "flags": [
                 "ACK"
@@ -26,86 +57,63 @@ An example event for `log` looks as following:
             "reserved_bits": 0,
             "window": 2853
         },
-        "input_device": "eth0",
-        "precedence_bits": 0,
+        "tos": 0,
+        "ttl": 63,
         "ubiquiti": {
             "input_zone": "wan",
-            "rule_set": "wan-lan",
+            "output_zone": "lan",
             "rule_number": "default",
-            "output_zone": "lan"
-        },
-        "ether_type": 2048,
-        "fragment_flags": [
-            "DF"
-        ],
-        "length": 52,
-        "tos": 0,
-        "output_device": "",
-        "id": 0,
-        "ttl": 63
-    },
-    "log": {
-        "original": "Oct 10 07:25:12 Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=158.109.0.1 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0 "
-    },
-    "destination": {
-        "port": 443,
-        "mac": "90:10:20:76:8d:20",
-        "ip": "10.4.0.5"
-    },
-    "rule": {
-        "name": "wan-lan",
-        "id": "default"
-    },
-    "source": {
-        "geo": {
-            "continent_name": "Europe",
-            "country_name": "Spain",
-            "location": {
-                "lon": -3.684,
-                "lat": 40.4172
-            },
-            "country_iso_code": "ES"
-        },
-        "as": {
-            "number": 13041,
-            "organization": {
-                "name": "Consorci de Serveis Universitaris de Catalunya"
-            }
-        },
-        "port": 38842,
-        "mac": "90:10:65:29:b6:2a",
-        "ip": "158.109.0.1"
-    },
-    "network": {
-        "type": "ipv4",
-        "transport": "tcp"
-    },
-    "observer": {
-        "ingress": {
-            "zone": "wan"
-        },
-        "egress": {
-            "zone": "lan"
+            "rule_set": "wan-lan"
         }
     },
-    "@timestamp": "2020-10-10T07:25:12.000Z",
+    "log": {
+        "syslog": {
+            "priority": 6
+        }
+    },
+    "message": "Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=158.109.0.1 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0",
+    "network": {
+        "community_id": "1:RGJPRWtru8Lg2itNyFREDvoRkNA=",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "egress": {
+            "zone": "lan"
+        },
+        "ingress": {
+            "zone": "wan"
+        }
+    },
     "related": {
         "ip": [
             "158.109.0.1",
             "10.4.0.5"
         ]
     },
-    "event": {
-        "action": "drop",
-        "ingested": "2020-12-04T13:23:38.842318600Z",
-        "type": [
-            "denied",
-            "connection"
-        ],
-        "category": [
-            "network"
-        ],
-        "kind": "event"
+    "rule": {
+        "id": "default",
+        "name": "wan-lan"
+    },
+    "source": {
+        "as": {
+            "number": 13041,
+            "organization": {
+                "name": "Consorci de Serveis Universitaris de Catalunya"
+            }
+        },
+        "geo": {
+            "continent_name": "Europe",
+            "country_iso_code": "ES",
+            "country_name": "Spain",
+            "location": {
+                "lat": 40.4172,
+                "lon": -3.684
+            }
+        },
+        "ip": "158.109.0.1",
+        "mac": "90:10:65:29:b6:2a",
+        "port": 38842
     }
 }
 ```
@@ -199,6 +207,8 @@ An example event for `log` looks as following:
 | log.offset | Log offset | long |
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
+| log.syslog.priority | Syslog priority of the event. | long |
+| message | Log message optimized for viewing in a log viewer. | text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) | keyword |
