@@ -3,10 +3,7 @@
     "author": [
       "Elastic"
     ], 
-    "description": "Compiled HTML files (.chm) are commonly distributed as part of the Microsoft HTML Help system. Adversaries may conceal malicious code in a CHM file and deliver it to a victim for execution. CHM content is loaded by the HTML Help executable program (hh.exe).", 
-    "false_positives": [
-      "The HTML Help executable program (hh.exe) runs whenever a user clicks a compiled help (.chm) file or menu item that opens the help file inside the Help Viewer. This is not always malicious, but adversaries may abuse this technology to conceal malicious code."
-    ], 
+    "description": "RegSvcs.exe and RegAsm.exe are Windows command line utilities that are used to register .NET Component Object Model (COM) assemblies. Adversaries can use RegSvcs.exe and RegAsm.exe to proxy execution of code through a trusted Windows utility.", 
     "from": "now-9m", 
     "index": [
       "winlogbeat-*", 
@@ -15,10 +12,10 @@
     ], 
     "language": "kuery", 
     "license": "Elastic License v2", 
-    "name": "Process Activity via Compiled HTML File", 
-    "query": "event.category:process and event.type:(start or process_started) and process.name:hh.exe", 
+    "name": "Execution via Regsvcs/Regasm", 
+    "query": "event.category:process and event.type:(start or process_started) and process.name:(RegAsm.exe or RegSvcs.exe)", 
     "risk_score": 21, 
-    "rule_id": "e3343ab9-4245-4715-b344-e11c56b0a47f", 
+    "rule_id": "47f09343-8d1f-4bb5-8bb0-00c9d18f5010", 
     "severity": "low", 
     "tags": [
       "Elastic", 
@@ -51,9 +48,9 @@
             "reference": "https://attack.mitre.org/techniques/T1218/", 
             "subtechnique": [
               {
-                "id": "T1218.001", 
-                "name": "Compiled HTML File", 
-                "reference": "https://attack.mitre.org/techniques/T1218/001/"
+                "id": "T1218.009", 
+                "name": "Regsvcs/Regasm", 
+                "reference": "https://attack.mitre.org/techniques/T1218/009/"
               }
             ]
           }
@@ -64,6 +61,6 @@
     "type": "query", 
     "version": 7
   }, 
-  "id": "e3343ab9-4245-4715-b344-e11c56b0a47f", 
+  "id": "47f09343-8d1f-4bb5-8bb0-00c9d18f5010", 
   "type": "security-rule"
 }
