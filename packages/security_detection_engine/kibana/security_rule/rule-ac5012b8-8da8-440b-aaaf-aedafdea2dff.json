@@ -5,7 +5,7 @@
         ],
         "description": "A suspicious WerFault child process was detected, which may indicate an attempt to run unnoticed. Verify process details such as command line, network connections, file writes and parent process details as well.",
         "false_positives": [
-            "Custom Windows error reporting debugger or applications restarted by WerFault after a crash."
+            "Custom Windows Error Reporting Debugger"
         ],
         "from": "now-9m",
         "index": [
@@ -16,7 +16,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Suspicious WerFault Child Process",
-        "query": "event.category:process and event.type:(start or process_started) and process.parent.name:WerFault.exe and not process.name:(cofire.exe or psr.exe or VsJITDebugger.exe or TTTracer.exe or rundll32.exe or LogiOptionsMgr.exe) and not process.args:(\"/LOADSAVEDWINDOWS\" or \"/restore\" or RestartByRestartManager* or \"--restarted\" or createdump or dontsend or /watson)",
+        "query": "event.category:process and event.type:(start or process_started) and process.parent.name:WerFault.exe and not process.name:(cofire.exe or psr.exe or VsJITDebugger.exe or TTTracer.exe or rundll32.exe)",
         "references": [
             "https://www.hexacorn.com/blog/2019/09/19/silentprocessexit-quick-look-under-the-hood/",
             "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/master/Persistence/persistence_SilentProcessExit_ImageHijack_sysmon_13_1.evtx",
