@@ -18,7 +18,11 @@ processors:
       field: json.id.time
       timezone: UTC
       formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
   - rename: 
       field: message
       target_field: event.original
@@ -107,8 +111,22 @@ processors:
       lang: painless
       if: 'ctx?.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
       source: >
-        for (int i = 0; i < ctx.message.length; ++i) {
-          ctx[ctx["message"][i]["name"]] = ctx["message"][i]["value"];
+        if (ctx.google_workspace.admin == null) {
+          ctx.google_workspace.admin = new HashMap();
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
+            ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
+            return;
+          }
+          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
+            ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
+            return;
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
+            ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+            return;
+          }
         }
   - remove:
       field: json.events.parameters
@@ -521,12 +539,89 @@ processors:
       field: google_workspace.admin.MOBILE_WIRELESS_NETWORK_NAME
       target_field: network.name
       ignore_missing: true
+  - date:
+      field: google_workspace.admin.EMAIL_LOG_SEARCH_END_DATE
+      target_field: google_workspace.admin.email.log_search_filter.end_date
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.EMAIL_LOG_SEARCH_END_DATE != null
+  - date:
+      field: google_workspace.admin.EMAIL_LOG_SEARCH_START_DATE
+      target_field: google_workspace.admin.email.log_search_filter.start_date
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.EMAIL_LOG_SEARCH_START_DATE != null
+  - date:
+      field: google_workspace.admin.BIRTHDATE
+      target_field: google_workspace.admin.user.birthdate
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.BIRTHDATE != null
+  - date:
+      field: google_workspace.admin.BEGIN_DATE_TIME
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.BEGIN_DATE_TIME != null
+  - date:
+      field: google_workspace.admin.START_DATE
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.START_DATE != null
+  - date:
+      field: google_workspace.admin.END_DATE
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.END_DATE != null
+  - date:
+      field: google_workspace.admin.END_DATE_TIME
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+      if: ctx?.google_workspace?.admin?.END_DATE_TIME != null
   - script:
       lang: painless
       if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
       source: >
         String[] splitmail = ctx.source.user.email.splitOnToken('@');
-        if splitmail.length !== 2 {
+        if (splitmail.length != 2) {
           return;
         }
         if (ctx.user == null) {
@@ -538,10 +633,10 @@ processors:
         ctx.source.user.domain = splitmail[1];
   - script:
       lang: painless
-      if: 'ctx?.google_workspace?.admin?.user?.email != null && ctx?.google_workspace?.admin?.user?.email.contains("@")'
+      if: 'ctx?.google_workspace?.admin?.group?.email != null && ctx?.google_workspace?.admin?.group?.email.contains("@")'
       source: >
-        String[] splitmail = ctx.google_workspace.admin.user.email.splitOnToken('@');
-        if splitmail.length !== 2 {
+        String[] splitmail = ctx.google_workspace.admin.group.email.splitOnToken('@');
+        if (splitmail.length != 2) {
           return;
         }
         if (ctx.group == null) {
@@ -549,6 +644,58 @@ processors:
         }
         ctx.group.name = splitmail[0];
         ctx.group.domain = splitmail[1];
+  - script:
+      lang: painless
+      if: 'ctx?.google_workspace?.admin?.user?.email != null && ctx?.google_workspace?.admin?.user?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.google_workspace.admin.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.user.target == null) {
+          ctx.user.target = new HashMap();
+        }
+        ctx.user.target.name = splitmail[0];
+        ctx.user.target.domain = splitmail[1];
+        ctx.user.target.email = ctx.google_workspace.admin.user.email;
+  - set:
+      field: user.target.group.name
+      copy_from: group.name
+      if: ctx?.group?.name != null
+  - set:
+      field: user.target.group.domain
+      copy_from: group.domain
+      if: ctx?.group?.domain != null
+  - script:
+      lang: painless
+      if: 'ctx?.event?.start != null && ctx?.event?.end != null'
+      source: >-
+        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+  - convert:
+      field: google_workspace.admin.bulk_upload.failed
+      type: long
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: success
+      if: 'ctx?.google_workspace?.admin?.group?.bulk_upload?.failed != null && ctx?.google_workspace?.admin?.group?.bulk_upload?.failed == 0'
+  - set:
+      field: event.outcome
+      value: failure
+      if: 'ctx?.google_workspace?.admin?.group?.bulk_upload?.failed != null && ctx?.google_workspace?.admin?.group?.bulk_upload?.failed != 0'
+  - split:
+      field: google_workspace.admin.WHITELISTED_GROUPS
+      target_field: google_workspace.admin.group.allowed_list
+      separator: ','
+      ignore_missing: true
   - append:
       field: related.ip
       value: "{{source.ip}}"
@@ -558,6 +705,11 @@ processors:
       field: related.user
       value: "{{source.user.name}}"
       if: ctx?.source?.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{user.target.name}}"
+      if: ctx?.user?.target?.name != null
       allow_duplicates: false
   - geoip:
       field: source.ip
@@ -579,8 +731,29 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: source.user.id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: user.id
+      type: string
+      ignore_missing: true
   - remove:
-      field: json
+      field:
+        - json
+        - google_workspace.admin.EMAIL_LOG_SEARCH_END_DATE
+        - google_workspace.admin.EMAIL_LOG_SEARCH_START_DATE
+        - google_workspace.admin.BIRTHDATE
+        - google_workspace.admin.BEGIN_DATE_TIME
+        - google_workspace.admin.START_DATE
+        - google_workspace.admin.END_DATE
+        - google_workspace.admin.END_DATE_TIME
+        - google_workspace.admin.WHITELISTED_GROUPS
       ignore_missing: true
 
 on_failure:
