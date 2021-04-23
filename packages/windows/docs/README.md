@@ -457,6 +457,7 @@ The Windows `powershell` dataset provides events from the Windows
 | destination.user.domain | Name of the directory the user is a member of. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
+| ecs.version | ECS version | keyword |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
@@ -470,6 +471,7 @@ The Windows `powershell` dataset provides events from the Windows
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.extension | File extension, excluding the leading dot. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -527,6 +529,7 @@ The Windows `powershell` dataset provides events from the Windows
 | source.user.domain | Name of the directory the user is a member of. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -696,6 +699,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | destination.user.domain | Name of the directory the user is a member of. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
+| ecs.version | ECS version | keyword |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
@@ -709,6 +713,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.extension | File extension, excluding the leading dot. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -766,6 +771,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | source.user.domain | Name of the directory the user is a member of. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
