@@ -6,6 +6,7 @@ processors:
       field: suricata.eve.tls.version
       pattern: '%{tls.version_protocol} %{tls.version}'
       ignore_missing: true
+      if: ctx?.suricata?.eve?.tls?.version != 'UNDETERMINED'
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -24,14 +25,9 @@ processors:
       field: tls.server.subject
       value: '{{suricata.eve.tls.subject}}'
       ignore_empty_value: true
-  - gsub:
-      field: suricata.eve.tls.subject
-      pattern: \\,
-      replacement: ""
-      ignore_missing: true
   - kv:
       field: suricata.eve.tls.subject
-      field_split: ', '
+      field_split: ' (?=[a-zA-Z]+=)'
       value_split: '='
       target_field: suricata.eve.tls.kv_subject
       ignore_missing: true
@@ -183,6 +179,6 @@ processors:
         - suricata.eve.tls.kv_subject
       ignore_missing: true
 on_failure:
-  - append:
-        field: error.message
-        value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
