@@ -509,6 +509,7 @@ activity.
 | dns.header_flags | Array of DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
+| dns.question.domain | The domain being queried. | keyword |
 | dns.question.name | The name being queried. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
 | dns.question.subdomain | The subdomain of the domain. | keyword |
@@ -549,6 +550,7 @@ activity.
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
+| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Source network address. | keyword |
@@ -981,6 +983,7 @@ HTTP requests and replies.
 | url.domain | Domain of the url. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
 | url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
 | url.port | Port of the request, such as 443. | long |
 | url.username | Username of the request. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -1696,6 +1699,7 @@ LAN Manager(NTLM) data.
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| file.path | Full path to the log file this event came from. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1778,6 +1782,7 @@ Online Certificate Status Protocol (OCSP) data.
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| file.path | Full path to the log file this event came from. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -2567,6 +2572,7 @@ which contains SMB trees.
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| file.path | Full path to the log file this event came from. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
