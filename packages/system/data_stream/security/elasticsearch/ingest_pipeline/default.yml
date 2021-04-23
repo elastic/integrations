@@ -8,6 +8,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set ECS categorization fields
+      description: Set ECS categorization fields
       params:
         "1100":
           category:
@@ -748,6 +749,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Logon Type
+      description: Set Logon Type
       params:
         "2": Interactive
         "3": Network
@@ -775,6 +777,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set User Account Control
+      description: Set User Account Control
       params:
         "0x00000001": SCRIPT
         "0x00000002": ACCOUNTDISABLE
@@ -828,6 +831,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Kerberos Ticket Options
+      description: Set Kerberos Ticket Options
       params:
         "0x40000000": Forwardable
         "0x20000000": Forwarded
@@ -869,6 +873,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Kerberos Encryption Types
+      description: Set Kerberos Encryption Types
       params:
         "0x1": DES-CBC-CRC
         "0x3": DES-CBC-MD5
@@ -887,6 +892,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Kerberos Ticket Status Codes
+      description: Set Kerberos Ticket Status Codes
       params:
         "0x0": KDC_ERR_NONE
         "0x1": KDC_ERR_NAME_EXP
@@ -957,6 +963,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Service Type and Name
+      description: Set Service Type and Name
       params:
         "0x1": Kernel Driver
         "0x2": File System Driver
@@ -984,6 +991,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Audit Information
+      description: Set Audit Information
       params:
         "0CCE9210-69AE-11D9-BED3-505054503030": ["Security State Change", "System"]
         "0CCE9211-69AE-11D9-BED3-505054503030": ["Security System Extension", "System"]
@@ -1056,6 +1064,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Decode message table
+      description: Decode message table
       params:
         "279": "Undefined Access (no effect) Bit 7"
         "1536": "Unused message ID"
@@ -2069,6 +2078,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: 4625 and 4776 Set Status and SubStatus
+      description: 4625 and 4776 Set Status and SubStatus
       params:
         "0xc000005e": "There are currently no logon servers available to service the logon request."
         "0xc0000064": "User logon with misspelled or bad user account"
@@ -2125,6 +2135,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Trust Type
+      description: Set Trust Type
       params:
         "1": "TRUST_TYPE_DOWNLEVEL"
         "2": "TRUST_TYPE_UPLEVEL"
@@ -2142,6 +2153,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Trust Direction
+      description: Set Trust Direction
       params:
         "0": "TRUST_DIRECTION_DISABLED"
         "1": "TRUST_DIRECTION_INBOUND"
@@ -2159,6 +2171,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Set Trust Attributes
+      description: Set Trust Attributes
       params:
         "0": "UNDEFINED"
         "1": "TRUST_ATTRIBUTE_NON_TRANSITIVE"
@@ -2183,6 +2196,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Add Session Events
+      description: Add Session Events
       source: |-
         if (ctx?.event?.code == null ||
             ![4778, 4779].contains(ctx.event.code)) {
@@ -2260,6 +2274,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Copy Target User
+      description: Copy Target User
       source: |-
         if (ctx?.event?.code == null ||
             ![4624, 4625, 4634, 4647, 4648, 4768, 4769, 4770,
@@ -2331,6 +2346,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Copy MemberName to User and User to Group
+      description: Copy MemberName to User and User to Group
       source: |-
         if (ctx?.event?.code == null ||
             ![4727, 4728, 4729, 4730, 4731, 4732, 4733, 4734, 4735,
@@ -2411,6 +2427,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Copy Target User to Computer Object
+      description: Copy Target User to Computer Object
       source: |-
         if (ctx?.event?.code == null ||
             ![4741, 4742, 4743].contains(ctx.event.code)) {
@@ -2448,6 +2465,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Copy Subject User from Event Data
+      description: Copy Subject User from Event Data
       source: |-
         if (ctx?.event?.code == null ||
             ![4657, 4670, 4672, 4673, 4674, 4688, 4689, 4697,
@@ -2498,6 +2516,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Copy Subject User from user_data
+      description: Copy Subject User from user_data
       source: |-
         if (ctx?.event?.code == null ||
             ![1102].contains(ctx.event.code)) {
@@ -2540,17 +2559,6 @@ processors:
       field: winlog.logon.id
       copy_from: winlog.event_data.SubjectLogonId
       ignore_failure: true
-      if: |-
-        ctx?.event?.code != null &&
-        [4625, 4648, 4670, 4672, 4673, 4674, 4688, 4689,
-         4697, 4698, 4699, 4700, 4701, 4702, 4706, 4707,
-         4713, 4716, 4717, 4718, 4719, 4720, 4722, 4723,
-         4724, 4725, 4726, 4727, 4728, 4729, 4730, 4731,
-         4732, 4733, 4734, 4735, 4737, 4738, 4739, 4740,
-         4741, 4742, 4743, 4744, 4745, 4746, 4747, 4748,
-         4749, 4750, 4751, 4752, 4753, 4754, 4755, 4756,
-         4757, 4758, 4759, 4760, 4761, 4762, 4763, 4764, 
-         4781, 4799, 4817, 4904, 4905, 4907, 4912].contains(ctx.event.code)
 
   - set:
       field: winlog.logon.id
@@ -2564,6 +2572,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Rename Common Auth Fields
+      description: Rename Common Auth Fields
       source: |-
         if (ctx?.event?.code == null ||
             ![1100, 1102, 1104, 1105, 1108, 4624, 4648, 4625,
@@ -2641,6 +2650,7 @@ processors:
       lang: painless
       ignore_failure: true
       tag: Process Event 4688
+      description: Process Event 4688
       source: |-
         if (ctx?.event?.code == null ||
             ![4688].contains(ctx.event.code)) {
@@ -2765,40 +2775,36 @@ processors:
       value: '{{winlog.event_data.NewTargetUserName}}'
       allow_duplicates: false
       if: |-
-        ctx?.event?.code != null &&
-        [4781].contains(ctx.event.code) &&
-        ctx?.winlog?.event_data?.NewTargetUserName != null
+        ctx?.winlog?.event_data?.NewTargetUserName != null &&
+        ctx.winlog.event_data.NewTargetUserName != "-"
 
   - append:
       field: related.user
       value: '{{winlog.event_data.OldTargetUserName}}'
       allow_duplicates: false
       if: |-
-        ctx?.event?.code != null &&
-        [4781].contains(ctx.event.code) &&
-        ctx?.winlog?.event_data?.OldTargetUserName != null
+        ctx?.winlog?.event_data?.OldTargetUserName != null &&
+        ctx.winlog.event_data.OldTargetUserName != "-"
 
   - gsub:
       field: source.ip
       pattern: "::ffff:"
       replacement: ""
       ignore_missing: true
-      if: |-
-        ctx?.event?.code != null &&
-        [4768, 4769, 4770, 4771].contains(ctx.event.code)
 
   - append:
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
       if: |-
-        ctx?.event?.code != null &&
-        [4768, 4769, 4770, 4771].contains(ctx.event.code)
+        ctx?.source?.ip != null &&
+        ctx.source.ip != "-"
 
   - script:
       lang: painless
       ignore_failure: true
       tag: Object Policy Change and SidListDesc
+      description: Object Policy Change and SidListDesc
       params:
         AccountSIDDescription:
           AO: Account operators
