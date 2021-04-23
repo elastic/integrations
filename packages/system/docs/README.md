@@ -435,7 +435,7 @@ The Windows `security` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -567,6 +567,12 @@ The Windows `security` dataset provides events from the Windows
 | winlog.event_data.NewProcessName |  | keyword |
 | winlog.event_data.NewSchemeGuid |  | keyword |
 | winlog.event_data.NewSd |  | keyword |
+| winlog.event_data.NewSdDacl0 |  | keyword |
+| winlog.event_data.NewSdDacl1 |  | keyword |
+| winlog.event_data.NewSdDacl2 |  | keyword |
+| winlog.event_data.NewSdSacl0 |  | keyword |
+| winlog.event_data.NewSdSacl1 |  | keyword |
+| winlog.event_data.NewSdSacl2 |  | keyword |
 | winlog.event_data.NewTargetUserName |  | keyword |
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NewUACList |  | keyword |
@@ -579,6 +585,12 @@ The Windows `security` dataset provides events from the Windows
 | winlog.event_data.OemInformation |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
 | winlog.event_data.OldSd |  | keyword |
+| winlog.event_data.OldSdDacl0 |  | keyword |
+| winlog.event_data.OldSdDacl1 |  | keyword |
+| winlog.event_data.OldSdDacl2 |  | keyword |
+| winlog.event_data.OldSdSacl0 |  | keyword |
+| winlog.event_data.OldSdSacl1 |  | keyword |
+| winlog.event_data.OldSdSacl2 |  | keyword |
 | winlog.event_data.OldTargetUserName |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
 | winlog.event_data.OldUacValue |  | keyword |
