@@ -73,7 +73,162 @@ To setup a scheduled query group:
 ### Default Osquery configuration
 The Osquery binary is executed with the standard Osqueryd defaults. 
 
-### Osquery result
+### Osquery example result
+
+Successful result
+```
+{
+  "_index": ".ds-logs-osquery_manager.result-default-2021.04.12-2021.04.12-000001",
+  "_id": "R3ZwxngBKwN-X8eyQbxy",
+  "_version": 1,
+  "_score": null,
+  "fields": {
+    "osquery.seconds": [
+      "7"
+    ],
+    "action_data.id": [
+      "72d3ec71-7635-461e-a15d-f728819ae27f"
+    ],
+    "osquery.seconds.number": [
+      7
+    ],
+    "osquery.hours.number": [
+      6
+    ],
+    "host.hostname": [
+      "MacBook-Pro.local"
+    ],
+    "type": [
+      "MacBook-Pro.local"
+    ],
+    "host.mac": [
+      "ad:de:48:00:12:22",
+      "a6:83:e7:cb:91:ee"
+    ],
+    "osquery.total_seconds.number": [
+      1060627
+    ],
+    "host.os.build": [
+      "20D91"
+    ],
+    "host.ip": [
+      "192.168.31.171",
+      "fe80::b5b1:39ff:faa1:3b39"
+    ],
+    "agent.type": [
+      "osquerybeat"
+    ],
+    "action_data.query": [
+      "select * from uptime;"
+    ],
+    "osquery.minutes": [
+      "37"
+    ],
+    "action_id": [
+      "5099c02d-bd6d-4b88-af90-d80dcdc945df"
+    ],
+    "host.os.version": [
+      "10.16"
+    ],
+    "host.os.kernel": [
+      "20.3.0"
+    ],
+    "host.os.name": [
+      "Mac OS X"
+    ],
+    "agent.name": [
+      "MacBook-Pro.local"
+    ],
+    "host.name": [
+      "MacBook-Pro.local"
+    ],
+    "osquery.total_seconds": [
+      "1060627"
+    ],
+    "host.id": [
+      "155D977D-8EA8-5BDE-94A2-D78A7B545198"
+    ],
+    "osquery.hours": [
+      "6"
+    ],
+    "osquery.days": [
+      "12"
+    ],
+    "host.os.type": [
+      "macos"
+    ],
+    "osquery.days.number": [
+      12
+    ],
+    "host.architecture": [
+      "x86_64"
+    ],
+    "@timestamp": [
+      "2021-04-12T14:15:45.060Z"
+    ],
+    "agent.id": [
+      "196a0086-a612-48b1-930a-300565b3efaf"
+    ],
+    "host.os.platform": [
+      "darwin"
+    ],
+    "ecs.version": [
+      "1.8.0"
+    ],
+    "agent.ephemeral_id": [
+      "5cb88e34-50fe-4c13-b81c-d2b7187505ea"
+    ],
+    "agent.version": [
+      "7.13.0"
+    ],
+    "host.os.family": [
+      "darwin"
+    ],
+    "osquery.minutes.number": [
+      37
+    ]
+  }
+}
+```
+
+Undefined action query
+```
+{
+  "_index": ".ds-.fleet-actions-results-2021.04.10-000001",
+  "_id": "qm7mvHgBKwN-X8eyYB1x",
+  "_version": 1,
+  "_score": null,
+  "fields": {
+    "completed_at": [
+      "2021-04-10T17:48:32.268Z"
+    ],
+    "error.keyword": [
+      "action undefined"
+    ],
+    "@timestamp": [
+      "2021-04-10T17:48:32.000Z"
+    ],
+    "action_data.query": [
+      "select * from uptime;"
+    ],
+    "action_data.id": [
+      "2c95bb2c-8ab6-4e8c-ac01-a1abb693ea00"
+    ],
+    "agent_id": [
+      "c21b4c9c-6f36-49f0-8b60-08490fc619ce"
+    ],
+    "action_id": [
+      "53454d3b-c8cd-4a50-b5b4-f85da17b4be2"
+    ],
+    "started_at": [
+      "2021-04-10T17:48:32.267Z"
+    ],
+    "error": [
+      "action undefined"
+    ]
+  }
+}
+```
 
 
 ### Exported Fields
