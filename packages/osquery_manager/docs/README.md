@@ -14,7 +14,7 @@ Once added, an Osquery page is available in Kibana under the Management section.
 
 ### Supported platforms
 
-This integration supports x64_64 bit Windows, Darwin, and Linux platforms.
+This integration supports x86_64 bit Windows, Darwin, and Linux platforms.
 
 ### Access to Osquery in Kibana
 After you add the Osquery Manager integration to a policy in Kibana Fleet, there are two ways to get to the Osquery app where you can run live queries and schedule query groups. 
@@ -191,7 +191,7 @@ Successful result
 }
 ```
 
-Undefined action query
+Error example: Undefined action query
 ```
 {
   "_index": ".ds-.fleet-actions-results-2021.04.10-000001",
