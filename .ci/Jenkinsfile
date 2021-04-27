@@ -29,7 +29,8 @@ pipeline {
     quietPeriod(10)
   }
   triggers {
-    issueCommentTrigger('(?i).*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*')
+    issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|/test)')
+    cron(env.CHANGE_ID?.trim() ? '' : 'H H(2-5) * * *')
   }
   stages {
     stage('Prepare workspace') {
