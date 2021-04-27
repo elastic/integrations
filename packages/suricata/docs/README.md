@@ -45,6 +45,7 @@ with other versions of Suricata.
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | Destination mac address. | keyword |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
@@ -113,11 +114,21 @@ with other versions of Suricata.
 | rule.name | Rule name | keyword |
 | source.address | Source network address. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | Source mac address. | keyword |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | suricata.eve.alert.category |  | keyword |
 | suricata.eve.alert.gid |  | long |
+| suricata.eve.alert.metadata.created_at |  | date |
+| suricata.eve.alert.metadata.updated_at |  | date |
 | suricata.eve.alert.rev |  | long |
 | suricata.eve.alert.signature |  | keyword |
 | suricata.eve.alert.signature_id |  | long |
@@ -149,6 +160,7 @@ with other versions of Suricata.
 | suricata.eve.flow.state |  | keyword |
 | suricata.eve.flow_id |  | keyword |
 | suricata.eve.http.http_content_type |  | keyword |
+| suricata.eve.http.http_port |  | long |
 | suricata.eve.http.protocol |  | keyword |
 | suricata.eve.http.redirect |  | keyword |
 | suricata.eve.icmp_code |  | long |
@@ -331,6 +343,7 @@ with other versions of Suricata.
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | url.path | Path of the request, such as "/search". | keyword |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |

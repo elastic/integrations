@@ -67,6 +67,7 @@ pipeline {
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                          sh(label: "Update the Elastic stack", script: '../../build/elastic-package stack update -v')
                           sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                           withKubernetes() {
                             withCloudTestEnv() {
@@ -97,8 +98,9 @@ pipeline {
                       }
 
                       // Check compatibility with previous stacks
-                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
-                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
+                      // FIXME: Enable compatibility check once we have a new stack released (compatibility with Fleet Server)
+                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
+                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
@@ -184,7 +186,7 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster')
+        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
       }
 
       body()
@@ -221,6 +223,7 @@ def checkPackageCompatibility(integrationName, stackVersion) {
 
   try {
     dir("${BASE_DIR}/packages/${integrationName}") {
+      sh(label: "Update the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack update -v --version ${stackVersion}")
       sh(label: "Boot up the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack up -d -v --version ${stackVersion}")
       sh(label: "Install integration: ${integrationName}", script: '''
         eval "$(../../build/elastic-package stack shellinit)"
