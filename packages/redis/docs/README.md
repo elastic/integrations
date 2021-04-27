@@ -120,11 +120,6 @@ An example event for `info` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
-    "dataset": {
-        "name": "redis.info",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "redis": {
         "info": {
             "clients": {
@@ -294,11 +289,6 @@ An example event for `info` looks as following:
         "dataset": "redis.info",
         "module": "redis"
     },
-    "stream": {
-        "dataset": "redis.info",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "metricset": {
         "name": "info",
         "period": 10000
@@ -334,6 +324,7 @@ An example event for `info` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -458,8 +449,9 @@ An example event for `info` looks as following:
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long |
-| service.address | Client address | keyword |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
+| service.version | Service version | keyword |
 
 
 ### key
@@ -480,11 +472,6 @@ An example event for `key` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
-    "dataset": {
-        "name": "redis.key",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "redis": {
         "key": {
             "expire": {
@@ -494,20 +481,12 @@ An example event for `key` looks as following:
             "length": 3,
             "name": "foo",
             "type": "string"
-        },
-        "keyspace": {
-            "id": "db0"
         }
     },
     "event": {
         "duration": 374411,
         "dataset": "redis.key",
         "module": "redis"
-    },
-    "stream": {
-        "dataset": "redis.key",
-        "namespace": "default",
-        "type": "metrics"
     },
     "metricset": {
         "name": "key",
@@ -544,6 +523,7 @@ An example event for `key` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -565,6 +545,8 @@ An example event for `key` looks as following:
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long |
 | redis.key.name | Key name. | keyword |
 | redis.key.type | Key type as shown by `TYPE` command. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
 
 
 ### keyspace
@@ -577,11 +559,6 @@ An example event for `keyspace` looks as following:
 ```$json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
-    "dataset": {
-        "name": "redis.keyspace",
-        "namespace": "default",
-        "type": "metrics"
-    },
     "redis": {
         "keyspace": {
             "avg_ttl": 359459,
@@ -594,11 +571,6 @@ An example event for `keyspace` looks as following:
         "duration": 374411,
         "dataset": "redis.keyspace",
         "module": "redis"
-    },
-    "stream": {
-        "dataset": "redis.keyspace",
-        "namespace": "default",
-        "type": "metrics"
     },
     "metricset": {
         "name": "keyspace",
@@ -635,6 +607,7 @@ An example event for `keyspace` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -655,3 +628,5 @@ An example event for `keyspace` looks as following:
 | redis.keyspace.expires |  | long |
 | redis.keyspace.id | Keyspace identifier. | keyword |
 | redis.keyspace.keys | Number of keys in the keyspace. | long |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |

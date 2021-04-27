@@ -13,7 +13,7 @@ request.transforms:
   - set:
       target: url.params.startTime
       value: "[[.cursor.last_execution_datetime]]"
-      default: '[[parseDate now (parseDuration "-{{initial_interval}}")]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
 response.split:
   target: body.items
   split:
@@ -23,9 +23,10 @@ response.pagination:
   - set:
       target: url.params.pageToken
       value: "[[.last_response.body.nextPageToken]]"
+      fail_on_template_error: true
 cursor:
   last_execution_datetime:
-    value: "[[now]]"
+    value: "[[formatDate now]]"
 tags:
 {{#each tags as |tag i|}}
  - {{tag}}
@@ -37,7 +38,7 @@ processors:
   - add_fields:
       target: ''
       fields:
-        ecs.version: 1.8.0
+        ecs.version: 1.9.0
   - script:
       lang: javascript
       id: gworkspace-common
@@ -167,14 +168,7 @@ processors:
                     // all saml event parameters are strings.
                     // for this reason we know for sure they are in the 'value' field.
                     // https://developers.google.com/admin-sdk/reports/v1/appendix/activity/saml
-                    switch (p.name) {
-                        case "status_code":
-                        case "second_level_status_code":
-                            evt.Put("google_workspace.saml."+p.name, parseInt(p.value));
-                            break;
-                        default:
-                            evt.Put("google_workspace.saml."+p.name, p.value);
-                    }
+                    evt.Put("google_workspace.saml."+p.name, p.value);
                 });
 
                 evt.Delete("json.events.parameters");

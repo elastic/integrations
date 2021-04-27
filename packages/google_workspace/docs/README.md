@@ -210,8 +210,8 @@ An example event for `saml` looks as following:
 | google_workspace.saml.failure_type | Login failure type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/saml. | keyword |
 | google_workspace.saml.initiated_by | Requester of SAML authentication. | keyword |
 | google_workspace.saml.orgunit_path | User orgunit. | keyword |
-| google_workspace.saml.second_level_status_code | SAML second level status code. | long |
-| google_workspace.saml.status_code | SAML status code. | long |
+| google_workspace.saml.second_level_status_code | SAML second level status code. | keyword |
+| google_workspace.saml.status_code | SAML status code. | keyword |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |

@@ -6,8 +6,8 @@ services:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
-  iptables-log-syslog:
-    image: akroh/stream:v0.0.1
+  iptables-log-udp:
+    image: akroh/stream:v0.3.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/iptables.log
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/iptables-syslog.log

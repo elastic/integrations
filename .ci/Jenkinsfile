@@ -3,7 +3,7 @@
 @Library('apm@current') _
 
 pipeline {
-  agent { label 'ubuntu && immutable' }
+  agent { label 'ubuntu-20 && immutable' }
   environment {
     BASE_DIR="src/github.com/elastic/integrations"
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
@@ -13,6 +13,10 @@ pipeline {
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.10.0"
     K8S_VERSION = "v1.20.2"
+    JOB_GCS_BUCKET = 'beats-ci-temp'
+    JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
+    ELASTIC_STACK_VERSION_PREV = "7.12.0-SNAPSHOT"
+    ELASTIC_STACK_VERSION_PREV_PREV = "7.11.2-SNAPSHOT"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -25,13 +29,15 @@ pipeline {
     quietPeriod(10)
   }
   triggers {
-    issueCommentTrigger('(?i).*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*')
+    issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|/test)')
+    cron(env.CHANGE_ID?.trim() ? '' : 'H H(2-5) * * *')
   }
   stages {
     stage('Prepare workspace') {
       steps {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
+        stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
       }
     }
     stage('Check Go sources') {
@@ -52,16 +58,17 @@ pipeline {
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              if (isPrAffected("${it}")) {
-                integrations["${it}"] = {
-                  node('ubuntu && immutable') {
+              if (isPrAffected(it)) {
+                integrations[it] = {
+                  withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
                       deleteDir()
-                      gitCheckout(basedir: "${BASE_DIR}")
+                      unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
                       useElasticPackage()
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
+                          sh(label: "Update the Elastic stack", script: '../../build/elastic-package stack update -v')
                           sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
                           withKubernetes() {
                             withCloudTestEnv() {
@@ -71,57 +78,36 @@ pipeline {
                                 ''')
                             }
                           }
+
+                          // Publish package to the Package Storage
+                          if (env.BRANCH_NAME == 'master') {
+                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
+                              sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
+                              sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
+                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
+                            }
+                          }
                         }
                       } finally {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                         }
                       }
+
+                      // Check compatibility with previous stacks
+                      // FIXME: Enable compatibility check once we have a new stack released (compatibility with Fleet Server)
+                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
+                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
               }
             }
             parallel integrations
-          }
-        }
-      }
-    }
-    stage('Update Package Storage') {
-      when {
-        branch 'master'
-      }
-      steps {
-        useElasticPackage()
-        dir("${BASE_DIR}/packages") {
-          sh(label: "Build packages", script: '''
-            for d in *; do
-              (
-                cd $d
-                ../../build/elastic-package build -v
-              )
-            done
-            ''')
-        }
-        gitCheckout(basedir: "${PACKAGE_STORAGE_BASE_DIR}", branch: 'master', repo: 'git@github.com:elastic/package-storage.git', credentialsId: "${JOB_GIT_CREDENTIALS}")
-        dir("${PACKAGE_STORAGE_BASE_DIR}"){
-          sh(label: 'Configure Git user.name', script: 'git config user.name "Elastic Machine"')
-          sh(label: 'Configure Git user.email', script: 'git config user.email "elasticmachine@users.noreply.github.com"')
-          sh(label: 'Add upstream to tracked repositories', script: 'git remote add upstream https://github.com/elastic/package-storage')
-          sh(label: 'Fetch upstream', script: 'git fetch upstream')
-          sh(label: 'Track snapshot', script: 'git checkout -b snapshot -t upstream/snapshot')
-          sh(label: 'Track staging', script: 'git checkout -b staging -t upstream/staging')
-          sh(label: 'Track production', script: 'git checkout -b production -t upstream/production')
-        }
-        withMageEnv(){
-          dir("${BASE_DIR}"){
-            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
-              sh(label: 'Updates Package Storage', script: 'mage -debug updatePackageStorage')
-            }
           }
         }
       }
@@ -167,13 +153,13 @@ def isPrAffected(integrationName) {
   def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
   def to = env.GIT_BASE_COMMIT
 
-  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only ${from}..${to} | egrep -v '^packages/'", returnStatus: true)
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) | egrep -v '^packages/'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found non-package files"
     return true
   }
 
-  r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only ${from}..${to} | egrep '^packages/${integrationName}/'", returnStatus: true)
+  r = sh(label: "[${integrationName}] git-diff: check package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) | egrep '^packages/${integrationName}/'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found package files"
     return true
@@ -201,7 +187,7 @@ def withKubernetes(Closure body) {
           chmod +x ${HOME}/bin/kubectl
           kubectl version --client
           ''') }
-        sh(label: "Create kind cluster", script: 'kind create cluster')
+        sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
       }
 
       body()
@@ -228,5 +214,42 @@ def withCloudTestEnv(Closure body) {
   ])
   withEnvMask(vars: maskedVars) {
     body()
+  }
+}
+
+def checkPackageCompatibility(integrationName, stackVersion) {
+  if (!isPackageCompatible(integrationName, stackVersion)) {
+    return // the package doesn't have to be supported by this stack
+  }
+
+  try {
+    dir("${BASE_DIR}/packages/${integrationName}") {
+      sh(label: "Update the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack update -v --version ${stackVersion}")
+      sh(label: "Boot up the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack up -d -v --version ${stackVersion}")
+      sh(label: "Install integration: ${integrationName}", script: '''
+        eval "$(../../build/elastic-package stack shellinit)"
+        ../../build/elastic-package install -v''')
+    }
+  } finally {
+    dir("${BASE_DIR}") {
+      sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${stackVersion}/${integrationName}")
+      archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/*.log")
+      sh(label: "Take down the Elastic stack (${stackVersion})", script: 'build/elastic-package stack down -v')
+    }
+  }
+}
+
+def isPackageCompatible(integrationName, stackVersion) {
+  dir("${BASE_DIR}/packages/${integrationName}") {
+    def r = sh(label: "Check compatibility with ${stackVersion}",
+      script: "../../build/elastic-package install -v -c kibana.version=${stackVersion}",
+      returnStatus: true)
+    if (r == 0) {
+      echo "Package should be compatible"
+      return true
+    }
+
+    echo "Package is not compatible. Skipping."
+    return false
   }
 }
