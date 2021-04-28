@@ -1,6 +1,6 @@
 # Developer workflow: build and test the integration
 
-## Directory layout for tests
+## Development Extensions: '_dev' directories
 
 The `_dev` directory is an extension to [the standard package spec](https://github.com/elastic/package-spec), which has been created for development purposes. It can be defined on the following levels:
 
