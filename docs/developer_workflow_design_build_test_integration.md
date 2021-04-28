@@ -2,7 +2,7 @@
 
 ## Directory layout for tests
 
-The `_dev` folder is an extension to [the standard package spec](https://github.com/elastic/package-spec), which has been created for development purposes. Currently, there are two _dev directories:
+The `_dev` directory is an extension to [the standard package spec](https://github.com/elastic/package-spec), which has been created for development purposes. It can be defined on the following levels:
 
 1. **Package** level (https://github.com/elastic/package-spec/tree/master/versions/1/_dev) - it contains resources to "build" docs content and "deploy" services for system tests.
 1. **Data-stream** level (https://github.com/elastic/package-spec/tree/master/versions/1/data_stream/_dev) - it contains "test" definitions for pipeline and system tests.
