@@ -37,8 +37,8 @@ The data stream consists of:
 
 The `_dev` directory is an extension to [the standard package spec](https://github.com/elastic/package-spec), which has been created for development purposes. It can be defined on the following levels:
 
-1. **Package** level ([spec.yml](https://github.com/elastic/package-spec/tree/master/versions/1/_dev/spec.yml)): the directory contains resources to "build" docs content and "deploy" services for system tests.
-1. **Data-stream** level ([spec.yml](https://github.com/elastic/package-spec/tree/master/versions/1/data_stream/_dev/spec.yml)): the directory contains "test" definitions for, i.e. pipeline and system tests.
+1. the package-level `_dev` folder contains files needed to setup the testing environment for that package. This environment setup is specified via folders/files in the `_dev/deploy` folder. For example, the `apache` package [specifies](https://github.com/elastic/integrations/tree/master/packages/apache/_dev/deploy) how to spin up an Apache Docker container for testing.
+1. the data stream-level `_dev` folder contains test configuration files for various types of tests. For example, see the [`_dev/test` folder](https://github.com/elastic/integrations/tree/master/packages/apache/data_stream/error/_dev/test) under the `apache/error` data stream.
 
 The integrations have also asset and static tests. They don't require config files, but configs can be used to mark them as optional.
 
