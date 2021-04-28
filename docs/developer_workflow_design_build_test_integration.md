@@ -1,14 +1,5 @@
 # Developer workflow: build and test the integration
 
-## Development Extensions: '_dev' directories
-
-The `_dev` directory is an extension to [the standard package spec](https://github.com/elastic/package-spec), which has been created for development purposes. It can be defined on the following levels:
-
-1. **Package** level ([spec.yml](https://github.com/elastic/package-spec/tree/master/versions/1/_dev/spec.yml)): the directory contains resources to "build" docs content and "deploy" services for system tests.
-1. **Data-stream** level ([spec.yml](https://github.com/elastic/package-spec/tree/master/versions/1/data_stream/_dev/spec.yml)): the directory contains "test" definitions for, i.e. pipeline and system tests.
-
->The integrations have also asset and static tests. They don't require config files, but configs can be used to mark them as optional.
-
 ## Prerequisites
 
 * `elastic-package` (builder tool) installed - follow the [Getting Started Guide](https://github.com/elastic/elastic-package#getting-started) guide to install the tool. 
