@@ -107,10 +107,54 @@ An example event for `audit` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | cyberarkpas.audit.action | A description of the audit record. | keyword |
-| cyberarkpas.audit.ca_properties | Account metadata. | flattened |
+| cyberarkpas.audit.ca_properties.address |  | keyword |
+| cyberarkpas.audit.ca_properties.cpm_disabled |  | keyword |
+| cyberarkpas.audit.ca_properties.cpm_error_details |  | keyword |
+| cyberarkpas.audit.ca_properties.cpm_status |  | keyword |
+| cyberarkpas.audit.ca_properties.creation_method |  | keyword |
+| cyberarkpas.audit.ca_properties.customer |  | keyword |
+| cyberarkpas.audit.ca_properties.database |  | keyword |
+| cyberarkpas.audit.ca_properties.device_type |  | keyword |
+| cyberarkpas.audit.ca_properties.dual_account_status |  | keyword |
+| cyberarkpas.audit.ca_properties.group_name |  | keyword |
+| cyberarkpas.audit.ca_properties.in_process |  | keyword |
+| cyberarkpas.audit.ca_properties.index |  | keyword |
+| cyberarkpas.audit.ca_properties.last_fail_date |  | keyword |
+| cyberarkpas.audit.ca_properties.last_success_change |  | keyword |
+| cyberarkpas.audit.ca_properties.last_success_reconciliation |  | keyword |
+| cyberarkpas.audit.ca_properties.last_success_verification |  | keyword |
+| cyberarkpas.audit.ca_properties.last_task |  | keyword |
+| cyberarkpas.audit.ca_properties.logon_domain |  | keyword |
+| cyberarkpas.audit.ca_properties.other |  | flattened |
+| cyberarkpas.audit.ca_properties.policy_id |  | keyword |
+| cyberarkpas.audit.ca_properties.port |  | keyword |
+| cyberarkpas.audit.ca_properties.privcloud |  | keyword |
+| cyberarkpas.audit.ca_properties.reset_immediately |  | keyword |
+| cyberarkpas.audit.ca_properties.retries_count |  | keyword |
+| cyberarkpas.audit.ca_properties.sequence_id |  | keyword |
+| cyberarkpas.audit.ca_properties.tags |  | keyword |
+| cyberarkpas.audit.ca_properties.user_dn |  | keyword |
+| cyberarkpas.audit.ca_properties.user_name |  | keyword |
+| cyberarkpas.audit.ca_properties.virtual_username |  | keyword |
 | cyberarkpas.audit.category | The category name (for category-related operations). | keyword |
 | cyberarkpas.audit.desc | A static value that displays a description of the audit codes. | keyword |
-| cyberarkpas.audit.extra_details | Specific extra details of the audit records. | flattened |
+| cyberarkpas.audit.extra_details.ad_process_id |  | keyword |
+| cyberarkpas.audit.extra_details.ad_process_name |  | keyword |
+| cyberarkpas.audit.extra_details.application_type |  | keyword |
+| cyberarkpas.audit.extra_details.command |  | keyword |
+| cyberarkpas.audit.extra_details.connection_component_id |  | keyword |
+| cyberarkpas.audit.extra_details.dst_host |  | keyword |
+| cyberarkpas.audit.extra_details.logon_account |  | keyword |
+| cyberarkpas.audit.extra_details.managed_account |  | keyword |
+| cyberarkpas.audit.extra_details.other |  | flattened |
+| cyberarkpas.audit.extra_details.process_id |  | keyword |
+| cyberarkpas.audit.extra_details.process_name |  | keyword |
+| cyberarkpas.audit.extra_details.protocol |  | keyword |
+| cyberarkpas.audit.extra_details.psmid |  | keyword |
+| cyberarkpas.audit.extra_details.session_duration |  | keyword |
+| cyberarkpas.audit.extra_details.session_id |  | keyword |
+| cyberarkpas.audit.extra_details.src_host |  | keyword |
+| cyberarkpas.audit.extra_details.username |  | keyword |
 | cyberarkpas.audit.file | The name of the target file. | keyword |
 | cyberarkpas.audit.gateway_station | The IP of the web application machine (PVWA). | ip |
 | cyberarkpas.audit.hostname | The hostname, in upper case. | keyword |
