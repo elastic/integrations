@@ -33,6 +33,15 @@ The data stream consists of:
 * Zero or more ingest pipelines
 * An Elastic Agent policy template
 
+## Development Extensions: '_dev' directories
+
+The `_dev` directory is part of [the package spec](https://github.com/elastic/package-spec), containing development resources. These development resources cover any types of files/folders needed only at development time. This includes resources needed for testing but also includes any templates that might be used for generating documentation. In the future it could include other files/folders needed just at development time. It can be defined on the following levels:
+
+1. the package-level `_dev` folder contains files needed to setup the testing environment for that package. This environment setup is specified via folders/files in the `_dev/deploy` folder. For example, the `apache` package [specifies](https://github.com/elastic/integrations/tree/master/packages/apache/_dev/deploy) how to spin up an Apache Docker container for testing.
+1. the data stream-level `_dev` folder contains test configuration files for various types of tests. For example, see the [`_dev/test` folder](https://github.com/elastic/integrations/tree/master/packages/apache/data_stream/error/_dev/test) under the `apache/error` data stream.
+
+The integrations have also [asset](https://github.com/elastic/elastic-package/blob/master/docs/howto/asset_testing.md) and [static](https://github.com/elastic/elastic-package/blob/master/docs/howto/static_testing.md) tests. They don't require config files, but configs can be used to mark them as optional.
+
 ## Migration from Beats Modules
 
 Filebeat and Metricbeat modules can be migrated over to Elastic Integrations. When migrating over, the same module in Filebeat and Metricbeat, related to the same observed product, can be combined into a single Elastic Integration. 
