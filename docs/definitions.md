@@ -40,7 +40,7 @@ The `_dev` directory is an extension to [the standard package spec](https://gith
 1. **Package** level ([spec.yml](https://github.com/elastic/package-spec/tree/master/versions/1/_dev/spec.yml)): the directory contains resources to "build" docs content and "deploy" services for system tests.
 1. **Data-stream** level ([spec.yml](https://github.com/elastic/package-spec/tree/master/versions/1/data_stream/_dev/spec.yml)): the directory contains "test" definitions for, i.e. pipeline and system tests.
 
->The integrations have also asset and static tests. They don't require config files, but configs can be used to mark them as optional.
+The integrations have also asset and static tests. They don't require config files, but configs can be used to mark them as optional.
 
 ## Migration from Beats Modules
 
