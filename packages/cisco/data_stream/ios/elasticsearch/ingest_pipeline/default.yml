@@ -10,10 +10,13 @@ processors:
       value: '1.9.0'
   - set:
       field: event.category
-      value: network_traffic
+      value: network
+  - set:
+      field: event.provider
+      value: firewall
   - set:
       field: event.type
-      value: firewall
+      value: info
   - dissect:
       field: message
       pattern: "%{_temp_.ts->} %{+_temp_.ts} %{+_temp_.ts->} %{log.source.address} %{event.sequence}: %{_temp_.timestamp}: %{_temp_.message}"
@@ -28,29 +31,33 @@ processors:
       field: event.severity
       type: long
       ignore_missing: true
+  - convert:
+      field: event.sequence
+      type: long
+      ignore_missing: true
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
       if: "['IPACCESSLOGDP', 'ACCESSLOGDP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "ctx?.event?.code == 'IPACCESSLOGRP'"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
       if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "%{cisco.ios.action} %{_temp_.event.outcome} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
+      pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
       if: "ctx?.event?.code == 'LOGIN_SUCCESS'"
   - dissect:
       field: message
@@ -61,6 +68,18 @@ processors:
       patterns: 
         - 'Received \(%{DATA:cisco.ios.tree}, %{DATA:cisco.ios.multicast.group}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
       if: "ctx?.event?.code == 'INVALID_RP_JOIN'"
+  - set:
+       field: event.action
+       value: "multicast-join"
+       if: ctx?.event?.code == "INVALID_RP_JOIN"
+  - set:
+       field: event.outcome
+       value: "failure"
+       if: ctx?.event?.code == "INVALID_RP_JOIN"
+  - set:
+       field: event.reason
+       value: "Invalid RP"
+       if: ctx?.event?.code == "INVALID_RP_JOIN"      
   - set:
       field: destination.ip
       value: '{{ destination.address }}'
@@ -94,13 +113,13 @@ processors:
       value: ipv6
       if: "ctx?.source?.ip != null && ctx?.network?.type == null"
   - set:
-      field: event.outcome
+      field: event.action
       value: deny
-      if: "ctx?._temp_?.event?.outcome == 'denied'"
+      if: "ctx?._temp_?.event?.action == 'denied'"
   - set:
-      field: event.outcome
+      field: event.action
       value: allow
-      if: "ctx?._temp_?.event?.outcome == 'permitted'"
+      if: "ctx?._temp_?.event?.action == 'permitted'"
 
   - set:
       field: "log.level"
