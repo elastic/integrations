@@ -1,6 +1,6 @@
 # AWS Integration
 
-This integration is used to fetches logs and metrics from 
+This integration is used to fetch logs and metrics from
 [Amazon Web Services](https://aws.amazon.com/).
 
 ## AWS Credentials
