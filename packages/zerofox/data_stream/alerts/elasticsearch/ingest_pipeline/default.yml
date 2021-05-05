@@ -1,0 +1,493 @@
+---
+description: Pipeline for parsing zerofox alerts
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.9.0"
+  - set:
+      field: event.original
+      copy_from: message
+  - json:
+      field: message
+      target_field: json
+  - rename:
+      field: json.alert_type
+      target_field: zerofox.alert_type
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.offending_content_url
+      target_field: zerofox.offending_content_url
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.id
+      target_field: zerofox.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.id
+      target_field: zerofox.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset_term
+      target_field: zerofox.asset_term
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity
+      target_field: zerofox.entity
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.id
+      target_field: zerofox.entity.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.entity.id
+      target_field: zerofox.entity.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.name
+      target_field: zerofox.entity.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.image
+      target_field: zerofox.entity.image
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.labels
+      target_field: zerofox.entity.labels
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.entity_group
+      target_field: zerofox.entity.entity_group
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.entity_group.id
+      target_field: zerofox.entity.entity_group.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.entity.entity_group.id
+      target_field: zerofox.entity.entity_group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity.entity_group.name
+      target_field: zerofox.entity.entity_group.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_term
+      target_field: zerofox.entity_term
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.content_created_at
+      target_field: zerofox.content_created_at
+      ignore_failure: true
+
+  - rename:
+      field: json.protected_account
+      target_field: zerofox.protected_account
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.severity
+      target_field: zerofox.severity
+      ignore_missing: true
+      ignore_failure: true
+
+  - set:
+      field: zerofox.severity
+      value: info
+      if: ctx?.zerofox?.severity == 1
+  - set:
+      field: zerofox.severity
+      value: low
+      if: ctx?.zerofox?.severity == 2
+  - set:
+      field: zerofox.severity
+      value: medium
+      if: ctx?.zerofox?.severity == 3
+  - set:
+      field: zerofox.severity
+      value: high
+      if: ctx?.zerofox?.severity == 4
+  - set:
+      field: zerofox.severity
+      value: critical
+      if: ctx?.zerofox?.severity == 5
+
+  - rename:
+      field: json.perpetrator
+      target_field: zerofox.perpetrator
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.id
+      target_field: zerofox.perpetrator.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.perpetrator.id
+      target_field: zerofox.perpetrator.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.username
+      target_field: zerofox.perpetrator.username
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.content
+      target_field: zerofox.perpetrator.content
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.name
+      target_field: zerofox.perpetrator.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.display_name
+      target_field: zerofox.perpetrator.display_name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.account_number
+      target_field: zerofox.perpetrator.account_number
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.destination_account_number
+      target_field: zerofox.perpetrator.destination_account_number
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.parent_post_number
+      target_field: zerofox.perpetrator.parent_post_number
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.parent_post_url
+      target_field: zerofox.perpetrator.parent_post_url
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.parent_post_account_number
+      target_field: zerofox.perpetrator.parent_post_account_number
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.post_number
+      target_field: zerofox.perpetrator.post_number
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.network
+      target_field: zerofox.perpetrator.network
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.image
+      target_field: zerofox.perpetrator.image
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.url
+      target_field: zerofox.perpetrator.url
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.type
+      target_field: zerofox.perpetrator.type
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.post_type
+      target_field: zerofox.perpetrator.post_type
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.perpetrator.timestamp
+      target_field: zerofox.perpetrator.timestamp
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.rule_group_id
+      target_field: zerofox.rule_group_id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.rule_group_id
+      target_field: zerofox.rule_group_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.metadata
+      target_field: zerofox.metadata
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.status
+      target_field: zerofox.status
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.timestamp
+      target_field: zerofox.timestamp
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.rule_name
+      target_field: zerofox.rule_name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.last_modified
+      target_field: zerofox.last_modified
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.protected_locations
+      target_field: zerofox.protected_locations
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.darkweb_term
+      target_field: zerofox.darkweb_term
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.business_network
+      target_field: zerofox.business_network
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.reviewed
+      target_field: zerofox.reviewed
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.escalated
+      target_field: zerofox.escalated
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.network
+      target_field: zerofox.network
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.protected_social_object
+      target_field: zerofox.protected_social_object
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.notes
+      target_field: zerofox.notes
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.reviews
+      target_field: zerofox.reviews
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.content_actions
+      target_field: zerofox.content_actions
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.rule_id
+      target_field: zerofox.rule_id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.rule_id
+      target_field: zerofox.rule_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_account
+      target_field: zerofox.entity_account
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_email_receiver_id
+      target_field: zerofox.entity_email_receiver_id
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.tags
+      target_field: zerofox.tags
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.assignee
+      target_field: zerofox.assignee
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset
+      target_field: zerofox.asset
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.id
+      target_field: zerofox.asset.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.asset.id
+      target_field: zerofox.asset.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.name
+      target_field: zerofox.asset.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.image
+      target_field: zerofox.asset.image
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.labels
+      target_field: zerofox.asset.labels
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.entity_group
+      target_field: zerofox.asset.entity_group
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.entity_group.id
+      target_field: zerofox.asset.entity_group.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.asset.entity_group.id
+      target_field: zerofox.asset.entity_group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset.entity_group.name
+      target_field: zerofox.asset.entity_group.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.logs
+      target_field: zerofox.logs
+      ignore_failure: true
+
+  - remove:
+      field: zerofox.logs
+      ignore_missing: true
+
+  - rename:
+      field: json.entered_by
+      target_field: zerofox.entered_by
+      ignore_failure: true
+
+  - remove:
+      field: zerofox.entered_by
+      ignore_missing: true
+
+  - remove:
+      field: message
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
