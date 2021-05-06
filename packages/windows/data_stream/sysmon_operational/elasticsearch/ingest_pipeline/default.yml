@@ -37,67 +37,119 @@ processors:
       field: event.code
       value: '{{winlog.event_id}}'
 
-  - append:
-      field: event.category
-      value: process
-      if: '["1", "4", "5", "7", "10", "25"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      value: file
-      if: '["2", "11", "15", "17", "18", "23"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      value: network
-      if: '["3", "22"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      value: driver
-      if: '["6"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      value: configuration
-      if: '["12", "13", "14", "16"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      value: registry
-      if: '["12", "13", "14"].contains(ctx.event.code)'
-      
-  - append:
-      field: event.type
-      value: start
-      if: '["1", "3", "6"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: change
-      if: '["2", "4", "7", "12", "13", "14", "16", "24", "25"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: connection
-      if: '["3", "22"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: protocol
-      if: '["3", "22"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: end
-      if: '["5"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: access
-      if: '["10", "15", "18"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: creation
-      if: '["11", "17"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: info
-      if: '["22"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      value: deletion
-      if: '["23"].contains(ctx.event.code)'
+  - script:
+      description: Set event category and type for all event types.
+      lang: painless
+      params:
+        "1":
+          category:
+            - process
+          type:
+            - start
+        "2":
+          category:
+            - file
+          type:
+            - change
+        "3":
+          category:
+            - network
+          type:
+            - start
+            - connection
+            - protocol
+        "4":
+          category:
+            - process
+          type:
+            - change
+        "5":
+          category:
+            - process
+          type:
+            - end
+        "6":
+          category:
+            - driver
+          type:
+            - start
+        "7":
+          category:
+            - process
+          type:
+            - change
+        "10":
+          category:
+            - process
+          type:
+            - access
+        "11":
+          category:
+            - file
+          type:
+            - creation
+        "12":
+          category:
+            - configuration
+            - registry
+          type:
+            - change
+        "13":
+          category:
+            - configuration
+            - registry
+          type:
+            - change
+        "14":
+          category:
+            - configuration
+            - registry
+          type:
+            - change
+        "15":
+          category:
+            - file
+          type:
+            - access
+        "16":
+          category:
+            - configuration
+          type:
+            - change
+        "17":
+          category:
+            - file
+          type:
+            - creation
+        "18":
+          category:
+            - file
+          type:
+            - access
+        "22":
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+            - info
+        "23":
+          category:
+            - file
+          type:
+            - deletion
+        "24":
+          type:
+            - change
+        "25":
+          category:
+            - process
+          type:
+            - change
+      if: ctx?.event?.code != null
+      source: |-
+        def hm = new HashMap(params[ctx.event.code]);
+        hm.forEach((k, v) -> ctx.event[k] = v);
   - convert:
       field: winlog.record_id
       type: string
@@ -171,7 +223,9 @@ processors:
         }
 
         ctx._temp.hashes = hashes;
-        ctx.related = related;
+        if (related.hash.length > 0) {
+          ctx.related = related;
+        }
 
 ## Process fields
 
