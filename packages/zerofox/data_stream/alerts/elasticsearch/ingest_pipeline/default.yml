@@ -44,6 +44,47 @@ processors:
       ignore_failure: true
 
   - rename:
+      field: json.asset_term.id
+      target_field: zerofox.asset_term.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset_term.name
+      target_field: zerofox.asset_term.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.asset_term.deleted
+      target_field: zerofox.asset_term.deleted
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_term
+      target_field: zerofox.entity_term
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_term.id
+      target_field: zerofox.entity_term.id
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_term.name
+      target_field: zerofox.entity_term.name
+      ignore_missing: true
+      ignore_failure: true
+
+  - rename:
+      field: json.entity_term.deleted
+      target_field: zerofox.entity_term.deleted
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
       field: json.entity
       target_field: zerofox.entity
       ignore_missing: true
@@ -470,22 +511,94 @@ processors:
       target_field: zerofox.logs
       ignore_failure: true
 
-  - remove:
-      field: zerofox.logs
-      ignore_missing: true
-
   - rename:
       field: json.entered_by
       target_field: zerofox.entered_by
       ignore_failure: true
 
-  - remove:
-      field: zerofox.entered_by
-      ignore_missing: true
+ ## Cleanup.
 
   - remove:
-      field: message
+      field:
+        - message
+        - zerofox.logs
+        - zerofox.entered_by
+        - zerofox.asset_term
+        - zerofox.entity_term
+        - zerofox.business_network
+        - zerofox.entity_email_receiver_id
       ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      field:
+        - zerofox.business_network
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.business_network == null 
+
+  - remove:
+      field:
+        - zerofox.darkweb_term
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.darkweb_term == null
+
+  - remove:
+      field:
+        - zerofox.entity_account
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.entity_account == null
+
+  - remove:
+      field:
+        - zerofox.perpetrator.parent_post_account_number
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.perpetrator?.parent_post_account_number == null
+
+  - remove:
+      field:
+        - zerofox.perpetrator.parent_post_number
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.perpetrator?.parent_post_number == null
+
+  - remove:
+      field:
+        - zerofox.perpetrator.parent_post_url
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.perpetrator?.parent_post_url == null
+
+  - remove:
+      field:
+        - zerofox.protected_account
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.protected_account == null
+
+  - remove:
+      field:
+        - zerofox.protected_locations
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.protected_locations == null
+
+  - remove:
+      field:
+        - zerofox.rule_group_id
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.rule_group_id == null
+
+  - remove:
+      field:
+        - zerofox.protected_social_object
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.protected_social_object == null
 
 on_failure:
   - set:
