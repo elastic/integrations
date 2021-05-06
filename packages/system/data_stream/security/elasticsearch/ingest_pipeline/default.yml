@@ -3156,6 +3156,20 @@ processors:
       field: ecs.version
       value: 1.9.0
 
+  - set:
+      field: log.level
+      copy_from: winlog.level
+      ignore_empty_value: true
+      ignore_failure: true
+      if: ctx?.winlog?.level != ""
+
+  - date:
+      field: winlog.time_created
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx?.winlog?.time_created != null
+
 on_failure:
   - set:
       field: error.message
