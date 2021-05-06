@@ -938,6 +938,9 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
+| destination.domain | Destination domain. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | dns.answers | An array containing an object for each answer section returned by the server. | object |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
 | dns.answers.data | The data describing the resource. | keyword |
@@ -956,6 +959,9 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | dns.resolved_ip | Array containing all IPs seen in `answers.data`. | ip |
 | dns.response_code | The DNS response code. | keyword |
 | dns.type | The type of DNS event captured, query or answer. | keyword |
+| ecs.version | ECS version | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
@@ -967,6 +973,26 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| file.code_signature.exists | Boolean to capture if a signature is present. | boolean |
+| file.code_signature.status | Additional information about the certificate status. | keyword |
+| file.code_signature.subject_name | Subject name of the code signer | keyword |
+| file.code_signature.trusted | Stores the trust status of the certificate chain. | boolean |
+| file.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. | boolean |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.extension | File extension, excluding the leading dot. | keyword |
+| file.hash.md5 | MD5 hash. | keyword |
+| file.hash.sha1 | SHA1 hash. | keyword |
+| file.hash.sha256 | SHA256 hash. | keyword |
+| file.hash.sha512 | SHA512 hash. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.pe.architecture | CPU architecture target for the file. | keyword |
+| file.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| file.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| file.pe.imphash | A hash of the imports in a PE file. | keyword |
+| file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | group.domain | Name of the directory the group is a member of. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -987,7 +1013,12 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | log.level | Original log level of the log event. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. | text |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. | keyword |
+| network.direction | Direction of the network traffic. | keyword |
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
@@ -1003,21 +1034,8 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
 | process.parent.entity_id | Unique identifier for the process. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
-| process.parent.hash.md5 | MD5 hash. | keyword |
-| process.parent.hash.sha1 | SHA1 hash. | keyword |
-| process.parent.hash.sha256 | SHA256 hash. | keyword |
-| process.parent.hash.sha512 | SHA512 hash. | keyword |
 | process.parent.name | Process name. | keyword |
-| process.parent.pe.architecture | CPU architecture target for the file. | keyword |
-| process.parent.pe.company | Internal company name of the file, provided at compile-time. | keyword |
-| process.parent.pe.description | Internal description of the file, provided at compile-time. | keyword |
-| process.parent.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
-| process.parent.pe.imphash | A hash of the imports in a PE file. | keyword |
-| process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
-| process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.parent.pid | Process id. | long |
-| process.parent.start | The time the process started. | date |
-| process.parent.title | Process title. | keyword |
 | process.pe.architecture | CPU architecture target for the file. | keyword |
 | process.pe.company | Internal company name of the file, provided at compile-time. | keyword |
 | process.pe.description | Internal description of the file, provided at compile-time. | keyword |
@@ -1028,6 +1046,12 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | process.pid | Process id. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.working_directory | The working directory of the process. | keyword |
+| registry.data.strings | Content when writing string types. | keyword |
+| registry.data.type | Standard registry type for encoding contents | keyword |
+| registry.hive | Abbreviated name for the hive. | keyword |
+| registry.key | Hive-relative path of keys. | keyword |
+| registry.path | Full path, including hive, key and value Options\winword.exe\Debugger | keyword |
+| registry.value | Name of the value written. | keyword |
 | related.hash |  | keyword |
 | related.hosts |  | keyword |
 | related.ip |  | ip |
@@ -1059,7 +1083,9 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | winlog.event_data.BootMode |  | keyword |
 | winlog.event_data.BootType |  | keyword |
 | winlog.event_data.BuildVersion |  | keyword |
+| winlog.event_data.ClientInfo |  | keyword |
 | winlog.event_data.Company |  | keyword |
+| winlog.event_data.Configuration |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
 | winlog.event_data.Description |  | keyword |
@@ -1074,6 +1100,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | winlog.event_data.DriverNameLength |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
+| winlog.event_data.EventType |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
 | winlog.event_data.FailureName |  | keyword |
 | winlog.event_data.FailureNameLength |  | keyword |
@@ -1128,6 +1155,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | winlog.event_data.ScriptBlockText |  | keyword |
 | winlog.event_data.ServiceName |  | keyword |
 | winlog.event_data.ServiceVersion |  | keyword |
+| winlog.event_data.Session |  | keyword |
 | winlog.event_data.ShutdownActionType |  | keyword |
 | winlog.event_data.ShutdownEventCode |  | keyword |
 | winlog.event_data.ShutdownReason |  | keyword |
@@ -1153,6 +1181,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | winlog.event_data.TerminalSessionId |  | keyword |
 | winlog.event_data.TokenElevationType |  | keyword |
 | winlog.event_data.TransmittedServices |  | keyword |
+| winlog.event_data.Type |  | keyword |
 | winlog.event_data.UserSid |  | keyword |
 | winlog.event_data.Version |  | keyword |
 | winlog.event_data.Workstation |  | keyword |
