@@ -317,6 +317,9 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  - json: 
+      field: json.metadata
+
   - rename:
       field: json.metadata
       target_field: zerofox.metadata
@@ -599,6 +602,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx?.zerofox?.protected_social_object == null
+
+  - remove:
+      field:
+        - zerofox.metadata
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.metadata == null
 
 on_failure:
   - set:
