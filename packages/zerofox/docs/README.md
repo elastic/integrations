@@ -18,7 +18,9 @@ Contains alert data received from the ZeroFOX Cloud Platform
 | zerofox.id | Unique identifier of this alert. | keyword |
 | zerofox.alert_type | Type of alert. | keyword | 
 | zerofox.offending_content_url | Original source url of the discovered content. | keyword |
-| zerofox.asset_term | asset_term. | keyword |
+| zerofox.asset_term.id | asset_term id. | keyword |
+| zerofox.asset_term.name | asset_term name. | keyword |
+| zerofox.asset_term.deleted | asset_term deleted. | boolean |
 | zerofox.entity.id | Unique identifier of the entity. | integer |
 | zerofox.entity.name | Name of the entity. | keyword |
 | zerofox.entity.image | Default image url for the entity. | keyword |
@@ -31,7 +33,9 @@ Contains alert data received from the ZeroFOX Cloud Platform
 | zerofox.asset.image | Default image url for the asset. | keyword |
 | zerofox.asset.labels.id | Unique identifier of the asset label. | integer |
 | zerofox.asset.labels.name | Name of the asset label. | keyword |
-| zerofox.entity_term | entity_term. | keyword |
+| zerofox.entity_term.id | entity_term id. | keyword |
+| zerofox.entity_term.name | entity_term name. | keyword |
+| zerofox.entity_term.deleted | entity_term deleted. | boolean |
 | zerofox.content_created_at | Date when the source content was created. | date |
 | zerofox.protected_account | protected_account. | keyword |
 | zerofox.severity | Severity of the alert. | keyword |
