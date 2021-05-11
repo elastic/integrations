@@ -1,6 +1,6 @@
 name: fleet_server
 title: Fleet Server
-version: 0.1.6
+version: 0.2.3
 release: experimental
 description: Fleet Server Integration
 type: integration
@@ -8,7 +8,7 @@ format_version: 1.0.0
 license: basic
 categories: ["elastic_stack"]
 conditions:
-  kibana.version: "^7.12.0"
+  kibana.version: "^7.13.0"
 owner:
   github: elastic/ingest-management
 #icons:
@@ -22,23 +22,33 @@ policy_templates:
     description: Fleet Server setup
     inputs:
       - type: fleet-server
+        title: "Fleet Server"
+        description: "Fleet Server Configuration"
+        template_path: "agent.yml.hbs"
         vars:
           - name: host
             type: text
             title: Host
-            multi: true
             required: true
             show_user: true
             default:
               - 0.0.0.0
           - name: port
-            type: text
+            type: integer
             title: Port
             required: true
             show_user: true
             default:
               - 8220
-        title: "Fleet Server"
-        description: "Fleet Server Configuration"
+          - name: max_connections
+            type: integer
+            title: Max connections
+            required: false
+            show_user: true
+          - name: custom
+            title: Custom fleet-server configurations
+            description: >
+              Additional YAML configuration options. Be careful using this as it might break your configuration file.
 
-# TODO: Make this package hidden?
+            type: yaml
+            default: ""
