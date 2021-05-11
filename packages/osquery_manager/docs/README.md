@@ -1,81 +1,81 @@
-# Osquery Manager Integration
+# Osquery Manager integration
 
-With this integration, you can centrally manage [Osquery](https://osquery.io/) deployments to agents in your Fleet and query host data through distributed SQL.
+With this integration, you can centrally manage [Osquery](https://osquery.io/) deployments to Elastic Agents in your Fleet and query host data through distributed SQL.
 
 Add this integration to:
-- Deploy osqueryd, the host monitoring daemon, to agents in a policy
+
+- Deploy osqueryd (the host monitoring daemon) to agents in a policy
 - Schedule queries to capture OS state changes over time
 - Run live queries against one or more agents or policies
-- View a history of the osqueries that have been run and the results of each query
+- View a history of past queries and their results 
 
-Osquery results are stored in Elasticsearch, so that you can use the power of the stack to search, analyze, and visualize osquery data.
 
-Once added, an Osquery page is available in Kibana under the Management section.
+Osquery results are stored in Elasticsearch, so that you can use the power of the stack to search, analyze, and visualize Osquery data.
+
+Once added, a new Management > Osquery page is available in Kibana. 
 
 ### Supported platforms
 
 This integration supports x86_64 bit Windows, Darwin, and Linux platforms.
 
-### Access to Osquery in Kibana
-After you add the Osquery Manager integration to a policy in Kibana Fleet, there are two ways to get to the Osquery app where you can run live queries and schedule query groups. 
+### Access Osquery in Kibana
+After you add the Osquery Manager integration to an agent policy in Kibana Fleet, there are two ways to get to the Osquery app where you can run live queries and schedule query groups:
 
-- From the left hand menu in Kibana under the Management section, select Osquery. 
-
-- From Fleet, select Integrations > Osquery Manager. From there, you can either select a specific policy or go to the Advanced tab, then select the buttons to either _Run live queries_ or _Schedule query groups_. When you click one of these buttons from a specific integration policy page, the agents in that policy are pre-selected for the new query or scheduled query group.
-
-Note that the Osquery page is not available in Kibana until the integration has been added to at least one Agent policy.
+- From Kibana, go to Management > Osquery. 
+- From Kibana, go to Management > Fleet, then select the **Integrations** tab. Search for and select **Osquery Manager**.  From there, you can either select a specific policy or go to the **Advanced** tab, then select the buttons to either **Run live queries** or **Schedule query groups**. When you click one of these buttons from a specific integration policy page, the agents in that policy are pre-selected for the new query or scheduled query group.
 
 ###  Run live queries
-The live query interface allows you to run an Osquery against one or more agents or policies. Results are returned when the query completes, and you can view the results in the Osquery UI or pivot to Discover or Lens to explore them further.
+The **Live queries** page  allows you to run a query against one or more agents or policies. Results are returned after the query completes. From the **Results** tab, you can view the results in a table or pivot to Discover or Lens to explore them further.
 
 To run a live query:
 
-1. Navigate to the _New live query_ page. You can get there in a couple ways:
+1. From Kibana, go to Management > Osquery.
+2. Click the **New live query** button.
+3. Select the agents or groups you want to query. You can select one or more.
+4. Enter a SQL query. The query field provides intellisense suggestions based on the Osquery schema.
+5. Click **Submit**.
+6. Monitor the status and results of your request under the **Check results** section. Depending on the number of agents queried, this request may take some time. The status area is updated as query results are returned.
+7. To view the query results and data, click **Results**.
 
-    - From the left menu in Kibana, select Osquery, then click the _New live query_ button. 
-    - Or, from Fleet, select Integrations > Osquery Manager > Advanced tab, then click the _New live query_ button.
-2. Select the agents or groups you want to query. You can select one or more.
-3. Enter an Osquery SQL query. The query field provides intellisense suggestions based on the Osquery schema.
-4. Click _Submit_.
-5. Use the _Check results_ section to monitor the status of your request. Depending on the number of agents queried, this request may take some time. The status area is updated as query results are returned.
-6. When the results are available, click the _Results_ tab to explore the data.
+> Note: If an agent is offline, the request Status remains in **pending** as we retry the request. The query request expires after 1 day.
 
 
-### Scheduled query groups
-Scheduled query groups are a way to organize and schedule queries that run on an interval (seconds) on the Osquerybeat. The results of the queries are returned directly to Elasticsearch and viewable in Kibana. 
+### Schedule query groups
+Scheduled query groups are a way to organize and schedule queries that run on an interval (seconds) on  Osquerybeat. The results of the queries are returned directly to Elasticsearch and are viewable in Kibana.
 
-Scheduled query groups are added to Osquery Manager integration policies. You can add one or more scheduled query groups to an integration policy. Creating multiple groups can be useful, for example, to organize related queries.
+Scheduled query groups are added to Osquery Manager integration policies. You can add one or more scheduled query groups to an integration policy. Creating multiple groups can be useful for organizing related queries.
 
-When you open the _Scheduled query groups_ tab in the Osquery app, the table lists all Osquery Manager integrations. The _Number of queries_ column shows which integrations currently have scheduled queries. Select the integration name in the table to add or edit scheduled queries for that integration. You also have the option to select the _Add scheduled query group_ button in the top right to create a new group of scheduled queries. Note that when you select this option, a new integration will be added to the Agent policy you select. 
+When you open the **Scheduled query groups** tab in the Osquery app, the table lists all Osquery Manager integrations, and the **Number of queries** column shows which integrations currently have scheduled queries. Select the integration name in the table to add or edit scheduled queries for that integration. To create a new group of scheduled queries, return to the **Scheduled groups** tab and click **Add scheduled query group**. Note that when you select this option, a new integration will be added to the Agent policy you select.
 
-To setup a scheduled query group:
+After selecting a scheduled query group to edit or adding a new scheduled query group:
 
-1. Navigate to the _Add scheduled query group_ page. You can get there in a couple ways:
+- *To add queries individually*: Click **Add query**. In the fly-out, enter an ID for the query, the query, and the query interval (seconds).
+- *To load queries from a .conf query pack*: Use the **Select or drag and drop zone** under the query table. You can upload your own pack or use a community pack. To explore the community packs that Osquery publishes, click Example packs. 
 
-    - From the left menu in Kibana, select Osquery, then select the _Scheduled query groups_ tab at the top. From there, you can select an existing integration where you want to add or edit scheduled queries, or you can create a new scheduled query group by selecting the _Add scheduled query group_ button. 
-    - Or, from Fleet, select Integrations > Osquery Manager, then select an integration policy to which you want to add a scheduled query group. From the details page for that integration, click the _Schedule query group_ button.
+To save your changes, click **Save query**. Once saved, the changes are pushed out to the agents in the policy. 
 
-2. You can schedule queries in two ways:
-
-    - Click the _Add query_ button to add queries individually. When you select the _Add query_ option, a fly out appears on the right side of the screen and you are prompted to enter a name, the query, and the interval in seconds to run the query. 
-    - Add a `.conf` query pack by using the _Select or drag and drop_ zone at the bottom of the page. You can upload your own pack or use a community pack (e.g. click the _Example packs_ link in the app to explore query packs that Osquery publishes). When you upload a pack, Kibana parses the queries and intervals in the `.conf` file provided. 
-
-3. When all of the queries are added or uploaded, click on the _Save query_ button at the bottom of the page. Once saved, the changes will be pushed out to the agents in the policy. 
 
 ### Query statuses
 
 | Status | Description |
 | ----------- | ----------- |
 | Successful | The query completed as expected.|
-| Failed | The query encountered a problem. The following are examples of issues that may cause a failure: loss of connectivity to the agent, an issue with the query.|
+| Failed | The query encountered a problem and might have failed, because there was an issue with the query or the agent was disconnected. |
 | Not yet responded | The query has not been sent to the agent. |
 
 ### Default Osquery configuration
-The Osquery binary is executed with the standard Osqueryd defaults. 
+The Osquery binary is executed with the standard osqueryd defaults. 
 
 ### Osquery example result
 
-Successful result
+This is an example of what a successful osquery result looks like. Things to note about the response:
+
+- Everything prefaced with `osquery.` is part of the query response. Note that these fields are not mapped to ECS.
+- The `host.*` and `agent.*` fields are mapped to ECS.
+- The `action_data.query` has the query that was sent.
+
+*Example:*
+
 ```
 {
   "_index": ".ds-logs-osquery_manager.result-default-2021.04.12-2021.04.12-000001",
@@ -191,7 +191,8 @@ Successful result
 }
 ```
 
-Error example: Undefined action query
+This is an example of an **error response** for an undefined action query.
+
 ```
 {
   "_index": ".ds-.fleet-actions-results-2021.04.10-000001",
