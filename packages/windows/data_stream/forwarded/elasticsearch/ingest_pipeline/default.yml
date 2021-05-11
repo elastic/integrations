@@ -1,9 +1,18 @@
 ---
-description: Pipeline for Windows forewarded Event Logs
+description: Pipeline for Windows forwarded Event Logs
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
+  - pipeline:
+      name: '{{ IngestPipeline "security" }}'
+      if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Security"
+  - pipeline:
+      name: '{{ IngestPipeline "powershell" }}'
+      if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Windows PowerShell"
+  - pipeline:
+      name: '{{ IngestPipeline "powershell_operational" }}'
+      if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Microsoft-Windows-PowerShell/Operational"
+  - pipeline:
+      name: '{{ IngestPipeline "sysmon_operational" }}'
+      if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Microsoft-Windows-Sysmon/Operational"
 on_failure:
   - set:
       field: "error.message"

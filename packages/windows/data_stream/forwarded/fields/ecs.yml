@@ -1,3 +1,41 @@
+- name: message
+  type: text
+  description: 'For log events the message field contains the log message, optimized for viewing in a log viewer.'
+- name: ecs.version
+  type: keyword
+  description: ECS version
+- name: destination
+  title: Destination
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: Destination domain.
+    - name: ip
+      type: ip
+      description: IP address of the destination (IPv4 or IPv6).
+    - name: port
+      type: long
+      format: string
+      description: Port of the destination.
+    - name: user.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: user.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: user.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
 - name: event
   title: Event
   type: group
@@ -61,6 +99,94 @@
       type: keyword
       ignore_above: 1024
       description: 'Original log level of the log event.'
+    - name: file.path
+      type: keyword
+      ignore_above: 1024
+      description: 'Full path to the log file this event came from.'
+- name: file
+  title: File
+  type: group
+  fields:
+    - name: code_signature.exists
+      type: boolean
+      description: Boolean to capture if a signature is present.
+    - name: code_signature.status
+      type: keyword
+      ignore_above: 1024
+      description: 'Additional information about the certificate status.'
+    - name: code_signature.subject_name
+      type: keyword
+      ignore_above: 1024
+      description: Subject name of the code signer
+    - name: code_signature.trusted
+      type: boolean
+      description: 'Stores the trust status of the certificate chain.'
+    - name: code_signature.valid
+      type: boolean
+      description: 'Boolean to capture if the digital signature is verified against the binary content.'
+    - name: hash.md5
+      type: keyword
+      ignore_above: 1024
+      description: MD5 hash.
+    - name: hash.sha1
+      type: keyword
+      ignore_above: 1024
+      description: SHA1 hash.
+    - name: hash.sha256
+      type: keyword
+      ignore_above: 1024
+      description: SHA256 hash.
+    - name: hash.sha512
+      type: keyword
+      ignore_above: 1024
+      description: SHA512 hash.
+    - description: Name of the file including the extension, without the directory.
+      name: name
+      type: keyword
+    - name: directory
+      type: keyword
+      ignore_above: 1024
+      description: Directory where the file is located. It should include the drive letter, when appropriate.
+    - name: extension
+      type: keyword
+      ignore_above: 1024
+      description: 'File extension, excluding the leading dot.'
+    - name: path
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+    - name: pe.architecture
+      type: keyword
+      ignore_above: 1024
+      description: CPU architecture target for the file.
+    - name: pe.company
+      type: keyword
+      ignore_above: 1024
+      description: Internal company name of the file, provided at compile-time.
+    - name: pe.description
+      type: keyword
+      ignore_above: 1024
+      description: Internal description of the file, provided at compile-time.
+    - name: pe.file_version
+      type: keyword
+      ignore_above: 1024
+      description: Internal version of the file, provided at compile-time.
+    - name: pe.imphash
+      type: keyword
+      ignore_above: 1024
+      description: 'A hash of the imports in a PE file.'
+    - name: pe.original_file_name
+      type: keyword
+      ignore_above: 1024
+      description: Internal name of the file, provided at compile-time.
+    - name: pe.product
+      type: keyword
+      ignore_above: 1024
+      description: Internal product name of the file, provided at compile-time.
 - name: process
   title: Process
   type: group
@@ -370,6 +496,23 @@
   title: Source
   type: group
   fields:
+    - name: user.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: user.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: user.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
     - name: domain
       type: keyword
       ignore_above: 1024
@@ -381,6 +524,34 @@
       type: long
       format: string
       description: Port of the source.
+- name: registry
+  title: Registry
+  type: group
+  fields:
+    - name: data.strings
+      type: keyword
+      ignore_above: 1024
+      description: 'Content when writing string types.'
+    - name: data.type
+      type: keyword
+      ignore_above: 1024
+      description: Standard registry type for encoding contents
+    - name: hive
+      type: keyword
+      ignore_above: 1024
+      description: Abbreviated name for the hive.
+    - name: key
+      type: keyword
+      ignore_above: 1024
+      description: Hive-relative path of keys.
+    - name: path
+      type: keyword
+      ignore_above: 1024
+      description: Full path, including hive, key and value Options\winword.exe\Debugger
+    - name: value
+      type: keyword
+      ignore_above: 1024
+      description: Name of the value written.
 - name: related
   title: Related
   type: group
@@ -477,10 +648,26 @@
   title: Network
   type: group
   fields:
+    - name: community_id
+      type: keyword
+      ignore_above: 1024
+      description: 'A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows.'
+    - name: direction
+      type: keyword
+      ignore_above: 1024
+      description: "Direction of the network traffic."
     - name: protocol
       type: keyword
       ignore_above: 1024
       description: 'L7 Network protocol name. ex. http, lumberjack, transport protocol.'
+    - name: transport
+      type: keyword
+      ignore_above: 1024
+      description: 'Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)'
+    - name: type
+      type: keyword
+      ignore_above: 1024
+      description: 'In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc'
 - name: rule
   title: Rule
   type: group
