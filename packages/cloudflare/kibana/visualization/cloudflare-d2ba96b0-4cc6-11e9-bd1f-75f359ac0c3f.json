@@ -1,23 +1,126 @@
 {
-    "_id": "d2ba96b0-4cc6-11e9-bd1f-75f359ac0c3f",
-    "_type": "visualization",
-    "_source": {
-        "title": "Top Bad Bots Referer",
-        "visState": "{\"title\":\"Top Bad Bots Referer\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showMetricsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"sum\",\"schema\":\"metric\",\"params\":{\"field\":\"Bad Bots\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"http.request.referrer\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}",
-        "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+    "attributes": {
         "description": "",
-        "version": 1,
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"lucene\"},\"filter\":[{\"script\":{\"script\":{\"inline\":\"boolean compare(Supplier s, def v) {return s.get() == v;}compare(() -> { int firstCount = 0;\\nint secondCount = 0;\\n\\nif (\\ndoc['cloudflare.log.edge.pathing.src'].value.equalsIgnoreCase(\\\"filterBasedFirewall\\\")\\n&& \\ndoc['cloudflare.log.edge.pathing.status'].value.equalsIgnoreCase(\\\"captchaNew\\\")\\n) \\n{ firstCount = 1  }\\n\\nif (\\ndoc['cloudflare.log.edge.pathing.src'].value.equalsIgnoreCase(\\\"filterBasedFirewall\\\")\\n&&\\ndoc['cloudflare.log.edge.pathing.status'].value.equalsIgnoreCase(\\\"captchaSucc\\\")\\n)\\n{ secondCount = 1 }\\n\\nreturn firstCount - secondCount;\\n }, params.value);\",\"lang\":\"painless\",\"params\":{\"value\":0}}},\"meta\":{\"type\":\"phrase\",\"disabled\":false,\"negate\":true,\"alias\":null,\"value\":0,\"params\":{\"query\":0},\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\"},\"$state\":{\"store\":\"appState\"}}],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "negate": true,
+                            "params": {
+                                "query": 0
+                            },
+                            "type": "phrase",
+                            "value": 0
+                        },
+                        "script": {
+                            "script": {
+                                "inline": "boolean compare(Supplier s, def v) {return s.get() == v;}compare(() -> { int firstCount = 0;\nint secondCount = 0;\n\nif (\ndoc['cloudflare.log.edge.pathing.src'].value.equalsIgnoreCase(\"filterBasedFirewall\")\n&& \ndoc['cloudflare.log.edge.pathing.status'].value.equalsIgnoreCase(\"captchaNew\")\n) \n{ firstCount = 1  }\n\nif (\ndoc['cloudflare.log.edge.pathing.src'].value.equalsIgnoreCase(\"filterBasedFirewall\")\n&&\ndoc['cloudflare.log.edge.pathing.status'].value.equalsIgnoreCase(\"captchaSucc\")\n)\n{ secondCount = 1 }\n\nreturn firstCount - secondCount;\n }, params.value);",
+                                "lang": "painless",
+                                "params": {
+                                    "value": 0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cloudflare.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cloudflare.log"
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "lucene",
+                    "query": ""
+                }
+            }
+        },
+        "title": "Top Bad Bots Referer",
+        "uiStateJSON": {
+            "vis": {
+                "params": {
+                    "sort": {
+                        "columnIndex": null,
+                        "direction": null
+                    }
+                }
+            }
+        },
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {
+                        "field": "Bad Bots"
+                    },
+                    "schema": "metric",
+                    "type": "sum"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "field": "http.request.referrer",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "order": "desc",
+                        "orderBy": "1",
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "size": 10
+                    },
+                    "schema": "bucket",
+                    "type": "terms"
+                }
+            ],
+            "params": {
+                "perPage": 10,
+                "showMetricsAtAllLevels": false,
+                "showPartialRows": false,
+                "showTotal": false,
+                "sort": {
+                    "columnIndex": null,
+                    "direction": null
+                },
+                "totalFunc": "sum"
+            },
+            "title": "Top Bad Bots Referer",
+            "type": "table"
         }
     },
-    "_meta": {
-        "savedObjectVersion": 2
+    "id": "d2ba96b0-4cc6-11e9-bd1f-75f359ac0c3f",
+    "migrationVersion": {
+        "visualization": "7.12.0"
     },
-    "_migrationVersion": {
-        "visualization": "7.0.1"
-    },
-    "_references": [
+    "namespaces": [
+        "default"
+    ],
+    "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
@@ -27,6 +130,12 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         }
-    ]
+    ],
+    "type": "visualization"
 }
