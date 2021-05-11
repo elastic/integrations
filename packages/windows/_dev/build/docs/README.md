@@ -38,10 +38,8 @@ Both datasets are available on Windows only.
 ### Forwarded
 
 The Windows `forwarded` dataset provides events from the Windows
-`ForwardedEvents` event log.
-
-{{fields "forwarded"}}
-
+`ForwardedEvents` event log. The fields will be the same as the 
+channel specific datasets.
 
 ### Powershell
 
