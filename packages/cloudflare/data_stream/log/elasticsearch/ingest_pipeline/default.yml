@@ -1,0 +1,61 @@
+description: Pipeline for parsing cloudflare logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: event.original
+    copy_from: message
+    if: "ctx?._conf?.keep_original_message == true"
+- remove:
+    field: _conf
+    ignore_missing: true
+- json:
+    field: message
+    target_field: cloudflare.log
+- set:
+    field: observer.vendor
+    value: Cloudflare
+- set:
+    field: observer.type
+    value: proxy
+- pipeline:
+    name: '{{ IngestPipeline "http" }}'
+    if: "ctx.cloudflare?.log?.EdgeRequestHost != null"
+# - pipeline:
+#     name: '{< IngestPipeline "firewall" >}'
+#     if: "ctx.cloudflare?.log?.Kind != null && ctx.cloudflare?.log?.Kind == 'firewall'"
+# - pipeline:
+#     name: '{< IngestPipeline "spectrum" >}'
+#     if: "ctx.cloudflare?.log?.Application != null && ctx.cloudflare?.log?.Event != null"
+- remove:
+    field: message
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null);
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
