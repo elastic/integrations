@@ -66,7 +66,9 @@ processors:
   - grok:
       field: message
       patterns: 
-        - 'Received \(%{DATA:cisco.ios.tree}, %{DATA:cisco.ios.multicast.group}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
+        - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
+      pattern_definitions:
+        PIM_SOURCE: (%{IP:cisco.ios.pim.source.ip}|%{DATA})
       if: "ctx?.event?.code == 'INVALID_RP_JOIN'"
   - set:
        field: event.action
@@ -88,6 +90,10 @@ processors:
       field: source.ip
       value: '{{ source.address }}'
       if: ctx?.source?.address != null
+  - convert:
+        field: cisco.ios.pim.source.ip
+        type: ip
+        ignore_missing: true
   - convert:
       field: source.port
       type: long

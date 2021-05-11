@@ -366,11 +366,11 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | cisco.ios.access_list | Name of the IP access list. | keyword |
 | cisco.ios.action | Action taken by the device | keyword |
 | cisco.ios.facility | The facility to which the message refers (for example, SNMP, SYS, and so forth). A facility can be a hardware device, a protocol, or a module of the system software. It denotes the source or the cause of the system message. | keyword |
-| cisco.ios.multicast.group | Multicast group | keyword |
 | cisco.ios.outcome | The result of the event | keyword |
+| cisco.ios.pim.group.ip | Multicast group IP | ip |
+| cisco.ios.pim.source.ip | Multicast source IP | ip |
 | cisco.ios.session.number | Session ID | integer |
 | cisco.ios.session.type | Session type | keyword |
-| cisco.ios.tree | XXX | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
