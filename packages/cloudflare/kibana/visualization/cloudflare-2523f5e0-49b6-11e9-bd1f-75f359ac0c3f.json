@@ -1,23 +1,167 @@
 {
-    "_id": "2523f5e0-49b6-11e9-bd1f-75f359ac0c3f",
-    "_type": "visualization",
-    "_source": {
-        "title": "Slowest URIs by cumulative time to first byte for dynamic requests",
-        "visState": "{\"title\":\"Slowest URIs by cumulative time to first byte for dynamic requests\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMetricsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"6\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"cloudflare.log.origin.response.time\",\"customLabel\":\"average_response_time\"}},{\"id\":\"7\",\"enabled\":true,\"type\":\"sum\",\"schema\":\"metric\",\"params\":{\"field\":\"cloudflare.log.origin.response.time\",\"customLabel\":\"wait_time\"}},{\"id\":\"8\",\"enabled\":true,\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"cloudflare.log.origin.response.time\",\"percents\":[99,99.9]}},{\"id\":\"9\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"url.full\",\"size\":50,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}",
-        "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+    "attributes": {
         "description": "",
-        "version": 1,
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"lucene\"},\"filter\":[{\"meta\":{\"type\":\"phrases\",\"key\":\"cloudflare.log.cache.status\",\"value\":\"bypass, unknown\",\"params\":[\"bypass\",\"unknown\"],\"negate\":false,\"disabled\":false,\"alias\":null,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\"},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"cloudflare.log.cache.status\":\"bypass\"}},{\"match_phrase\":{\"cloudflare.log.cache.status\":\"unknown\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}}],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "cloudflare.log.cache.status",
+                            "negate": false,
+                            "params": [
+                                "bypass",
+                                "unknown"
+                            ],
+                            "type": "phrases",
+                            "value": "bypass, unknown"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "cloudflare.log.cache.status": "bypass"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cloudflare.log.cache.status": "unknown"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cloudflare.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cloudflare.log"
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "lucene",
+                    "query": ""
+                }
+            }
+        },
+        "title": "Slowest URIs by cumulative time to first byte for dynamic requests",
+        "uiStateJSON": {
+            "vis": {
+                "params": {
+                    "sort": {
+                        "columnIndex": null,
+                        "direction": null
+                    }
+                }
+            }
+        },
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {},
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "6",
+                    "params": {
+                        "customLabel": "average_response_time",
+                        "field": "cloudflare.log.origin.response.time"
+                    },
+                    "schema": "metric",
+                    "type": "avg"
+                },
+                {
+                    "enabled": true,
+                    "id": "7",
+                    "params": {
+                        "customLabel": "wait_time",
+                        "field": "cloudflare.log.origin.response.time"
+                    },
+                    "schema": "metric",
+                    "type": "sum"
+                },
+                {
+                    "enabled": true,
+                    "id": "8",
+                    "params": {
+                        "field": "cloudflare.log.origin.response.time",
+                        "percents": [
+                            99,
+                            99.9
+                        ]
+                    },
+                    "schema": "metric",
+                    "type": "percentiles"
+                },
+                {
+                    "enabled": true,
+                    "id": "9",
+                    "params": {
+                        "field": "url.full",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "order": "desc",
+                        "orderBy": "1",
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "size": 50
+                    },
+                    "schema": "bucket",
+                    "type": "terms"
+                }
+            ],
+            "params": {
+                "perPage": 10,
+                "showMetricsAtAllLevels": false,
+                "showPartialRows": false,
+                "showTotal": false,
+                "sort": {
+                    "columnIndex": null,
+                    "direction": null
+                },
+                "totalFunc": "sum"
+            },
+            "title": "Slowest URIs by cumulative time to first byte for dynamic requests",
+            "type": "table"
         }
     },
-    "_meta": {
-        "savedObjectVersion": 2
+    "id": "2523f5e0-49b6-11e9-bd1f-75f359ac0c3f",
+    "migrationVersion": {
+        "visualization": "7.12.0"
     },
-    "_migrationVersion": {
-        "visualization": "7.0.1"
-    },
-    "_references": [
+    "namespaces": [
+        "default"
+    ],
+    "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
@@ -27,6 +171,12 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         }
-    ]
+    ],
+    "type": "visualization"
 }

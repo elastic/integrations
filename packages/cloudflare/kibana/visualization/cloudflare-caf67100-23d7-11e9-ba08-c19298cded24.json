@@ -1,27 +1,119 @@
 {
-    "_id": "caf67100-23d7-11e9-ba08-c19298cded24",
-    "_type": "visualization",
-    "_source": {
-        "title": "Top Traffic Countries Map",
-        "visState": "{\"title\":\"Top Traffic Countries Map\",\"type\":\"tile_map\",\"params\":{\"colorSchema\":\"Yellow to Red\",\"mapType\":\"Scaled Circle Markers\",\"isDesaturated\":true,\"addTooltip\":true,\"heatClusterSize\":1.5,\"legendPosition\":\"bottomright\",\"mapZoom\":2,\"mapCenter\":[0,0],\"wms\":{\"enabled\":false,\"options\":{\"format\":\"image/png\",\"transparent\":true},\"selectedTmsLayer\":{\"id\":\"road_map\",\"url\":\"https://tiles.maps.elastic.co/v2/default/{z}/{x}/{y}.png?elastic_tile_service_tos=agree&my_app_name=kibana&my_app_version=6.5.4&license=4552d43c-e532-47b1-9552-27fed12f7d1a\",\"minZoom\":0,\"maxZoom\":18,\"attribution\":\"<p>&#169; <a href=\\\"http://www.openstreetmap.org/copyright\\\">OpenStreetMap</a> contributors | <a href=\\\"https://www.elastic.co/elastic-maps-service\\\">Elastic Maps Service</a></p>&#10;\",\"subdomains\":[]}}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"geohash_grid\",\"schema\":\"segment\",\"params\":{\"field\":\"source.geo.location\",\"autoPrecision\":true,\"isFilteredByCollar\":true,\"useGeocentroid\":true,\"mapZoom\":2,\"mapCenter\":[0,0],\"precision\":2}}]}",
-        "uiStateJSON": "{}",
+    "attributes": {
         "description": "",
-        "version": 1,
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": "{\"query\":{\"query\":\"*\",\"language\":\"lucene\"},\"filter\":[],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cloudflare.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cloudflare.log"
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "lucene",
+                    "query": "*"
+                }
+            }
+        },
+        "title": "Top Traffic Countries Map",
+        "uiStateJSON": {},
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {},
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "autoPrecision": true,
+                        "field": "source.geo.location",
+                        "isFilteredByCollar": true,
+                        "mapCenter": [
+                            0,
+                            0
+                        ],
+                        "mapZoom": 2,
+                        "precision": 2,
+                        "useGeocentroid": true
+                    },
+                    "schema": "segment",
+                    "type": "geohash_grid"
+                }
+            ],
+            "params": {
+                "addTooltip": true,
+                "colorSchema": "Yellow to Red",
+                "heatClusterSize": 1.5,
+                "isDesaturated": true,
+                "legendPosition": "bottomright",
+                "mapCenter": [
+                    0,
+                    0
+                ],
+                "mapType": "Scaled Circle Markers",
+                "mapZoom": 2,
+                "wms": {
+                    "enabled": false,
+                    "options": {
+                        "format": "image/png",
+                        "transparent": true
+                    },
+                    "selectedTmsLayer": {
+                        "attribution": "<p>&#169; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors | <a href=\"https://www.elastic.co/elastic-maps-service\">Elastic Maps Service</a></p>&#10;",
+                        "id": "road_map",
+                        "maxZoom": 18,
+                        "minZoom": 0,
+                        "subdomains": [],
+                        "url": "https://tiles.maps.elastic.co/v2/default/{z}/{x}/{y}.png?elastic_tile_service_tos=agree&my_app_name=kibana&my_app_version=6.5.4&license=4552d43c-e532-47b1-9552-27fed12f7d1a"
+                    }
+                }
+            },
+            "title": "Top Traffic Countries Map",
+            "type": "tile_map"
         }
     },
-    "_meta": {
-        "savedObjectVersion": 2
+    "id": "caf67100-23d7-11e9-ba08-c19298cded24",
+    "migrationVersion": {
+        "visualization": "7.12.0"
     },
-    "_migrationVersion": {
-        "visualization": "7.0.1"
-    },
-    "_references": [
+    "namespaces": [
+        "default"
+    ],
+    "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         }
-    ]
+    ],
+    "type": "visualization"
 }
