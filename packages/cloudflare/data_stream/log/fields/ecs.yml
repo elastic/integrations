@@ -1,0 +1,364 @@
+- description: Unique number allocated to the autonomous system.
+  name: client.as.number
+  type: long
+- description: Organization name.
+  name: client.as.organization.name
+  type: keyword
+- description: Client domain.
+  name: client.domain
+  type: keyword
+- description: City name.
+  name: client.geo.city_name
+  type: keyword
+- description: Country name.
+  name: client.geo.country_name
+  type: keyword
+- name: client.geo.country_iso_code
+  type: keyword
+  ignore_above: 1024
+  description: Country ISO code.
+- description: Longitude and latitude.
+  name: client.geo.location
+  type: geo_point
+- description: Region name.
+  name: client.geo.region_name
+  type: keyword
+- description: IP address of the client.
+  name: client.ip
+  type: ip
+- name: client.address
+  type: keyword
+  description: Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field.
+- description: Bytes sent from the client to the server.
+  name: client.bytes
+  type: long
+- description: Port of the client.
+  name: client.port
+  type: long
+- description: Bytes sent from the destination to the server.
+  name: destination.bytes
+  type: long
+- description: Unique number allocated to the autonomous system.
+  name: destination.as.number
+  type: long
+- description: Organization name.
+  name: destination.as.organization.name
+  type: keyword
+- description: City name.
+  name: destination.geo.city_name
+  type: keyword
+- description: Name of the continent.
+  name: destination.geo.continent_name
+  type: keyword
+- description: Country ISO code.
+  name: destination.geo.country_iso_code
+  type: keyword
+- description: Country name.
+  name: destination.geo.country_name
+  type: keyword
+- description: Longitude and latitude.
+  name: destination.geo.location
+  type: geo_point
+- description: User-defined description of a location.
+  name: destination.geo.name
+  type: keyword
+- description: Region ISO code.
+  name: destination.geo.region_iso_code
+  type: keyword
+- description: Region name.
+  name: destination.geo.region_name
+  type: keyword
+- description: IP address of the destination.
+  name: destination.ip
+  type: ip
+- name: destination.address
+  type: keyword
+  description: Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field.
+- description: ECS version this event conforms to.
+  name: ecs.version
+  type: keyword
+- description: Error message.
+  name: error.message
+  type: text
+- description: The action captured by the event.
+  name: event.action
+  type: keyword
+- description: Event category. The second categorization field in the hierarchy.
+  name: event.category
+  type: keyword
+- description: Unique ID to describe the event.
+  name: event.id
+  type: keyword
+- description: Timestamp when an event arrived in the central data store.
+  name: event.ingested
+  type: date
+- description: The kind of the event. The highest categorization field in the hierarchy.
+  name: event.kind
+  type: keyword
+- description: Raw text message of entire event.
+  name: event.original
+  type: keyword
+- description: The outcome of the event. The lowest level categorization field in the hierarchy.
+  name: event.outcome
+  type: keyword
+- description: Event type. The third categorization field in the hierarchy.
+  name: event.type
+  type: keyword
+- description: Log message optimized for viewing in a log viewer.
+  name: message
+  type: text
+- description: All of the IPs seen on your event.
+  name: related.ip
+  type: ip
+- description: All the user names seen on your event.
+  name: related.user
+  type: keyword
+- name: source.address
+  type: keyword
+  description: Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field.
+- description: Unique number allocated to the autonomous system.
+  name: source.as.number
+  type: long
+- description: Organization name.
+  name: source.as.organization.name
+  type: keyword
+- name: source.bytes
+  type: long
+  description: Bytes sent from the source to the destination.
+- description: Source domain.
+  name: source.domain
+  type: keyword
+- description: City name.
+  name: source.geo.city_name
+  type: keyword
+- description: Name of the continent.
+  name: source.geo.continent_name
+  type: keyword
+- description: Country ISO code.
+  name: source.geo.country_iso_code
+  type: keyword
+- description: Country name.
+  name: source.geo.country_name
+  type: keyword
+- description: Longitude and latitude.
+  name: source.geo.location
+  type: geo_point
+- description: User-defined description of a location.
+  name: source.geo.name
+  type: keyword
+- description: Region ISO code.
+  name: source.geo.region_iso_code
+  type: keyword
+- description: Region name.
+  name: source.geo.region_name
+  type: keyword
+- description: IP address of the source.
+  name: source.ip
+  type: ip
+- name: source.port
+  type: long
+  description: Port of the source.
+- description: Unique identifiers of the user.
+  name: source.user.id
+  type: keyword
+- description: User’s full name, if available.
+  name: source.user.full_name
+  type: keyword
+- description: Name of the device.
+  name: user_agent.device.name
+  type: keyword
+- description: Name of the user agent.
+  name: user_agent.name
+  type: keyword
+- description: Unparsed user_agent string.
+  name: user_agent.original
+  type: keyword
+- description: Operating system name, without the version.
+  name: user_agent.os.name
+  type: keyword
+- description: Operating system version as a raw string.
+  name: user_agent.os.version
+  type: keyword
+- description: Operating system name, including the version or code name.
+  name: user_agent.os.full
+  type: keyword
+- description: Version of the user agent.
+  name: user_agent.version
+  type: keyword
+- name: tags
+  type: keyword
+  description: List of keywords used to tag each event.
+- name: user
+  title: User
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+    - name: email
+      type: keyword
+      ignore_above: 1024
+      description: User email address.
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+    - name: name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Short name or login of the user.
+    - name: full_name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: User's full name, if available.
+      default_field: false
+    - name: target.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the user is a member of.'
+      default_field: false
+    - name: target.email
+      type: keyword
+      ignore_above: 1024
+      description: User email address.
+      default_field: false
+    - name: target.full_name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: User's full name, if available.
+      default_field: false
+    - name: target.group.domain
+      type: keyword
+      ignore_above: 1024
+      description: 'Name of the directory the group is a member of.'
+      default_field: false
+    - name: target.group.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the group on the system/platform.
+      default_field: false
+    - name: target.group.name
+      type: keyword
+      ignore_above: 1024
+      description: Name of the group.
+      default_field: false
+    - name: target.id
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier of the user.
+      default_field: false
+    - name: target.name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+      description: Short name or login of the user.
+      default_field: false
+- description: Domain of the url.
+  example: www.elastic.co
+  ignore_above: 1024
+  name: url.domain
+  type: keyword
+- description: Unmodified original url as seen in the event source.
+  example: https://www.elastic.co:443/search?q=elasticsearch#top or /search?q=elasticsearch
+  ignore_above: 1024
+  multi_fields:
+    - flat_name: url.original.text
+      name: text
+      norms: false
+      type: text
+  name: url.original
+  type: keyword
+- description: Password of the request.
+  ignore_above: 1024
+  name: url.password
+  type: keyword
+- description: Port of the request, such as 443.
+  example: 443
+  name: url.port
+  type: long
+- description: Username of the request.
+  ignore_above: 1024
+  name: url.username
+  type: keyword
+- description: Path of the request, such as "/search".
+  name: url.path
+  type: keyword
+- description: Query of the request, such as "?search=asdf".
+  name: url.query
+  type: keyword
+- description: Extension of the requested file, such as ".jpg".
+  name: url.extension
+  type: keyword
+- description: Scheme of the request, such as "https".
+  ignore_above: 1024
+  name: url.scheme
+  type: keyword
+- name: tls.cipher
+  type: keyword
+  description: String indicating the cipher used during the current connection.
+- name: tls.version
+  type: keyword
+  description: Numeric part of the version parsed from the original string.
+- name: tls.version_protocol
+  type: keyword
+  description: Normalized lowercase protocol name parsed from original string.
+- name: network.bytes
+  type: long
+  description: Total bytes transferred in both directions.
+- name: network.protocol
+  type: keyword
+  description: L7 Network protocol name.
+- name: network.transport
+  type: keyword
+  description: Protocol Name corresponding to the field `iana_number`.
+- name: http.response.status_code
+  type: long
+  description: HTTP response status code.
+- name: http.request.body.bytes
+  type: long
+  description: Size in bytes of the request body.
+- name: http.response.body.bytes
+  type: long
+  description: Size in bytes of the response body.
+- name: http.request.method
+  type: keyword
+  description: HTTP request method.
+- name: http.request.referrer
+  type: keyword
+  description: Referrer for this HTTP request.
+- name: http.version
+  type: keyword
+  description: HTTP version.
+- name: observer.type
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: 'The type of the observer the data is coming from.'
+- name: observer.vendor
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: Vendor name of the observer.
+- description: Server network address.
+  name: server.address
+  type: keyword
+- description: Bytes sent from the server to the client.
+  name: server.bytes
+  type: long
