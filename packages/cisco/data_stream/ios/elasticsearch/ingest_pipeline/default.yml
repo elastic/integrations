@@ -10,44 +10,78 @@ processors:
       value: '1.9.0'
   - set:
       field: event.category
-      value: network_traffic
+      value: network
+  - set:
+      field: event.provider
+      value: firewall
   - set:
       field: event.type
-      value: firewall
+      value: info
   - dissect:
       field: message
       pattern: "%{_temp_.ts->} %{+_temp_.ts} %{+_temp_.ts->} %{log.source.address} %{event.sequence}: %{_temp_.timestamp}: %{_temp_.message}"
   - remove:
       field: message
       ignore_missing: true
-  - dissect:
+  - grok:
       field: _temp_.message
-      pattern: "%{cisco.ios.facility}-%{event.severity}-%{event.code}: %{message}"
+      patterns:
+        - "%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}: %{GREEDYDATA:message}"
   - convert:
       field: event.severity
       type: long
       ignore_missing: true
+  - convert:
+      field: event.sequence
+      type: long
+      ignore_missing: true
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
       if: "['IPACCESSLOGDP', 'ACCESSLOGDP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "ctx?.event?.code == 'IPACCESSLOGRP'"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
       if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx?.event?.code)"
   - dissect:
       field: message
-      pattern: "list %{cisco.ios.access_list} %{_temp_.event.outcome} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx?.event?.code)"
-
+  - dissect:
+      field: message
+      pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
+      if: "ctx?.event?.code == 'LOGIN_SUCCESS'"
+  - dissect:
+      field: message
+      pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
+      if: "ctx?.event?.code == 'LOGOUT'"
+  - grok:
+      field: message
+      patterns: 
+        - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
+      pattern_definitions:
+        PIM_SOURCE: (%{IP:cisco.ios.pim.source.ip}|%{DATA})
+      if: "ctx?.event?.code == 'INVALID_RP_JOIN'"
+  - set:
+       field: event.action
+       value: "multicast-join"
+       if: ctx?.event?.code == "INVALID_RP_JOIN"
+  - set:
+       field: event.outcome
+       value: "failure"
+       if: ctx?.event?.code == "INVALID_RP_JOIN"
+  - set:
+       field: event.reason
+       value: "Invalid RP"
+       if: ctx?.event?.code == "INVALID_RP_JOIN"      
   - set:
       field: destination.ip
       value: '{{ destination.address }}'
@@ -56,6 +90,10 @@ processors:
       field: source.ip
       value: '{{ source.address }}'
       if: ctx?.source?.address != null
+  - convert:
+        field: cisco.ios.pim.source.ip
+        type: ip
+        ignore_missing: true
   - convert:
       field: source.port
       type: long
@@ -81,13 +119,13 @@ processors:
       value: ipv6
       if: "ctx?.source?.ip != null && ctx?.network?.type == null"
   - set:
-      field: event.outcome
+      field: event.action
       value: deny
-      if: "ctx?._temp_?.event?.outcome == 'denied'"
+      if: "ctx?._temp_?.event?.action == 'denied'"
   - set:
-      field: event.outcome
+      field: event.action
       value: allow
-      if: "ctx?._temp_?.event?.outcome == 'permitted'"
+      if: "ctx?._temp_?.event?.action == 'permitted'"
 
   - set:
       field: "log.level"
@@ -165,7 +203,24 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
   - remove:
       field: _temp_
       ignore_missing: true
