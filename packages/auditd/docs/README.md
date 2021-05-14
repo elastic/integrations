@@ -198,13 +198,14 @@ An example event for `log` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
 | user.audit.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.audit.group.name | Name of the group. | keyword |
 | user.audit.id | One or multiple unique identifiers of the user. | keyword |
 | user.audit.name | Short name or login of the user. | keyword |
 | user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.effective.group.name | Name of the group. | keyword |
-| user.effective.id | One or multiple unique identifiers of the user. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
 | user.filesystem.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.filesystem.group.name | Name of the group. | keyword |

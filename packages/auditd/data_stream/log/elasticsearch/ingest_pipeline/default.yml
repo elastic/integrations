@@ -4,8 +4,15 @@ processors:
 - set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
-- grok:
+- set:
+    field: ecs.version
+    value: 1.9.0
+- rename:
     field: message
+    target_field: event.original
+    ignore_failure: true
+- grok:
+    field: event.original
     pattern_definitions:
       AUDIT_TYPE: "type=%{NOTSPACE:auditd.log.record_type}"
       AUDIT_NODE: "node=%{IPORHOST:auditd.log.node} "
@@ -31,10 +38,6 @@ processors:
     value_split: "="
     target_field: auditd.log
     ignore_missing: true
-- rename:
-    field: message
-    target_field: event.original
-    ignore_failure: true
 - date:
     field: auditd.log.epoch
     target_field: "@timestamp"
@@ -2157,6 +2160,11 @@ processors:
       - auditd.log.sub_kv
       - auditd.log.epoch
       - auditd.log.copy
+    ignore_failure: true
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_failure: true
     ignore_missing: true
 on_failure:
