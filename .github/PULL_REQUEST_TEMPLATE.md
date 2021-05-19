@@ -17,6 +17,7 @@ Explain here the changes you made on the PR.
 - [ ] I have reviewed [tips for building integrations](https://github.com/elastic/integrations/blob/master/docs/tips_for_building_integrations.md) and this pull request is aligned with them.
 - [ ] I have verified that all data streams collect metrics or logs.
 - [ ] I have added an entry to my package's `changelog.yml` file.
+- [ ] If I'm introducing a new feature, I have modified the Kibana version constraint in my package's `manifest.yml` file to point to the latest Elastic stack release (e.g. `^7.13.0`).
 
 ## Author's Checklist
 
