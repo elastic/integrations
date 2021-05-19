@@ -61,10 +61,14 @@ temporary credentials. Please see
 for more details.
 
 ### Supported Formats
-1. Use `access_key_id`, `secret_access_key` and/or `session_token` directly
-2. Use `role_arn`: If `access_key_id` and `secret_access_key` are not given, 
-then the package will check for `role_arn`. `role_arn` is used to specify which
- AWS IAM role to assume for generating temporary credentials.
+1. Use access keys: Access keys include `access_key_id`, `secret_access_key` 
+and/or `session_token`.
+2. Use `role_arn`: `role_arn` is used to specify which AWS IAM role to assume 
+for generating temporary credentials. If `role_arn` is given, the package will 
+check if access keys are given. If not, the package will check for credential 
+profile name. If neither is given, default credential profile will be used. 
+Please make sure credentials are given under either a credential profile or 
+access keys.
 3. Use `credential_profile_name` and/or `shared_credential_file`: 
 If `access_key_id`, `secret_access_key` and `role_arn` are all not given, then
 the package will check for `credential_profile_name`. If you use different 

@@ -33,6 +33,9 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
@@ -68,12 +71,12 @@ processors:
       fail_on_error: false
   - drop_fields:
       fields: json
-  - decode_xml:
+  - decode_xml_wineventlog:
       field: event.original
       target_field: winlog
-      schema: wineventlog
       ignore_missing: true
       ignore_failure: true
+      map_ecs_fields: true
   - timestamp:
       field: winlog.time_created
       layouts:

@@ -1,0 +1,95 @@
+type: logs
+title: CyberArk PAS audit logs
+release: beta
+streams:
+  - input: logfile
+    enabled: false
+    template_path: log.yml.hbs
+    title: CyberArk PAS audit logs
+    description: Collect CyberArk PAS audit logs from files.
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: false
+        required: false
+        show_user: true
+  - input: tcp
+    enabled: true
+    template_path: tcp.yml.hbs
+    title: CyberArk PAS audit logs (TCP)
+    description: Collect CyberArk PAS audit logs using TCP input
+    vars:
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        multi: false
+        required: true
+        show_user: true
+        default: 9301
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - cyberarkpas.audit
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: ssl
+        type: yaml
+        title: TLS configuration
+        multi: false
+        required: false
+        show_user: true
+        description: Options for enabling TLS mode. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+  - input: udp
+    enabled: true
+    template_path: udp.yml.hbs
+    title: CyberArk PAS audit logs (UDP)
+    description: Collect CyberArk PAS audit logs using UDP input
+    vars:
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        multi: false
+        required: true
+        show_user: true
+        default: 9301
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - cyberarkpas.audit
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        multi: false
+        required: true
+        show_user: true
+        default: false
