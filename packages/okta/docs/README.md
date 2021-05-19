@@ -8,6 +8,172 @@ The Okta integration collects events from the Okta API, specifically reading fro
 
 The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
 
+An example event for `system` looks as following:
+
+```$json
+{
+    "@timestamp": "2020-02-14T20:18:57.718Z",
+    "agent": {
+        "ephemeral_id": "4927e29f-62b9-48b5-80d6-3a6472c7ec79",
+        "hostname": "docker-fleet-agent",
+        "id": "031c86fe-6c1b-47c6-8606-a84941974792",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.13.0"
+    },
+    "client": {
+        "geo": {
+            "city_name": "Dublin",
+            "country_name": "United States",
+            "location": {
+                "lat": 37.7201,
+                "lon": -121.919
+            },
+            "region_name": "California"
+        },
+        "ip": "108.255.197.247",
+        "user": {
+            "full_name": "xxxxxx",
+            "id": "00u1abvz4pYqdM8ms4x6"
+        }
+    },
+    "data_stream": {
+        "dataset": "okta.system",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "edf17a53-264b-42ce-b1b0-12c4dd4fc099",
+        "snapshot": true,
+        "version": "7.13.0"
+    },
+    "event": {
+        "action": "user.session.start",
+        "category": [
+            "authentication",
+            "session"
+        ],
+        "dataset": "okta.system",
+        "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
+        "ingested": "2021-05-19T12:23:00.173930400Z",
+        "kind": "event",
+        "outcome": "success",
+        "type": [
+            "start",
+            "user"
+        ]
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/okta-system.json.log"
+        },
+        "offset": 1665
+    },
+    "okta": {
+        "actor": {
+            "alternate_id": "xxxxxx@elastic.co",
+            "display_name": "xxxxxx",
+            "id": "00u1abvz4pYqdM8ms4x6",
+            "type": "User"
+        },
+        "authentication_context": {
+            "authentication_step": 0,
+            "external_session_id": "102bZDNFfWaQSyEZQuDgWt-uQ"
+        },
+        "client": {
+            "device": "Computer",
+            "ip": "108.255.197.247",
+            "user_agent": {
+                "browser": "FIREFOX",
+                "os": "Mac OS X",
+                "raw_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0"
+            },
+            "zone": "null"
+        },
+        "debug_context": {
+            "debug_data": {
+                "device_fingerprint": "541daf91d15bef64a7e08c946fd9a9d0",
+                "request_id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
+                "request_uri": "/api/v1/authn",
+                "threat_suspected": "false",
+                "url": "/api/v1/authn?"
+            }
+        },
+        "display_message": "User login to Okta",
+        "event_type": "user.session.start",
+        "outcome": {
+            "result": "SUCCESS"
+        },
+        "transaction": {
+            "id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
+            "type": "WEB"
+        },
+        "uuid": "3aeede38-4f67-11ea-abd3-1f5d113f2546"
+    },
+    "related": {
+        "ip": [
+            "108.255.197.247"
+        ],
+        "user": [
+            "xxxxxx"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 7018,
+            "organization": {
+                "name": "AT\u0026T Services, Inc."
+            }
+        },
+        "geo": {
+            "city_name": "Dublin",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 37.7201,
+                "lon": -121.919
+            },
+            "region_iso_code": "US-CA",
+            "region_name": "California"
+        },
+        "ip": "108.255.197.247",
+        "user": {
+            "full_name": "xxxxxx",
+            "id": "00u1abvz4pYqdM8ms4x6"
+        }
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "user": {
+        "full_name": "xxxxxx"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Firefox",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0",
+        "os": {
+            "full": "Mac OS X 10.15",
+            "name": "Mac OS X",
+            "version": "10.15"
+        },
+        "version": "72.0."
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -168,4 +334,3 @@ The Okta System Log records system events related to your organization in order 
 | user_agent.os.name | Operating system name, without the version. | keyword |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
-
