@@ -1,6 +1,210 @@
 ---
 description: Pipeline for parsing google_workspace logs
 processors:
+  - set:
+      field: event.ingested
+      value: "{{ _ingest.timestamp }}"
+  - set:
+      field: ecs.version
+      value: '1.9.0'
+  - append:
+      field: event.category
+      value: authentication
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.id.time
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.id.applicationName
+      target_field: event.provider
+      ignore_missing: true
+  - convert:
+      field: json.id.uniqueQualifier
+      target_field: event.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      target_field: source.user.email
+      ignore_missing: true
+  - convert:
+      field: json.actor.profileId
+      target_field: source.user.id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.ipAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: json.kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - convert:
+      field: json.id.customerId
+      target_field: organization.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      target_field: google_workspace.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.actor.key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      target_field: google_workspace.event.type
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.source.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.name = splitmail[0];
+        ctx.source.user.name = splitmail[0];
+        ctx.user.domain = splitmail[1];
+        ctx.source.user.domain = splitmail[1];
+  - set:
+      field: user.id
+      copy_from: source.user.id
+      if: ctx?.source?.user?.id != null
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      if: ctx?.source?.user?.name != null
+      allow_duplicates: false
+  - append: 
+      field: event.category
+      value: session
+      if: '["login_failure", "login_success", "logout"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: start
+      if: '["login_failure", "login_success"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: end
+      if: 'ctx?.event?.action == "logout"'
+  - append: 
+      field: event.type
+      value: user
+      if: '["account_disabled_generic", "account_disabled_spamming_through_relay", "account_disabled_spamming", "account_disabled_hijacked", "account_disabled_password_leak"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: change
+      if: '["account_disabled_generic", "account_disabled_spamming_through_relay", "account_disabled_spamming", "account_disabled_hijacked", "account_disabled_password_leak"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: info
+      if: '["gov_attack_warning", "login_challenge", "login_verification", "suspicious_login", "suspicious_login_less_secure_app", "suspicious_programmatic_login"].contains(ctx?.event?.action)'
+  - set: 
+      field: event.outcome
+      value: failure
+      if: 'ctx?.event?.action == "login_failure"'
+  - set: 
+      field: event.outcome
+      value: success
+      if: 'ctx?.event?.action == "login_success"'
+  - script:
+      lang: painless
+      if: 'ctx?.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
+      source: >
+        if (ctx.google_workspace.login == null) {
+          ctx.google_workspace.login = new HashMap();
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["name"] != null && ctx["json"]["events"]["parameters"][i]["name"].startsWith("login_")) {
+            ctx["json"]["events"]["parameters"][i]["name"] = ctx["json"]["events"]["parameters"][i]["name"].substring(6);
+          }
+          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
+            ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
+            ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
+            ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+          }
+        }
+  - script:
+      lang: painless
+      if: ctx?.google_workspace?.login?.timestamp != null
+      source: >
+        ctx._temp_ = new HashMap();
+        ctx._temp_.start = ctx?.google_workspace?.login.timestamp / 1000;
+  - date:
+      field: _temp_.start
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      if: ctx?._temp_?.start != null
+  - set: 
+      field: event.outcome
+      value: success
+      if: 'ctx?.google_workspace?.login?.challenge_status != null && ctx?.event?.outcome == null && ctx?.google_workspace?.login?.challenge_status == "Challenge Passed"'
+  - set: 
+      field: event.outcome
+      value: failure
+      if: 'ctx?.google_workspace?.login?.challenge_status != null && ctx?.event?.outcome == null'
+  - script:
+      lang: painless
+      if: 'ctx?.google_workspace?.login?.affected_email_address != null && ctx?.google_workspace?.login?.affected_email_address.contains("@")'
+      source: >
+        String[] splitmail = ctx.google_workspace.login.affected_email_address.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        if (ctx.related.user == null) {
+          ctx.related.user = new ArrayList();
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.user.target == null) {
+          ctx.user.target = new HashMap();
+        }
+        ctx.user.target.name = splitmail[0];
+        ctx.user.target.domain = splitmail[1];
+        ctx.related.user.add(splitmail[0]);
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -22,12 +226,10 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - remove:
-      field: json
+      field: 
+        - json
+        - _temp_
       ignore_missing: true
-  - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-
 on_failure:
   - set:
       field: error.message

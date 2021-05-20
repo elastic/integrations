@@ -1,6 +1,267 @@
 ---
 description: Pipeline for parsing google_workspace logs
 processors:
+  - set:
+      field: event.ingested
+      value: "{{ _ingest.timestamp }}"
+  - set:
+      field: ecs.version
+      value: '1.9.0'
+  - append: 
+      field: event.category
+      value: iam
+  - append: 
+      field: event.type
+      value: group
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.id.time
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.id.applicationName
+      target_field: event.provider
+      ignore_missing: true
+  - convert:
+      field: json.id.uniqueQualifier
+      target_field: event.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      target_field: source.user.email
+      ignore_missing: true
+  - convert:
+      field: json.actor.profileId
+      target_field: source.user.id
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.ipAddress
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: json.kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - convert:
+      field: json.id.customerId
+      target_field: organization.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      target_field: google_workspace.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.actor.key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      target_field: google_workspace.event.type
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: source.user.id
+      if: ctx?.source?.user?.id != null
+  - script:
+      lang: painless
+      if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.source.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.name = splitmail[0];
+        ctx.source.user.name = splitmail[0];
+        ctx.user.domain = splitmail[1];
+        ctx.source.user.domain = splitmail[1];
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      if: ctx?.source?.user?.name != null
+      allow_duplicates: false
+  - append: 
+      field: event.type
+      value: change
+      if: '["change_basic_setting", "change_identity_setting", "change_info_setting", "change_new_members_restrictions_setting", "change_post_replies_setting", "change_spam_moderation_setting", "change_topic_setting", "change_acl_permission", "approve_join_request", "join"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.category
+      value: configuration
+      if: '["change_basic_setting", "change_identity_setting", "change_info_setting", "change_new_members_restrictions_setting", "change_post_replies_setting", "change_spam_moderation_setting", "change_topic_setting", "add_info_setting", "remove_info_setting"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: info
+      if: '["accept_invitation", "request_to_join", "ban_user_with_moderation", "revoke_invitation", "invite_user", "reject_join_request", "reinvite_user", "moderate_message", "always_post_from_user"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: user
+      if: '["accept_invitation", "approve_join_request", "join", "request_to_join", "ban_user_with_moderation", "revoke_invitation", "invite_user", "reject_join_request", "reinvite_user", "add_user", "remove_user"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: creation
+      if: '["create_group", "add_info_setting", "add_user"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: deletion
+      if: '["delete_group", "remove_info_setting", "remove_user"].contains(ctx?.event?.action)'
+  - script:
+      lang: painless
+      if: 'ctx?.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
+      source: >
+        if (ctx.google_workspace.groups == null) {
+          ctx.google_workspace.groups = new HashMap();
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
+            ctx.google_workspace.groups[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
+            ctx.google_workspace.groups[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
+            ctx.google_workspace.groups[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+          }
+        }
+  - rename:
+      field: google_workspace.groups.group_email
+      target_field: google_workspace.groups.email
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.new_value_repeated
+      target_field: google_workspace.groups.new_value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.old_value_repeated
+      target_field: google_workspace.groups.old_value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.user_email
+      target_field: google_workspace.groups.member.email
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.basic_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.identity_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.info_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.new_members_restrictions_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.post_replies_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.spam_moderation_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.topic_setting
+      target_field: google_workspace.groups.setting
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.message_id
+      target_field: google_workspace.groups.message.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.message_moderation_action
+      target_field: google_workspace.groups.message.moderation_action
+      ignore_missing: true
+  - rename:
+      field: google_workspace.groups.member_role
+      target_field: google_workspace.groups.member.role
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: 'ctx?.google_workspace?.groups?.status == "failed"'
+  - set:
+      field: event.outcome
+      value: success
+      if: 'ctx?.google_workspace?.groups?.status == "success"'
+  - script:
+      lang: painless
+      if: 'ctx?.google_workspace?.groups?.email != null && ctx?.google_workspace?.groups?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.google_workspace.groups.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.group == null) {
+          ctx.group = new HashMap();
+        }
+        ctx.group.name = splitmail[0];
+        ctx.group.domain = splitmail[1];
+  - script:
+      lang: painless
+      if: 'ctx?.google_workspace?.groups?.member?.email != null && ctx?.google_workspace?.groups?.member?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.google_workspace.groups.member.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.user.target == null) {
+          ctx.user.target = new HashMap();
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        if (ctx.related.user == null) {
+          ctx.related.user = new ArrayList();
+        }
+        ctx.related.user.add(splitmail[0]);
+        ctx.user.target.name = splitmail[0];
+        ctx.user.target.domain = splitmail[1];
+        ctx.user.target.email = ctx.google_workspace.groups.member.email;
+  - set:
+      field: user.target.group.name
+      copy_from: group.name
+      if: ctx?.group?.name != null
+  - set:
+      field: user.target.group.domain
+      copy_from: group.domain
+      if: ctx?.group?.domain != null
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -24,10 +285,6 @@ processors:
   - remove:
       field: json
       ignore_missing: true
-  - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-
 on_failure:
   - set:
       field: error.message
