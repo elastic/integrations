@@ -8,6 +8,178 @@ processors:
   - set: 
       field: ecs.version
       value: '1.9.0'
+  - append:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - append:
+      field: event.category
+      value: web
+  - json:
+      field: message
+      target_field: o365audit
+  - date:
+      field: o365audit.CreationTime
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss
+  - rename:
+      field: o365audit.Id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: o365audit.ClientIPAddress
+      target_field: client.address
+      ignore_missing: true
+  - rename:
+      field: o365audit.ClientIP
+      target_field: client.address
+      ignore_missing: true
+      if: ctx.client?.address == null
+  - rename:
+      field: o365audit.ActorIpAddress
+      target_field: client.address
+      ignore_missing: true
+      if: ctx.client?.address == null
+  - convert:
+      field: o365audit.UserId
+      target_field: user.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: o365audit.Workload
+      target_field: event.provider
+      ignore_missing: true
+  - rename:
+      field: o365audit.Operation
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: o365audit.OrganizationId
+      target_field: organization.id
+      ignore_missing: true
+  - rename:
+      field: o365audit.UserAgent
+      target_field: user_agent.original
+      ignore_missing: true
+  - script:
+      if: ctx.o365audit?.RecordType != null
+      lang: painless
+      params:
+        "1": "ExchangeAdmin"
+        "2": "ExchangeItem"
+        "3": "ExchangeItemGroup"
+        "4": "SharePoint"
+        "6": "SharePointFileOperation"
+        "8": "AzureActiveDirectory"
+        "9": "AzureActiveDirectoryAccountLogon"
+        "10": "DataCenterSecurityCmdlet"
+        "11": "ComplianceDLPSharePoint"
+        "12": "Sway"
+        "13": "ComplianceDLPExchange"
+        "14": "SharePointSharingOperation"
+        "15": "AzureActiveDirectoryStsLogon"
+        "18": "SecurityComplianceCenterEOPCmdlet"
+        "20": "PowerBIAudit"
+        "21": "CRM"
+        "22": "Yammer"
+        "23": "SkypeForBusinessCmdlets"
+        "24": "Discovery"
+        "25": "MicrosoftTeams"
+        "28": "ThreatIntelligence"
+        "30": "MicrosoftFlow"
+        "31": "AeD"
+        "32": "MicrosoftStream"
+        "33": "ComplianceDLPSharePointClassification"
+        "35": "Project"
+        "36": "SharePointListOperation"
+        "38": "DataGovernance"
+        "40": "SecurityComplianceAlerts"
+        "41": "ThreatIntelligenceUrl"
+        "42": "SecurityComplianceInsights"
+        "44": "WorkplaceAnalytics"
+        "45": "PowerAppsApp"
+        "47": "ThreatIntelligenceAtpContent"
+        "49": "TeamsHealthcare"
+        "52": "DataInsightsRestApiAudit"
+        "54": "SharePointListItemOperation"
+        "55": "SharePointContentTypeOperation"
+        "56": "SharePointFieldOperation"
+        "64": "AirInvestigation"
+        "66": "MicrosoftForms"
+      source: >
+        def schemaId = ctx.o365audit.RecordType.toString();
+        def schema = params[schemaId];
+        if (schema != null) {
+          if (ctx.event == null) {
+            ctx.event = new HashMap();
+          }
+          ctx.event.code = schema;
+        }
+  - set: 
+      field: event.outcome
+      value: success
+      if: '["succeeded", "partiallysucceeded", "true"].contains(ctx.o365?.ResultStatus)'
+  - set: 
+      field: event.outcome
+      value: failure
+      if: '["failed", "false"].contains(ctx.o365?.ResultStatus)'
+  - script:
+      lang: painless
+      if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof List'
+      source: >
+        def newparams = new HashMap(); 
+        def oldparams = ctx.o365audit.Parameters;
+        for (int i = 0; i < oldparams.length; ++i) {
+          if (oldparams[i]["Value"] != null) {
+            newparams[oldparams[i]["Name"]] = oldparams[i]["Value"];
+          }
+        }
+        ctx.o365audit.Parameters = newparams;
+  - script:
+      lang: painless
+      if: 'ctx.o365audit?.ExtendedProperties != null && ctx.o365audit?.ExtendedProperties instanceof List'
+      source: >
+        def newparams = new HashMap(); 
+        def oldparams = ctx.o365audit.ExtendedProperties;
+        for (int i = 0; i < oldparams.length; ++i) {
+          if (oldparams[i]["Value"] != null) {
+            newparams[oldparams[i]["Name"]] = oldparams[i]["Value"];
+          }
+        }
+        ctx.o365audit.ExtendedProperties = newparams;
+  - script:
+      lang: painless
+      if: 'ctx.o365audit?.ModifiedProperties != null && ctx.o365audit?.ModifiedProperties instanceof List'
+      source: >
+        def newparams = new HashMap(); 
+        def oldparams = ctx.o365audit.ModifiedProperties;
+        for (int i = 0; i < oldparams.length; ++i) {
+          if (oldparams[i]["OldValue"] != null && oldparams[i]["NewValue"] != null) {
+            def validname = oldparams[i]["Name"].replace(" ","_").replace(".","_");
+            newparams[validname] = new HashMap();
+            newparams[validname]["NewValue"] = oldparams[i]["NewValue"];
+            newparams[validname]["OldValue"] = oldparams[i]["OldValue"];
+          }
+        }
+        ctx.o365audit.ModifiedProperties = newparams;
+  - script:
+      lang: painless
+      if: 'ctx.o365audit?.AlertLinks != null && ctx.o365audit?.AlertLinks instanceof List'
+      source: >
+        def list = ctx.o365audit.AlertLinks;
+        def links = new Array;
+        for (int i = 0; i < list.length; ++i) {
+          if (list[i].containsKey("AlertLinkHref") && list[i]["AlertLinkHref"] != null && list[i]["AlertLinkHref"] instaceof String) {
+            links.add(list[i]["AlertLinkHref"]);
+          }
+        }
+        if (links.length == 0) {
+          ctx.o365audit.remove("AlertLinks");
+          return;
+        }
+        ctx.o365audit.AlertLinks = links;
   - user_agent:
       field: user_agent.original
       ignore_missing: true

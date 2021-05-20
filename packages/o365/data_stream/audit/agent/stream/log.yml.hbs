@@ -3,7 +3,6 @@ paths:
  - {{this}}
 {{/each}}
 exclude_files: [".gz$"]
-json.add_error_key: true
 tags:
 {{#each tags as |tag i|}}
 - {{tag}}
@@ -12,19 +11,6 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-  - rename:
-     fields:
-      - from: json.error
-        to: error
-     ignore_missing: true
-  - rename:
-     fields:
-      - from: json
-        to: o365audit
-  - timestamp:
-      field: o365audit.CreationTime
-      layouts:
-        - 2006-01-02T15:04:05
   - script:
       when.has_fields: ['o365audit']
       lang: javascript
@@ -37,65 +23,8 @@ processors:
           {{/each}}
       id: o365audit_script
       source: |
-        // Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
-        // or more contributor license agreements. Licensed under the Elastic License;
-        // you may not use this file except in compliance with the Elastic License.
 
-        var processor = require("processor");
-        var console   = require("console");
 
-        // PipelineBuilder to aid debugging of pipelines during development.
-        function PipelineBuilder(pipelineName, debug) {
-            this.pipeline = new processor.Chain();
-            this.add = function (processor) {
-                this.pipeline = this.pipeline.Add(processor);
-            };
-            this.Add = function (name, processor) {
-                this.add(processor);
-                if (debug) {
-                    this.add(makeLogEvent("after " + pipelineName + "/" + name));
-                }
-            };
-            this.Build = function () {
-                if (debug) {
-                    this.add(makeLogEvent(pipelineName + "processing done"));
-                }
-                return this.pipeline.Build();
-            };
-            if (debug) {
-                this.add(makeLogEvent(pipelineName + ": begin processing event"));
-            }
-        }
-
-        function appendFields(options) {
-            return function(evt) {
-                options.fields.forEach(function (key) {
-                    var value = evt.Get(key);
-                    if (value != null) evt.AppendTo(options.to, value);
-                });
-            }
-        }
-
-        // logEvent(msg)
-        //
-        // Processor that logs the current value of evt to console.debug.
-        function makeLogEvent(msg) {
-            return function (evt) {
-                console.debug(msg + " :" +  JSON.stringify(evt, null, 4));
-            };
-        }
-
-        // makeConditional({condition:expr, result1:processor|expr, [...]})
-        //
-        // Processor that selects which processor to run depending on the result of
-        // evaluating a _condition_. Result can be boolean (if-else equivalent) or any
-        // other value (switch equivalent). Unspecified values are a no-op.
-        function makeConditional(options) {
-            return function (evt) {
-                var branch = options[options.condition(evt)] || function(evt){};
-                return (typeof branch === "function" ? branch : branch.Run)(evt);
-            };
-        }
 
         // makeMapper({from:field, to:field, default:value mappings:{orig: new, [...]}})
         //
@@ -776,126 +705,6 @@ processors:
         }
 
         function AuditProcessor(tenant_names, debug) {
-            var builder = new PipelineBuilder("o365.audit", debug);
-
-            var unsetIPValues = {"null": true, "<null>": true, "": true};
-            builder.Add("cleanupNulls", function(event) {
-                [
-                    "o365audit.ClientIP",
-                    "o365audit.ClientIPAddress",
-                    "o365audit.ActorIpAddress",
-                    "o365audit.OriginatingServer"
-                ].forEach(function(field) {
-                    if (event.Get(field) in unsetIPValues) event.Delete(field);
-                });
-            });
-            builder.Add("convertCommonAuditRecordFields", new processor.Convert({
-                fields: [
-                    {from: "o365audit.Id", to: "event.id"},
-                    {from: "o365audit.ClientIP", to: "client.address"},
-                    {from: "o365audit.ClientIPAddress", to: "client.address"},
-                    {from: "o365audit.ActorIpAddress", to: "client.address"},
-                    {from: "o365audit.UserId", to: "user.id", type: "string"},
-                    {from: "o365audit.Workload", to: "event.provider"},
-                    {from: "o365audit.Operation", to: "event.action"},
-                    {from: "o365audit.OrganizationId", to: "organization.id"},
-                    // Extra common fields:
-                    {from: "o365audit.UserAgent", to: "user_agent.original"},
-                ],
-                ignore_missing: true,
-                fail_on_error: false
-            }));
-            builder.Add("mapEventType", makeMapper({
-                from: 'o365audit.RecordType',
-                to: 'event.code',
-                // Keep original RecordType for unknown mappings.
-                default: function(recordType) {
-                    return recordType;
-                },
-                mappings: {
-                    1: 'ExchangeAdmin', // Events from the Exchange admin audit log.
-                    2: 'ExchangeItem', // Events from an Exchange mailbox audit log for actions that are performed on a single item, such as creating or receiving an email message.
-                    3: 'ExchangeItemGroup', // Events from an Exchange mailbox audit log for actions that can be performed on multiple items, such as moving or deleted one or more email messages.
-                    4: 'SharePoint', // SharePoint events.
-                    6: 'SharePointFileOperation', // SharePoint file operation events.
-                    8: 'AzureActiveDirectory', // Azure Active Directory events.
-                    9: 'AzureActiveDirectoryAccountLogon', // Azure Active Directory OrgId logon events (deprecating).
-                    10: 'DataCenterSecurityCmdlet', // Data Center security cmdlet events.
-                    11: 'ComplianceDLPSharePoint', // Data loss protection (DLP) events in SharePoint and OneDrive for Business.
-                    12: 'Sway', // Events from the Sway service and clients.
-                    13: 'ComplianceDLPExchange', // Data loss protection (DLP) events in Exchange, when configured via Unified DLP Policy. DLP events based on Exchange Transport Rules are not supported.
-                    14: 'SharePointSharingOperation', // SharePoint sharing events.
-                    15: 'AzureActiveDirectoryStsLogon', // Secure Token Service (STS) logon events in Azure Active Directory.
-                    18: 'SecurityComplianceCenterEOPCmdlet', // Admin actions from the Security & Compliance Center.
-                    20: 'PowerBIAudit', // Power BI events.
-                    21: 'CRM', // Microsoft CRM events.
-                    22: 'Yammer', // Yammer events.
-                    23: 'SkypeForBusinessCmdlets', // Skype for Business events.
-                    24: 'Discovery', // Events for eDiscovery activities performed by running content searches and managing eDiscovery cases in the Security & Compliance Center.
-                    25: 'MicrosoftTeams', // Events from Microsoft Teams.
-                    28: 'ThreatIntelligence', // Phishing and malware events from Exchange Online Protection and Office 365 Advanced Threat Protection.
-                    30: 'MicrosoftFlow', // Microsoft Power Automate (formerly called Microsoft Flow) events.
-                    31: 'AeD', // Advanced eDiscovery events.
-                    32: 'MicrosoftStream', // Microsoft Stream events.
-                    33: 'ComplianceDLPSharePointClassification', // Events related to DLP classification in SharePoint.
-                    35: 'Project', // Microsoft Project events.
-                    36: 'SharePointListOperation', // SharePoint List events.
-                    38: 'DataGovernance', // Events related to retention policies and retention labels in the Security & Compliance Center
-                    40: 'SecurityComplianceAlerts', // Security and compliance alert signals.
-                    41: 'ThreatIntelligenceUrl', // Safe links time-of-block and block override events from Office 365 Advanced Threat Protection.
-                    42: 'SecurityComplianceInsights', // Events related to insights and reports in the Office 365 security and compliance center.
-                    44: 'WorkplaceAnalytics', // Workplace Analytics events.
-                    45: 'PowerAppsApp', // Power Apps events.
-                    47: 'ThreatIntelligenceAtpContent', // Phishing and malware events for files in SharePoint, OneDrive for Business, and Microsoft Teams from Office 365 Advanced Threat Protection.
-                    49: 'TeamsHealthcare', // Events related to the Patients application in Microsoft Teams for Healthcare.
-                    52: 'DataInsightsRestApiAudit', // Data Insights REST API events.
-                    54: 'SharePointListItemOperation', // SharePoint list item events.
-                    55: 'SharePointContentTypeOperation', // SharePoint list content type events.
-                    56: 'SharePointFieldOperation', // SharePoint list field events.
-                    64: 'AirInvestigation', // Automated incident response (AIR) events.
-                    66: 'MicrosoftForms', // Microsoft Forms events.
-                },
-            }));
-
-            builder.Add("setEventFields", new processor.AddFields({
-                target: 'event',
-                fields: {
-                    kind: 'event',
-                    type: 'info',
-                    // Not so sure about web as a default category:
-                    category: 'web',
-                },
-            }));
-
-            builder.Add("mapEventOutcome", makeMapper({
-                from: 'o365audit.ResultStatus',
-                to: 'event.outcome',
-                lowercase: true,
-                default: 'success',
-                mappings: {
-                    'success': 'success', // This one is necessary to map Success
-                    'succeeded': 'success',
-                    'partiallysucceeded': 'success',
-                    'true': 'success',
-                    'failed': 'failure',
-                    'false': 'failure',
-                },
-            }));
-
-            builder.Add("makeParametersDict", makeObjFromNameValuePairArray({
-                from: 'o365audit.Parameters',
-                to: 'o365audit.Parameters',
-            }));
-
-            builder.Add("makeExtendedPropertiesDict", makeObjFromNameValuePairArray({
-                from: 'o365audit.ExtendedProperties',
-                to: 'o365audit.ExtendedProperties',
-            }));
-
-            builder.Add("makeModifiedPropertyDict", makeDictFromModifiedPropertyArray({
-                from: 'o365audit.ModifiedProperties',
-                to: 'o365audit.ModifiedProperties',
-            }));
 
             // Turn AlertLinks into an array of keyword instead of array of objects.
             builder.Add("alertLinks", function (evt) {
@@ -1075,7 +884,3 @@ processors:
         function process(evt) {
             return audit.process(evt);
         }
-  - add_fields:
-      target: ''
-      fields:
-        ecs.version: 1.9.0
