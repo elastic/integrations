@@ -33,18 +33,18 @@ processors:
       ignore_missing: true
   - rename:
       field: o365audit.ClientIPAddress
-      target_field: client.address
+      target_field: client._temp
       ignore_missing: true
   - rename:
       field: o365audit.ClientIP
-      target_field: client.address
+      target_field: client._temp
       ignore_missing: true
-      if: ctx.client?.address == null
+      if: ctx.client?._temp == null
   - rename:
       field: o365audit.ActorIpAddress
-      target_field: client.address
+      target_field: client._temp
       ignore_missing: true
-      if: ctx.client?.address == null
+      if: ctx.client?._temp == null
   - convert:
       field: o365audit.UserId
       target_field: user.id
@@ -207,7 +207,7 @@ processors:
       if: ctx.event?.code == "ExchangeAdmin"
   - rename:
       field: o365audit.OriginatingServer
-      target_field: server.address
+      target_field: server._temp
       ignore_missing: true
       if: ctx.event?.code == "ExchangeAdmin"
   # ExchangeItem Schema
@@ -759,6 +759,158 @@ processors:
             ctx.related.user.add(members[i]["UPN"]);
           }
         }
+  - gsub:
+      field: client._temp
+      pattern: "::ffff:"
+      replacement: ""
+      ignore_missing: true
+  - grok:
+      field: client._temp
+      patterns: 
+        - '%{IPANDPORTBRACKETS}'
+        - '%{IPANDPORT}'
+        - '%{IP:client._address}'
+        - '(%{WORD:client.domain}|%{HOSTNAME:client.domain})'
+        - '%{HOSTNAMEANDPORTBRACKETS}'
+        - '%{HOSTNAMEANDPORT}'
+        - '%{HOSTNAMEANDIP}'
+      pattern_definitions:
+        IPANDPORTBRACKETS: "^\\[%{IP:client._address}\\]:%{POSINT:client._port}"
+        IPANDPORT: "^%{IP:client._address}:%{POSINT:client._port}"
+        HOSTNAMEANDPORTBRACKETS: "^\\[(%{WORD:client.domain}|%{HOSTNAME:client.domain})\\]:%{POSINT:client._port}"
+        HOSTNAMEANDPORT: "^(%{WORD:client.domain}|%{HOSTNAME:client.domain}):%{POSINT:client._port}"
+        HOSTNAMEANDIP: "^(%{WORD:client.domain}|%{HOSTNAME:client.domain}) \\(%{IP:client._address}\\)"
+      if: 'ctx.client?._temp != null && !ctx.client?._temp.isEmpty()'
+  - grok:
+      field: server._temp
+      patterns: 
+        - '%{HOSTNAMEANDIP}'
+      pattern_definitions:
+        HOSTNAMEANDIP: "^(%{WORD:server.domain}|%{HOSTNAME:server.domain}) \\(%{IP:server._address}\\)"
+      if: 'ctx.server?._temp != null && !ctx.server?._temp.isEmpty()'
+  - convert:
+      field: client._address
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: client._port
+      target_field: client.port
+      type: long
+      ignore_missing: true
+  - rename:
+      field: client._address
+      target_field: client.address
+      ignore_failure: true
+  - convert:
+      field: server._address
+      target_field: server.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: server._address
+      target_field: server.address
+      ignore_failure: true
+  - remove: 
+      field:
+        - client._port
+        - client._temp
+        - server._temp
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - set:
+      field: source.port
+      copy_from: client.port
+      if: ctx.client?.port != null
+  - set:
+      field: destination.ip
+      copy_from: server.ip
+      if: ctx.server?.ip != null
+  - script:
+      lang: painless
+      if: 'ctx.user?.id != null && ctx.user?.id.contains("@")'
+      source: >
+        String[] splitmail = ctx.user.id.splitOnToken("@");
+        if (splitmail.length != 2) {
+          return;
+        }
+        ctx.user.email = ctx.user.id;
+        ctx.user.domain = splitmail[1];
+        ctx.user.name = splitmail[0];
+  - script:
+      lang: painless
+      if: 'ctx.user?.target?.id != null && ctx.user?.target?.id.contains("@")'
+      source: >
+        String[] splitmail = ctx.user.target.id.splitOnToken("@");
+        if (splitmail.length != 2) {
+          return;
+        }
+        ctx.user.target.email = ctx.user.target.id;
+        ctx.user.target.domain = splitmail[1];
+        ctx.user.target.name = splitmail[0];
+  - script:
+      lang: painless
+      if: 'ctx.source?.user?.id != null && ctx.source?.user?.id.contains("@")'
+      source: >
+        String[] splitmail = ctx.source.user.id.splitOnToken("@");
+        if (splitmail.length != 2) {
+          return;
+        }
+        ctx.source.user.email = ctx.source.user.id;
+        ctx.source.user.domain = splitmail[1];
+        ctx.source.user.name = splitmail[0];
+  - script:
+      lang: painless
+      if: 'ctx.destination?.user?.id != null && ctx.destination?.user?.id.contains("@")'
+      source: >
+        String[] splitmail = ctx.destination.user.id.splitOnToken("@");
+        if (splitmail.length != 2) {
+          return;
+        }
+        ctx.destination.user.email = ctx.destination.user.id;
+        ctx.destination.user.domain = splitmail[1];
+        ctx.destination.user.name = splitmail[0];
+  - set:
+      field: network.type
+      value: ipv6
+      if: 'ctx.client?.ip.contains(":")'
+  - set:
+      field: network.type
+      value: ipv4
+      if: ctx.network?.type == null
+  - append:
+      field: related.ip
+      value: "{{client.ip}}"
+      allow_duplicates: false
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      value: "{{server.ip}}"
+      allow_duplicates: false
+      if: ctx.server?.ip != null
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: "{{user.target.name}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+  - append:
+      field: related.user
+      value: "{{file.owner}}"
+      allow_duplicates: false
+      if: ctx.file?.owner != null
+  - rename:
+      field: o365audit.ExtendedProperties.UserAgent
+      target_field: user_agent.original
+      ignore_missing: true
+      if: ctx.o365audit?.ExtendedProperties?.UserAgent != null
   - user_agent:
       field: user_agent.original
       ignore_missing: true
