@@ -1,6 +1,234 @@
 ---
 description: Pipeline for parsing google_workspace logs
 processors:
+  - set:
+      field: event.ingested
+      value: "{{ _ingest.timestamp }}"
+  - set:
+      field: ecs.version
+      value: '1.9.0'
+  - append:
+      field: event.category
+      value: file
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.id.time
+      timezone: UTC
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy/MM/dd HH:mm:ss z
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: json.events.name
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.id.applicationName
+      target_field: event.provider
+      ignore_missing: true
+  - convert:
+      field: json.id.uniqueQualifier
+      target_field: event.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.actor.email
+      target_field: source.user.email
+      ignore_missing: true
+  - convert:
+      field: json.actor.profileId
+      target_field: source.user.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: source.user.id
+      if: ctx?.source?.user?.id != null
+  - rename:
+      field: json.ipAddress
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: json.kind
+      target_field: google_workspace.kind
+      ignore_missing: true
+  - rename:
+      field: json.id.customerId
+      target_field: organization.id
+      ignore_missing: true
+  - rename:
+      field: json.actor.callerType
+      target_field: google_workspace.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.actor.key
+      target_field: google_workspace.actor.key
+      ignore_missing: true
+  - rename:
+      field: json.ownerDomain
+      target_field: google_workspace.organization.domain
+      ignore_missing: true
+  - rename:
+      field: json.events.type
+      target_field: google_workspace.event.type
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.source.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.user.name = splitmail[0];
+        ctx.source.user.name = splitmail[0];
+        ctx.user.domain = splitmail[1];
+        ctx.source.user.domain = splitmail[1];
+  - append: 
+      field: event.type
+      value: change
+      if: '["add_to_folder", "edit", "add_lock", "move", "remove_from_folder", "rename", "remove_lock", "sheets_import_range", "approval_canceled", "approval_comment_added", "approval_requested", "approval_reviewer_responded", "change_acl_editors", "change_document_access_scope", "change_document_visibility", "shared_drive_membership_change", "shared_drive_settings_change", "sheets_import_range_access_change", "change_user_access"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.category
+      value: iam
+      if: '["approval_canceled", "approval_comment_added", "approval_requested", "approval_reviewer_responded", "change_acl_editors", "change_document_access_scope", "change_document_visibility", "shared_drive_membership_change", "shared_drive_settings_change", "sheets_import_range_access_change", "change_user_access"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.category
+      value: configuration
+      if: '["approval_canceled", "approval_comment_added", "approval_requested", "approval_reviewer_responded", "change_acl_editors", "change_document_access_scope", "change_document_visibility", "shared_drive_membership_change", "shared_drive_settings_change", "sheets_import_range_access_change", "change_user_access"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: creation
+      if: '["create", "untrash", "upload"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: deletion
+      if: '["delete", "trash"].contains(ctx?.event?.action)'
+  - append: 
+      field: event.type
+      value: info
+      if: '["download", "preview", "print", "view"].contains(ctx?.event?.action)'
+  - script:
+      lang: painless
+      if: 'ctx?.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
+      source: >
+        if (ctx.google_workspace.drive == null) {
+          ctx.google_workspace.drive = new HashMap();
+        }
+        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
+          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
+            ctx.google_workspace.drive[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
+            ctx.google_workspace.drive[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+          }
+          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
+            ctx.google_workspace.drive[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
+          }
+        }
+  - rename:
+      field: google_workspace.drive.doc_id
+      target_field: google_workspace.drive.file.id
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.doc_title
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.doc_type
+      target_field: google_workspace.drive.file.type
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.owner
+      target_field: google_workspace.drive.file.owner.email
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.owner_is_shared_drive
+      target_field: google_workspace.drive.file.owner.is_shared_drive
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.new_settings_state
+      target_field: google_workspace.drive.new_value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.old_settings_state
+      target_field: google_workspace.drive.old_value
+      ignore_missing: true
+  - rename:
+      field: google_workspace.drive.target_user
+      target_field: google_workspace.drive.target
+      ignore_missing: true
+  - set:
+      field: file.type
+      value: dir
+      if: '["folder", "shared"].contains(ctx?.google_workspace?.drive?.file?.type)'
+  - set:
+      field: file.type
+      value: file
+      if: ctx?.file?.type == null
+  - script:
+      lang: painless
+      if: ctx?.file?.name != null
+      source: >
+        def path = ctx.file.name;
+        def extIdx = path.lastIndexOf(".");
+        if (extIdx > -1) {
+            ctx.file.extension = path.substring(extIdx+1);
+        }
+  - script:
+      lang: painless
+      if: 'ctx?.google_workspace?.drive?.target != null && ctx?.google_workspace?.drive?.target.contains("@")'
+      source: >
+        String[] splitmail = ctx.google_workspace.drive.target.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        if (ctx.related.user == null) {
+          ctx.related.user = new ArrayList();
+        }
+        ctx.related.user.add(splitmail[0]);
+  - script:
+      lang: painless
+      if: 'ctx?.google_workspace?.drive?.file?.owner?.email != null && ctx?.google_workspace?.drive?.file?.owner?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.google_workspace.drive.file.owner.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.file == null) {
+          ctx.file = new HashMap();
+        }
+        ctx.file.owner = splitmail[0];
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{file.owner}}"
+      if: ctx?.file?.owner != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      if: ctx?.source?.user?.name != null
+      allow_duplicates: false
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -22,11 +250,9 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - remove:
-      field: json
+      field: 
+        - json
       ignore_missing: true
-  - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
 
 on_failure:
   - set:
