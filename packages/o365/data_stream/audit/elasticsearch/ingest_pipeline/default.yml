@@ -20,6 +20,9 @@ processors:
   - json:
       field: message
       target_field: o365audit
+  - remove:
+      field: message  
+  # General Schema
   - date:
       field: o365audit.CreationTime
       formats:
@@ -169,9 +172,9 @@ processors:
       if: 'ctx.o365audit?.AlertLinks != null && ctx.o365audit?.AlertLinks instanceof List'
       source: >
         def list = ctx.o365audit.AlertLinks;
-        def links = new Array;
+        def links = new ArrayList();
         for (int i = 0; i < list.length; ++i) {
-          if (list[i].containsKey("AlertLinkHref") && list[i]["AlertLinkHref"] != null && list[i]["AlertLinkHref"] instaceof String) {
+          if (list[i].containsKey("AlertLinkHref") && list[i]["AlertLinkHref"] != null && list[i]["AlertLinkHref"] instanceof String) {
             links.add(list[i]["AlertLinkHref"]);
           }
         }
@@ -180,6 +183,582 @@ processors:
           return;
         }
         ctx.o365audit.AlertLinks = links;
+  - set: 
+      field: event.severity
+      value: 1
+      if: ctx.o365audit?.Severity == "informational"
+  - set: 
+      field: event.severity
+      value: 2
+      if: ctx.o365audit?.Severity == "low"
+  - set: 
+      field: event.severity
+      value: 3
+      if: ctx.o365audit?.Severity == "medium"
+  - set: 
+      field: event.severity
+      value: 4
+      if: ctx.o365audit?.Severity == "high"
+  # ExchangeAdmin Schema
+  - rename:
+      field: o365audit.OrganizationName
+      target_field: organization.name
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeAdmin"
+  - rename:
+      field: o365audit.OriginatingServer
+      target_field: server.address
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeAdmin"
+  # ExchangeItem Schema
+  - rename:
+      field: o365audit.MailboxOwnerUPN
+      target_field: user.email
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeItem"
+  - convert:
+      field: o365audit.LogonUserSid
+      target_field: user.id
+      type: string
+      ignore_missing: true
+      if: 'ctx.o365audit?.LogonUserSid != null && ctx.event?.code == "ExchangeItem"'
+  - rename:
+      field: o365audit.LogonUserDisplayName
+      target_field: user.full_name
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeItem"
+  - rename:
+      field: o365audit.OrganizationName
+      target_field: organization.name
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeItem"
+  - rename:
+      field: o365audit.OriginatingServer
+      target_field: server.address
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeItem"
+  - rename:
+      field: o365audit.ClientIPAddress
+      target_field: client.address
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeItem"
+  - rename:
+      field: o365audit.ClientProcessName
+      target_field: process.name
+      ignore_missing: true
+      if: ctx.event?.code == "ExchangeItem"
+  # AzureActiveDirectory Schema
+  - set: 
+      field: user.target.id
+      copy_from: o365audit.ObjectId
+      if: ctx.event?.code == "AzureActiveDirectory"
+  ## AzureActiveDirectory Schema new user
+  - set: 
+      field: event.action
+      value: added-user-account
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "Add user."'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "added-user-account"'
+  - append: 
+      field: event.type
+      value: user
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "added-user-account"'
+  - append: 
+      field: event.type
+      value: creation
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "added-user-account"'
+  ## AzureActiveDirectory Schema update user
+  - set: 
+      field: event.action
+      value: modified-user-account
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "Update user."'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "modified-user-account"'
+  - append: 
+      field: event.type
+      value: user
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "modified-user-account"'
+  - append: 
+      field: event.type
+      value: change
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "modified-user-account"'
+  ## AzureActiveDirectory Schema delete user
+  - set: 
+      field: event.action
+      value: deleted-user-account
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "Delete user."'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "deleted-user-account"'
+  - append: 
+      field: event.type
+      value: user
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "deleted-user-account"'
+  - append: 
+      field: event.type
+      value: deletion
+      if: 'ctx.event?.code == "AzureActiveDirectory" && ctx.event?.action == "deleted-user-account"'
+  # AzureActiveDirectoryStsLogon Schema
+  - append: 
+      field: event.category
+      value: authentication
+      if: ctx.event?.code == "AzureActiveDirectoryStsLogon"
+  - append: 
+      field: event.type
+      value: start
+      if: ctx.event?.code == "AzureActiveDirectoryStsLogon"
+  - append: 
+      field: event.type
+      value: "authentication_{{event.outcome}}"
+      if: 'ctx.event?.code == "AzureActiveDirectoryStsLogon" && ctx.event?.outcome != null && ctx.event?.outcome != "unknown"'
+  # SharePointFileOperation Schema
+  - rename:
+      field: o365audit.ObjectId
+      target_field: url.original
+      ignore_missing: true
+      if: ctx.event?.code == "SharePointFileOperation"
+  - rename:
+      field: o365audit.SourceRelativeUrl
+      target_field: file.directory
+      ignore_missing: true
+      if: ctx.event?.code == "SharePointFileOperation"
+  - rename:
+      field: o365audit.SourceFileName
+      target_field: file.name
+      ignore_missing: true
+      if: ctx.event?.code == "SharePointFileOperation"
+  - rename:
+      field: o365audit.SourceFileExtension
+      target_field: file.extension
+      ignore_missing: true
+      if: ctx.event?.code == "SharePointFileOperation"
+  - append: 
+      field: event.category
+      value: file
+      if: '["FileAccessed", "FileDeleted", "FileDownloaded", "FileModified", "FileMoved", "FileRenamed", "FileRestored", "FileUploaded", "FolderCopied", "FolderCreated", "FolderDeleted", "FolderModified", "FolderMoved", "FolderRenamed", "FolderRestored"].contains(ctx.event?.action)'
+  - append: 
+      field: event.category
+      value: configuration
+      if: ctx.event?.action == "ComplianceSettingChanged"
+  - append: 
+      field: event.type
+      value: access
+      if: '["FileAccessed", "FileDownloaded"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: change
+      if: '["ComplianceSettingChanged", "FileModified", "FileMoved", "FileRenamed", "FileRestored", "FolderModified", "FolderMoved", "FolderRenamed", "FolderRestored"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: deletion
+      if: '["FileDeleted", "FolderDeleted"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: creation
+      if: '["FileUploaded", "FolderCopied", "FolderCreated"].contains(ctx.event?.action)'
+  # SecurityComplianceAlerts Schema
+  - rename:
+      field: o365audit.Comments
+      target_field: message
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - rename:
+      field: o365audit.Name
+      target_field: rule.name
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - rename:
+      field: o365audit.PolicyId
+      target_field: rule.id
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - rename:
+      field: o365audit.Category
+      target_field: rule.category
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - rename:
+      field: o365audit.EntityType
+      target_field: rule.ruleset
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - rename:
+      field: o365audit.AlertEntityId
+      target_field: rule.description
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - rename:
+      field: o365audit.AlertLinks
+      target_field: rule.reference
+      ignore_missing: true
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - append: 
+      field: event.kind
+      value: alert
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - append: 
+      field: event.category
+      value: authentication
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.o365audit?.Category == "AccessGovernance"'
+  - append: 
+      field: event.category
+      value: file
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && ["DataGovernance", "DataLossPrevention"].contains(ctx.o365audit?.Category)'
+  - append: 
+      field: event.category
+      value: malware
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.o365audit?.Category == "ThreatManagement"'
+  - append: 
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && !["DataGovernance", "DataLossPrevention", "ThreatManagement", "AccessGovernance"].contains(ctx.o365audit?.Category)'
+  - append: 
+      field: event.category
+      value: web
+      allow_duplicates: false
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - append: 
+      field: event.type
+      value: info
+      if: ctx.event?.code == "SecurityComplianceAlerts"
+  - convert:
+      field: o365audit.AlertEntityId
+      target_field: user.id
+      type: string
+      ignore_missing: true
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "User"'
+  - rename:
+      field: o365audit.AlertEntityId
+      target_field: user.email
+      ignore_missing: true
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset != null && ["Recipients", "Sender"].contains(ctx.rule.ruleset)'
+  - rename:
+      field: o365audit.AlertEntityId
+      target_field: threat.technique.id
+      ignore_missing: true
+      if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "MalwareFamily"'
+  # DLP Schema
+  - append: 
+      field: event.kind
+      value: alert
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - append: 
+      field: event.category
+      value: file
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - append: 
+      field: event.type
+      value: access
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.SharePointMetaData.From
+      target_field: user.id
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.SharePointMetaData.FileName
+      target_field: file.name
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.SharePointMetaData.FilePathUrl
+      target_field: url.original
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.SharePointMetaData.UniqueId
+      target_field: file.inode
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.SharePointMetaData.UniqueID
+      target_field: file.inode
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.SharePointMetaData.FileOwner
+      target_field: file.owner
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.ExchangeMetaData.From
+      target_field: source.user.email
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.ExchangeMetaData.Subject
+      target_field: message
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.PolicyId
+      target_field: rule.id
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - rename:
+      field: o365audit.PolicyName
+      target_field: rule.name
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+  - date:
+      field: o365audit.SharePointMetaData.LastModifiedTime
+      target_field: file.mtime
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code) && ctx.o365audit?.SharePointMetaData?.LastModifiedTime != null'
+  - script:
+      lang: painless
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
+      source: >
+        def fields = new def[] {"To", "CC", "BCC"};
+        if (ctx.destination == null) {
+          ctx.destination = new HashMap();
+        }
+        if (ctx.destination.user == null) {
+          ctx.destination.user = new HashMap();
+        }
+        ctx.destination.user.email = new ArrayList();
+        for (int i = 0; i < fields.length; ++i) {
+          if (ctx.o365audit.ExchangeMetaData.containsKey(fields[i])) {
+            def emails = ctx.o365audit.ExchangeMetaData[fields[i]];
+            if (emails instanceof List){
+              for (int e = 0; e < emails.length; ++e) {
+                ctx.destination.user.email.add(emails[e]);
+              }
+            }
+            if (emails instanceof String){
+              ctx.destination.user.email.add(emails);
+            }
+          }
+        }
+  - rename:
+      field: o365audit.ExceptionInfo
+      target_field: o365audit.ExceptionInfo.Reason
+      ignore_missing: true
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code) && ctx.o365audit?.ExceptionInfo != null && ctx.o365audit?.ExceptionInfo instanceof String'
+  - script:
+      lang: painless
+      if: '["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code) && ctx.o365audit?.PolicyDetails != null'
+      source: >
+        int severityToCode(def x) { 
+          if (x == "informational") {
+            return 1;
+          }
+          if (x == "low") {
+            return 2;
+          }
+          if (x == "medium") {
+            return 3;
+          }
+          if (x == "high") {
+            return 4;
+          }
+          return 0;
+        }
+        if (ctx.rule == null) {
+          ctx.rule = new HashMap();
+        }
+        if (ctx.rule.id == null) {
+          ctx.rule.id = new ArrayList();
+        }
+        if (ctx.rule.name == null) {
+          ctx.rule.name = new ArrayList();
+        }
+        def maxSeverity = 0;
+        def allowed = true;
+        def policies = ctx.o365audit.PolicyDetails;
+        for (int i = 0; i < policies.length; ++i) {
+          def rules = policies[i].Rules;
+          if (rules = null) {
+            continue;
+          }
+          for (int j = 0; j < rules.length; ++j) {
+            def rule = rules[j];
+            def id = rule.RuleId;
+            def name = rule.RuleName;
+            def sev = severityToCode(rule.Severity);
+            if (id != null && name != null) {
+              ctx.rule.id.add(id);
+              ctx.rule.name.add(name);
+            }
+            if (sev > maxSeverity) {
+              maxSeverity = sev;
+            }
+            if (allowed) {
+              if (rule.Actions != null && rule.Actions.indexOf("BlockAccess") > -1) {
+                allowed = false;
+              }
+            }
+          }
+        }
+        if (maxSeverity > -1) {
+          ctx.event.severity = maxSeverity;
+        }
+        if (allowed) {
+          ctx.event.outcome = "success";
+          return;
+        }
+        if (ctx.event?.action == "DlpRuleUndo") {
+          ctx.event.outcome = "success";
+        }
+        if (ctx.event?.action == "DlpInfo") {
+          ctx.event.outcome = "failure";
+        }
+  # Yammer Schema
+  - rename:
+      field: o365audit.ActorUserId
+      target_field: user.email
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - convert:
+      field: o365audit.ActorYammerUserId
+      target_field: user.id
+      type: string
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - rename:
+      field: o365audit.FileId
+      target_field: file.inode
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - rename:
+      field: o365audit.FileName
+      target_field: file.name
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - rename:
+      field: o365audit.GroupName
+      target_field: group.name
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - rename:
+      field: o365audit.TargetUserId
+      target_field: destination.user.email
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - rename:
+      field: o365audit.TargetYammerUserId
+      target_field: destination.user.id
+      ignore_missing: true
+      if: ctx.event?.code == "Yammer"
+  - append: 
+      field: event.category
+      value: configuration
+      if: 'ctx.event?.code == "Yammer" && ["NetworkConfigurationUpdated", "NetworkSecurityConfigurationUpdated", "SoftDeleteSettingsUpdated", "ProcessProfileFields", "SupervisorAdminToggled"].contains(ctx.event?.action)'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "Yammer" && ["NetworkSecurityConfigurationUpdated", "GroupCreation", "GroupDeletion", "NetworkUserSuspended", "UserSuspension"].contains(ctx.event?.action)'
+  - append: 
+      field: event.category
+      value: file
+      if: 'ctx.event?.code == "Yammer" && ["FileCreated", "FileDownloaded", "FileShared", "FileUpdateDescription", "FileUpdateName", "FileVisited"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: change
+      if: 'ctx.event?.code == "Yammer" && ["NetworkConfigurationUpdated", "NetworkSecurityConfigurationUpdated", "SoftDeleteSettingsUpdated", "ProcessProfileFields", "SupervisorAdminToggled"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: admin
+      if: 'ctx.event?.code == "Yammer" && ctx.event?.action == "NetworkSecurityConfigurationUpdated"'
+  - append: 
+      field: event.type
+      value: creation
+      if: 'ctx.event?.code == "Yammer" && ["FileCreated", "GroupCreation", "FileUpdateName"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: deletion
+      if: 'ctx.event?.code == "Yammer" && ctx.event?.action == "GroupDeletion"'
+  - append: 
+      field: event.type
+      value: access
+      if: 'ctx.event?.code == "Yammer" && ["FileDownloaded", "FileShared", "FileUpdateDescription", "FileVisited"].contains(ctx.event?.action)'
+  - append: 
+      field: event.type
+      value: group
+      if: 'ctx.event?.code == "Yammer" && ["GroupCreation", "GroupDeletion"].contains(ctx.event?.action)'
+  # Teams Schema
+  - set: 
+      field: event.action
+      value: added-group-account-to
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "TeamCreated"'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-group-account-to"'
+  - append: 
+      field: event.type
+      value: group
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-group-account-to"'
+  - append: 
+      field: event.type
+      value: creation
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-group-account-to"'
+  - rename:
+      field: o365audit.TeamName
+      target_field: group.name
+      ignore_missing: true
+      if: ctx.event?.code == "MicrosoftTeams"
+  - set: 
+      field: event.action
+      value: added-users-to-group
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "MemberAdded"'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-users-to-group"'
+  - append: 
+      field: event.type
+      value: group
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-users-to-group"'
+  - append: 
+      field: event.type
+      value: change
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "added-users-to-group"'
+  - set: 
+      field: event.action
+      value: deleted-user-account
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "Delete user."'
+  - append: 
+      field: event.category
+      value: iam
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
+  - append: 
+      field: event.type
+      value: user
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
+  - append: 
+      field: event.type
+      value: deletion
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
+  - rename:
+      field: o365audit.ObjectId
+      target_field: user.target.id
+      ignore_missing: true
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
+  - script:
+      lang: painless
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.o365audit?.Members != null'
+      source: >
+        def members = ctx.o365audit?.Members;
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        if (ctx.related.user == null) {
+          ctx.related.user = new ArrayList();
+        }
+        for (int i = 0; i < members.length; ++i) {
+          if (members[i].containsKey("UPN") && !members[i]["UPN"].isEmpty()) {
+            ctx.related.user.add(members[i]["UPN"]);
+          }
+        }
   - user_agent:
       field: user_agent.original
       ignore_missing: true
