@@ -34,6 +34,13 @@ processors:
       field: json.events.name
       target_field: event.action
       ignore_missing: true
+  - fingerprint:
+      description: Hashes the ID object and uses it as the document id to avoid duplicate events.
+      fields:
+        - json.id
+      target_field: _id
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.id.applicationName
       target_field: event.provider
