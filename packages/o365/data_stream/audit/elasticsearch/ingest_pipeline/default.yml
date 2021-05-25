@@ -8,7 +8,7 @@ processors:
   - set: 
       field: ecs.version
       value: '1.9.0'
-  - append:
+  - set:
       field: event.kind
       value: event
   - append:
@@ -123,11 +123,15 @@ processors:
   - set: 
       field: event.outcome
       value: success
-      if: 'ctx.o365?.ResultStatus != null && ["succeeded", "partiallysucceeded", "true"].contains(ctx.o365?.ResultStatus)'
+      if: 'ctx.o365audit?.ResultStatus != null && ["succeeded", "success", "partiallysucceeded", "true"].contains(ctx.o365audit?.ResultStatus.toLowerCase())'
   - set: 
       field: event.outcome
       value: failure
-      if: 'ctx.o365?.ResultStatus != null && ["failed", "false"].contains(ctx.o365?.ResultStatus)'
+      if: 'ctx.o365audit?.ResultStatus != null && ["failed", "false"].contains(ctx.o365audit?.ResultStatus.toLowerCase())'
+  - set: 
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
   - script:
       lang: painless
       if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof List'
@@ -165,6 +169,10 @@ processors:
             newparams[validname]["NewValue"] = oldparams[i]["NewValue"];
             newparams[validname]["OldValue"] = oldparams[i]["OldValue"];
           }
+        }
+        if (newparams == null) {
+          ctx.o365audit.remove("ModifiedProperties");
+          return;
         }
         ctx.o365audit.ModifiedProperties = newparams;
   - script:
@@ -234,12 +242,12 @@ processors:
       if: ctx.event?.code == "ExchangeItem"
   - rename:
       field: o365audit.OriginatingServer
-      target_field: server.address
+      target_field: server._temp
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
   - rename:
       field: o365audit.ClientIPAddress
-      target_field: client.address
+      target_field: client._temp
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
   - rename:
@@ -397,7 +405,7 @@ processors:
       target_field: rule.reference
       ignore_missing: true
       if: ctx.event?.code == "SecurityComplianceAlerts"
-  - append: 
+  - set: 
       field: event.kind
       value: alert
       if: ctx.event?.code == "SecurityComplianceAlerts"
@@ -426,6 +434,7 @@ processors:
   - append: 
       field: event.type
       value: info
+      allow_duplicates: false
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - convert:
       field: o365audit.AlertEntityId
@@ -444,7 +453,7 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "MalwareFamily"'
   # DLP Schema
-  - append: 
+  - set: 
       field: event.kind
       value: alert
       if: 'ctx.event?.code != null && ["ComplianceDLPSharePoint", "ComplianceDLPExchange"].contains(ctx.event?.code)'
@@ -594,7 +603,7 @@ processors:
               maxSeverity = sev;
             }
             if (allowed) {
-              if (rule.Actions != null && rule.Actions.indexOf("BlockAccess") > -1) {
+              if (rule.Actions != null && rule.Actions.contains("BlockAccess")) {
                 allowed = false;
               }
             }
@@ -609,10 +618,17 @@ processors:
         }
         if (ctx.event?.action == "DlpRuleUndo") {
           ctx.event.outcome = "success";
+          return;
         }
         if (ctx.event?.action == "DlpInfo") {
           ctx.event.outcome = "failure";
+          return;
         }
+        if (ctx.o365audit?.ExceptionInfo != null && !ctx.o365audit?.ExceptionInfo.isEmpty()) {
+          ctx.event.outcome = "success";
+          return;
+        }
+        ctx.event.outcome = "failure";
   # Yammer Schema
   - rename:
       field: o365audit.ActorUserId
@@ -772,23 +788,28 @@ processors:
         - '%{IPANDPORTBRACKETS}'
         - '%{IPANDPORT}'
         - '%{IP:client._address}'
-        - '(%{WORD:client.domain}|%{HOSTNAME:client.domain})'
+        - '(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain})'
         - '%{HOSTNAMEANDPORTBRACKETS}'
         - '%{HOSTNAMEANDPORT}'
         - '%{HOSTNAMEANDIP}'
       pattern_definitions:
         IPANDPORTBRACKETS: "^\\[%{IP:client._address}\\]:%{POSINT:client._port}"
         IPANDPORT: "^%{IP:client._address}:%{POSINT:client._port}"
-        HOSTNAMEANDPORTBRACKETS: "^\\[(%{WORD:client.domain}|%{HOSTNAME:client.domain})\\]:%{POSINT:client._port}"
-        HOSTNAMEANDPORT: "^(%{WORD:client.domain}|%{HOSTNAME:client.domain}):%{POSINT:client._port}"
-        HOSTNAMEANDIP: "^(%{WORD:client.domain}|%{HOSTNAME:client.domain}) \\(%{IP:client._address}\\)"
+        HOSTNAMEANDPORTBRACKETS: "^\\[(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain})\\]:%{POSINT:client._port}"
+        HOSTNAMEANDPORT: "^(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain}):%{POSINT:client._port}"
+        HOSTNAMEANDIP: "^(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain}) \\(%{IP:client._address}\\)"
       if: 'ctx.client?._temp != null && !ctx.client?._temp.isEmpty()'
+  - gsub:
+      field: server._temp
+      pattern: "\n"
+      replacement: ""
+      ignore_missing: true
   - grok:
       field: server._temp
       patterns: 
         - '%{HOSTNAMEANDIP}'
       pattern_definitions:
-        HOSTNAMEANDIP: "^(%{WORD:server.domain}|%{HOSTNAME:server.domain}) \\(%{IP:server._address}\\)"
+        HOSTNAMEANDIP: "^(%{NOTSPACE:server.domain}|%{HOSTNAME:server.domain}) \\(%{IP:server._address}\\)"
       if: 'ctx.server?._temp != null && !ctx.server?._temp.isEmpty()'
   - convert:
       field: client._address
@@ -882,7 +903,7 @@ processors:
   - set:
       field: network.type
       value: ipv4
-      if: ctx.network?.type == null
+      if: 'ctx.network?.type == null && ctx.client?.ip != null'
   - append:
       field: related.ip
       value: "{{client.ip}}"
@@ -921,20 +942,14 @@ processors:
       field: host.id
       copy_from: organization.id
       if: ctx.organization?.id != null
-  - set:
-      field: organization.name
-      copy_from: organization.id
-      if: ctx.organization?.id != null
   - script:
       lang: painless
       if: 'ctx.organization?.id != null && ctx._conf?.tenants != null'
       source: >
         def conftenants = ctx._conf.tenants;
         def orgid = ctx.organization.id;
-        if (conftenants.containsKey("orgid")) {
-          if (ctx.host == null) {
-            ctx.host = new HashMap();
-          }
+        if (conftenants.containsKey(orgid)) {
+          ctx.organization.name = conftenants[orgid];
           ctx.host.name = conftenants[orgid];
         }
   - set:
@@ -944,7 +959,7 @@ processors:
   - set:
       field: host.name
       copy_from: user.domain
-      if: ctx.organization?.name != null && ctx.host?.name == null
+      if: ctx.user?.domain != null && ctx.host?.name == null
   # Convert field values
   - convert:
       field: o365audit.AzureActiveDirectoryEventType
@@ -1008,8 +1023,9 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - remove:
-      field: 
+      field:
         - _conf
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
