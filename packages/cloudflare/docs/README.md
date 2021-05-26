@@ -28,7 +28,7 @@ The Cloudflare Log records network events related to your organization in order 
 | cloudflare.log.cache.bytes | Number of bytes returned by the cache | long |
 | cloudflare.log.cache.status | Status of cache | keyword |
 | cloudflare.log.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
-| cloudflare.log.cache.tiered_fill | Tiered Cache was used to serve this request | bool |
+| cloudflare.log.cache.tiered_fill | Tiered Cache was used to serve this request | boolean |
 | cloudflare.log.client.ip_class | Class of client, ex. badHost | searchEngine | allowlist | greylist.... | keyword |
 | cloudflare.log.device_type | Client device type | keyword |
 | cloudflare.log.edge.colo.code | IATA airport code of data center that received the request | keyword |
@@ -61,7 +61,7 @@ The Cloudflare Log records network events related to your organization in order 
 | cloudflare.log.waf.rule.message | Rule message associated with the triggered rule | keyword |
 | cloudflare.log.worker.cpu_time | Amount of time in microseconds spent executing a worker, if any | long |
 | cloudflare.log.worker.status | Status returned from worker daemon | keyword |
-| cloudflare.log.worker.subrequest | Whether or not this request was a worker subrequest | bool |
+| cloudflare.log.worker.subrequest | Whether or not this request was a worker subrequest | boolean |
 | cloudflare.log.worker.subrequest_count | Number of subrequests issued by a worker when handling this request | long |
 | cloudflare.log.zone.id | Internal zone ID | long |
 | cloudflare.log.zone.name | The human-readable name of the zone (e.g. 'cloudflare.com'). | keyword |
