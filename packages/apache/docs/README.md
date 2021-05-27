@@ -168,6 +168,7 @@ Error logs collects the Apache error logs.
 | source.geo.region_name | Region name. | keyword |
 | source.ip | Source IP address. | ip |
 | source.port | Source port. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
