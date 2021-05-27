@@ -15,8 +15,8 @@ pipeline {
     K8S_VERSION = "v1.20.2"
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
-    ELASTIC_STACK_VERSION_PREV = "7.12.0-SNAPSHOT"
-    ELASTIC_STACK_VERSION_PREV_PREV = "7.11.2-SNAPSHOT"
+    ELASTIC_STACK_VERSION_PREV = "7.13.1-SNAPSHOT"
+    ELASTIC_STACK_VERSION_PREV_PREV = "7.13.0-SNAPSHOT"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -99,9 +99,8 @@ pipeline {
                       }
 
                       // Check compatibility with previous stacks
-                      // FIXME: Enable compatibility check once we have a new stack released (compatibility with Fleet Server)
-                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
-                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
+                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
+                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
