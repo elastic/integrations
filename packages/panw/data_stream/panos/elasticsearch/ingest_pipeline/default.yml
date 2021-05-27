@@ -89,8 +89,12 @@ processors:
         - panw.panos.scp.chunks_sent
         - panw.panos.scp.chunks_received
 
-  - csv:
+  - rename:
       field: message
+      target_field: event.original
+
+  - csv:
+      field: event.original
       if: ctx?.panw?.panos?.type == 'THREAT'
       target_fields:
         - source.ip
@@ -801,7 +805,6 @@ processors:
   - remove:
       field:
         - _temp_
-        - message
         - _conf
       ignore_missing: true
 
@@ -816,6 +819,12 @@ processors:
         - destination.nat.ip
         - destination.nat.port
       if: 'ctx?.destination?.nat?.ip == "0.0.0.0" && ctx?.destination?.nat?.port == 0'
+
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 
 on_failure:
   - append:
