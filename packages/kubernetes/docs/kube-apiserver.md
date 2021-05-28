@@ -1,6 +1,8 @@
-# apiserver
+# kube-apiserver
 
 ## Metrics
+
+# apiserver
 
 This is the `apiserver` dataset of the Kubernetes package, in charge of retrieving metrics
 from the Kubernetes API (available at `/metrics`).
