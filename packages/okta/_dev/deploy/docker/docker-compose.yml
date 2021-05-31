@@ -1,8 +1,16 @@
 version: '2.3'
 services:
   okta:
-    image: alpine
+    image: docker.elastic.co/observability/stream:v0.4.0
+    ports:
+      - 8080
     volumes:
       - ./sample_logs:/sample_logs:ro
-      - ${SERVICE_LOGS_DIR}:/var/log
-    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+    command:
+      - log
+      - --start-signal=SIGHUP
+      - --addr=:8080
+      - --http-server-response-headers="Link"
+      - --http-server-response-headers="next=http://elastic-package-service_okta_1/api/v1/logs"
+      - -p=http-server
+      - /sample_logs/okta-system.json.log
