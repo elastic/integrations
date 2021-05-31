@@ -45,7 +45,9 @@ Potential candidates to remove:
 
 #### Relevant metrics
 
-Probably the most important and in fact the hardest one of them all as it requires knowledge of every target system. Identifying relevant metrics should be considered case by case. There are no well defined guidelines for this exercise, as it can be as simple as finding everything in one place (like the [RabbitMQ’s documentation](https://www.rabbitmq.com/monitoring.html)) or as hard as going through multiple sources like docs, blog posts, competitors’ integrations and consolidating the discovered information in one place for revision.
+Probably the most important and in fact the hardest one of them all as it requires knowledge of every target system. Identifying relevant metrics should be considered case by case.
+
+There are no well defined guidelines for this exercise, as it can be as simple as finding everything in one place (like the [RabbitMQ’s documentation](https://www.rabbitmq.com/monitoring.html)) or as hard as going through multiple sources like docs, blog posts, competitors’ integrations and consolidating the discovered information in one place for revision. A good indicator is to only collect the metrics that are needed for dashboards/visualizations in general.
 
 #### Keep the original message field
 
