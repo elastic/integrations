@@ -493,5 +493,4 @@ An example event for `stubstatus` looks as following:
 | nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
