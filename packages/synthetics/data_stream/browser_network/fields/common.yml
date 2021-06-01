@@ -1,0 +1,63 @@
+- name: monitor
+  type: group
+  description: >
+    Common monitor fields.
+
+  fields:
+    - name: type
+      type: constant_keyword
+      value: browser
+      description: >
+        The monitor type.
+
+    - name: name
+      type: keyword
+      description: >
+        The monitors configured name
+
+      multi_fields:
+        - name: text
+          type: text
+          analyzer: simple
+    - name: id
+      type: keyword
+      description: >
+        The monitors full job ID as used by heartbeat.
+
+      multi_fields:
+        - name: text
+          type: text
+          analyzer: simple
+    - name: duration
+      type: group
+      description: Total monitoring test duration
+      fields:
+        - name: us
+          type: long
+          description: Duration in microseconds
+    - name: ip
+      type: ip
+      description: >
+        IP of service being monitored. If service is monitored by hostname, the `ip` field contains the resolved ip address for the current host.
+
+    - name: status
+      required: true
+      type: keyword
+      description: >
+        Indicator if monitor could validate the service to be available.
+
+    - name: check_group
+      type: keyword
+      description: >
+        A token unique to a simultaneously invoked group of checks as in the case where multiple IPs are checked for a single DNS entry.
+
+    - name: timespan
+      type: date_range
+      description: >
+        Time range this ping reported starting at the instant the check was started, ending at the start of the next scheduled check.
+
+    - name: fleet_managed
+      type: boolean
+      description: >
+        True if monitor is created with the Fleet integration UI
+
