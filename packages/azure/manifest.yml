@@ -1,11 +1,11 @@
-name: azure_logs
-title: Azure Logs
-version: 0.2.4
+name: azure
+title: Azure
+version: 0.2.3
 release: beta
-description: Azure Logs Integration
+description: Azure Integration
 type: integration
 icons:
-  - src: /img/azure_logs_logo.png
+  - src: /img/logo_azure.svg
     title: logo azure
     size: 32x32
     type: image/svg+xml
@@ -17,113 +17,66 @@ categories:
   - network
   - security
 conditions:
-  kibana.version: "^7.14.0"
+  kibana.version: ^7.9.0
 screenshots:
   - src: /img/filebeat-azure-overview.png
     title: filebeat azure overview
     size: 5002x2666
     type: image/png
-vars:
-  - name: consumer_group
-    type: text
-    title: Consumer Group
-    multi: false
-    required: true
-    show_user: true
-    default: $Default
-  - name: connection_string
-    type: text
-    title: Connection String
-    multi: false
-    required: true
-    show_user: true
-  - name: storage_account
-    type: text
-    title: Storage Account
-    multi: false
-    required: true
-    show_user: true
-  - name: storage_account_key
-    type: text
-    title: Storage Account Key
-    multi: false
-    required: true
-    show_user: true
-  - name: resource_manager_endpoint
-    type: text
-    title: Resource Manager Endpoint
-    multi: false
-    required: false
-    show_user: true
-  - name: tags
-    type: text
-    title: Tags
-    multi: true
-    required: true
-    show_user: false
-    default:
-      - forwarded
 policy_templates:
-  - name: active-directory-logs
-    title: Azure Active Directory logs
-    description: Collects Azure Directory logs
-    data_streams:
-      - auditlogs
-      - signinlogs
+  - name: azure
+    title: Azure logs
+    description: Collects platforms and Active Directory logs
     inputs:
-      - type: "azure/logs"
-        title: "Collect Azure Active Directory from Event Hub"
-        description: "Collecting Active Directory logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
-        input_group: logs
-    icons:
-      - src: /img/active_directory_logo.png
-        title: logo azure
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/filebeat-azure-overview.png
-        title: filebeat azure overview
-        size: 5002x2666
-        type: image/png
-  - name: platformlogs
-    title: Azure platform logs
-    description: Collects azure platformlogs logs
-    data_streams:
-      - platformlogs
-    inputs:
-      - type: "azure/logs"
-        title: "Collect Azure platform logs logs from Event Hub"
-        description: "Collecting platform logs from Azure instances (input: azure-eventhub)"
-        input_group: logs
-    icons:
-      - src: /img/platformlogs_logo.png
-        title: logo azure
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/filebeat-azure-overview.png
-        title: filebeat azure overview
-        size: 5002x2666
-        type: image/png
-  - name: activitylogs
-    title: Azure activity logs
-    description: Collects azure activity logs
-    data_streams:
-      - activitylogs
-    inputs:
-      - type: "azure/logs"
-        title: "Collect Azure activity logs from Event Hub"
-        description: "Collecting activity logs from Azure instances (input: azure-eventhub)"
-        input_group: logs
-    icons:
-      - src: /img/platformlogs_logo.png
-        title: logo azure
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/filebeat-azure-overview.png
-        title: filebeat azure overview
-        size: 5002x2666
-        type: image/png
+      - type: "azure-eventhub"
+        vars:
+          - name: eventhub
+            type: text
+            title: Eventhub
+            multi: false
+            required: true
+            show_user: true
+            default: insights-operational-logs
+          - name: consumer_group
+            type: text
+            title: Consumer Group
+            multi: false
+            required: true
+            show_user: true
+            default: $Default
+          - name: connection_string
+            type: text
+            title: Connection String
+            multi: false
+            required: true
+            show_user: true
+          - name: storage_account
+            type: text
+            title: Storage Account
+            multi: false
+            required: true
+            show_user: true
+          - name: storage_account_key
+            type: text
+            title: Storage Account Key
+            multi: false
+            required: true
+            show_user: true
+          - name: resource_manager_endpoint
+            type: text
+            title: Resource Manager Endpoint
+            multi: false
+            required: false
+            show_user: true
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: false
+            default:
+              - forwarded
+        title: "Collect Azure logs from Event Hub"
+        description: "Collecting activitylogs, auditlogs and signinlogs from Azure instances (input: azure-eventhub)"
 owner:
   github: elastic/integrations
