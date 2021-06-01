@@ -88,6 +88,7 @@ The `log` dataset collects the MongoDB logs.
 | mongodb.log.context | Context of message | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
