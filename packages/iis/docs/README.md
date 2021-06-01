@@ -554,6 +554,7 @@ The fields reported are:
 | iis.access.sub_status | The HTTP substatus code. | long |
 | iis.access.win32_status | The Windows status code. | long |
 | message | Message. | text |
+| network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | related.ip | All of the IPs seen in the event. | ip |
 | related.user | All the user names seen in the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -567,6 +568,10 @@ The fields reported are:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
 | url.path | Path of the request, such as "/search". | keyword |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -699,4 +704,9 @@ The fields reported are:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
