@@ -39,6 +39,7 @@ Access logs collects the Apache access logs.
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | destination.domain | Destination domain | keyword |  |  |
 | ecs.version | ECS version | keyword |  |  |
+| error.message | Error message. | text |  |  |
 | event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
@@ -83,6 +84,7 @@ Access logs collects the Apache access logs.
 | source.geo.region_iso_code | Region ISO code. | keyword |  |  |
 | source.geo.region_name | Region name. | keyword |  |  |
 | source.ip | IP address of the source | ip |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |  |  |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |  |  |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |  |  |
@@ -124,6 +126,7 @@ Error logs collects the Apache error logs.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version | keyword |  |  |
+| error.message | Error message. | text |  |  |
 | event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |  |  |
