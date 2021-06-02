@@ -13,45 +13,50 @@ processors:
       ignore_missing: true
   - json:
       field: event.original
-      target_field: json
- #Splunk specific parsing start
+      target_field: _temp_.json
+  #Splunk specific parsing start
   - drop:
-      if: 'ctx.json?.result == null && ctx.json?.preview != null'
+      if: 'ctx._temp_?.json?.result == null && ctx._temp_?.json?.preview != null'
   - fingerprint:
       fields: 
-        - json.result._cd
-        - json.result._indextime
-        - json.result._raw
-        - json.result._time
-        - json.result.host
-        - json.result.source
+        - _temp_.json.result._cd
+        - _temp_.json.result._indextime
+        - _temp_.json.result._raw
+        - _temp_.json.result._time
+        - _temp_.json.result.host
+        - _temp_.json.result.source
       target_field: '_id'
-      if: 'ctx.json?.result != null && ctx?.json?.preview != null'
+      if: 'ctx._temp_?.json?.result != null && ctx._temp_?.json?.preview != null'
   - remove:
-      field: message
-      ignore_missing: true
-      if: 'ctx.json?.result != null && ctx?.json?.preview != null'
+      field: event.original
+      if: ctx._temp_?.json?.result?._raw != null
   - rename:
-      field: json.result._raw
-      target_field: message
+      field: _temp_.json.result._raw
+      target_field: event.original
       ignore_missing: true
-      if: ctx._temp_?.isSplunk == "true"
+      if: ctx._temp_?.json?.result?._raw != null
+  - json:
+      field: event.original
+      target_field: json
+      if: ctx._temp_?.json?.result?._raw != null
   - rename:
-      field: json.result.host
+      field: _temp_.json.result.host
       target_field: host.name
       ignore_missing: true
-      if: ctx._temp_?.isSplunk == "true"
   - rename:
-      field: json.result.source
+      field: _temp_.json.result.source
       target_field: file.path
       ignore_missing: true
-      if: ctx._temp_?.isSplunk == "true"
+  # Rename if this is not splunk data
+  - rename:
+      field: _temp_.json
+      target_field: json
+      ignore_missing: true
+      if: ctx._temp_?.json?.result?._raw == null
   - remove:
       field: 
-        - json
         - _temp_
       ignore_missing: true
-      if: ctx._temp_?.isSplunk == 1
   #Splunk specific parsing end
   - date:
       field: json.eventTime
