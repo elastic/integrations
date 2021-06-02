@@ -6,15 +6,16 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.9.0'
+      value: '1.10.0'
   - rename:
-      field: "message"
-      target_field: "event.original"
+      field: message
+      target_field: event.original
+      ignore_missing: true
   - json:
-      field: "event.original"
-      target_field: "json"
+      field: event.original
+      target_field: json
   - date:
-      field: "json.eventTime"
+      field: json.eventTime
       target_field: "@timestamp"
       ignore_failure: true
       formats:
@@ -40,75 +41,75 @@ processors:
         }
         drop(ctx);
   - rename:
-      field: "json.eventVersion"
-      target_field: "aws.cloudtrail.event_version"
+      field: json.eventVersion
+      target_field: aws.cloudtrail.event_version
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.type"
-      target_field: "aws.cloudtrail.user_identity.type"
+      field: json.userIdentity.type
+      target_field: aws.cloudtrail.user_identity.type
       ignore_failure: true
   - append:
       field: related.user
       value: '{{json.userIdentity.userName}}'
       allow_duplicates: false
-      if: 'ctx.json?.userIdentity?.userName != null'
+      if: ctx.json?.userIdentity?.userName != null
   - rename:
-      field: "json.userIdentity.userName"
-      target_field: "user.name"
+      field: json.userIdentity.userName
+      target_field: user.name
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.principalId"
-      target_field: "user.id"
+      field: json.userIdentity.principalId
+      target_field: user.id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.arn"
-      target_field: "aws.cloudtrail.user_identity.arn"
+      field: json.userIdentity.arn
+      target_field: aws.cloudtrail.user_identity.arn
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.accountId"
-      target_field: "cloud.account.id"
+      field: json.userIdentity.accountId
+      target_field: cloud.account.id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.accessKeyId"
-      target_field: "aws.cloudtrail.user_identity.access_key_id"
+      field: json.userIdentity.accessKeyId
+      target_field: aws.cloudtrail.user_identity.access_key_id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.attributes.mfaAuthenticated"
-      target_field: "aws.cloudtrail.user_identity.session_context.mfa_authenticated"
+      field: json.userIdentity.sessionContext.attributes.mfaAuthenticated
+      target_field: aws.cloudtrail.user_identity.session_context.mfa_authenticated
       ignore_failure: true
   - date:
-      field: "json.userIdentity.sessionContext.attributes.creationDate"
-      target_field: "aws.cloudtrail.user_identity.session_context.creation_date"
+      field: json.userIdentity.sessionContext.attributes.creationDate
+      target_field: aws.cloudtrail.user_identity.session_context.creation_date
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.type"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.type"
+      field: json.userIdentity.sessionContext.sessionIssuer.type
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.type
       ignore_failure: true
   # userIdentity.sessionIssuer.userName is only set with assumed roles.
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.userName"
-      target_field: "user.name"
+      field: json.userIdentity.sessionContext.sessionIssuer.userName
+      target_field: user.name
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.principalId"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.principal_id"
+      field: json.userIdentity.sessionContext.sessionIssuer.principalId
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.principal_id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.arn"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.arn"
+      field: json.userIdentity.sessionContext.sessionIssuer.arn
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.arn
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.accountId"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.account_id"
+      field: json.userIdentity.sessionContext.sessionIssuer.accountId
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.account_id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.invokedBy"
-      target_field: "aws.cloudtrail.user_identity.invoked_by"
+      field: json.userIdentity.invokedBy
+      target_field: aws.cloudtrail.user_identity.invoked_by
       ignore_failure: true
   - rename:
-      field: "json.eventSource"
+      field: json.eventSource
       target_field: "event.provider"
       ignore_failure: true
   - set:
