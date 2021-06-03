@@ -6,6 +6,9 @@ processors:
   - set:
         field: event.ingested
         value: '{{_ingest.timestamp}}'
+  - set:
+        field: ecs.version
+        value: 1.9.0
   # User agent
   - user_agent:
         field: user_agent.original
@@ -58,6 +61,11 @@ processors:
         value: '{{host.name}}'
         allow_duplicates: false
         if: ctx.host?.name != null && ctx.host?.name != ''
+  - remove:
+        field: event.original
+        if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+        ignore_failure: true
+        ignore_missing: true
 on_failure:
   - append:
         field: error.message
