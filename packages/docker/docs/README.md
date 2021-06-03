@@ -154,9 +154,9 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | docker.container.labels.* | Container labels | object |  |  |
-| docker.cpu.core.*.norm.pct | Percentage of CPU time in this core, normalized by the number of CPU cores. | object | percent | gauge |
-| docker.cpu.core.*.pct | Percentage of CPU time in this core. | object | percent | gauge |
-| docker.cpu.core.*.ticks | Number of CPU ticks in this core. | object |  |  |
+| docker.cpu.core.*.norm.pct | Percentage of CPU time in this core, normalized by the number of CPU cores. | scaled_float | percent | gauge |
+| docker.cpu.core.*.pct | Percentage of CPU time in this core. | scaled_float | percent | gauge |
+| docker.cpu.core.*.ticks | Number of CPU ticks in this core. | long |  | counter |
 | docker.cpu.kernel.norm.pct | Percentage of time in kernel space normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | docker.cpu.kernel.pct | Percentage of time in kernel space. | scaled_float | percent | gauge |
 | docker.cpu.kernel.ticks | CPU ticks in kernel space. | long |  | counter |
