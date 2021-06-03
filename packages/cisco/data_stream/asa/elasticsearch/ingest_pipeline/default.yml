@@ -16,7 +16,7 @@ processors:
   - grok:
       field: message
       patterns:
-        - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:log.original}"
+        - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:event.original}"
       pattern_definitions:
         SYSLOG_HEADER: "(?:%{SYSLOGFACILITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.facility.code:int}(?:.%{NONNEGINT:log.syslog.priority:int})?>"
@@ -34,7 +34,7 @@ processors:
   #
   # This parses the header of an EMBLEM-style message for FTD and ASA prefixes.
   - grok:
-      field: log.original
+      field: event.original
       patterns:
         - "%{FTD_PREFIX}-(?:%{FTD_SUFFIX:_temp_.cisco.suffix}-)?%{NONNEGINT:event.severity:int}-%{POSINT:_temp_.cisco.message_id}?:?\\s*%{GREEDYDATA:message}"
         # Before version 6.3, messages for connection, security intelligence, and intrusion events didn't include an event type ID in the message header.
@@ -1448,10 +1448,6 @@ processors:
   # Rename some 7.x fields
   #
   - rename:
-      field: log.original
-      target_field: event.original
-      ignore_missing: true
-  - rename:
       field: cisco.asa.list_id
       target_field: cisco.asa.rule_name
       ignore_missing: true
@@ -1603,6 +1599,11 @@ processors:
       value: "{{source.domain}}"
       if: ctx.source?.domain != null && ctx.source?.domain != ''
       allow_duplicates: false
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   # Copy any fields under _temp_.cisco to its final destination. Those can help
   # with diagnosing the failure.
