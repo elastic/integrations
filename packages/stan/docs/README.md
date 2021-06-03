@@ -16,7 +16,7 @@ The `log` dataset collects the STAN logs.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4d0d8c0f4097",
@@ -156,7 +156,7 @@ metrics from a STAN instance.
 
 An example event for `stats` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-01-15T12:26:32.467Z",
     "service": {
@@ -262,7 +262,7 @@ metrics about channels from a STAN instance.
 
 An example event for `channels` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-01-15T12:23:32.592Z",
     "service": {
@@ -367,7 +367,7 @@ metrics about subscriptions from a STAN instance.
 
 An example event for `subscriptions` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-01-15T12:25:32.509Z",
     "ecs": {

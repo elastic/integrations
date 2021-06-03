@@ -15,7 +15,7 @@ The `access` data stream collects Traefik access logs.
 
 An example event for `access` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-03-18T20:39:44.000Z",
     "agent": {
@@ -181,7 +181,7 @@ The `health` data stream collects metrics from the Traefik server.
 
 An example event for `health` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-03-18T20:40:18.823Z",
     "agent": {

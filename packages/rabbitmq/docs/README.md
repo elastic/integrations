@@ -66,7 +66,7 @@ Application logs collects standard RabbitMQ logs.
 
 An example event for `connection` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "rabbitmq": {
@@ -181,7 +181,7 @@ An example event for `connection` looks as following:
 
 An example event for `exchange` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
     "rabbitmq": {
@@ -279,7 +279,7 @@ It supports two modes to collect data which can be selected with the "Collection
 
 An example event for `node` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
     "rabbitmq": {
@@ -505,7 +505,7 @@ An example event for `node` looks as following:
 
 An example event for `queue` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:15:10.955Z",
     "rabbitmq": {
