@@ -1161,28 +1161,23 @@ processors:
           selected['other'] = base;
           audit[lst.getKey()] = selected;
         });
-
   #
   # Cleanup
   #
   - remove:
       field: _tmp
       ignore_missing: true
-
   - remove:
       field: event.original
       ignore_missing: true
       if: 'ctx.tags == null || !ctx.tags.contains("preserve_original_event")'
-
 on_failure:
   - append:
         field: error.message
         value: '{{{_ingest.on_failure_message}}}'
-
   - remove:
       field: _tmp
       ignore_missing: true
-
   - set:
       field: event.kind
       value: pipeline_error
