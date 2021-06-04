@@ -16,7 +16,7 @@ The `access` data stream collects the Nginx Ingress Controller access logs.
 
 An example event for `access` looks as following:
 
-```$json
+```json
 {
     "nginx_ingress_controller": {
         "access": {
@@ -177,7 +177,7 @@ The `error` data stream collects the Nginx Ingress Controller error logs.
 
 An example event for `error` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "953e412c8e77",

@@ -17,7 +17,7 @@ The `webserver` dataset allows users to retrieve aggregated metrics for the enti
 
 An example event for `webserver` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-08T11:42:12.102Z",
     "service": {
@@ -202,7 +202,7 @@ This dataset will collect metrics of specific sites, users can configure which w
 
 An example event for `website` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-08T11:40:22.114Z",
     "ecs": {
@@ -312,7 +312,7 @@ This dataset will collect metrics of specific application pools, users can confi
 
 An example event for `application_pool` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-08T11:41:31.048Z",
     "event": {
@@ -422,7 +422,7 @@ This dataset will collect and parse access IIS logs.
 
 An example event for `access` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "name": "DESKTOP-RFOOE09",
@@ -586,7 +586,7 @@ This dataset will collect and parse error IIS logs.
 
 An example event for `error` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "name": "DESKTOP-RFOOE09",

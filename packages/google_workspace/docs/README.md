@@ -53,7 +53,7 @@ This is the `saml` dataset.
 
 An example event for `saml` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",
@@ -275,7 +275,7 @@ This is the `user_accounts` dataset.
 
 An example event for `user_accounts` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",
@@ -485,7 +485,7 @@ This is the `login` dataset.
 
 An example event for `login` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",
@@ -706,7 +706,7 @@ This is the `admin` dataset.
 
 An example event for `admin` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "3baca80779ab",
@@ -1034,7 +1034,7 @@ This is the `drive` dataset.
 
 An example event for `drive` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "87e669265675",
@@ -1294,7 +1294,7 @@ This is the `groups` dataset.
 
 An example event for `groups` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",

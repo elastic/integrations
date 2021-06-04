@@ -16,7 +16,7 @@ This is the Iptables `log` dataset.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-03-12T14:10:18.000Z",
     "destination": {

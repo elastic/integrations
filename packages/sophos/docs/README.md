@@ -834,7 +834,7 @@ This is the Sophos `xg` dataset.
 
 An example event for `xg` looks as following:
 
-```$json
+```json
 {
     "server": {
         "port": 0,

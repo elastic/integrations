@@ -26,7 +26,7 @@ performance. This parameter can only be enabled in combination with `Use Types`.
 
 When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 
-```$json
+```json
 {
   "_index": ".ds-metrics-prometheus.collector-default-000001",
   "_id": "JlK9AHMBeyDc0b9rCwVA",
@@ -128,7 +128,7 @@ Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 
 An example event for `collector` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T10:22:23.034Z",
     "agent": {},
@@ -274,7 +274,7 @@ remote_write:
 
 An example event for `remote_write` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T16:46:40.018Z",
     "ecs": {
@@ -373,7 +373,7 @@ performance. This parameter can only be enabled in combination with `use_types`.
 
 When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
-```$json
+```json
 {
     "prometheus": {
         "labels": {
@@ -482,7 +482,7 @@ queries:
 
 An example event for `query` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T15:36:54.000Z",
     "host": {},

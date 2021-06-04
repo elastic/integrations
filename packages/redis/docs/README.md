@@ -117,7 +117,7 @@ result.
 
 An example event for `info` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -469,7 +469,7 @@ Patterns are configured as a list containing these fields:
 
 An example event for `key` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -556,7 +556,7 @@ Elasticsearch. The keyspace information is fetched from the `INFO` command.
 
 An example event for `keyspace` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {

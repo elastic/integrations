@@ -75,7 +75,7 @@ running Docker containers.
 
 An example event for `container` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -186,7 +186,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 
 An example event for `cpu` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "container": {
@@ -367,7 +367,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 
 An example event for `diskio` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "container": {
@@ -467,7 +467,7 @@ The Docker `event` data stream collects docker events
 
 An example event for `event` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -544,7 +544,7 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 
 An example event for `healthcheck` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -647,7 +647,7 @@ The Docker `image` data stream collects metrics on docker images
 
 An example event for `image` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "docker": {
@@ -733,7 +733,7 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 
 An example event for `info` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "docker": {
@@ -810,7 +810,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 
 An example event for `memory` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "container": {
@@ -940,7 +940,7 @@ The Docker `network` data stream collects network metrics.
 
 An example event for `network` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {

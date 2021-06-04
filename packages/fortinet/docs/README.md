@@ -19,7 +19,7 @@ Contains log entries from Fortinet FortiGate applicances.
 
 An example event for `firewall` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2019-05-15T18:03:36.000Z",
     "agent": {
@@ -745,7 +745,7 @@ The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security log
 
 An example event for `clientendpoint` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-05T21:33:08.000Z",
     "agent": {
@@ -1709,7 +1709,7 @@ The `fortimail` dataset collects Fortinet FortiMail logs.
 
 An example event for `fortimail` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
@@ -2626,7 +2626,7 @@ The `fortimanager` dataset collects Fortinet Manager/Analyzer logs.
 
 An example event for `fortimanager` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {

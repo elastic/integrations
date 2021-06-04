@@ -26,7 +26,7 @@ performance. This parameter can only be enabled in combination with `Use Types`.
 
 When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 
-```$json
+```json
 {
   "_index": ".ds-metrics-prometheus.collector-default-000001",
   "_id": "JlK9AHMBeyDc0b9rCwVA",
@@ -208,7 +208,7 @@ performance. This parameter can only be enabled in combination with `use_types`.
 
 When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
-```$json
+```json
 {
     "prometheus": {
         "labels": {

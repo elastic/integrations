@@ -19,7 +19,7 @@ The `asa` dataset collects the Cisco firewall logs.
 
 An example event for `asa` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
@@ -310,7 +310,7 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 
 An example event for `ftd` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
@@ -669,7 +669,7 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 
 An example event for `ios` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-06-03T09:25:42.537Z",
     "agent": {
@@ -875,7 +875,7 @@ The `nexus` dataset collects Cisco Nexus logs.
 
 An example event for `nexus` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-06-03T09:31:40.532Z",
     "agent": {
@@ -1779,7 +1779,7 @@ The `meraki` dataset collects Cisco Meraki logs.
 
 An example event for `meraki` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {

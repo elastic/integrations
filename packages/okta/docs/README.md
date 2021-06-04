@@ -10,7 +10,7 @@ The Okta System Log records system events related to your organization in order 
 
 An example event for `system` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {

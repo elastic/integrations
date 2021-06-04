@@ -112,7 +112,7 @@ rules:
 
 An example event for `apiserver` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:30:34.616Z",
     "metricset": {
@@ -269,7 +269,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `container` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:32:29.748Z",
     "kubernetes": {
@@ -508,7 +508,7 @@ Kubernetes controller component `metrics` endpoint.
 
 An example event for `controllermanager` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:33:29.643Z",
     "kubernetes": {
@@ -699,7 +699,7 @@ related metrics.
 
 An example event for `event` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:30:27.575Z",
     "metricset": {
@@ -862,7 +862,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `node` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:34:39.723Z",
     "event": {
@@ -1098,7 +1098,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `pod` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:34:59.729Z",
     "kubernetes": {
@@ -1305,7 +1305,7 @@ from Kubernetes Proxy component.
 
 An example event for `proxy` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:35:29.639Z",
     "agent": {
@@ -1599,7 +1599,7 @@ from Kubernetes Scheduler component.
 
 An example event for `scheduler` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:35:59.624Z",
     "agent": {
@@ -1778,7 +1778,7 @@ metrics from `kube_state_metrics`.
 
 An example event for `state_container` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:36:34.469Z",
     "host": {
@@ -1936,7 +1936,7 @@ metrics from `kube_state_metrics`.
 
 An example event for `state_cronjob` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:43:04.384Z",
     "metricset": {
@@ -2077,7 +2077,7 @@ metrics from `kube_state_metrics`.
 
 An example event for `state_daemonset` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:37:04.455Z",
     "service": {
@@ -2210,7 +2210,7 @@ metrics from `kube_state_metrics`.
 
 An example event for `state_deployment` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:37:04.455Z",
     "service": {
@@ -2344,7 +2344,7 @@ metrics from `kube_state_metrics`.
 
 An example event for `state_node` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:37:44.457Z",
     "ecs": {
@@ -2510,7 +2510,7 @@ PersistentVolume related metrics from `kube_state_metrics`.
 
 An example event for `state_persistentvolume` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:43:54.412Z",
     "ecs": {
@@ -2640,7 +2640,7 @@ PersistentVolumeClaim related metrics from `kube_state_metrics`.
 
 An example event for `state_persistentvolumeclaim` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:44:44.418Z",
     "event": {
@@ -2772,7 +2772,7 @@ Pod related metrics from `kube_state_metrics`.
 
 An example event for `state_pod` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:38:34.469Z",
     "ecs": {
@@ -2912,7 +2912,7 @@ Replicaset related metrics from `kube_state_metrics`.
 
 An example event for `state_replicaset` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:38:54.482Z",
     "service": {
@@ -3052,7 +3052,7 @@ from `kube_state_metrics`.
 
 An example event for `state_resourcequota` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:45:04.416Z",
     "metricset": {
@@ -3179,7 +3179,7 @@ Service related metrics from `kube_state_metrics`.
 
 An example event for `state_service` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:39:24.389Z",
     "kubernetes": {
@@ -3315,7 +3315,7 @@ This is the `state_statefulset` dataset of the Kubernetes package.
 
 An example event for `state_statefulset` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:39:24.389Z",
     "kubernetes": {
@@ -3448,7 +3448,7 @@ StorageClass related metrics from `kube_state_metrics`.
 
 An example event for `state_storageclass` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:39:44.399Z",
     "agent": {
@@ -3578,7 +3578,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `system` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:39:59.647Z",
     "service": {
@@ -3754,7 +3754,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `volume` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:40:19.649Z",
     "ecs": {

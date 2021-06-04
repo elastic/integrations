@@ -400,7 +400,7 @@ The Windows `security` dataset provides events from the Windows
 
 An example event for `security` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {

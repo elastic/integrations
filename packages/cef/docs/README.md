@@ -130,7 +130,7 @@ This is the CEF `log` dataset.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "name": "mbp.local",

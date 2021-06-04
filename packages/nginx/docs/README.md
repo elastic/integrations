@@ -28,7 +28,7 @@ Access logs collects the nginx access logs.
 
 An example event for `access` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "a73e7856c209",
@@ -214,7 +214,7 @@ Error logs collects the nginx error logs.
 
 An example event for `error` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "a73e7856c209",
@@ -363,7 +363,7 @@ It's highly recommended to replace `127.0.0.1` with your server’s IP address a
 
 An example event for `stubstatus` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-12-03T11:47:31.996Z",
     "host": {
