@@ -7,9 +7,13 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.9.0'
-  - grok:
+      value: '1.10.0'
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
       # Classic ELB patterns documented in https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html
       # ELB v2 Application load balancers https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
       # ELB v2 Netwwork load balancers https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-access-logs.html
@@ -95,110 +99,89 @@ processors:
           %{ELBSSL}
         ELBV2TYPE: '%{WORD:aws.elb.type}'
         ELBV2LOGVERSION: '%{NOTSPACE}'  # Could be used to support different log versions, only 1.0 exists now
-
   - set:
       field: event.kind
       value: event
-
   - set:
       field: cloud.provider
       value: aws
-
   - set:
-      if: 'ctx.http != null'
-      field: 'aws.elb.protocol'
-      value: 'http'
-
+      if: ctx.http != null
+      field: aws.elb.protocol
+      value: http
   - set:
-      if: 'ctx.http != null'
+      if: ctx.http != null
       field: event.category
       value: web
-
   - set:
-      if: 'ctx.http == null'
-      field: 'aws.elb.protocol'
-      value: 'tcp'
-
+      field: aws.elb.protocol
+      value: tcp
+      if: ctx.http == null
   - set:
-      if: 'ctx.http == null'
       field: event.category
       value: network
-
+      if: ctx.http == null
   - set:
-      if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400'
       field: event.outcome
       value: success
-
+      if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400'
   - set:
-      if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400'
       field: event.outcome
       value: failure
-
+      if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400'
   - lowercase:
       field: http.request.method
       ignore_missing: true
-
   - set:
-      if: "ctx?.aws?.elb?.trace_id != null"
       field: tracing.trace.id
-      value: "{{aws.elb.trace_id}}"
-
+      value: '{{aws.elb.trace_id}}'
+      if: ctx?.aws?.elb?.trace_id != null
   - split:
-      field: '_tmp.actions_executed'
-      target_field: 'aws.elb.action_executed'
+      field: _tmp.actions_executed
+      target_field: aws.elb.action_executed
       separator: ','
       ignore_missing: true
-
   - split:
-      field: '_tmp.target_port'
-      target_field: 'aws.elb.target_port'
+      field: _tmp.target_port
+      target_field: aws.elb.target_port
       separator: ' '
       ignore_missing: true
-
   - split:
-      field: '_tmp.target_status_code'
-      target_field: 'aws.elb.target_status_code'
+      field: _tmp.target_status_code
+      target_field: aws.elb.target_status_code
       separator: ' '
       ignore_missing: true
-
   - date:
-      field: '_tmp.timestamp'
+      field: _tmp.timestamp
       formats:
-        - 'ISO8601'
-
+        - ISO8601
   - set:
-      field: 'event.end'
+      field: event.end
       value: '{{ @timestamp }}'
-
   - geoip:
-      field: 'source.ip'
-      target_field: 'source.geo'
+      field: source.ip
+      target_field: source.geo
       ignore_missing: true
-
   - geoip:
-      database_file: 'GeoLite2-ASN.mmdb'
-      field: 'source.ip'
-      target_field: 'source.as'
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
       properties:
-        - 'asn'
-        - 'organization_name'
+        - asn
+        - organization_name
       ignore_missing: true
-
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
-
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-
   - set:
       field: tls.cipher
       value: '{{aws.elb.ssl_cipher}}'
       if: ctx.aws?.elb?.ssl_cipher != null
-
   - script:
       lang: painless
       if: ctx.aws?.elb?.ssl_protocol != null
@@ -213,14 +196,16 @@ processors:
           ctx.tls.version = parts[1].substring(0,1) + "." + parts[1].substring(1);
         }
         ctx.tls.version_protocol = parts[0].toLowerCase();
-
   - remove:
       field:
-        - message
         - _tmp
       ignore_missing: true
-
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }}"
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
