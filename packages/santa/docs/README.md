@@ -19,7 +19,7 @@ This is the Google Santa `log` dataset.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "process": {
         "args": [
