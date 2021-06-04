@@ -24,9 +24,6 @@ processors:
   - dissect:
       field: event.original
       pattern: "%{_temp_.ts->} %{+_temp_.ts} %{+_temp_.ts->} %{log.source.address} %{event.sequence}: %{_temp_.timestamp}: %{_temp_.message}"
-  - remove:
-      field: event.original
-      ignore_missing: true
   - grok:
       field: _temp_.message
       patterns:
@@ -40,35 +37,35 @@ processors:
       type: long
       ignore_missing: true
   - dissect:
-      field: event.original
+      field: message
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
       if: "['IPACCESSLOGP', 'ACCESSLOGP'].contains(ctx?.event?.code)"
   - dissect:
-      field: event.original
+      field: message
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
       if: "['IPACCESSLOGDP', 'ACCESSLOGDP'].contains(ctx?.event?.code)"
   - dissect:
-      field: event.original
+      field: message
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "ctx?.event?.code == 'IPACCESSLOGRP'"
   - dissect:
-      field: event.original
+      field: message
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
       if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx?.event?.code)"
   - dissect:
-      field: event.original
+      field: message
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
       if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx?.event?.code)"
   - dissect:
-      field: event.original
+      field: message
       pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
       if: "ctx?.event?.code == 'LOGIN_SUCCESS'"
   - dissect:
-      field: event.original
+      field: message
       pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
       if: "ctx?.event?.code == 'LOGOUT'"
   - grok:
-      field: event.original
+      field: message
       patterns: 
         - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
       pattern_definitions:
@@ -130,7 +127,6 @@ processors:
       field: event.action
       value: allow
       if: "ctx?._temp_?.event?.action == 'permitted'"
-
   - set:
       field: "log.level"
       if: "ctx.event.severity == 0"
