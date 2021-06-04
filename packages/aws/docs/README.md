@@ -642,7 +642,7 @@ for sending server access logs to S3 bucket.
 
 An example event for `billing` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:17:06.212Z",
     "cloud": {
@@ -763,7 +763,7 @@ An example event for `billing` looks as following:
 
 An example event for `cloudwatch` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:17:02.812Z",
     "event": {
@@ -871,7 +871,7 @@ An example event for `cloudwatch` looks as following:
 
 An example event for `dynamodb` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:17:08.666Z",
     "agent": {
@@ -1012,7 +1012,7 @@ An example event for `dynamodb` looks as following:
 
 An example event for `ebs` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:57:22.450Z",
     "service": {
@@ -1145,7 +1145,7 @@ An example event for `ebs` looks as following:
 
 An example event for `ec2` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:56:37.255Z",
     "aws": {
@@ -1264,6 +1264,7 @@ An example event for `ec2` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
 | aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
 | aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |
@@ -1354,7 +1355,7 @@ An example event for `ec2` looks as following:
 
 An example event for `elb` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:30.211Z",
     "agent": {
@@ -1529,7 +1530,7 @@ An example event for `elb` looks as following:
 
 An example event for `lambda` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:17:08.666Z",
     "agent": {
@@ -1658,7 +1659,7 @@ An example event for `lambda` looks as following:
 
 An example event for `natgateway` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
@@ -1812,7 +1813,7 @@ An example event for `natgateway` looks as following:
 
 An example event for `rds` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:34.537Z",
     "ecs": {
@@ -1910,6 +1911,7 @@ An example event for `rds` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
 | aws.dimensions.DBClusterIdentifier | This dimension filters the data that you request for a specific Amazon Aurora DB cluster. | keyword |
 | aws.dimensions.DBClusterIdentifier,Role | This dimension filters the data that you request for a specific Aurora DB cluster, aggregating the metric by instance role (WRITER/READER). | keyword |
@@ -2036,7 +2038,7 @@ An example event for `rds` looks as following:
 
 An example event for `s3_daily_storage` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
@@ -2143,7 +2145,7 @@ An example event for `s3_daily_storage` looks as following:
 
 An example event for `s3_request` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
@@ -2277,7 +2279,7 @@ An example event for `s3_request` looks as following:
 
 An example event for `sns` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
@@ -2406,7 +2408,7 @@ An example event for `sns` looks as following:
 
 An example event for `sqs` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
@@ -2468,6 +2470,7 @@ An example event for `sqs` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
 | aws.dimensions.QueueName | SQS queue name | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
@@ -2524,7 +2527,7 @@ An example event for `sqs` looks as following:
 
 An example event for `transitgateway` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T20:10:20.953Z",
     "cloud": {
@@ -2650,7 +2653,7 @@ An example event for `transitgateway` looks as following:
 
 An example event for `usage` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:30.929Z",
     "aws": {
@@ -2762,7 +2765,7 @@ An example event for `usage` looks as following:
 
 An example event for `vpn` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
