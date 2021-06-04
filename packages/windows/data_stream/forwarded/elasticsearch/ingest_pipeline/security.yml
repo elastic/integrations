@@ -4,9 +4,13 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - convert:
+      field: event.code
+      type: string
+      ignore_missing: true
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set ECS categorization fields
       description: Set ECS categorization fields
       params:
@@ -743,11 +747,11 @@ processors:
         if (ctx?.event?.code == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.event.code.toString()));
+        def hm = new HashMap(params.get(ctx.event.code));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Logon Type
       description: Set Logon Type
       params:
@@ -775,7 +779,7 @@ processors:
         ctx.winlog.logon.put("type", t)
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set User Account Control
       description: Set User Account Control
       params:
@@ -829,7 +833,7 @@ processors:
         ctx.winlog.event_data.UserAccountControl = uac_array;
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Kerberos Ticket Options
       description: Set Kerberos Ticket Options
       params:
@@ -871,7 +875,7 @@ processors:
         ctx.winlog.event_data.put("TicketOptionsDescription", tDescs);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Kerberos Encryption Types
       description: Set Kerberos Encryption Types
       params:
@@ -890,7 +894,7 @@ processors:
                                   params[ctx.winlog.event_data.TicketEncryptionType.toLowerCase()])
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Kerberos Ticket Status Codes
       description: Set Kerberos Ticket Status Codes
       params:
@@ -955,13 +959,13 @@ processors:
       source: |-
         if (ctx?.winlog?.event_data?.Status == null ||
             ctx?.event?.code == null ||
-            ![4768, 4769, 4770, 4771].contains(ctx.event.code)) {
+            !["4768", "4769", "4770", "4771"].contains(ctx.event.code)) {
           return;
         }
         ctx.winlog.event_data.put("StatusDescription", params[ctx.winlog.event_data.Status]);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Service Type and Name
       description: Set Service Type and Name
       params:
@@ -989,7 +993,7 @@ processors:
         }
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Audit Information
       description: Set Audit Information
       params:
@@ -1062,7 +1066,7 @@ processors:
         ctx.winlog.event_data.put("SubCategory", params[subCatGuid][0]);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Decode message table
       description: Decode message table
       params:
@@ -2076,7 +2080,7 @@ processors:
         }
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: 4625 and 4776 Set Status and SubStatus
       description: 4625 and 4776 Set Status and SubStatus
       params:
@@ -2105,7 +2109,7 @@ processors:
       source: |-
         if (ctx?.winlog?.event_data?.Status == null ||
             ctx?.event?.code == null ||
-            ![4625, 4776].contains(ctx.event.code)) {
+            !["4625", "4776"].contains(ctx.event.code)) {
           return;
         }
         if (params.containsKey(ctx.winlog.event_data.Status)) {
@@ -2133,7 +2137,7 @@ processors:
         ctx.winlog.logon.failure.put("sub_status", params[ctx.winlog.event_data.SubStatus]);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Trust Type
       description: Set Trust Type
       params:
@@ -2151,7 +2155,7 @@ processors:
         ctx.winlog.put("trustType", params[ctx.winlog.event_data.TdoType]);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Trust Direction
       description: Set Trust Direction
       params:
@@ -2169,7 +2173,7 @@ processors:
         ctx.winlog.put("trustDirection", params[ctx.winlog.event_data.TdoDirection]);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Set Trust Attributes
       description: Set Trust Attributes
       params:
@@ -2194,12 +2198,12 @@ processors:
         ctx.winlog.put("trustAttribute", params[ctx.winlog.event_data.TdoAttributes]);
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Add Session Events
       description: Add Session Events
       source: |-
         if (ctx?.event?.code == null ||
-            ![4778, 4779].contains(ctx.event.code)) {
+            !["4778", "4779"].contains(ctx.event.code)) {
           return;
         }
         //AccountName to user.name and related.user
@@ -2272,13 +2276,13 @@ processors:
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Copy Target User
       description: Copy Target User
       source: |-
         if (ctx?.event?.code == null ||
-            ![4624, 4625, 4634, 4647, 4648, 4768, 4769, 4770,
-              4771, 4776, 4964].contains(ctx.event.code)) {
+            !["4624", "4625", "4634", "4647", "4648", "4768", "4769", "4770",
+              "4771", "4776", "4964"].contains(ctx.event.code)) {
           return;
         }
 
@@ -2344,15 +2348,15 @@ processors:
         }
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Copy MemberName to User and User to Group
       description: Copy MemberName to User and User to Group
       source: |-
         if (ctx?.event?.code == null ||
-            ![4727, 4728, 4729, 4730, 4731, 4732, 4733, 4734, 4735,
-              4737, 4744, 4745, 4746, 4747, 4748, 4749, 4750, 4751,
-              4752, 4753, 4754, 4755, 4756, 4757, 4758, 4759, 4760,
-              4761, 4762, 4763, 4764, 4799].contains(ctx.event.code)) {
+            !["4727", "4728", "4729", "4730", "4731", "4732", "4733", "4734", "4735",
+              "4737", "4744", "4745", "4746", "4747", "4748", "4749", "4750", "4751",
+              "4752", "4753", "4754", "4755", "4756", "4757", "4758", "4759", "4760",
+              "4761", "4762", "4763", "4764", "4799"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.MemberName != null) {
@@ -2425,12 +2429,12 @@ processors:
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Copy Target User to Computer Object
       description: Copy Target User to Computer Object
       source: |-
         if (ctx?.event?.code == null ||
-            ![4741, 4742, 4743].contains(ctx.event.code)) {
+            !["4741", "4742", "4743"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.TargetSid != null) {
@@ -2458,25 +2462,25 @@ processors:
   - set:
       field: winlog.logon.id
       copy_from: winlog.event_data.TargetLogonId
-      ignore_failure: true
-      if: ctx?.event?.code != null && [4634, 4647, 4964].contains(ctx.event.code)
+      ignore_failure: false
+      if: ctx?.event?.code != null && ["4634", "4647", "4964"].contains(ctx.event.code)
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Copy Subject User from Event Data
       description: Copy Subject User from Event Data
       source: |-
         if (ctx?.event?.code == null ||
-            ![4657, 4670, 4672, 4673, 4674, 4688, 4689, 4697,
-              4698, 4699, 4700, 4701, 4702, 4706, 4707, 4713,
-              4716, 4717, 4718, 4719, 4720, 4722, 4723, 4724,
-              4725, 4726, 4727, 4728, 4729, 4730, 4731, 4732,
-              4733, 4734, 4735, 4737, 4738, 4739, 4740, 4741,
-              4742, 4743, 4744, 4745, 4746, 4747, 4748, 4749,
-              4750, 4751, 4752, 4753, 4754, 4755, 4756, 4757,
-              4758, 4759, 4760, 4761, 4762, 4763, 4764, 4767,
-              4781, 4798, 4799, 4817, 4904, 4905, 4907, 4912].contains(ctx.event.code)) {
+            !["4657", "4670", "4672", "4673", "4674", "4688", "4689", "4697",
+              "4698", "4699", "4700", "4701", "4702", "4706", "4707", "4713",
+              "4716", "4717", "4718", "4719", "4720", "4722", "4723", "4724",
+              "4725", "4726", "4727", "4728", "4729", "4730", "4731", "4732",
+              "4733", "4734", "4735", "4737", "4738", "4739", "4740", "4741",
+              "4742", "4743", "4744", "4745", "4746", "4747", "4748", "4749",
+              "4750", "4751", "4752", "4753", "4754", "4755", "4756", "4757",
+              "4758", "4759", "4760", "4761", "4762", "4763", "4764", "4767",
+              "4781", "4798", "4799", "4817", "4904", "4905", "4907", "4912"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.SubjectUserSid != null) {
@@ -2514,12 +2518,12 @@ processors:
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Copy Subject User from user_data
       description: Copy Subject User from user_data
       source: |-
         if (ctx?.event?.code == null ||
-            ![1102].contains(ctx.event.code)) {
+            !["1102"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.user_data?.SubjectUserSid != null) {
@@ -2566,24 +2570,24 @@ processors:
       ignore_failure: true
       if: |-
         ctx?.event?.code != null &&
-        [1102].contains(ctx.event.code)
+        ["1102"].contains(ctx.event.code)
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Rename Common Auth Fields
       description: Rename Common Auth Fields
       source: |-
         if (ctx?.event?.code == null ||
-            ![1100, 1102, 1104, 1105, 1108, 4624, 4648, 4625,
-              4670, 4673, 4674, 4689, 4697, 4719, 4720, 4722,
-              4723, 4724, 4725, 4726, 4727, 4728, 4729, 4730,
-              4731, 4732, 4733, 4734, 4735, 4737, 4738, 4740,
-              4741, 4742, 4743, 4744, 4745, 4746, 4747, 4748,
-              4749, 4750, 4751, 4752, 4753, 4754, 4755, 4756,
-              4757, 4758, 4759, 4760, 4761, 4762, 4763, 4764,
-              4767, 4768, 4769, 4770, 4771, 4798, 4799, 4817,
-              4904, 4905, 4907, 4912].contains(ctx.event.code)) {
+            !["1100", "1102", "1104", "1105", "1108", "4624", "4648", "4625",
+              "4670", "4673", "4674", "4689", "4697", "4719", "4720", "4722",
+              "4723", "4724", "4725", "4726", "4727", "4728", "4729", "4730",
+              "4731", "4732", "4733", "4734", "4735", "4737", "4738", "4740",
+              "4741", "4742", "4743", "4744", "4745", "4746", "4747", "4748",
+              "4749", "4750", "4751", "4752", "4753", "4754", "4755", "4756",
+              "4757", "4758", "4759", "4760", "4761", "4762", "4763", "4764",
+              "4767", "4768", "4769", "4770", "4771", "4798", "4799", "4817",
+              "4904", "4905", "4907", "4912"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.ProcessId != null) {
@@ -2648,12 +2652,12 @@ processors:
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Process Event 4688
       description: Process Event 4688
       source: |-
         if (ctx?.event?.code == null ||
-            ![4688].contains(ctx.event.code)) {
+            !["4688"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.NewProcessId != null) {
@@ -2747,7 +2751,7 @@ processors:
       allow_duplicates: false
       if: |-
         ctx?.event?.code != null &&
-        [4624, 4648].contains(ctx.event.code) &&
+        ["4624", "4648"].contains(ctx.event.code) &&
         ctx?.winlog?.event_data?.SubjectUserName != null &&
         ctx.winlog.event_data.SubjectUserName != "-"
 
@@ -2757,8 +2761,8 @@ processors:
       allow_duplicates: false
       if: |-
         ctx?.event?.code != null &&
-        [4688, 4720, 4722, 4723, 4724, 4725, 4726, 4738,
-         4740, 4767, 4798].contains(ctx.event.code) &&
+        ["4688", "4720", "4722", "4723", "4724", "4725", "4726", "4738",
+         "4740", "4767", "4798"].contains(ctx.event.code) &&
         ctx?.winlog?.event_data?.TargetUserName != null &&
         ctx.winlog.event_data.TargetUserName != "-"
 
@@ -2767,7 +2771,7 @@ processors:
       separator: "\\s+"
       if: |-
         ctx?.event?.code != null &&
-        [4672, 4673, 4674, 4741, 4742, 4743].contains(ctx.event.code) &&
+        ["4672", "4673", "4674", "4741", "4742", "4743"].contains(ctx.event.code) &&
         ctx?.winlog?.event_data?.PrivilegeList != null
 
   - append:
@@ -2802,7 +2806,7 @@ processors:
 
   - script:
       lang: painless
-      ignore_failure: true
+      ignore_failure: false
       tag: Object Policy Change and SidListDesc
       description: Object Policy Change and SidListDesc
       params:
@@ -3124,7 +3128,7 @@ processors:
         }
         
         if (ctx?.event?.code == null ||
-            ![4670, 4817, 4907, 4908].contains(ctx.event.code)) {
+            !["4670", "4817", "4907", "4908"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.OldSd != null) {
@@ -3147,11 +3151,6 @@ processors:
       type: string
       ignore_missing: true
 
-  - convert:
-      field: event.code
-      type: string
-      ignore_missing: true
-
   - set:
       field: ecs.version
       value: 1.9.0
@@ -3169,6 +3168,12 @@ processors:
         - ISO8601
       ignore_failure: true
       if: ctx?.winlog?.time_created != null
+
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 
 on_failure:
   - set:
