@@ -7,15 +7,19 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.9.0'
+      value: '1.10.0'
   - set:
       field: event.category
       value: web
   - append:
       field: event.type
       value: access
-  - grok:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
       patterns:
         - >-
           %{BASE16NUM:aws.s3access.bucket_owner} %{HOSTNAME:aws.s3access.bucket} \[%{HTTPDATE:_temp_.s3access_time}\]
@@ -33,7 +37,6 @@ processors:
         S3KEY: "[a-zA-Z0-9\\/_\\.\\-%+]+"
         S3ID: "[a-zA-Z0-9\\/_\\.\\-%+=]+"
         S3VERSION: "[a-zA-Z0-9.]+"
-
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -51,110 +54,89 @@ processors:
           return false;
         }
         drop(ctx);
-
   - grok:
       field: aws.s3access.request_uri
       ignore_failure: true
       patterns:
-        - '%{NOTSPACE:http.request.method} %{NOTSPACE:url.original} [hH][tT][tT][pP]/%{NOTSPACE:http.version}'
-
-  #
-  # Best-effort parse of url.original in the form /path?query"
-  #
-  - grok:
-      field: url.original
-      ignore_failure: true
-      patterns:
-        - '^%{ABS_PATH:url.path}(?:\?%{DATA:url.query})?$'
-      pattern_definitions:
-        ABS_PATH: '/[^?]*'
+        - '%{NOTSPACE:http.request.method} %{NOTSPACE:_temp_.url} [hH][tT][tT][pP]/%{NOTSPACE:http.version}'
+  - uri_parts:
+      field: _temp_.url
+      target_field: url
+      keep_original: true
+      if: ctx._temp_?.url != null
   - append:
-      if: "ctx?.aws?.s3access?.bucket_owner != null"
       field: related.user
-      value: "{{aws.s3access.bucket_owner}}"
-
+      value: '{{aws.s3access.bucket_owner}}'
+      allow_duplicates: false
+      if: ctx?.aws?.s3access?.bucket_owner != null
   #
   # Parse the date included in s3 access logs
   #
   - date:
-      field: "_temp_.s3access_time"
-      target_field: "@timestamp"
+      field: _temp_.s3access_time'
+      target_field: '@timestamp'
       ignore_failure: true
       formats:
-        - "dd/MMM/yyyy:H:m:s Z"
-
+        - dd/MMM/yyyy:H:m:s Z
   - set:
       field: client.ip
-      value: "{{aws.s3access.remote_ip}}"
+      value: '{{aws.s3access.remote_ip}}'
       ignore_empty_value: true
-
   - append:
-      if: "ctx?.aws?.s3access?.remote_ip != null"
       field: related.ip
-      value: "{{aws.s3access.remote_ip}}"
-
+      value: '{{aws.s3access.remote_ip}}'
+      allow_duplicates: false
+      if: ctx?.aws?.s3access?.remote_ip != null
   - set:
       field: client.address
-      value: "{{aws.s3access.remote_ip}}"
+      value: '{{aws.s3access.remote_ip}}'
       ignore_empty_value: true
-
   - geoip:
-      if: "ctx?.aws?.s3access?.remote_ip != null"
       field: aws.s3access.remote_ip
       target_field: geo
-
+      if: ctx?.aws?.s3access?.remote_ip != null
   - set:
       field: client.user.id
-      value: "{{aws.s3access.requester}}"
+      value: '{{aws.s3access.requester}}'
       ignore_empty_value: true
-
   - set:
       field: event.id
-      value: "{{aws.s3access.request_id}}"
+      value: '{{aws.s3access.request_id}}'
       ignore_empty_value: true
-
   - set:
       field: event.action
-      value: "{{aws.s3access.operation}}"
+      value: '{{aws.s3access.operation}}'
       ignore_empty_value: true
-
   - set:
       field: http.response.status_code
-      value: "{{aws.s3access.http_status}}"
+      value: '{{aws.s3access.http_status}}'
       ignore_empty_value: true
-
   - convert:
-      if: "ctx?.http?.response?.status_code != null"
       field: http.response.status_code
       type: long
-
+      if: ctx?.http?.response?.status_code != null
   - set:
-      if: "ctx?.aws?.s3access?.error_code != null"
       field: event.outcome
       value: failure
-
+      if: ctx?.aws?.s3access?.error_code != null
   - set:
       field: event.code
-      value: "{{aws.s3access.error_code}}"
+      value: '{{aws.s3access.error_code}}'
       ignore_empty_value: true
-
   - set:
-      if: "ctx?.aws?.s3access?.error_code == null"
       field: event.outcome
       value: success
-
+      if: ctx?.aws?.s3access?.error_code == null
   - convert:
       field: aws.s3access.bytes_sent
       target_field: http.response.body.bytes
       type: long
       ignore_failure: true
-
   - convert:
       field: aws.s3access.total_time
       target_field: event.duration
       type: long
       ignore_failure: true
-
   - script:
       lang: painless
       if: ctx.event?.duration != null
@@ -162,21 +144,17 @@ processors:
         MS_TO_NS: 1000000
       source: >-
         ctx.event.duration *= params.MS_TO_NS;
-
   - set:
       field: http.request.referrer
-      value: "{{aws.s3access.referrer}}"
+      value: '{{aws.s3access.referrer}}'
       ignore_empty_value: true
-
   - user_agent:
-      if: "ctx?.aws?.s3access?.user_agent != null"
+      if: ctx?.aws?.s3access?.user_agent != null
       field: aws.s3access.user_agent
-
   - set:
       field: tls.cipher
       value: '{{aws.s3access.cipher_suite}}'
       ignore_empty_value: true
-
   - script:
       lang: painless
       if: ctx.aws?.s3access?.tls_version != null
@@ -187,30 +165,48 @@ processors:
         }
         ctx.tls.version = parts[1];
         ctx.tls.version_protocol = parts[0]
-
   - set:
       field: cloud.provider
       value: aws
-
   - set:
       field: event.kind
       value: event
-
-  #
-  # Save original message into event.original
-  #
-  - rename:
-      field: "message"
-      target_field: "event.original"
-
   #
   # Remove temporary fields
   #
   - remove:
       field: _temp_
       ignore_missing: true
-
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }}"
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
