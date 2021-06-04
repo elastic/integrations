@@ -53,7 +53,7 @@ This is the `saml` dataset.
 
 An example event for `saml` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",
@@ -275,7 +275,7 @@ This is the `user_accounts` dataset.
 
 An example event for `user_accounts` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",
@@ -485,7 +485,7 @@ This is the `login` dataset.
 
 An example event for `login` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",
@@ -636,9 +636,11 @@ An example event for `login` looks as following:
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.login.affected_email_address |  | keyword |
 | google_workspace.login.challenge_method | Login challenge method. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
+| google_workspace.login.challenge_status | Login challenge status. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.login.failure_type | Login failure type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.login.is_second_factor |  | boolean |
 | google_workspace.login.is_suspicious |  | boolean |
+| google_workspace.login.timestamp | UNIX timestmap of login in microseconds. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | long |
 | google_workspace.login.type | Login credentials type. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login. | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
@@ -704,7 +706,7 @@ This is the `admin` dataset.
 
 An example event for `admin` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "3baca80779ab",
@@ -1032,7 +1034,7 @@ This is the `drive` dataset.
 
 An example event for `drive` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "87e669265675",
@@ -1292,7 +1294,7 @@ This is the `groups` dataset.
 
 An example event for `groups` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4cc571ab4c1e",

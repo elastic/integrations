@@ -96,9 +96,6 @@
 - name: log.level
   type: keyword
   description: Log level of the log event.
-- name: log.original
-  type: keyword
-  description: Original log message with light interpretation only (encoding, newlines).
 - name: network.community_id
   type: keyword
   description: A hash of source and destination IPs and ports.
@@ -117,6 +114,9 @@
 - name: related.ip
   type: ip
   description: All of the IPs seen on your event.
+- name: related.user
+  type: keyword
+  description: All the user names seen on your event.
 - name: source.address
   type: keyword
   description: Source network address.
@@ -129,6 +129,17 @@
 - name: source.port
   type: long
   description: Port of the source.
+- name: source.user.name
+  level: core
+  type: keyword
+  ignore_above: 1024
+  multi_fields:
+    - name: text
+      type: text
+      norms: false
+      default_field: false
+  description: Short name or login of the user.
+  example: albert
 - name: tags
   type: keyword
   description: List of keywords used to tag each event.
