@@ -22,7 +22,7 @@ This is the OSQuery `result` dataset.
 
 An example event for `result` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-12-28T14:40:08.000Z",
     "file": {
