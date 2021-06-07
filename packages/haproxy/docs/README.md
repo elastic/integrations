@@ -131,7 +131,7 @@ The HAProxy `info` dataset collects general information about HAProxy processes.
 
 An example event for `info` looks as following:
 
-```json
+```$json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -354,7 +354,7 @@ See section "9.1. CSV format" of the official [HAProxy Management Guide](http://
 
 An example event for `stat` looks as following:
 
-```json
+```$json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
