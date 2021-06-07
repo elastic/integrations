@@ -1,50 +1,12 @@
 version: '2.3'
 services:
-  forwarded:
-    image: docker.elastic.co/observability/stream:v0.4.0
+  splunk-mock:
+    image: docker.elastic.co/observability/stream:v0.5.0
     ports:
       - 8080
     volumes:
-      - ./sample_logs:/sample_logs:ro
+      - ./files:/files:ro
     command:
-      - log
-      - --start-signal=SIGHUP
+      - http-server
       - --addr=:8080
-      - -p=http-server
-      - /sample_logs/forwarded.json.log
-  powershell:
-    image: docker.elastic.co/observability/stream:v0.4.0
-    ports:
-      - 8080
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-    command:
-      - log
-      - --start-signal=SIGHUP
-      - --addr=:8080
-      - -p=http-server
-      - /sample_logs/powershell.json.log
-  powershell-operational:
-    image: docker.elastic.co/observability/stream:v0.4.0
-    ports:
-      - 8080
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-    command:
-      - log
-      - --start-signal=SIGHUP
-      - --addr=:8080
-      - -p=http-server
-      - /sample_logs/powershell_operational.json.log
-  sysmon-operational:
-    image: docker.elastic.co/observability/stream:v0.4.0
-    ports:
-      - 8080
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-    command:
-      - log
-      - --start-signal=SIGHUP
-      - --addr=:8080
-      - -p=http-server
-      - /sample_logs/sysmon_operational.json.log
+      - --config=/files/config.yml

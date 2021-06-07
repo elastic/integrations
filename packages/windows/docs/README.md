@@ -135,7 +135,7 @@ The Windows `powershell` dataset provides events from the Windows
 
 An example event for `powershell` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-13T13:21:43.183Z",
     "agent": {
@@ -465,7 +465,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 
 An example event for `powershell_operational` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-13T09:04:04.755Z",
     "agent": {
@@ -788,7 +788,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 
 An example event for `sysmon_operational` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2019-07-18T03:34:01.261Z",
     "agent": {
