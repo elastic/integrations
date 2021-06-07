@@ -1,4 +1,4 @@
-name: azure_logs
+name: azure
 title: Azure Logs
 version: 0.2.4
 release: beta
@@ -24,6 +24,13 @@ screenshots:
     size: 5002x2666
     type: image/png
 vars:
+  - name: eventhub
+    type: text
+    title: Eventhub
+    multi: false
+    required: true
+    show_user: true
+    default: insights-operational-logs
   - name: consumer_group
     type: text
     title: Consumer Group
@@ -66,12 +73,12 @@ vars:
 policy_templates:
   - name: active-directory-logs
     title: Azure Active Directory logs
-    description: Collects Azure Directory logs
+    description: Azure Directory log integration
     data_streams:
       - auditlogs
       - signinlogs
     inputs:
-      - type: "azure/logs"
+      - type: "azure-eventhub"
         title: "Collect Azure Active Directory from Event Hub"
         description: "Collecting Active Directory logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
         input_group: logs
@@ -87,11 +94,11 @@ policy_templates:
         type: image/png
   - name: platformlogs
     title: Azure platform logs
-    description: Collects azure platformlogs logs
+    description: Azure platform logs integration
     data_streams:
       - platformlogs
     inputs:
-      - type: "azure/logs"
+      - type: "azure-eventhub"
         title: "Collect Azure platform logs logs from Event Hub"
         description: "Collecting platform logs from Azure instances (input: azure-eventhub)"
         input_group: logs
@@ -107,11 +114,11 @@ policy_templates:
         type: image/png
   - name: activitylogs
     title: Azure activity logs
-    description: Collects azure activity logs
+    description:  Azure activity logs integration
     data_streams:
       - activitylogs
     inputs:
-      - type: "azure/logs"
+      - type: "azure-eventhub"
         title: "Collect Azure activity logs from Event Hub"
         description: "Collecting activity logs from Azure instances (input: azure-eventhub)"
         input_group: logs
