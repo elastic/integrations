@@ -7,11 +7,11 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset :\"azure.activitylogs\" and azure.activitylogs.event_category : \"ServiceHealth\" "
+                    "query": "data_stream.dataset : \"azure.activitylogs\" "
                 }
             }
         },
-        "title": "Service Health Count [Logs Azure]",
+        "title": "Activity Stats [Logs Azure]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -20,51 +20,66 @@
                     "enabled": true,
                     "id": "1",
                     "params": {
-                        "customLabel": "Incidents"
+                        "customLabel": "Resources",
+                        "field": "azure.resource.name"
                     },
                     "schema": "metric",
-                    "type": "count"
+                    "type": "cardinality"
                 },
                 {
                     "enabled": true,
                     "id": "2",
                     "params": {
-                        "filters": [
-                            {
-                                "input": {
-                                    "language": "kuery",
-                                    "query": "azure.activitylogs.result_type : \"Active\""
-                                },
-                                "label": "Active"
-                            },
-                            {
-                                "input": {
-                                    "language": "kuery",
-                                    "query": "azure.activitylogs.result_type : \"Resolved\""
-                                },
-                                "label": "Resolved"
-                            }
-                        ]
+                        "customLabel": "Users",
+                        "field": "azure.activitylogs.identity.claims_initiated_by_user.name"
                     },
-                    "schema": "group",
-                    "type": "filters"
+                    "schema": "metric",
+                    "type": "cardinality"
+                },
+                {
+                    "enabled": true,
+                    "id": "3",
+                    "params": {
+                        "customLabel": "Resource Groups",
+                        "field": "azure.resource.group"
+                    },
+                    "schema": "metric",
+                    "type": "cardinality"
+                },
+                {
+                    "enabled": true,
+                    "id": "4",
+                    "params": {
+                        "customLabel": "Subscriptions",
+                        "field": "azure.subscription_id"
+                    },
+                    "schema": "metric",
+                    "type": "cardinality"
                 }
             ],
             "params": {
                 "addLegend": false,
                 "addTooltip": true,
                 "dimensions": {
-                    "bucket": {
-                        "accessor": 0,
-                        "format": {
-                            "id": "string",
-                            "params": {}
-                        },
-                        "type": "vis_dimension"
-                    },
                     "metrics": [
                         {
+                            "accessor": 0,
+                            "format": {
+                                "id": "number",
+                                "params": {}
+                            },
+                            "type": "vis_dimension"
+                        },
+                        {
                             "accessor": 1,
+                            "format": {
+                                "id": "number",
+                                "params": {}
+                            },
+                            "type": "vis_dimension"
+                        },
+                        {
+                            "accessor": 2,
                             "format": {
                                 "id": "number",
                                 "params": {}
@@ -99,11 +114,11 @@
                 },
                 "type": "metric"
             },
-            "title": "Service Health Count [Logs Azure]",
+            "title": "Activity Stats [Logs Azure]",
             "type": "metric"
         }
     },
-    "id": "azure-e37cd3d0-ec23-11e9-90ec-112a988266d5",
+    "id": "azure_logs-e4c7f4b0-f045-11e9-90ec-112a988266d5",
     "migrationVersion": {
         "visualization": "7.8.0"
     },

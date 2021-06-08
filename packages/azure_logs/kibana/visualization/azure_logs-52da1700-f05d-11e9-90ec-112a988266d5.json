@@ -6,12 +6,12 @@
                 "filter": [],
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
-                    "language": "kuery",
-                    "query": "data_stream.dataset :\"azure.activitylogs\" "
+                    "language": "lucene",
+                    "query": ""
                 }
             }
         },
-        "title": "Caller IP [Logs Azure]",
+        "title": "Users List [Logs Azure]",
         "uiStateJSON": {
             "vis": {
                 "params": {
@@ -29,15 +29,15 @@
                     "enabled": true,
                     "id": "2",
                     "params": {
-                        "customLabel": "Caller IP",
-                        "field": "source.ip",
+                        "customLabel": "Email",
+                        "field": "azure.activitylogs.identity.claims_initiated_by_user.name",
                         "missingBucket": false,
                         "missingBucketLabel": "Missing",
                         "order": "desc",
-                        "orderBy": "5",
+                        "orderBy": "1",
                         "otherBucket": false,
                         "otherBucketLabel": "Other",
-                        "size": 100
+                        "size": 20
                     },
                     "schema": "bucket",
                     "type": "terms"
@@ -46,29 +46,12 @@
                     "enabled": true,
                     "id": "3",
                     "params": {
-                        "customLabel": "Country",
-                        "field": "geo.country_name",
+                        "customLabel": "Name",
+                        "field": "azure.activitylogs.identity.claims_initiated_by_user.fullname",
                         "missingBucket": false,
                         "missingBucketLabel": "Missing",
                         "order": "desc",
-                        "orderBy": "5",
-                        "otherBucket": false,
-                        "otherBucketLabel": "Other",
-                        "size": 100
-                    },
-                    "schema": "bucket",
-                    "type": "terms"
-                },
-                {
-                    "enabled": true,
-                    "id": "4",
-                    "params": {
-                        "customLabel": "Email",
-                        "field": "azure.activitylogs.identity.claims_initiated_by_user.name",
-                        "missingBucket": false,
-                        "missingBucketLabel": "Missing",
-                        "order": "desc",
-                        "orderBy": "_key",
+                        "orderBy": "1",
                         "otherBucket": false,
                         "otherBucketLabel": "Other",
                         "size": 5
@@ -79,7 +62,19 @@
                 {
                     "enabled": true,
                     "id": "5",
-                    "params": {},
+                    "params": {
+                        "customLabel": "IPs",
+                        "field": "source.ip"
+                    },
+                    "schema": "metric",
+                    "type": "cardinality"
+                },
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {
+                        "customLabel": "Actions"
+                    },
                     "schema": "metric",
                     "type": "count"
                 }
@@ -93,7 +88,7 @@
                             "format": {
                                 "id": "terms",
                                 "params": {
-                                    "id": "ip",
+                                    "id": "string",
                                     "missingBucketLabel": "Missing",
                                     "otherBucketLabel": "Other"
                                 }
@@ -112,22 +107,17 @@
                                 }
                             },
                             "params": {}
-                        },
-                        {
-                            "accessor": 2,
-                            "aggType": "terms",
-                            "format": {
-                                "id": "terms",
-                                "params": {
-                                    "id": "string",
-                                    "missingBucketLabel": "Missing",
-                                    "otherBucketLabel": "Other"
-                                }
-                            },
-                            "params": {}
                         }
                     ],
                     "metrics": [
+                        {
+                            "accessor": 2,
+                            "aggType": "cardinality",
+                            "format": {
+                                "id": "number"
+                            },
+                            "params": {}
+                        },
                         {
                             "accessor": 3,
                             "aggType": "count",
@@ -149,11 +139,11 @@
                 },
                 "totalFunc": "sum"
             },
-            "title": "Caller IP [Logs Azure]",
+            "title": "Users List [Logs Azure]",
             "type": "table"
         }
     },
-    "id": "azure-6ece76d0-f0cc-11e9-90ec-112a988266d5",
+    "id": "azure_logs-52da1700-f05d-11e9-90ec-112a988266d5",
     "migrationVersion": {
         "visualization": "7.8.0"
     },

@@ -7,11 +7,11 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"azure.activitylogs\" "
+                    "query": "data_stream.dataset :\"azure.activitylogs\" and azure.activitylogs.event_category : \"Alert\" "
                 }
             }
         },
-        "title": "Activity Stats [Logs Azure]",
+        "title": "Alerts Count [Logs Azure]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -20,66 +20,58 @@
                     "enabled": true,
                     "id": "1",
                     "params": {
-                        "customLabel": "Resources",
-                        "field": "azure.resource.name"
+                        "customLabel": "Alerts"
                     },
                     "schema": "metric",
-                    "type": "cardinality"
+                    "type": "count"
                 },
                 {
                     "enabled": true,
                     "id": "2",
                     "params": {
-                        "customLabel": "Users",
-                        "field": "azure.activitylogs.identity.claims_initiated_by_user.name"
+                        "filters": [
+                            {
+                                "input": {
+                                    "language": "kuery",
+                                    "query": "azure.activitylogs.result_type : \"Activated\""
+                                },
+                                "label": "Activated"
+                            },
+                            {
+                                "input": {
+                                    "language": "kuery",
+                                    "query": "azure.activitylogs.result_type : \"Resolved\""
+                                },
+                                "label": "Resolved"
+                            },
+                            {
+                                "input": {
+                                    "language": "kuery",
+                                    "query": "azure.activitylogs.result_type : \"Succeeded\""
+                                },
+                                "label": "Succeeded"
+                            }
+                        ]
                     },
-                    "schema": "metric",
-                    "type": "cardinality"
-                },
-                {
-                    "enabled": true,
-                    "id": "3",
-                    "params": {
-                        "customLabel": "Resource Groups",
-                        "field": "azure.resource.group"
-                    },
-                    "schema": "metric",
-                    "type": "cardinality"
-                },
-                {
-                    "enabled": true,
-                    "id": "4",
-                    "params": {
-                        "customLabel": "Subscriptions",
-                        "field": "azure.subscription_id"
-                    },
-                    "schema": "metric",
-                    "type": "cardinality"
+                    "schema": "group",
+                    "type": "filters"
                 }
             ],
             "params": {
                 "addLegend": false,
                 "addTooltip": true,
                 "dimensions": {
+                    "bucket": {
+                        "accessor": 0,
+                        "format": {
+                            "id": "string",
+                            "params": {}
+                        },
+                        "type": "vis_dimension"
+                    },
                     "metrics": [
                         {
-                            "accessor": 0,
-                            "format": {
-                                "id": "number",
-                                "params": {}
-                            },
-                            "type": "vis_dimension"
-                        },
-                        {
                             "accessor": 1,
-                            "format": {
-                                "id": "number",
-                                "params": {}
-                            },
-                            "type": "vis_dimension"
-                        },
-                        {
-                            "accessor": 2,
                             "format": {
                                 "id": "number",
                                 "params": {}
@@ -114,11 +106,11 @@
                 },
                 "type": "metric"
             },
-            "title": "Activity Stats [Logs Azure]",
+            "title": "Alerts Count [Logs Azure]",
             "type": "metric"
         }
     },
-    "id": "azure-e4c7f4b0-f045-11e9-90ec-112a988266d5",
+    "id": "azure_logs-f684a750-ec23-11e9-90ec-112a988266d5",
     "migrationVersion": {
         "visualization": "7.8.0"
     },
