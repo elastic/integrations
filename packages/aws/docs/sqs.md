@@ -4,7 +4,7 @@
 
 An example event for `sqs` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {
@@ -66,6 +66,7 @@ An example event for `sqs` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
 | aws.dimensions.QueueName | SQS queue name | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |

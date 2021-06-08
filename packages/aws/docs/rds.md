@@ -4,7 +4,7 @@
 
 An example event for `rds` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:34.537Z",
     "ecs": {
@@ -102,6 +102,7 @@ An example event for `rds` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
 | aws.dimensions.DBClusterIdentifier | This dimension filters the data that you request for a specific Amazon Aurora DB cluster. | keyword |
 | aws.dimensions.DBClusterIdentifier,Role | This dimension filters the data that you request for a specific Aurora DB cluster, aggregating the metric by instance role (WRITER/READER). | keyword |

@@ -4,7 +4,7 @@
 
 An example event for `natgateway` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:27.154Z",
     "service": {

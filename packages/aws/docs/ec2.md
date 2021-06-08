@@ -47,14 +47,16 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.name | Process name. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
 
 An example event for `ec2` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:56:37.255Z",
     "aws": {
@@ -173,6 +175,7 @@ An example event for `ec2` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
 | aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
 | aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |

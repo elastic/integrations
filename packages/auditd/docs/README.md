@@ -16,7 +16,7 @@ This is the Auditd `log` dataset.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-01-31T20:17:14.891Z",
     "destination": {

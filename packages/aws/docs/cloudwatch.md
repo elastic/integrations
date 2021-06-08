@@ -47,13 +47,14 @@ setup already.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
 
 An example event for `cloudwatch` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:17:02.812Z",
     "event": {

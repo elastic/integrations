@@ -7,15 +7,11 @@ processors:
   - set:
       field: ecs.version
       value: "1.9.0"
-  - set:
-      field: event.original
-      copy_from: message
-      if: "ctx?._conf?.keep_original_message == true"
-  - remove:
-      field: _conf
-      ignore_missing: true
-  - json:
+  - rename:
       field: message
+      target_field: event.original
+  - json:
+      field: event.original
       target_field: json
   - script:
       description: Drops null/empty values recursively
@@ -34,9 +30,6 @@ processors:
           return false;
         }
         drop(ctx);
-  - remove:
-      field: message
-      ignore_missing: true
   - convert:
       field: json.uuid
       target_field: _id
@@ -557,7 +550,11 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message

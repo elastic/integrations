@@ -4,7 +4,7 @@
 
 An example event for `lambda` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:17:08.666Z",
     "agent": {

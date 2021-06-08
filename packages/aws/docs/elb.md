@@ -104,6 +104,7 @@ For network load balancer, please follow [enable access log for network load bal
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
@@ -112,7 +113,7 @@ For network load balancer, please follow [enable access log for network load bal
 
 An example event for `elb` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:58:30.211Z",
     "agent": {

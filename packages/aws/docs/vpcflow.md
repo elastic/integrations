@@ -93,4 +93,5 @@
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 

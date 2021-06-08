@@ -4,7 +4,7 @@
 
 An example event for `transitgateway` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T20:10:20.953Z",
     "cloud": {

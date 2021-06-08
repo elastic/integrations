@@ -6,6 +6,16 @@ processors:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
 
+  - set:
+      field: ecs.version
+      value: 1.9.0
+
+  - convert:
+      field: network.iana_number
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
   # IP Geolocation Lookup
   - geoip:
         if: ctx.source?.geo == null
@@ -16,7 +26,7 @@ processors:
         if: ctx.destination?.geo == null
         field: destination.ip
         target_field: destination.geo
-        ignore_missing: true
+        ignore_missing: true 
 
   # IP Autonomous System (AS) Lookup
   - geoip:

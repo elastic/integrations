@@ -16,7 +16,7 @@ The `log` dataset collects the NATS logs.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "nats": {
         "log": {
@@ -155,7 +155,7 @@ metrics from a Nats instance.
 
 An example event for `stats` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:55:12.889Z",
     "agent": {
@@ -290,7 +290,7 @@ metrics about connections from a Nats instance.
 
 An example event for `connections` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:55:32.849Z",
     "metricset": {
@@ -383,7 +383,7 @@ metrics about routes from a Nats instance.
 
 An example event for `routes` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:54:52.887Z",
     "event": {
@@ -476,7 +476,7 @@ metrics about subscriptions from a Nats instance.
 
 An example event for `subscriptions` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:56:12.814Z",
     "service": {
@@ -583,7 +583,7 @@ metrics per connection from a Nats instance.
 
 An example event for `connection` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:55:52.814Z",
     "service": {
@@ -695,7 +695,7 @@ metric per route from a Nats instance.
 
 An example event for `route` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:54:22.920Z",
     "service": {

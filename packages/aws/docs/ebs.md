@@ -4,7 +4,7 @@
 
 An example event for `ebs` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-28T17:57:22.450Z",
     "service": {
