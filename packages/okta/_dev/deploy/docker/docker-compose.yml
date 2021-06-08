@@ -1,8 +1,14 @@
 version: '2.3'
 services:
   okta:
-    image: alpine
+    image: docker.elastic.co/observability/stream:v0.5.0
+    ports:
+      - 8080
     volumes:
-      - ./sample_logs:/sample_logs:ro
-      - ${SERVICE_LOGS_DIR}:/var/log
-    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+      - ./files:/files:ro
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/config.yml
