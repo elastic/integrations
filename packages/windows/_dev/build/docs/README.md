@@ -46,6 +46,8 @@ channel specific datasets.
 The Windows `powershell` dataset provides events from the Windows
 `Windows PowerShell` event log.
 
+{{event "powershell"}}
+
 {{fields "powershell"}}
 
 ### Powershell/Operational
@@ -53,11 +55,15 @@ The Windows `powershell` dataset provides events from the Windows
 The Windows `powershell_operational` dataset provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
+{{event "powershell_operational"}}
+
 {{fields "powershell_operational"}}
 
 ### Sysmon/Operational
 
 The Windows `sysmon_operational` dataset provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
+
+{{event "sysmon_operational"}}
 
 {{fields "sysmon_operational"}}
