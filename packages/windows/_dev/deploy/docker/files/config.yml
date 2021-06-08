@@ -1,0 +1,177 @@
+rules:
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - POST
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:ForwardedEvents" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/><EventID>4105</EventID><Version>1</Version><Level>5</Level><Task>102</Task><Opcode>15</Opcode><Keywords>0x0</Keywords><TimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/><EventRecordID>790</EventRecordID><Correlation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/><Execution ProcessID='4204' ThreadID='1476'/><Channel>Microsoft-Windows-PowerShell/Operational</Channel><Computer>vagrant</Computer><Security UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/></System><EventData><Data Name='ScriptBlockId'>f4a378ab-b74f-41a7-a5ef-6dd55562fdb9</Data><Data Name='RunspaceId'>9c031e5c-8d5a-4b91-a12e-b3624970b623</Data></EventData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Security",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Security",
+                  "sourcetype": "XmlWinEventLog:Security",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - post
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:Windows PowerShell" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='PowerShell'/><EventID Qualifiers='0'>600</EventID><Level>4</Level><Task>6</Task><Keywords>0x80000000000000</Keywords><TimeCreated SystemTime='2020-05-13T13:21:43.183180900Z'/><EventRecordID>1089</EventRecordID><Channel>Windows PowerShell</Channel><Computer>vagrant</Computer><Security/></System><EventData><Data>Certificate</Data><Data>Started</Data><Data>\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=35\n\n\tHostName=Windows PowerShell ISE Host\n\tHostVersion=5.1.17763.1007\n\tHostId=86edc16f-6943-469e-8bd8-ef1857080206\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1\n\tEngineVersion=5.1.17763.1007\n\tRunspaceId=9d21da0b-e402-40e1-92ff-98c5ab1137a9\n\tPipelineId=15\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=</Data></EventData></Event>\n<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='PowerShell'/><EventID Qualifiers='0'>600</EventID><Level>4</Level><Task>6</Task><Keywords>0x80000000000000</Keywords><TimeCreated SystemTime='2020-05-13T13:25:04.656426900Z'/><EventRecordID>1266</EventRecordID><Channel>Windows PowerShell</Channel><Computer>vagrant</Computer><Security/></System><EventData><Data>Registry</Data><Data>Started</Data><Data>\tProviderName=Registry\n\tNewProviderState=Started\n\n\tSequenceNumber=1\n\n\tHostName=ConsoleHost\n\tHostVersion=5.1.17763.1007\n\tHostId=44b8d66c-f5a2-4abb-ac7d-6db73990a6d3\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -noexit -command 'C:\\Gopath\\src\\github.com\\elastic\\beats'\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=</Data></EventData></Event>\n<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='PowerShell'/><EventID Qualifiers='0'>600</EventID><Level>4</Level><Task>6</Task><Keywords>0x80000000000000</Keywords><TimeCreated SystemTime='2020-06-04T07:25:04.857430200Z'/><EventRecordID>18640</EventRecordID><Channel>Windows PowerShell</Channel><Computer>vagrant</Computer><Security/></System><EventData><Data>Certificate</Data><Data>Started</Data><Data>\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=8\n\n\tHostName=ConsoleHost\n\tHostVersion=2.0\n\tHostId=99a16837-7392-463d-afe5-5f3ed24bd358\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=</Data></EventData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Security",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Security",
+                  "sourcetype": "XmlWinEventLog:Security",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - post
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:Microsoft-Windows-Powershell/Operational" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/><EventID>4105</EventID><Version>1</Version><Level>5</Level><Task>102</Task><Opcode>15</Opcode><Keywords>0x0</Keywords><TimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/><EventRecordID>790</EventRecordID><Correlation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/><Execution ProcessID='4204' ThreadID='1476'/><Channel>Microsoft-Windows-PowerShell/Operational</Channel><Computer>vagrant</Computer><Security UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/></System><EventData><Data Name='ScriptBlockId'>f4a378ab-b74f-41a7-a5ef-6dd55562fdb9</Data><Data Name='RunspaceId'>9c031e5c-8d5a-4b91-a12e-b3624970b623</Data></EventData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Security",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Security",
+                  "sourcetype": "XmlWinEventLog:Security",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }
+  - path: /services/search/jobs/export
+    user: test
+    password: test
+    methods:
+      - post
+    query_params:
+      index_earliest: "{index_earliest:[0-9]+}"
+      index_latest: "{index_latest:[0-9]+}"
+      output_mode: json
+      search: 'search sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" | streamstats max(_indextime) AS max_indextime'
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+              "preview": false,
+              "offset": 194,
+              "lastrow": true,
+              "result": {
+                  "_bkt": "main~0~1212176D-89E1-485D-89E6-3ADC276CCA38",
+                  "_cd": "0:315",
+                  "_indextime": "1622471463",
+                  "_raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/><EventID>22</EventID><Version>5</Version><Level>4</Level><Task>22</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/><EventRecordID>67</EventRecordID><Correlation/><Execution ProcessID='2828' ThreadID='1684'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>vagrant-2016</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'></Data><Data Name='UtcTime'>2019-07-18 03:34:01.261</Data><Data Name='ProcessGuid'>{fa4a0de6-e8a9-5d2f-0000-001053699900}</Data><Data Name='ProcessId'>2736</Data><Data Name='QueryName'>www.msn.com</Data><Data Name='QueryStatus'>0</Data><Data Name='QueryResults'>type:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;</Data><Data Name='Image'>C:\\Program Files (x86)\\Internet Explorer\\iexplore.exe</Data></EventData></Event>",
+                  "_serial": "194",
+                  "_si": [
+                      "69819b6ce1bd",
+                      "main"
+                  ],
+                  "_sourcetype": "XmlWinEventLog:Security",
+                  "_time": "2021-05-25 13:11:45.000 UTC",
+                  "host": "VAGRANT",
+                  "index": "main",
+                  "linecount": "1",
+                  "max_indextime": "1622471606",
+                  "source": "WinEventLog:Security",
+                  "sourcetype": "XmlWinEventLog:Security",
+                  "splunk_server": "69819b6ce1bd"
+              }
+          }
