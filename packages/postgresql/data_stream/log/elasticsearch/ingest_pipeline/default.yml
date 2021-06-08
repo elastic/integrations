@@ -27,7 +27,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline-csv" }}'
       if: ctx.separator == ','
-
   - date:
       field: postgresql.log.timestamp
       target_field: '@timestamp'
@@ -66,10 +65,15 @@ processors:
       if: "ctx?.user?.name != null"
   - remove:
       field:
-      - separator
-      - raw_message
+        - separator
+        - raw_message
   - remove:
       field: temp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
