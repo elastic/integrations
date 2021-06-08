@@ -1,64 +1,109 @@
-# Azure Metrics Integration
+# Azure Resource Metrics Integration
 
-The azure logs integration retrieves different types of log data from Azure.
-There are several requirements before using the module since the logs will actually be read from azure event hubs.
 
-   - the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
-   - to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export
-   - to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
+The Azure Monitor feature collects and aggregates logs and metrics from a variety of sources into a common data platform where it can be used for analysis, visualization, and alerting.
 
-The module contains the following filesets:
 
-### app_insights
-Will retrieve azure activity logs. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
+The azure monitor metrics are numerical values that describe some aspect of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
 
-### app_state
-Will retrieve azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
+The Azure Resource Metrics will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
+Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
-### Credentials
+###Module-specific configuration notes
 
-`eventhub` :
-  _string_
-Is the fully managed, real-time data ingestion service.
-Default value `insights-operational-logs`.
+All the tasks executed against the Azure Monitor REST API will use the Azure Resource Manager authentication model.
+Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
+One approach to authenticate the client application is to create an Azure AD service principal and retrieve the authentication (JWT) token.
+For a more detailed walk-through, have a look at using Azure PowerShell to create a service principal to access resources https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0.
+ It is also possible to create a service principal via the Azure portal https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal.
+Users will have to make sure the roles assigned to the application contain at least reading permissions to the monitor data, more on the roles here https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles.
 
-`consumer_group` :
+Required credentials for the `azure` resource metrics integration:
+
+`client_id`:: The unique identifier for the application (also known as Application Id)
+
+`client_secret`:: The client/application secret/key
+
+`subscription_id`:: The unique identifier for the azure subscription
+
+`tenant_id`:: The unique identifier of the Azure Active Directory instance
+
+
+The azure credentials keys can be used if configured `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
+
+`resource_manager_endpoint` ::
 _string_
- The publish/subscribe mechanism of Event Hubs is enabled through consumer groups. A consumer group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
-Default value: `$Default`
-
-`connection_string` :
-_string_
-The connection string required to communicate with Event Hubs, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
-
-A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
-
-`storage_account` :
-_string_
-The name of the storage account the state/offsets will be stored and updated.
-
-`storage_account_key` :
-_string_
-The storage account key, this key will be used to authorize access to data in your storage account.
-
-`resource_manager_endpoint` :
-_string_
-Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+Optional, by default the azure public environment will be used, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
 Ex:
-https://management.chinacloudapi.cn/ for azure ChinaCloud
-https://management.microsoftazure.de/ for azure GermanCloud
-https://management.azure.com/ for azure PublicCloud
-https://management.usgovcloudapi.net/ for azure USGovernmentCloud
-Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
+https://management.chinacloudapi.cn for azure ChinaCloud
+https://management.microsoftazure.de for azure GermanCloud
+https://management.azure.com for azure PublicCloud
+https://management.usgovcloudapi.net for azure USGovernmentCloud
+
+`active_directory_endpoint` ::
+_string_
+Optional, by default the associated active directory endpoint to the resource manager endpoint will be used, to override, users can provide a specific active directory endpoint in order to use a different azure environment.
+Ex:
+https://login.microsoftonline.com for azure ChinaCloud
+https://login.microsoftonline.us for azure GermanCloud
+https://login.chinacloudapi.cn for azure PublicCloud
+https://login.microsoftonline.de for azure USGovernmentCloud
 
 
-{{event "monitor"}}
+
+###Datasets
+
+ `monitor`
+This dataset allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
+aggregation list, namespaces and metric dimensions. The monitor metrics will have a minimum timegrain of 5 minutes, so the `period` for `monitor` dataset should be `300s` or multiples of `300s`.
+
+{{fields "monitor"}}
+
+`compute_vm`
+This dataset will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm` dataset should be `300s` or multiples of `300s`.
 
 {{fields "compute_vm"}}
 
+`compute_vm_scaleset`
+This dataset will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm_scaleset` dataset should be `300s` or multiples of `300s`.
+
+{{fields "compute_vm_scaleset"}}
+
+ `storage_account`
+This dataset will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
+so the `period` for `storage_account` dataset should be `300s` or multiples of `300s`.
+
+{{fields "storage_account"}}
+
+`container_instance`
+This dataset will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_instance` dataset should be `300s` or multiples of `300s`.
+
+{{fields "container_instance"}}
+
+`container_registry`
+This dataset will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_registry` dataset should be `300s` or multiples of `300s`.
+
+{{fields "container_registry"}}
+
+`container_service`
+This dataset will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_service` dataset should be `300s` or multiples of `300s`.
+
+{{fields "container_service"}}
+
+`database_account`
+This dataset will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
+so the `period` for `database_account` dataset should be `300s` or multiples of `300s`.
+
+{{fields "database_account"}}
 
 
+###Additional notes about metrics and costs
 
+Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 
-
-
+Authentication: we are handling authentication on our side (creating/renewing the authentication token), so we advise users to use dedicated credentials for metricbeat only.
