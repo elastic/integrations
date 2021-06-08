@@ -133,6 +133,93 @@ channel specific datasets.
 The Windows `powershell` dataset provides events from the Windows
 `Windows PowerShell` event log.
 
+An example event for `powershell` looks as following:
+
+```json
+{
+    "@timestamp": "2020-05-13T13:21:43.183Z",
+    "agent": {
+        "ephemeral_id": "6d6bb3f5-f905-4ee5-8bee-c719616f8b6b",
+        "hostname": "docker-fleet-agent",
+        "id": "6fe85b08-7c10-4f55-ba4e-eeb75fdd6fdf",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.13.0"
+    },
+    "data_stream": {
+        "dataset": "windows.powershell",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "6bdfe1ae-64c3-4177-8b0c-2380a6e01322",
+        "snapshot": true,
+        "version": "7.13.0"
+    },
+    "event": {
+        "category": "process",
+        "code": "600",
+        "created": "2021-06-01T10:23:48.533Z",
+        "dataset": "windows.powershell",
+        "ingested": "2021-06-01T10:23:49.554043100Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:21:43.183180900Z'/\u003e\u003cEventRecordID\u003e1089\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=35\n\n\tHostName=Windows PowerShell ISE Host\n\tHostVersion=5.1.17763.1007\n\tHostId=86edc16f-6943-469e-8bd8-ef1857080206\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1\n\tEngineVersion=5.1.17763.1007\n\tRunspaceId=9d21da0b-e402-40e1-92ff-98c5ab1137a9\n\tPipelineId=15\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:25:04.656426900Z'/\u003e\u003cEventRecordID\u003e1266\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eRegistry\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Registry\n\tNewProviderState=Started\n\n\tSequenceNumber=1\n\n\tHostName=ConsoleHost\n\tHostVersion=5.1.17763.1007\n\tHostId=44b8d66c-f5a2-4abb-ac7d-6db73990a6d3\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -noexit -command 'C:\\Gopath\\src\\github.com\\elastic\\beats'\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-06-04T07:25:04.857430200Z'/\u003e\u003cEventRecordID\u003e18640\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=8\n\n\tHostName=ConsoleHost\n\tHostVersion=2.0\n\tHostId=99a16837-7392-463d-afe5-5f3ed24bd358\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "PowerShell",
+        "sequence": 35,
+        "type": "info"
+    },
+    "host": {
+        "name": "vagrant"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "information"
+    },
+    "powershell": {
+        "engine": {
+            "version": "5.1.17763.1007"
+        },
+        "pipeline_id": "15",
+        "process": {
+            "executable_version": "5.1.17763.1007"
+        },
+        "provider": {
+            "name": "Certificate",
+            "new_state": "Started"
+        },
+        "runspace_id": "9d21da0b-e402-40e1-92ff-98c5ab1137a9"
+    },
+    "process": {
+        "args": [
+            "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe",
+            "C:\\Users\\vagrant\\Desktop\\lateral.ps1"
+        ],
+        "args_count": 2,
+        "command_line": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1",
+        "entity_id": "86edc16f-6943-469e-8bd8-ef1857080206",
+        "title": "Windows PowerShell ISE Host"
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "winlog": {
+        "channel": "Windows PowerShell",
+        "computer_name": "vagrant",
+        "event_id": "600",
+        "keywords": [
+            "Classic"
+        ],
+        "provider_name": "PowerShell",
+        "record_id": "1089"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -183,7 +270,7 @@ The Windows `powershell` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -192,6 +279,7 @@ The Windows `powershell` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
@@ -375,6 +463,86 @@ The Windows `powershell` dataset provides events from the Windows
 The Windows `powershell_operational` dataset provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
+An example event for `powershell_operational` looks as following:
+
+```json
+{
+    "@timestamp": "2020-05-13T09:04:04.755Z",
+    "agent": {
+        "ephemeral_id": "6d6bb3f5-f905-4ee5-8bee-c719616f8b6b",
+        "hostname": "docker-fleet-agent",
+        "id": "6fe85b08-7c10-4f55-ba4e-eeb75fdd6fdf",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.13.0"
+    },
+    "data_stream": {
+        "dataset": "windows.powershell_operational",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "6bdfe1ae-64c3-4177-8b0c-2380a6e01322",
+        "snapshot": true,
+        "version": "7.13.0"
+    },
+    "event": {
+        "category": "process",
+        "code": "4105",
+        "created": "2021-06-01T10:24:43.254Z",
+        "dataset": "windows.powershell_operational",
+        "ingested": "2021-06-01T10:24:44.277129100Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/\u003e\u003cEventID\u003e4105\u003c/EventID\u003e\u003cVersion\u003e1\u003c/Version\u003e\u003cLevel\u003e5\u003c/Level\u003e\u003cTask\u003e102\u003c/Task\u003e\u003cOpcode\u003e15\u003c/Opcode\u003e\u003cKeywords\u003e0x0\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/\u003e\u003cEventRecordID\u003e790\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/\u003e\u003cExecution ProcessID='4204' ThreadID='1476'/\u003e\u003cChannel\u003eMicrosoft-Windows-PowerShell/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='ScriptBlockId'\u003ef4a378ab-b74f-41a7-a5ef-6dd55562fdb9\u003c/Data\u003e\u003cData Name='RunspaceId'\u003e9c031e5c-8d5a-4b91-a12e-b3624970b623\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "Microsoft-Windows-PowerShell",
+        "type": "start"
+    },
+    "host": {
+        "name": "vagrant"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "verbose"
+    },
+    "powershell": {
+        "file": {
+            "script_block_id": "f4a378ab-b74f-41a7-a5ef-6dd55562fdb9"
+        },
+        "runspace_id": "9c031e5c-8d5a-4b91-a12e-b3624970b623"
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "user": {
+        "id": "S-1-5-21-1350058589-2282154016-2764056528-1000"
+    },
+    "winlog": {
+        "activity_id": "{dd68516a-2930-0000-5962-68dd3029d601}",
+        "channel": "Microsoft-Windows-PowerShell/Operational",
+        "computer_name": "vagrant",
+        "event_id": "4105",
+        "process": {
+            "pid": 4204,
+            "thread": {
+                "id": 1476
+            }
+        },
+        "provider_guid": "{a0c1853b-5c40-4b15-8766-3cf1c58f985a}",
+        "provider_name": "Microsoft-Windows-PowerShell",
+        "record_id": "790",
+        "user": {
+            "identifier": "S-1-5-21-1350058589-2282154016-2764056528-1000"
+        },
+        "version": 1
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -425,7 +593,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -434,6 +602,7 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
@@ -617,6 +786,135 @@ The Windows `powershell_operational` dataset provides events from the Windows
 The Windows `sysmon_operational` dataset provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
 
+An example event for `sysmon_operational` looks as following:
+
+```json
+{
+    "@timestamp": "2019-07-18T03:34:01.261Z",
+    "agent": {
+        "ephemeral_id": "6d6bb3f5-f905-4ee5-8bee-c719616f8b6b",
+        "hostname": "docker-fleet-agent",
+        "id": "6fe85b08-7c10-4f55-ba4e-eeb75fdd6fdf",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.13.0"
+    },
+    "data_stream": {
+        "dataset": "windows.sysmon_operational",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "dns": {
+        "answers": [
+            {
+                "data": "www-msn-com.a-0003.a-msedge.net",
+                "type": "CNAME"
+            },
+            {
+                "data": "a-0003.a-msedge.net",
+                "type": "CNAME"
+            },
+            {
+                "data": "204.79.197.203",
+                "type": "A"
+            }
+        ],
+        "question": {
+            "name": "www.msn.com",
+            "registered_domain": "msn.com",
+            "subdomain": "www",
+            "top_level_domain": "com"
+        },
+        "resolved_ip": [
+            "204.79.197.203"
+        ]
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "6bdfe1ae-64c3-4177-8b0c-2380a6e01322",
+        "snapshot": true,
+        "version": "7.13.0"
+    },
+    "event": {
+        "category": [
+            "network"
+        ],
+        "code": "22",
+        "created": "2019-07-18T03:34:02.025Z",
+        "dataset": "windows.sysmon_operational",
+        "ingested": "2021-06-01T10:25:35.382586400Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/\u003e\u003cEventID\u003e22\u003c/EventID\u003e\u003cVersion\u003e5\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e22\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/\u003e\u003cEventRecordID\u003e67\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='2828' ThreadID='1684'/\u003e\u003cChannel\u003eMicrosoft-Windows-Sysmon/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant-2016\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='RuleName'\u003e\u003c/Data\u003e\u003cData Name='UtcTime'\u003e2019-07-18 03:34:01.261\u003c/Data\u003e\u003cData Name='ProcessGuid'\u003e{fa4a0de6-e8a9-5d2f-0000-001053699900}\u003c/Data\u003e\u003cData Name='ProcessId'\u003e2736\u003c/Data\u003e\u003cData Name='QueryName'\u003ewww.msn.com\u003c/Data\u003e\u003cData Name='QueryStatus'\u003e0\u003c/Data\u003e\u003cData Name='QueryResults'\u003etype:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;\u003c/Data\u003e\u003cData Name='Image'\u003eC:\\Program Files (x86)\\Internet Explorer\\iexplore.exe\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "Microsoft-Windows-Sysmon",
+        "type": [
+            "connection",
+            "protocol",
+            "info"
+        ]
+    },
+    "host": {
+        "name": "vagrant-2016"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "information"
+    },
+    "network": {
+        "protocol": "dns"
+    },
+    "process": {
+        "entity_id": "{fa4a0de6-e8a9-5d2f-0000-001053699900}",
+        "executable": "C:\\Program Files (x86)\\Internet Explorer\\iexplore.exe",
+        "name": "iexplore.exe",
+        "pid": 2736
+    },
+    "related": {
+        "hosts": [
+            "www-msn-com.a-0003.a-msedge.net",
+            "a-0003.a-msedge.net",
+            "www.msn.com"
+        ],
+        "ip": [
+            "204.79.197.203"
+        ]
+    },
+    "sysmon": {
+        "dns": {
+            "status": "SUCCESS"
+        }
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "user": {
+        "id": "S-1-5-18"
+    },
+    "winlog": {
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer_name": "vagrant-2016",
+        "event_id": "22",
+        "opcode": "Info",
+        "process": {
+            "pid": 2828,
+            "thread": {
+                "id": 1684
+            }
+        },
+        "provider_guid": "{5770385f-c22a-43e0-bf4c-06f5698ffbd9}",
+        "provider_name": "Microsoft-Windows-Sysmon",
+        "record_id": "67",
+        "user": {
+            "identifier": "S-1-5-18"
+        },
+        "version": 5
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -715,6 +1013,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. | text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. | keyword |
@@ -768,6 +1067,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | sysmon.dns.status | Windows status code returned for the DNS query. | keyword |
 | sysmon.file.archived | Indicates if the deleted file was archived. | boolean |
 | sysmon.file.is_executable | Indicates if the deleted file was an executable. | boolean |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
