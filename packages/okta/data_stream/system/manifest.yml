@@ -4,13 +4,14 @@ release: experimental
 streams:
   - input: httpjson
     vars:
-      - name: keep_original_message
-        type: bool
-        title: Keep Original Message
-        multi: false
+      - name: preserve_original_event
         required: true
         show_user: true
-        default: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
       - name: tags
         type: text
         title: Tags
@@ -20,26 +21,5 @@ streams:
         default:
           - forwarded
     template_path: httpjson.yml.hbs
-    title: Okta system logs
-    description: Collect Okta system logs
-  - input: logfile
-    enabled: false
-    vars:
-      - name: keep_original_message
-        type: bool
-        title: Keep Original Message
-        multi: false
-        required: true
-        show_user: true
-        default: true
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - forwarded
-    template_path: log.yml.hbs
     title: Okta system logs
     description: Collect Okta system logs

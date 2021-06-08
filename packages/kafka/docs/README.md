@@ -69,7 +69,7 @@ The `broker` dataset collects JMX metrics from Kafka brokers using Jolokia.
 
 An example event for `broker` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-15T15:12:12.270Z",
     "service": {
@@ -184,7 +184,7 @@ An example event for `broker` looks as following:
 
 An example event for `consumergroup` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-15T15:18:13.919Z",
     "agent": {
@@ -311,7 +311,7 @@ An example event for `consumergroup` looks as following:
 
 An example event for `partition` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-05-15T15:19:44.240Z",
     "metricset": {

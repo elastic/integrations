@@ -163,7 +163,7 @@ The `galera_status` dataset periodically fetches metrics from [Galera](http://ga
 
 An example event for `galera_status` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-04-20T12:33:24.613Z",
     "mysql": {
@@ -348,7 +348,7 @@ The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL ST
 
 An example event for `status` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-04-20T12:32:54.614Z",
     "mysql": {
