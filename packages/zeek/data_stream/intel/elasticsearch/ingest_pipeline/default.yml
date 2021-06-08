@@ -20,39 +20,48 @@ processors:
   - append:
       field: event.type
       value: indicator
-  - json:
-      field: message
-      target_field: json
-      ignore_failure: true
-      if: ctx?.message != null
-  - drop:
-      if: 'ctx?.json?.result == null && ctx?.json?.ts == null'
   - rename:
-      field: json
-      target_field: zeek.intel
-      if: ctx?.json?.ts != null
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: _temp_.json
+  - drop:
+      description: Drop if it is a Splunk event but it is empty.
+      if: 'ctx?._temp_?.json?.result == null && ctx?._temp_?.json?.ts == null' 
+# Splunk specific parsing start
   - fingerprint:
       fields: 
-        - json.result._cd
-        - json.result._indextime
-        - json.result._raw
-        - json.result._time
-        - json.result.host
-        - json.result.source
+        - _temp_.json.result._cd
+        - _temp_.json.result._indextime
+        - _temp_.json.result._raw
+        - _temp_.json.result._time
+        - _temp_.json.result.host
+        - _temp_.json.result.source
       target_field: '_id'
-      if: 'ctx?.json?.result != null && ctx?.json?.ts == null'
-  - rename:
-      field: json.result._raw
-      target_field: event.original
+      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
+  - remove:
+      field: event.original
       ignore_missing: true
+      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
+  - set:
+      field: event.original
+      copy_from: _temp_.json.result._raw
+      ignore_empty_value: true
+      ignore_failure: true
+      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
   - rename:
-      field: json.result.host
+      field: _temp_.json.result.host
       target_field: host.name
       ignore_missing: true
   - rename:
-      field: json.result.source
+      field: _temp_.json.result.source
       target_field: log.file.path
       ignore_missing: true
+  - remove:
+      field: _temp_
+      ignore_missing: true
+# Splunk parsing end
   - json:
       field: event.original
       target_field: zeek.intel
@@ -231,6 +240,11 @@ processors:
         - message
         - json
         - zeek.intel.id
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
