@@ -6,25 +6,25 @@ processors:
     value: '{{_ingest.timestamp}}'
 - set:
     field: ecs.version
-    value: "1.9.0"
+    value: "1.10.0"
 - grok:
     field: message
     patterns:
-    - '%{SYSLOG5424PRI}%{GREEDYDATA:log.original}$'
+    - '%{SYSLOG5424PRI}%{GREEDYDATA:event.original}$'
 
-# optimize fields / strings in log.original for KV processor
+# optimize fields / strings in event.original for KV processor
 - gsub:
-    field: log.original
+    field: event.original
     pattern: "clients_conn_SSID"
     replacement: 'clients_conn_ssid'
 - gsub:
-    field: log.original
+    field: event.original
     pattern: "SysLog_SERVER_NAME"
     replacement: 'syslog_server_name'
 
 # split Sophos-XG fields
 - kv:
-    field: log.original
+    field: event.original
     field_split: " (?=[a-z0-9\\_\\-]+=)"
     value_split: "="
     prefix: "sophos.xg."
@@ -90,10 +90,6 @@ processors:
 - set:
     field: event.severity
     value: "{{sophos.xg.log_id}}"
-- rename:
-    field: log.original
-    target_field: event.original
-    ignore_missing: true
 
 # extract from event_severity from log_id, example: 010101600001"
 - gsub:
@@ -208,12 +204,15 @@ processors:
         if (mappings == null) return;
         def name = conf['default'];
         for (def item : mappings) {
-            if (item.serial == serial) {
-                name = item.hostname;
-                break;
-            }
+          if (item.serial_number == serial) {
+            name = item.hostname;
+            break;
+          }
         }
-        ctx["host"]["name"] = name;
+        if (ctx?.host == null) {
+          ctx.host = new HashMap();
+        }
+        ctx.host.name = name;
 - append:
     field: related.hosts
     value: '{{host.name}}'
@@ -280,7 +279,11 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "wifi" }}'
     if: "ctx.sophos?.xg?.log_type == 'Wireless Protection'"
-
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message
