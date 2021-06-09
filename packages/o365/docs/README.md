@@ -33,6 +33,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.address | Client network address. | keyword |
+| client.domain | Client network domain. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -76,10 +77,10 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -200,6 +201,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | rule.reference | Rule reference URL | keyword |
 | rule.ruleset | Rule ruleset | keyword |
 | server.address | Server network address. | keyword |
+| server.domain | Server network domain. | keyword |
 | server.ip | IP address of the server. | ip |
 | source.as.number | Unique number allocated to the autonomous system. | long |
 | source.as.organization.name | Organization name. | keyword |
