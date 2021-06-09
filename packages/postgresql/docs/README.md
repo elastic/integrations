@@ -126,7 +126,7 @@ The `activity` dataset periodically fetches metrics from PostgreSQL servers.
 
 An example event for `activity` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -242,7 +242,7 @@ The PostgreSQL `bgwriter` dataset collects data from PostgreSQL by running a `SE
 
 An example event for `bgwriter` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -352,7 +352,7 @@ The `database` dataset periodically fetches metrics from PostgreSQL servers.
 
 An example event for `database` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "metricset": {
@@ -468,7 +468,7 @@ The `statement` dataset periodically fetches metrics from PostgreSQL servers.
 
 An example event for `statement` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
