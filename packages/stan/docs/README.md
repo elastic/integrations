@@ -143,6 +143,7 @@ An example event for `log` looks as following:
 | stan.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
 | stan.log.msg.subject | Subject name this message was received on | keyword |
 | stan.log.msg.type | The protocol message type | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
