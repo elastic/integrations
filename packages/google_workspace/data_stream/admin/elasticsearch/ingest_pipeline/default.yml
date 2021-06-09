@@ -6,12 +6,16 @@ processors:
       value: "{{ _ingest.timestamp }}"
   - set:
       field: ecs.version
-      value: '1.9.0'
+      value: '1.10.0'
   - append:
       field: event.category
       value: iam
-  - json:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: json
       ignore_failure: true
   - date:
@@ -23,10 +27,6 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - yyyy/MM/dd HH:mm:ss z
-  - rename: 
-      field: message
-      target_field: event.original
-      if: ctx?.message != null
   - rename: 
       field: json.events.name
       target_field: event.action
@@ -310,6 +310,10 @@ processors:
       field: google_workspace.admin.WEB_ADDRESS
       target_field: url.full
       ignore_missing: true
+  - uri_parts:
+      field: url.full
+      ignore_failure: true
+      if: ctx?.url?.full != null
   - rename:
       field: google_workspace.admin.SITE_NAME
       target_field: google_workspace.admin.url.name
@@ -762,7 +766,11 @@ processors:
         - google_workspace.admin.END_DATE_TIME
         - google_workspace.admin.WHITELISTED_GROUPS
       ignore_missing: true
-
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
