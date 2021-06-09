@@ -4,6 +4,9 @@ paths:
 {{/each}}
 exclude_files: [".gz$"]
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
@@ -11,27 +14,25 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-  - add_locale: ~
-  {{#if internal_zones.length}}
-  - add_fields:
-      target: _temp_
-      fields:
-        internal_zones:
-          {{#each internal_zones as |zone i|}}
-          - {{zone}}
-          {{/each}}
-  {{/if}}
-  {{#if external_zones.length}}
-  - add_fields:
-      target: _temp_
-      fields:
-        external_zones:
-          {{#each external_zones as |zone i|}}
-          - {{zone}}
-          {{/each}}
-  {{/if}}
-  - add_fields:
-      target: ''
-      fields:
-        ecs.version: 1.9.0
-
+- add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{#if internal_zones.length}}
+- add_fields:
+    target: _temp_
+    fields:
+      internal_zones:
+        {{#each internal_zones as |zone i|}}
+        - {{zone}}
+        {{/each}}
+{{/if}}
+{{#if external_zones.length}}
+- add_fields:
+    target: _temp_
+    fields:
+      external_zones:
+        {{#each external_zones as |zone i|}}
+        - {{zone}}
+        {{/each}}
+{{/if}}
