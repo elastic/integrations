@@ -57,6 +57,7 @@ The `log` dataset collects and parses logs from Kafka servers.
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kafka.log.class | Java class the log is coming from. | keyword |
 | kafka.log.component | Component the log is coming from. | keyword |
+| kafka.log.thread | Thread name the log is coming from. | keyword |
 | kafka.log.trace.class | Java class the trace is coming from. | keyword |
 | kafka.log.trace.message | Message part of the trace. | text |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
