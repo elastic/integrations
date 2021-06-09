@@ -2,8 +2,18 @@
 description: Pipeline for Google Cloud VPC Flow Logs
 
 processors:
-  - json:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.10.0"
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: json
   - community_id:
       source_ip: json.jsonPayload.connection.src_ip
@@ -11,25 +21,11 @@ processors:
       destination_ip: json.jsonPayload.connection.dest_ip
       destination_port: json.jsonPayload.connection.dest_port
       iana_number: json.jsonPayload.connection.protocol
-  - set:
-      field: ecs.version
-      value: "1.9.0"
-
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-
   - date:
       field: json.timestamp
       timezone: UTC
       formats:
         - ISO8601
-
   - set:
       field: event.kind
       value: event
@@ -48,7 +44,6 @@ processors:
       field: json.logName
       target_field: log.logger
       ignore_missing: true
-
   - rename:
       field: json.jsonPayload.connection.dest_ip
       target_field: destination.address
@@ -170,7 +165,6 @@ processors:
       field: network.iana_number
       type: string
       ignore_missing: true
-  
   - remove:
       field:
         - gcp.vpcflow.rtt_msec
@@ -179,19 +173,16 @@ processors:
         - gcp.vpcflow.src_location
         - json
       ignore_missing: true
-
   - set:
       field: source.ip
       value: "{{source.address}}"
       ignore_failure: true
       if: ctx?.source?.address != null
-
   - set:
       field: destination.ip
       value: "{{destination.address}}"
       ignore_failure: true
       if: ctx?.destination?.address != null
-
   - convert:
       field: gcp.source.instance.project_id
       target_field: cloud.project.id
@@ -306,7 +297,6 @@ processors:
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: ctx?.destination?.ip != null && ctx?.destination?.ip != ""
-
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -316,7 +306,6 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-
   # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
@@ -350,7 +339,11 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
