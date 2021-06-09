@@ -4,11 +4,19 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.10.0"
   - rename:
       field: '@timestamp'
       target_field: event.created
-  - grok:
+      ignore_missing: true
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
       patterns:
         - ^%{CHAR:first_char}
       pattern_definitions:
@@ -89,6 +97,11 @@ processors:
       value: tcp
   - community_id:
       if: "ctx?.source?.ip != null && ctx?.source?.port != null && ctx?.destination?.ip != null && ctx?.destination?.ip != null"
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
