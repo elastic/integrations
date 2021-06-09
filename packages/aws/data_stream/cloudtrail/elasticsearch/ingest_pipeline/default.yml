@@ -6,15 +6,50 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.9.0'
+      value: '1.10.0'
   - rename:
-      field: "message"
-      target_field: "event.original"
+      field: message
+      target_field: event.original
+      ignore_missing: true
   - json:
-      field: "event.original"
-      target_field: "json"
+      field: event.original
+      target_field: _temp_.json
+  #Splunk specific parsing start
+  - drop:
+      if: 'ctx._temp_?.json?.result == null && ctx._temp_?.json?.preview != null'
+  - fingerprint:
+      fields: 
+        - _temp_.json.result._cd
+        - _temp_.json.result._indextime
+        - _temp_.json.result._raw
+        - _temp_.json.result._time
+      target_field: '_id'
+      if: 'ctx._temp_?.json?.result != null && ctx._temp_?.json?.preview != null'
+  - remove:
+      field: event.original
+      if: ctx._temp_?.json?.result?._raw != null
+  - rename:
+      field: _temp_.json.result._raw
+      target_field: event.original
+      ignore_missing: true
+      if: ctx._temp_?.json?.result?._raw != null
+  - json:
+      field: event.original
+      target_field: json
+      if: ctx._temp_?.json?.result?._raw != null
+  # Rename if this is not splunk data
+  - rename:
+      field: _temp_.json
+      target_field: json
+      ignore_missing: true
+      if: ctx._temp_?.json?.result?._raw == null
+  - remove:
+      field: 
+        - _temp_
+      ignore_missing: true
+  #Splunk specific parsing end
   - date:
-      field: "json.eventTime"
+      field: json.eventTime
       target_field: "@timestamp"
       ignore_failure: true
       formats:
@@ -40,93 +75,93 @@ processors:
         }
         drop(ctx);
   - rename:
-      field: "json.eventVersion"
-      target_field: "aws.cloudtrail.event_version"
+      field: json.eventVersion
+      target_field: aws.cloudtrail.event_version
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.type"
-      target_field: "aws.cloudtrail.user_identity.type"
+      field: json.userIdentity.type
+      target_field: aws.cloudtrail.user_identity.type
       ignore_failure: true
   - append:
       field: related.user
       value: '{{json.userIdentity.userName}}'
       allow_duplicates: false
-      if: 'ctx.json?.userIdentity?.userName != null'
+      if: ctx.json?.userIdentity?.userName != null
   - rename:
-      field: "json.userIdentity.userName"
-      target_field: "user.name"
+      field: json.userIdentity.userName
+      target_field: user.name
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.principalId"
-      target_field: "user.id"
+      field: json.userIdentity.principalId
+      target_field: user.id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.arn"
-      target_field: "aws.cloudtrail.user_identity.arn"
+      field: json.userIdentity.arn
+      target_field: aws.cloudtrail.user_identity.arn
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.accountId"
-      target_field: "cloud.account.id"
+      field: json.userIdentity.accountId
+      target_field: cloud.account.id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.accessKeyId"
-      target_field: "aws.cloudtrail.user_identity.access_key_id"
+      field: json.userIdentity.accessKeyId
+      target_field: aws.cloudtrail.user_identity.access_key_id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.attributes.mfaAuthenticated"
-      target_field: "aws.cloudtrail.user_identity.session_context.mfa_authenticated"
+      field: json.userIdentity.sessionContext.attributes.mfaAuthenticated
+      target_field: aws.cloudtrail.user_identity.session_context.mfa_authenticated
       ignore_failure: true
   - date:
-      field: "json.userIdentity.sessionContext.attributes.creationDate"
-      target_field: "aws.cloudtrail.user_identity.session_context.creation_date"
+      field: json.userIdentity.sessionContext.attributes.creationDate
+      target_field: aws.cloudtrail.user_identity.session_context.creation_date
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.type"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.type"
+      field: json.userIdentity.sessionContext.sessionIssuer.type
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.type
       ignore_failure: true
   # userIdentity.sessionIssuer.userName is only set with assumed roles.
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.userName"
-      target_field: "user.name"
+      field: json.userIdentity.sessionContext.sessionIssuer.userName
+      target_field: user.name
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.principalId"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.principal_id"
+      field: json.userIdentity.sessionContext.sessionIssuer.principalId
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.principal_id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.arn"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.arn"
+      field: json.userIdentity.sessionContext.sessionIssuer.arn
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.arn
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.sessionContext.sessionIssuer.accountId"
-      target_field: "aws.cloudtrail.user_identity.session_context.session_issuer.account_id"
+      field: json.userIdentity.sessionContext.sessionIssuer.accountId
+      target_field: aws.cloudtrail.user_identity.session_context.session_issuer.account_id
       ignore_failure: true
   - rename:
-      field: "json.userIdentity.invokedBy"
-      target_field: "aws.cloudtrail.user_identity.invoked_by"
+      field: json.userIdentity.invokedBy
+      target_field: aws.cloudtrail.user_identity.invoked_by
       ignore_failure: true
   - rename:
-      field: "json.eventSource"
-      target_field: "event.provider"
+      field: json.eventSource
+      target_field: event.provider
       ignore_failure: true
   - set:
-      field: "event.action"
-      value: "{{json.eventName}}"
+      field: event.action
+      value: '{{json.eventName}}'
       ignore_failure: true
       ignore_empty_value: true
   - rename:
-      field: "json.eventCategory"
-      target_field: "aws.cloudtrail.event_category"
+      field: json.eventCategory
+      target_field: aws.cloudtrail.event_category
       ignore_failure: true
   - rename:
-      field: "json.awsRegion"
-      target_field: "cloud.region"
+      field: json.awsRegion
+      target_field: cloud.region
       ignore_failure: true
   - rename:
-      field: "json.sourceIPAddress"
-      target_field: "source.address"
+      field: json.sourceIPAddress
+      target_field: source.address
       ignore_failure: true
   - grok:
       field: source.address
@@ -134,8 +169,8 @@ processors:
       patterns:
         - ^%{IP:source.ip}$
   - geoip:
-      field: "source.ip"
-      target_field: "source.geo"
+      field: source.ip
+      target_field: source.geo
       ignore_failure: true
       ignore_missing: true
   - geoip:
@@ -155,20 +190,20 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
   - user_agent:
-      field: "json.userAgent"
-      target_field: "user_agent"
+      field: json.userAgent
+      target_field: user_agent
       on_failure:
         - rename:
-            field: "json.userAgent"
-            target_field: "user_agent.original"
+            field: json.userAgent
+            target_field: user_agent.original
             ignore_failure: true
   - rename:
-      field: "json.errorCode"
-      target_field: "aws.cloudtrail.error_code"
+      field: json.errorCode
+      target_field: aws.cloudtrail.error_code
       ignore_failure: true
   - rename:
-      field: "json.errorMessage"
-      target_field: "aws.cloudtrail.error_message"
+      field: json.errorMessage
+      target_field: aws.cloudtrail.error_message
       ignore_failure: true
   - script:
       lang: painless
@@ -203,63 +238,63 @@ processors:
         }
       ignore_failure: true
   - rename:
-      field: "json.requestId"
-      target_field: "aws.cloudtrail.request_id"
+      field: json.requestId
+      target_field: aws.cloudtrail.request_id
       ignore_failure: true
   - rename:
-      field: "json.eventID"
+      field: json.eventID
       target_field: event.id
       ignore_failure: true
   - rename:
-      field: "json.eventType"
-      target_field: "aws.cloudtrail.event_type"
+      field: json.eventType
+      target_field: aws.cloudtrail.event_type
       ignore_failure: true
   - rename:
-      field: "json.apiVersion"
-      target_field: "aws.cloudtrail.api_version"
+      field: json.apiVersion
+      target_field: aws.cloudtrail.api_version
       ignore_failure: true
   - rename:
-      field: "json.managementEvent"
-      target_field: "aws.cloudtrail.management_event"
+      field: json.managementEvent
+      target_field: aws.cloudtrail.management_event
       ignore_failure: true
   - rename:
-      field: "json.readOnly"
-      target_field: "aws.cloudtrail.read_only"
+      field: json.readOnly
+      target_field: aws.cloudtrail.read_only
       ignore_failure: true
   - rename:
-      field: "json.resources.ARN"
-      target_field: "aws.cloudtrail.resources.arn"
+      field: json.resources.ARN
+      target_field: aws.cloudtrail.resources.arn
       ignore_failure: true
   - rename:
-      field: "json.resources.accountId"
-      target_field: "aws.cloudtrail.resources.account_id"
+      field: json.resources.accountId
+      target_field: aws.cloudtrail.resources.account_id
       ignore_failure: true
   - rename:
-      field: "json.resources.type"
-      target_field: "aws.cloudtrail.resources.type"
+      field: json.resources.type
+      target_field: aws.cloudtrail.resources.type
       ignore_failure: true
   - rename:
-      field: "json.recipientAccountId"
-      target_field: "aws.cloudtrail.recipient_account_id"
+      field: json.recipientAccountId
+      target_field: aws.cloudtrail.recipient_account_id
       ignore_failure: true
   - rename:
-      field: "json.sharedEventId"
-      target_field: "aws.cloudtrail.shared_event_id"
+      field: json.sharedEventId
+      target_field: aws.cloudtrail.shared_event_id
       ignore_failure: true
   - rename:
-      field: "json.vpcEndpointId"
-      target_field: "aws.cloudtrail.vpc_endpoint_id"
+      field: json.vpcEndpointId
+      target_field: aws.cloudtrail.vpc_endpoint_id
       ignore_failure: true
   - append:
       field: related.user
       value: '{{aws.cloudtrail.flattened.request_parameters.userName}}'
       allow_duplicates: false
-      if: 'ctx.aws?.cloudtrail?.flattened?.request_parameters?.userName != null'
+      if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.userName != null
   - append:
       field: related.user
       value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
       allow_duplicates: false
-      if: 'ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null'
+      if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null
   - script:
       lang: painless
       ignore_failure: true
@@ -624,79 +659,79 @@ processors:
         hm.forEach((k, v) -> ctx.event[k] = v);
 
   - rename:
-      field: "json.awsAccountId"
-      target_field: "cloud.account.id"
+      field: json.awsAccountId
+      target_field: cloud.account.id
       ignore_failure: true
   - rename:
-      field: "json.previousDigestS3Object"
-      target_field: "file.path"
+      field: json.previousDigestS3Object
+      target_field: file.path
       ignore_failure: true
   - rename:
-      field: "json.previousDigestSignature"
-      target_field: "file.hash.sha256"
+      field: json.previousDigestSignature
+      target_field: file.hash.sha256
       if: >-
-        ctx?.json?.previousDigestHashAlgorithm != null && ctx.json.previousDigestHashAlgorithm == 'SHA-256'
+        ctx.json?.previousDigestHashAlgorithm != null && ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
   - append:
-      field: "related.hash"
-      value: "{{file.hash.sha256}}"
-      if: "ctx?.file?.hash?.sha256 != null"
+      field: related.hash
+      value: '{{file.hash.sha256}}'
+      if: ctx.file?.hash?.sha256 != null
   - rename:
-      field: "json.logFiles"
-      target_field: "aws.cloudtrail.digest.log_files"
+      field: json.logFiles
+      target_field: aws.cloudtrail.digest.log_files
       ignore_failure: true
   - date:
-      field: "json.digestStartTime"
-      target_field: "aws.cloudtrail.digest.start_time"
+      field: json.digestStartTime
+      target_field: aws.cloudtrail.digest.start_time
       ignore_failure: true
       formats:
         - ISO8601
   - date:
-      field: "json.digestEndTime"
+      field: json.digestEndTime
       target_field: "@timestamp"
       ignore_failure: true
       formats:
         - ISO8601
   - date:
-      field: "json.digestEndTime"
-      target_field: "aws.cloudtrail.digest.end_time"
+      field: json.digestEndTime
+      target_field: aws.cloudtrail.digest.end_time
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
-      field: "json.digestS3Bucket"
-      target_field: "aws.cloudtrail.digest.s3_bucket"
+      field: json.digestS3Bucket
+      target_field: aws.cloudtrail.digest.s3_bucket
       ignore_failure: true
   - date:
-      field: "json.newestEventTime"
-      target_field: "aws.cloudtrail.digest.newest_event_time"
+      field: json.newestEventTime
+      target_field: aws.cloudtrail.digest.newest_event_time
       ignore_failure: true
       formats:
         - ISO8601
   - date:
-      field: "json.oldestEventTime"
-      target_field: "aws.cloudtrail.digest.oldest_event_time"
+      field: json.oldestEventTime
+      target_field: aws.cloudtrail.digest.oldest_event_time
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
-      field: "json.previousDigestS3Bucket"
-      target_field: "aws.cloudtrail.digest.previous_s3_bucket"
+      field: json.previousDigestS3Bucket
+      target_field: aws.cloudtrail.digest.previous_s3_bucket
       ignore_failure: true
   - rename:
-      field: "json.previousDigestHashAlgorithm"
-      target_field: "aws.cloudtrail.digest.previous_hash_algorithm"
+      field: json.previousDigestHashAlgorithm
+      target_field: aws.cloudtrail.digest.previous_hash_algorithm
       ignore_failure: true
   - rename:
-      field: "json.publicKeyFingerprint"
-      target_field: "aws.cloudtrail.digest.public_key_fingerprint"
+      field: json.publicKeyFingerprint
+      target_field: aws.cloudtrail.digest.public_key_fingerprint
       ignore_failure: true
   - rename:
-      field: "json.digestSignatureAlgorithm"
-      target_field: "aws.cloudtrail.digest.signature_algorithm"
+      field: json.digestSignatureAlgorithm
+      target_field: aws.cloudtrail.digest.signature_algorithm
       ignore_failure: true
   - rename:
-      field: "json.insightDetails"
-      target_field: "aws.cloudtrail.insight_details"
+      field: json.insightDetails
+      target_field: aws.cloudtrail.insight_details
       ignore_failure: true
   - set:
       field: group.id
@@ -734,7 +769,12 @@ processors:
   - remove:
       field: json
       ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
-      field: "error.message"
+      field: error.message
       value: "{{ _ingest.on_failure_message }}"

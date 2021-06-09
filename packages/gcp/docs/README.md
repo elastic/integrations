@@ -11,7 +11,7 @@ This is the `audit` dataset.
 
 An example event for `audit` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/foo/logs/cloudaudit.googleapis.com%2Factivity"
@@ -229,7 +229,7 @@ This is the `firewall` dataset.
 
 An example event for `firewall` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/test-beats/logs/compute.googleapis.com%2Ffirewall"
@@ -450,7 +450,7 @@ This is the `VPC Flow` dataset.
 
 An example event for `vpcflow` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
