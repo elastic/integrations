@@ -74,11 +74,21 @@ processors:
   - grok:
       field: nginx.access.info
       patterns:
-      - '%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}'
+      - '%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}'
       - ""
       ignore_missing: true
+  - uri_parts:
+      field: _tmp.url_orig
+      ignore_failure: true
+  - set:
+      field: url.domain
+      value: "{{destination.domain}}"
+      if: ctx.url?.domain == null && ctx.destination?.domain != null
   - remove:
-      field: nginx.access.info
+      field:
+        - nginx.access.info
+        - _tmp.url_orig
+      ignore_missing: true
   - split:
       field: nginx.access.remote_ip_list
       separator: '"?,?\s+'
