@@ -106,7 +106,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 An example event for `collstats` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T21:20:51.459Z",
     "metricset": {
@@ -277,7 +277,7 @@ action on the [database resource](https://docs.mongodb.com/manual/reference/reso
 
 An example event for `dbstats` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T21:20:51.459Z",
     "metricset": {
@@ -397,7 +397,7 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 
 An example event for `metrics` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T21:20:51.459Z",
     "mongodb": {
@@ -814,7 +814,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 An example event for `replstatus` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T21:20:51.457Z",
     "service": {
@@ -983,7 +983,7 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 
 An example event for `status` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T21:20:01.455Z",
     "agent": {
