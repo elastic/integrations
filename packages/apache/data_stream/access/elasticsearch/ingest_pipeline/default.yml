@@ -2,117 +2,196 @@
 description: "Pipeline for parsing Apache HTTP Server access logs. Requires the geoip and user_agent plugins."
 
 processors:
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
-    field: ecs.version
-    value: 1.10.0
-- rename:
-    field: message
-    target_field: event.original
-- grok:
-    field: event.original
-    patterns:
-    - '%{IPORHOST:destination.domain} %{IPORHOST:source.ip} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
-      "(?:%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}|-)?"
-      %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
-      "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
-    - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
-      "(?:%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}|-)?"
-      %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
-      "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
-    - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
-      "-" %{NUMBER:http.response.status_code:long} -'
-    - \[%{HTTPDATE:apache.access.time}\] %{IPORHOST:source.address} %{DATA:apache.access.ssl.protocol}
-      %{DATA:apache.access.ssl.cipher} "%{WORD:http.request.method} %{DATA:url.original}
-      HTTP/%{NUMBER:http.version}" (-|%{NUMBER:http.response.body.bytes:long})
-    ignore_missing: true
-- set:
-    field: event.kind
-    value: event
-- set:
-    field: event.category
-    value: web
-- set:
-    field: event.outcome
-    value: success
-    if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
-- set:
-    field: event.outcome
-    value: failure
-    if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code > 399"
-- grok:
-    field: source.address
-    ignore_missing: true
-    patterns:
-    - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
-- remove:
-    field: event.created
-    ignore_missing: true
-    ignore_failure: true
-- rename:
-    field: '@timestamp'
-    target_field: event.created
-- date:
-    field: apache.access.time
-    target_field: '@timestamp'
-    formats:
-    - dd/MMM/yyyy:H:m:s Z
-    ignore_failure: true
-- remove:
-    field: apache.access.time
-    ignore_failure: true
-- user_agent:
-    field: user_agent.original
-    ignore_failure: true
-- geoip:
-    field: source.ip
-    target_field: source.geo
-    ignore_missing: true
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: source.ip
-    target_field: source.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- rename:
-    field: source.as.asn
-    target_field: source.as.number
-    ignore_missing: true
-- rename:
-    field: source.as.organization_name
-    target_field: source.as.organization.name
-    ignore_missing: true
-- set:
-    field: tls.cipher
-    value: '{{apache.access.ssl.cipher}}'
-    if: ctx?.apache?.access?.ssl?.cipher != null
-
-- script:
-    lang: painless
-    if: ctx?.apache?.access?.ssl?.protocol != null
-    source: >-
-      def parts = ctx.apache.access.ssl.protocol.toLowerCase().splitOnToken("v");
-      if (parts.length != 2) {
-        return;
-      }
-      if (parts[1].contains(".")) {
-        ctx.tls.version = parts[1];
-      } else {
-        ctx.tls.version = parts[1] + ".0";
-      }
-      ctx.tls.version_protocol = parts[0];
-
-- remove:
-    field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
-
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.10.0'
+   # Splunk specific parsing start
+  - set:
+      field: _temp_.isSplunk
+      value: true
+      if: ctx.message.startsWith('{')
+  - json:
+      field: message
+      target_field: json
+      if: ctx._temp_?.isSplunk == true
+  - drop:
+      if: 'ctx._temp_?.isSplunk == true && ctx.json?.result == null'
+  - fingerprint:
+      fields: 
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: '_id'
+      if: 'ctx._temp_?.isSplunk == true && ctx?.json?.result != null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - rename:
+      field: json.result._raw
+      target_field: message
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - rename:
+      field: json.result.host
+      target_field: host.name
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - rename:
+      field: json.result.source
+      target_field: file.path
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - remove:
+      field: 
+        - json
+        - _temp_
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == 1
+# Splunk specific parsing end
+  - rename:
+      field: message
+      target_field: event.original
+  - grok:
+      field: event.original
+      patterns:
+      - '%{IPORHOST:destination.domain} %{IPORHOST:source.ip} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+        "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
+        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
+        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
+      - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+        "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
+        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
+        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
+      - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+        "-" %{NUMBER:http.response.status_code:long} -'
+      - \[%{HTTPDATE:apache.access.time}\] %{IPORHOST:source.address} %{DATA:apache.access.ssl.protocol}
+        %{DATA:apache.access.ssl.cipher} "%{WORD:http.request.method} %{DATA:_tmp.url_orig}
+        HTTP/%{NUMBER:http.version}" (-|%{NUMBER:http.response.body.bytes:long})
+      ignore_missing: true
+  - uri_parts:
+      field: _tmp.url_orig
+      ignore_failure: true
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - set:
+      field: url.domain
+      value: "{{destination.domain}}"
+      if: ctx.url?.domain == null && ctx.destination?.domain != null
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: web
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+  - set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code > 399"
+  - grok:
+      field: source.address
+      ignore_missing: true
+      patterns:
+      - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
+  - remove:
+      field: event.created
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: '@timestamp'
+      target_field: event.created
+  - date:
+      field: apache.access.time
+      target_field: '@timestamp'
+      formats:
+      - dd/MMM/yyyy:H:m:s Z
+      ignore_failure: true
+  - remove:
+      field: apache.access.time
+      ignore_failure: true
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: tls.cipher
+      value: '{{apache.access.ssl.cipher}}'
+      if: ctx?.apache?.access?.ssl?.cipher != null
+  - script:
+      lang: painless
+      if: ctx?.apache?.access?.ssl?.protocol != null
+      source: >-
+        def parts = ctx.apache.access.ssl.protocol.toLowerCase().splitOnToken("v");
+        if (parts.length != 2) {
+          return;
+        }
+        if (parts[1].contains(".")) {
+          ctx.tls.version = parts[1];
+        } else {
+          ctx.tls.version = parts[1] + ".0";
+        }
+        ctx.tls.version_protocol = parts[0];
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
