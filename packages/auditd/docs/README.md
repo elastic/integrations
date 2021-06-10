@@ -153,6 +153,7 @@ An example event for `log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | ecs.version | ECS version | keyword |
+| error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -205,7 +206,7 @@ An example event for `log` looks as following:
 | user.audit.name | Short name or login of the user. | keyword |
 | user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.effective.group.name | Name of the group. | keyword |
-| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.id | One or multiple unique identifiers of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
 | user.filesystem.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.filesystem.group.name | Name of the group. | keyword |
