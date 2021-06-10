@@ -4,12 +4,12 @@ paths:
 {{/each}}
 exclude_files: [".gz$"]
 tags:
-{{#each tags as |tag i|}}
- - {{tag}}
-{{/each}}
 {{#if preserve_original_event}}
- - preserve_original_event
+  - preserve_original_event
 {{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
 fields_under_root: true
 fields:
     observer:
@@ -21,6 +21,9 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
 - script:
     lang: javascript
     params:
@@ -1019,7 +1022,7 @@ processors:
       }
       
       var ecs_mappings = {
-          "_facility": {convert: to_long, to:[{field: "log.syslog.facility.code", setter: fld_set}]},
+          "_facility": {convert: to_long, to:[{field: "syslog.facility.code", setter: fld_set}]},
           "_pri": {convert: to_long, to:[{field: "log.syslog.priority", setter: fld_set}]},
           "_severity": {convert: to_long, to:[{field: "log.syslog.severity.code", setter: fld_set}]},
           "action": {to:[{field: "event.action", setter: fld_prio, prio: 0}]},

@@ -178,12 +178,15 @@ An example event for `asa` looks as following:
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
+| cisco.asa.security | Cisco FTD security event fields. | flattened |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
+| cisco.asa.termination_user | AAA name of user requesting termination | keyword |
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.asa.username |  | keyword |
+| cisco.asa.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -255,15 +258,17 @@ An example event for `asa` looks as following:
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.facility.code | Syslog numeric facility of the event. | long |
-| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
+| network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.interface.name | Interface name | keyword |
 | observer.egress.zone | Observer Egress zone | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -298,8 +303,23 @@ An example event for `asa` looks as following:
 | source.nat.port | Source NAT port | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility.code | Syslog numeric facility of the event. | long |
+| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
@@ -524,9 +544,11 @@ An example event for `ftd` looks as following:
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.ftd.suffix | Optional suffix after %FTD identifier. | keyword |
+| cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
 | cisco.ftd.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.ftd.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.ftd.username |  | keyword |
+| cisco.ftd.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -569,7 +591,7 @@ An example event for `ftd` looks as following:
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
-| event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | keyword |
 | event.ingested | The timestamp when an event arrived in the central data store | date |
@@ -607,16 +629,18 @@ An example event for `ftd` looks as following:
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.facility.code | Syslog numeric facility of the event. | long |
-| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
+| network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.interface.name | Interface name | keyword |
 | observer.egress.zone | Observer Egress zone | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -654,9 +678,23 @@ An example event for `ftd` looks as following:
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility.code | Syslog numeric facility of the event. | long |
+| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
