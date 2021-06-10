@@ -125,19 +125,33 @@
   group: 2
   type: group
   fields:
-    - name: original
+    - name: path
+      level: extended
+      type: keyword
+      description: Path of the request, such as "/search".
+      ignore_above: 1024
+    - name: query
       level: extended
       type: keyword
       description: |-
-        Unmodified original url as seen in the event source.
-        Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path.
-        This field is meant to represent the URL as it was observed, complete or not.
+        The query field describes the query string of the request, such as "q=elasticsearch".
+        The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.
       ignore_above: 1024
+    - name: domain
+      type: keyword
+      description: 'Domain of the url, such as "www.elastic.co".'
+    - name: extension
+      type: keyword
+      ignore_above: 1024
+      description: "The field contains the file extension from the original request url, excluding the leading dot."
+    - name: original
+      type: keyword
       multi_fields:
         - name: text
           type: text
           norms: false
           default_field: false
+      description: "Unmodified original url as seen in the event source."
 - name: error.message
   description: Error message
   type: text
@@ -147,3 +161,9 @@
 - name: ecs.version
   type: keyword
   description: ECS version
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+  example: '["production", "env2"]'
