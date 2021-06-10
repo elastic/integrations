@@ -18,14 +18,17 @@ storage_account_key: {{storage_account_key}}
 resource_manager_endpoint: {{resource_manager_endpoint}}
 {{/if}}
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
-- {{tag}}
+  - {{tag}}
 {{/each}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if processors}}
 processors:
-  - add_fields:
-      target: ''
-      fields:
-        ecs.version: 1.9.0
+{{processors}}
+{{/if}}
+
