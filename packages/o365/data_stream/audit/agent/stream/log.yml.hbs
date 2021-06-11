@@ -4,19 +4,25 @@ paths:
 {{/each}}
 exclude_files: [".gz$"]
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
-- {{tag}}
+  - {{tag}}
 {{/each}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if tenant_names}}
 processors:
-  - add_fields:
-      target: '_conf.tenants'
-      fields:
-          mappings:
+{{#if processors}}
+{{processors}}
+{{/if}}
+- add_fields:
+    target: '_conf.tenants'
+    fields:
+        mappings:
 {{#each tenant_names as |entry i|}}
-            - {{entry.id}}: {{entry.name}}
+          - {{entry.id}}: {{entry.name}}
 {{/each}}
 {{/if}}

@@ -7,7 +7,7 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set: 
       field: ecs.version
-      value: '1.9.0'
+      value: '1.10.0'
   - set:
       field: event.kind
       value: event
@@ -17,11 +17,13 @@ processors:
   - append:
       field: event.category
       value: web
-  - json:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: o365audit
-  - remove:
-      field: message  
   # General Schema
   - date:
       field: o365audit.CreationTime
@@ -1025,6 +1027,11 @@ processors:
   - remove:
       field:
         - _conf
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
