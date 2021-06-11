@@ -1,197 +1,205 @@
 ---
 description: Pipeline for parsing stan log logs
 processors:
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- grok:
-    field: message
-    patterns:
-    - \[%{POSINT:process.pid}\]( %{STANTIME:stan.log.timestamp})? \[%{STANLOGLEVEL:log.level}\]
-      %{GREEDYDATA:stan.log.info}
-    pattern_definitions:
-      STANTIME: '%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}'
-      STANLOGLEVEL: (INF|DBG|WRN|ERR|FTL|TRC)
-    ignore_missing: true
-- grok:
-    field: stan.log.info
-    patterns:
-    - '%{IPV4:client.ip}:%{POSINT:client.port} - cid:%{POSINT:stan.log.client.id}
-      - %{GREEDYDATA:stan.log.msg.info}'
-    - '%{GREEDYDATA:stan.log.msg.data}'
-    ignore_missing: true
-- grok:
-    field: stan.log.msg.info
-    patterns:
-    - '%{STANDIRECTION:network.direction} %{STANPAYLOAD:stan.log.msg.type}: \[%{GREEDYDATA:stan.log.msg.payload}\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANNOINFO:stan.log.msg.type}\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANUNSUB:stan.log.msg.type}\s+%{POSINT:stan.log.msg.sid}(\s+%{POSINT:stan.log.msg.max_messages})?\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANPUB:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}(\s+%{NOTSPACE:stan.log.msg.reply_to})?\s+%{POSINT:stan.log.msg.bytes}\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANSUB:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}(\s+%{NOTSPACE:stan.log.msg.queue_group})?\s+%{POSINT:stan.log.msg.sid}\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANMSG:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}\s+%{POSINT:stan.log.msg.sid}(\s+%{NOTSPACE:stan.log.msg.reply_to})?\s+%{POSINT:stan.log.msg.bytes}\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANCONNECTION:stan.log.msg.type}\s+%{GREEDYDATA:stan.log.msg.data}\]'
-    - '%{STANDIRECTION:network.direction} \[%{STANERROR:stan.log.msg.type}\s+%{GREEDYDATA:stan.log.msg.error\]'
-    - '%{GREEDYDATA:stan.log.msg.data}'
-    pattern_definitions:
-      STANDIRECTION: (<<-|->>)
-      STANMSG: MSG
-      STANPUB: PUB
-      STANSUB: SUB
-      STANUNSUB: UNSUB
-      STANPAYLOAD: MSG_PAYLOAD
-      STANERROR: -ERROR
-      STANPING: PING
-      STANPONG: PONG
-      STANOK: OK
-      STANCONNECT: CONNECT
-      STANINFO: INFO
-      STANCONNECTION: (?:%{STANCONNECT}|%{STANINFO})
-      STANNOINFO: (?:%{STANPING}|%{STANPONG}|%{STANOK})
-    ignore_missing: true
-- remove:
-    field: stan.log.info
-- remove:
-    field: stan.log.msg.info
-    ignore_missing: true
-- remove:
-    field: stan.log.msg.payload
-    ignore_missing: true
-- remove:
-    field: message
-- rename:
-    field: stan.log.msg.data
-    target_field: message
-    ignore_missing: true
-- script:
-    lang: painless
-    source: |-
-      if (ctx.log.level == params.inf) {
-                ctx.log.level = params.info;
-              } else if (ctx.log.level == params.dbg) {
-                ctx.log.level = params.debug;
-              } else if (ctx.log.level == params.wrn) {
-                ctx.log.level = params.warning;
-              } else if (ctx.log.level == params.err) {
-                ctx.log.level = params.error;
-              } else if (ctx.log.level == params.ftl) {
-                ctx.log.level = params.fatal;
-              } else if (ctx.log.level == params.trc) {
-                ctx.log.level = params.trace;
-              }
-    params:
-      inf: INF
-      info: info
-      dbg: DBG
-      debug: debug
-      wrn: WRN
-      warning: warning
-      err: ERR
-      error: error
-      ftl: FTL
-      fatal: fatal
-      trc: TRC
-      trace: trace
-- script:
-    lang: painless
-    source: |-
-      if (ctx.stan.log.msg.type == params.msg) {
-                ctx.stan.log.msg.type = params.message;
-              } else if (ctx.stan.log.msg.type == params.pub) {
-                ctx.stan.log.msg.type = params.publish;
-              } else if (ctx.stan.log.msg.type == params.sub) {
-                ctx.stan.log.msg.type = params.subscribe;
-              } else if (ctx.stan.log.msg.type == params.unsub) {
-                ctx.stan.log.msg.type = params.unsubscribe;
-              } else if (ctx.stan.log.msg.type == params.msg_payload) {
-                ctx.stan.log.msg.type = params.payload;
-              } else if (ctx.stan.log.msg.type == params.err) {
-                ctx.stan.log.msg.type = params.error;
-              } else if (ctx.stan.log.msg.type == params.pi) {
-                ctx.stan.log.msg.type = params.ping;
-              } else if (ctx.stan.log.msg.type == params.po) {
-                ctx.stan.log.msg.type = params.pong;
-              } else if (ctx.stan.log.msg.type == params.ok) {
-                ctx.stan.log.msg.type = params.acknowledge;
-              } else if (ctx.stan.log.msg.type == params.connect) {
-                ctx.stan.log.msg.type = params.connection;
-              } else if (ctx.stan.log.msg.type == params.info) {
-                ctx.stan.log.msg.type = params.information;
-              }
-    params:
-      msg: MSG
-      message: message
-      pub: PUB
-      publish: publish
-      sub: SUB
-      subscribe: subscribe
-      unsub: UNSUB
-      unsubscribe: unsubscribe
-      msg_payload: MSG_PAYLOAD
-      payload: payload
-      err: -ERROR
-      error: error
-      pi: PING
-      ping: ping
-      po: PONG
-      pong: pong
-      ok: OK
-      acknowledge: acknowledge
-      connect: CONNECT
-      connection: connection
-      info: INFO
-      information: information
-    if: ctx.stan.log.msg?.type != null
-- script:
-    lang: painless
-    source: |-
-      if (ctx.network.direction == params.in) {
-                ctx.network.direction = params.inbound;
-              } else if (ctx.network.direction == params.out) {
-                ctx.network.direction = params.outbound;
-              }
-    params:
-      in: <<-
-      inbound: inbound
-      out: ->>
-      outbound: outbound
-    if: ctx.network?.direction != null
-- rename:
-    field: '@timestamp'
-    target_field: event.created
-- date:
-    field: stan.log.timestamp
-    target_field: '@timestamp'
-    formats:
-    - yyyy/MM/dd HH:mm:ss.SSSSSS
-- remove:
-    field: stan.log.timestamp
-- set:
-    field: event.kind
-    value: event
-- append:
-    field: event.type
-    value: info
-- append:
-    field: event.type
-    value: error
-    if: "ctx?.log?.level != null && (ctx.log.level == 'error' || ctx.log.level == 'fatal')"
-- append:
-    field: related.ip
-    value: "{{client.ip}}"
-    if: "ctx?.client?.ip != null"
-- convert:
-    ignore_missing: true
-    field: process.pid
-    type: long
-- convert:
-    ignore_missing: true
-    field: client.port
-    type: long
-- convert:
-    ignore_missing: true
-    field: stan.log.msg.bytes
-    type: long
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.10.0"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
+      patterns:
+      - \[%{POSINT:process.pid}\]( %{STANTIME:stan.log.timestamp})? \[%{STANLOGLEVEL:log.level}\]
+        %{GREEDYDATA:stan.log.info}
+      pattern_definitions:
+        STANTIME: '%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}'
+        STANLOGLEVEL: (INF|DBG|WRN|ERR|FTL|TRC)
+      ignore_missing: true
+  - grok:
+      field: stan.log.info
+      patterns:
+      - '%{IPV4:client.ip}:%{POSINT:client.port} - cid:%{POSINT:stan.log.client.id}
+        - %{GREEDYDATA:stan.log.msg.info}'
+      - '%{GREEDYDATA:stan.log.msg.data}'
+      ignore_missing: true
+  - grok:
+      field: stan.log.msg.info
+      patterns:
+      - '%{STANDIRECTION:network.direction} %{STANPAYLOAD:stan.log.msg.type}: \[%{GREEDYDATA:stan.log.msg.payload}\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANNOINFO:stan.log.msg.type}\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANUNSUB:stan.log.msg.type}\s+%{POSINT:stan.log.msg.sid}(\s+%{POSINT:stan.log.msg.max_messages})?\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANPUB:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}(\s+%{NOTSPACE:stan.log.msg.reply_to})?\s+%{POSINT:stan.log.msg.bytes}\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANSUB:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}(\s+%{NOTSPACE:stan.log.msg.queue_group})?\s+%{POSINT:stan.log.msg.sid}\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANMSG:stan.log.msg.type}\s+%{NOTSPACE:stan.log.msg.subject}\s+%{POSINT:stan.log.msg.sid}(\s+%{NOTSPACE:stan.log.msg.reply_to})?\s+%{POSINT:stan.log.msg.bytes}\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANCONNECTION:stan.log.msg.type}\s+%{GREEDYDATA:stan.log.msg.data}\]'
+      - '%{STANDIRECTION:network.direction} \[%{STANERROR:stan.log.msg.type}\s+%{GREEDYDATA:stan.log.msg.error\]'
+      - '%{GREEDYDATA:stan.log.msg.data}'
+      pattern_definitions:
+        STANDIRECTION: (<<-|->>)
+        STANMSG: MSG
+        STANPUB: PUB
+        STANSUB: SUB
+        STANUNSUB: UNSUB
+        STANPAYLOAD: MSG_PAYLOAD
+        STANERROR: -ERROR
+        STANPING: PING
+        STANPONG: PONG
+        STANOK: OK
+        STANCONNECT: CONNECT
+        STANINFO: INFO
+        STANCONNECTION: (?:%{STANCONNECT}|%{STANINFO})
+        STANNOINFO: (?:%{STANPING}|%{STANPONG}|%{STANOK})
+      ignore_missing: true
+  - remove:
+      field: 
+        - stan.log.info
+        - stan.log.msg.info
+        - stan.log.msg.payload
+      ignore_missing: true
+  - rename:
+      field: stan.log.msg.data
+      target_field: message
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: |-
+        if (ctx.log.level == params.inf) {
+                  ctx.log.level = params.info;
+                } else if (ctx.log.level == params.dbg) {
+                  ctx.log.level = params.debug;
+                } else if (ctx.log.level == params.wrn) {
+                  ctx.log.level = params.warning;
+                } else if (ctx.log.level == params.err) {
+                  ctx.log.level = params.error;
+                } else if (ctx.log.level == params.ftl) {
+                  ctx.log.level = params.fatal;
+                } else if (ctx.log.level == params.trc) {
+                  ctx.log.level = params.trace;
+                }
+      params:
+        inf: INF
+        info: info
+        dbg: DBG
+        debug: debug
+        wrn: WRN
+        warning: warning
+        err: ERR
+        error: error
+        ftl: FTL
+        fatal: fatal
+        trc: TRC
+        trace: trace
+  - script:
+      lang: painless
+      source: |-
+        if (ctx.stan.log.msg.type == params.msg) {
+                  ctx.stan.log.msg.type = params.message;
+                } else if (ctx.stan.log.msg.type == params.pub) {
+                  ctx.stan.log.msg.type = params.publish;
+                } else if (ctx.stan.log.msg.type == params.sub) {
+                  ctx.stan.log.msg.type = params.subscribe;
+                } else if (ctx.stan.log.msg.type == params.unsub) {
+                  ctx.stan.log.msg.type = params.unsubscribe;
+                } else if (ctx.stan.log.msg.type == params.msg_payload) {
+                  ctx.stan.log.msg.type = params.payload;
+                } else if (ctx.stan.log.msg.type == params.err) {
+                  ctx.stan.log.msg.type = params.error;
+                } else if (ctx.stan.log.msg.type == params.pi) {
+                  ctx.stan.log.msg.type = params.ping;
+                } else if (ctx.stan.log.msg.type == params.po) {
+                  ctx.stan.log.msg.type = params.pong;
+                } else if (ctx.stan.log.msg.type == params.ok) {
+                  ctx.stan.log.msg.type = params.acknowledge;
+                } else if (ctx.stan.log.msg.type == params.connect) {
+                  ctx.stan.log.msg.type = params.connection;
+                } else if (ctx.stan.log.msg.type == params.info) {
+                  ctx.stan.log.msg.type = params.information;
+                }
+      params:
+        msg: MSG
+        message: message
+        pub: PUB
+        publish: publish
+        sub: SUB
+        subscribe: subscribe
+        unsub: UNSUB
+        unsubscribe: unsubscribe
+        msg_payload: MSG_PAYLOAD
+        payload: payload
+        err: -ERROR
+        error: error
+        pi: PING
+        ping: ping
+        po: PONG
+        pong: pong
+        ok: OK
+        acknowledge: acknowledge
+        connect: CONNECT
+        connection: connection
+        info: INFO
+        information: information
+      if: ctx.stan.log.msg?.type != null
+  - script:
+      lang: painless
+      source: |-
+        if (ctx.network.direction == params.in) {
+                  ctx.network.direction = params.inbound;
+                } else if (ctx.network.direction == params.out) {
+                  ctx.network.direction = params.outbound;
+                }
+      params:
+        in: <<-
+        inbound: inbound
+        out: ->>
+        outbound: outbound
+      if: ctx.network?.direction != null
+  - rename:
+      field: '@timestamp'
+      target_field: event.created
+  - date:
+      field: stan.log.timestamp
+      target_field: '@timestamp'
+      formats:
+      - yyyy/MM/dd HH:mm:ss.SSSSSS
+  - remove:
+      field: stan.log.timestamp
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - append:
+      field: event.type
+      value: error
+      if: "ctx?.log?.level != null && (ctx.log.level == 'error' || ctx.log.level == 'fatal')"
+  - append:
+      field: related.ip
+      value: "{{client.ip}}"
+      if: "ctx?.client?.ip != null"
+  - convert:
+      ignore_missing: true
+      field: process.pid
+      type: long
+  - convert:
+      ignore_missing: true
+      field: client.port
+      type: long
+  - convert:
+      ignore_missing: true
+      field: stan.log.msg.bytes
+      type: long
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

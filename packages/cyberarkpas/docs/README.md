@@ -31,7 +31,7 @@ For proper timestamping of events, it's recommended to use the newer RFC5424 Sys
 
 An example event for `audit` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-03-04T17:27:14.000Z",
     "cyberarkpas": {

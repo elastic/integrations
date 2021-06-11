@@ -1,56 +1,118 @@
 ---
 description: Pipeline for parsing the Nginx error logs
 processors:
-- grok:
-    field: message
-    patterns:
-    - '%{DATA:nginx.error.time} \[%{DATA:log.level}\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}:
-      (\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}'
-    pattern_definitions:
-      GREEDYMULTILINE: |-
-        (.|
-        |	)*
-    ignore_missing: true
-- remove:
-    field: event.created
-    ignore_missing: true
-    ignore_failure: true
-- rename:
-    field: '@timestamp'
-    target_field: event.created
-- date:
-    if: ctx.event.timezone == null
-    field: nginx.error.time
-    target_field: '@timestamp'
-    formats:
-    - yyyy/MM/dd H:m:s
-    on_failure:
-    - append:
-        field: error.message
-        value: '{{ _ingest.on_failure_message }}'
-- date:
-    if: ctx.event.timezone != null
-    field: nginx.error.time
-    target_field: '@timestamp'
-    formats:
-    - yyyy/MM/dd H:m:s
-    timezone: '{{ event.timezone }}'
-    on_failure:
-    - append:
-        field: error.message
-        value: '{{ _ingest.on_failure_message }}'
-- remove:
-    field: nginx.error.time
-- set:
-    field: event.kind
-    value: event
-- append:
-    field: event.category
-    value: web
-- append:
-    field: event.type
-    value: error
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.10.0"
+ # Splunk specific parsing start
+  - set:
+      field: _temp_.isSplunk
+      value: true
+      if: ctx.message.startsWith('{')
+  - json:
+      field: message
+      target_field: json
+      if: ctx._temp_?.isSplunk == true
+  - drop:
+      if: 'ctx._temp_?.isSplunk == true && ctx.json?.result == null'
+  - fingerprint:
+      fields: 
+        - json.result._cd
+        - json.result._indextime
+        - json.result._raw
+        - json.result._time
+        - json.result.host
+        - json.result.source
+      target_field: '_id'
+      if: 'ctx._temp_?.isSplunk == true && ctx?.json?.result != null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - rename:
+      field: json.result._raw
+      target_field: message
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - rename:
+      field: json.result.host
+      target_field: host.name
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - rename:
+      field: json.result.source
+      target_field: file.path
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == true
+  - remove:
+      field: 
+        - json
+        - _temp_
+      ignore_missing: true
+      if: ctx._temp_?.isSplunk == 1
+  # Splunk specific parsing end
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
+      patterns:
+      - '%{DATA:nginx.error.time} \[%{DATA:log.level}\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}:
+        (\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}'
+      pattern_definitions:
+        GREEDYMULTILINE: |-
+          (.|
+          |	)*
+      ignore_missing: true
+  - remove:
+      field: event.created
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: '@timestamp'
+      target_field: event.created
+  - date:
+      if: ctx.event.timezone == null
+      field: nginx.error.time
+      target_field: '@timestamp'
+      formats:
+      - yyyy/MM/dd H:m:s
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{ _ingest.on_failure_message }}'
+  - date:
+      if: ctx.event.timezone != null
+      field: nginx.error.time
+      target_field: '@timestamp'
+      formats:
+      - yyyy/MM/dd H:m:s
+      timezone: '{{ event.timezone }}'
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{ _ingest.on_failure_message }}'
+  - remove:
+      field: nginx.error.time
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+  - append:
+      field: event.type
+      value: error
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

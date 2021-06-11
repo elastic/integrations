@@ -3,105 +3,105 @@ description: Pipeline for CEF logs. CEF decoding happens in the Agent. This perf
 
 processors:
   - set:
-      field: ecs.version
-      value: 1.9.0
-  - set:
       field: event.ingested
       value: '{{{_ingest.timestamp}}}'
+  - set:
+      field: ecs.version
+      value: '1.10.0'
 
   # IP Geolocation Lookup
   - geoip:
-        field: source.ip
-        target_field: source.geo
-        ignore_missing: true
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
   - geoip:
-        field: destination.ip
-        target_field: destination.geo
-        ignore_missing: true
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
 
   # IP Autonomous System (AS) Lookup
   - geoip:
-        database_file: GeoLite2-ASN.mmdb
-        field: source.ip
-        target_field: source.as
-        properties:
-            - asn
-            - organization_name
-        ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
   - geoip:
-        database_file: GeoLite2-ASN.mmdb
-        field: destination.ip
-        target_field: destination.as
-        properties:
-            - asn
-            - organization_name
-        ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
   - rename:
-        field: source.as.asn
-        target_field: source.as.number
-        ignore_missing: true
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
   - rename:
-        field: source.as.organization_name
-        target_field: source.as.organization.name
-        ignore_missing: true
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - rename:
-        field: destination.as.asn
-        target_field: destination.as.number
-        ignore_missing: true
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
   - rename:
-        field: destination.as.organization_name
-        target_field: destination.as.organization.name
-        ignore_missing: true
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - append:
-        field: related.hash
-        value: "{{cef.extensions.fileHash}}"
-        allow_duplicates: false
-        if: "ctx?.cef?.extensions?.fileHash != null && ctx?.cef?.extensions?.fileHash != ''"
+      field: related.hash
+      value: "{{cef.extensions.fileHash}}"
+      allow_duplicates: false
+      if: "ctx?.cef?.extensions?.fileHash != null && ctx?.cef?.extensions?.fileHash != ''"
   - append:
-        field: related.hash
-        value: "{{cef.extensions.oldFileHash}}"
-        allow_duplicates: false
-        if: "ctx?.cef?.extensions?.oldFileHash != null && ctx?.cef?.extensions?.oldFileHash != ''"
+      field: related.hash
+      value: "{{cef.extensions.oldFileHash}}"
+      allow_duplicates: false
+      if: "ctx?.cef?.extensions?.oldFileHash != null && ctx?.cef?.extensions?.oldFileHash != ''"
   - append:
-        field: related.ip
-        value: "{{destination.ip}}"
-        allow_duplicates: false
-        if: "ctx?.destination?.ip != null && ctx?.destination?.ip != ''"
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: "ctx?.destination?.ip != null && ctx?.destination?.ip != ''"
   - append:
-        field: related.ip
-        value: "{{destination.nat.ip}}"
-        allow_duplicates: false
-        if: "ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''"
+      field: related.ip
+      value: "{{destination.nat.ip}}"
+      allow_duplicates: false
+      if: "ctx?.destination?.nat?.ip != null && ctx?.destination?.nat?.ip != ''"
   - append:
-        field: related.ip
-        value: "{{source.ip}}"
-        allow_duplicates: false
-        if: "ctx?.source?.ip != null && ctx?.source?.ip != ''"
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: "ctx?.source?.ip != null && ctx?.source?.ip != ''"
   - append:
-        field: related.ip
-        value: "{{source.nat.ip}}"
-        allow_duplicates: false
-        if: "ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''"
+      field: related.ip
+      value: "{{source.nat.ip}}"
+      allow_duplicates: false
+      if: "ctx?.source?.nat?.ip != null && ctx?.source?.nat?.ip != ''"
   - append:
-        field: related.user
-        value: "{{destination.user.name}}"
-        if: "ctx?.destination?.user?.name != null"
+      field: related.user
+      value: "{{destination.user.name}}"
+      if: "ctx?.destination?.user?.name != null"
   - append:
-        field: related.user
-        value: "{{source.user.name}}"
-        allow_duplicates: false
-        if: "ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''"
+      field: related.user
+      value: "{{source.user.name}}"
+      allow_duplicates: false
+      if: "ctx?.source?.user?.name != null && ctx?.source?.user?.name != ''"
   - append:
-        field: related.hosts
-        value: "{{observer.hostname}}"
-        allow_duplicates: false
-        if: "ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''"
+      field: related.hosts
+      value: "{{observer.hostname}}"
+      allow_duplicates: false
+      if: "ctx?.observer?.hostname != null && ctx?.observer?.hostname != ''"
   - pipeline:
-        name: '{{ IngestPipeline "fp-pipeline" }}'
-        if: "ctx.cef?.device?.vendor == 'FORCEPOINT'"
+      name: '{{ IngestPipeline "fp-pipeline" }}'
+      if: "ctx.cef?.device?.vendor == 'FORCEPOINT'"
   - pipeline:
-        name: '{{ IngestPipeline "cp-pipeline" }}'
-        if: "ctx.cef?.device?.vendor == 'Check Point'"
+      name: '{{ IngestPipeline "cp-pipeline" }}'
+      if: "ctx.cef?.device?.vendor == 'Check Point'"
   - community_id: {}
 
   #
@@ -135,11 +135,16 @@ processors:
       field:
         - _tmp
       ignore_failure: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - remove:
       field:
         - _tmp
       ignore_failure: true
   - set:
-        field: error.message
-        value: "{{ _ingest.on_failure_message }}"
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
