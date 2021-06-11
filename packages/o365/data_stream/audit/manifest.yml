@@ -42,12 +42,16 @@ streams:
         title: Directory (tenant) IDs
         required: true
         show_user: true
+        default:
+          - tenant-id
       - name: tenant_names
         type: text
         multi: true
-        title: Directory (tenant) domains
+        title: Directory (tenant) domains mapping
         required: true
         show_user: true
+        default:
+          - "tenant-id: domain-name"
       - name: content_type
         type: text
         title: Content types
@@ -61,7 +65,7 @@ streams:
         required: true
         show_user: true
       - name: api
-        type: text
+        type: yaml
         title: Advanced API settings
         multi: false
         required: false
@@ -93,53 +97,3 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: o365audit.yml.hbs
-  - input: logfile
-    title: "Collect Office 365 audit logs via log files"
-    description: "Collecting audit logs from Office 365 via log files"
-    enabled: false
-    template_path: log.yml.hbs
-    vars:
-      - name: paths
-        type: text
-        title: Paths
-        multi: true
-        required: false
-        show_user: true
-      - name: tenants
-        type: text
-        multi: true
-        title: Directory (tenant) IDs
-        required: true
-        show_user: true
-      - name: tenant_names
-        type: text
-        multi: true
-        title: Directory (tenant) domains
-        required: true
-        show_user: true
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: false
-        default:
-          - forwarded
-          - o365-audit
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
-      - name: processors
-        type: yaml
-        title: Processors
-        multi: false
-        required: false
-        show_user: false
-        description: >
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
