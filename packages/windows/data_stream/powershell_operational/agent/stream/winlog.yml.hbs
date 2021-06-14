@@ -1,3 +1,18 @@
 name: Microsoft-Windows-PowerShell/Operational
 condition: ${host.platform} == 'windows'
 event_id: 4103, 4104, 4105, 4106
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if processors.length}}
+processors:
+  {{processors}}
+{{/if}}

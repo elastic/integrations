@@ -29,10 +29,17 @@ request.transforms:
       target: header.Content-Type
       value: application/x-www-form-urlencoded
 response.decode_as: application/x-ndjson
+{{#if tags.length}}
 tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
@@ -74,3 +81,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
       map_ecs_fields: true
+{{#if processors.length}}
+processors:
+  {{processors}}
+{{/if}}
