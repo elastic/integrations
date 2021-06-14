@@ -1,12 +1,12 @@
 udp:
 host: "{{udp_host}}:{{udp_port}}"
 tags:
-{{#each tags as |tag i|}}
- - {{tag}}
-{{/each}}
 {{#if preserve_original_event}}
- - preserve_original_event
+  - preserve_original_event
 {{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
 fields_under_root: true
 fields:
     observer:
@@ -18,6 +18,9 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
 - script:
     lang: javascript
     params:

@@ -1,18 +1,27 @@
 host: "{{syslog_host}}:{{syslog_port}}"
 tags:
-{{#each tags as |tag i|}}
- - {{tag}}
-{{/each}}
 {{#if preserve_original_event}}
- - preserve_original_event
+  - preserve_original_event
 {{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
+{{/contains}}
 {{#if internal_interfaces.length}}
 processors:
 {{else}}
-  {{#if external_interfaces.length}}
+{{#if external_interfaces.length}}
 processors:
-  {{/if}}
+{{else}}
+{{#if processors}}
+processors:
+{{/if}}
+{{/if}}
+{{/if}}
+{{#if processors}}
+{{processors}}
 {{/if}}
 {{#if internal_interfaces.length}}
   - add_fields:
