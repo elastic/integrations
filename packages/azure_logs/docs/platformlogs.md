@@ -97,7 +97,7 @@ An example event for `platformlogs` looks as following:
 | azure.platformlogs.ccpNamespace | ccpNamespace | keyword |
 | azure.platformlogs.event_category | Event Category | keyword |
 | azure.platformlogs.operation_name | Operation name | keyword |
-| azure.platformlogs.properties.* | Properties | object |
+| azure.platformlogs.properties | Event properties | flattened |
 | azure.platformlogs.result_signature | Result signature | keyword |
 | azure.platformlogs.result_type | Result type | keyword |
 | azure.platformlogs.status | Status | keyword |
@@ -191,6 +191,7 @@ An example event for `platformlogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Domain of the user. | keyword |
 | user.full_name | Full name of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |

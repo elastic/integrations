@@ -198,6 +198,7 @@ An example event for `auditlogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Domain of the user. | keyword |
 | user.full_name | Full name of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |
@@ -404,6 +405,7 @@ An example event for `signinlogs` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Domain of the user. | keyword |
 | user.full_name | Full name of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |
