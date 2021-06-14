@@ -6,7 +6,7 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '1.9.0'
+      value: '1.10.0'
   - set:
       field: observer.vendor
       value: Palo Alto Networks
@@ -18,14 +18,17 @@ processors:
       value: firewall
 
 # Collects the first few parts of the message to be used for conditional parsing later
-  - grok:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
       patterns:
         - "^%{DATA},%{PANW_DATE:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD},%{PANW_DATE:_temp_.generated_time},%{GREEDYDATA:message}$"
       pattern_definitions:
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
         FIELD: "[^,]*"
-
   - csv:
       field: message
       if: ctx?.panw?.panos?.type == 'TRAFFIC'
@@ -88,13 +91,8 @@ processors:
         - panw.panos.scp.chunks
         - panw.panos.scp.chunks_sent
         - panw.panos.scp.chunks_received
-
-  - rename:
-      field: message
-      target_field: event.original
-
   - csv:
-      field: event.original
+      field: message
       if: ctx?.panw?.panos?.type == 'THREAT'
       target_fields:
         - source.ip
@@ -422,12 +420,10 @@ processors:
       field: network.direction
       value: inbound
       if: 'ctx?.panw?.panos?.type == "THREAT" && (ctx?._temp_?.direction == "0" || ctx?._temp_?.direction == "client-to-server")'
-
   - set:
       field: network.direction
       value: outbound
       if: 'ctx?.panw?.panos?.type == "THREAT" && (ctx?._temp_?.direction == "1" || ctx?._temp_?.direction == "server-to-client")'
-
   - set:
       field: network.direction
       value: unknown
@@ -709,8 +705,6 @@ processors:
       field: _temp_.dstloc
       target_field: destination.geo.name
       ignore_missing: true
-
-
   - convert:
       field: source.port
       type: integer
@@ -732,7 +726,6 @@ processors:
   - community_id:
       target_field: network.community_id
       if: ctx?.source?.port != null && ctx?.source?.port != 0 && ctx?.destination?.port != null && ctx?.destination?.port != 0
-
   - community_id:
       target_field: panw.panos.network.nat.community_id
       source_ip: source.nat.ip
@@ -747,67 +740,56 @@ processors:
       field: network.community_id
       value:
       - '{{panw.panos.network.nat.community_id}}'
-
   - grok:
       if: 'ctx?.panw?.panos?.threat?.name != null'
       field: panw.panos.threat.name
       ignore_failure: true
       patterns:
         - '%{GREEDYDATA:panw.panos.threat.name}\(\s*%{GREEDYDATA:panw.panos.threat.id}\s*\)'
-
   - set:
       field: panw.panos.threat.name
       value: 'URL-filtering'
       if: 'ctx?.panw?.panos?.threat?.id == "9999"'
-
   - set:
       field: rule.name
       value: "{{panw.panos.ruleset}}"
       ignore_empty_value: true
-
   - append:
       field: related.user
       allow_duplicates: false
       value: "{{client.user.name}}"
       if: "ctx?.client?.user?.name != null"
-
   - append:
       field: related.user
       allow_duplicates: false
       value: "{{source.user.name}}"
       if: "ctx?.source?.user?.name != null"
-
   - append:
       field: related.user
       allow_duplicates: false
       value: "{{server.user.name}}"
       if: "ctx?.server?.user?.name != null"
-
   - append:
       field: related.user
       allow_duplicates: false
       value: "{{destination.user.name}}"
       if: "ctx?.destination?.user?.name != null"
-
   - append:
       field: related.hash
       allow_duplicates: false
       value: "{{panw.panos.file.hash}}"
       if: "ctx?.panw?.panos?.file?.hash != null"
-
   - append:
       field: related.hosts
       value: "{{observer.hostname}}"
       if: "ctx?.observer?.hostname != null && ctx.observer?.hostname != ''"
       allow_duplicates: false
-
 # Remove temporary fields.
   - remove:
       field:
         - _temp_
         - _conf
       ignore_missing: true
-
 # Remove NAT fields when translation was not done.
   - remove:
       field:
@@ -819,7 +801,6 @@ processors:
         - destination.nat.ip
         - destination.nat.port
       if: 'ctx?.destination?.nat?.ip == "0.0.0.0" && ctx?.destination?.nat?.port == 0'
-
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
