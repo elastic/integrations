@@ -156,6 +156,7 @@ An example event for `access` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | traefik.access.backend_url | The url of the backend where request is forwarded | keyword |
 | traefik.access.frontend_name | The name of the frontend used | keyword |
 | traefik.access.request_count | The number of requests | long |

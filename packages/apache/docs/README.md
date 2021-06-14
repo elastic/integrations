@@ -39,10 +39,12 @@ Access logs collects the Apache access logs.
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | destination.domain | Destination domain | keyword |  |  |
 | ecs.version | ECS version | keyword |  |  |
+| error.message | Error message. | text |  |  |
 | event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.outcome | The outcome of the event. If the event describes an action, this fields contains the outcome of that action. Examples outcomes are `success` and `failure`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -83,16 +85,21 @@ Access logs collects the Apache access logs.
 | source.geo.region_iso_code | Region ISO code. | keyword |  |  |
 | source.geo.region_name | Region name. | keyword |  |  |
 | source.ip | IP address of the source | ip |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |  |  |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |  |  |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |  |  |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |  |  |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |  |  |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |  |  |
+| url.path | Path of the request, such as "/search". | keyword |  |  |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |  |  |
 | user.name | Short name or login of the user. | keyword |  |  |
 | user_agent.device.name | Name of the device. | keyword |  |  |
 | user_agent.name | Name of the user agent. | keyword |  |  |
 | user_agent.original | Unparsed user_agent string. | keyword |  |  |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |  |  |
-| user_agent.os.name | Operating system name, without the version. | keyword |  |  |
+| user_agent.os.name | Operating system name, without the version | keyword |  |  |
 | user_agent.os.version | Operating system version as a raw string | keyword |  |  |
 | user_agent.version | Version of the user agent | keyword |  |  |
 
@@ -124,10 +131,12 @@ Error logs collects the Apache error logs.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version | keyword |  |  |
+| error.message | Error message. | text |  |  |
 | event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |  |  |
 | event.type | Reserved for future usage. Please avoid using this field for user data. | keyword |  |  |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -169,7 +178,11 @@ Error logs collects the Apache error logs.
 | source.ip | Source IP address. | ip |  |  |
 | source.port | Source port. | long |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |  |  |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |  |  |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |  |  |
+| url.path | Path of the request, such as "/search". | keyword |  |  |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |  |  |
 | user.name | Short name or login of the user. | keyword |  |  |
 | user_agent.device.name | Name of the device. | keyword |  |  |
 | user_agent.name | Name of the user agent. | keyword |  |  |
@@ -345,6 +358,7 @@ An example event for `status` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version | keyword |  |  |
+| error.message | Error message. | text |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
