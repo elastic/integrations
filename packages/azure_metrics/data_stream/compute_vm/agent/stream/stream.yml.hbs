@@ -1,4 +1,6 @@
-metricsets: ["compute_vm"]
+metricsets: ["monitor"]
+default_resource_type: "Microsoft.Compute/virtualMachines"
+add_cloud_metadata: true
 period: {{period}}
 {{#if client_id}}
 client_id: {{client_id}}
@@ -15,6 +17,35 @@ subscription_id: {{subscription_id}}
 {{#if refresh_list_interval}}
 refresh_list_interval: {{refresh_list_interval}}
 {{/if}}
-{{#if resources}}
-resources: {{resources}}
+
+resources:
+{{#if resource_groups}}
+{{#each resource_groups}}
+    - resource_group: "{{this}}"
+      resource_type: "Microsoft.Compute/virtualMachines"
+      metrics:
+        - name: ["Percentage CPU","Network In"]
+          namespace: "Microsoft.Compute/virtualMachines"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: "*"
+          namespace: "Azure.VM.Windows.GuestMetrics"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+{{/each}}
+{{/if}}
+{{#if resource_ids}}
+{{#each resource_ids}}
+    - resource_id: "{{this}}"
+      resource_type: "Microsoft.Compute/virtualMachines"
+      metrics:
+        - name: "*"
+          namespace: "Microsoft.Compute/virtualMachines"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: "*"
+          namespace: "Azure.VM.Windows.GuestMetrics"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+{{/each}}
 {{/if}}
