@@ -157,6 +157,7 @@ An example event for `log` looks as following:
 | santa.disk.volume | The volume name. | keyword |
 | santa.mode | Operating mode of Santa. | keyword |
 | santa.reason | Reason for the decision. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
