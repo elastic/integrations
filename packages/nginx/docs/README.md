@@ -158,6 +158,9 @@ An example event for `access` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | Destination domain. | keyword |
+| destination.ip | IP address of the destination. | ip |
+| destination.port | Port of the destination. | long |
 | ecs.version | ECS version | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | host.architecture | Operating system architecture. | keyword |
@@ -197,7 +200,13 @@ An example event for `access` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
@@ -341,6 +350,7 @@ An example event for `error` looks as following:
 | nginx.error.connection_id | Connection identifier. | long |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
