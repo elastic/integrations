@@ -37,6 +37,8 @@ The `log` dataset collects the Redis standard logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| error.message | Error message. | text |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -58,6 +60,7 @@ The `log` dataset collects the Redis standard logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.pid | Process id. | long |
 | redis.log.role | The role of the Redis instance. Can be one of `master`, `slave`, `child` (for RDF/AOF writing child), or `sentinel`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ### slowlog
@@ -85,6 +88,8 @@ The `slowlog` dataset collects the Redis slow logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| error.message | Error message. | text |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -106,6 +111,7 @@ The `slowlog` dataset collects the Redis slow logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.pid | Process id. | long |
 | redis.log.role | The role of the Redis instance. Can be one of `master`, `slave`, `child` (for RDF/AOF writing child), or `sentinel`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -117,7 +123,7 @@ result.
 
 An example event for `info` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -469,7 +475,7 @@ Patterns are configured as a list containing these fields:
 
 An example event for `key` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -556,7 +562,7 @@ Elasticsearch. The keyspace information is fetched from the `INFO` command.
 
 An example event for `keyspace` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {

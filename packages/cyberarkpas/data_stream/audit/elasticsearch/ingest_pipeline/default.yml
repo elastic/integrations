@@ -10,7 +10,7 @@ processors:
       value: '{{{_ingest.timestamp}}}'
   - set:
       field: ecs.version
-      value: 1.9.0
+      value: "1.10.0"
 
   #
   # Set event.original from message, unless reindexing.
@@ -1161,28 +1161,24 @@ processors:
           selected['other'] = base;
           audit[lst.getKey()] = selected;
         });
-
   #
   # Cleanup
   #
   - remove:
       field: _tmp
       ignore_missing: true
-
   - remove:
       field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
-      if: 'ctx.tags == null || !ctx.tags.contains("preserve_original_event")'
-
 on_failure:
   - append:
-        field: error.message
-        value: '{{{_ingest.on_failure_message}}}'
-
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: _tmp
       ignore_missing: true
-
   - set:
       field: event.kind
       value: pipeline_error

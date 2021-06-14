@@ -1,6 +1,9 @@
 tcp:
 host: "{{tcp_host}}:{{tcp_port}}"
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
  - {{tag}}
 {{/each}}
@@ -13,8 +16,10 @@ fields:
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-
 processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
 - script:
     lang: javascript
     params:
@@ -3928,7 +3933,3 @@ processors:
     target_subdomain_field: url.subdomain
     target_etld_field: url.top_level_domain
 - add_locale: ~
-- add_fields:
-    target: ''
-    fields:
-        ecs.version: 1.9.0

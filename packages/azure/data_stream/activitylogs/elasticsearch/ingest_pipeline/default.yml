@@ -4,6 +4,9 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.10.0"
   - rename:
       field: azure
       target_field: azure-eventhub
@@ -13,8 +16,12 @@ processors:
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
-  - json:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: azure.activitylogs
   - date:
       field: azure.activitylogs.time
@@ -22,9 +29,6 @@ processors:
       ignore_failure: true
       formats:
         - ISO8601
-  - rename:
-      field: message
-      target_field: event.original
   - remove:
       field: azure.activitylogs.time
       ignore_missing: true
@@ -32,9 +36,17 @@ processors:
       field: azure.activitylogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
-  - rename:
+  - grok:
       field: azure.activitylogs.callerIpAddress
-      target_field: source.ip
+      patterns:
+        - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
+        - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
+        - "%{IPORHOST:source.ip}"
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: azure.activitylogs.callerIpAddress
+      if: 'ctx.source?.ip != null'
       ignore_missing: true
   - set:
       field: client.ip
@@ -64,6 +76,14 @@ processors:
       field: azure.activitylogs.location
       target_field: geo.name
       ignore_missing: true
+  - json:
+      field: azure.activitylogs.identity
+      if: "ctx.azure?.activitylogs?.identity instanceof String"
+      ignore_failure: true
+  - json:
+      field: azure.activitylogs.properties
+      if: "ctx.azure?.activitylogs?.properties instanceof String"
+      ignore_failure: true
   - script:
       lang: painless
       source: >-
@@ -77,6 +97,10 @@ processors:
           ctx.azure.activitylogs.event_category = 'Administrative';
         }
       ignore_failure: true
+  - remove:
+      field: azure.activitylogs.properties.eventCategory
+      if: 'ctx.azure.activitylogs.event_category != null'
+      ignore_missing: true
   - rename:
       field: azure.activitylogs.resultType
       target_field: azure.activitylogs.result_type
@@ -264,6 +288,11 @@ processors:
       value: event
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
