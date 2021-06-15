@@ -2,11 +2,11 @@
 description: Pipeline for IPTables
 processors:
   - set:
-      field: ecs.version
-      value: '1.10.0'
-  - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.10.0'
   - rename:
       field: message
       target_field: event.original
@@ -68,7 +68,6 @@ processors:
         UBIQUITI_RULESET_NAME: '[^\]]*'
         UBIQUITI_LABEL: '%{UBIQUITI_RULESET_NAME:iptables.ubiquiti.rule_set}-%{UBIQUITI_FIELD:iptables.ubiquiti.rule_number}-%{UBIQUITI_FIELD:event.action}'
         UDM_LOGS: '(%{UNSIGNED_INT}%{SPACE})?(TTL|TL|L)=(%{UNSIGNED_INT:iptables.ttl:int})%{SPACE}(ID=(%{UNSIGNED_INT:iptables.id:int})%{SPACE})?(DF%{SPACE})?'
-
   - grok:
       field: iptables.ubiquiti.rule_set
       ignore_missing: true
@@ -214,6 +213,7 @@ processors:
                   dst = new HashMap();
                   ctx[action.destination.object] = dst;
               }
+              dst[action.destination.key] = mapping;
             }
           }
         }
@@ -248,6 +248,7 @@ processors:
               iptables[key] = value;
             }
           }
+        }
   - set:
       field: event.kind
       value: event
@@ -307,9 +308,9 @@ processors:
       ignore_missing: true
 on_failure:
   - remove:
-        field:
-          - _tmp
-        ignore_failure: true
+      field:
+        - _tmp
+      ignore_failure: true
   - append:
       field: error.message
       value: '{{ _ingest.on_failure_message }}'
