@@ -1,5 +1,5 @@
 
-# Prebuilt Security Detection Rules
+# Detection rules
 
 The detection rules package stores the prebuilt security rules for the Elastic Security [detection engine](https://www.elastic.co/guide/en/security/7.13/detection-engine-overview.html).
 
