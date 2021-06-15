@@ -12,29 +12,28 @@ content_type:
  - "{{this}}"
 {{/each}}
 {{#if api}}
-api: {{api}}
+api:
+  {{api}}
 {{/if}}
 tags:
 {{#each tags as |tag i|}}
  - {{tag}}
 {{/each}}
+{{#if preserve_original_event}}
+ - preserve_original_event
+api.preserve_original_event: true
+{{/if}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if tenant_names}}
 processors:
-- add_fields:
-    target: '_conf.tenants'
+ - add_fields:
+    target: "_conf"
     fields:
-        mappings:
-{{#each tenant_names as |entry i|}}
-          - {{entry.id}}: {{entry.name}}
-{{/each}}
-{{else}}
+      tenants:
+        {{#each tenant_names}}
+          {{this}}
+        {{/each}}
 {{#if processors}}
-processors:
-{{/if}}
-{{/if}}
-{{#if processors}}
-{{processors}}
+ {{processors}}
 {{/if}}
