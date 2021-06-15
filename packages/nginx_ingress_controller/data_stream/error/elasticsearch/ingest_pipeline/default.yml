@@ -1,8 +1,18 @@
 ---
 description: Pipeline for parsing the Nginx Ingress Controller error logs
 processors:
-  - grok:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.10.0"
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
       patterns:
         - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.%{NANOS:timestamp_nano}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}] %{GREEDYMULTILINE:message}'
       pattern_definitions:
@@ -14,9 +24,6 @@ processors:
   - rename:
       field: '@timestamp'
       target_field: event.created
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: event.kind
       value: event
@@ -79,6 +86,11 @@ processors:
         - timestamp_minute
         - timestamp_second
         - timestamp_nano
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message

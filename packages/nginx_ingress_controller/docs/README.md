@@ -160,6 +160,7 @@ An example event for `access` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
+| tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -305,3 +306,4 @@ An example event for `error` looks as following:
 | nginx_ingress_controller.error.source.file | Source file | keyword |
 | nginx_ingress_controller.error.source.line_number | Source line number | long |
 | nginx_ingress_controller.error.thread_id | Thread ID | long |
+| tags | List of keywords used to tag each event. | keyword |
