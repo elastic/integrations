@@ -1,6 +1,15 @@
-input: logfile
+input: httpjson
+service: o365
 vars: ~
 data_stream:
   vars:
-    paths:
-      - "{{SERVICE_LOGS_DIR}}/*.log"
+    preserve_original_event: true
+    application_id: test-app-id
+    client_secret: test-secret
+    tenants:
+      - tenant-id
+    tenant_names:
+      - "tenant-id: domain-name"
+    api: |
+      authentication_endpoint: http://{{Hostname}}:{{Port}}/
+      resource: http://{{Hostname}}:{{Port}}
