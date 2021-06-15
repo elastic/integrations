@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Incoming DCOM Lateral Movement with MMC",
-        "query": "sequence by host.id with maxspan=1m\n [network where event.type == \"start\" and process.name : \"mmc.exe\" and\n  source.port \u003e= 49152 and destination.port \u003e= 49152 and source.address not in (\"127.0.0.1\", \"::1\") and\n  network.direction == \"incoming\" and network.transport == \"tcp\"\n ] by process.entity_id\n [process where event.type in (\"start\", \"process_started\") and process.parent.name : \"mmc.exe\"\n ] by process.parent.entity_id\n",
+        "query": "sequence by host.id with maxspan=1m\n [network where event.type == \"start\" and process.name : \"mmc.exe\" and\n  source.port >= 49152 and destination.port >= 49152 and source.address not in (\"127.0.0.1\", \"::1\") and\n  network.direction == \"incoming\" and network.transport == \"tcp\"\n ] by process.entity_id\n [process where event.type in (\"start\", \"process_started\") and process.parent.name : \"mmc.exe\"\n ] by process.parent.entity_id\n",
         "references": [
             "https://enigma0x3.net/2017/01/05/lateral-movement-using-the-mmc20-application-com-object/"
         ],
@@ -29,7 +29,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0008",
                     "name": "Lateral Movement",
