@@ -9,7 +9,7 @@ related metrics.
 
 An example event for `event` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:30:27.575Z",
     "metricset": {

@@ -9,7 +9,7 @@ Kubernetes controller component `metrics` endpoint.
 
 An example event for `controllermanager` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:33:29.643Z",
     "kubernetes": {

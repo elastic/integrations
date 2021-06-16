@@ -30,7 +30,7 @@ rules:
 
 An example event for `apiserver` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:30:34.616Z",
     "metricset": {

@@ -9,7 +9,7 @@ from Kubernetes Scheduler component.
 
 An example event for `scheduler` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:35:59.624Z",
     "agent": {

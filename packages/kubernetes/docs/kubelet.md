@@ -9,7 +9,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `container` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:32:29.748Z",
     "kubernetes": {
@@ -248,7 +248,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `node` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:34:39.723Z",
     "event": {
@@ -484,7 +484,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `pod` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:34:59.729Z",
     "kubernetes": {
@@ -691,7 +691,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `system` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:39:59.647Z",
     "service": {
@@ -867,7 +867,7 @@ from Kubelet's monitoring APIs.
 
 An example event for `volume` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:40:19.649Z",
     "ecs": {

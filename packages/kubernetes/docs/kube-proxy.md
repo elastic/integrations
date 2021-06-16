@@ -9,7 +9,7 @@ from Kubernetes Proxy component.
 
 An example event for `proxy` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T12:35:29.639Z",
     "agent": {
