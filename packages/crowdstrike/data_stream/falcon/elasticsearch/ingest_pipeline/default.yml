@@ -6,13 +6,16 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: "1.9.0"
-  - json:
+      value: "1.10.0"
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: crowdstrike
   - remove:
       field:
-        - message
         - host.name
       ignore_missing: true
   - remove:
@@ -387,6 +390,11 @@ processors:
       ignore_failure: true
       allow_duplicates: false
       if: ctx?.host?.name != null && ctx?.host?.name != ""
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message

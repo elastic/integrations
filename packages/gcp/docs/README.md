@@ -11,7 +11,7 @@ This is the `audit` dataset.
 
 An example event for `audit` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/foo/logs/cloudaudit.googleapis.com%2Factivity"
@@ -198,6 +198,15 @@ An example event for `audit` looks as following:
 | log.logger |  | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| orchestrator.api_version | API version being used to carry out the action | keyword |
+| orchestrator.cluster.name | Name of the cluster. | keyword |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
+| orchestrator.cluster.version | The version of the cluster. | keyword |
+| orchestrator.namespace | Namespace in which the action is taking place. | keyword |
+| orchestrator.organization | Organization affected by the event (for multi-tenant orchestrator setups). | keyword |
+| orchestrator.resource.name | Name of the resource being acted upon. | keyword |
+| orchestrator.resource.type | Type of resource being acted upon. | keyword |
+| orchestrator.type | Orchestrator cluster type (e.g. kubernetes, nomad or cloudfoundry). | keyword |
 | service.name | Name of the service data is collected from. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -229,7 +238,7 @@ This is the `firewall` dataset.
 
 An example event for `firewall` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/test-beats/logs/compute.googleapis.com%2Ffirewall"
@@ -450,7 +459,7 @@ This is the `VPC Flow` dataset.
 
 An example event for `vpcflow` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"

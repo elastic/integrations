@@ -85,6 +85,43 @@
           type: text
           norms: false
           default_field: false
+    - name: domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Domain of the url, such as "www.elastic.co".
+
+        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
+
+        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
+    - name: scheme
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Scheme of the request, such as "https".
+
+        Note: The `:` is not part of the scheme.'
+    - name: fragment
+      type: keyword
+      ignore_above: 1024
+      description: 'Portion of the url after the `#`, such as "top".
+
+        The `#` is not part of the fragment.'
+    - name: extension
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The field contains the file extension from the original request url.
+
+        The file extension is only set if it exists, as not every url has a file extension.
+
+        The leading period must not be included. For example, the value must be "png", not ".png".'
+      example: png
+    - name: path
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Path of the request, such as "/search".
 - name: user
   title: User
   group: 2
@@ -173,3 +210,17 @@
 - name: log.offset
   type: long
   description: Log offset
+- name: destination.domain
+  description: Destination domain.
+  type: keyword
+- name: destination.ip
+  description: IP address of the destination.
+  type: ip
+- name: destination.port
+  description: Port of the destination.
+  type: long
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.

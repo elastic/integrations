@@ -14,7 +14,7 @@ The `connection` dataset fetches the data returned by the `cons` admin keyword.
 
 An example event for `connection` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T16:12:07.612Z",
     "host": {
@@ -112,7 +112,7 @@ The `mntr` Metricset fetches the data returned by the `mntr` admin keyword.
 
 An example event for `mntr` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T16:12:08.494Z",
     "zookeeper": {
@@ -234,7 +234,7 @@ The `server` Metricset fetches the data returned by the `srvr` admin keyword.
 
 An example event for `server` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T16:12:12.409Z",
     "event": {
