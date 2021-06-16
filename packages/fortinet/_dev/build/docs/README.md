@@ -17,11 +17,15 @@ This integration has been tested against FortiOS version 6.0.x and 6.2.x. Versio
 
 Contains log entries from Fortinet FortiGate applicances.
 
+{{event "firewall"}}
+
 {{fields "firewall"}}
 
 ### Clientendpoint
 
 The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security logs.
+
+{{event "clientendpoint"}}
 
 {{fields "clientendpoint"}}
 
@@ -29,10 +33,14 @@ The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security log
 
 The `fortimail` dataset collects Fortinet FortiMail logs.
 
+{{event "fortimail"}}
+
 {{fields "fortimail"}}
 
 ### Fortimanager
 
 The `fortimanager` dataset collects Fortinet Manager/Analyzer logs.
+
+{{event "fortimanager"}}
 
 {{fields "fortimanager"}}

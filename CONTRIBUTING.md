@@ -5,6 +5,7 @@ This page is intended for contributors to the [Package Registry](https://github.
 ## Table of Contents
 
 * [Definitions](/docs/definitions.md) - learn basic terms used in the universe of integrations, packages, data streams
+* [Generic guidelines](/docs/generic_guidelines.md) - generic guidelines for developing integrations, compliance with ECS, docs, dashboards
 * [Sample package: Nginx](/packages/nginx) - use as an inspiration for new packages, look at files, folders, test resources
 * [Developer workflow: build and test integration](/docs/developer_workflow_design_build_test_integration.md) - step-by-step guide on how to build and test an integration
 * [Developer workflow: promote and release integration](/docs/developer_workflow_promote_release_integration.md) - step-by-step guide on how to promote and release an integration

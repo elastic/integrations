@@ -1,0 +1,58 @@
+queue_url: {{queue_url}}
+file_selectors:
+{{#if cloudtrail_regex}}
+  - regex: {{cloudtrail_regex}}
+    expand_event_list_from_field: 'Records'
+{{/if}}
+{{#if cloudtrail_digest_regex}}
+  - regex: {{cloudtrail_digest_regex}}
+{{/if}}
+{{#if cloudtrail_insight_regex}}
+  - regex: {{cloudtrail_insight_regex}}
+    expand_event_list_from_field: 'Records'
+{{/if}}
+expand_event_list_from_field: Records
+{{#if credential_profile_name}}
+credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if shared_credential_file}}
+shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if visibility_timeout}}
+visibility_timeout: {{visibility_timeout}}
+{{/if}}
+{{#if api_timeout}}
+api_timeout: {{api_timeout}}
+{{/if}}
+{{#if endpoint}}
+endpoint: {{endpoint}}
+{{/if}}
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
+{{#if role_arn}}
+role_arn: {{role_arn}}
+{{/if}}
+{{#if fips_enabled}}
+fips_enabled: {{fips_enabled}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

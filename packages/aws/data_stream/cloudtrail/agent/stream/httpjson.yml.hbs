@@ -32,39 +32,17 @@ response.split:
   target: body.result._raw
   type: string
   delimiter: "\n"
-{{#contains tags "forwarded"}}
-publisher_pipeline.disable_host: true
-{{/contains}}
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
 processors:
-  - decode_json_fields:
-      fields: message
-      target: json
-      add_error_key: true
-  - drop_event:
-      when:
-        not:
-          has_fields: ['json.result']
-  - fingerprint:
-      fields:
-        - json.result._cd
-        - json.result._indextime
-        - json.result._raw
-        - json.result._time
-      target_field: "@metadata._id"
-  - drop_fields:
-      fields: ["message"]
-  - rename:
-      fields:
-        - from: json.result._raw
-          to: message
-  - drop_fields:
-      fields: ["json"]
-      ignore_missing: true
-  - add_fields:
-      target: ''
-      fields:
-        ecs.version: 1.9.0
+{{processors}}
+{{/if}}

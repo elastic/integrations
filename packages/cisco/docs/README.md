@@ -17,6 +17,136 @@ datasets for receiving logs over syslog or read from a file:
 
 The `asa` dataset collects the Cisco firewall logs.
 
+An example event for `asa` looks as following:
+
+```json
+{
+    "@timestamp": "2018-10-10T12:34:56.000Z",
+    "agent": {
+        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "hostname": "docker-fleet-agent",
+        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "cisco": {
+        "asa": {
+            "destination_interface": "outside",
+            "message_id": "305011",
+            "source_interface": "inside"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco.asa",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "100.66.98.44",
+        "ip": "100.66.98.44",
+        "port": 8256
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "firewall-rule",
+        "category": [
+            "network"
+        ],
+        "code": "305011",
+        "dataset": "cisco.asa",
+        "ingested": "2021-06-03T09:22:20.519428820Z",
+        "kind": "event",
+        "original": "%ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:100.66.98.44/8256",
+        "severity": 6,
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "localhost",
+        "id": "f46ddd9d65ff20633d9c337909855778",
+        "ip": [
+            "172.19.0.7"
+        ],
+        "mac": [
+            "02:42:ac:13:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.25-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "informational",
+        "source": {
+            "address": "172.19.0.4:47315"
+        }
+    },
+    "network": {
+        "iana_number": "6",
+        "transport": "tcp"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "inside"
+            }
+        },
+        "hostname": "localhost",
+        "ingress": {
+            "interface": {
+                "name": "outside"
+            }
+        },
+        "product": "asa",
+        "type": "firewall",
+        "vendor": "Cisco"
+    },
+    "process": {
+        "name": "CiscoASA",
+        "pid": 999
+    },
+    "related": {
+        "hosts": [
+            "localhost"
+        ],
+        "ip": [
+            "172.31.98.44",
+            "100.66.98.44"
+        ]
+    },
+    "source": {
+        "address": "172.31.98.44",
+        "ip": "172.31.98.44",
+        "port": 1772
+    },
+    "tags": [
+        "cisco-asa",
+        "preserve_original_event"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -48,12 +178,15 @@ The `asa` dataset collects the Cisco firewall logs.
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
+| cisco.asa.security | Cisco FTD security event fields. | flattened |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
+| cisco.asa.termination_user | AAA name of user requesting termination | keyword |
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.asa.username |  | keyword |
+| cisco.asa.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -124,17 +257,18 @@ The `asa` dataset collects the Cisco firewall logs.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.facility.code | Syslog numeric facility of the event. | long |
-| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
+| network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.interface.name | Interface name | keyword |
 | observer.egress.zone | Observer Egress zone | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -169,8 +303,23 @@ The `asa` dataset collects the Cisco firewall logs.
 | source.nat.port | Source NAT port | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility.code | Syslog numeric facility of the event. | long |
+| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
@@ -178,6 +327,187 @@ The `asa` dataset collects the Cisco firewall logs.
 ### FTD
 
 The `ftd` dataset collects the Firepower Threat Defense logs.
+
+An example event for `ftd` looks as following:
+
+```json
+{
+    "@timestamp": "2019-08-16T09:39:03.000Z",
+    "agent": {
+        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "hostname": "docker-fleet-agent",
+        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "cisco": {
+        "ftd": {
+            "message_id": "430005",
+            "rule_name": "malware-and-file-policy",
+            "security": {
+                "application_protocol": "HTTP",
+                "client": "cURL",
+                "dst_ip": "213.211.198.62",
+                "dst_port": "80",
+                "file_action": "Malware Cloud Lookup",
+                "file_direction": "Download",
+                "file_name": "eicar_com.zip",
+                "file_policy": "malware-and-file-policy",
+                "file_sandbox_status": "File Size Is Too Small",
+                "file_sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad",
+                "file_size": "184",
+                "file_storage_status": "Not Stored (Disposition Was Pending)",
+                "file_type": "ZIP",
+                "first_packet_second": "2019-08-16T09:39:02Z",
+                "protocol": "tcp",
+                "sha_disposition": "Unavailable",
+                "spero_disposition": "Spero detection not performed on file",
+                "src_ip": "10.0.1.20",
+                "src_port": "46004",
+                "threat_name": "Win.Ransomware.Eicar::95.sbx.tg",
+                "uri": "http://www.eicar.org/download/eicar_com.zip",
+                "user": "No Authentication Required"
+            },
+            "threat_category": "Win.Ransomware.Eicar::95.sbx.tg"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco.ftd",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "213.211.198.62",
+        "as": {
+            "number": 43341,
+            "organization": {
+                "name": "MDlink online service center GmbH"
+            }
+        },
+        "geo": {
+            "city_name": "Magdeburg",
+            "continent_name": "Europe",
+            "country_iso_code": "DE",
+            "country_name": "Germany",
+            "location": {
+                "lat": 52.1333,
+                "lon": 11.6167
+            },
+            "region_iso_code": "DE-ST",
+            "region_name": "Saxony-Anhalt"
+        },
+        "ip": "213.211.198.62",
+        "port": 80
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "malware-detected",
+        "category": [
+            "malware"
+        ],
+        "code": "430005",
+        "dataset": "cisco.ftd",
+        "ingested": "2021-06-03T09:24:01.526093450Z",
+        "kind": "alert",
+        "original": "%FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 213.211.198.62, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
+        "severity": 1,
+        "start": "2019-08-16T09:39:02Z",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "file": {
+        "hash": {
+            "sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
+        },
+        "name": "eicar_com.zip",
+        "size": 184
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "firepower",
+        "id": "f46ddd9d65ff20633d9c337909855778",
+        "ip": [
+            "172.19.0.7"
+        ],
+        "mac": [
+            "02:42:ac:13:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.25-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "alert",
+        "source": {
+            "address": "172.19.0.4:46787"
+        }
+    },
+    "network": {
+        "application": "curl",
+        "iana_number": "6",
+        "protocol": "http",
+        "transport": "tcp"
+    },
+    "observer": {
+        "hostname": "firepower",
+        "product": "asa",
+        "type": "firewall",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hash": [
+            "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
+        ],
+        "hosts": [
+            "firepower"
+        ],
+        "ip": [
+            "10.0.1.20",
+            "213.211.198.62"
+        ],
+        "user": [
+            "No Authentication Required"
+        ]
+    },
+    "source": {
+        "address": "10.0.1.20",
+        "ip": "10.0.1.20",
+        "port": 46004
+    },
+    "tags": [
+        "cisco-ftd",
+        "preserve_original_event"
+    ],
+    "url": {
+        "original": "http://www.eicar.org/download/eicar_com.zip"
+    },
+    "user": {
+        "id": "No Authentication Required",
+        "name": "No Authentication Required"
+    }
+}
+```
 
 **Exported fields**
 
@@ -214,9 +544,11 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.ftd.suffix | Optional suffix after %FTD identifier. | keyword |
+| cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
 | cisco.ftd.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.ftd.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.ftd.username |  | keyword |
+| cisco.ftd.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -259,7 +591,7 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
-| event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | keyword |
 | event.ingested | The timestamp when an event arrived in the central data store | date |
@@ -296,18 +628,19 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.facility.code | Syslog numeric facility of the event. | long |
-| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
+| network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.interface.name | Interface name | keyword |
 | observer.egress.zone | Observer Egress zone | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -345,9 +678,23 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility.code | Syslog numeric facility of the event. | long |
+| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
 | url.original | Unmodified original url as seen in the event source. | keyword |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -358,13 +705,123 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 
 The `ios` dataset collects the Cisco IOS router and switch logs.
 
+An example event for `ios` looks as following:
+
+```json
+{
+    "@timestamp": "2021-06-03T09:25:42.537Z",
+    "agent": {
+        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "hostname": "docker-fleet-agent",
+        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "cisco": {
+        "ios": {
+            "access_list": "177",
+            "facility": "SEC"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco.ios",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "224.0.0.22",
+        "ip": "224.0.0.22"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "deny",
+        "category": "network",
+        "code": "IPACCESSLOGRP",
+        "dataset": "cisco.ios",
+        "ingested": "2021-06-03T09:25:43.560570635Z",
+        "original": "Feb  8 04:00:48 198.51.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet\n",
+        "provider": "firewall",
+        "sequence": 585917,
+        "severity": 6,
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "f46ddd9d65ff20633d9c337909855778",
+        "ip": [
+            "172.19.0.7"
+        ],
+        "mac": [
+            "02:42:ac:13:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.25-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "informational",
+        "source": {
+            "address": "198.51.100.2"
+        }
+    },
+    "message": "list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet",
+    "network": {
+        "community_id": "1:Rt5RGlrNED3cg8Wokm4+KGsDz+4=",
+        "packets": 1,
+        "transport": "igmp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "198.51.100.197",
+            "224.0.0.22"
+        ]
+    },
+    "source": {
+        "address": "198.51.100.197",
+        "ip": "198.51.100.197",
+        "packets": 1
+    },
+    "tags": [
+        "cisco-ios",
+        "preserve_original_event"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. example: '2016-05-23T08:05:34.853Z' | date |
 | cisco.ios.access_list | Name of the IP access list. | keyword |
+| cisco.ios.action | Action taken by the device | keyword |
 | cisco.ios.facility | The facility to which the message refers (for example, SNMP, SYS, and so forth). A facility can be a hardware device, a protocol, or a module of the system software. It denotes the source or the cause of the system message. | keyword |
+| cisco.ios.outcome | The result of the event | keyword |
+| cisco.ios.pim.group.ip | Multicast group IP | ip |
+| cisco.ios.pim.source.ip | Multicast source IP | ip |
+| cisco.ios.session.number | Session ID | integer |
+| cisco.ios.session.type | Session type | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -432,7 +889,6 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset |  | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
@@ -442,16 +898,88 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | process.program | Process from syslog header. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names seen on your event. | keyword |
 | source.address | Source network address. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
 
 ### Nexus
 
 The `nexus` dataset collects Cisco Nexus logs.
+
+An example event for `nexus` looks as following:
+
+```json
+{
+    "@timestamp": "2021-06-03T09:31:40.532Z",
+    "agent": {
+        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "hostname": "docker-fleet-agent",
+        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "cisco.nexus",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "code": "pam_aaa",
+        "dataset": "cisco.nexus",
+        "ingested": "2021-06-03T09:31:41.553114054Z",
+        "original": "2012 Dec 18 14:51:08 Nexus5010-B %AUTHPRIV-3-SYSTEM_MSG: pam_aaa:Authentication failed for user en from 2.2.2.1 - login\n",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.19.0.4:46985"
+        }
+    },
+    "observer": {
+        "product": "Nexus",
+        "type": "Switches",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ]
+    },
+    "rsa": {
+        "internal": {
+            "messageid": "pam_aaa"
+        },
+        "time": {
+            "timezone": "Nexus5010-B %AUTHPRIV-3-SYSTEM_MSG"
+        }
+    },
+    "tags": [
+        "cisco-nexus",
+        "forwarded",
+        "preserve_original_event"
+    ]
+}
+```
 
 **Exported fields**
 
@@ -1286,6 +1814,107 @@ The `nexus` dataset collects Cisco Nexus logs.
 ### Meraki
 
 The `meraki` dataset collects Cisco Meraki logs.
+
+An example event for `meraki` looks as following:
+
+```json
+{
+    "@timestamp": "2016-01-29T06:09:59.000Z",
+    "agent": {
+        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "hostname": "docker-fleet-agent",
+        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "cisco.meraki",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": [
+            "10.193.124.51"
+        ],
+        "port": 5293
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "deny\n",
+        "code": "security_event",
+        "dataset": "cisco.meraki",
+        "ingested": "2021-06-03T09:28:46.590942659Z",
+        "original": "modtempo 1454047799.olab nto_ security_event olaborissecurity_event tur url=https://example.org/odoco/ria.jpg?ritin=uredolor#tatemac src=10.15.44.253:5078 dst=10.193.124.51:5293 mac=01:00:5e:28:ae:7d name=psa sha256=umq disposition=ntium action=deny\n",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.19.0.4:37952"
+        }
+    },
+    "observer": {
+        "product": "Meraki",
+        "type": "Wireless",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ],
+        "ip": [
+            "10.15.44.253",
+            "10.193.124.51"
+        ]
+    },
+    "rsa": {
+        "internal": {
+            "event_desc": "olaborissecurity_event tur",
+            "messageid": "security_event"
+        },
+        "misc": {
+            "action": [
+                "deny\n"
+            ],
+            "disposition": "ntium",
+            "event_type": "security_event",
+            "node": "nto_",
+            "sensor": "nto_"
+        },
+        "time": {
+            "event_time": "2016-01-29T06:09:59.000Z"
+        }
+    },
+    "source": {
+        "ip": [
+            "10.15.44.253"
+        ],
+        "mac": "01:00:5e:28:ae:7d",
+        "port": 5078
+    },
+    "tags": [
+        "cisco-meraki",
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "url": {
+        "original": "https://example.org/odoco/ria.jpg?ritin=uredolor#tatemac"
+    }
+}
+```
 
 **Exported fields**
 
