@@ -215,6 +215,7 @@ An example event for `log` looks as following:
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress  traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress  traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.name | Custom name of the observer. | keyword |
 | process.program | Process from syslog header. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |

@@ -22,10 +22,15 @@ processors:
   - grok:
       field: message
       patterns:
-      - '\[%{UBIQUITI_LABEL}\]%{IPTABLES}%{SPACE}'
-      - '%{IPTABLES}%{SPACE}'
+      - '%{IPTABLES_HOSTNAME}%{GREEDYDATA}\[%{UBIQUITI_LABEL}\]%{IPTABLES}%{SPACE}'
+      - '%{IPTABLES_ACTION}%{GREEDYDATA}%{IPTABLES}%{SPACE}'
+      - '%{IPTABLES_HOSTNAME}%{SPACE}%{UDM_LOGS}%{IPTABLES_IP_PAYLOAD}'
+      - '%{GREEDYDATA}\[%{UBIQUITI_LABEL}\]%{IPTABLES}%{SPACE}'
+      - '%{GREEDYDATA}%{IPTABLES}%{SPACE}'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority>'
+        IPTABLES_HOSTNAME: '%{HOSTNAME:observer.name}%{SPACE}(%{NOTSPACE}%{SPACE})?kernel:'
+        IPTABLES_ACTION: '(:?%{WORD:event.action}:|%{IPTABLES_HOSTNAME}%{SPACE}iptables%{SPACE}%{WORD:event.action}|%{IPTABLES_HOSTNAME})'
         UNSIGNED_INT: '[0-9]+'
         ETHTYPE: (?:[A-Fa-f0-9]{2}):(?:[A-Fa-f0-9]{2})
         ETHTYPE_DISCARD: (?::[A-Fa-f0-9]{2})*
@@ -62,6 +67,7 @@ processors:
         UBIQUITI_FIELD: '[^-\]]*'
         UBIQUITI_RULESET_NAME: '[^\]]*'
         UBIQUITI_LABEL: '%{UBIQUITI_RULESET_NAME:iptables.ubiquiti.rule_set}-%{UBIQUITI_FIELD:iptables.ubiquiti.rule_number}-%{UBIQUITI_FIELD:event.action}'
+        UDM_LOGS: '(%{UNSIGNED_INT}%{SPACE})?(TTL|TL|L)=(%{UNSIGNED_INT:iptables.ttl:int})%{SPACE}(ID=(%{UNSIGNED_INT:iptables.id:int})%{SPACE})?(DF%{SPACE})?'
   - grok:
       field: iptables.ubiquiti.rule_set
       ignore_missing: true
@@ -96,12 +102,22 @@ processors:
       - append:
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: observer.name
+      value: "{{hostname}}"
+      ignore_empty_value: true
+      if: ctx?.observer?.name == null
+  - set:
+      field: observer.hostname
+      value: "{{hostname}}"
+      ignore_empty_value: true
+      if: ctx?.observer?.name == null
   - lowercase:
       field: network.transport
       ignore_missing: true
-  - community_id:
-      icmp_type: iptables.icmp.type
-      icmp_code: iptables.icmp.code
+  - lowercase:
+      field: event.action
+      ignore_missing: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -163,8 +179,8 @@ processors:
             object: event
             key: action
           map:
-            D: drop
-            A: accept
+            d: drop
+            a: accept
         - source:
             object: event
             key: action
@@ -174,6 +190,8 @@ processors:
           map:
             drop: denied
             accept: allowed
+            deny: denied
+            drop_input: denied
         - source:
             object: network
             key: transport
@@ -199,6 +217,10 @@ processors:
             }
           }
         }
+  - community_id:
+      ignore_missing: true
+      icmp_type: iptables.icmp.type
+      icmp_code: iptables.icmp.code
   - script:
       description: Convert bit fields to numbers.
       lang: painless
@@ -223,11 +245,10 @@ processors:
               if (v >= 0) {
                 value = value * 16 + v;
               }
+              iptables[key] = value;
             }
-            iptables[key] = value;
           }
         }
-
   - set:
       field: event.kind
       value: event
@@ -287,9 +308,9 @@ processors:
       ignore_missing: true
 on_failure:
   - remove:
-        field:
-          - _tmp
-        ignore_failure: true
+      field:
+        - _tmp
+      ignore_failure: true
   - append:
       field: error.message
       value: '{{ _ingest.on_failure_message }}'
