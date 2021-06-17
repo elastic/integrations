@@ -120,6 +120,28 @@
 - name: network.transport
   type: keyword
   description: Protocol Name corresponding to the field `iana_number`.
+- name: network.inner
+  level: extended
+  type: object
+  description: Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.)
+  default_field: false
+- name: network.inner.vlan.id
+  level: extended
+  type: keyword
+  ignore_above: 1024
+  description: VLAN ID as reported by the observer.
+  example: 10
+  default_field: false
+- name: network.inner.vlan.name
+  level: extended
+  type: keyword
+  ignore_above: 1024
+  description: Optional VLAN name as reported by the observer.
+  example: outside
+  default_field: false
+- name: network.type
+  type: keyword
+  description: In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc
 - name: process.name
   type: keyword
   description: Process name.
@@ -168,9 +190,6 @@
 - name: source.port
   type: long
   description: Port of the source.
-- name: url.original
-  type: keyword
-  description: Unmodified original url as seen in the event source.
 - name: user.email
   type: keyword
   description: User email address.
@@ -356,15 +375,81 @@
 - name: source.packets
   type: long
   description: Packets sent from the source to the destination.
-- name: url.domain
-  type: keyword
-  description: Domain of the url.
 - name: user_agent.original
   type: keyword
   description: Unparsed user_agent string.
-- name: log.syslog.facility.code
+- name: syslog.facility.code
   type: long
   description: Syslog numeric facility of the event.
-- name: log.syslog.priority
+- name: syslog.priority
   type: long
   description: Syslog priority of the event.
+- name: url
+  title: URL
+  group: 2
+  type: group
+  fields:
+    - name: domain
+      type: keyword
+      description: 'Domain of the url, such as "www.elastic.co".'
+    - name: extension
+      type: keyword
+      ignore_above: 1024
+      description: "The field contains the file extension from the original request url, excluding the leading dot."
+    - name: fragment
+      type: keyword
+      ignore_above: 1024
+      description: 'Portion of the url after the `#`, such as "top".
+
+        The `#` is not part of the fragment.'
+    - name: full
+      type: keyword
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
+    - name: original
+      type: keyword
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: "Unmodified original url as seen in the event source."
+    - name: password
+      type: keyword
+      ignore_above: 1024
+      description: Password of the request.
+    - name: path
+      type: keyword
+      description: Path of the request, such as "/search".
+    - name: port
+      type: long
+      format: string
+      description: Port of the request, such as 443.
+    - name: query
+      type: keyword
+      ignore_above: 1024
+      description: 'The query field describes the query string of the request, such as "q=elasticsearch".'
+    - name: registered_domain
+      type: keyword
+      description: "The highest registered url domain, stripped of the subdomain."
+    - name: scheme
+      type: keyword
+      ignore_above: 1024
+      description: 'Scheme of the request, such as "https".'
+    - name: subdomain
+      type: keyword
+      ignore_above: 1024
+      description: "The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain."
+      default_field: false
+    - name: top_level_domain
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".'
+    - name: username
+      type: keyword
+      ignore_above: 1024
+      description: Username of the request.

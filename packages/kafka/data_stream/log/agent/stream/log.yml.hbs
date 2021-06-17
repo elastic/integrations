@@ -2,6 +2,16 @@ paths:
 {{#each paths as |path i|}}
  - {{../kafka_home}}{{path}}
 {{/each}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 exclude_files: [".gz$"]
 multiline:
   pattern: '^\['
@@ -9,3 +19,6 @@ multiline:
   match: after
 processors:
 - add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}

@@ -33,6 +33,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.address | Client network address. | keyword |
+| client.domain | Client network domain. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -79,7 +80,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | host.id | Unique host id. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -120,6 +121,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
+| o365.audit.ErrorNumber |  | keyword |
 | o365.audit.EventData |  | keyword |
 | o365.audit.EventSource |  | keyword |
 | o365.audit.ExceptionInfo.* |  | object |
@@ -200,6 +202,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | rule.reference | Rule reference URL | keyword |
 | rule.ruleset | Rule ruleset | keyword |
 | server.address | Server network address. | keyword |
+| server.domain | Server network domain. | keyword |
 | server.ip | IP address of the server. | ip |
 | source.as.number | Unique number allocated to the autonomous system. | long |
 | source.as.organization.name | Organization name. | keyword |
