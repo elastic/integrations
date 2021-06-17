@@ -1,0 +1,15 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+exclude_files: ['.gz$']
+multiline:
+  pattern: '^(# User@Host: |# Time: )'
+  negate: true
+  match: after
+exclude_lines: ['^[\/\w\.]+, Version: .* started with:.*', '^# Time:.*']   # Exclude the header and time
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.10.0

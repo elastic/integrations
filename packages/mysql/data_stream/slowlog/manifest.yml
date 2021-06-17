@@ -1,16 +1,18 @@
-title: MySQL slowlog logs
 type: logs
+title: MySQL slowlog logs
 release: experimental
 streams:
   - input: logfile
     vars:
       - name: paths
         type: text
-        title: Slowlog paths
+        title: Paths
         multi: true
         required: true
         show_user: true
         default:
           - /var/log/mysql/mysql-slow.log*
-    title: MySQL slowlog logs
-    description: Collect MySQL slowlog logs
+          - /var/lib/mysql/{{.builtin.hostname}}-slow.log
+    template_path: log.yml.hbs
+    title: MySQL slowlog logs (log)
+    description: Collect MySQL slowlog logs using log input

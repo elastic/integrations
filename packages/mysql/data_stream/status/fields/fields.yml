@@ -1,5 +1,6 @@
 - name: mysql.status
   type: group
+  release: experimental
   fields:
     - name: aborted
       type: group
@@ -12,6 +13,63 @@
           type: long
           description: |
             The number of failed attempts to connect to the MySQL server.
+    - name: connection
+      type: group
+      fields:
+        - name: errors
+          type: group
+          fields:
+            - name: peer_address
+              type: long
+              description: The number of errors that occurred while searching for connecting client IP addresses.
+            - name: accept
+              type: long
+              description: The number of errors that occurred during calls to accept() on the listening port.
+            - name: internal
+              type: long
+              description: |
+                The number of connections refused due to internal errors in the server, such as failure to start a new thread or an out-of-memory condition.
+            - name: max
+              type: long
+              description: The number of connections refused because the server max_connections limit was reached. thread or an out-of-memory condition.
+            - name: tcpwrap
+              type: long
+              description: The number of connections refused by the libwrap library.
+            - name: select
+              type: long
+              description: |
+                The number of errors that occurred during calls to select() or poll() on the listening port. (Failure of this operation does not necessarily means a client connection was rejected.)
+    - name: cache
+      type: group
+      fields:
+        - name: ssl
+          type: group
+          fields:
+            - name: hits
+              type: long
+              description: The number of SSL session cache hits.
+            - name: misses
+              type: long
+              description: The number of SSL session cache misses.
+            - name: size
+              type: long
+              description: The SSL session cache size.
+        - name: table
+          type: group
+          fields:
+            - name: open_cache
+              type: group
+              fields:
+                - name: hits
+                  type: long
+                  description: The number of hits for open tables cache lookups.
+                - name: misses
+                  type: long
+                  description: The number of misses for open tables cache lookups.
+                - name: overflows
+                  type: long
+                  description: |
+                    Number of times, after a table is opened or closed, a cache instance has an unused entry and the size of the instance is larger than table_open_cache / table_open_cache_instances
     - name: binlog
       type: group
       fields:
@@ -149,7 +207,8 @@
                 The number of requests to read a row based on a key.
             - name: last
               type: long
-              description: "The number of requests to read the last key in an index. \n"
+              description: |
+                The number of requests to read the last key in an index.
             - name: next
               type: long
               description: |
@@ -160,10 +219,12 @@
                 The number of requests to read the previous row in key order.
             - name: rnd
               type: long
-              description: "The number of requests to read a row based on a fixed position. \n"
+              description: |
+                The number of requests to read a row based on a fixed position.
             - name: rnd_next
               type: long
-              description: "The number of requests to read the next row in the data file. \n"
+              description: |
+                The number of requests to read the next row in the data file.
         - name: rollback
           type: long
           description: |
@@ -187,6 +248,21 @@
     - name: innodb
       type: group
       fields:
+        - name: rows
+          type: group
+          fields:
+            - name: reads
+              type: long
+              description: The number of rows reads into InnoDB tables.
+            - name: inserted
+              type: long
+              description: The number of rows inserted into InnoDB tables.
+            - name: deleted
+              type: long
+              description: The number of rows deleted into InnoDB tables.
+            - name: updated
+              type: long
+              description: The number of rows updated into InnoDB tables.
         - name: buffer_pool
           type: group
           fields:
@@ -203,7 +279,8 @@
               fields:
                 - name: data
                   type: long
-                  description: "The total number of bytes in the InnoDB buffer pool containing data. \n"
+                  description: |
+                    The total number of bytes in the InnoDB buffer pool containing data.
                 - name: dirty
                   type: long
                   description: |
@@ -275,4 +352,5 @@
                     Normally, writes to the InnoDB buffer pool happen in the background. When InnoDB needs to read or create a page and no clean pages are available, InnoDB flushes some dirty pages first and waits for that operation to finish. This counter counts instances of these waits.
             - name: write_requests
               type: long
-              description: The number of writes done to the InnoDB buffer pool.
+              description: |
+                The number of writes done to the InnoDB buffer pool.

@@ -522,10 +522,22 @@ An example event for `status` looks as following:
 | mysql.status.binlog.cache.use |  | long |
 | mysql.status.bytes.received | The number of bytes received from all clients. | long |
 | mysql.status.bytes.sent | The number of bytes sent to all clients. | long |
+| mysql.status.cache.ssl.hits | The number of SSL session cache hits. | long |
+| mysql.status.cache.ssl.misses | The number of SSL session cache misses. | long |
+| mysql.status.cache.ssl.size | The SSL session cache size. | long |
+| mysql.status.cache.table.open_cache.hits | The number of hits for open tables cache lookups. | long |
+| mysql.status.cache.table.open_cache.misses | The number of misses for open tables cache lookups. | long |
+| mysql.status.cache.table.open_cache.overflows | Number of times, after a table is opened or closed, a cache instance has an unused entry and the size of the instance is larger than table_open_cache / table_open_cache_instances | long |
 | mysql.status.command.delete | The number of DELETE queries since startup. | long |
 | mysql.status.command.insert | The number of INSERT queries since startup. | long |
 | mysql.status.command.select | The number of SELECT queries since startup. | long |
 | mysql.status.command.update | The number of UPDATE queries since startup. | long |
+| mysql.status.connection.errors.accept | The number of errors that occurred during calls to accept() on the listening port. | long |
+| mysql.status.connection.errors.internal | The number of connections refused due to internal errors in the server, such as failure to start a new thread or an out-of-memory condition. | long |
+| mysql.status.connection.errors.max | The number of connections refused because the server max_connections limit was reached. thread or an out-of-memory condition. | long |
+| mysql.status.connection.errors.peer_address | The number of errors that occurred while searching for connecting client IP addresses. | long |
+| mysql.status.connection.errors.select | The number of errors that occurred during calls to select() or poll() on the listening port. (Failure of this operation does not necessarily means a client connection was rejected.) | long |
+| mysql.status.connection.errors.tcpwrap | The number of connections refused by the libwrap library. | long |
 | mysql.status.connections |  | long |
 | mysql.status.created.tmp.disk_tables |  | long |
 | mysql.status.created.tmp.files |  | long |
@@ -570,6 +582,10 @@ An example event for `status` looks as following:
 | mysql.status.innodb.buffer_pool.read.ahead_rnd | The number of "random" read-aheads initiated by InnoDB. | long |
 | mysql.status.innodb.buffer_pool.read.requests | The number of logical read requests. | long |
 | mysql.status.innodb.buffer_pool.write_requests | The number of writes done to the InnoDB buffer pool. | long |
+| mysql.status.innodb.rows.deleted | The number of rows deleted into InnoDB tables. | long |
+| mysql.status.innodb.rows.inserted | The number of rows inserted into InnoDB tables. | long |
+| mysql.status.innodb.rows.reads | The number of rows reads into InnoDB tables. | long |
+| mysql.status.innodb.rows.updated | The number of rows updated into InnoDB tables. | long |
 | mysql.status.max_used_connections |  | long |
 | mysql.status.open.files |  | long |
 | mysql.status.open.streams |  | long |
