@@ -77,7 +77,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.id | Unique host id. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. | keyword |
@@ -121,6 +121,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
+| o365.audit.ErrorNumber |  | keyword |
 | o365.audit.EventData |  | keyword |
 | o365.audit.EventSource |  | keyword |
 | o365.audit.ExceptionInfo.* |  | object |
