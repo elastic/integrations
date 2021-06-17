@@ -4,7 +4,8 @@ This integration is used to fetch logs and metrics from [MongoDB](https://www.mo
 
 ## Compatibility
 
-The `log` dataset is tested with logs from versions v3.2.11 on Debian.
+The `log` dataset is tested with logs from versions v3.2.11 and v4.4.4 in
+plaintext and json formats.
 The `collstats`, `dbstats`, `metrics`, `replstatus` and `status` datasets are 
 tested with MongoDB 3.4 and 3.0 and are expected to work with all versions >= 2.8.
 
@@ -86,6 +87,7 @@ The `log` dataset collects the MongoDB logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | mongodb.log.component | Functional categorization of message | keyword |
 | mongodb.log.context | Context of message | keyword |
+| mongodb.log.id | Integer representing the unique identifier of the log statement | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | tags | List of keywords used to tag each event. | keyword |
