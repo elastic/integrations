@@ -1,9 +1,15 @@
 ---
 description: Pipeline for parsing osquery result logs
 processors:
+- json:
+    field: "message"
+    target_field: "json"
+- set:
+    field: ecs.version
+    value: 1.10.0
 - rename:
     field: message
-    target_field: log.original
+    target_field: event.original
     ignore_missing: true
 - set:
     field: event.ingested
@@ -161,6 +167,11 @@ processors:
 - convert:
     field: file.size
     type: long
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
     ignore_missing: true
 on_failure:
 - set:

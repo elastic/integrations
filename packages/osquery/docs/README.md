@@ -24,66 +24,110 @@ An example event for `result` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-12-28T14:40:08.000Z",
-    "file": {
-        "type": "apfs",
-        "path": "/private/var/vm"
+    "@timestamp": "2018-01-08T14:51:55.000Z",
+    "agent": {
+        "ephemeral_id": "52c6e71e-baf4-4213-a267-13392719380c",
+        "hostname": "docker-fleet-agent",
+        "id": "3f497f07-16ca-4367-b8a8-12fa87e169c4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "osquery.result",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
-        "version": "1.7.0"
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "315bb3a9-e66e-4b71-a016-1a59eccd75f8",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "added",
+        "agent_id_status": "agent_id_mismatch",
+        "created": "2021-06-17T09:28:55.203Z",
+        "dataset": "osquery.result",
+        "ingested": "2021-06-17T09:28:56.245919600Z",
+        "kind": "event",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "ubuntu-xenial",
+        "id": "72E1287B-D1BC-4FC6-B9D8-64F4352776A9",
+        "ip": [
+            "192.168.48.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:30:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.25-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/osquery.log"
+        },
+        "offset": 0
     },
     "osquery": {
         "result": {
+            "action": "added",
+            "calendar_time": "Mon Jan  8 14:51:55 2018 UTC",
             "columns": {
-                "path": "/private/var/vm",
-                "blocks": "122061322",
-                "inodes": "9223372036854775807",
-                "flags": "345018372",
-                "inodes_free": "9223372036854775804",
-                "blocks_size": "4096",
-                "blocks_available": "75966945",
-                "type": "apfs",
-                "device": "/dev/disk1s4",
-                "device_alias": "/dev/disk1s4",
-                "blocks_free": "121274885"
+                "average_memory": "0",
+                "avg_system_time": "0",
+                "avg_user_time": "0",
+                "executions": "38",
+                "interval": "60",
+                "last_executed": "1515423094",
+                "name": "pack_ossec-rootkit_55808.a_worm",
+                "output_size": "0",
+                "wall_time": "0"
             },
-            "name": "pack_it-compliance_mounts",
-            "unix_time": "1514472008",
-            "action": "removed",
+            "counter": "0",
             "decorations": {
-                "host_uuid": "4AB2906D-5516-5794-AF54-86D1D7F533F3",
-                "username": "tsg"
+                "host_uuid": "72E1287B-D1BC-4FC6-B9D8-64F4352776A9",
+                "username": "ubuntu"
             },
             "epoch": "0",
-            "counter": "1",
-            "calendar_time": "Thu Dec 28 14:40:08 2017 UTC",
-            "host_identifier": "192-168-0-4.rdsnet.ro"
+            "host_identifier": "ubuntu-xenial",
+            "name": "pack_osquery-monitoring_schedule",
+            "unix_time": "1515423115"
         }
     },
     "related": {
-        "user": [
-            "tsg"
-        ],
         "hosts": [
-            "192-168-0-4.rdsnet.ro"
+            "ubuntu-xenial"
+        ],
+        "user": [
+            "ubuntu"
         ]
     },
-    "host": {
-        "hostname": "192-168-0-4.rdsnet.ro",
-        "id": "4AB2906D-5516-5794-AF54-86D1D7F533F3"
-    },
     "rule": {
-        "name": "pack_it-compliance_mounts"
+        "name": "pack_osquery-monitoring_schedule"
     },
-    "event": {
-        "action": "removed",
-        "ingested": "2020-12-07T14:56:04.850666700Z",
-        "type": "info",
-        "created": "2020-04-28T11:07:58.223Z",
-        "kind": "event"
-    },
+    "tags": [
+        "osquery"
+    ],
     "user": {
-        "name": "tsg"
+        "name": "ubuntu"
     }
 }
 ```
@@ -322,6 +366,7 @@ An example event for `result` looks as following:
 | related.hosts |  | keyword |
 | related.user |  | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | url.full |  | keyword |
 | user.name | Short name or login of the user. | keyword |
 
