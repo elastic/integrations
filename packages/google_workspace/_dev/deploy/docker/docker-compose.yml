@@ -1,8 +1,32 @@
-version: '2.3'
+version: '3.0'
 services:
-  google_workspace:
+  creds:
     image: alpine
     volumes:
-      - ./sample_logs:/sample_logs:ro
-      - ${SERVICE_LOGS_DIR}:/var/log
-    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+      - ./credentials.json:/credentials.json:ro
+      - ${SERVICE_LOGS_DIR}:/config
+    command:
+      - /bin/sh
+      - -c
+      - |
+        apk add openssl;
+        openssl genrsa -out keypair.pem 2048;
+        openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in keypair.pem -out pkcs8.key;
+        echo "This puts the generated private key into a single string that can be interpolated in the credentials file.";
+        awk -v var="$$(sed -E ':a;N;$$!ba;s/\r{0,1}\n/\\\\n/g' pkcs8.key)" '{sub(/the-key/,var)}1' /credentials.json > /config/credentials.json;
+        sleep 1000
+  google_workspace:
+    image: docker.elastic.co/observability/stream:v0.5.0
+    hostname: google_workspace
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+    depends_on:
+      - creds

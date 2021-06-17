@@ -55,61 +55,73 @@ An example event for `saml` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-06-15T13:02:13.000Z",
     "agent": {
-        "hostname": "4cc571ab4c1e",
-        "name": "4cc571ab4c1e",
-        "id": "a0b95f8f-4ef9-4197-abc8-5daa58bb46dd",
-        "ephemeral_id": "f418e019-108a-4137-bb16-6a37813d75c0",
+        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
+        "hostname": "docker-fleet-agent",
+        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.11.0"
+        "version": "7.14.0"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/saml-test.json.log"
-        },
-        "offset": 606
+    "data_stream": {
+        "dataset": "google_workspace.saml",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "e83750e0-3ec9-11eb-89ab-197fa6952ca2",
-        "version": "7.11.0",
-        "snapshot": true
+        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
+        "snapshot": true,
+        "version": "7.14.0"
     },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-PA",
-            "city_name": "State College",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Pennsylvania",
-            "location": {
-                "lon": -77.8618,
-                "lat": 40.7957
-            }
+    "event": {
+        "action": "login_failure",
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "authentication",
+            "session"
+        ],
+        "created": "2021-06-16T13:02:13.755Z",
+        "dataset": "google_workspace.saml",
+        "id": "1",
+        "ingested": "2021-06-16T13:02:14.774956509Z",
+        "outcome": "failure",
+        "provider": "saml",
+        "type": [
+            "start"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "type": "USER"
         },
-        "as": {
-            "number": 7922,
-            "organization": {
-                "name": "Comcast Cable Communications, LLC"
-            }
+        "event": {
+            "type": "login"
         },
-        "ip": "98.235.162.24",
-        "user": {
-            "domain": "bar.com",
-            "name": "foo",
-            "id": "1",
-            "email": "foo@bar.com"
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
+        },
+        "saml": {
+            "application_name": "app",
+            "failure_type": "failure_app_not_configured_for_user",
+            "initiated_by": "idp",
+            "orgunit_path": "ounit",
+            "second_level_status_code": "SUCCESS_URI",
+            "status_code": "SUCCESS_URI"
         }
     },
-    "tags": [
-        "forwarded"
-    ],
-    "input": {
-        "type": "log"
+    "host": {
+        "name": "docker-fleet-agent"
     },
-    "@timestamp": "2020-10-02T15:00:01.000Z",
-    "ecs": {
-        "version": "1.7.0"
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
     },
     "related": {
         "ip": [
@@ -119,49 +131,41 @@ An example event for `saml` looks as following:
             "foo"
         ]
     },
-    "google_workspace": {
-        "actor": {
-            "type": "USER"
+    "source": {
+        "as": {
+            "number": 7922,
+            "organization": {
+                "name": "Comcast Cable Communications, LLC"
+            }
         },
-        "kind": "admin#reports#activity",
-        "organization": {
-            "domain": "elastic.com"
+        "geo": {
+            "city_name": "State College",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 40.7957,
+                "lon": -77.8618
+            },
+            "region_iso_code": "US-PA",
+            "region_name": "Pennsylvania"
         },
-        "saml": {
-            "initiated_by": "idp",
-            "application_name": "app",
-            "status_code": 400,
-            "orgunit_path": "ounit"
-        },
-        "event": {
-            "type": "login"
+        "ip": "98.235.162.24",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "google_workspace.saml"
-    },
-    "organization": {
-        "id": "1"
-    },
-    "host": {
-        "name": "4cc571ab4c1e"
-    },
-    "event": {
-        "ingested": "2020-12-15T11:46:26.743219844Z",
-        "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:01Z\",\"uniqueQualifier\":1,\"applicationName\":\"saml\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"98.235.162.24\",\"events\":{\"type\":\"login\",\"name\":\"login_success\",\"parameters\":[{\"name\":\"application_name\",\"value\":\"app\"},{\"name\":\"initiated_by\",\"value\":\"idp\"},{\"name\":\"orgunit_path\",\"value\":\"ounit\"},{\"name\":\"saml_status_code\",\"value\":\"400\"}]}}",
-        "provider": "saml",
-        "action": "login_success",
+    "tags": [
+        "forwarded",
+        "google-workspace-saml"
+    ],
+    "user": {
+        "domain": "bar.com",
         "id": "1",
-        "type": [
-            "start"
-        ],
-        "category": [
-            "authentication"
-        ],
-        "dataset": "google_workspace.saml",
-        "outcome": "success"
+        "name": "foo"
     }
 }
 ```
@@ -277,59 +281,65 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-06-15T13:03:09.000Z",
     "agent": {
-        "hostname": "4cc571ab4c1e",
-        "name": "4cc571ab4c1e",
-        "id": "a0b95f8f-4ef9-4197-abc8-5daa58bb46dd",
+        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
+        "hostname": "docker-fleet-agent",
+        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "ephemeral_id": "f418e019-108a-4137-bb16-6a37813d75c0",
-        "version": "7.11.0"
+        "version": "7.14.0"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/user_accounts-test.json.log"
-        },
-        "offset": 0
+    "data_stream": {
+        "dataset": "google_workspace.user_accounts",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "e83750e0-3ec9-11eb-89ab-197fa6952ca2",
-        "version": "7.11.0",
-        "snapshot": true
+        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
+        "snapshot": true,
+        "version": "7.14.0"
     },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-PA",
-            "city_name": "State College",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Pennsylvania",
-            "location": {
-                "lon": -77.8618,
-                "lat": 40.7957
-            }
+    "event": {
+        "action": "2sv_disable",
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "iam"
+        ],
+        "created": "2021-06-16T13:03:09.529Z",
+        "dataset": "google_workspace.user_accounts",
+        "id": "1",
+        "ingested": "2021-06-16T13:03:10.552894458Z",
+        "provider": "user_accounts",
+        "type": [
+            "change",
+            "user"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "type": "USER"
         },
-        "as": {
-            "number": 7922,
-            "organization": {
-                "name": "Comcast Cable Communications, LLC"
-            }
+        "event": {
+            "type": "2sv_change"
         },
-        "ip": "98.235.162.24",
-        "user": {
-            "domain": "bar.com",
-            "name": "foo",
-            "id": "1",
-            "email": "foo@bar.com"
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
         }
     },
-    "tags": [
-        "forwarded"
-    ],
-    "input": {
-        "type": "log"
+    "host": {
+        "name": "docker-fleet-agent"
     },
-    "@timestamp": "2020-10-02T15:00:00.000Z",
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
     "related": {
         "ip": [
             "98.235.162.24"
@@ -338,46 +348,41 @@ An example event for `user_accounts` looks as following:
             "foo"
         ]
     },
-    "ecs": {
-        "version": "1.7.0"
-    },
-    "google_workspace": {
-        "actor": {
-            "type": "USER"
+    "source": {
+        "as": {
+            "number": 7922,
+            "organization": {
+                "name": "Comcast Cable Communications, LLC"
+            }
         },
-        "kind": "admin#reports#activity",
-        "organization": {
-            "domain": "elastic.com"
+        "geo": {
+            "city_name": "State College",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 40.7957,
+                "lon": -77.8618
+            },
+            "region_iso_code": "US-PA",
+            "region_name": "Pennsylvania"
         },
-        "event": {
-            "type": "2sv_change"
+        "ip": "98.235.162.24",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "google_workspace.user_accounts"
-    },
-    "organization": {
-        "id": "1"
-    },
-    "host": {
-        "name": "4cc571ab4c1e"
-    },
-    "event": {
-        "ingested": "2020-12-15T11:52:18.378529535Z",
-        "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"user_accounts\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"98.235.162.24\",\"events\":{\"type\":\"2sv_change\",\"name\":\"2sv_disable\"}}",
-        "provider": "user_accounts",
-        "action": "2sv_disable",
+    "tags": [
+        "forwarded",
+        "google-workspace-user-accounts"
+    ],
+    "user": {
+        "domain": "bar.com",
         "id": "1",
-        "type": [
-            "change",
-            "user"
-        ],
-        "category": [
-            "iam"
-        ],
-        "dataset": "google_workspace.user_accounts"
+        "name": "foo"
     }
 }
 ```
@@ -487,110 +492,116 @@ An example event for `login` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-06-15T13:01:21.000Z",
     "agent": {
-        "hostname": "4cc571ab4c1e",
-        "name": "4cc571ab4c1e",
-        "id": "a0b95f8f-4ef9-4197-abc8-5daa58bb46dd",
-        "ephemeral_id": "f418e019-108a-4137-bb16-6a37813d75c0",
+        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
+        "hostname": "docker-fleet-agent",
+        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.11.0"
+        "version": "7.14.0"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/login-test.json.log"
-        },
-        "offset": 0
+    "data_stream": {
+        "dataset": "google_workspace.login",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "e83750e0-3ec9-11eb-89ab-197fa6952ca2",
-        "version": "7.11.0",
-        "snapshot": true
+        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "account_disabled_password_leak",
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "authentication"
+        ],
+        "created": "2021-06-16T13:01:21.813Z",
+        "dataset": "google_workspace.login",
+        "id": "1",
+        "ingested": "2021-06-16T13:01:22.836420693Z",
+        "provider": "login",
+        "type": [
+            "user",
+            "change"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "type": "USER"
+        },
+        "event": {
+            "type": "account_warning"
+        },
+        "kind": "admin#reports#activity",
+        "login": {
+            "affected_email_address": "foo@elastic.co"
+        },
+        "organization": {
+            "domain": "elastic.com"
+        }
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "ip": [
+            "98.235.162.24"
+        ],
+        "user": [
+            "foo",
+            "foo"
+        ]
     },
     "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-PA",
-            "city_name": "State College",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Pennsylvania",
-            "location": {
-                "lon": -77.8618,
-                "lat": 40.7957
-            }
-        },
         "as": {
             "number": 7922,
             "organization": {
                 "name": "Comcast Cable Communications, LLC"
             }
         },
+        "geo": {
+            "city_name": "State College",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 40.7957,
+                "lon": -77.8618
+            },
+            "region_iso_code": "US-PA",
+            "region_name": "Pennsylvania"
+        },
         "ip": "98.235.162.24",
         "user": {
             "domain": "bar.com",
-            "name": "foo",
+            "email": "foo@bar.com",
             "id": "1",
-            "email": "foo@bar.com"
+            "name": "foo"
         }
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "google-workspace-login"
     ],
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2020-10-02T15:00:00.000Z",
-    "related": {
-        "ip": [
-            "98.235.162.24"
-        ],
-        "user": [
-            "foo"
-        ]
-    },
-    "ecs": {
-        "version": "1.7.0"
-    },
-    "google_workspace": {
-        "actor": {
-            "type": "USER"
-        },
-        "kind": "admin#reports#activity",
-        "organization": {
-            "domain": "elastic.com"
-        },
-        "event": {
-            "type": "account_warning"
-        },
-        "login": {
-            "affected_email_address": "foo@elastic.co"
-        }
-    },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "google_workspace.login"
-    },
-    "organization": {
-        "id": "1"
-    },
-    "host": {
-        "name": "4cc571ab4c1e"
-    },
-    "event": {
-        "ingested": "2020-12-15T11:45:21.481006689Z",
-        "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"login\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"98.235.162.24\",\"events\":{\"type\":\"account_warning\",\"name\":\"account_disabled_password_leak\",\"parameters\":[{\"name\":\"affected_email_address\",\"value\":\"foo@elastic.co\"}]}}",
-        "provider": "login",
-        "action": "account_disabled_password_leak",
+    "user": {
+        "domain": "bar.com",
         "id": "1",
-        "category": [
-            "authentication"
-        ],
-        "type": [
-            "user",
-            "change"
-        ],
-        "dataset": "google_workspace.login"
+        "name": "foo",
+        "target": {
+            "domain": "elastic.co",
+            "name": "foo"
+        }
     }
 }
 ```
@@ -708,61 +719,69 @@ An example event for `admin` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-06-15T12:58:47.000Z",
     "agent": {
-        "hostname": "3baca80779ab",
-        "name": "3baca80779ab",
-        "id": "3c8561b2-b476-40cf-9969-90b7613bd543",
-        "ephemeral_id": "b57fb8ad-1203-4d99-a9ca-0c785d7023ad",
+        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
+        "hostname": "docker-fleet-agent",
+        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.11.0"
+        "version": "7.14.0"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/admin-application-test.json.log"
-        },
-        "offset": 0
+    "data_stream": {
+        "dataset": "google_workspace.admin",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "d56892f0-3ec2-11eb-928b-59bba217f141",
-        "version": "7.11.0",
-        "snapshot": true
+        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
+        "snapshot": true,
+        "version": "7.14.0"
     },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-PA",
-            "city_name": "State College",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Pennsylvania",
-            "location": {
-                "lon": -77.8618,
-                "lat": 40.7957
+    "event": {
+        "action": "CHANGE_APPLICATION_SETTING",
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "iam",
+            "configuration"
+        ],
+        "created": "2021-06-16T12:58:47.527Z",
+        "dataset": "google_workspace.admin",
+        "id": "1",
+        "ingested": "2021-06-16T12:58:48.550215693Z",
+        "provider": "admin",
+        "type": [
+            "change"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "type": "USER"
+        },
+        "admin": {
+            "application": {
+                "edition": "basic"
             }
         },
-        "as": {
-            "number": 7922,
-            "organization": {
-                "name": "Comcast Cable Communications, LLC"
-            }
+        "event": {
+            "type": "APPLICATION_SETTINGS"
         },
-        "ip": "98.235.162.24",
-        "user": {
-            "domain": "bar.com",
-            "name": "foo",
-            "id": "1",
-            "email": "foo@bar.com"
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
         }
     },
-    "tags": [
-        "forwarded"
-    ],
-    "input": {
-        "type": "log"
+    "host": {
+        "name": "docker-fleet-agent"
     },
-    "@timestamp": "2020-10-02T15:00:00.000Z",
-    "ecs": {
-        "version": "1.7.0"
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
     },
     "related": {
         "ip": [
@@ -772,64 +791,41 @@ An example event for `admin` looks as following:
             "foo"
         ]
     },
-    "google_workspace": {
-        "actor": {
-            "type": "USER"
-        },
-        "kind": "admin#reports#activity",
-        "organization": {
-            "domain": "elastic.com"
-        },
-        "admin": {
-            "org_unit": {
-                "name": "org"
-            },
-            "application": {
-                "name": "drive",
-                "edition": "basic"
-            },
-            "old_value": "old",
-            "new_value": "new",
-            "setting": {
-                "name": "setting"
-            },
-            "group": {
-                "email": "group@example.com"
+    "source": {
+        "as": {
+            "number": 7922,
+            "organization": {
+                "name": "Comcast Cable Communications, LLC"
             }
         },
-        "event": {
-            "type": "APPLICATION_SETTINGS"
+        "geo": {
+            "city_name": "State College",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 40.7957,
+                "lon": -77.8618
+            },
+            "region_iso_code": "US-PA",
+            "region_name": "Pennsylvania"
+        },
+        "ip": "98.235.162.24",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "google_workspace.admin"
-    },
-    "organization": {
-        "id": "1"
-    },
-    "host": {
-        "name": "3baca80779ab"
-    },
-    "event": {
-        "ingested": "2020-12-15T10:56:36.913768658Z",
-        "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"admin\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"98.235.162.24\",\"events\":{\"type\":\"APPLICATION_SETTINGS\",\"name\":\"CHANGE_APPLICATION_SETTING\",\"parameters\":[{\"name\":\"APPLICATION_EDITION\",\"value\":\"basic\"},{\"name\":\"APPLICATION_NAME\",\"value\":\"drive\"},{\"name\":\"GROUP_EMAIL\",\"value\":\"group@example.com\"},{\"name\":\"NEW_VALUE\",\"value\":\"new\"},{\"name\":\"OLD_VALUE\",\"value\":\"old\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"org\"},{\"name\":\"SETTING_NAME\",\"value\":\"setting\"}]}}",
-        "provider": "admin",
-        "action": "CHANGE_APPLICATION_SETTING",
+    "tags": [
+        "forwarded",
+        "google-workspace-admin"
+    ],
+    "user": {
+        "domain": "bar.com",
         "id": "1",
-        "category": [
-            "iam",
-            "configuration"
-        ],
-        "type": [
-            "change"
-        ],
-        "dataset": "google_workspace.admin"
-    },
-    "group": {
-        "domain": "example.com",
-        "name": "group"
+        "name": "foo"
     }
 }
 ```
@@ -1036,128 +1032,129 @@ An example event for `drive` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-06-15T12:59:39.000Z",
     "agent": {
-        "hostname": "87e669265675",
-        "name": "87e669265675",
-        "id": "b07eaeb9-8ecf-42e8-a496-d4b3a844f73b",
+        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
+        "hostname": "docker-fleet-agent",
+        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "ephemeral_id": "ee3ad1f1-bda7-4645-b9a3-a306050af7e5",
-        "version": "7.11.0"
+        "version": "7.14.0"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/drive-test.json.log"
-        },
-        "offset": 0
-    },
-    "elastic_agent": {
-        "id": "a1b36f30-3ec6-11eb-a3e0-836834823886",
-        "version": "7.11.0",
-        "snapshot": true
-    },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-PA",
-            "city_name": "State College",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Pennsylvania",
-            "location": {
-                "lon": -77.8618,
-                "lat": 40.7957
-            }
-        },
-        "as": {
-            "number": 7922,
-            "organization": {
-                "name": "Comcast Cable Communications, LLC"
-            }
-        },
-        "ip": "98.235.162.24",
-        "user": {
-            "domain": "bar.com",
-            "name": "foo",
-            "id": "1",
-            "email": "foo@bar.com"
-        }
-    },
-    "tags": [
-        "forwarded"
-    ],
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2020-10-02T15:00:00.000Z",
-    "file": {
-        "owner": "owner",
-        "name": "document title",
-        "type": "file"
+    "data_stream": {
+        "dataset": "google_workspace.drive",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
-        "version": "1.7.0"
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "add_to_folder",
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "file"
+        ],
+        "created": "2021-06-16T12:59:39.884Z",
+        "dataset": "google_workspace.drive",
+        "id": "1",
+        "ingested": "2021-06-16T12:59:40.904399475Z",
+        "provider": "drive",
+        "type": [
+            "change"
+        ]
+    },
+    "file": {
+        "name": "document title",
+        "owner": "owner",
+        "type": "file"
+    },
+    "google_workspace": {
+        "actor": {
+            "type": "USER"
+        },
+        "drive": {
+            "billable": false,
+            "destination_folder_id": "1234",
+            "destination_folder_title": "folder title",
+            "file": {
+                "id": "1234",
+                "owner": {
+                    "email": "owner@example.com",
+                    "is_shared_drive": false
+                },
+                "type": "document"
+            },
+            "originating_app_id": "1234",
+            "primary_event": true,
+            "visibility": "people_with_link"
+        },
+        "event": {
+            "type": "access"
+        },
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
+        }
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
     },
     "related": {
         "ip": [
             "98.235.162.24"
         ],
         "user": [
-            "foo",
-            "owner"
+            "owner",
+            "foo"
         ]
     },
-    "google_workspace": {
-        "actor": {
-            "type": "USER"
+    "source": {
+        "as": {
+            "number": 7922,
+            "organization": {
+                "name": "Comcast Cable Communications, LLC"
+            }
         },
-        "kind": "admin#reports#activity",
-        "organization": {
-            "domain": "elastic.com"
-        },
-        "drive": {
-            "file": {
-                "owner": {
-                    "email": "owner@example.com",
-                    "is_shared_drive": false
-                },
-                "id": "1234",
-                "type": "document"
+        "geo": {
+            "city_name": "State College",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 40.7957,
+                "lon": -77.8618
             },
-            "primary_event": true,
-            "originating_app_id": "1234",
-            "visibility": "people_with_link",
-            "destination_folder_title": "folder title",
-            "billable": false,
-            "destination_folder_id": "1234"
+            "region_iso_code": "US-PA",
+            "region_name": "Pennsylvania"
         },
-        "event": {
-            "type": "access"
+        "ip": "98.235.162.24",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "google_workspace.drive"
-    },
-    "organization": {
-        "id": "1"
-    },
-    "host": {
-        "name": "87e669265675"
-    },
-    "event": {
-        "ingested": "2020-12-15T11:29:11.760838719Z",
-        "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"drive\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"98.235.162.24\",\"events\":{\"type\":\"access\",\"name\":\"add_to_folder\",\"parameters\":[{\"name\":\"billable\",\"boolValue\":false},{\"name\":\"destination_folder_id\",\"value\":\"1234\"},{\"name\":\"destination_folder_title\",\"value\":\"folder title\"},{\"name\":\"doc_id\",\"value\":\"1234\"},{\"name\":\"doc_title\",\"value\":\"document title\"},{\"name\":\"doc_type\",\"value\":\"document\"},{\"name\":\"originating_app_id\",\"value\":\"1234\"},{\"name\":\"owner\",\"value\":\"owner@example.com\"},{\"name\":\"owner_is_shared_drive\",\"boolValue\":false},{\"name\":\"primary_event\",\"boolValue\":true},{\"name\":\"visibility\",\"value\":\"people_with_link\"}]}}",
-        "provider": "drive",
-        "action": "add_to_folder",
+    "tags": [
+        "forwarded",
+        "google-workspace-drive"
+    ],
+    "user": {
+        "domain": "bar.com",
         "id": "1",
-        "category": [
-            "file"
-        ],
-        "type": [
-            "change"
-        ],
-        "dataset": "google_workspace.drive"
+        "name": "foo"
     }
 }
 ```
@@ -1296,61 +1293,79 @@ An example event for `groups` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-06-15T13:00:32.000Z",
     "agent": {
-        "hostname": "4cc571ab4c1e",
-        "name": "4cc571ab4c1e",
-        "id": "a0b95f8f-4ef9-4197-abc8-5daa58bb46dd",
-        "ephemeral_id": "f418e019-108a-4137-bb16-6a37813d75c0",
+        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
+        "hostname": "docker-fleet-agent",
+        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.11.0"
+        "version": "7.14.0"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/groups-test.json.log"
-        },
-        "offset": 0
+    "data_stream": {
+        "dataset": "google_workspace.groups",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "e83750e0-3ec9-11eb-89ab-197fa6952ca2",
-        "version": "7.11.0",
-        "snapshot": true
+        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
+        "snapshot": true,
+        "version": "7.14.0"
     },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-PA",
-            "city_name": "State College",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Pennsylvania",
-            "location": {
-                "lon": -77.8618,
-                "lat": 40.7957
-            }
+    "event": {
+        "action": "change_acl_permission",
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "iam"
+        ],
+        "created": "2021-06-16T13:00:32.455Z",
+        "dataset": "google_workspace.groups",
+        "id": "1",
+        "ingested": "2021-06-16T13:00:33.478404747Z",
+        "provider": "groups",
+        "type": [
+            "group",
+            "change"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "type": "USER"
         },
-        "as": {
-            "number": 7922,
-            "organization": {
-                "name": "Comcast Cable Communications, LLC"
-            }
+        "event": {
+            "type": "acl_change"
         },
-        "ip": "98.235.162.24",
-        "user": {
-            "domain": "bar.com",
-            "name": "foo",
-            "id": "1",
-            "email": "foo@bar.com"
+        "groups": {
+            "acl_permission": "can_add_members",
+            "email": "group@example.com",
+            "new_value": [
+                "managers",
+                "members"
+            ],
+            "old_value": [
+                "managers"
+            ]
+        },
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
         }
     },
-    "tags": [
-        "forwarded"
-    ],
-    "input": {
-        "type": "log"
+    "group": {
+        "domain": "example.com",
+        "name": "group"
     },
-    "@timestamp": "2020-10-02T15:00:00.000Z",
-    "ecs": {
-        "version": "1.7.0"
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
     },
     "related": {
         "ip": [
@@ -1360,58 +1375,47 @@ An example event for `groups` looks as following:
             "foo"
         ]
     },
-    "google_workspace": {
-        "actor": {
-            "type": "USER"
+    "source": {
+        "as": {
+            "number": 7922,
+            "organization": {
+                "name": "Comcast Cable Communications, LLC"
+            }
         },
-        "kind": "admin#reports#activity",
-        "organization": {
-            "domain": "elastic.com"
+        "geo": {
+            "city_name": "State College",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 40.7957,
+                "lon": -77.8618
+            },
+            "region_iso_code": "US-PA",
+            "region_name": "Pennsylvania"
         },
-        "groups": {
-            "old_value": [
-                "managers"
-            ],
-            "new_value": [
-                "managers",
-                "members"
-            ],
-            "email": "group@example.com",
-            "acl_permission": "can_add_members"
-        },
-        "event": {
-            "type": "acl_change"
+        "ip": "98.235.162.24",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
         }
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "google_workspace.groups"
-    },
-    "organization": {
-        "id": "1"
-    },
-    "host": {
-        "name": "4cc571ab4c1e"
-    },
-    "event": {
-        "ingested": "2020-12-15T11:43:31.137282906Z",
-        "original": "{\"kind\":\"admin#reports#activity\",\"id\":{\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1,\"applicationName\":\"groups\",\"customerId\":\"1\"},\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"ownerDomain\":\"elastic.com\",\"ipAddress\":\"98.235.162.24\",\"events\":{\"type\":\"acl_change\",\"name\":\"change_acl_permission\",\"parameters\":[{\"name\":\"acl_permission\",\"value\":\"can_add_members\"},{\"name\":\"group_email\",\"value\":\"group@example.com\"},{\"name\":\"new_value_repeated\",\"multiValue\":[\"managers\",\"members\"]},{\"name\":\"old_value_repeated\",\"multiValue\":[\"managers\"]}]}}",
-        "provider": "groups",
-        "action": "change_acl_permission",
+    "tags": [
+        "forwarded",
+        "google-workspace-groups"
+    ],
+    "user": {
+        "domain": "bar.com",
         "id": "1",
-        "category": [
-            "iam"
-        ],
-        "type": [
-            "group",
-            "change"
-        ],
-        "dataset": "google_workspace.groups"
-    },
-    "group": {
-        "domain": "example.com",
-        "name": "group"
+        "name": "foo",
+        "target": {
+            "group": {
+                "domain": "example.com",
+                "name": "group"
+            }
+        }
     }
 }
 ```
