@@ -1,6 +1,10 @@
 {
   "description": "Pipeline for parsing MySQL slow logs.",
   "processors": [{
+    "drop": {
+      "if": "ctx.message ==~ /^# Time:.*/ || ctx.message ==~ /^[\\/\\w\\.]+, Version: .*\\. started with:.*/ms"
+    }
+  }, {
     "set": {
       "field": "event.ingested",
       "value": "{{_ingest.timestamp}}"
