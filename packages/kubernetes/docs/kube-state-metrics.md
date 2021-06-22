@@ -1668,6 +1668,7 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | kubernetes.statefulset.replicas.desired | The number of desired replicas per StatefulSet | long |
 | kubernetes.statefulset.replicas.observed | The number of observed replicas per StatefulSet | long |
+| kubernetes.statefulset.replicas.ready | The number of ready replicas per StatefulSet | long |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
