@@ -981,9 +981,9 @@ HTTP requests and replies.
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
 | url.username | Username of the request. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -2284,7 +2284,7 @@ data.
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.full | Full unparsed URL. | keyword |
+| url.full | Full unparsed URL. | wildcard |
 | zeek.session_id | A unique identifier of the session | keyword |
 | zeek.sip.call_id | Contents of the Call-ID: header from the client. | keyword |
 | zeek.sip.content_type | Contents of the Content-Type: header from the server. | keyword |
