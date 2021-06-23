@@ -217,6 +217,6 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | syslog.priority | Syslog priority of the event. | long |
 | syslog.severity_label | Syslog text-based severity of the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
