@@ -538,7 +538,7 @@ An example event for `security` looks as following:
 | log.level | Original log level of the log event. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
