@@ -189,10 +189,14 @@ def withKubernetes(Closure body) {
         sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
       }
 
-      body()
-
-      if (r == 0) {
-        sh(label: "Delete kind cluster", script: 'kind delete cluster')
+      try {
+        body()
+      } catch(error) {
+        throw error // rethrow error up if there is any, but delete k8s cluster first
+      } finally {
+        if (r == 0) {
+          sh(label: "Delete kind cluster", script: 'kind delete cluster')
+        }
       }
     }
 }
