@@ -219,7 +219,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | source.user.email | User email address. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.technique.id | Threat technique id. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
