@@ -244,8 +244,8 @@ Fields published for Apache Cassandra packets.
 | cassandra.request.headers.flags | Flags applying to this frame. | keyword |
 | cassandra.request.headers.length | A integer representing the length of the body of the frame (a frame is limited to 256MB in length). | long |
 | cassandra.request.headers.op | An operation type that distinguishes the actual message. | keyword |
-| cassandra.request.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | keyword |
-| cassandra.request.headers.version | The version of the protocol. | long |
+| cassandra.request.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | long |
+| cassandra.request.headers.version | The version of the protocol. | keyword |
 | cassandra.request.query | The CQL query which client send to cassandra. | keyword |
 | cassandra.response.authentication.class | Indicates the full class name of the IAuthenticator in use | keyword |
 | cassandra.response.error.code | The error code of the Cassandra response. | long |
@@ -278,8 +278,8 @@ Fields published for Apache Cassandra packets.
 | cassandra.response.headers.flags | Flags applying to this frame. | keyword |
 | cassandra.response.headers.length | A integer representing the length of the body of the frame (a frame is limited to 256MB in length). | long |
 | cassandra.response.headers.op | An operation type that distinguishes the actual message. | keyword |
-| cassandra.response.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | keyword |
-| cassandra.response.headers.version | The version of the protocol. | long |
+| cassandra.response.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | long |
+| cassandra.response.headers.version | The version of the protocol. | keyword |
 | cassandra.response.result.keyspace | Indicating the name of the keyspace that has been set. | keyword |
 | cassandra.response.result.prepared.prepared_id | Representing the prepared query ID. | keyword |
 | cassandra.response.result.prepared.req_meta.col_count | Representing the number of columns selected by the query that produced this result. | long |
