@@ -593,6 +593,7 @@ Fields published for DNS packets.
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
 | dns.response_code | The DNS response code. | keyword |
+| dns.type | The type of DNS event captured, query or answer. | keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.dataset | Name of the dataset. | keyword |
