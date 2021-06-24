@@ -309,7 +309,7 @@ Fields published for Apache Cassandra packets.
 | cassandra.response.result.schema_change.table | This describes which table has changed. | keyword |
 | cassandra.response.result.schema_change.target | Target could be "FUNCTION" or "AGGREGATE", multiple arguments. | keyword |
 | cassandra.response.result.type | Cassandra result type. | keyword |
-| cassandra.response.supported | Indicates which startup options are supported by the server. This message comes as a response to an OPTIONS message. | object |
+| cassandra.response.supported | Indicates which startup options are supported by the server. This message comes as a response to an OPTIONS message. | flattened |
 | cassandra.response.warnings | The text of the warnings, only occur when Warning flag was set. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.ip | IP address of the client. | ip |
@@ -1572,6 +1572,7 @@ Fields published for SIP packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
+| network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | network.direction | Direction of the network traffic. | keyword |
@@ -1667,6 +1668,7 @@ Fields published for SIP packets.
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
+| user.name | Short name or login of the user. | keyword |
 
 
 ### Thrift
