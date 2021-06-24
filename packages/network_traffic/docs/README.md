@@ -564,6 +564,7 @@ Fields published for DNS packets.
 | dns.additionals.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.additionals.type | The type of data contained in this resource record. | keyword |
 | dns.additionals_count | The number of resource records contained in the `dns.additionals` field. The `dns.additionals` field may or may not be included depending on the configuration of Packetbeat. | long |
+| dns.answers | Array of DNS answers. | object |
 | dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
 | dns.authorities | An array containing a dictionary for each authority section from the answer. | object |
 | dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
@@ -576,11 +577,21 @@ Fields published for DNS packets.
 | dns.flags.recursion_available | A DNS flag specifying whether recursive query support is available in the name server. | boolean |
 | dns.flags.recursion_desired | A DNS flag specifying that the client directs the server to pursue a query recursively. Recursive query support is optional. | boolean |
 | dns.flags.truncated_response | A DNS flag specifying that only the first 512 bytes of the reply were returned. | boolean |
+| dns.header_flags | Array of DNS header flags. | keyword |
+| dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
+| dns.op_code | The DNS operation code that specifies the kind of query in the message. | keyword |
 | dns.opt.do | If set, the transaction uses DNSSEC. | boolean |
 | dns.opt.ext_rcode | Extended response code field. | keyword |
 | dns.opt.udp_size | Requestor's UDP payload size (in bytes). | long |
 | dns.opt.version | The EDNS version. | keyword |
+| dns.question.class | The class of records being queried. | keyword |
 | dns.question.etld_plus_one | The effective top-level domain (eTLD) plus one more label. For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.". The data for determining the eTLD comes from an embedded copy of the data from http://publicsuffix.org. | keyword |
+| dns.question.name | The name being queried. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
+| dns.question.top_level_domain | The effective top level domain (com, org, net, co.uk). | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
+| dns.response_code | The DNS response code. | keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.dataset | Name of the dataset. | keyword |
