@@ -244,7 +244,7 @@ Fields published for Apache Cassandra packets.
 | cassandra.request.headers.flags | Flags applying to this frame. | keyword |
 | cassandra.request.headers.length | A integer representing the length of the body of the frame (a frame is limited to 256MB in length). | long |
 | cassandra.request.headers.op | An operation type that distinguishes the actual message. | keyword |
-| cassandra.request.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | long |
+| cassandra.request.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | keyword |
 | cassandra.request.headers.version | The version of the protocol. | keyword |
 | cassandra.request.query | The CQL query which client send to cassandra. | keyword |
 | cassandra.response.authentication.class | Indicates the full class name of the IAuthenticator in use | keyword |
@@ -278,7 +278,7 @@ Fields published for Apache Cassandra packets.
 | cassandra.response.headers.flags | Flags applying to this frame. | keyword |
 | cassandra.response.headers.length | A integer representing the length of the body of the frame (a frame is limited to 256MB in length). | long |
 | cassandra.response.headers.op | An operation type that distinguishes the actual message. | keyword |
-| cassandra.response.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | long |
+| cassandra.response.headers.stream | A frame has a stream id.  If a client sends a request message with the stream id X, it is guaranteed that the stream id of the response to that message will be X. | keyword |
 | cassandra.response.headers.version | The version of the protocol. | keyword |
 | cassandra.response.result.keyspace | Indicating the name of the keyspace that has been set. | keyword |
 | cassandra.response.result.prepared.prepared_id | Representing the prepared query ID. | keyword |
@@ -1065,7 +1065,7 @@ Fields published for MongoDB packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | long |
+| mongodb.cursorId | The cursor identifier returned in the OP_REPLY. This must be the value that was returned from the database. | keyword |
 | mongodb.error | If the MongoDB request has resulted in an error, this field contains the error message returned by the server. | keyword |
 | mongodb.fullCollectionName | The full collection name. The full collection name is the concatenation of the database name with the collection name, using a dot (.) for the concatenation. For example, for the database foo and the collection bar, the full collection name is foo.bar. | keyword |
 | mongodb.numberReturned | The number of documents in the reply. | long |
@@ -1074,7 +1074,7 @@ Fields published for MongoDB packets.
 | mongodb.query | A JSON document that represents the query. The query will contain one or more elements, all of which must match for a document to be included in the result set. Possible elements include $query, $orderby, $hint, $explain, and $snapshot. | keyword |
 | mongodb.returnFieldsSelector | A JSON document that limits the fields in the returned documents. The returnFieldsSelector contains one or more elements, each of which is the name of a field that should be returned, and the integer value 1. | keyword |
 | mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
-| mongodb.startingFrom | Where in the cursor this reply is starting. | long |
+| mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
 | mongodb.update | A BSON document that specifies the update to be performed. For information on specifying updates, see the Update Operations documentation from the MongoDB Manual. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
@@ -1172,7 +1172,7 @@ Fields published for MySQL packets.
 | mysql.affected_rows | If the MySQL command is successful, this field contains the affected number of rows of the last statement. | long |
 | mysql.error_code | The error code returned by MySQL. | long |
 | mysql.error_message | The error info message returned by MySQL. | keyword |
-| mysql.insert_id | If the INSERT query is successful, this field contains the id of the newly inserted row. | long |
+| mysql.insert_id | If the INSERT query is successful, this field contains the id of the newly inserted row. | keyword |
 | mysql.num_fields | If the SELECT query is successful, this field is set to the number of fields returned. | long |
 | mysql.num_rows | If the SELECT query is successful, this field is set to the number of rows returned. | long |
 | mysql.query | The row mysql query as read from the transaction's request. | keyword |
