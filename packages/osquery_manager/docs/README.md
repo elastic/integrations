@@ -7,7 +7,7 @@ Add this integration to:
 - Deploy osqueryd (the host monitoring daemon) to agents in a policy
 - Schedule queries to capture OS state changes over time
 - Run live queries against one or more agents or policies
-- View a history of past queries and their results 
+- View a history of past queries and their results
 
 
 Osquery results are stored in Elasticsearch, so that you can use the power of the stack to search, analyze, and visualize Osquery data.
