@@ -683,6 +683,7 @@ Fields published for HTTP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | Destination domain. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. | keyword |
@@ -712,10 +713,15 @@ Fields published for HTTP packets.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | object |
-| http.response.headers | A map containing the captured header fields from the response. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | object |
+| http.request.bytes | Total size in bytes of the request (body and headers). | long |
+| http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
+| http.request.method | HTTP request method. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.bytes | Total size in bytes of the response (body and headers). | long |
+| http.response.headers | A map containing the captured header fields from the response. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
 | http.response.status_code | HTTP response status code. | long |
 | http.response.status_phrase | The HTTP status phrase. | keyword |
+| http.version | HTTP version. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
@@ -727,11 +733,13 @@ Fields published for HTTP packets.
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
+| related.hosts | All the host identifiers seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.domain | Server domain. | keyword |
 | server.ip | IP address of the server. | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -744,7 +752,14 @@ Fields published for HTTP packets.
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
+| url.domain | Domain of the url. | keyword |
+| url.extension | File extension from the request url, excluding the leading dot. | keyword |
+| url.full | Full unparsed URL. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
 | url.query | Query string of the request. | keyword |
+| url.scheme | Scheme of the url. | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
 
 
 ### ICMP
