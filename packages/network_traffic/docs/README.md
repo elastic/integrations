@@ -1262,7 +1262,7 @@ Fields published for NFS packets.
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | rpc.auth_flavor | RPC authentication flavor. | keyword |
 | rpc.cred.gid | RPC caller's group id, in case of auth-unix. | long |
-| rpc.cred.gids | RPC caller's secondary group ids, in case of auth-unix. | keyword |
+| rpc.cred.gids | RPC caller's secondary group ids, in case of auth-unix. | long |
 | rpc.cred.machinename | The name of the caller's machine. | keyword |
 | rpc.cred.stamp | Arbitrary ID which the caller machine may generate. | long |
 | rpc.cred.uid | RPC caller's user id, in case of auth-unix. | long |
@@ -1358,7 +1358,7 @@ Fields published for PostgreSQL packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
-| pgsql.error_code | The PostgreSQL error code. | long |
+| pgsql.error_code | The PostgreSQL error code. | keyword |
 | pgsql.error_message | The PostgreSQL error message. | keyword |
 | pgsql.error_severity | The PostgreSQL error severity. | keyword |
 | pgsql.num_fields | If the SELECT query if successful, this field is set to the number of fields returned. | long |
@@ -1570,10 +1570,10 @@ Fields published for SIP packets.
 | sip.auth.scheme | Auth scheme | keyword |
 | sip.auth.uri.host | Auth URI host | keyword |
 | sip.auth.uri.original | Auth original URI | keyword |
-| sip.auth.uri.port | Auth URI port | keyword |
+| sip.auth.uri.port | Auth URI port | long |
 | sip.auth.uri.scheme | Auth URI scheme | keyword |
 | sip.call_id | Call ID. | keyword |
-| sip.code | Response status code. | keyword |
+| sip.code | Response status code. | long |
 | sip.contact.display_info | Contact display info | keyword |
 | sip.contact.expires | Contact expires | keyword |
 | sip.contact.line | Contact line | keyword |
@@ -1581,25 +1581,25 @@ Fields published for SIP packets.
 | sip.contact.transport | Contact transport | keyword |
 | sip.contact.uri.host | Contact URI host | keyword |
 | sip.contact.uri.original | Contact original URI | keyword |
-| sip.contact.uri.port | Contact URI port | keyword |
+| sip.contact.uri.port | Contact URI port | long |
 | sip.contact.uri.scheme | Contat URI scheme | keyword |
 | sip.contact.uri.username | Contact URI user name | keyword |
 | sip.content_length |  | long |
 | sip.content_type |  | keyword |
-| sip.cseq.code | Sequence code. | keyword |
+| sip.cseq.code | Sequence code. | long |
 | sip.cseq.method | Sequence method. | keyword |
 | sip.from.display_info | From display info | keyword |
 | sip.from.tag | From tag | keyword |
 | sip.from.uri.host | From URI host | keyword |
 | sip.from.uri.original | From original URI | keyword |
-| sip.from.uri.port | From URI port | keyword |
+| sip.from.uri.port | From URI port | long |
 | sip.from.uri.scheme | From URI scheme | keyword |
 | sip.from.uri.username | From URI user name | keyword |
 | sip.max_forwards |  | long |
 | sip.method | Request method. | keyword |
 | sip.private.uri.host | Private URI host. | keyword |
 | sip.private.uri.original | Private original URI. | keyword |
-| sip.private.uri.port | Private URI port. | keyword |
+| sip.private.uri.port | Private URI port. | long |
 | sip.private.uri.scheme | Private URI scheme. | keyword |
 | sip.private.uri.username | Private URI user name. | keyword |
 | sip.sdp.body.original | SDP original body | keyword |
@@ -1617,13 +1617,13 @@ Fields published for SIP packets.
 | sip.to.tag | To tag | keyword |
 | sip.to.uri.host | To URI host | keyword |
 | sip.to.uri.original | To original URI | keyword |
-| sip.to.uri.port | To URI port | keyword |
+| sip.to.uri.port | To URI port | long |
 | sip.to.uri.scheme | To URI scheme | keyword |
 | sip.to.uri.username | To URI user name | keyword |
 | sip.type | Either request or response. | keyword |
 | sip.uri.host | The URI host. | keyword |
 | sip.uri.original | The original URI. | keyword |
-| sip.uri.port | The URI port. | keyword |
+| sip.uri.port | The URI port. | long |
 | sip.uri.scheme | The URI scheme. | keyword |
 | sip.uri.username | The URI user name. | keyword |
 | sip.user_agent.original |  | keyword |
@@ -1767,6 +1767,7 @@ Fields published for TLS packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | Destination domain. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. | keyword |
@@ -1812,6 +1813,7 @@ Fields published for TLS packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.domain | Server domain. | keyword |
 | server.ip | IP address of the server. | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -1823,6 +1825,10 @@ Fields published for TLS packets.
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
+| tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
+| tls.client.server_name | Hostname the client is trying to connect to. Also called the SNI. | keyword |
+| tls.client.supported_ciphers | Array of ciphers offered by the client during the client hello. | keyword |
 | tls.client.x509.issuer.province | Province or region within country. | keyword |
 | tls.client.x509.subject.province | Province or region within country. | keyword |
 | tls.client.x509.version | Version of x509 format. | keyword |
@@ -1899,8 +1905,12 @@ Fields published for TLS packets.
 | tls.detailed.server_hello.session_id | Unique number to identify the session for the corresponding connection with the client. | keyword |
 | tls.detailed.server_hello.version | The version of the TLS protocol that is used for this session. It is the highest version supported by the server not exceeding the version requested in the client hello. | keyword |
 | tls.detailed.version | The version of the TLS protocol used. | keyword |
+| tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
+| tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
 | tls.server.x509.issuer.province | Province or region within country. | keyword |
 | tls.server.x509.subject.province | Province or region within country. | keyword |
 | tls.server.x509.version | Version of x509 format. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
