@@ -588,6 +588,7 @@ Fields published for DNS packets.
 | dns.question.etld_plus_one | The effective top-level domain (eTLD) plus one more label. For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.". The data for determining the eTLD comes from an embedded copy of the data from http://publicsuffix.org. | keyword |
 | dns.question.name | The name being queried. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
+| dns.question.subdomain | The subdomain of the domain. | keyword |
 | dns.question.top_level_domain | The effective top level domain (com, org, net, co.uk). | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
@@ -713,9 +714,11 @@ Fields published for HTTP packets.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
 | http.request.method | HTTP request method. | keyword |
+| http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.headers | A map containing the captured header fields from the response. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
@@ -1572,13 +1575,16 @@ Fields published for SIP packets.
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
 | network.direction | Direction of the network traffic. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
+| network.iana_number | IANA Protocol Number. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
+| related.hosts | All the host identifiers seen on your event. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names seen on your event. | keyword |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
