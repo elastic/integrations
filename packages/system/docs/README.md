@@ -403,7 +403,7 @@ The Windows `security` dataset provides events from the Windows
 
 An example event for `security` looks as following:
 
-```json
+```$json
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
@@ -528,7 +528,7 @@ An example event for `security` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
