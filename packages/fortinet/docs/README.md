@@ -17,6 +17,153 @@ This integration has been tested against FortiOS version 6.0.x and 6.2.x. Versio
 
 Contains log entries from Fortinet FortiGate applicances.
 
+An example event for `firewall` looks as following:
+
+```json
+{
+    "@timestamp": "2019-05-15T18:03:36.000Z",
+    "agent": {
+        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
+        "hostname": "docker-fleet-agent",
+        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "fortinet.firewall",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "as": {
+            "number": 41690,
+            "organization": {
+                "name": "Dailymotion S.A."
+            }
+        },
+        "geo": {
+            "continent_name": "Europe",
+            "country_iso_code": "FR",
+            "country_name": "France",
+            "location": {
+                "lat": 48.8582,
+                "lon": 2.3387
+            }
+        },
+        "ip": "195.8.215.136",
+        "port": 443
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "app-ctrl-all",
+        "category": [
+            "network"
+        ],
+        "code": "1059028704",
+        "dataset": "fortinet.firewall",
+        "ingested": "2021-06-03T12:38:44.458586716Z",
+        "kind": "event",
+        "module": "fortinet",
+        "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=195.8.215.136 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"\n",
+        "outcome": "success",
+        "start": "2019-05-16T01:03:35.000Z",
+        "type": [
+            "allowed"
+        ]
+    },
+    "fortinet": {
+        "firewall": {
+            "action": "pass",
+            "appid": "40568",
+            "apprisk": "medium",
+            "dstintfrole": "wan",
+            "incidentserialno": "1962906680",
+            "sessionid": "4414",
+            "srcintfrole": "lan",
+            "subtype": "app-ctrl",
+            "type": "utm",
+            "vd": "root"
+        }
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "information",
+        "source": {
+            "address": "192.168.240.4:54617"
+        }
+    },
+    "message": "Web.Client: HTTPS.BROWSER,",
+    "network": {
+        "application": "HTTPS.BROWSER",
+        "direction": "outbound",
+        "iana_number": "6",
+        "protocol": "https"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "port9"
+            }
+        },
+        "ingress": {
+            "interface": {
+                "name": "port10"
+            }
+        },
+        "product": "Fortigate",
+        "type": "firewall",
+        "vendor": "Fortinet"
+    },
+    "related": {
+        "ip": [
+            "10.1.100.22",
+            "195.8.215.136"
+        ]
+    },
+    "rule": {
+        "category": "Web-Client",
+        "id": "1",
+        "ruleset": "block-social.media"
+    },
+    "source": {
+        "ip": "10.1.100.22",
+        "port": 50798
+    },
+    "tags": [
+        "fortinet-firewall",
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "tls": {
+        "server": {
+            "issuer": "DigiCert SHA2 High Assurance Server CA",
+            "x509": {
+                "issuer": {
+                    "common_name": "DigiCert SHA2 High Assurance Server CA"
+                },
+                "subject": {
+                    "common_name": "*.dailymotion.com"
+                }
+            }
+        }
+    },
+    "url": {
+        "domain": "www.dailymotion.com",
+        "path": "/"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -587,7 +734,7 @@ Contains log entries from Fortinet FortiGate applicances.
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | url.domain | Domain of the url. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | vulnerability.category | Category of a vulnerability. | keyword |
 
@@ -595,6 +742,136 @@ Contains log entries from Fortinet FortiGate applicances.
 ### Clientendpoint
 
 The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security logs.
+
+An example event for `clientendpoint` looks as following:
+
+```json
+{
+    "@timestamp": "2020-06-05T21:33:08.000Z",
+    "agent": {
+        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
+        "hostname": "docker-fleet-agent",
+        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "fortinet.clientendpoint",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": [
+            "10.203.5.162"
+        ],
+        "port": 7290
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "deny",
+        "code": "pop3",
+        "dataset": "fortinet.clientendpoint",
+        "ingested": "2021-06-03T12:35:28.382730111Z",
+        "original": "June 5 21:33:08 tatno4987.www5.localhost proto=ggp service=pop3 status=deny src=10.54.231.100 dst=10.203.5.162 src_port=5616 dst_port=7290 server_app=iam pid=6096 app_name=ciati traff_direct=unknown block_count=3162 logon_user=umdolore@eniam7007.api.invalid msg=success\n",
+        "outcome": "failure",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "tatno4987.www5.localhost"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.240.4:43222"
+        }
+    },
+    "network": {
+        "direction": "unknown",
+        "protocol": "ggp"
+    },
+    "observer": {
+        "product": "FortiClient",
+        "type": "Anti-Virus",
+        "vendor": "Fortinet"
+    },
+    "process": {
+        "pid": 6096
+    },
+    "related": {
+        "hosts": [
+            "eniam7007.api.invalid",
+            "tatno4987.www5.localhost"
+        ],
+        "ip": [
+            "10.54.231.100",
+            "10.203.5.162"
+        ],
+        "user": [
+            "umdolore"
+        ]
+    },
+    "rsa": {
+        "counters": {
+            "dclass_c1": 3162,
+            "dclass_c1_str": "block_count"
+        },
+        "internal": {
+            "messageid": "pop3"
+        },
+        "investigations": {
+            "ec_outcome": "Failure",
+            "ec_subject": "NetworkComm",
+            "ec_theme": "ALM"
+        },
+        "misc": {
+            "action": [
+                "deny"
+            ],
+            "result": "success\n"
+        },
+        "network": {
+            "alias_host": [
+                "tatno4987.www5.localhost"
+            ],
+            "domain": "eniam7007.api.invalid",
+            "network_service": "pop3"
+        },
+        "time": {
+            "event_time": "2020-06-05T21:33:08.000Z"
+        }
+    },
+    "server": {
+        "domain": "eniam7007.api.invalid",
+        "registered_domain": "api.invalid",
+        "subdomain": "eniam7007",
+        "top_level_domain": "invalid"
+    },
+    "source": {
+        "ip": [
+            "10.54.231.100"
+        ],
+        "port": 5616
+    },
+    "tags": [
+        "fortinet-clientendpoint",
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "user": {
+        "name": "umdolore"
+    }
+}
+```
 
 **Exported fields**
 
@@ -1414,8 +1691,8 @@ The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security log
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -1430,6 +1707,89 @@ The `clientendpoint` dataset collects Fortinet FortiClient Endpoint Security log
 
 The `fortimail` dataset collects Fortinet FortiMail logs.
 
+An example event for `fortimail` looks as following:
+
+```json
+{
+    "@timestamp": "2016-01-29T06:09:59.000Z",
+    "agent": {
+        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
+        "hostname": "docker-fleet-agent",
+        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "fortinet.fortimail",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "event",
+        "code": "nes",
+        "dataset": "fortinet.fortimail",
+        "ingested": "2021-06-03T12:42:09.362670647Z",
+        "original": "date=2016-1-29 time=06:09:59 device_id=pexe log_id=nes log_part=eab type=event subtype=update pri=high msg=\"boNemoe\"\n",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "high",
+        "source": {
+            "address": "192.168.240.4:60044"
+        }
+    },
+    "observer": {
+        "product": "FortiMail",
+        "type": "Firewall",
+        "vendor": "Fortinet"
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ]
+    },
+    "rsa": {
+        "internal": {
+            "event_desc": "boNemoe",
+            "messageid": "event_update"
+        },
+        "misc": {
+            "category": "update",
+            "event_type": "event",
+            "hardware_id": "pexe",
+            "msgIdPart1": "event",
+            "msgIdPart2": "update",
+            "reference_id": "nes",
+            "reference_id1": "eab",
+            "severity": "high"
+        },
+        "time": {
+            "event_time": "2016-01-29T06:09:59.000Z"
+        }
+    },
+    "tags": [
+        "fortinet-fortimail",
+        "forwarded",
+        "preserve_original_event"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -2248,8 +2608,8 @@ The `fortimail` dataset collects Fortinet FortiMail logs.
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -2264,11 +2624,151 @@ The `fortimail` dataset collects Fortinet FortiMail logs.
 
 The `fortimanager` dataset collects Fortinet Manager/Analyzer logs.
 
+An example event for `fortimanager` looks as following:
+
+```json
+{
+    "@timestamp": "2016-01-29T06:09:59.000Z",
+    "agent": {
+        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
+        "hostname": "docker-fleet-agent",
+        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "fortinet.fortimanager",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 449,
+        "geo": {
+            "country_name": "sequa"
+        },
+        "ip": [
+            "10.44.173.44"
+        ],
+        "nat": {
+            "ip": "10.189.58.145",
+            "port": 5273
+        },
+        "port": 6125
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "allow",
+        "code": "sse",
+        "dataset": "fortinet.fortimanager",
+        "ingested": "2021-06-03T12:45:50.284271932Z",
+        "original": "logver=iusm devname=\"modtempo\" devid=\"olab\" vd=nto date=2016-1-29 time=6:09:59 logid=sse type=exercita subtype=der level=very-high eventtime=odoco logtime=ria srcip=10.20.234.169 srcport=1001 srcintf=eth5722 srcintfrole=vol dstip=10.44.173.44 dstport=6125 dstintf=enp0s3068 dstintfrole=nseq poluuid=itinvol sessionid=psa proto=21 action=allow policyid=ntium policytype=psaq crscore=13.800000 craction=eab crlevel=aliqu appcat=Ute service=lupt srccountry=dolore dstcountry=sequa trandisp=abo tranip=10.189.58.145 tranport=5273 duration=14.119000 sentbyte=7880 rcvdbyte=449 sentpkt=mqui app=nci\n",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "very-high",
+        "source": {
+            "address": "192.168.240.4:36529"
+        }
+    },
+    "network": {
+        "bytes": 8329
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "enp0s3068"
+            }
+        },
+        "ingress": {
+            "interface": {
+                "name": "eth5722"
+            }
+        },
+        "product": "FortiManager",
+        "type": "Configuration",
+        "vendor": "Fortinet"
+    },
+    "related": {
+        "hosts": [
+            "modtempo",
+            "docker-fleet-agent"
+        ],
+        "ip": [
+            "10.44.173.44",
+            "10.20.234.169",
+            "10.189.58.145"
+        ]
+    },
+    "rsa": {
+        "internal": {
+            "messageid": "generic_fortinetmgr_1"
+        },
+        "misc": {
+            "action": [
+                "allow"
+            ],
+            "category": "der",
+            "context": "abo",
+            "event_source": "modtempo",
+            "event_type": "exercita",
+            "hardware_id": "olab",
+            "log_session_id": "psa",
+            "policy_id": "ntium",
+            "reference_id": "sse",
+            "severity": "very-high",
+            "vsys": "nto"
+        },
+        "network": {
+            "dinterface": "enp0s3068",
+            "network_service": "lupt",
+            "sinterface": "eth5722"
+        },
+        "time": {
+            "duration_time": 14.119,
+            "event_time": "2016-01-29T06:09:59.000Z",
+            "event_time_str": "odoco"
+        },
+        "web": {
+            "reputation_num": 13.8
+        }
+    },
+    "source": {
+        "bytes": 7880,
+        "geo": {
+            "country_name": "dolore"
+        },
+        "ip": [
+            "10.20.234.169"
+        ],
+        "port": 1001
+    },
+    "tags": [
+        "fortinet-fortimanager",
+        "forwarded",
+        "preserve_original_event"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | client.domain | Server domain. | keyword |
 | client.registered_domain | The highest registered source domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | client.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -3082,10 +3582,13 @@ The `fortimanager` dataset collects Fortinet Manager/Analyzer logs.
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.extension | The field contains the file extension from the original request url. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.full_name | User's full name, if available. | keyword |

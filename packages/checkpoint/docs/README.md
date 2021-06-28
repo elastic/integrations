@@ -21,6 +21,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | checkpoint.action_reason | Connection drop reason. | integer |
+| checkpoint.action_reason_msg | Connection drop reason message. | keyword |
 | checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
 | checkpoint.additional_ip | DNS host name. | keyword |
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
@@ -501,7 +502,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
