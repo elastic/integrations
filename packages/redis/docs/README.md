@@ -40,6 +40,7 @@ The `log` dataset collects the Redis standard logs.
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -92,6 +93,7 @@ The `slowlog` dataset collects the Redis slow logs.
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -333,6 +335,7 @@ An example event for `info` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -458,7 +461,7 @@ An example event for `info` looks as following:
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long |
-| service.address | Service address | keyword |
+| service.address | Client address | keyword |
 | service.type | Service type | keyword |
 | service.version | Service version | keyword |
 
@@ -533,6 +536,7 @@ An example event for `key` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -618,6 +622,7 @@ An example event for `keyspace` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
