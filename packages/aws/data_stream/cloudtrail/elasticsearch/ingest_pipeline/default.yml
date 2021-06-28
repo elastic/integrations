@@ -1,53 +1,21 @@
 ---
 description: Pipeline for AWS CloudTrail Logs
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: json
+  - pipeline:
+      if: ctx?.json?.preview != null
+      name: '{{ IngestPipeline "third-party" }}'
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
       value: '1.10.0'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-  - json:
-      field: event.original
-      target_field: _temp_.json
-  #Splunk specific parsing start
-  - drop:
-      if: 'ctx._temp_?.json?.result == null && ctx._temp_?.json?.preview != null'
-  - fingerprint:
-      fields: 
-        - _temp_.json.result._cd
-        - _temp_.json.result._indextime
-        - _temp_.json.result._raw
-        - _temp_.json.result._time
-      target_field: '_id'
-      if: 'ctx._temp_?.json?.result != null && ctx._temp_?.json?.preview != null'
-  - remove:
-      field: event.original
-      if: ctx._temp_?.json?.result?._raw != null
-  - rename:
-      field: _temp_.json.result._raw
-      target_field: event.original
-      ignore_missing: true
-      if: ctx._temp_?.json?.result?._raw != null
-  - json:
-      field: event.original
-      target_field: json
-      if: ctx._temp_?.json?.result?._raw != null
-  # Rename if this is not splunk data
-  - rename:
-      field: _temp_.json
-      target_field: json
-      ignore_missing: true
-      if: ctx._temp_?.json?.result?._raw == null
-  - remove:
-      field: 
-        - _temp_
-      ignore_missing: true
-  #Splunk specific parsing end
   - date:
       field: json.eventTime
       target_field: "@timestamp"
