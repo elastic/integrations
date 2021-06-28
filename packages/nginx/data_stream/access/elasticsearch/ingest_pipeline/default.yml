@@ -2,59 +2,15 @@
 description: Pipeline for parsing Nginx access logs. Requires the geoip and user_agent
   plugins.
 processors:
+  - pipeline:
+      if: ctx.message.startsWith('{')
+      name: '{{ IngestPipeline "third-party" }}'
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
       value: "1.10.0"
- # Splunk specific parsing start
-  - set:
-      field: _temp_.isSplunk
-      value: true
-      if: ctx.message.startsWith('{')
-  - json:
-      field: message
-      target_field: json
-      if: ctx._temp_?.isSplunk == true
-  - drop:
-      if: 'ctx._temp_?.isSplunk == true && ctx.json?.result == null'
-  - fingerprint:
-      fields: 
-        - json.result._cd
-        - json.result._indextime
-        - json.result._raw
-        - json.result._time
-        - json.result.host
-        - json.result.source
-      target_field: '_id'
-      if: 'ctx._temp_?.isSplunk == true && ctx?.json?.result != null'
-  - remove:
-      field: message
-      ignore_missing: true
-      if: ctx._temp_?.isSplunk == true
-  - rename:
-      field: json.result._raw
-      target_field: message
-      ignore_missing: true
-      if: ctx._temp_?.isSplunk == true
-  - rename:
-      field: json.result.host
-      target_field: host.name
-      ignore_missing: true
-      if: ctx._temp_?.isSplunk == true
-  - rename:
-      field: json.result.source
-      target_field: file.path
-      ignore_missing: true
-      if: ctx._temp_?.isSplunk == true
-  - remove:
-      field: 
-        - json
-        - _temp_
-      ignore_missing: true
-      if: ctx._temp_?.isSplunk == 1
-  # Splunk specific parsing end
   - rename:
       field: message
       target_field: event.original
