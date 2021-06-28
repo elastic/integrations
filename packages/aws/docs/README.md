@@ -432,7 +432,15 @@ For network load balancer, please follow [enable access log for network load bal
 | source.port | Port of the source. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| user_agent.device.name | Name of the device. | keyword |
+| user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
 
 
 ### s3access
