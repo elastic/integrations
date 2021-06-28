@@ -1,6 +1,21 @@
 ---
 description: Pipeline for normalizing Zeek dhcp.log
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: _temp_
+  - pipeline:
+      if: ctx?._temp_?.result != null
+      name: '{{ IngestPipeline "third-party" }}'
+  - drop:
+      description: Drop if no timestamp (invalid json)
+      if: 'ctx?._temp_?.ts == null'
+  - rename:
+      field: _temp_
+      target_field: zeek.dhcp
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
@@ -32,54 +47,6 @@ processors:
   - set:
       field: network.protocol
       value: dhcp
-  - rename:
-      field: message
-      target_field: event.original
-  - json:
-      field: event.original
-      target_field: _temp_.json
-  - drop:
-      description: Drop if it is a Splunk event but it is empty.
-      if: 'ctx?._temp_?.json?.result == null && ctx?._temp_?.json?.ts == null' 
-# Splunk specific parsing start
-  - fingerprint:
-      fields: 
-        - _temp_.json.result._cd
-        - _temp_.json.result._indextime
-        - _temp_.json.result._raw
-        - _temp_.json.result._time
-        - _temp_.json.result.host
-        - _temp_.json.result.source
-      target_field: '_id'
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - remove:
-      field: event.original
-      ignore_missing: true
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - set:
-      field: event.original
-      copy_from: _temp_.json.result._raw
-      ignore_empty_value: true
-      ignore_failure: true
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - set:
-      field: host.name
-      copy_from: _temp_.json.result.host
-      ignore_empty_value: true
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - rename:
-      field: _temp_.json.result.source
-      target_field: log.file.path
-      ignore_missing: true
-  - remove:
-      field: _temp_
-      ignore_missing: true
-# Splunk parsing end
-  - json:
-      field: event.original
-      target_field: zeek.dhcp
-      ignore_failure: true
-      if: ctx?.event?.original != null
   - rename:
       field: zeek.dhcp.uids
       target_field: zeek.session_id
@@ -211,11 +178,6 @@ processors:
       allow_duplicates: false
   - community_id:
       target_field: network.community_id
-  - remove:
-      field: 
-        - message
-        - json
-      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
