@@ -309,7 +309,7 @@ An example event for `powershell` looks as following:
 | powershell.total | Total number of messages in the sequence. | long |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
@@ -634,7 +634,7 @@ An example event for `powershell_operational` looks as following:
 | powershell.total | Total number of messages in the sequence. | long |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
@@ -1029,7 +1029,7 @@ An example event for `sysmon_operational` looks as following:
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
@@ -1039,7 +1039,7 @@ An example event for `sysmon_operational` looks as following:
 | process.name | Process name. | keyword |
 | process.parent.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.parent.args_count | Length of the process.args array. | long |
-| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.parent.entity_id | Unique identifier for the process. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
 | process.parent.name | Process name. | keyword |
@@ -1054,7 +1054,7 @@ An example event for `sysmon_operational` looks as following:
 | process.pid | Process id. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.working_directory | The working directory of the process. | keyword |
-| registry.data.strings | Content when writing string types. | keyword |
+| registry.data.strings | Content when writing string types. | wildcard |
 | registry.data.type | Standard registry type for encoding contents | keyword |
 | registry.hive | Abbreviated name for the hive. | keyword |
 | registry.key | Hive-relative path of keys. | keyword |

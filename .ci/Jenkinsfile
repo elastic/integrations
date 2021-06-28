@@ -11,7 +11,7 @@ pipeline {
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.10.0"
+    KIND_VERSION = "v0.11.1"
     K8S_VERSION = "v1.20.2"
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
@@ -189,10 +189,14 @@ def withKubernetes(Closure body) {
         sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
       }
 
-      body()
-
-      if (r == 0) {
-        sh(label: "Delete kind cluster", script: 'kind delete cluster')
+      try {
+        body()
+      } catch(error) {
+        throw error // rethrow error up if there is any, but delete k8s cluster first
+      } finally {
+        if (r == 0) {
+          sh(label: "Delete kind cluster", script: 'kind delete cluster')
+        }
       }
     }
 }

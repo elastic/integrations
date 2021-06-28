@@ -1,7 +1,7 @@
 format_version: 1.0.0
 name: kubernetes
 title: Kubernetes
-version: 0.5.3
+version: 0.6.0
 license: basic
 description: Kubernetes Integration
 type: integration
@@ -10,23 +10,11 @@ categories:
   - kubernetes
 release: experimental
 conditions:
-  kibana.version: "^7.13.0"
+  kibana.version: "^7.14.0"
 screenshots:
   - src: /img/metricbeat_kubernetes_overview.png
     title: Metricbeat Kubernetes Overview
     size: 1896x961
-    type: image/png
-  - src: /img/metricbeat-kubernetes-controllermanager.png
-    title: Metricbeat Kubernetes Controller Manager
-    size: 1896x961
-    type: image/png
-  - src: /img/metricbeat_kubernetes_scheduler.png
-    title: Metricbeat Kubernetes Scheduler
-    size: 1856x897
-    type: image/png
-  - src: /img/metricbeat-kubernetes-proxy.png
-    title: Metricbeat Kubernetes Proxy
-    size: 1854x920
     type: image/png
 icons:
   - src: /img/logo_kubernetes.svg
@@ -34,12 +22,161 @@ icons:
     size: 32x32
     type: image/svg+xml
 policy_templates:
-  - name: kubernetes
-    title: Kubernetes metrics
-    description: Collect metrics from Kubernetes
+  - name: kubelet
+    title: Kubelet
+    description: Collect metrics from Kubernetes Kubelet API
+    data_streams:
+      - container
+      - node
+      - pod
+      - system
+      - volume
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics
-        description: Collecting API Server, Controller Manager, Scheduler, Proxy and Event metrics as well as Node, Pod, Container, Volume and System metrics from Kubelet and metrics from kube_state_metrics (container, cronjob, deployment, daemonset, node, persistentvolume, persistentvolumeclaim, pod, replicaset, resourcequota, service, statefulset, storageclass).
+        title: Collect Kubernetes metrics from Kubelet API
+        description: Collecting Node, Pod, Container, Volume and System metrics from Kubelet
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: kube-state-metrics
+    title: kube-state-metrics
+    description: Collect metrics from kube-state-metrics
+    data_streams:
+      - state_container
+      - state_cronjob
+      - state_daemonset
+      - state_deployment
+      - state_node
+      - state_persistentvolume
+      - state_persistentvolumeclaim
+      - state_pod
+      - state_replicaset
+      - state_resourcequota
+      - state_service
+      - state_statefulset
+      - state_storageclass
+    inputs:
+      - type: kubernetes/metrics
+        title: Collect Kubernetes metrics from kube-state-metrics
+        description: Collecting metrics from kube-state-metrics (container, cronjob, deployment, daemonset, node, persistentvolume, persistentvolumeclaim, pod, replicaset, resourcequota, service, statefulset, storageclass)
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: kube-apiserver
+    title: kube-apiserver
+    description: Collect metrics from Kubernetes API Server
+    data_streams:
+      - apiserver
+    inputs:
+      - type: kubernetes/metrics
+        title: Collect Kubernetes metrics from Kubernetes API Server
+        description: Collecting metrics from Kubernetes API Server
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: kube-proxy
+    title: kube-proxy
+    description: Collect metrics from Kubernetes Proxy
+    data_streams:
+      - proxy
+    inputs:
+      - type: kubernetes/metrics
+        title: Collect Kubernetes metrics from Kubernetes Proxy
+        description: Collecting metrics from Kubernetes Proxy
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat-kubernetes-proxy.png
+        title: Metricbeat Kubernetes Proxy
+        size: 1854x920
+        type: image/png
+  - name: kube-scheduler
+    title: kube-scheduler
+    description: Collect metrics from Kubernetes Scheduler
+    data_streams:
+      - scheduler
+    inputs:
+      - type: kubernetes/metrics
+        title: Collect Kubernetes metrics from Kubernetes Scheduler
+        description: Collecting metrics from Kubernetes Scheduler
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_scheduler.png
+        title: Metricbeat Kubernetes Scheduler
+        size: 1856x897
+        type: image/png
+  - name: kube-controller-manager
+    title: kube-controller-manager
+    description: Collect metrics from Kubernetes controller-manager
+    data_streams:
+      - controllermanager
+    inputs:
+      - type: kubernetes/metrics
+        title: Collect Kubernetes metrics from Kubernetes controller-manager
+        description: Collecting metrics from Kubernetes controller-manager
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat-kubernetes-controllermanager.png
+        title: Metricbeat Kubernetes Controller Manager
+        size: 1896x961
+        type: image/png
+  - name: events
+    title: Events
+    description: Collect events from Kubernetes API server
+    data_streams:
+      - event
+    inputs:
+      - type: kubernetes/metrics
+        title: Collect Kubernetes events from Kubernetes API Server
+        description: Collecting events from Kubernetes API Server
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
 owner:
   github: elastic/integrations
