@@ -162,6 +162,9 @@ events for the account. If user creates a trail, it delivers those events as log
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
@@ -249,6 +252,9 @@ setup already.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -298,6 +304,9 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -383,6 +392,9 @@ For network load balancer, please follow [enable access log for network load bal
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | Destination domain. | keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
@@ -494,6 +506,9 @@ for sending server access logs to S3 bucket.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
@@ -584,6 +599,9 @@ for sending server access logs to S3 bucket.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -746,6 +764,9 @@ An example event for `billing` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -853,6 +874,9 @@ An example event for `cloudwatch` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -993,6 +1017,9 @@ An example event for `dynamodb` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -1125,6 +1152,9 @@ An example event for `ebs` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -1327,6 +1357,9 @@ An example event for `ec2` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -1508,6 +1541,9 @@ An example event for `elb` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -1636,6 +1672,9 @@ An example event for `lambda` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -1789,6 +1828,9 @@ An example event for `natgateway` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2013,6 +2055,9 @@ An example event for `rds` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2119,6 +2164,9 @@ An example event for `s3_daily_storage` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2252,6 +2300,9 @@ An example event for `s3_request` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2380,6 +2431,9 @@ An example event for `sns` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2498,6 +2552,9 @@ An example event for `sqs` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2623,6 +2680,9 @@ An example event for `transitgateway` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2734,6 +2794,9 @@ An example event for `usage` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
@@ -2844,6 +2907,9 @@ An example event for `vpn` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
