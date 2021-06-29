@@ -39,6 +39,8 @@ The `log` dataset collects the HAProxy application logs.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | haproxy.backend_name | Name of the backend (or listener) which was selected to manage the connection to the server. | keyword |
 | haproxy.backend_queue | Total number of requests which were processed before this one in the backend's global queue. | long |
 | haproxy.bind_name | Name of the listening address which received the connection. | keyword |
@@ -271,6 +273,8 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | haproxy.info.busy_polling | Number of busy polling. | long |
 | haproxy.info.bytes.out.rate | Average bytes output rate. | long |
 | haproxy.info.bytes.out.total | Number of bytes sent out. | long |
@@ -466,6 +470,8 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | haproxy.stat.agent.check.description | Human readable version of check. | keyword |
 | haproxy.stat.agent.check.fall | Fall value of server. | integer |
 | haproxy.stat.agent.check.health | Health parameter of server. Between 0 and `agent.check.rise`+`agent.check.fall`-1. | integer |
