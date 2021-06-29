@@ -778,7 +778,7 @@ An example event for `cloudwatch` looks as following:
     "@timestamp": "2020-05-28T17:17:02.812Z",
     "event": {
         "duration": 14119105951,
-        "dataset": "aws.cloudwatch",
+        "dataset": "aws.cloudwatch_metrics",
         "module": "aws"
     },
     "ecs": {
@@ -1238,7 +1238,7 @@ An example event for `ec2` looks as following:
     "event": {
         "module": "aws",
         "duration": 23217499283,
-        "dataset": "aws.ec2"
+        "dataset": "aws.ec2_metrics"
     },
     "metricset": {
         "period": 300000,
@@ -1417,7 +1417,7 @@ An example event for `elb` looks as following:
         "period": 60000
     },
     "event": {
-        "dataset": "aws.elb",
+        "dataset": "aws.elb_metrics",
         "module": "aws",
         "duration": 15044430616
     },
@@ -1546,7 +1546,7 @@ An example event for `lambda` looks as following:
         "version": "8.0.0"
     },
     "event": {
-        "dataset": "aws.dynamodb",
+        "dataset": "aws.lambda",
         "module": "aws",
         "duration": 10266182336
     },
