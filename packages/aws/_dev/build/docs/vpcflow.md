@@ -1,0 +1,5 @@
+# vpcflow
+
+## Logs
+
+{{fields "vpcflow"}}
