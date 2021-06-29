@@ -498,7 +498,7 @@ An example event for `event` looks as following:
         }
     },
     "event": {
-        "dataset": "event",
+        "dataset": "docker.event",
         "module": "docker"
     },
     "service": {
