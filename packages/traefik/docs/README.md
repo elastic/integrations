@@ -26,11 +26,6 @@ An example event for `access` looks as following:
         "type": "filebeat",
         "version": "7.13.0"
     },
-    "data_stream": {
-        "dataset": "traefik.access",
-        "namespace": "ep",
-        "type": "logs"
-    },
     "ecs": {
         "version": "1.8.0"
     },
@@ -191,11 +186,6 @@ An example event for `health` looks as following:
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.13.0"
-    },
-    "data_stream": {
-        "dataset": "traefik.health",
-        "namespace": "ep",
-        "type": "metrics"
     },
     "ecs": {
         "version": "1.8.0"
