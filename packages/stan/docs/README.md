@@ -124,7 +124,9 @@ An example event for `log` looks as following:
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
@@ -243,6 +245,8 @@ An example event for `stats` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | stan.cluster.id | The cluster ID | keyword |
@@ -349,6 +353,8 @@ An example event for `channels` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | stan.channels.bytes | The number of STAN bytes in the channel | long |
@@ -454,6 +460,8 @@ An example event for `subscriptions` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | stan.cluster.id | The cluster ID | keyword |
