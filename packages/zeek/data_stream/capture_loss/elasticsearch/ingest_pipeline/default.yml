@@ -1,6 +1,21 @@
 ---
 description: Pipeline for normalizing Zeek capture_loss.log
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: _temp_
+  - pipeline:
+      if: ctx?._temp_?.result != null
+      name: '{{ IngestPipeline "third-party" }}'
+  - drop:
+      description: Drop if no timestamp (invalid json)
+      if: 'ctx?._temp_?.ts == null'
+  - rename:
+      target_field: zeek.capture_loss
+      field: _temp_
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
@@ -11,53 +26,6 @@ processors:
   - set:
       field: ecs.version
       value: '1.10.0'
-  - rename:
-      field: message
-      target_field: event.original
-  - json:
-      field: event.original
-      target_field: _temp_.json
-  - drop:
-      description: Drop if it is a Splunk event but it is empty.
-      if: 'ctx?._temp_?.json?.result == null && ctx?._temp_?.json?.ts == null' 
-# Splunk specific parsing start
-  - fingerprint:
-      fields: 
-        - _temp_.json.result._cd
-        - _temp_.json.result._indextime
-        - _temp_.json.result._raw
-        - _temp_.json.result._time
-        - _temp_.json.result.host
-        - _temp_.json.result.source
-      target_field: '_id'
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - remove:
-      field: event.original
-      ignore_missing: true
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - set:
-      field: event.original
-      copy_from: _temp_.json.result._raw
-      ignore_empty_value: true
-      ignore_failure: true
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - set:
-      field: host.name
-      copy_from: _temp_.json.result.host
-      ignore_empty_value: true
-      if: 'ctx?._temp_?.json?.result != null && ctx?._temp_?.json?.ts == null'
-  - rename:
-      field: _temp_.json.result.source
-      target_field: log.file.path
-      ignore_missing: true
-  - remove:
-      field: _temp_
-      ignore_missing: true
-# Splunk parsing end
-  - json:
-      field: event.original
-      target_field: zeek.capture_loss
-      ignore_failure: true
   - date:
       field: zeek.capture_loss.ts
       formats:
@@ -76,8 +44,6 @@ processors:
   - remove:
       field: 
         - zeek.capture_loss.ts
-        - message
-        - json
       ignore_missing: true
   - remove:
       field: event.original

@@ -1,7 +1,13 @@
 config_version: 2
 interval: {{interval}}
+{{#unless token}}
+{{#if username}}
+{{#if password}}
 auth.basic.user: {{username}}
 auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+{{/unless}}
 cursor:
   index_earliest:
     value: '[[.last_event.result.max_indextime]]'
@@ -27,6 +33,15 @@ request.transforms:
   - set:
       target: header.Content-Type
       value: application/x-www-form-urlencoded
+{{#unless username}}
+{{#unless password}}
+{{#if token}}
+  - set:
+      target: header.Authorization
+      value: {{token}}
+{{/if}}
+{{/unless}}
+{{/unless}}
 response.decode_as: application/x-ndjson
 response.split:
   target: body.result._raw
