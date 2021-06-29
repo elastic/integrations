@@ -58,6 +58,8 @@ running Docker containers.
 | docker.container.status | Container status. | keyword |  |
 | docker.container.tags | Image tags. | keyword |  |
 | ecs.version | ECS version | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.ip | Host ip address. | ip |  |
 | host.mac | Host mac address. | keyword |  |
@@ -169,6 +171,8 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | docker.cpu.user.pct | Percentage of time in user space. | scaled_float | percent | gauge |
 | docker.cpu.user.ticks | CPU ticks in user space. | long |  | counter |
 | ecs.version | ECS version | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.ip | Host ip address. | ip |  |  |
 | host.mac | Host mac address. | keyword |  |  |
@@ -350,6 +354,8 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | docker.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
 | docker.diskio.writes | Number of current writes per second | scaled_float |  | gauge |
 | ecs.version | ECS version | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.ip | Host ip address. | ip |  |  |
 | host.mac | Host mac address. | keyword |  |  |
@@ -450,6 +456,8 @@ The Docker `event` data stream collects docker events
 | docker.event.status | Event status | keyword |
 | docker.event.type | The type of object emitting the event | keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.ip | Host ip address. | ip |
 | host.mac | Host mac address. | keyword |
@@ -490,7 +498,7 @@ An example event for `event` looks as following:
         }
     },
     "event": {
-        "dataset": "event",
+        "dataset": "docker.event",
         "module": "docker"
     },
     "service": {
@@ -527,6 +535,8 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | docker.healthcheck.failingstreak | concurent failed check | integer | counter |
 | docker.healthcheck.status | Healthcheck status code | keyword |  |
 | ecs.version | ECS version | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.ip | Host ip address. | ip |  |
 | host.mac | Host mac address. | keyword |  |
@@ -630,6 +640,8 @@ The Docker `image` data stream collects metrics on docker images
 | docker.image.size.virtual | Size of the image. | long | gauge |
 | docker.image.tags | Image tags. | keyword |  |
 | ecs.version | ECS version | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.ip | Host ip address. | ip |  |
 | host.mac | Host mac address. | keyword |  |
@@ -716,6 +728,8 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | docker.info.id | Unique Docker host identifier. | keyword |  |
 | docker.info.images | Total number of existing images. | long | counter |
 | ecs.version | ECS version | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.ip | Host ip address. | ip |  |
 | host.mac | Host mac address. | keyword |  |
@@ -793,6 +807,8 @@ The Docker `memory` data stream collects memory metrics from docker.
 | docker.memory.usage.pct | Memory usage percentage. | scaled_float | percent | gauge |
 | docker.memory.usage.total | Total memory usage. | long | byte | gauge |
 | ecs.version | ECS version | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.ip | Host ip address. | ip |  |  |
 | host.mac | Host mac address. | keyword |  |  |
@@ -923,6 +939,8 @@ The Docker `network` data stream collects network metrics.
 | docker.network.outbound.errors | Total errors on outgoing packets. | long | counter |
 | docker.network.outbound.packets | Total number of outgoing packets. | long | counter |
 | ecs.version | ECS version | keyword |  |
+| event.dataset | Event dataset | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.ip | Host ip address. | ip |  |
 | host.mac | Host mac address. | keyword |  |
