@@ -39,7 +39,9 @@ The `error` dataset collects the MySQL error logs.
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.provider | Source of the event (e.g. Server) | keyword |
 | event.timezone | Time zone information | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
@@ -89,7 +91,9 @@ The `slowlog` dataset collects the MySQL slow logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -281,6 +285,8 @@ An example event for `galera_status` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -500,6 +506,8 @@ An example event for `status` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
