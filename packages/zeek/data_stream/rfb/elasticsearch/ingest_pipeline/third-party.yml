@@ -1,0 +1,39 @@
+---
+description: Pipeline for parsing Zeek logs from third party api
+processors:
+  - fingerprint:
+      fields:
+        - _temp_.result._cd
+        - _temp_.result._indextime
+        - _temp_.result._raw
+        - _temp_.result._time
+        - _temp_.result.host
+        - _temp_.result.source
+      target_field: '_id'
+      ignore_missing: true
+  - set:
+      field: event.original
+      copy_from: _temp_.result._raw
+      ignore_empty_value: true
+  - set:
+      field: host.name
+      copy_from: _temp_.result.host
+      ignore_empty_value: true
+  - set:
+      copy_from: _temp_.result.source
+      field: log.file.path
+      ignore_empty_value: true
+  - remove:
+      field: _temp_
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: _temp_
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in third party api pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}
