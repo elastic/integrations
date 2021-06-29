@@ -42,7 +42,9 @@ Access logs collects the Apache access logs.
 | error.message | Error message. | text |  |  |
 | event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | event.outcome | The outcome of the event. If the event describes an action, this fields contains the outcome of that action. Examples outcomes are `success` and `failure`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
@@ -133,7 +135,9 @@ Error logs collects the Apache error logs.
 | ecs.version | ECS version | keyword |  |  |
 | error.message | Error message. | text |  |  |
 | event.category | Event category. This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
 | event.kind | The kind of the event. This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution. | keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |  |  |
 | event.type | Reserved for future usage. Please avoid using this field for user data. | keyword |  |  |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |  |  |
@@ -359,6 +363,8 @@ An example event for `status` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version | keyword |  |  |
 | error.message | Error message. | text |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
