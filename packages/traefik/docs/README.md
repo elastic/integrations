@@ -195,6 +195,11 @@ An example event for `health` looks as following:
         "type": "metricbeat",
         "version": "7.13.0"
     },
+    "data_stream": {
+        "dataset": "traefik.health",
+        "namespace": "ep",
+        "type": "metrics"
+    },
     "ecs": {
         "version": "1.8.0"
     },
