@@ -62,7 +62,7 @@ The `log` dataset collects and parses logs from Kafka servers.
 | kafka.log.thread | Thread name the log is coming from. | keyword |
 | kafka.log.trace.class | Java class the trace is coming from. | keyword |
 | kafka.log.trace.message | Message part of the trace. | text |
-| log | Details about the event's logging mechanism or logging transport. The log.* fields are typically populated with details about the logging mechanism used to create and/or transport the event. For example, syslog details belong under `log.syslog.*`. The details specific to your event source are typically not logged under `log.*`, but rather in `event.*` or in other ECS fields. | group |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | tags | List of keywords used to tag each event. | keyword |
 
