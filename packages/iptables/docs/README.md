@@ -153,9 +153,9 @@ An example event for `log` looks as following:
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version | keyword |
 | event.created |  | date |
-| event.dataset |  | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested |  | date |
-| event.module |  | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome |  | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
