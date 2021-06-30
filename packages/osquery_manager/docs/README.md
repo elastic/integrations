@@ -77,6 +77,7 @@ Each query contains the following information:
 | Successful | The query completed as expected.|
 | Failed | The query encountered a problem and might have failed, because there was an issue with the query or the agent was disconnected. |
 | Not yet responded | The query has not been sent to the agent. |
+| Expired | The action request timed out. The agent may be offline.|
 
 ### Default Osquery configuration
 The Osquery binary is executed with the standard osqueryd defaults. 
