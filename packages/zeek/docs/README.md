@@ -42,8 +42,10 @@ which contains packet loss rate data.
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -120,10 +122,12 @@ contains TCP/UDP/ICMP connection data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -227,9 +231,11 @@ contains Distributed Computing Environment/RPC data.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -311,9 +317,11 @@ DHCP lease data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -412,9 +420,11 @@ requests and replies.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -522,10 +532,12 @@ activity.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. | keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
@@ -633,9 +645,11 @@ protocol detection failures.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -711,9 +725,11 @@ file analysis results.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
@@ -817,9 +833,11 @@ activity.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
@@ -931,9 +949,11 @@ HTTP requests and replies.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -1061,8 +1081,10 @@ intelligence data matches.
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -1162,9 +1184,11 @@ commands and responses.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
@@ -1266,9 +1290,11 @@ contains kerberos data.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -1392,9 +1418,11 @@ modbus commands and responses.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -1485,9 +1513,11 @@ MySQL data.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -1579,9 +1609,11 @@ Zeek notices.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
@@ -1694,9 +1726,11 @@ LAN Manager(NTLM) data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.path | Full path to the log file this event came from. | keyword |
@@ -1780,8 +1814,10 @@ Online Certificate Status Protocol (OCSP) data.
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | file.path | Full path to the log file this event came from. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1849,8 +1885,10 @@ portable executable data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1936,9 +1974,11 @@ RADIUS authentication attempts.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -2036,9 +2076,11 @@ data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -2142,9 +2184,11 @@ Remote Framebuffer (RFB) data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -2241,9 +2285,11 @@ data.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -2353,9 +2399,11 @@ contains SMB commands.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -2461,9 +2509,11 @@ contains SMB file data.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.accessed | Last time the file was accessed. | date |
 | file.created | File creation time. | date |
@@ -2568,9 +2618,11 @@ which contains SMB trees.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.path | Full path to the log file this event came from. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -2661,9 +2713,11 @@ SMTP transactions..
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -2773,9 +2827,11 @@ SNMP messages.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -2869,9 +2925,11 @@ SOCKS proxy requests.
 | ecs.version | ECS version this event conforms to. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -2969,9 +3027,11 @@ connection data.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -3071,9 +3131,11 @@ SSL/TLS handshake info.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -3211,8 +3273,10 @@ memory/event/packet/lag statistics.
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3304,9 +3368,11 @@ syslog messages.
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -3395,8 +3461,10 @@ contains traceroute detections.
 | error.message | Error message. | text |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -3480,9 +3548,11 @@ tunneling protocol events.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -3566,9 +3636,11 @@ unexpected network-level activity.
 | ecs.version | ECS version this event conforms to. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -3643,9 +3715,11 @@ X.509 certificate info.
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.x509.alternative_names | List of subject alternative names (SAN). | keyword |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
