@@ -293,8 +293,12 @@ An example event for `node` looks as following:
 ```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
+    "event": {
+        "dataset": "rabbitmq.node",
+        "duration": 115000,
+        "module": "rabbitmq"
+    },
     "rabbitmq": {
-        "vhost": "/",
         "node": {
             "disk": {
                 "free": {
@@ -413,21 +417,9 @@ An example event for `node` looks as following:
             "uptime": 155275
         }
     },
-    "metricset": {
-        "name": "exchange",
-        "period": 10000
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
     "service": {
         "address": "localhost:15672",
         "type": "rabbitmq"
-    },
-    "event": {
-        "dataset": "rabbitmq.exchange",
-        "module": "rabbitmq",
-        "duration": 4104737
     }
 }
 ```
