@@ -27,9 +27,9 @@ An example event for `access` looks as following:
         "version": "7.13.0"
     },
     "data_stream": {
-        "dataset": "traefik.health",
+        "dataset": "traefik.access",
         "namespace": "ep",
-        "type": "metrics"
+        "type": "logs"
     },
     "ecs": {
         "version": "1.8.0"
