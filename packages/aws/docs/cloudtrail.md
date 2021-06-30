@@ -70,8 +70,10 @@ events for the account. If user creates a trail, it delivers those events as log
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |

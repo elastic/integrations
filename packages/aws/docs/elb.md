@@ -68,8 +68,10 @@ For network load balancer, please follow [enable access log for network load bal
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, sig | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | host.architecture | Operating system architecture. | keyword |
@@ -177,7 +179,7 @@ An example event for `elb` looks as following:
         "period": 60000
     },
     "event": {
-        "dataset": "aws.elb",
+        "dataset": "aws.elb_metrics",
         "module": "aws",
         "duration": 15044430616
     },
@@ -273,6 +275,8 @@ An example event for `elb` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
