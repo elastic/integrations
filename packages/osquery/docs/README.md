@@ -154,8 +154,9 @@ An example event for `result` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
-| event.dataset | Name of the dataset. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.module | Event module | constant_keyword |
 | file.accessed | Last time the file was accessed. | date |
 | file.created | File creation time. | date |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
