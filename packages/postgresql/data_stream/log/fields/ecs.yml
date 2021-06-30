@@ -1,155 +1,30 @@
 - name: message
-  level: core
-  type: text
-  description: |-
-    For log events the message field contains the log message, optimized for viewing in a log viewer.
-    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
-    If multiple messages exist, they can be combined into one message.
-- name: event
-  title: Event
-  group: 2
-  type: group
-  fields:
-    - name: category
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.
-
-        `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory.
-
-        This field is an array. This will allow proper categorization of some events that fall in multiple categories.'
-      example: authentication
-    - name: duration
-      level: core
-      type: long
-      format: duration
-      input_format: nanoseconds
-      output_format: asMilliseconds
-      output_precision: 1
-      description: 'Duration of the event in nanoseconds.
-
-        If event.start and event.end are known this value should be the difference between the end and start time.'
-    - name: ingested
-      level: core
-      type: date
-      description: 'Timestamp when an event arrived in the central data store.
-
-        This is different from `@timestamp`, which is when the event originally occurred.  It''s also different from `event.created`, which is meant to capture the first time an agent saw the event.
-
-        In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`.'
-      example: '2016-05-23T08:05:35.101Z'
-      default_field: false
-    - name: kind
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.
-
-        `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events.
-
-        The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not.'
-      example: alert
-    - name: timezone
-      level: extended
-      type: keyword
-      description: |-
-        This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise.
-        Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00").
-      ignore_above: 1024
-- name: log
-  title: Log
-  group: 2
-  type: group
-  fields:
-    - name: level
-      level: core
-      type: keyword
-      description: |-
-        Original log level of the log event.
-        If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity).
-        Some examples are `warn`, `err`, `i`, `informational`.
-      ignore_above: 1024
-- name: user
-  title: User
-  group: 2
-  type: group
-  fields:
-    - name: name
-      level: core
-      type: keyword
-      description: Short name or login of the user.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-- name: process
-  title: Process
-  group: 2
-  description: |-
-    These fields contain information about a process.
-    These fields can help you correlate metrics information with a process id/name
-    from a log message.  The `process.pid` often stays in the metric itself and
-    is copied to the global field for correlation.
-  type: group
-  fields:
-    - name: pid
-      level: core
-      type: long
-      format: string
-      description: Process id.
-      example: 4242
-- name: related
-  title: Related
-  group: 2
-  description: |-
-    This field set is meant to facilitate pivoting around a piece of data.
-    Some pieces of information can be seen in many places in an ECS event. To facilitate
-    searching for them, store an array of all seen values to their corresponding
-    field in `related.`.
-
-    A concrete example is IP addresses, which can be under host, observer, source,
-    destination, client, server, and network.forwarded_ip. If you append all IPs
-    to `related.ip`, you can then search for a given IP trivially, no matter where
-    it appeared, by querying `related.ip:192.0.2.15`.
-  type: group
-  fields:
-    - name: user
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All the user names seen on your event.
-      default_field: false
-- name: error
-  title: Error
-  group: 2
-  description: |-
-    These fields can represent errors of any kind.
-    Use them for errors that happen while fetching events or in cases where the
-    event itself contains an error.
-  type: group
-  fields:
-    - name: code
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Error code describing the error.
-    - name: id
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier for the error.
-    - name: message
-      level: core
-      type: text
-      description: Error message.
+  external: ecs
+- name: event.category
+  external: ecs
+- name: event.duration
+  external: ecs
+- name: event.ingested
+  external: ecs
+- name: event.kind
+  external: ecs
+- name: event.timezone
+  external: ecs
+- name: log.level
+  external: ecs
+- name: user.name
+  external: ecs
+- name: process.pid
+  external: ecs
+- name: related.user
+  external: ecs
+- name: error.code
+  external: ecs
+- name: error.id
+  external: ecs
+- name: error.message
+  external: ecs
 - name: tags
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
-  ignore_above: 1024
-  type: keyword
+  external: ecs
 - name: ecs.version
-  type: keyword
-  description: ECS version this event conforms to.
+  external: ecs
