@@ -50,8 +50,10 @@
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | Event kind (e.g. event, alert, metric, state, pipeline_error, signal) | keyword |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |

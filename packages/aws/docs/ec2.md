@@ -31,6 +31,8 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -142,7 +144,7 @@ An example event for `ec2` looks as following:
     "event": {
         "module": "aws",
         "duration": 23217499283,
-        "dataset": "aws.ec2"
+        "dataset": "aws.ec2_metrics"
     },
     "metricset": {
         "period": 300000,
@@ -236,6 +238,8 @@ An example event for `ec2` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
 | error.message | Error message. | text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
