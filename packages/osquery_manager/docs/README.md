@@ -35,8 +35,9 @@ To run a live query:
 3. Select the agents or groups you want to query. You can select one or more. Note that agents with a green dot indicate that the agent is online, based on a check that runs every 5 minutes.
 4. (optional) Select a saved query to run.
 5. Click **Submit**.
-6. Monitor the status and results of your request under the **Check results** section. Depending on the number of agents queried, this request may take some time. The status area is updated as query results are returned.
-7. To view the query results and data, click **Results**.
+6. Review the results. Depending on the number of agents queried, this request may take some time. Status info is updated as available.
+7. (optional) Click the **Status** tab to view more info about the request, for example, if there are any failures.
+
 
 > Note: If an agent is offline, the request Status remains in **pending** as we retry the request.  By default, a query request times out after 5 minutes. Note that this time out applies to the time it takes to deliver the action request to an agent to run a query. If the action completes after the timeout period, the results are still returned.
 
@@ -88,7 +89,7 @@ When you run a live or scheduled query, note the following about osquery respons
 - The `host.*` and `agent.*` fields are mapped to ECS.
 - The `action_data.query` has the query that was sent.
 - All query results are [snapshot logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#snapshot-logs) that represent a point in time set of results, with no differentials. [Differential logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#differential-logs) are not supported.
-Osquery data is stored in the `logs-osquery_manager.result-default` datastream, and the result row data is under the `osquery` property in the document.
+- Osquery data is stored in the `logs-osquery_manager.result-default` datastream, and the result row data is under the `osquery` property in the document.
 
 
 This is an example of a successful osquery result.
