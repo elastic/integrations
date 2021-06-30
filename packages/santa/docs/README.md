@@ -110,8 +110,9 @@ An example event for `log` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. | keyword |
-| event.dataset | Name of the dataset. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.module | Event module | constant_keyword |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
