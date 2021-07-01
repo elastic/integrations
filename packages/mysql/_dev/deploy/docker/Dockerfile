@@ -8,4 +8,7 @@ HEALTHCHECK --interval=1s --retries=90 CMD mysql -u root -p$MYSQL_ROOT_PASSWORD 
 COPY test.cnf /etc/mysql/conf.d/test.cnf
 COPY entrypoint.sh /test-entrypoint.sh
 
+# Scripts executed by the base image entry point, after starting the server.
+COPY docker-entrypoint-initdb.d /docker-entrypoint-initdb.d
+
 ENTRYPOINT ["bash", "/test-entrypoint.sh"]
