@@ -1,3 +1,3 @@
 #!/bin/bash
 
-chmod a+r -R /var/log/mysql
+chmod a+r /var/log/mysql/*.log
