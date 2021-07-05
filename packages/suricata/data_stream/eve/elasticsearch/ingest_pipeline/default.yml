@@ -564,6 +564,11 @@ processors:
       value: '{{destination.ip}}'
       allow_duplicates: false
   - remove:
+      field: suricata.eve.alert.metadata
+      if: "ctx.suricata?.eve?.alert?.metadata == null || ctx.suricata?.eve?.alert?.metadata.isEmpty()"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
       field:
         - suricata.eve.app_proto
         - suricata.eve.flow.end
