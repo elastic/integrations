@@ -42,6 +42,8 @@ The Windows `service` dataset provides service details.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -96,6 +98,8 @@ The Windows `perfmon` dataset provides performance counter values.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -139,12 +143,12 @@ An example event for `powershell` looks as following:
 {
     "@timestamp": "2020-05-13T13:21:43.183Z",
     "agent": {
-        "ephemeral_id": "6d6bb3f5-f905-4ee5-8bee-c719616f8b6b",
+        "ephemeral_id": "0db86869-9076-44ed-acbc-32415bdaa793",
         "hostname": "docker-fleet-agent",
-        "id": "6fe85b08-7c10-4f55-ba4e-eeb75fdd6fdf",
+        "id": "8a695e28-aed6-4bbf-90be-5a9b7f99eab9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.13.0"
+        "version": "7.14.0"
     },
     "data_stream": {
         "dataset": "windows.powershell",
@@ -152,19 +156,20 @@ An example event for `powershell` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "6bdfe1ae-64c3-4177-8b0c-2380a6e01322",
+        "id": "24ec544f-3818-44a4-ac26-223be6af154a",
         "snapshot": true,
-        "version": "7.13.0"
+        "version": "7.14.0"
     },
     "event": {
+        "agent_id_status": "agent_id_mismatch",
         "category": "process",
         "code": "600",
-        "created": "2021-06-01T10:23:48.533Z",
+        "created": "2021-06-14T13:43:24.815Z",
         "dataset": "windows.powershell",
-        "ingested": "2021-06-01T10:23:49.554043100Z",
+        "ingested": "2021-06-14T13:43:25.859030600Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:21:43.183180900Z'/\u003e\u003cEventRecordID\u003e1089\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=35\n\n\tHostName=Windows PowerShell ISE Host\n\tHostVersion=5.1.17763.1007\n\tHostId=86edc16f-6943-469e-8bd8-ef1857080206\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1\n\tEngineVersion=5.1.17763.1007\n\tRunspaceId=9d21da0b-e402-40e1-92ff-98c5ab1137a9\n\tPipelineId=15\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:25:04.656426900Z'/\u003e\u003cEventRecordID\u003e1266\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eRegistry\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Registry\n\tNewProviderState=Started\n\n\tSequenceNumber=1\n\n\tHostName=ConsoleHost\n\tHostVersion=5.1.17763.1007\n\tHostId=44b8d66c-f5a2-4abb-ac7d-6db73990a6d3\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -noexit -command 'C:\\Gopath\\src\\github.com\\elastic\\beats'\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-06-04T07:25:04.857430200Z'/\u003e\u003cEventRecordID\u003e18640\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=8\n\n\tHostName=ConsoleHost\n\tHostVersion=2.0\n\tHostId=99a16837-7392-463d-afe5-5f3ed24bd358\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "PowerShell",
@@ -205,7 +210,8 @@ An example event for `powershell` looks as following:
         "title": "Windows PowerShell ISE Host"
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "preserve_original_event"
     ],
     "winlog": {
         "channel": "Windows PowerShell",
@@ -252,9 +258,10 @@ An example event for `powershell` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
@@ -307,7 +314,7 @@ An example event for `powershell` looks as following:
 | powershell.total | Total number of messages in the sequence. | long |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
@@ -469,12 +476,12 @@ An example event for `powershell_operational` looks as following:
 {
     "@timestamp": "2020-05-13T09:04:04.755Z",
     "agent": {
-        "ephemeral_id": "6d6bb3f5-f905-4ee5-8bee-c719616f8b6b",
+        "ephemeral_id": "0db86869-9076-44ed-acbc-32415bdaa793",
         "hostname": "docker-fleet-agent",
-        "id": "6fe85b08-7c10-4f55-ba4e-eeb75fdd6fdf",
+        "id": "8a695e28-aed6-4bbf-90be-5a9b7f99eab9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.13.0"
+        "version": "7.14.0"
     },
     "data_stream": {
         "dataset": "windows.powershell_operational",
@@ -482,19 +489,20 @@ An example event for `powershell_operational` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "6bdfe1ae-64c3-4177-8b0c-2380a6e01322",
+        "id": "24ec544f-3818-44a4-ac26-223be6af154a",
         "snapshot": true,
-        "version": "7.13.0"
+        "version": "7.14.0"
     },
     "event": {
+        "agent_id_status": "agent_id_mismatch",
         "category": "process",
         "code": "4105",
-        "created": "2021-06-01T10:24:43.254Z",
+        "created": "2021-06-14T13:44:07.370Z",
         "dataset": "windows.powershell_operational",
-        "ingested": "2021-06-01T10:24:44.277129100Z",
+        "ingested": "2021-06-14T13:44:08.399097100Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/\u003e\u003cEventID\u003e4105\u003c/EventID\u003e\u003cVersion\u003e1\u003c/Version\u003e\u003cLevel\u003e5\u003c/Level\u003e\u003cTask\u003e102\u003c/Task\u003e\u003cOpcode\u003e15\u003c/Opcode\u003e\u003cKeywords\u003e0x0\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/\u003e\u003cEventRecordID\u003e790\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/\u003e\u003cExecution ProcessID='4204' ThreadID='1476'/\u003e\u003cChannel\u003eMicrosoft-Windows-PowerShell/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='ScriptBlockId'\u003ef4a378ab-b74f-41a7-a5ef-6dd55562fdb9\u003c/Data\u003e\u003cData Name='RunspaceId'\u003e9c031e5c-8d5a-4b91-a12e-b3624970b623\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-PowerShell",
@@ -516,7 +524,8 @@ An example event for `powershell_operational` looks as following:
         "runspace_id": "9c031e5c-8d5a-4b91-a12e-b3624970b623"
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "preserve_original_event"
     ],
     "user": {
         "id": "S-1-5-21-1350058589-2282154016-2764056528-1000"
@@ -575,9 +584,10 @@ An example event for `powershell_operational` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
@@ -630,7 +640,7 @@ An example event for `powershell_operational` looks as following:
 | powershell.total | Total number of messages in the sequence. | long |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
@@ -792,12 +802,12 @@ An example event for `sysmon_operational` looks as following:
 {
     "@timestamp": "2019-07-18T03:34:01.261Z",
     "agent": {
-        "ephemeral_id": "6d6bb3f5-f905-4ee5-8bee-c719616f8b6b",
+        "ephemeral_id": "0db86869-9076-44ed-acbc-32415bdaa793",
         "hostname": "docker-fleet-agent",
-        "id": "6fe85b08-7c10-4f55-ba4e-eeb75fdd6fdf",
+        "id": "8a695e28-aed6-4bbf-90be-5a9b7f99eab9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.13.0"
+        "version": "7.14.0"
     },
     "data_stream": {
         "dataset": "windows.sysmon_operational",
@@ -830,21 +840,22 @@ An example event for `sysmon_operational` looks as following:
         ]
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "6bdfe1ae-64c3-4177-8b0c-2380a6e01322",
+        "id": "24ec544f-3818-44a4-ac26-223be6af154a",
         "snapshot": true,
-        "version": "7.13.0"
+        "version": "7.14.0"
     },
     "event": {
+        "agent_id_status": "agent_id_mismatch",
         "category": [
             "network"
         ],
         "code": "22",
         "created": "2019-07-18T03:34:02.025Z",
         "dataset": "windows.sysmon_operational",
-        "ingested": "2021-06-01T10:25:35.382586400Z",
+        "ingested": "2021-06-14T13:44:51.825787300Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/\u003e\u003cEventID\u003e22\u003c/EventID\u003e\u003cVersion\u003e5\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e22\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/\u003e\u003cEventRecordID\u003e67\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='2828' ThreadID='1684'/\u003e\u003cChannel\u003eMicrosoft-Windows-Sysmon/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant-2016\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='RuleName'\u003e\u003c/Data\u003e\u003cData Name='UtcTime'\u003e2019-07-18 03:34:01.261\u003c/Data\u003e\u003cData Name='ProcessGuid'\u003e{fa4a0de6-e8a9-5d2f-0000-001053699900}\u003c/Data\u003e\u003cData Name='ProcessId'\u003e2736\u003c/Data\u003e\u003cData Name='QueryName'\u003ewww.msn.com\u003c/Data\u003e\u003cData Name='QueryStatus'\u003e0\u003c/Data\u003e\u003cData Name='QueryResults'\u003etype:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;\u003c/Data\u003e\u003cData Name='Image'\u003eC:\\Program Files (x86)\\Internet Explorer\\iexplore.exe\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-Sysmon",
@@ -888,7 +899,8 @@ An example event for `sysmon_operational` looks as following:
         }
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "preserve_original_event"
     ],
     "user": {
         "id": "S-1-5-18"
@@ -967,9 +979,10 @@ An example event for `sysmon_operational` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
@@ -1004,7 +1017,7 @@ An example event for `sysmon_operational` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -1023,7 +1036,7 @@ An example event for `sysmon_operational` looks as following:
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
@@ -1033,7 +1046,7 @@ An example event for `sysmon_operational` looks as following:
 | process.name | Process name. | keyword |
 | process.parent.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.parent.args_count | Length of the process.args array. | long |
-| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.parent.entity_id | Unique identifier for the process. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
 | process.parent.name | Process name. | keyword |
@@ -1048,7 +1061,7 @@ An example event for `sysmon_operational` looks as following:
 | process.pid | Process id. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.working_directory | The working directory of the process. | keyword |
-| registry.data.strings | Content when writing string types. | keyword |
+| registry.data.strings | Content when writing string types. | wildcard |
 | registry.data.type | Standard registry type for encoding contents | keyword |
 | registry.hive | Abbreviated name for the hive. | keyword |
 | registry.key | Hive-relative path of keys. | keyword |

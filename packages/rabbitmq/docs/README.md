@@ -43,6 +43,8 @@ Application logs collects standard RabbitMQ logs.
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -144,6 +146,8 @@ An example event for `connection` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -243,6 +247,8 @@ An example event for `exchange` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -287,8 +293,12 @@ An example event for `node` looks as following:
 ```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
+    "event": {
+        "dataset": "rabbitmq.node",
+        "duration": 115000,
+        "module": "rabbitmq"
+    },
     "rabbitmq": {
-        "vhost": "/",
         "node": {
             "disk": {
                 "free": {
@@ -407,21 +417,9 @@ An example event for `node` looks as following:
             "uptime": 155275
         }
     },
-    "metricset": {
-        "name": "exchange",
-        "period": 10000
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
     "service": {
         "address": "localhost:15672",
         "type": "rabbitmq"
-    },
-    "event": {
-        "dataset": "rabbitmq.exchange",
-        "module": "rabbitmq",
-        "duration": 4104737
     }
 }
 ```
@@ -448,6 +446,8 @@ An example event for `node` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -599,6 +599,8 @@ An example event for `queue` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

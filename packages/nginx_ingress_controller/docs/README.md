@@ -113,6 +113,8 @@ An example event for `access` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -160,6 +162,7 @@ An example event for `access` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
+| tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -280,6 +283,8 @@ An example event for `error` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -305,3 +310,4 @@ An example event for `error` looks as following:
 | nginx_ingress_controller.error.source.file | Source file | keyword |
 | nginx_ingress_controller.error.source.line_number | Source line number | long |
 | nginx_ingress_controller.error.thread_id | Thread ID | long |
+| tags | List of keywords used to tag each event. | keyword |

@@ -1,7 +1,13 @@
 config_version: "2"
 interval: {{interval}}
+{{#unless token}}
+{{#if username}}
+{{#if password}}
 auth.basic.user: {{username}}
 auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+{{/unless}}
 cursor:
   index_earliest:
     value: '[[.last_event.result.max_indextime]]'
@@ -28,11 +34,27 @@ request.transforms:
   - set:
       target: header.Content-Type
       value: application/x-www-form-urlencoded
+{{#unless username}}
+{{#unless password}}
+{{#if token}}
+  - set:
+      target: header.Authorization
+      value: {{token}}
+{{/if}}
+{{/unless}}
+{{/unless}}
 response.decode_as: application/x-ndjson
+{{#if tags.length}}
 tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
@@ -74,3 +96,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       map_ecs_fields: true
+{{#if processors.length}}
+  {{processors}}
+{{/if}}

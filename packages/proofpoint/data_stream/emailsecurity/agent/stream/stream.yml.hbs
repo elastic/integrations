@@ -4,8 +4,11 @@ paths:
 {{/each}}
 exclude_files: [".gz$"]
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
- - {{tag}}
+  - {{tag}}
 {{/each}}
 fields_under_root: true
 fields:
@@ -18,6 +21,9 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
 - script:
     lang: javascript
     params:
@@ -5576,7 +5582,3 @@ processors:
     target_subdomain_field: url.subdomain
     target_etld_field: url.top_level_domain
 - add_locale: ~
-- add_fields:
-    target: ''
-    fields:
-        ecs.version: 1.9.0

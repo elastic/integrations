@@ -59,9 +59,11 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.code | Identification code for this event. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.severity | Numeric severity of the event. | long |
@@ -121,6 +123,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
+| o365.audit.ErrorNumber |  | keyword |
 | o365.audit.EventData |  | keyword |
 | o365.audit.EventSource |  | keyword |
 | o365.audit.ExceptionInfo.* |  | object |
@@ -218,7 +221,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | source.user.email | User email address. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.technique.id | Threat technique id. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |

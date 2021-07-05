@@ -1,0 +1,248 @@
+rules:
+  - path: /token
+    methods: [POST]
+    query_params:
+      grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+      assertion: "{assertion:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"access_token": "1/fFAGRNJru1FTz70BzhT3Zg","expires_in": 3920,"token_type": "Bearer",
+          "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly","refresh_token": "1//xEoDL4iW3cxlI7yDbSRFYNG01kVKM2C-259HOF2aQbI"}
+  - path: /admin/reports/v1/activity/users/all/applications/admin
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      pageToken: page-2
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},
+          "events":[{"name":"CREATE_BUILDING","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},
+          {"name":"NEW_VALUE","value":"new"}],"type":"CALENDAR_SETTINGS"},{"name":"DELETE_BUILDING",
+          "parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"OLD_VALUE","value":"old"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"UPDATE_BUILDING","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"FIELD_NAME","value":"field"},
+          {"name":"NEW_VALUE","value":"new"},{"name":"OLD_VALUE","value":"old"},{"name":"RESOURCE_IDENTIFIER","value":"1234"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"CREATE_CALENDAR_RESOURCE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"NEW_VALUE","value":"new"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"DELETE_CALENDAR_RESOURCE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"OLD_VALUE","value":"old"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"CREATE_CALENDAR_RESOURCE_FEATURE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"NEW_VALUE","value":"new"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"DELETE_CALENDAR_RESOURCE_FEATURE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"OLD_VALUE","value":"old"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"UPDATE_CALENDAR_RESOURCE_FEATURE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"FIELD_NAME","value":"field"},
+          {"name":"NEW_VALUE","value":"new"},{"name":"OLD_VALUE","value":"old"},{"name":"RESOURCE_IDENTIFIER","value":"1234"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"RENAME_CALENDAR_RESOURCE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"NEW_VALUE","value":"new"},{"name":"OLD_VALUE","value":"old"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"UPDATE_CALENDAR_RESOURCE","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},{"name":"FIELD_NAME","value":"field"},{"name":"NEW_VALUE","value":"new"},{"name":"OLD_VALUE","value":"old"},
+          {"name":"RESOURCE_IDENTIFIER","value":"1234"}],"type":"CALENDAR_SETTINGS"},{"name":"CHANGE_CALENDAR_SETTING","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},
+          {"name":"GROUP_EMAIL","value":"group@example.com"},{"name":"NEW_VALUE","value":"new"},{"name":"OLD_VALUE","value":"old"},{"name":"ORG_UNIT_NAME","value":"org"},{"name":"SETTING_NAME","value":"setting"}],"type":"CALENDAR_SETTINGS"},
+          {"name":"CANCEL_CALENDAR_EVENTS","parameters":[{"name":"USER_EMAIL","value":"user@example.com"}],"type":"CALENDAR_SETTINGS"},{"name":"RELEASE_CALENDAR_RESOURCES",
+          "parameters":[{"name":"USER_EMAIL","value":"user@example.com"}],"type":"CALENDAR_SETTINGS"}],
+          "id":{"applicationName":"admin","customerId":"1","time":"{{.request.vars.startTime}}","uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/admin
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","nextPageToken": "page-2","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"CHANGE_APPLICATION_SETTING",
+          "parameters":[{"name":"APPLICATION_EDITION","value":"basic"},{"name":"APPLICATION_NAME","value":"drive"},
+          {"name":"GROUP_EMAIL","value":"group@example.com"},{"name":"NEW_VALUE","value":"new"},{"name":"OLD_VALUE","value":"old"},
+          {"name":"ORG_UNIT_NAME","value":"org"},{"name":"SETTING_NAME","value":"setting"}],"type":"APPLICATION_SETTINGS"},
+          {"name":"CREATE_APPLICATION_SETTING","parameters":[{"name":"APPLICATION_EDITION","value":"basic"},{"name":"APPLICATION_NAME","value":"drive"},
+          {"name":"GROUP_EMAIL","value":"group@example.com"},{"name":"NEW_VALUE","value":"new"},{"name":"ORG_UNIT_NAME","value":"org"},
+          {"name":"SETTING_NAME","value":"setting"}],"type":"APPLICATION_SETTINGS"},{"name":"DELETE_APPLICATION_SETTING",
+          "parameters":[{"name":"APPLICATION_EDITION","value":"basic"},{"name":"APPLICATION_NAME","value":"drive"},{"name":"GROUP_EMAIL","value":"group@example.com"},
+          {"name":"OLD_VALUE","value":"old"},{"name":"ORG_UNIT_NAME","value":"org"},{"name":"SETTING_NAME","value":"setting"}],"type":"APPLICATION_SETTINGS"},
+          {"name":"REORDER_GROUP_BASED_POLICIES_EVENT","parameters":[{"name":"APPLICATION_NAME","value":"drive"},{"multiValue":["a","b"],"name":"GROUP_PRIORITIES"},
+          {"name":"SETTING_NAME","value":"setting"}],"type":"APPLICATION_SETTINGS"},{"name":"GPLUS_PREMIUM_FEATURES","parameters":[{"name":"DOMAIN_NAME","value":"example.com"},
+          {"name":"NEW_VALUE","value":"new"}],"type":"APPLICATION_SETTINGS"},{"name":"CREATE_MANAGED_CONFIGURATION","parameters":[{"name":"MANAGED_CONFIGURATION_NAME","value":"a"},
+          {"name":"MOBILE_APP_PACKAGE_ID","value":"1234"}],"type":"APPLICATION_SETTINGS"},{"name":"DELETE_MANAGED_CONFIGURATION","parameters":[{"name":"MANAGED_CONFIGURATION_NAME","value":"a"},
+          {"name":"MOBILE_APP_PACKAGE_ID","value":"1234"}],"type":"APPLICATION_SETTINGS"},{"name":"UPDATE_MANAGED_CONFIGURATION","parameters":[{"name":"MANAGED_CONFIGURATION_NAME","value":"a"},
+          {"name":"MOBILE_APP_PACKAGE_ID","value":"1234"}],"type":"APPLICATION_SETTINGS"},{"name":"FLASHLIGHT_EDU_NON_FEATURED_SERVICES_SELECTED",
+          "parameters":[{"name":"FLASHLIGHT_EDU_NON_FEATURED_SERVICES_SELECTION","value":"FLASHLIGHT_EDU_SELECTION_MANUAL"}],"type":"APPLICATION_SETTINGS"}],
+          "id":{"applicationName":"admin","customerId":"1","time":"{{.request.vars.startTime}}","uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity",
+          "ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/drive
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"add_to_folder","parameters":[{"boolValue":false,"name":"billable"},{"name":"destination_folder_id","value":"1234"},
+          {"name":"destination_folder_title","value":"folder title"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},
+          {"name":"approval_canceled","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},
+          {"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},
+          {"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"approval_comment_added","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},
+          {"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},
+          {"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"approval_requested","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},
+          {"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},
+          {"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"approval_reviewer_responded","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},
+          {"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},
+          {"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"create","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},
+          {"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},
+          {"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"delete","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},
+          {"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},
+          {"name":"download","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},
+          {"name":"edit","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"add_lock","parameters":[{"boolValue":false,"name":"billable"},
+          {"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},
+          {"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"move","parameters":[{"boolValue":false,"name":"billable"},{"name":"destination_folder_id","value":"1234"},
+          {"name":"destination_folder_title","value":"folder title"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},
+          {"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},{"name":"source_folder_id","value":"1234"},{"name":"source_folder_title","value":"a folder title"}],"type":"access"},
+          {"name":"preview","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},
+          {"name":"print","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},
+          {"name":"remove_from_folder","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},
+          {"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},
+          {"name":"source_folder_id","value":"1234"},{"name":"source_folder_title","value":"a folder title"}],"type":"access"},{"name":"rename","parameters":[{"boolValue":true,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"bar.gif"},
+          {"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},
+          {"name":"visibility","value":"people_with_link"},{"name":"old_value","new_value":"bar.gif","value":"foo.gif"}],"type":"access"},{"name":"untrash","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},
+          {"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},
+          {"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"sheets_import_range","parameters":[{"name":"sheets_import_range_recipient_doc","value":"1234"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},
+          {"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},
+          {"name":"trash","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},
+          {"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"remove_lock","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},
+          {"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},
+          {"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"upload","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"}],"type":"access"},{"name":"view","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},
+          {"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},
+          {"name":"shared_drive_id","value":"1234"}],"type":"access"},{"name":"change_acl_editors","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"new_value","value":"owner"},
+          {"name":"old_value","value":"writers"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},
+          {"name":"old_visibility","value":"people_within_domain_with_link"},{"name":"visibility_change","value":"external"}],"type":"acl_change"},{"name":"change_document_access_scope","parameters":[{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},
+          {"name":"doc_type","value":"document"},{"name":"new_value","value":"owner"},{"name":"old_value","value":"writers"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},
+          {"name":"visibility","value":"people_with_link"},{"name":"old_visibility","value":"people_within_domain_with_link"},{"name":"visibility_change","value":"external"},{"name":"target_domain","value":"all"}],"type":"acl_change"},{"name":"change_document_visibility","parameters":[{"boolValue":false,"name":"billable"},
+          {"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"new_value","value":"owner"},{"name":"old_value","value":"writers"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},
+          {"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},{"name":"old_visibility","value":"people_within_domain_with_link"},{"name":"visibility_change","value":"external"},{"name":"target_domain","value":"all"}],"type":"acl_change"},{"name":"shared_drive_membership_change","parameters":[{"name":"added_role","value":"editor"},
+          {"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},
+          {"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},{"name":"removed_role","value":"content_manager"},{"name":"membership_change_type","value":"add_to_shared_drive"},{"name":"target","value":"user@example.com"}],"type":"acl_change"},
+          {"name":"shared_drive_settings_change","parameters":[{"name":"new_settings_state","value":"restricted"},{"boolValue":false,"name":"billable"},{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},
+          {"name":"owner","value":"owner@example.com"},{"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},{"name":"old_settings_state","value":"unrestricted"},{"name":"shared_drive_settings_change_type","value":"direct_acl"},
+          {"name":"target","value":"user@example.com"}],"type":"acl_change"},{"name":"sheets_import_range_access_change","parameters":[{"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},
+          {"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"visibility","value":"people_with_link"},{"name":"sheets_import_range_recipient_doc","value":"1234"}],"type":"acl_change"},{"name":"change_user_access","parameters":[{"boolValue":false,"name":"billable"},
+          {"name":"doc_id","value":"1234"},{"name":"doc_title","value":"document title"},{"name":"doc_type","value":"document"},{"name":"new_value","value":"can_comment"},{"name":"old_value","value":"can_view"},{"name":"old_visibility","value":"people_with_link"},{"name":"originating_app_id","value":"1234"},{"name":"owner","value":"owner@example.com"},
+          {"boolValue":false,"name":"owner_is_shared_drive"},{"boolValue":true,"name":"primary_event"},{"name":"target_user","value":"user@example.com"},{"name":"visibility","value":"private"},{"name":"visibility_change","value":"external"}],"type":"acl_change"}],"id":{"applicationName":"drive","customerId":"1",
+          "time":"{{.request.vars.startTime}}","uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/groups
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"change_acl_permission","parameters":[{"name":"acl_permission","value":"can_add_members"},{"name":"group_email","value":"group@example.com"},{"multiValue":["managers","members"],"name":"new_value_repeated"},
+          {"multiValue":["managers"],"name":"old_value_repeated"}],"type":"acl_change"},{"name":"accept_invitation","parameters":[{"name":"group_email","value":"group@example.com"}],"type":"moderator_action"},{"name":"approve_join_request","parameters":[{"name":"group_email","value":"group@example.com"},
+          {"name":"user_email","value":"user@example.com"}],"type":"moderator_action"},{"name":"join","parameters":[{"name":"group_email","value":"group@example.com"}],"type":"moderator_action"},{"name":"request_to_join","parameters":[{"name":"group_email","value":"group@example.com"}],"type":"moderator_action"},
+          {"name":"change_basic_setting","parameters":[{"name":"basic_setting","value":"allow_external_members"},{"name":"group_email","value":"group@example.com"},{"name":"new_value","value":"true"},{"name":"old_value","value":"false"}],"type":"moderator_action"},
+          {"name":"create_group","parameters":[{"name":"group_email","value":"group@example.com"}],"type":"moderator_action"},{"name":"delete_group","parameters":[{"name":"group_email","value":"group@example.com"}],"type":"moderator_action"},
+          {"name":"change_identity_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"identity_setting","value":"required_forms_of_identity"},{"name":"new_value","value":"display_name_only"},{"name":"old_value","value":"display_name_or_google_profile"}],"type":"moderator_action"},
+          {"name":"add_info_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"info_setting","value":"custom_footer"},{"name":"value","value":"footer"}],"type":"moderator_action"},{"name":"change_info_setting","parameters":[{"name":"group_email","value":"group@example.com"},
+          {"name":"info_setting","value":"custom_footer"},{"name":"new_value","value":"footer"},{"name":"old_value","value":"old footer"}],"type":"moderator_action"},{"name":"remove_info_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"info_setting","value":"custom_footer"},
+          {"name":"value","value":"footer"}],"type":"moderator_action"},{"name":"change_new_members_restrictions_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"new_members_restrictions_setting","value":"new_members_can_post"},{"name":"new_value","value":"inherit"},
+          {"name":"old_value","value":"overriden_to_false"}],"type":"moderator_action"},{"name":"change_post_replies_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"post_replies_setting","value":"where_should_replies_be_sent"},{"name":"new_value","value":"reply_to_custom_address"},
+          {"name":"old_value","value":"reply_to_author_only"}],"type":"moderator_action"},{"name":"change_spam_moderation_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"spam_moderation_setting","value":"how_to_handle_suspected_spam_messages"},{"name":"new_value","value":"moderate_and_do_not_send_notifications"},
+          {"name":"old_value","value":"moderate_and_send_notifications"}],"type":"moderator_action"},{"name":"change_topic_setting","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"topic_setting","value":"allowed_topic_types"},{"name":"new_value","value":"discussions_questions"},
+          {"name":"old_value","value":"discussions"}],"type":"moderator_action"},{"name":"moderate_message","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"message_moderation_action","value":"approved"},{"name":"status","value":"succeeded"},{"name":"message_id","value":"message id"}],"type":"moderator_action"},
+          {"name":"always_post_from_user","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"user_email","value":"user@example.com"},{"name":"status","value":"succeeded"}],"type":"moderator_action"},{"name":"add_user","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"user_email","value":"user@example.com"},
+          {"name":"member_role","value":"manager"}],"type":"moderator_action"},{"name":"ban_user_with_moderation","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"user_email","value":"user@example.com"},{"name":"member_role","value":"manager"}],"type":"moderator_action"},{"name":"revoke_invitation","parameters":[{"name":"group_email","value":"group@example.com"},
+          {"name":"user_email","value":"user@example.com"}],"type":"moderator_action"},{"name":"invite_user","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"user_email","value":"user@example.com"}],"type":"moderator_action"},{"name":"reject_join_request","parameters":[{"name":"group_email","value":"group@example.com"},
+          {"name":"user_email","value":"user@example.com"}],"type":"moderator_action"},{"name":"reinvite_user","parameters":[{"name":"group_email","value":"group@example.com"},{"name":"user_email","value":"user@example.com"}],"type":"moderator_action"},{"name":"remove_user","parameters":[{"name":"group_email","value":"group@example.com"},
+          {"name":"user_email","value":"user@example.com"}],"type":"moderator_action"}],"id":{"applicationName":"groups","customerId":"1","time":"{{.request.vars.startTime}}","uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/login
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"account_disabled_password_leak","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"}],"type":"account_warning"},{"name":"suspicious_login","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"},
+          {"intValue":1593695305123456,"name":"login_timestamp"}],"type":"account_warning"},{"name":"suspicious_login_less_secure_app","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"},{"intValue":1593695305123456,"name":"login_timestamp"}],"type":"account_warning"},{"name":"suspicious_programmatic_login","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"},
+          {"intValue":1593695305123456,"name":"login_timestamp"}],"type":"account_warning"},{"name":"account_disabled_generic","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"}],"type":"account_warning"},{"name":"account_disabled_spamming_through_relay","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"}],"type":"account_warning"},
+          {"name":"account_disabled_spamming","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"}],"type":"account_warning"},{"name":"account_disabled_hijacked","parameters":[{"name":"affected_email_address","value":"foo@elastic.co"},{"intValue":1593695305123456,"name":"login_timestamp"}],"type":"account_warning"},
+          {"name":"gov_attack_warning","type":"account_warning"},{"name":"login_failure","parameters":[{"name":"login_challenge_method","value":"backup_code"},{"name":"login_failure_type","value":"login_failure_access_code_disallowed"},{"name":"login_type","value":"exchange"}],"type":"login"},{"name":"login_challenge","parameters":[{"name":"login_challenge_method","value":"backup_code"},
+          {"name":"login_challenge_status","value":"Challenge Passed."},{"name":"login_type","value":"exchange"}],"type":"login"},{"name":"login_verification","parameters":[{"boolValue":false,"name":"is_second_factor"},{"name":"login_challenge_method","value":"backup_code"},{"name":"login_challenge_status","value":"Challenge Passed."},{"name":"login_type","value":"exchange"}],"type":"login"},
+          {"name":"logout","parameters":[{"name":"login_type","value":"exchange"}],"type":"login"},{"name":"login_success","parameters":[{"name":"login_challenge_method","value":"backup_code"},{"boolValue":false,"name":"is_suspicious"},{"name":"login_type","value":"exchange"}],"type":"login"}],"id":{"applicationName":"login","customerId":"1","time":"{{.request.vars.startTime}}","uniqueQualifier":1},
+          "ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/saml
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"login_failure","parameters":[{"name":"application_name","value":"app"},{"name":"failure_type","value":"failure_app_not_configured_for_user"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_second_level_status_code","value":"SUCCESS_URI"},
+          {"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"},{"name":"login_success","parameters":[{"name":"application_name","value":"app"},{"name":"initiated_by","value":"idp"},{"name":"orgunit_path","value":"ounit"},{"name":"saml_status_code","value":"SUCCESS_URI"}],"type":"login"}],"id":{"applicationName":"saml","customerId":"1","time":"{{.request.vars.startTime}}",
+          "uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/user_accounts
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"2sv_disable","type":"2sv_change"},{"name":"2sv_enroll","type":"2sv_change"},{"name":"password_edit","type":"password_change"},{"name":"recovery_email_edit","type":"recovery_info_change"},{"name":"recovery_phone_edit","type":"recovery_info_change"},{"name":"recovery_secret_qa_edit","type":"recovery_info_change"},
+          {"name":"titanium_enroll","type":"titanium_change"},{"name":"titanium_unenroll","type":"titanium_change"}],"id":{"applicationName":"user_accounts","customerId":"1","time":"{{.request.vars.startTime}}","uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
