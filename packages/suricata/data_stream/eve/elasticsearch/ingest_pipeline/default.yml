@@ -375,24 +375,36 @@ processors:
       field: suricata.eve.alert.metadata.created_at
       target_field: _tmp_.created_at
       ignore_missing: true
+  - join:
+      field: _tmp_.created_at
+      description: Converts date field to string
+      separator: ","
+      if: ctx._tmp_?.created_at != null
   - date:
       field: _tmp_.created_at
       target_field: suricata.eve.alert.created_at
       formats:
         - yyyy-MM-dd
-      ignore_failure: true
+        - yyyy_MM_dd
       if: ctx._tmp_?.created_at != null
+      ignore_failure: true
   - rename:
       field: suricata.eve.alert.metadata.updated_at
       target_field: _tmp_.updated_at
       ignore_missing: true
+  - join:
+      field: _tmp_.updated_at
+      description: Converts date field to string
+      separator: ","
+      if: ctx._tmp_?.updated_at != null
   - date:
       field: _tmp_.updated_at
       target_field: suricata.eve.alert.updated_at
       formats:
         - yyyy-MM-dd
-      ignore_failure: true
+        - yyyy_MM_dd
       if: ctx._tmp_?.updated_at != null
+      ignore_failure: true
   - rename:
       field: suricata.eve.alert.metadata.filename
       target_field: file.name
