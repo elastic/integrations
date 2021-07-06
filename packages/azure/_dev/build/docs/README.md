@@ -1,7 +1,7 @@
-# Azure Integration
+# Azure Logs Integration
 
-The azure integration retrieves different types of log data from Azure.
-There are several requirements before using the module since the logs will actually be read from azure event hubs.
+The azure logs integration retrieves different types of log data from Azure.
+There are several requirements before using the integration since the logs will actually be read from azure event hubs.
 
    - the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
    - to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export

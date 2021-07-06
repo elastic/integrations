@@ -125,9 +125,6 @@ An example event for `platformlogs` looks as following:
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | destination.address | Destination network address. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. | long |
 | destination.as.organization.name | Organization name. | keyword |
@@ -146,9 +143,11 @@ An example event for `platformlogs` looks as following:
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
