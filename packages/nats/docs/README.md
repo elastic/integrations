@@ -121,7 +121,9 @@ An example event for `log` looks as following:
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
@@ -262,6 +264,8 @@ An example event for `stats` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
 | nats.stats.cores | The number of logical cores the NATS process runs on | integer |
@@ -370,6 +374,8 @@ An example event for `connections` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.connections.total | The number of currently active clients | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
@@ -463,6 +469,8 @@ An example event for `routes` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.routes.total | The number of registered routes | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
@@ -563,6 +571,8 @@ An example event for `subscriptions` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
 | nats.subscriptions.cache.fanout.avg | The average fanout served by cache | double |
@@ -674,6 +684,8 @@ An example event for `connection` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.connection.idle_time | The period the connection is idle (sec) | long |
 | nats.connection.in.bytes | The amount of incoming bytes | long |
 | nats.connection.in.messages | The amount of incoming messages | long |
@@ -786,6 +798,8 @@ An example event for `route` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.route.in.bytes | The amount of incoming bytes | long |
 | nats.route.in.messages | The amount of incoming messages | long |
 | nats.route.ip | The ip of the route | ip |

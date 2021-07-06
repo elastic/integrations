@@ -2,6 +2,16 @@ paths:
 {{#each paths}}
   - {{this}}
 {{/each}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 exclude_files: [".gz$"]
 multiline:
   pattern: '^[A-Z]{1}[0-9]{4} '
@@ -14,3 +24,6 @@ processors:
         regexp:
           message: '^[A-Z]{1}[0-9]{4} ' # Ignore welcome notice (not starting with log level)
 - add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}
