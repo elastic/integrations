@@ -16,7 +16,7 @@ This is the `platformlogs` dataset of the Azure Logs package. It will collect an
 
 An example event for `platformlogs` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "DESKTOP-RFOOE09",

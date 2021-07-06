@@ -60,7 +60,7 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 
 An example event for `activitylogs` looks as following:
 
-```$json
+```json
 {
     "log": {
         "level": "Information"
@@ -275,7 +275,7 @@ An example event for `activitylogs` looks as following:
 
 An example event for `platformlogs` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "DESKTOP-RFOOE09",
@@ -458,7 +458,7 @@ An example event for `platformlogs` looks as following:
 
 An example event for `auditlogs` looks as following:
 
-```$json
+```json
 {
     "log": {
         "level": "Information"
@@ -644,7 +644,7 @@ An example event for `auditlogs` looks as following:
 
 An example event for `signinlogs` looks as following:
 
-```$json
+```json
 {
     "log": {
         "level": "Information"

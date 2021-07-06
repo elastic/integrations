@@ -17,7 +17,7 @@ This is the `activitylogs` dataset of the Azure Logs package. It will collect an
 
 An example event for `activitylogs` looks as following:
 
-```$json
+```json
 {
     "log": {
         "level": "Information"

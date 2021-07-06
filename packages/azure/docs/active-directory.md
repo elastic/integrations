@@ -20,7 +20,7 @@ This is the `auditlogs` dataset of the Azure Logs package. It will collect any a
 
 An example event for `auditlogs` looks as following:
 
-```$json
+```json
 {
     "log": {
         "level": "Information"
@@ -210,7 +210,7 @@ This is the `signinlogs` dataset of the Kubernetes package. It will collect any 
 
 An example event for `signinlogs` looks as following:
 
-```$json
+```json
 {
     "log": {
         "level": "Information"
