@@ -30,16 +30,16 @@ The **Live queries** page  allows you to run a query against one or more agents 
 To run a live query:
 
 
-1. From Kibana, go to Management > Osquery.
-2. Click the New live query button.
-3. Select the agents or groups you want to query. You can select one or more. Note that agents with a green dot indicate that the agent is online, based on a check that runs every 5 minutes.
-4. (optional) Select a saved query to run.
+1. From Kibana, open the main menu and click **Management > Osquery**.
+2. On the Live queries history page, click the **New live query button**.
+3. Select one or more agents or groups to query. Note that agents with a green dot indicate that the agent is online, based on a check that runs every 5 minutes.
+4. (Optional) Select a saved query to run.
 5. Click **Submit**.
 6. Review the results. Depending on the number of agents queried, this request may take some time. Status info is updated as available.
-7. (optional) Click the **Status** tab to view more info about the request, for example, if there are any failures.
+7. (Optional) Click the **Status** tab to view more info about the request, for example, if there are any failures.
 
 
-> Note: If an agent is offline, the request Status remains in **pending** as we retry the request.  By default, a query request times out after 5 minutes. Note that this time out applies to the time it takes to deliver the action request to an agent to run a query. If the action completes after the timeout period, the results are still returned.
+> Note: If an agent is offline, the request status remains in **pending** as Kibana retries the request.  By default, a query request times out after 5 minutes. Note that this time out applies to the time it takes to deliver the action request to an agent to run a query. If the action completes after the timeout period, the results are still returned.
 
 
 
@@ -52,13 +52,13 @@ When you open the **Scheduled query groups** tab in the Osquery app, the table l
 
 After selecting a scheduled query group to edit or adding a new scheduled query group:
 
-- *To add queries individually*: Click **Add query**. In the fly-out, enter an ID for the query, the query, and the query interval (seconds). You can also optionally set the minimum osquery version required to run the query and set the Platform required to run the query.
+- *To add queries individually*: Click **Add query**. In the flyout, enter an ID for the query, the query, and the query interval (seconds). You can also optionally set the minimum osquery version required to run the query and set the platform required to run the query.
 - *To load queries from a .conf query pack*: Use the **Select or drag and drop zone** under the query table. You can upload your own pack or use a community pack. To explore the community packs that Osquery publishes, click Example packs. 
 
 To save your changes, click **Save query**. Once saved, the changes are pushed out to the agents in the policy. 
 
 ### Saved queries
-The Saved queries page lists all queries that have been saved. Queries can be saved when running a live query or from the Saved queries page, and they can be run from the Live queries page or added to a scheduled query group.
+The Saved queries page lists all queries that have been saved. From the Live queries page, you can create and save a new live query. From the **Scheduled query groups** page, you can add saved queries to a scheduled query group.
 
 Each query contains the following information:
 - ID: A unique identifier for the query.
@@ -84,12 +84,12 @@ The Osquery binary is executed with the standard osqueryd defaults.
 
 ### Osquery results
 
-When you run a live or scheduled query, note the following about osquery responses:
+When you run a live or scheduled query, note the following about Osquery responses:
 
 - Everything prefaced with `osquery.` is part of the query response. Note that these fields are not mapped to ECS.
 - The `host.*` and `agent.*` fields are mapped to ECS.
 - The `action_data.query` has the query that was sent.
-- All query results are [snapshot logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#snapshot-logs) that represent a point in time set of results, with no differentials. [Differential logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#differential-logs) are not supported.
+- All query results are [snapshot logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#snapshot-logs) that represent a point in time with a set of results, with no differentials. [Differential logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#differential-logs) are not supported.
 - Osquery data is stored in the `logs-osquery_manager.result-default` datastream, and the result row data is under the `osquery` property in the document.
 
 
@@ -260,7 +260,7 @@ If you encounter issues when using Osquery Manager, you can find relevant logs f
 - `/data/elastic-agent-054e22/logs/default/osquerybeat-json.log`
 
 To get more details in the logs, you can change the agent logging level to debug:
-1. From Kibana, go to Fleet > Agents, then select the agent you want to debug. 
+1. From Kibana, go to **Fleet > Agents**, then select the agent you want to debug. 
 2. From the bottom of the **Logs** tab, change the **Agent logging level** to **debug**, then click **Apply changes**.
 
 This updates `agent.logging.level` in the `fleet.yml` file and sets the logging level to `debug`.
@@ -269,7 +269,7 @@ This updates `agent.logging.level` in the `fleet.yml` file and sets the logging 
 
 ### Exported Fields
 This section describes the fields that can be returned in osquery results. Note the following about osquery fields:
-- Some fields list multiple descriptions, because the one that applies depends on which table was queried. For example, a result stored in the `osquery.autoupdate` field may represent a response from the `firefox_addons` table or the `windows_security_center` table. 
+- Some fields list multiple descriptions because the one that applies depends on which table was queried. For example, a result stored in the `osquery.autoupdate` field may represent a response from the `firefox_addons` table or the `windows_security_center` table. 
 - In the cases where a field name is associated with more than one osquery table, we have made a best guess at what the data `type` should be. In the cases where it is unknown, the data type is set as a keyword object. 
 
 For more information about osquery tables, see the [osquery schema documentation](https://osquery.io/schema/).
@@ -2697,4 +2697,3 @@ For more information about osquery tables, see the [osquery schema documentation
 | **zero_fill** | **virtual_memory_info.zero_fill** - Total number of zero filled pages. | keyword, number.long |
 | **zone** | **azure_instance_metadata.zone** - Availability zone of the VM | keyword, text.text |
 |  | **ycloud_instance_metadata.zone** - Availability zone of the VM |  |
-
