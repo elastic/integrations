@@ -217,7 +217,7 @@ An example event for `container` looks as following:
 | kubernetes.container.memory.pagefaults | Number of page faults | long |  | counter |
 | kubernetes.container.memory.rss.bytes | RSS memory usage | long | byte | gauge |
 | kubernetes.container.memory.usage.bytes | Total memory usage | long | byte | gauge |
-| kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percetn | gauge |
+| kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
 | kubernetes.container.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
