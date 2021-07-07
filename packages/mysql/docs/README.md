@@ -36,10 +36,13 @@ The `error` dataset collects the MySQL error logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.provider | Source of the event (e.g. Server) | keyword |
 | event.timezone | Time zone information | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
@@ -59,7 +62,11 @@ The `error` dataset collects the MySQL error logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | Log flags. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | mysql.thread_id | The connection or thread ID for the query. | long |
 
@@ -89,7 +96,10 @@ The `slowlog` dataset collects the MySQL slow logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -106,6 +116,10 @@ The `slowlog` dataset collects the MySQL slow logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | Log flags. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | mysql.slowlog.bytes_received | The number of bytes received from client. | long |
 | mysql.slowlog.bytes_sent | The number of bytes sent to client. | long |
 | mysql.slowlog.current_user | Current authenticated user, used to determine access privileges. Can differ from the value for user. | keyword |
@@ -123,7 +137,7 @@ The `slowlog` dataset collects the MySQL slow logs.
 | mysql.slowlog.killed | Code of the reason if the query was killed. | keyword |
 | mysql.slowlog.last_errno | Last SQL error seen. | keyword |
 | mysql.slowlog.lock_time.sec | The amount of time the query waited for the lock to be available. The value is in seconds, as a floating point number. | float |
-| mysql.slowlog.log_slow_rate_limit | Slow log rate limit, a value of 100 means that one in a hundred queries or sessions are being logged. | keyword |
+| mysql.slowlog.log_slow_rate_limit | Slow log rate limit, a value of 100 means that one in a hundred queries or sessions are being logged. | long |
 | mysql.slowlog.log_slow_rate_type | Type of slow log rate limit, it can be `session` if the rate limit is applied per session, or `query` if it applies per query. | keyword |
 | mysql.slowlog.merge_passes | Number of merge passes executed for the query. | long |
 | mysql.slowlog.priority_queue | Whether a priority queue was used for filesort. | boolean |
@@ -280,7 +294,9 @@ An example event for `galera_status` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -339,7 +355,7 @@ An example event for `galera_status` looks as following:
 | mysql.galera_status.repl.keys_bytes | Total size of keys replicated. | long |
 | mysql.galera_status.repl.other_bytes | Total size of other bits replicated. | long |
 | service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### status
@@ -499,7 +515,9 @@ An example event for `status` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -522,10 +540,22 @@ An example event for `status` looks as following:
 | mysql.status.binlog.cache.use |  | long |
 | mysql.status.bytes.received | The number of bytes received from all clients. | long |
 | mysql.status.bytes.sent | The number of bytes sent to all clients. | long |
+| mysql.status.cache.ssl.hits | The number of SSL session cache hits. | long |
+| mysql.status.cache.ssl.misses | The number of SSL session cache misses. | long |
+| mysql.status.cache.ssl.size | The SSL session cache size. | long |
+| mysql.status.cache.table.open_cache.hits | The number of hits for open tables cache lookups. | long |
+| mysql.status.cache.table.open_cache.misses | The number of misses for open tables cache lookups. | long |
+| mysql.status.cache.table.open_cache.overflows | Number of times, after a table is opened or closed, a cache instance has an unused entry and the size of the instance is larger than table_open_cache / table_open_cache_instances | long |
 | mysql.status.command.delete | The number of DELETE queries since startup. | long |
 | mysql.status.command.insert | The number of INSERT queries since startup. | long |
 | mysql.status.command.select | The number of SELECT queries since startup. | long |
 | mysql.status.command.update | The number of UPDATE queries since startup. | long |
+| mysql.status.connection.errors.accept | The number of errors that occurred during calls to accept() on the listening port. | long |
+| mysql.status.connection.errors.internal | The number of connections refused due to internal errors in the server, such as failure to start a new thread or an out-of-memory condition. | long |
+| mysql.status.connection.errors.max | The number of connections refused because the server max_connections limit was reached. thread or an out-of-memory condition. | long |
+| mysql.status.connection.errors.peer_address | The number of errors that occurred while searching for connecting client IP addresses. | long |
+| mysql.status.connection.errors.select | The number of errors that occurred during calls to select() or poll() on the listening port. (Failure of this operation does not necessarily means a client connection was rejected.) | long |
+| mysql.status.connection.errors.tcpwrap | The number of connections refused by the libwrap library. | long |
 | mysql.status.connections |  | long |
 | mysql.status.created.tmp.disk_tables |  | long |
 | mysql.status.created.tmp.files |  | long |
@@ -570,6 +600,10 @@ An example event for `status` looks as following:
 | mysql.status.innodb.buffer_pool.read.ahead_rnd | The number of "random" read-aheads initiated by InnoDB. | long |
 | mysql.status.innodb.buffer_pool.read.requests | The number of logical read requests. | long |
 | mysql.status.innodb.buffer_pool.write_requests | The number of writes done to the InnoDB buffer pool. | long |
+| mysql.status.innodb.rows.deleted | The number of rows deleted into InnoDB tables. | long |
+| mysql.status.innodb.rows.inserted | The number of rows inserted into InnoDB tables. | long |
+| mysql.status.innodb.rows.reads | The number of rows reads into InnoDB tables. | long |
+| mysql.status.innodb.rows.updated | The number of rows updated into InnoDB tables. | long |
 | mysql.status.max_used_connections |  | long |
 | mysql.status.open.files |  | long |
 | mysql.status.open.streams |  | long |
@@ -582,5 +616,5 @@ An example event for `status` looks as following:
 | mysql.status.threads.created | The number of created threads. | long |
 | mysql.status.threads.running | The number of running threads. | long |
 | service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
