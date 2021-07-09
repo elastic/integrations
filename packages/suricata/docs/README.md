@@ -77,6 +77,7 @@ with other versions of Suricata.
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | host.architecture | Operating system architecture. | keyword |
@@ -127,13 +128,37 @@ with other versions of Suricata.
 | source.mac | Source mac address. | keyword |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| suricata.eve.alert.affected_product |  | keyword |
+| suricata.eve.alert.attack_target |  | keyword |
+| suricata.eve.alert.capec_id |  | keyword |
 | suricata.eve.alert.category |  | keyword |
+| suricata.eve.alert.classtype |  | keyword |
+| suricata.eve.alert.created_at |  | date |
+| suricata.eve.alert.cve |  | keyword |
+| suricata.eve.alert.cvss_v2_base |  | keyword |
+| suricata.eve.alert.cvss_v2_temporal |  | keyword |
+| suricata.eve.alert.cvss_v3_base |  | keyword |
+| suricata.eve.alert.cvss_v3_temporal |  | keyword |
+| suricata.eve.alert.cwe_id |  | keyword |
+| suricata.eve.alert.deployment |  | keyword |
+| suricata.eve.alert.former_category |  | keyword |
 | suricata.eve.alert.gid |  | long |
-| suricata.eve.alert.metadata.created_at |  | date |
-| suricata.eve.alert.metadata.updated_at |  | date |
+| suricata.eve.alert.hostile |  | keyword |
+| suricata.eve.alert.infected |  | keyword |
+| suricata.eve.alert.malware |  | keyword |
+| suricata.eve.alert.metadata |  | flattened |
+| suricata.eve.alert.mitre_tool_id |  | keyword |
+| suricata.eve.alert.performance_impact |  | keyword |
+| suricata.eve.alert.priority |  | keyword |
+| suricata.eve.alert.protocols |  | keyword |
 | suricata.eve.alert.rev |  | long |
+| suricata.eve.alert.rule_source |  | keyword |
+| suricata.eve.alert.sid |  | keyword |
 | suricata.eve.alert.signature |  | keyword |
 | suricata.eve.alert.signature_id |  | long |
+| suricata.eve.alert.signature_severity |  | keyword |
+| suricata.eve.alert.tag |  | keyword |
+| suricata.eve.alert.updated_at |  | date |
 | suricata.eve.app_proto_expected |  | keyword |
 | suricata.eve.app_proto_orig |  | keyword |
 | suricata.eve.app_proto_tc |  | keyword |
@@ -316,6 +341,11 @@ with other versions of Suricata.
 | suricata.eve.tls.version |  | keyword |
 | suricata.eve.tx_id |  | long |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0040/ ) | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0040/) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1499/) | keyword |
+| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1499/) | keyword |
 | tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
 | tls.client.server_name | Hostname the client is trying to connect to. Also called the SNI. | keyword |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
