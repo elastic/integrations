@@ -1,0 +1,110 @@
+- name: request
+  type: text
+  description: >
+    For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request.
+
+- name: response
+  type: text
+  description: >
+    For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request.
+
+- name: query
+  type: keyword
+  description: >
+    The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`.
+
+- name: params
+  type: text
+  description: >
+    The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request.
+
+- name: status
+  type: keyword
+  description: >
+    The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol.
+
+- name: method
+  type: keyword
+  description: >
+    The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on).
+
+- name: resource
+  type: keyword
+  description: >
+    The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types.
+
+- name: path
+  type: keyword
+  description: >
+    The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key.
+
+- name: flow.final
+  type: boolean
+  description: >
+    Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only.
+
+- name: flow.id
+  type: keyword
+  description: >
+    Internal flow ID based on connection meta data and address.
+
+- name: flow.vlan
+  type: long
+  description: >
+    VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first.
+
+- name: type
+  description: >
+    The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows.
+
+  type: keyword
+- name: server.process.name
+  type: keyword
+  description: >
+    The name of the process that served the transaction.
+
+- name: server.process.args
+  type: keyword
+  description: >
+    The command-line of the process that served the transaction.
+
+- name: server.process.executable
+  type: keyword
+  description: >
+    Absolute path to the server process executable.
+
+- name: server.process.working_directory
+  type: keyword
+  description: >
+    The working directory of the server process.
+
+- name: server.process.start
+  type: date
+  description: >
+    The time the server process started.
+
+- name: client.process.name
+  type: keyword
+  description: >
+    The name of the process that initiated the transaction.
+
+- name: client.process.args
+  type: keyword
+  description: >
+    The command-line of the process that initiated the transaction.
+
+- name: client.process.executable
+  type: keyword
+  description: >
+    Absolute path to the client process executable.
+
+- name: client.process.working_directory
+  type: keyword
+  description: >
+    The working directory of the client process.
+
+- name: client.process.start
+  type: date
+  description: >
+    The time the client process started.
+

@@ -1,0 +1,18 @@
+type: http
+ports: [{{port}}]
+{{#if processes}}
+procs:
+  enabled: true
+  monitored:
+    {{#each processes}}
+    - cmdline_grep: {{this}}
+    {{/each}}
+{{/if}}
+{{#if interface}}
+interface:
+{{#if (contains ".pcap" interface)}}
+  file: {{interface}}
+{{else}}
+  device: {{interface}}
+{{/if}}
+{{/if}}
