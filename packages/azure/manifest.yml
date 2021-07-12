@@ -1,11 +1,11 @@
 name: azure
-title: Azure
-version: 0.4.0
+title: Azure Logs
+version: 0.5.0
 release: beta
-description: Azure Integration
+description: Azure Logs Integration
 type: integration
 icons:
-  - src: /img/logo_azure.svg
+  - src: /img/azure_logs_logo.png
     title: logo azure
     size: 32x32
     type: image/svg+xml
@@ -23,52 +23,106 @@ screenshots:
     title: filebeat azure overview
     size: 5002x2666
     type: image/png
+vars:
+  - name: eventhub
+    type: text
+    title: Eventhub
+    multi: false
+    required: true
+    show_user: true
+    default: insights-operational-logs
+  - name: consumer_group
+    type: text
+    title: Consumer Group
+    multi: false
+    required: true
+    show_user: true
+    default: $Default
+  - name: connection_string
+    type: text
+    title: Connection String
+    multi: false
+    required: true
+    show_user: true
+  - name: storage_account
+    type: text
+    title: Storage Account
+    multi: false
+    required: true
+    show_user: true
+  - name: storage_account_key
+    type: text
+    title: Storage Account Key
+    multi: false
+    required: true
+    show_user: true
+  - name: resource_manager_endpoint
+    type: text
+    title: Resource Manager Endpoint
+    multi: false
+    required: false
+    show_user: true
 policy_templates:
-  - name: azure
-    title: Azure logs
-    description: Collects platforms and Active Directory logs
+  - name: adlogs
+    title: Azure Active Directory logs
+    description: Azure Directory log integration
+    data_streams:
+      - auditlogs
+      - signinlogs
     inputs:
       - type: "azure-eventhub"
-        vars:
-          - name: eventhub
-            type: text
-            title: Eventhub
-            multi: false
-            required: true
-            show_user: true
-            default: insights-operational-logs
-          - name: consumer_group
-            type: text
-            title: Consumer Group
-            multi: false
-            required: true
-            show_user: true
-            default: $Default
-          - name: connection_string
-            type: text
-            title: Connection String
-            multi: false
-            required: true
-            show_user: true
-          - name: storage_account
-            type: text
-            title: Storage Account
-            multi: false
-            required: true
-            show_user: true
-          - name: storage_account_key
-            type: text
-            title: Storage Account Key
-            multi: false
-            required: true
-            show_user: true
-          - name: resource_manager_endpoint
-            type: text
-            title: Resource Manager Endpoint
-            multi: false
-            required: false
-            show_user: true
-        title: "Collect Azure logs from Event Hub"
-        description: "Collecting activitylogs, auditlogs and signinlogs from Azure instances (input: azure-eventhub)"
+        title: "Collect Azure Active Directory from Event Hub"
+        description: "Collecting Active Directory logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/active_directory_logo.png
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/filebeat-azure-overview.png
+        title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
+  - name: platformlogs
+    title: Azure platform logs
+    description: Azure platform logs integration
+    data_streams:
+      - platformlogs
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect Azure platform logs logs from Event Hub"
+        description: "Collecting platform logs from Azure instances (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/platformlogs_logo.png
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/filebeat-azure-overview.png
+        title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
+  - name: activitylogs
+    title: Azure activity logs
+    description: Azure activity logs integration
+    data_streams:
+      - activitylogs
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect Azure activity logs from Event Hub"
+        description: "Collecting activity logs from Azure instances (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/platformlogs_logo.png
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/filebeat-azure-overview.png
+        title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
 owner:
   github: elastic/integrations

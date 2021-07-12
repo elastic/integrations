@@ -164,81 +164,81 @@ An example event for `container` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| kubernetes.annotations.* | Kubernetes annotations map | object |
-| kubernetes.container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |
-| kubernetes.container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float |
-| kubernetes.container.cpu.usage.nanocores | CPU used nanocores | long |
-| kubernetes.container.cpu.usage.node.pct | CPU usage as a percentage of the total node allocatable CPU | scaled_float |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.logs.available.bytes | Logs available capacity in bytes | long |
-| kubernetes.container.logs.capacity.bytes | Logs total capacity in bytes | long |
-| kubernetes.container.logs.inodes.count | Total available inodes | long |
-| kubernetes.container.logs.inodes.free | Total free inodes | long |
-| kubernetes.container.logs.inodes.used | Total used inodes | long |
-| kubernetes.container.logs.used.bytes | Logs used capacity in bytes | long |
-| kubernetes.container.memory.available.bytes | Total available memory | long |
-| kubernetes.container.memory.majorpagefaults | Number of major page faults | long |
-| kubernetes.container.memory.pagefaults | Number of page faults | long |
-| kubernetes.container.memory.rss.bytes | RSS memory usage | long |
-| kubernetes.container.memory.usage.bytes | Total memory usage | long |
-| kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float |
-| kubernetes.container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float |
-| kubernetes.container.memory.workingset.bytes | Working set memory usage | long |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.container.rootfs.available.bytes | Root filesystem total available in bytes | long |
-| kubernetes.container.rootfs.capacity.bytes | Root filesystem total capacity in bytes | long |
-| kubernetes.container.rootfs.inodes.used | Used inodes | long |
-| kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long |
-| kubernetes.container.start_time | Start time | date |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
-| kubernetes.labels.* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
-| kubernetes.node.name | Kubernetes node name | keyword |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |  | gauge |
+| kubernetes.container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float | percent | gauge |
+| kubernetes.container.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
+| kubernetes.container.cpu.usage.node.pct | CPU usage as a percentage of the total node allocatable CPU | scaled_float | percent | gauge |
+| kubernetes.container.image | Kubernetes container image | keyword |  |  |
+| kubernetes.container.logs.available.bytes | Logs available capacity in bytes | long | byte | gauge |
+| kubernetes.container.logs.capacity.bytes | Logs total capacity in bytes | long | byte | gauge |
+| kubernetes.container.logs.inodes.count | Total available inodes | long |  | gauge |
+| kubernetes.container.logs.inodes.free | Total free inodes | long |  | gauge |
+| kubernetes.container.logs.inodes.used | Total used inodes | long |  | gauge |
+| kubernetes.container.logs.used.bytes | Logs used capacity in bytes | long | byte | gauge |
+| kubernetes.container.memory.available.bytes | Total available memory | long | byte | gauge |
+| kubernetes.container.memory.majorpagefaults | Number of major page faults | long |  | counter |
+| kubernetes.container.memory.pagefaults | Number of page faults | long |  | counter |
+| kubernetes.container.memory.rss.bytes | RSS memory usage | long | byte | gauge |
+| kubernetes.container.memory.usage.bytes | Total memory usage | long | byte | gauge |
+| kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
+| kubernetes.container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
+| kubernetes.container.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.container.rootfs.available.bytes | Root filesystem total available in bytes | long | byte | gauge |
+| kubernetes.container.rootfs.capacity.bytes | Root filesystem total capacity in bytes | long | byte | gauge |
+| kubernetes.container.rootfs.inodes.used | Used inodes | long |  | gauge |
+| kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long | byte | gauge |
+| kubernetes.container.start_time | Start time | date |  |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.name | Kubernetes node name | keyword |  |  |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| service.address | Service address | keyword |  |  |
+| service.type | Service type | keyword |  |  |
 
 
 ### node
@@ -401,80 +401,80 @@ An example event for `node` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| kubernetes.annotations.* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
-| kubernetes.labels.* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
-| kubernetes.node.cpu.usage.core.ns | Node CPU Core usage nanoseconds | long |
-| kubernetes.node.cpu.usage.nanocores | CPU used nanocores | long |
-| kubernetes.node.fs.available.bytes | Filesystem total available in bytes | long |
-| kubernetes.node.fs.capacity.bytes | Filesystem total capacity in bytes | long |
-| kubernetes.node.fs.inodes.count | Number of inodes | long |
-| kubernetes.node.fs.inodes.free | Number of free inodes | long |
-| kubernetes.node.fs.inodes.used | Number of used inodes | long |
-| kubernetes.node.fs.used.bytes | Filesystem total used in bytes | long |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
-| kubernetes.node.memory.available.bytes | Total available memory | long |
-| kubernetes.node.memory.majorpagefaults | Number of major page faults | long |
-| kubernetes.node.memory.pagefaults | Number of page faults | long |
-| kubernetes.node.memory.rss.bytes | RSS memory usage | long |
-| kubernetes.node.memory.usage.bytes | Total memory usage | long |
-| kubernetes.node.memory.workingset.bytes | Working set memory usage | long |
-| kubernetes.node.name | Kubernetes node name | keyword |
-| kubernetes.node.network.rx.bytes | Received bytes | long |
-| kubernetes.node.network.rx.errors | Rx errors | long |
-| kubernetes.node.network.tx.bytes | Transmitted bytes | long |
-| kubernetes.node.network.tx.errors | Tx errors | long |
-| kubernetes.node.runtime.imagefs.available.bytes | Image filesystem total available in bytes | long |
-| kubernetes.node.runtime.imagefs.capacity.bytes | Image filesystem total capacity in bytes | long |
-| kubernetes.node.runtime.imagefs.used.bytes | Image filesystem total used in bytes | long |
-| kubernetes.node.start_time | Start time | date |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.container.image | Kubernetes container image | keyword |  |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.node.cpu.usage.core.ns | Node CPU Core usage nanoseconds | long |  | gauge |
+| kubernetes.node.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
+| kubernetes.node.fs.available.bytes | Filesystem total available in bytes | long | byte | gauge |
+| kubernetes.node.fs.capacity.bytes | Filesystem total capacity in bytes | long | byte | gauge |
+| kubernetes.node.fs.inodes.count | Number of inodes | long |  | gauge |
+| kubernetes.node.fs.inodes.free | Number of free inodes | long |  | gauge |
+| kubernetes.node.fs.inodes.used | Number of used inodes | long |  | gauge |
+| kubernetes.node.fs.used.bytes | Filesystem total used in bytes | long | byte | gauge |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.memory.available.bytes | Total available memory | long | byte | gauge |
+| kubernetes.node.memory.majorpagefaults | Number of major page faults | long |  | counter |
+| kubernetes.node.memory.pagefaults | Number of page faults | long |  | counter |
+| kubernetes.node.memory.rss.bytes | RSS memory usage | long | byte | gauge |
+| kubernetes.node.memory.usage.bytes | Total memory usage | long | byte | gauge |
+| kubernetes.node.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
+| kubernetes.node.name | Kubernetes node name | keyword |  |  |
+| kubernetes.node.network.rx.bytes | Received bytes | long | byte | counter |
+| kubernetes.node.network.rx.errors | Rx errors | long |  |  |
+| kubernetes.node.network.tx.bytes | Transmitted bytes | long | byte | counter |
+| kubernetes.node.network.tx.errors | Tx errors | long |  | counter |
+| kubernetes.node.runtime.imagefs.available.bytes | Image filesystem total available in bytes | long | byte | gauge |
+| kubernetes.node.runtime.imagefs.capacity.bytes | Image filesystem total capacity in bytes | long | byte | gauge |
+| kubernetes.node.runtime.imagefs.used.bytes | Image filesystem total used in bytes | long | byte | gauge |
+| kubernetes.node.start_time | Start time | date |  |  |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| service.address | Service address | keyword |  |  |
+| service.type | Service type | keyword |  |  |
 
 
 ### pod
@@ -614,74 +614,74 @@ An example event for `pod` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| kubernetes.annotations.* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
-| kubernetes.labels.* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
-| kubernetes.node.name | Kubernetes node name | keyword |
-| kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float |
-| kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long |
-| kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.memory.available.bytes | Total memory available | long |
-| kubernetes.pod.memory.major_page_faults | Total major page faults | long |
-| kubernetes.pod.memory.page_faults | Total page faults | long |
-| kubernetes.pod.memory.rss.bytes | Total resident set size memory | long |
-| kubernetes.pod.memory.usage.bytes | Total memory usage | long |
-| kubernetes.pod.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float |
-| kubernetes.pod.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float |
-| kubernetes.pod.memory.working_set.bytes | Total working set memory | long |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.network.rx.bytes | Received bytes | long |
-| kubernetes.pod.network.rx.errors | Rx errors | long |
-| kubernetes.pod.network.tx.bytes | Transmitted bytes | long |
-| kubernetes.pod.network.tx.errors | Tx errors | long |
-| kubernetes.pod.start_time | Start time | date |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.container.image | Kubernetes container image | keyword |  |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.name | Kubernetes node name | keyword |  |  |
+| kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float | percent | gauge |
+| kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long | byte | gauge |
+| kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float | percent | gauge |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
+| kubernetes.pod.memory.available.bytes | Total memory available | long | percent | gauge |
+| kubernetes.pod.memory.major_page_faults | Total major page faults | long |  | counter |
+| kubernetes.pod.memory.page_faults | Total page faults | long |  | counter |
+| kubernetes.pod.memory.rss.bytes | Total resident set size memory | long | percent | gauge |
+| kubernetes.pod.memory.usage.bytes | Total memory usage | long | byte | gauge |
+| kubernetes.pod.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
+| kubernetes.pod.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
+| kubernetes.pod.memory.working_set.bytes | Total working set memory | long | percent | gauge |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
+| kubernetes.pod.network.rx.bytes | Received bytes | long | byte | counter |
+| kubernetes.pod.network.rx.errors | Rx errors | long |  | counter |
+| kubernetes.pod.network.tx.bytes | Transmitted bytes | long | byte | counter |
+| kubernetes.pod.network.tx.errors | Tx errors | long |  | counter |
+| kubernetes.pod.start_time | Start time | date |  |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| service.address | Service address | keyword |  |  |
+| service.type | Service type | keyword |  |  |
 
 
 ### system
@@ -797,67 +797,67 @@ An example event for `system` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| kubernetes.annotations.* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
-| kubernetes.labels.* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
-| kubernetes.node.name | Kubernetes node name | keyword |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| kubernetes.system.container | Container name | keyword |
-| kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |
-| kubernetes.system.cpu.usage.nanocores | CPU used nanocores | long |
-| kubernetes.system.memory.majorpagefaults | Number of major page faults | long |
-| kubernetes.system.memory.pagefaults | Number of page faults | long |
-| kubernetes.system.memory.rss.bytes | RSS memory usage | long |
-| kubernetes.system.memory.usage.bytes | Total memory usage | long |
-| kubernetes.system.memory.workingset.bytes | Working set memory usage | long |
-| kubernetes.system.start_time | Start time | date |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.container.image | Kubernetes container image | keyword |  |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.name | Kubernetes node name | keyword |  |  |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| kubernetes.system.container | Container name | keyword |  |  |
+| kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |  | gauge |
+| kubernetes.system.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
+| kubernetes.system.memory.majorpagefaults | Number of major page faults | long |  | counter |
+| kubernetes.system.memory.pagefaults | Number of page faults | long |  | counter |
+| kubernetes.system.memory.rss.bytes | RSS memory usage | long | byte | gauge |
+| kubernetes.system.memory.usage.bytes | Total memory usage | long | byte | gauge |
+| kubernetes.system.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
+| kubernetes.system.start_time | Start time | date |  |  |
+| service.address | Service address | keyword |  |  |
+| service.type | Service type | keyword |  |  |
 
 
 ### volume
@@ -971,63 +971,63 @@ An example event for `volume` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| kubernetes.annotations.* | Kubernetes annotations map | object |
-| kubernetes.container.image | Kubernetes container image | keyword |
-| kubernetes.container.name | Kubernetes container name | keyword |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |
-| kubernetes.labels.* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
-| kubernetes.node.name | Kubernetes node name | keyword |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |
-| kubernetes.pod.name | Kubernetes pod name | keyword |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long |
-| kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long |
-| kubernetes.volume.fs.inodes.count | Total inodes | long |
-| kubernetes.volume.fs.inodes.free | Free inodes | long |
-| kubernetes.volume.fs.inodes.used | Used inodes | long |
-| kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long |
-| kubernetes.volume.fs.used.pct | Percentage of filesystem total used | long |
-| kubernetes.volume.name | Volume name | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.container.image | Kubernetes container image | keyword |  |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
+| kubernetes.node.name | Kubernetes node name | keyword |  |  |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
+| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long | byte | gauge |
+| kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long | byte | gauge |
+| kubernetes.volume.fs.inodes.count | Total inodes | long |  | gauge |
+| kubernetes.volume.fs.inodes.free | Free inodes | long |  | gauge |
+| kubernetes.volume.fs.inodes.used | Used inodes | long |  | gauge |
+| kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long | byte | gauge |
+| kubernetes.volume.fs.used.pct | Percentage of filesystem total used | long | percent | gauge |
+| kubernetes.volume.name | Volume name | keyword |  |  |
+| service.address | Service address | keyword |  |  |
+| service.type | Service type | keyword |  |  |
