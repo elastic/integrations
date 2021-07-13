@@ -11,8 +11,12 @@ This metricset needs access to the `apiserver` component of Kubernetes, accessib
 by any POD via the `kubernetes.default` service or via environment
 variables (`KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT`).
 
+If Leader Election is activated (default behaviour) only the `elastic agent` which holds the leadership lock
+will retrieve metrics from the `apiserver`.
+This is relevant in multi-node kubernetes cluster and prevents duplicate data.
+
 When the API uses https, the pod will need to authenticate using its default token and trust
-the server using the appropiate CA file.
+the server using the appropriate CA file.
 
 Configuration example using https and token based authentication:
 
