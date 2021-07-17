@@ -4,9 +4,9 @@ The Cloudflare integration collects events from the Cloudflare API, specifically
 
 ## Logs
 
-### Log
+### Logpull
 
-The Cloudflare Log records network events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and the AWS S3 input.
+The Cloudflare Logpull records network events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input.
 
 **Exported fields**
 
@@ -25,46 +25,46 @@ The Cloudflare Log records network events related to your organization in order 
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.port | Port of the client. | long |
-| cloudflare.log.cache.bytes | Number of bytes returned by the cache | long |
-| cloudflare.log.cache.status | Status of cache | keyword |
-| cloudflare.log.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
-| cloudflare.log.cache.tiered_fill | Tiered Cache was used to serve this request | boolean |
-| cloudflare.log.client.ip_class | Class of client, ex. badHost | searchEngine | allowlist | greylist.... | keyword |
-| cloudflare.log.device_type | Client device type | keyword |
-| cloudflare.log.edge.colo.code | IATA airport code of data center that received the request | keyword |
-| cloudflare.log.edge.colo.id | Cloudflare edge colo id | long |
-| cloudflare.log.edge.pathing.op | Indicates what type of response was issued for this request (unknown = no specific action) | keyword |
-| cloudflare.log.edge.pathing.src | Details how the request was classified based on security checks (unknown = no specific classification) | keyword |
-| cloudflare.log.edge.pathing.status | Indicates what data was used to determine the handling of this request (unknown = no data) | keyword |
-| cloudflare.log.edge.rate_limit.action | The action taken by the blocking rule; empty if no action taken | keyword |
-| cloudflare.log.edge.rate_limit.id | The internal rule ID of the rate-limiting rule that triggered a block (ban) or log action. 0 if no action taken. | long |
-| cloudflare.log.edge.request.host | Host header on the request from the edge to the origin | keyword |
-| cloudflare.log.edge.response.compression_ratio | Edge response compression ratio | long |
-| cloudflare.log.edge.response.content_type | Edge response Content-Type header value | keyword |
-| cloudflare.log.firewall.actions | Array of actions the Cloudflare firewall products performed on this request. The individual firewall products associated with this action be found in FirewallMatchesSources and their respective RuleIds can be found in FirewallMatchesRuleIDs. The length of the array is the same as FirewallMatchesRuleIDs and FirewallMatchesSources. | array |
-| cloudflare.log.firewall.rule_ids | Array of RuleIDs of the firewall product that has matched the request. The firewall product associated with the RuleID can be found in FirewallMatchesSources. The length of the array is the same as FirewallMatchesActions and FirewallMatchesSources. | array |
-| cloudflare.log.firewall.sources | The firewall products that matched the request. The same product can appear multiple times, which indicates different rules or actions that were activated. The RuleIDs can be found in FirewallMatchesRuleIDs, the actions can be found in FirewallMatchesActions. The length of the array is the same as FirewallMatchesRuleIDs and FirewallMatchesActions. | array |
-| cloudflare.log.origin.response.bytes | Number of bytes returned by the origin server | long |
-| cloudflare.log.origin.response.expires | Value of the origin 'expires' header | date |
-| cloudflare.log.origin.response.last_modified | Value of the origin 'last-modified' header | date |
-| cloudflare.log.origin.response.status_code | Status returned by the origin server | long |
-| cloudflare.log.origin.response.time | Number of nanoseconds it took the origin to return the response to edge | long |
-| cloudflare.log.origin.ssl.protocol | SSL (TLS) protocol used to connect to the origin | keyword |
-| cloudflare.log.parent.ray_id | Ray ID of the parent request if this request was made using a Worker script | keyword |
-| cloudflare.log.ray_id | Ray ID of the parent request if this request was made using a Worker script | keyword |
-| cloudflare.log.security_level | The security level configured at the time of this request. This is used to determine the sensitivity of the IP Reputation system. | keyword |
-| cloudflare.log.waf.action | Action taken by the WAF, if triggered | keyword |
-| cloudflare.log.waf.flags | Additional configuration flags: simulate (0x1) | null | keyword |
-| cloudflare.log.waf.matched_var | The full name of the most-recently matched variable | keyword |
-| cloudflare.log.waf.profile | low | med | high | keyword |
-| cloudflare.log.waf.rule.id | ID of the applied WAF rule | keyword |
-| cloudflare.log.waf.rule.message | Rule message associated with the triggered rule | keyword |
-| cloudflare.log.worker.cpu_time | Amount of time in microseconds spent executing a worker, if any | long |
-| cloudflare.log.worker.status | Status returned from worker daemon | keyword |
-| cloudflare.log.worker.subrequest | Whether or not this request was a worker subrequest | boolean |
-| cloudflare.log.worker.subrequest_count | Number of subrequests issued by a worker when handling this request | long |
-| cloudflare.log.zone.id | Internal zone ID | long |
-| cloudflare.log.zone.name | The human-readable name of the zone (e.g. 'cloudflare.com'). | keyword |
+| cloudflare.cache.bytes | Number of bytes returned by the cache | long |
+| cloudflare.cache.status | Status of cache | keyword |
+| cloudflare.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
+| cloudflare.cache.tiered_fill | Tiered Cache was used to serve this request | boolean |
+| cloudflare.client.ip_class | Class of client, ex. badHost | searchEngine | allowlist | greylist.... | keyword |
+| cloudflare.device_type | Client device type | keyword |
+| cloudflare.edge.colo.code | IATA airport code of data center that received the request | keyword |
+| cloudflare.edge.colo.id | Cloudflare edge colo id | long |
+| cloudflare.edge.pathing.op | Indicates what type of response was issued for this request (unknown = no specific action) | keyword |
+| cloudflare.edge.pathing.src | Details how the request was classified based on security checks (unknown = no specific classification) | keyword |
+| cloudflare.edge.pathing.status | Indicates what data was used to determine the handling of this request (unknown = no data) | keyword |
+| cloudflare.edge.rate_limit.action | The action taken by the blocking rule; empty if no action taken | keyword |
+| cloudflare.edge.rate_limit.id | The internal rule ID of the rate-limiting rule that triggered a block (ban) or log action. 0 if no action taken. | long |
+| cloudflare.edge.request.host | Host header on the request from the edge to the origin | keyword |
+| cloudflare.edge.response.compression_ratio | Edge response compression ratio | long |
+| cloudflare.edge.response.content_type | Edge response Content-Type header value | keyword |
+| cloudflare.firewall.actions | Array of actions the Cloudflare firewall products performed on this request. The individual firewall products associated with this action be found in FirewallMatchesSources and their respective RuleIds can be found in FirewallMatchesRuleIDs. The length of the array is the same as FirewallMatchesRuleIDs and FirewallMatchesSources. | array |
+| cloudflare.firewall.rule_ids | Array of RuleIDs of the firewall product that has matched the request. The firewall product associated with the RuleID can be found in FirewallMatchesSources. The length of the array is the same as FirewallMatchesActions and FirewallMatchesSources. | array |
+| cloudflare.firewall.sources | The firewall products that matched the request. The same product can appear multiple times, which indicates different rules or actions that were activated. The RuleIDs can be found in FirewallMatchesRuleIDs, the actions can be found in FirewallMatchesActions. The length of the array is the same as FirewallMatchesRuleIDs and FirewallMatchesActions. | array |
+| cloudflare.origin.response.bytes | Number of bytes returned by the origin server | long |
+| cloudflare.origin.response.expires | Value of the origin 'expires' header | date |
+| cloudflare.origin.response.last_modified | Value of the origin 'last-modified' header | date |
+| cloudflare.origin.response.status_code | Status returned by the origin server | long |
+| cloudflare.origin.response.time | Number of nanoseconds it took the origin to return the response to edge | long |
+| cloudflare.origin.ssl.protocol | SSL (TLS) protocol used to connect to the origin | keyword |
+| cloudflare.parent.ray_id | Ray ID of the parent request if this request was made using a Worker script | keyword |
+| cloudflare.ray_id | Ray ID of the parent request if this request was made using a Worker script | keyword |
+| cloudflare.security_level | The security level configured at the time of this request. This is used to determine the sensitivity of the IP Reputation system. | keyword |
+| cloudflare.waf.action | Action taken by the WAF, if triggered | keyword |
+| cloudflare.waf.flags | Additional configuration flags: simulate (0x1) | null | keyword |
+| cloudflare.waf.matched_var | The full name of the most-recently matched variable | keyword |
+| cloudflare.waf.profile | low | med | high | keyword |
+| cloudflare.waf.rule.id | ID of the applied WAF rule | keyword |
+| cloudflare.waf.rule.message | Rule message associated with the triggered rule | keyword |
+| cloudflare.worker.cpu_time | Amount of time in microseconds spent executing a worker, if any | long |
+| cloudflare.worker.status | Status returned from worker daemon | keyword |
+| cloudflare.worker.subrequest | Whether or not this request was a worker subrequest | boolean |
+| cloudflare.worker.subrequest_count | Number of subrequests issued by a worker when handling this request | long |
+| cloudflare.zone.id | Internal zone ID | long |
+| cloudflare.zone.name | The human-readable name of the zone (e.g. 'cloudflare.com'). | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
