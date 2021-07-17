@@ -1,0 +1,96 @@
+type: logs
+title: Cloudflare Logpull
+release: experimental
+streams:
+  - input: httpjson
+    vars:
+      - name: auth_email
+        type: text
+        title: Auth Email
+        multi: false
+        required: true
+        show_user: true
+      - name: auth_key
+        type: text
+        title: Auth Key
+        multi: false
+        required: true
+        show_user: true
+      - name: zone_id
+        type: text
+        title: Zone ID
+        multi: false
+        required: false
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 60m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: keep_original_message
+        type: bool
+        title: Keep Original Message
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+    template_path: httpjson.yml.hbs
+    title: Cloudflare logs
+    description: Collect Cloudflare logs via the Logpull API
+  - input: logfile
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: false
+        show_user: true
+      - name: keep_original_message
+        type: bool
+        title: Keep Original Message
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+    template_path: log.yml.hbs
+    title: Cloudflare system logs
+    description: Collect Cloudflare system logs via log files

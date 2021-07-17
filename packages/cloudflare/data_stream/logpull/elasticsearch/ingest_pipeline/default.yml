@@ -13,7 +13,7 @@ processors:
     ignore_missing: true
 - json:
     field: message
-    target_field: cloudflare.log
+    target_field: json
 - set:
     field: observer.vendor
     value: Cloudflare
@@ -23,14 +23,10 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "http" }}'
     if: "ctx.cloudflare?.log?.EdgeRequestHost != null"
-- pipeline:
-    name: '{< IngestPipeline "firewall" >}'
-    if: "ctx.cloudflare?.log?.Kind != null && ctx.cloudflare?.log?.Kind == 'firewall'"
-# - pipeline:
-#     name: '{< IngestPipeline "spectrum" >}'
-#     if: "ctx.cloudflare?.log?.Application != null && ctx.cloudflare?.log?.Event != null"
 - remove:
-    field: message
+    field:
+      - message
+      - json
     ignore_missing: true
 - script:
     lang: painless
