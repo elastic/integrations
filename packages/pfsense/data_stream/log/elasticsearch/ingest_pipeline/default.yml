@@ -1,0 +1,129 @@
+---
+description: Pipeline for PFsense
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.10.0'
+  - rename:
+      field: message
+      target_field: event.original
+  - grok:
+      description: Parse syslog header
+      field: event.original
+      patterns:
+        - '^%{ECS_SYSLOG_PRI}%{TIMESTAMP} %{GREEDYDATA:message}'
+      pattern_definitions:
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}%{SPACE}%{WORD:event.provider}\[%{POSINT:event.id}\]:'
+        SYSLOG_TIMESTAMP_FORMAT: '(\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})%{SPACE}%{WORD:event.provider}%{SPACE}%{POSINT:event.id} - -'
+        TIMESTAMP: '(?:%{BSD_TIMESTAMP_FORMAT}|%{SYSLOG_TIMESTAMP_FORMAT})'
+  - date:
+      if: ctx?._tmp.timestamp8601 != null
+      field: _tmp.timestamp8601
+      formats:
+        - ISO8601
+  - date:
+      if: ctx?.event?.timezone == null && ctx?._tmp?.timestamp != null
+      field: _tmp.timestamp
+      formats:
+      - MMM  d HH:mm:ss
+      - MMM dd HH:mm:ss
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{ _ingest.on_failure_message }}'
+  - date:
+      if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
+      field: _tmp.timestamp
+      formats:
+      - MMM  d HH:mm:ss
+      - MMM dd HH:mm:ss
+      timezone: '{{ event.timezone }}'
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{ _ingest.on_failure_message }}'
+  - pipeline:
+      name: '{{ IngestPipeline "firewall" }}'
+      if: ctx.event.provider == 'filterlog'
+  - pipeline:
+      name: '{{ IngestPipeline "openvpn" }}'
+      if: ctx.event.provider == 'openvpn'
+  - pipeline:
+      name: '{{ IngestPipeline "ipsec" }}'
+      if: ctx.event.provider == 'charon'
+  - pipeline:
+      name: '{{ IngestPipeline "dhcp" }}'
+      if: ctx.event.provider == 'dhcpd'
+  - drop:
+      if: '!["filterlog", "openvpn", "charon", "dhcpd"].contains(ctx?.event?.provider)'
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx?.destination?.ip != null
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx?.source?.ip != null
+  - remove:
+      field:
+        - _tmp
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_failure: true
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
