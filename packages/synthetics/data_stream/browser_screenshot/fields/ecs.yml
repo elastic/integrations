@@ -1,0 +1,1365 @@
+- name: labels
+  level: core
+  type: object
+  object_type: keyword
+  description: "Custom key/value pairs.\nCan be used to add meta information to events. Should not contain nested objects. All values are stored as keyword.\nExample: `docker` and `k8s` labels."
+  example: '{"application": "foo-bar", "env": "production"}'
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+  example: '["production", "env2"]'
+- name: agent
+  title: Agent
+  group: 2
+  description: "The agent fields contain the data about the software entity, if any, that collects, detects, or observes events on a host, or takes measurements on a host.\nExamples include Beats. Agents may also run on observers. ECS agent.* fields shall be populated with details of the agent running on the host or observer where the event happened or the measurement was taken."
+  footnote: "Examples: In the case of Beats for logs, the agent.name is filebeat. For APM, it is the agent running in the app/service. The agent information does not change if data is sent through queuing systems like Kafka, Redis, or processing systems such as Logstash or APM Server."
+  type: group
+  fields:
+    - name: build.original
+      level: core
+      type: wildcard
+      description: "Extended build information for the agent.\nThis field is intended to contain any build information that a data source may provide, no specific formatting is required."
+      example: metricbeat version 7.6.0 (amd64), libbeat 7.6.0 [6a23e8f8f30f5001ba344e4e54d8d9cb82cb107c built 2020-02-05 23:10:10 +0000 UTC]
+      default_field: false
+    - name: ephemeral_id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "Ephemeral identifier of this agent (if one exists).\nThis id normally changes across restarts, but `agent.id` does not."
+      example: 8a4f500f
+    - name: id
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: "Unique identifier of this agent (if one exists).\nExample: For Beats this would be beat.id."
+      example: 8a4f500d
+    - name: name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: "Custom name of the agent.\nThis is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from.\nIf no name is given, the name is often left empty."
+      example: foo
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: "Type of the agent.\nThe agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine."
+      example: filebeat
+    - name: version
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Version of the agent.
+      example: 6.0.0-rc2
+- name: cloud
+  title: Cloud
+  group: 2
+  description: Fields related to the cloud or infrastructure the events are coming from.
+  footnote: "Examples: If Metricbeat is running on an EC2 host and fetches data from its host, the cloud info contains the data about this machine. If Metricbeat runs on a remote machine outside the cloud and fetches data from a service running in the cloud, the field contains cloud data from the machine the service is running on."
+  type: group
+  fields:
+    - name: account.id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "The cloud account or organization id used to identify different entities in a multi-tenant environment.\nExamples: AWS account id, Google Cloud ORG Id, or other unique identifier."
+      example: 666777888999
+    - name: account.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "The cloud account name or alias used to identify different entities in a multi-tenant environment.\nExamples: AWS account name, Google Cloud ORG display name."
+      example: elastic-dev
+      default_field: false
+    - name: availability_zone
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Availability zone in which this host is running.
+      example: us-east-1c
+    - name: instance.id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Instance ID of the host machine.
+      example: i-1234567890abcdef0
+    - name: instance.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Instance name of the host machine.
+    - name: machine.type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Machine type of the host machine.
+      example: t2.medium
+    - name: project.id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "The cloud project identifier.\nExamples: Google Cloud Project id, Azure Project id."
+      example: my-project
+      default_field: false
+    - name: project.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "The cloud project name.\nExamples: Google Cloud Project name, Azure Project name."
+      example: my project
+      default_field: false
+    - name: provider
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean.
+      example: aws
+    - name: region
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Region in which this host is running.
+      example: us-east-1
+- name: container
+  title: Container
+  group: 2
+  description: "Container fields are used for meta information about the specific container that is the source of information.\nThese fields help correlate data based containers from any runtime."
+  type: group
+  fields:
+    - name: id
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Unique container id.
+    - name: image.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Name of the image the container was built on.
+    - name: image.tag
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Container image tags.
+    - name: labels
+      level: extended
+      type: object
+      object_type: keyword
+      description: Image labels.
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Container name.
+    - name: runtime
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Runtime managing this container.
+      example: docker
+- name: dns
+  title: DNS
+  group: 2
+  description: "Fields describing DNS queries and answers.\nDNS events should either represent a single DNS query prior to getting answers (`dns.type:query`) or they should represent a full exchange and contain the query details as well as all of the answers that were provided for this query (`dns.type:answer`)."
+  type: group
+  fields:
+    - name: answers
+      level: extended
+      type: object
+      description: "An array containing an object for each answer section returned by the server.\nThe main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines.\nNot all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields."
+    - name: answers.class
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The class of DNS data contained in this resource record.
+      example: IN
+    - name: answers.data
+      level: extended
+      type: wildcard
+      description: "The data describing the resource.\nThe meaning of this data depends on the type and class of the resource record."
+      example: 10.10.10.10
+    - name: answers.name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "The domain name to which this resource record pertains.\nIf a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated."
+      example: www.example.com
+    - name: answers.ttl
+      level: extended
+      type: long
+      description: The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached.
+      example: 180
+    - name: answers.type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The type of data contained in this resource record.
+      example: CNAME
+    - name: header_flags
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "Array of 2 letter DNS header flags.\nExpected values are: AA, TC, RD, RA, AD, CD, DO."
+      example: '["RD", "RA"]'
+    - name: id
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response.
+      example: 62111
+    - name: op_code
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response.
+      example: QUERY
+    - name: question.class
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The class of records being queried.
+      example: IN
+    - name: question.name
+      level: extended
+      type: wildcard
+      description: 'The name being queried.
+
+        If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively.'
+      example: www.example.com
+    - name: question.registered_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The highest registered domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: question.subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain is all of the labels under the registered_domain.
+
+        If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: www
+    - name: question.top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+    - name: question.type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The type of record being queried.
+      example: AAAA
+    - name: resolved_ip
+      level: extended
+      type: ip
+      description: "Array containing all IPs seen in `answers.data`.\nThe `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for."
+      example: '["10.10.10.10", "10.10.10.11"]'
+    - name: response_code
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The DNS response code.
+      example: NOERROR
+    - name: type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "The type of DNS event captured, query or answer.\nIf your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`.\nIf your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers."
+      example: answer
+- name: ecs
+  title: ECS
+  group: 2
+  description: Meta-information specific to ECS.
+  type: group
+  fields:
+    - name: version
+      level: core
+      required: true
+      type: keyword
+      ignore_above: 1024
+      description: "ECS version this event conforms to. `ecs.version` is a required field and must exist in all events.\nWhen querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events."
+      example: 1.0.0
+- name: error
+  title: Error
+  group: 2
+  description: "These fields can represent errors of any kind.\nUse them for errors that happen while fetching events or in cases where the event itself contains an error."
+  type: group
+  fields:
+    - name: code
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Error code describing the error.
+    - name: id
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Unique identifier for the error.
+    - name: message
+      level: core
+      type: text
+      description: Error message.
+    - name: stack_trace
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: The stack trace of this error in plain text.
+    - name: type
+      level: extended
+      type: wildcard
+      description: The type of the error, for example the class name of the exception.
+      example: java.lang.NullPointerException
+- name: http
+  title: HTTP
+  group: 2
+  description: Fields related to HTTP activity. Use the `url` field set to store the url of the request.
+  type: group
+  fields:
+    - name: request.body.bytes
+      level: extended
+      type: long
+      format: bytes
+      description: Size in bytes of the request body.
+      example: 887
+    - name: request.body.content
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: The full HTTP request body.
+      example: Hello world
+    - name: request.bytes
+      level: extended
+      type: long
+      format: bytes
+      description: Total size in bytes of the request (body and headers).
+      example: 1437
+    - name: request.method
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'HTTP request method.
+
+        Prior to ECS 1.6.0 the following guidance was provided:
+
+        "The field value must be normalized to lowercase for querying."
+
+        As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0'
+      example: GET, POST, PUT, PoST
+    - name: request.mime_type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "Mime type of the body of the request.\nThis value must only be populated based on the content of the request body, not on the `Content-Type` header. Comparing the mime type of a request with the request's Content-Type header can be helpful in detecting threats or misconfigured clients."
+      example: image/gif
+      default_field: false
+    - name: request.referrer
+      level: extended
+      type: wildcard
+      description: Referrer for this HTTP request.
+      example: https://blog.example.com/
+    - name: response.body.bytes
+      level: extended
+      type: long
+      format: bytes
+      description: Size in bytes of the response body.
+      example: 887
+    - name: response.body.content
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: The full HTTP response body.
+      example: Hello world
+    - name: response.bytes
+      level: extended
+      type: long
+      format: bytes
+      description: Total size in bytes of the response (body and headers).
+      example: 1437
+    - name: response.mime_type
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "Mime type of the body of the response.\nThis value must only be populated based on the content of the response body, not on the `Content-Type` header. Comparing the mime type of a response with the response's Content-Type header can be helpful in detecting misconfigured servers."
+      example: image/gif
+      default_field: false
+    - name: response.status_code
+      level: extended
+      type: long
+      format: string
+      description: HTTP response status code.
+      example: 404
+    - name: version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: HTTP version.
+      example: 1.1
+- name: observer
+  title: Observer
+  group: 2
+  description: "An observer is defined as a special network, security, or application device used to detect, observe, or create network, security, or application-related events and metrics.\nThis could be a custom hardware appliance or a server that has been configured to run special network, security, or application software. Examples include firewalls, web proxies, intrusion detection/prevention systems, network monitoring sensors, web application firewalls, data loss prevention systems, and APM servers. The observer.* fields shall be populated with details of the system, if any, that detects, observes and/or creates a network, security, or application event or metric. Message queues and ETL components used in processing events or metrics are not considered observers in ECS."
+  type: group
+  fields:
+    - name: geo.city_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: City name.
+      example: Montreal
+    - name: geo.continent_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Name of the continent.
+      example: North America
+    - name: geo.country_iso_code
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Country ISO code.
+      example: CA
+    - name: geo.country_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Country name.
+      example: Canada
+    - name: geo.location
+      level: core
+      type: geo_point
+      description: Longitude and latitude.
+      example: '{ "lon": -73.614830, "lat": 45.505918 }'
+    - name: geo.name
+      level: extended
+      type: wildcard
+      description: "User-defined description of a location, at the level of granularity they care about.\nCould be the name of their data centers, the floor number, if this describes a local physical entity, city names.\nNot typically used in automated geolocation."
+      example: boston-dc
+    - name: geo.region_iso_code
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Region ISO code.
+      example: CA-QC
+    - name: geo.region_name
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Region name.
+      example: Quebec
+    - name: hostname
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Hostname of the observer.
+    - name: ip
+      level: core
+      type: ip
+      description: IP addresses of the observer.
+    - name: mac
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: MAC addresses of the observer
+    - name: name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: "Custom name of the observer.\nThis is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization.\nIf no custom name is needed, the field can be left empty."
+      example: 1_proxySG
+    - name: os.family
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: OS family (such as redhat, debian, freebsd, windows).
+      example: debian
+    - name: os.full
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Operating system name, including the version or code name.
+      example: Mac OS Mojave
+    - name: os.kernel
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system kernel version as a raw string.
+      example: 4.4.0-112-generic
+    - name: os.name
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Operating system name, without the version.
+      example: Mac OS X
+    - name: os.platform
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system platform (such centos, ubuntu, windows).
+      example: darwin
+    - name: os.version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Operating system version as a raw string.
+      example: 10.14.1
+    - name: product
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The product name of the observer.
+      example: s200
+    - name: serial_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Observer serial number.
+    - name: type
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: "The type of the observer the data is coming from.\nThere is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`."
+      example: firewall
+    - name: vendor
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Vendor name of the observer.
+      example: Symantec
+    - name: version
+      level: core
+      type: keyword
+      ignore_above: 1024
+      description: Observer version.
+- name: tls
+  title: TLS
+  group: 2
+  description: Fields related to a TLS connection. These fields focus on the TLS protocol itself and intentionally avoids in-depth analysis of the related x.509 certificate files.
+  type: group
+  fields:
+    - name: cipher
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: String indicating the cipher used during the current connection.
+      example: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+      default_field: false
+    - name: client.certificate
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: PEM-encoded stand-alone certificate offered by the client. This is usually mutually-exclusive of `client.certificate_chain` since this value also exists in that list.
+      example: MII...
+      default_field: false
+    - name: client.certificate_chain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Array of PEM-encoded certificates that make up the certificate chain offered by the client. This is usually mutually-exclusive of `client.certificate` since that value should be the first certificate in the chain.
+      example: '["MII...", "MII..."]'
+      default_field: false
+    - name: client.hash.md5
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Certificate fingerprint using the MD5 digest of DER-encoded version of certificate offered by the client. For consistency with other hash values, this value should be formatted as an uppercase hash.
+      example: 0F76C7F2C55BFD7D8E8B8F4BFBF0C9EC
+      default_field: false
+    - name: client.hash.sha1
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the client. For consistency with other hash values, this value should be formatted as an uppercase hash.
+      example: 9E393D93138888D288266C2D915214D1D1CCEB2A
+      default_field: false
+    - name: client.hash.sha256
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Certificate fingerprint using the SHA256 digest of DER-encoded version of certificate offered by the client. For consistency with other hash values, this value should be formatted as an uppercase hash.
+      example: 0687F666A054EF17A08E2F2162EAB4CBC0D265E1D7875BE74BF3C712CA92DAF0
+      default_field: false
+    - name: client.issuer
+      level: extended
+      type: wildcard
+      description: Distinguished name of subject of the issuer of the x.509 certificate presented by the client.
+      example: CN=Example Root CA, OU=Infrastructure Team, DC=example, DC=com
+      default_field: false
+    - name: client.ja3
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: A hash that identifies clients based on how they perform an SSL/TLS handshake.
+      example: d4e5b18d6b55c71272893221c96ba240
+      default_field: false
+    - name: client.not_after
+      level: extended
+      type: date
+      description: Date/Time indicating when client certificate is no longer considered valid.
+      example: "2021-01-01T00:00:00.000Z"
+      default_field: false
+    - name: client.not_before
+      level: extended
+      type: date
+      description: Date/Time indicating when client certificate is first considered valid.
+      example: "1970-01-01T00:00:00.000Z"
+      default_field: false
+    - name: client.server_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`.
+      example: www.elastic.co
+      default_field: false
+    - name: client.subject
+      level: extended
+      type: wildcard
+      description: Distinguished name of subject of the x.509 certificate presented by the client.
+      example: CN=myclient, OU=Documentation Team, DC=example, DC=com
+      default_field: false
+    - name: client.supported_ciphers
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Array of ciphers offered by the client during the client hello.
+      example: '["TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "..."]'
+      default_field: false
+    - name: client.x509.alternative_names
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses.
+      example: "*.elastic.co"
+      default_field: false
+    - name: client.x509.issuer.common_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of common name (CN) of issuing certificate authority.
+      example: Example SHA2 High Assurance Server CA
+      default_field: false
+    - name: client.x509.issuer.country
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of country (C) codes
+      example: US
+      default_field: false
+    - name: client.x509.issuer.distinguished_name
+      level: extended
+      type: wildcard
+      description: Distinguished name (DN) of issuing certificate authority.
+      example: C=US, O=Example Inc, OU=www.example.com, CN=Example SHA2 High Assurance Server CA
+      default_field: false
+    - name: client.x509.issuer.locality
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of locality names (L)
+      example: Mountain View
+      default_field: false
+    - name: client.x509.issuer.organization
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizations (O) of issuing certificate authority.
+      example: Example Inc
+      default_field: false
+    - name: client.x509.issuer.organizational_unit
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizational units (OU) of issuing certificate authority.
+      example: www.example.com
+      default_field: false
+    - name: client.x509.issuer.state_or_province
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of state or province names (ST, S, or P)
+      example: California
+      default_field: false
+    - name: client.x509.not_after
+      level: extended
+      type: date
+      description: Time at which the certificate is no longer considered valid.
+      example: 2020-07-16 03:15:39+00:00
+      default_field: false
+    - name: client.x509.not_before
+      level: extended
+      type: date
+      description: Time at which the certificate is first considered valid.
+      example: 2019-08-16 01:40:25+00:00
+      default_field: false
+    - name: client.x509.public_key_algorithm
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Algorithm used to generate the public key.
+      example: RSA
+      default_field: false
+    - name: client.x509.public_key_curve
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The curve used by the elliptic curve public key algorithm. This is algorithm specific.
+      example: nistp521
+      default_field: false
+    - name: client.x509.public_key_exponent
+      level: extended
+      type: long
+      description: Exponent used to derive the public key. This is algorithm specific.
+      example: 65537
+      index: false
+      default_field: false
+    - name: client.x509.public_key_size
+      level: extended
+      type: long
+      description: The size of the public key space in bits.
+      example: 2048
+      default_field: false
+    - name: client.x509.serial_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters.
+      example: 55FBB9C7DEBF09809D12CCAA
+      default_field: false
+    - name: client.x509.signature_algorithm
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353.
+      example: SHA256-RSA
+      default_field: false
+    - name: client.x509.subject.common_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of common names (CN) of subject.
+      example: shared.global.example.net
+      default_field: false
+    - name: client.x509.subject.country
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of country (C) code
+      example: US
+      default_field: false
+    - name: client.x509.subject.distinguished_name
+      level: extended
+      type: wildcard
+      description: Distinguished name (DN) of the certificate subject entity.
+      example: C=US, ST=California, L=San Francisco, O=Example, Inc., CN=shared.global.example.net
+      default_field: false
+    - name: client.x509.subject.locality
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of locality names (L)
+      example: San Francisco
+      default_field: false
+    - name: client.x509.subject.organization
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizations (O) of subject.
+      example: Example, Inc.
+      default_field: false
+    - name: client.x509.subject.organizational_unit
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizational units (OU) of subject.
+      default_field: false
+    - name: client.x509.subject.state_or_province
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of state or province names (ST, S, or P)
+      example: California
+      default_field: false
+    - name: client.x509.version_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of x509 format.
+      example: 3
+      default_field: false
+    - name: curve
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: String indicating the curve used for the given cipher, when applicable.
+      example: secp256r1
+      default_field: false
+    - name: established
+      level: extended
+      type: boolean
+      description: Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel.
+      default_field: false
+    - name: next_protocol
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: String indicating the protocol being tunneled. Per the values in the IANA registry (https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids), this string should be lower case.
+      example: http/1.1
+      default_field: false
+    - name: resumed
+      level: extended
+      type: boolean
+      description: Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation.
+      default_field: false
+    - name: server.certificate
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: PEM-encoded stand-alone certificate offered by the server. This is usually mutually-exclusive of `server.certificate_chain` since this value also exists in that list.
+      example: MII...
+      default_field: false
+    - name: server.certificate_chain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Array of PEM-encoded certificates that make up the certificate chain offered by the server. This is usually mutually-exclusive of `server.certificate` since that value should be the first certificate in the chain.
+      example: '["MII...", "MII..."]'
+      default_field: false
+    - name: server.hash.md5
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Certificate fingerprint using the MD5 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash.
+      example: 0F76C7F2C55BFD7D8E8B8F4BFBF0C9EC
+      default_field: false
+    - name: server.hash.sha1
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash.
+      example: 9E393D93138888D288266C2D915214D1D1CCEB2A
+      default_field: false
+    - name: server.hash.sha256
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Certificate fingerprint using the SHA256 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash.
+      example: 0687F666A054EF17A08E2F2162EAB4CBC0D265E1D7875BE74BF3C712CA92DAF0
+      default_field: false
+    - name: server.issuer
+      level: extended
+      type: wildcard
+      description: Subject of the issuer of the x.509 certificate presented by the server.
+      example: CN=Example Root CA, OU=Infrastructure Team, DC=example, DC=com
+      default_field: false
+    - name: server.ja3s
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: A hash that identifies servers based on how they perform an SSL/TLS handshake.
+      example: 394441ab65754e2207b1e1b457b3641d
+      default_field: false
+    - name: server.not_after
+      level: extended
+      type: date
+      description: Timestamp indicating when server certificate is no longer considered valid.
+      example: "2021-01-01T00:00:00.000Z"
+      default_field: false
+    - name: server.not_before
+      level: extended
+      type: date
+      description: Timestamp indicating when server certificate is first considered valid.
+      example: "1970-01-01T00:00:00.000Z"
+      default_field: false
+    - name: server.subject
+      level: extended
+      type: wildcard
+      description: Subject of the x.509 certificate presented by the server.
+      example: CN=www.example.com, OU=Infrastructure Team, DC=example, DC=com
+      default_field: false
+    - name: server.x509.alternative_names
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses.
+      example: "*.elastic.co"
+      default_field: false
+    - name: server.x509.issuer.common_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of common name (CN) of issuing certificate authority.
+      example: Example SHA2 High Assurance Server CA
+      default_field: false
+    - name: server.x509.issuer.country
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of country (C) codes
+      example: US
+      default_field: false
+    - name: server.x509.issuer.distinguished_name
+      level: extended
+      type: wildcard
+      description: Distinguished name (DN) of issuing certificate authority.
+      example: C=US, O=Example Inc, OU=www.example.com, CN=Example SHA2 High Assurance Server CA
+      default_field: false
+    - name: server.x509.issuer.locality
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of locality names (L)
+      example: Mountain View
+      default_field: false
+    - name: server.x509.issuer.organization
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizations (O) of issuing certificate authority.
+      example: Example Inc
+      default_field: false
+    - name: server.x509.issuer.organizational_unit
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizational units (OU) of issuing certificate authority.
+      example: www.example.com
+      default_field: false
+    - name: server.x509.issuer.state_or_province
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of state or province names (ST, S, or P)
+      example: California
+      default_field: false
+    - name: server.x509.not_after
+      level: extended
+      type: date
+      description: Time at which the certificate is no longer considered valid.
+      example: 2020-07-16 03:15:39+00:00
+      default_field: false
+    - name: server.x509.not_before
+      level: extended
+      type: date
+      description: Time at which the certificate is first considered valid.
+      example: 2019-08-16 01:40:25+00:00
+      default_field: false
+    - name: server.x509.public_key_algorithm
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Algorithm used to generate the public key.
+      example: RSA
+      default_field: false
+    - name: server.x509.public_key_curve
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The curve used by the elliptic curve public key algorithm. This is algorithm specific.
+      example: nistp521
+      default_field: false
+    - name: server.x509.public_key_exponent
+      level: extended
+      type: long
+      description: Exponent used to derive the public key. This is algorithm specific.
+      example: 65537
+      index: false
+      default_field: false
+    - name: server.x509.public_key_size
+      level: extended
+      type: long
+      description: The size of the public key space in bits.
+      example: 2048
+      default_field: false
+    - name: server.x509.serial_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters.
+      example: 55FBB9C7DEBF09809D12CCAA
+      default_field: false
+    - name: server.x509.signature_algorithm
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353.
+      example: SHA256-RSA
+      default_field: false
+    - name: server.x509.subject.common_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of common names (CN) of subject.
+      example: shared.global.example.net
+      default_field: false
+    - name: server.x509.subject.country
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of country (C) code
+      example: US
+      default_field: false
+    - name: server.x509.subject.distinguished_name
+      level: extended
+      type: wildcard
+      description: Distinguished name (DN) of the certificate subject entity.
+      example: C=US, ST=California, L=San Francisco, O=Example, Inc., CN=shared.global.example.net
+      default_field: false
+    - name: server.x509.subject.locality
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of locality names (L)
+      example: San Francisco
+      default_field: false
+    - name: server.x509.subject.organization
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizations (O) of subject.
+      example: Example, Inc.
+      default_field: false
+    - name: server.x509.subject.organizational_unit
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizational units (OU) of subject.
+      default_field: false
+    - name: server.x509.subject.state_or_province
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of state or province names (ST, S, or P)
+      example: California
+      default_field: false
+    - name: server.x509.version_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of x509 format.
+      example: 3
+      default_field: false
+    - name: version
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Numeric part of the version parsed from the original string.
+      example: "1.2"
+      default_field: false
+    - name: version_protocol
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Normalized lowercase protocol name parsed from original string.
+      example: tls
+      default_field: false
+- name: url
+  title: URL
+  group: 2
+  description: URL fields provide support for complete or partial URLs, and supports the breaking down into scheme, domain, path, and so on.
+  type: group
+  fields:
+    - name: domain
+      level: extended
+      type: wildcard
+      description: 'Domain of the url, such as "www.elastic.co".
+
+        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.'
+      example: www.elastic.co
+    - name: extension
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The field contains the file extension from the original request url, excluding the leading dot.
+
+        The file extension is only set if it exists, as not every url has a file extension.
+
+        The leading period must not be included. For example, the value must be "png", not ".png".
+
+        Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz").'
+      example: png
+    - name: fragment
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Portion of the url after the `#`, such as "top".
+
+        The `#` is not part of the fragment.'
+    - name: full
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
+      example: https://www.elastic.co:443/search?q=elasticsearch#top
+    - name: original
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: "Unmodified original url as seen in the event source.\nNote that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path.\nThis field is meant to represent the URL as it was observed, complete or not."
+      example: https://www.elastic.co:443/search?q=elasticsearch#top or /search?q=elasticsearch
+    - name: password
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Password of the request.
+    - name: path
+      level: extended
+      type: wildcard
+      description: Path of the request, such as "/search".
+    - name: port
+      level: extended
+      type: long
+      format: string
+      description: Port of the request, such as 443.
+      example: 443
+    - name: query
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The query field describes the query string of the request, such as "q=elasticsearch".
+
+        The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.'
+    - name: registered_domain
+      level: extended
+      type: wildcard
+      description: 'The highest registered url domain, stripped of the subdomain.
+
+        For example, the registered domain for "foo.example.com" is "example.com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk".'
+      example: example.com
+    - name: scheme
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Scheme of the request, such as "https".
+
+        Note: The `:` is not part of the scheme.'
+      example: https
+    - name: subdomain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.
+
+        For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period.'
+      example: east
+      default_field: false
+    - name: top_level_domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".
+
+        This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk".'
+      example: co.uk
+    - name: username
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Username of the request.
+- name: x509
+  title: x509 Certificate
+  group: 2
+  description: "This implements the common core fields for x509 certificates. This information is likely logged with TLS sessions, digital signatures found in executable binaries, S/MIME information in email bodies, or analysis of files on disk.\nWhen the certificate relates to a file, use the fields at `file.x509`. When hashes of the DER-encoded certificate are available, the `hash` data set should be populated as well (e.g. `file.hash.sha256`).\nEvents that contain certificate information about network connections, should use the x509 fields under the relevant TLS fields: `tls.server.x509` and/or `tls.client.x509`."
+  type: group
+  fields:
+    - name: alternative_names
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses.
+      example: "*.elastic.co"
+      default_field: false
+    - name: issuer.common_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of common name (CN) of issuing certificate authority.
+      example: Example SHA2 High Assurance Server CA
+      default_field: false
+    - name: issuer.country
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of country (C) codes
+      example: US
+      default_field: false
+    - name: issuer.distinguished_name
+      level: extended
+      type: wildcard
+      description: Distinguished name (DN) of issuing certificate authority.
+      example: C=US, O=Example Inc, OU=www.example.com, CN=Example SHA2 High Assurance Server CA
+      default_field: false
+    - name: issuer.locality
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of locality names (L)
+      example: Mountain View
+      default_field: false
+    - name: issuer.organization
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizations (O) of issuing certificate authority.
+      example: Example Inc
+      default_field: false
+    - name: issuer.organizational_unit
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizational units (OU) of issuing certificate authority.
+      example: www.example.com
+      default_field: false
+    - name: issuer.state_or_province
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of state or province names (ST, S, or P)
+      example: California
+      default_field: false
+    - name: not_after
+      level: extended
+      type: date
+      description: Time at which the certificate is no longer considered valid.
+      example: 2020-07-16 03:15:39+00:00
+      default_field: false
+    - name: not_before
+      level: extended
+      type: date
+      description: Time at which the certificate is first considered valid.
+      example: 2019-08-16 01:40:25+00:00
+      default_field: false
+    - name: public_key_algorithm
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Algorithm used to generate the public key.
+      example: RSA
+      default_field: false
+    - name: public_key_curve
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: The curve used by the elliptic curve public key algorithm. This is algorithm specific.
+      example: nistp521
+      default_field: false
+    - name: public_key_exponent
+      level: extended
+      type: long
+      description: Exponent used to derive the public key. This is algorithm specific.
+      example: 65537
+      index: false
+      default_field: false
+    - name: public_key_size
+      level: extended
+      type: long
+      description: The size of the public key space in bits.
+      example: 2048
+      default_field: false
+    - name: serial_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters.
+      example: 55FBB9C7DEBF09809D12CCAA
+      default_field: false
+    - name: signature_algorithm
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353.
+      example: SHA256-RSA
+      default_field: false
+    - name: subject.common_name
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of common names (CN) of subject.
+      example: shared.global.example.net
+      default_field: false
+    - name: subject.country
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of country (C) code
+      example: US
+      default_field: false
+    - name: subject.distinguished_name
+      level: extended
+      type: wildcard
+      description: Distinguished name (DN) of the certificate subject entity.
+      example: C=US, ST=California, L=San Francisco, O=Example, Inc., CN=shared.global.example.net
+      default_field: false
+    - name: subject.locality
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of locality names (L)
+      example: San Francisco
+      default_field: false
+    - name: subject.organization
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizations (O) of subject.
+      example: Example, Inc.
+      default_field: false
+    - name: subject.organizational_unit
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of organizational units (OU) of subject.
+      default_field: false
+    - name: subject.state_or_province
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: List of state or province names (ST, S, or P)
+      example: California
+      default_field: false
+    - name: version_number
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: Version of x509 format.
+      example: 3
+      default_field: false
