@@ -1,0 +1,75 @@
+name: zerofox_threatfeed
+title: ZeroFOX ThreatFeed
+version: 0.1.3
+release: experimental
+description: ZeroFOX ThreatFeed Indicators
+type: integration
+format_version: 1.0.0
+license: basic
+icons:
+  - src: /img/logo.svg
+    title: logo ZeroFOX
+    size: 32x32
+    type: image/svg+xml
+categories:
+  - cloud
+  - security
+conditions:
+  kibana.version: ^7.12.1
+policy_templates:
+  - name: zerofox_threatfeed
+    title: ZeroFOX Threatfeed
+    description: Collect indicators from the ZeroFOX Threatfeed API
+    inputs:
+      - type: httpjson
+        vars:
+          - name: http_client_timeout
+            type: text
+            title: Http Client Timeout
+            description: Duration of the time limit on HTTP requests.
+            multi: false
+            required: true
+            show_user: true
+            default: 60s
+          - name: url
+            type: text
+            title: ZeroFOX Threatfeed API URL
+            multi: false
+            required: true
+            show_user: true
+            default: https://tg-api.zerofox.com/indicators/
+          - name: zerofox_threatfeed_api_token
+            type: password
+            title: ZeroFOX Threatfeed API Token
+            description: zerofox threatfeed api token
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: How far back to pull the initial indicators
+            multi: false
+            required: true
+            show_user: true
+            default: 48h
+          - name: interval
+            type: text
+            title: Periodic Polling Interval
+            description: How often to poll the ZeroFOX API for new indicators
+            multi: false
+            required: true
+            show_user: true
+            default: 1h
+          - name: tags
+            type: text
+            title: Tags
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - forwarded
+        title: "Collect indicator logs (input: httpjson)"
+        description: "Collecting indicator logs (input: httpjson)"
+owner:
+  github: elastic/security-external-integrations
