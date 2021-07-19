@@ -1,0 +1,135 @@
+---
+description: Pipeline for parsing zerofox alerts
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "1.9.0"
+
+  - rename:
+      field: message
+      target_field: event.original
+
+  - json:
+      field: event.original
+      target_field: zerofox
+
+  - set:
+      field: zerofox.severity
+      value: info
+      if: ctx?.zerofox?.severity == 1
+  - set:
+      field: zerofox.severity
+      value: low
+      if: ctx?.zerofox?.severity == 2
+  - set:
+      field: zerofox.severity
+      value: medium
+      if: ctx?.zerofox?.severity == 3
+  - set:
+      field: zerofox.severity
+      value: high
+      if: ctx?.zerofox?.severity == 4
+  - set:
+      field: zerofox.severity
+      value: critical
+      if: ctx?.zerofox?.severity == 5
+
+  - convert:
+      field: zerofox.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.asset_term.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.entity.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.entity.entity_group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.entity_term.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.perpetrator.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.rule_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.rule_group_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.asset.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - convert:
+      field: zerofox.asset.entity_group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+
+  - json:
+      field: zerofox.metadata
+      ignore_failure: true
+
+ ## Cleanup.
+
+  - remove:
+      field:
+        - zerofox.logs
+        - zerofox.entered_by
+        - zerofox.asset_term
+        - zerofox.entity_term
+        - zerofox.business_network
+        - zerofox.entity_email_receiver_id
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Remove all empty values from zerofox.perpetrator.
+      lang: painless
+      if: ctx?.zerofox?.perpetrator != null
+      source: ctx.zerofox.perpetrator?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
+  - script:
+      description: Remove all empty values from zerofox.metadata.
+      lang: painless
+      if: ctx?.zerofox?.metadata != null
+      source: ctx?.zerofox?.metadata?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
+  - script:
+      description: Remove all empty values from zerofox.
+      lang: painless
+      if: ctx?.zerofox != null
+      source: ctx?.zerofox?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
