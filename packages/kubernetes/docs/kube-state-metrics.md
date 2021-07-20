@@ -149,6 +149,7 @@ An example event for `state_container` looks as following:
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
 | kubernetes.container.status.reason | Waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or termination (Completed, ContainerCannotRun, Error, OOMKilled) reason. | keyword |  |  |
 | kubernetes.container.status.restarts | Container restarts count | integer |  | counter |
+| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
@@ -1272,6 +1273,7 @@ An example event for `state_pod` looks as following:
 | kubernetes.annotations.* | Kubernetes annotations map | object |
 | kubernetes.container.image | Kubernetes container image | keyword |
 | kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.labels.* | Kubernetes labels map | object |
 | kubernetes.namespace | Kubernetes namespace | keyword |
