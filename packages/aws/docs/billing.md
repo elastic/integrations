@@ -81,6 +81,8 @@ An example event for `billing` looks as following:
 | aws.billing.start_date | Start date for retrieving AWS costs. | keyword |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.* | Metric dimensions. | object |
+| aws.linked_account.id | ID used to identify linked account. | keyword |
+| aws.linked_account.name | Name or alias used to identify linked account. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.* | Tag key value pairs from aws resources. | object |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
