@@ -72,6 +72,7 @@ entropy will be out of a total pool size of 4096.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -90,6 +91,8 @@ entropy will be out of a total pool size of 4096.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| service.version | Version of the service the data was collected from. This allows users to look at a data set for a specific version of a service. | keyword |
 | system.entropy.available_bits | The available bits of entropy | long |
 | system.entropy.pct | The percentage of available entropy, relative to the pool size of 4096 | scaled_float |
 
@@ -120,6 +123,7 @@ operating system. These events are global and sorted by protocol.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -138,6 +142,8 @@ operating system. These events are global and sorted by protocol.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| service.version | Version of the service the data was collected from. This allows users to look at a data set for a specific version of a service. | keyword |
 | system.network_summary.icmp.* | ICMP counters | object |
 | system.network_summary.ip.* | IP counters | object |
 | system.network_summary.tcp.* | TCP counters | object |
