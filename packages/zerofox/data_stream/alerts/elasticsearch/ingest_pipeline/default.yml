@@ -101,14 +101,75 @@ processors:
       field: zerofox.metadata
       ignore_failure: true
 
+  # ECS
+  - rename:
+      field: zerofox.rule_id
+      target_field: rule.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.rule_name
+      target_field: rule.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.rule_group_id
+      target_field: rule.ruleset
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.assignee
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.network
+      target_field: network.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.protected_locations
+      target_field: geo.location
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.id
+      target_field: event.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.alert_type
+      target_field: event.alert_type
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.offending_content_url
+      target_field: event.url
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.content_created_at
+      target_field: event.ingested
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.timestamp
+      target_field: event.created
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: zerofox.severity
+      target_field: event.severity
+      ignore_missing: true
+      ignore_failure: true
+
  ## Cleanup.
 
   - remove:
       field:
-        - zerofox.logs
         - zerofox.entered_by
+        - zerofox.asset
         - zerofox.asset_term
-        - zerofox.entity_term
         - zerofox.business_network
         - zerofox.entity_email_receiver_id
       ignore_missing: true
@@ -133,3 +194,4 @@ on_failure:
   - set:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
+
