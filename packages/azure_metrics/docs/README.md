@@ -67,6 +67,133 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
+| azure.resource.name | The name of the resource | keyword |
+| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.type | The type of the resource | keyword |
+| azure.subscription_id | The subscription ID | keyword |
+| azure.timegrain | The Azure metric timegrain | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| container.runtime | Container runtime. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip address. | ip |
+| host.mac | Host mac address. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.address | Service address | keyword |
+| service.type | Service type | keyword |
+
+
+`compute_vm`
+This dataset will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm` dataset should be `300s` or multiples of `300s`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.application_id | The application ID | keyword |
+| azure.compute_vm.*.* | compute_vm | object |
+| azure.dimensions.* | Azure metric dimensions. | object |
+| azure.metrics.*.* | Metrics returned. | object |
+| azure.namespace | The namespace selected | keyword |
+| azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
+| azure.resource.name | The name of the resource | keyword |
+| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.type | The type of the resource | keyword |
+| azure.subscription_id | The subscription ID | keyword |
+| azure.timegrain | The Azure metric timegrain | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| container.runtime | Container runtime. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip address. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. | keyword |
+| service.address | Service address | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+
+
+`compute_vm_scaleset`
+This dataset will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm_scaleset` dataset should be `300s` or multiples of `300s`.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.application_id | The application ID | keyword |
+| azure.compute_vm_scaleset.*.* | compute_vm_scaleset | object |
+| azure.dimensions.* | Azure metric dimensions. | object |
+| azure.metrics.*.* | Metrics returned. | object |
+| azure.namespace | The namespace selected | keyword |
+| azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -109,131 +236,7 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
-
-
-`compute_vm`
-This dataset will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm` dataset should be `300s` or multiples of `300s`.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| azure.application_id | The application ID | keyword |
-| azure.compute_vm.*.* | compute_vm | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
-| azure.namespace | The namespace selected | keyword |
-| azure.resource.group | The resource group | keyword |
-| azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
-| azure.resource.type | The type of the resource | keyword |
-| azure.subscription_id | The subscription ID | keyword |
-| azure.timegrain | The Azure metric timegrain | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Container runtime. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.full | Operating system name, including the version or code name. | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.address | Service address | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-
-
-`compute_vm_scaleset`
-This dataset will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm_scaleset` dataset should be `300s` or multiples of `300s`.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| azure.application_id | The application ID | keyword |
-| azure.compute_vm_scaleset.*.* | compute_vm_scaleset | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
-| azure.namespace | The namespace selected | keyword |
-| azure.resource.group | The resource group | keyword |
-| azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
-| azure.resource.type | The type of the resource | keyword |
-| azure.subscription_id | The subscription ID | keyword |
-| azure.timegrain | The Azure metric timegrain | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Container runtime. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.full | Operating system name, including the version or code name. | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.type | Type of host. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -252,6 +255,7 @@ so the `period` for `storage_account` dataset should be `300s` or multiples of `
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -285,7 +289,7 @@ so the `period` for `storage_account` dataset should be `300s` or multiples of `
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -295,7 +299,7 @@ so the `period` for `storage_account` dataset should be `300s` or multiples of `
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.type | Type of host. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -315,6 +319,7 @@ so the `period` for `container_instance` dataset should be `300s` or multiples o
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -347,7 +352,7 @@ so the `period` for `container_instance` dataset should be `300s` or multiples o
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -357,7 +362,7 @@ so the `period` for `container_instance` dataset should be `300s` or multiples o
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.type | Type of host. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -377,6 +382,7 @@ so the `period` for `container_registry` dataset should be `300s` or multiples o
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -409,7 +415,7 @@ so the `period` for `container_registry` dataset should be `300s` or multiples o
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -419,7 +425,7 @@ so the `period` for `container_registry` dataset should be `300s` or multiples o
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.type | Type of host. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -439,6 +445,7 @@ so the `period` for `container_service` dataset should be `300s` or multiples of
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -471,7 +478,7 @@ so the `period` for `container_service` dataset should be `300s` or multiples of
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -481,7 +488,7 @@ so the `period` for `container_service` dataset should be `300s` or multiples of
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.type | Type of host. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -501,6 +508,7 @@ so the `period` for `database_account` dataset should be `300s` or multiples of 
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -533,7 +541,7 @@ so the `period` for `database_account` dataset should be `300s` or multiples of 
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -543,7 +551,7 @@ so the `period` for `database_account` dataset should be `300s` or multiples of 
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.type | Type of host. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 

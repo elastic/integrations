@@ -63,6 +63,7 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 | azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
@@ -95,7 +96,7 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip address. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host mac address. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
