@@ -109,7 +109,7 @@ We recommend using the Remote Write dataset for this, and make Prometheus push m
 
 In order to filter out/in metrics one can make use of `Metrics Filters Include`, `Metrics Filters Exclude` settings:
 
-```$yml
+```yml
 Metrics Filters Include: ["node_filesystem_*"]
 Metrics Filters Exclude: ["node_filesystem_device_*"]
 ```
@@ -122,7 +122,7 @@ To keep only specific metrics, anchor the start and the end of the regexp of eac
 - the caret ^ matches the beginning of a text or line,
 - the dollar sign $ matches the end of a text.
 
-```$yml
+```yml
 Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
 
@@ -139,7 +139,7 @@ The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 setting accordingly, for instance:
 
-```$yml
+```yml
 remote_write:
   - url: "http://localhost:9201/write"
 ```
@@ -164,7 +164,7 @@ be able to cover `max_samples_per_send`.
 Metrics sent to the http endpoint will be put by default under the `prometheus.metrics` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
-```$yml
+```yml
 host: "localhost"
 port: "9201"
 ```
@@ -172,7 +172,7 @@ port: "9201"
 
 Also consider using secure settings for the server, configuring the module with TLS/SSL as shown:
 
-```$yml
+```yml
 host: "localhost"
 ssl.certificate: "/etc/pki/server/cert.pem"
 ssl.key: "/etc/pki/server/cert.key"
@@ -181,7 +181,7 @@ port: "9201"
 
 and on Prometheus side:
 
-```$yml
+```yml
 remote_write:
   - url: "https://localhost:9201/write"
     tls_config:
@@ -250,7 +250,7 @@ Summary's quantiles are handled as Gauges and Summary's sum and count as Counter
 
 Users have the flexibility to add their own patterns using the following configuration:
 
-```$yml
+```yml
 types_patterns:
     counter_patterns: ["_my_counter_suffix"]
     histogram_patterns: ["_my_histogram_suffix"]
@@ -265,7 +265,7 @@ To match only specific metrics, anchor the start and the end of the regexp of ea
 - the caret `^` matches the beginning of a text or line,
 - the dollar sign `$` matches the end of a text.
 
-```$yml
+```yml
 types_patterns:
     histogram_patterns: ["^my_histogram_metric$"]
 ```
@@ -281,7 +281,7 @@ The Prometheus `query` dataset to query from [querying API of Prometheus](https:
 #### Instant queries
 
 The following configuration performs an instant query for `up` metric at a single point in time:
-```$yml
+```yml
 queries:
 - name: 'up'
   path: '/api/v1/query'
@@ -292,7 +292,7 @@ queries:
 
 More complex PromQL expressions can also be used like the following one which calculates the per-second rate of HTTP
 requests as measured over the last 5 minutes.
-```$yml
+```yml
 queries:
 - name: "rate_http_requests_total"
   path: "/api/v1/query"
@@ -304,7 +304,7 @@ queries:
 
 
 The following example evaluates the expression `up` over a 30-second range with a query resolution of 15 seconds:
-```$yml
+```yml
 queries:
 - name: "up_master"
   path: "/api/v1/query_range"

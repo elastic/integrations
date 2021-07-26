@@ -2,6 +2,10 @@
 
 ## Metrics
 
+If Leader Election is activated (default behaviour) only the `elastic agent` which holds the leadership lock
+will retrieve metrics from the `kube_state_metrics`.
+This is relevant in multi-node kubernetes cluster and prevents duplicate data.
+
 ### state_container
 
 This is the `state_container` dataset of the Kubernetes package. It collects container related
@@ -37,6 +41,15 @@ metrics from `kube_state_metrics`.
 {{event "state_deployment"}}
 
 {{fields "state_deployment"}}
+
+### state_job
+
+This is the `state_job` dataset of the Kubernetes package. It collects job related
+metrics from `kube_state_metrics`.
+
+{{event "state_job"}}
+
+{{fields "state_job"}}
 
 ### state_node
 
