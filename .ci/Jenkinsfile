@@ -93,10 +93,10 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          stashCoverageReport()
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                          stashCoverageReport()
                         }
                       }
 
@@ -116,13 +116,7 @@ pipeline {
   }
   post {
     always {
-      withNode(labels: 'ubuntu-20 && immutable') {
-        stage('Publish coverage reports') {
-          dir("${BASE_DIR}") {
-            publishCoverageReports()
-          }
-        }
-      }
+      publishCoverageReports()
     }
     cleanup {
       notifyBuildResult(prComment: true)
@@ -274,9 +268,13 @@ def stashCoverageReport() {
 }
 
 def publishCoverageReports() {
-  def bucketUri = getCoverageBucketURI() + "*.xml"
-  googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
-  coverageReport('build/test-coverage')
+  stage('Publish coverage reports') {
+    dir("${BASE_DIR}") {
+      def bucketUri = getCoverageBucketURI() + "*.xml"
+      googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
+      coverageReport('build/test-coverage')
+    }
+  }
 }
 
 def getCoverageBucketURI() {
