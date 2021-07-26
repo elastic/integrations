@@ -92,7 +92,7 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          coverageReport('build/test-coverage')
+                          stashCoverageReport(it)
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
@@ -114,6 +114,9 @@ pipeline {
     }
   }
   post {
+    always {
+      publishCoverageReports()
+    }
     cleanup {
       notifyBuildResult(prComment: true)
     }
@@ -255,5 +258,18 @@ def isPackageCompatible(integrationName, stackVersion) {
 
     echo "Package is not compatible. Skipping."
     return false
+  }
+}
+
+def stashCoverageReport(integrationName) {
+  dir("${BASE_DIR}") {
+    // TODO upload report for integration
+  }
+}
+
+def publishCoverageReports() {
+  dir("${BASE_DIR}") {
+    // TODO download reports
+    coverageReport('build/test-coverage')
   }
 }
