@@ -259,7 +259,7 @@ so the `period` for `storage_account` dataset should be `300s` or multiples of `
 | azure.resource.name | The name of the resource | keyword |
 | azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
-| azure.storage.*.* | storage account | object |
+| azure.storage_account.*.* | storage account | object |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
