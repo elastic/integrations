@@ -116,9 +116,11 @@ pipeline {
   }
   post {
     always {
-      stage('Publish coverage reports') {
-        dir("${BASE_DIR}") {
-          publishCoverageReports()
+      withNode(labels: 'ubuntu-20 && immutable') {
+        stage('Publish coverage reports') {
+          dir("${BASE_DIR}") {
+            publishCoverageReports()
+          }
         }
       }
     }
