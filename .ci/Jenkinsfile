@@ -116,7 +116,9 @@ pipeline {
   }
   post {
     always {
-      publishCoverageReports()
+      dir("${BASE_DIR}") {
+        publishCoverageReports()
+      }
     }
     cleanup {
       notifyBuildResult(prComment: true)
@@ -268,11 +270,9 @@ def stashCoverageReport() {
 }
 
 def publishCoverageReports() {
-  dir("${BASE_DIR}") {
-    def bucketUri = getCoverageBucketURI() + "*.xml"
-    googleStorageDownload(bucketUri: bucketUri, localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
-    coverageReport('build/test-coverage')
-  }
+  def bucketUri = getCoverageBucketURI() + "*.xml"
+  googleStorageDownload(bucketUri: bucketUri, localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
+  coverageReport('build/test-coverage')
 }
 
 def getCoverageBucketURI() {
