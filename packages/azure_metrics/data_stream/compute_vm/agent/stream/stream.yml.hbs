@@ -30,7 +30,7 @@ resources:
     - resource_group: "{{this}}"
       resource_type: "Microsoft.Compute/virtualMachines"
       metrics:
-        - name: ["Percentage CPU","Network In","Inbound Flows Maximum Creation Rate","Outbound Flows Maximum Creation Rate","Disk Read Bytes","Network In Total"]
+        - name: "*"
           namespace: "Microsoft.Compute/virtualMachines"
           timegrain: "PT5M"
           ignore_unsupported: true
@@ -43,7 +43,6 @@ resources:
 {{#if resource_ids}}
 {{#each resource_ids}}
     - resource_id: "{{this}}"
-      resource_type: "Microsoft.Compute/virtualMachines"
       metrics:
         - name: ["Percentage CPU","Network In","Inbound Flows Maximum Creation Rate","Outbound Flows Maximum Creation Rate","Disk Read Bytes","Network In Total"]
           namespace: "Microsoft.Compute/virtualMachines"
@@ -55,3 +54,17 @@ resources:
           ignore_unsupported: true
 {{/each}}
 {{/if}}
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+    - resource_query: "resourceType eq 'Microsoft.Compute/virtualMachines'"
+      metrics:
+        - name: "*"
+          namespace: "Microsoft.Compute/virtualMachines"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: "*"
+          namespace: "Azure.VM.Windows.GuestMetrics"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+    {{/unless}}
+{{/unless}}

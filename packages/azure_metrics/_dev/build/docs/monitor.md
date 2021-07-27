@@ -7,7 +7,7 @@ The azure monitor metrics are numerical values that describe some aspect of a sy
 The Azure Resource Metrics will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
 Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
-### Module-specific configuration notes
+## Integration specific configuration notes
 
 All the tasks executed against the Azure Monitor REST API will use the Azure Resource Manager authentication model.
 Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
@@ -54,7 +54,7 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 {{fields "monitor"}}
 
 
-### Additional notes about metrics and costs
+## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 

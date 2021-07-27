@@ -5,7 +5,7 @@ The Azure Compute Scaleset VM data stream collects and aggregates storage accoun
 The Azure Compute Scaleset will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
 Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
-### Integration configuration notes
+## Integration configuration notes
 
 All the tasks executed against the Azure Monitor REST API will use the Azure Resource Manager authentication model.
 Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
@@ -109,7 +109,7 @@ so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s
 
 
 
-### Additional notes about metrics and costs
+## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 
