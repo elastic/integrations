@@ -23,6 +23,29 @@ processors:
   - json:
       field: event.original
       target_field: azure.platformlogs
+      on_failure:
+        - grok:
+            field: event.original
+            patterns:
+              - "resourceId\": ?\"%{DATA:azure.platformlogs.resourceId}\""
+            ignore_failure: true
+            ignore_missing: true
+        - grok:
+            field: event.original
+            patterns:
+              - "category\": ?\"%{DATA:azure.platformlogs.category}\""
+            ignore_failure: true
+            ignore_missing: true
+        - grok:
+            field: event.original
+            patterns:
+              - "time\": ?\"%{DATA:azure.platformlogs.time}\""
+            ignore_failure: true
+            ignore_missing: true
+        - set:
+            field: error.message
+            value: 'invalid json log'
+            ignore_failure: true
   - date:
       field: azure.platformlogs.time
       target_field: '@timestamp'
