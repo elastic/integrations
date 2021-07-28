@@ -9,7 +9,7 @@ The azure monitor metrics are numerical values that describe some aspect of a sy
 The Azure Resource Metrics will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
 Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
-###Module-specific configuration notes
+## Integration specific configuration notes
 
 All the tasks executed against the Azure Monitor REST API will use the Azure Resource Manager authentication model.
 Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
@@ -51,58 +51,58 @@ https://login.microsoftonline.de for azure USGovernmentCloud
 
 
 
-###Datasets
+## Data streams
 
  `monitor`
-This dataset allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
+This data stream allows users to retrieve metrics from specified resources. Added filters can apply here as the interval of retrieving these metrics, metric names,
 aggregation list, namespaces and metric dimensions. The monitor metrics will have a minimum timegrain of 5 minutes, so the `period` for `monitor` dataset should be `300s` or multiples of `300s`.
 
 {{fields "monitor"}}
 
 `compute_vm`
-This dataset will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 
 {{fields "compute_vm"}}
 
 `compute_vm_scaleset`
-This dataset will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm_scaleset` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
 
 {{fields "compute_vm_scaleset"}}
 
  `storage_account`
-This dataset will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
-so the `period` for `storage_account` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
+so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 
 {{fields "storage_account"}}
 
 `container_instance`
-This dataset will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
-so the `period` for `container_instance` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from specified container groups, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_instance` should be `300s` or multiples of `300s`.
 
 {{fields "container_instance"}}
 
 `container_registry`
-This dataset will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
-so the `period` for `container_registry` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from the container registries, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_registry` should be `300s` or multiples of `300s`.
 
 {{fields "container_registry"}}
 
 `container_service`
-This dataset will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
-so the `period` for `container_service` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from the container services, these metrics will have a timegrain every 5 minutes,
+so the `period` for `container_service` should be `300s` or multiples of `300s`.
 
 {{fields "container_service"}}
 
 `database_account`
-This dataset will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
-so the `period` for `database_account` dataset should be `300s` or multiples of `300s`.
+This data stream will collect relevant metrics from specified database accounts, these metrics will have a timegrain every 5 minutes,
+so the `period` for `database_account` should be `300s` or multiples of `300s`.
 
 {{fields "database_account"}}
 
 
-###Additional notes about metrics and costs
+## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 
