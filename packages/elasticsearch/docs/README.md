@@ -1,10 +1,10 @@
 # Elasticsearch
 
-The `elasticsearch` module collects metrics about elasticsearch.
+The `elasticsearch` package collects metrics and logs of Elasticsearch.
 
 ## Compatibility
 
-The `elasticsearch` module works with elasticsearch 6.7.0 and later.
+The `elasticsearch` package can monitor Elasticsearch 6.7.0 and later.
 
 ## Usage for Stack Monitoring
 
@@ -18,6 +18,6 @@ This setting can contain a list of entries. The related `scope` setting determin
 the `hosts` list is interpreted by the module.
 
 * If `scope` is set to `node` (default), each entry in the `hosts` list indicates a distinct node in an
-  elasticsearch cluster.
+  Elasticsearch cluster.
 * If `scope` is set to `cluster`, each entry in the `hosts` list indicates a single endpoint for a distinct
-  elasticsearch cluster (for example, a load-balancing proxy fronting the cluster).
+  Elasticsearch cluster (for example, a load-balancing proxy fronting the cluster).
