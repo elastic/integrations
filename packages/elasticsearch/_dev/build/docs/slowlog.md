@@ -1,0 +1,5 @@
+# Slowlog
+
+## Logs
+
+{{fields "slowlog"}}
