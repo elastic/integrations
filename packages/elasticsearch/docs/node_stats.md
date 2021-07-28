@@ -182,10 +182,10 @@ An example event for `node_stats` looks as following:
                         "memory": {
                             "control_group": "/",
                             "limit": {
-                                "bytes": "9223372036854771712"
+                                "bytes": 9223372036854771712
                             },
                             "usage": {
-                                "bytes": "1508503552"
+                                "bytes": 1508503552
                             }
                         }
                     },
@@ -237,11 +237,6 @@ An example event for `node_stats` looks as following:
     "metricset": {
         "name": "node_stats",
         "period": 10000
-    },
-    "service": {
-        "address": "localhost:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
     }
 }
 ```

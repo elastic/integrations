@@ -36,10 +36,6 @@ An example event for `enrich` looks as following:
     "metricset": {
         "name": "enrich",
         "period": 10000
-    },
-    "service": {
-        "address": "127.0.0.1:51380",
-        "type": "elasticsearch"
     }
 }
 ```

@@ -25,8 +25,8 @@ An example event for `shard` looks as following:
             "number": 0,
             "primary": true,
             "relocating_node": {
-                "id": null,
-                "name": null
+                "id": "",
+                "name": ""
             },
             "source_node": {
                 "name": "1fb2aa83efac",
@@ -43,10 +43,6 @@ An example event for `shard` looks as following:
     "metricset": {
         "name": "shard",
         "period": 10000
-    },
-    "service": {
-        "address": "127.0.0.1:44037",
-        "type": "elasticsearch"
     }
 }
 ```
@@ -104,6 +100,7 @@ An example event for `shard` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
+| elasticsearch.index.name |  | keyword |
 | elasticsearch.node.id | Node ID | keyword |
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |

@@ -63,10 +63,7 @@ An example event for `cluster_stats` looks as following:
                             }
                         }
                     },
-                    "master": 1,
-                    "versions": [
-                        "8.0.0"
-                    ]
+                    "master": 1
                 },
                 "stack": {
                     "xpack": {
@@ -78,19 +75,6 @@ An example event for `cluster_stats` looks as following:
                 },
                 "state": {
                     "master_node": "0sZBDd6VQ4ObLacVSh65jw",
-                    "nodes": {
-                        "0sZBDd6VQ4ObLacVSh65jw": {
-                            "attributes": {
-                                "ml.machine_memory": "33300463616",
-                                "ml.max_open_jobs": "20",
-                                "transform.node": "true",
-                                "xpack.installed": "true"
-                            },
-                            "ephemeral_id": "nqDXltxJTly70OWy95QfBw",
-                            "name": "7d86b192e7ce",
-                            "transport_address": "127.0.0.1:9300"
-                        }
-                    },
                     "nodes_hash": -575310727,
                     "state_uuid": "N0SOO0GZQICpIp19KZ27dg"
                 },
@@ -107,10 +91,6 @@ An example event for `cluster_stats` looks as following:
     "metricset": {
         "name": "cluster_stats",
         "period": 10000
-    },
-    "service": {
-        "address": "127.0.0.1:39279",
-        "type": "elasticsearch"
     }
 }
 ```
@@ -168,12 +148,12 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
+| elasticsearch.cluster.stats.indices.docs.total | Total number of indices in cluster. | long |
 | elasticsearch.cluster.stats.indices.fielddata.memory.bytes | Memory used for fielddata. | long |
 | elasticsearch.cluster.stats.indices.shards.count | Total number of shards in cluster. | long |
-| elasticsearch.cluster.stats.indices.shards.docs.total |  | long |
 | elasticsearch.cluster.stats.indices.shards.primaries | Total number of primary shards in cluster. | long |
 | elasticsearch.cluster.stats.indices.store.size.bytes |  | long |
-| elasticsearch.cluster.stats.indices.total | Total number of indices in cluster. | long |
+| elasticsearch.cluster.stats.indices.total |  | long |
 | elasticsearch.cluster.stats.license.expiry_date_in_millis |  | long |
 | elasticsearch.cluster.stats.license.status |  | keyword |
 | elasticsearch.cluster.stats.license.type |  | keyword |
@@ -199,6 +179,7 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.version |  | keyword |
 | index_recovery.shards.start_time_in_millis |  | alias |
 | index_recovery.shards.stop_time_in_millis |  | alias |
 | index_stats.index |  | alias |

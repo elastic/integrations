@@ -40,11 +40,6 @@ An example event for `ml_job` looks as following:
     "metricset": {
         "name": "ml_job",
         "period": 10000
-    },
-    "service": {
-        "address": "127.0.0.1:38585",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
     }
 }
 ```

@@ -55,7 +55,7 @@
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.pending_task.insert_order | Insert order | long |
-| elasticsearch.cluster.pending_task.priority | Priority | long |
+| elasticsearch.cluster.pending_task.priority | Priority | keyword |
 | elasticsearch.cluster.pending_task.source | Source. For example: put-mapping | keyword |
 | elasticsearch.cluster.pending_task.time_in_queue.ms | Time in queue | long |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |

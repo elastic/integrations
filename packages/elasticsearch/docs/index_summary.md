@@ -85,11 +85,6 @@ An example event for `index_summary` looks as following:
     "metricset": {
         "name": "index_summary",
         "period": 10000
-    },
-    "service": {
-        "address": "127.0.0.1:32943",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
     }
 }
 ```

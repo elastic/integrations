@@ -51,9 +51,6 @@ An example event for `node` looks as following:
         "module": "elasticsearch",
         "name": "node",
         "rtt": 115
-    },
-    "service": {
-        "name": "elasticsearch"
     }
 }
 ```

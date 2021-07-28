@@ -61,11 +61,6 @@ An example event for `index_recovery` looks as following:
     "metricset": {
         "name": "index_recovery",
         "period": 10000
-    },
-    "service": {
-        "address": "127.0.0.1:43035",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
     }
 }
 ```
@@ -123,6 +118,7 @@ An example event for `index_recovery` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
+| elasticsearch.index.name |  | keyword |
 | elasticsearch.index.recovery.id | Shard recovery id. | long |
 | elasticsearch.index.recovery.index.files.percent |  | keyword |
 | elasticsearch.index.recovery.index.files.recovered |  | long |
@@ -265,4 +261,5 @@ An example event for `index_recovery` looks as following:
 | stack_stats.xpack.ccr.available |  | alias |
 | stack_stats.xpack.ccr.enabled |  | alias |
 | timestamp |  | alias |
+| version |  | long |
 
