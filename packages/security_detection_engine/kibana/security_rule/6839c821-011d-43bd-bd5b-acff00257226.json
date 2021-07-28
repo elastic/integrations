@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Image File Execution Options Injection",
-        "query": "registry where length(registry.data.strings) \u003e 0 and\n registry.path : (\"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Image File Execution Options\\\\*.exe\\\\Debugger\", \n                  \"HKLM\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Image File Execution Options\\\\*\\\\Debugger\", \n                  \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\SilentProcessExit\\\\*\\\\MonitorProcess\", \n                  \"HKLM\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\SilentProcessExit\\\\*\\\\MonitorProcess\") and\n   /* add FPs here */\n not registry.data.strings : (\"C:\\\\Program Files*\\\\ThinKiosk\\\\thinkiosk.exe\", \"*\\\\PSAppDeployToolkit\\\\*\")\n",
+        "query": "registry where length(registry.data.strings) \u003e 0 and\n registry.path : (\"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Image File Execution Options\\\\*.exe\\\\Debugger\", \n                  \"HKLM\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Image File Execution Options\\\\*\\\\Debugger\", \n                  \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\SilentProcessExit\\\\*\\\\MonitorProcess\", \n                  \"HKLM\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\SilentProcessExit\\\\*\\\\MonitorProcess\") and\n   /* add FPs here */\n not registry.data.strings regex~ (\"\"\"C:\\\\Program Files( \\(x86\\))?\\\\ThinKiosk\\\\thinkiosk\\.exe\"\"\", \"\"\".*\\\\PSAppDeployToolkit\\\\.*\"\"\")\n",
         "references": [
             "https://oddvar.moe/2018/04/10/persistence-using-globalflags-in-image-file-execution-options-hidden-from-autoruns-exe/"
         ],
@@ -53,7 +53,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 3
+        "version": 4
     },
     "id": "6839c821-011d-43bd-bd5b-acff00257226",
     "type": "security-rule"
