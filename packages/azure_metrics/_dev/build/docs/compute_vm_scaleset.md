@@ -1,15 +1,11 @@
-# Azure Resource Metrics Integration
+# Azure Compute VM Scaleset Integration
 
 
-The Azure Monitor feature collects and aggregates logs and metrics from a variety of sources into a common data platform where it can be used for analysis, visualization, and alerting.
-
-
-The azure monitor metrics are numerical values that describe some aspect of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
-
-The Azure Resource Metrics will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
+The Azure Compute Scaleset VM data stream collects and aggregates storage account related metrics from azure virtual machine scaleset type resources where it can be used for analysis, visualization, and alerting.
+The Azure Compute Scaleset will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
 Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
-###Module-specific configuration notes
+## Integration configuration notes
 
 All the tasks executed against the Azure Monitor REST API will use the Azure Resource Manager authentication model.
 Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
@@ -50,14 +46,13 @@ https://login.chinacloudapi.cn for azure PublicCloud
 https://login.microsoftonline.de for azure USGovernmentCloud
 
 
-`compute_vm_scaleset`
-This dataset will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm_scaleset` dataset should be `300s` or multiples of `300s`.
+This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
+so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
 
 {{fields "compute_vm_scaleset"}}
 
 
-###Additional notes about metrics and costs
+## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 

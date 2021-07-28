@@ -30,7 +30,8 @@ resources:
     - resource_group: "{{this}}"
       resource_type: "Microsoft.Compute/virtualMachines"
       metrics:
-        - name: ["Percentage CPU","Network In","Inbound Flows Maximum Creation Rate","Outbound Flows Maximum Creation Rate","Disk Read Bytes","Network In Total"]
+        - name: ["Available Memory Bytes","CPU Credits Consumed","CPU Credits Remaining", "Inbound Flows Maximum Creation Rate", "Outbound Flows Maximum Creation Rate", "Disk Read Bytes","Network In Total", "Disk Write Operations/Sec", "Network Out Total", "Disk Read Operations/Sec",
+    "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
           namespace: "Microsoft.Compute/virtualMachines"
           timegrain: "PT5M"
           ignore_unsupported: true
@@ -43,9 +44,9 @@ resources:
 {{#if resource_ids}}
 {{#each resource_ids}}
     - resource_id: "{{this}}"
-      resource_type: "Microsoft.Compute/virtualMachines"
       metrics:
-        - name: ["Percentage CPU","Network In","Inbound Flows Maximum Creation Rate","Outbound Flows Maximum Creation Rate","Disk Read Bytes","Network In Total"]
+        - name: ["Available Memory Bytes","CPU Credits Consumed","CPU Credits Remaining", "Inbound Flows Maximum Creation Rate", "Outbound Flows Maximum Creation Rate", "Disk Read Bytes","Network In Total", "Disk Write Operations/Sec", "Network Out Total", "Disk Read Operations/Sec",
+    "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
           namespace: "Microsoft.Compute/virtualMachines"
           timegrain: "PT5M"
           ignore_unsupported: true
@@ -55,3 +56,18 @@ resources:
           ignore_unsupported: true
 {{/each}}
 {{/if}}
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+    - resource_query: "resourceType eq 'Microsoft.Compute/virtualMachines'"
+      metrics:
+        - name: ["Available Memory Bytes","CPU Credits Consumed","CPU Credits Remaining", "Inbound Flows Maximum Creation Rate", "Outbound Flows Maximum Creation Rate", "Disk Read Bytes","Network In Total", "Disk Write Operations/Sec", "Network Out Total", "Disk Read Operations/Sec",
+    "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
+          namespace: "Microsoft.Compute/virtualMachines"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+        - name: "*"
+          namespace: "Azure.VM.Windows.GuestMetrics"
+          timegrain: "PT5M"
+          ignore_unsupported: true
+    {{/unless}}
+{{/unless}}
