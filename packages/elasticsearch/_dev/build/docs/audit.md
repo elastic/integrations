@@ -1,5 +1,0 @@
-# Audit
-
-## Logs
-
-{{fields "audit"}}

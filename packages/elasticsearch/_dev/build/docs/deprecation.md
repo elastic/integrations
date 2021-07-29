@@ -1,5 +1,0 @@
-# Deprecation
-
-## Logs
-
-{{fields "deprecation"}}

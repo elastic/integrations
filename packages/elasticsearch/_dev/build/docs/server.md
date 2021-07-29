@@ -1,5 +1,0 @@
-# Server
-
-## Logs
-
-{{fields "server"}}
