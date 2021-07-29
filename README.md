@@ -1,4 +1,4 @@
-[![Build Status](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/badge/icon)](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/)
+[![Build Status](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/badge/icon)](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/) [Test Coverage Report](https://beats-ci.elastic.co/job/Ingest-manager/job/integrations/job/master/cobertura/)
 
 # Elastic Integrations
 
