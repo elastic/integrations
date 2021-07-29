@@ -15,6 +15,7 @@ pipeline {
     K8S_VERSION = "v1.20.2"
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
+    JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
     ELASTIC_STACK_VERSION_PREV = "7.13.1-SNAPSHOT"
     ELASTIC_STACK_VERSION_PREV_PREV = "7.13.0-SNAPSHOT"
   }
@@ -74,7 +75,7 @@ pipeline {
                             withCloudTestEnv() {
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package test -v --report-format xUnit --report-output file
+                                ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
                                 ''')
                             }
                           }
@@ -95,6 +96,7 @@ pipeline {
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                          stashCoverageReport()
                         }
                       }
 
@@ -113,6 +115,9 @@ pipeline {
     }
   }
   post {
+    always {
+      publishCoverageReports()
+    }
     cleanup {
       notifyBuildResult(prComment: true)
     }
@@ -255,4 +260,32 @@ def isPackageCompatible(integrationName, stackVersion) {
     echo "Package is not compatible. Skipping."
     return false
   }
+}
+
+def stashCoverageReport() {
+  r = sh(label: "isCoverageReportPresent", script: "ls build/test-coverage/*.xml", returnStatus: true)
+  if (r != 0) {
+    echo "isCoverageReportPresent: coverage files not found, report won't be stashed"
+    return
+  }
+
+  googleStorageUploadExt(bucket: getCoverageBucketURI(), credentialsId: "${JOB_GCS_EXT_CREDENTIALS}", pattern: "build/test-coverage/*.xml")
+}
+
+def publishCoverageReports() {
+  stage('Publish coverage reports') {
+    dir("${BASE_DIR}") {
+      def bucketUri = getCoverageBucketURI() + "*.xml"
+      googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
+      coverageReport('build/test-coverage')
+    }
+  }
+}
+
+def getCoverageBucketURI() {
+  return "gs://${JOB_GCS_BUCKET}/" + getCoveragePathPrefix()
+}
+
+def getCoveragePathPrefix() {
+  return "${env.JOB_NAME}-${env.BUILD_ID}/test-coverage/"
 }
