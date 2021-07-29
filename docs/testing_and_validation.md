@@ -117,6 +117,9 @@ As the Cobertura report format refers to packages, classes, methods, etc., unfor
 We decided to make few assumptions for the Cobertura classification:
 
 **Package** - integration
+
 **File** - data stream
+
 **Class** - test type (pipeline tests, system tests, etc.)
+
 **Method** - "OK" if there are any tests present
