@@ -9,8 +9,7 @@ This module has been developed against Zeek 2.6.1, but is expected to
 work with other versions of Zeek.
 
 Zeek requires a Unix-like platform, and it currently supports Linux,
-FreeBSD, and Mac OS X.  Find out how to use Zeek here:
-<https://www.zeek.org/>
+FreeBSD, and Mac OS X.  Find out how to use Zeek [here](https://www.zeek.org/).
 
 ## Logs
 ### capture_loss
