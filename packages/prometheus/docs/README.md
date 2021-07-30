@@ -205,12 +205,12 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| prometheus.*.counter | Prometheus counter metric | object |
-| prometheus.*.histogram | Prometheus histogram metric | object |
-| prometheus.*.rate | Prometheus rated counter metric | object |
-| prometheus.*.value | Prometheus gauge metric | object |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
+| prometheus.\*.counter | Prometheus counter metric | object |
+| prometheus.\*.histogram | Prometheus histogram metric | object |
+| prometheus.\*.rate | Prometheus rated counter metric | object |
+| prometheus.\*.value | Prometheus gauge metric | object |
+| prometheus.labels.\* | Prometheus metric labels | object |
+| prometheus.metrics.\* | Prometheus metric | object |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -356,12 +356,12 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| prometheus.*.counter | Prometheus counter metric | object |
-| prometheus.*.histogram | Prometheus histogram metric | object |
-| prometheus.*.rate | Prometheus rated counter metric | object |
-| prometheus.*.value | Prometheus gauge metric | object |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
+| prometheus.\*.counter | Prometheus counter metric | object |
+| prometheus.\*.histogram | Prometheus histogram metric | object |
+| prometheus.\*.rate | Prometheus rated counter metric | object |
+| prometheus.\*.value | Prometheus gauge metric | object |
+| prometheus.labels.\* | Prometheus metric labels | object |
+| prometheus.metrics.\* | Prometheus metric | object |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -564,7 +564,7 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
+| prometheus.labels.\* | Prometheus metric labels | object |
+| prometheus.query.\* | Prometheus value resulted from PromQL | object |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |

@@ -143,13 +143,13 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.etcd.object.count | Number of kubernetes objects at etcd | long |  | gauge |
 | kubernetes.apiserver.http.request.count | Request count for response | long |  | counter |
 | kubernetes.apiserver.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.apiserver.http.request.duration.us.percentile.* | Request duration microseconds percentiles | object |  |  |
+| kubernetes.apiserver.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
 | kubernetes.apiserver.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
 | kubernetes.apiserver.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.apiserver.http.request.size.bytes.percentile.* | Request size percentiles | object |  |  |
+| kubernetes.apiserver.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
 | kubernetes.apiserver.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
 | kubernetes.apiserver.http.response.size.bytes.count | Response count | long |  | counter |
-| kubernetes.apiserver.http.response.size.bytes.percentile.* | Response size percentiles | object |  |  |
+| kubernetes.apiserver.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
 | kubernetes.apiserver.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.apiserver.process.cpu.sec | CPU seconds | double |  | counter |
 | kubernetes.apiserver.process.fds.open.count | Number of open file descriptors | long |  | gauge |
@@ -163,14 +163,14 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.count | Number of requests | long |  | counter |
 | kubernetes.apiserver.request.current.count | Inflight requests | long |  | counter |
 | kubernetes.apiserver.request.dry_run | Wether the request uses dry run | keyword |  |  |
-| kubernetes.apiserver.request.duration.us.bucket.* | Request duration, histogram buckets | object |  |  |
+| kubernetes.apiserver.request.duration.us.bucket.\* | Request duration, histogram buckets | object |  |  |
 | kubernetes.apiserver.request.duration.us.count | Request duration, number of operations | long |  | counter |
 | kubernetes.apiserver.request.duration.us.sum | Request duration, sum in microseconds | long |  | counter |
 | kubernetes.apiserver.request.group | API group for the resource | keyword |  |  |
 | kubernetes.apiserver.request.handler | Request handler | keyword |  |  |
 | kubernetes.apiserver.request.host | Request host | keyword |  |  |
 | kubernetes.apiserver.request.kind | Kind of request | keyword |  |  |
-| kubernetes.apiserver.request.latency.bucket.* | Request latency histogram buckets | object |  |  |
+| kubernetes.apiserver.request.latency.bucket.\* | Request latency histogram buckets | object |  |  |
 | kubernetes.apiserver.request.latency.count | Request latency, number of requests | long |  | counter |
 | kubernetes.apiserver.request.latency.sum | Requests latency, sum of latencies in microseconds | long |  | counter |
 | kubernetes.apiserver.request.longrunning.count | Number of requests active long running requests | long |  | counter |

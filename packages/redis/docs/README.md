@@ -555,7 +555,7 @@ An example event for `key` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | redis.key.expire.ttl | Seconds to expire. | long |
-| redis.key.id | Unique id for this key (With the form `<keyspace>:<name>`). | keyword |
+| redis.key.id | Unique id for this key (With the form `\<keyspace\>:\<name\>`). | keyword |
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long |
 | redis.key.name | Key name. | keyword |
 | redis.key.type | Key type as shown by `TYPE` command. | keyword |

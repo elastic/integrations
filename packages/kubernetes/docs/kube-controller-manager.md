@@ -143,7 +143,7 @@ An example event for `controllermanager` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.controllermanager.client.request.count | Number of requests as client | long |  | counter |
@@ -152,13 +152,13 @@ An example event for `controllermanager` looks as following:
 | kubernetes.controllermanager.host | Request host | keyword |  |  |
 | kubernetes.controllermanager.http.request.count | Request count for response | long |  | counter |
 | kubernetes.controllermanager.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.controllermanager.http.request.duration.us.percentile.* | Request duration microseconds percentiles | object |  |  |
+| kubernetes.controllermanager.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
 | kubernetes.controllermanager.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
 | kubernetes.controllermanager.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.controllermanager.http.request.size.bytes.percentile.* | Request size percentiles | object |  |  |
+| kubernetes.controllermanager.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
 | kubernetes.controllermanager.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
 | kubernetes.controllermanager.http.response.size.bytes.count | Response count | long | byte | counter |
-| kubernetes.controllermanager.http.response.size.bytes.percentile.* | Response size percentiles | object |  |  |
+| kubernetes.controllermanager.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
 | kubernetes.controllermanager.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.controllermanager.leader.is_master | Whether the node is master | boolean |  |  |
 | kubernetes.controllermanager.method | HTTP method | keyword |  |  |
@@ -179,7 +179,7 @@ An example event for `controllermanager` looks as following:
 | kubernetes.controllermanager.workqueue.unfinished.sec | Unfinished processors | double |  | gauge |
 | kubernetes.controllermanager.zone | Infrastructure zone | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -187,7 +187,7 @@ An example event for `controllermanager` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |

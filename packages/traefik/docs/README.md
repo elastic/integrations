@@ -257,6 +257,6 @@ An example event for `health` looks as following:
 | service.type | Service type | keyword |
 | traefik.health.response.avg_time.us | Average response time in microseconds | long |
 | traefik.health.response.count | Number of responses | long |
-| traefik.health.response.status_codes.* | Number of responses per status code | object |
+| traefik.health.response.status_codes.\* | Number of responses per status code | object |
 | traefik.health.uptime.sec | Uptime of Traefik instance in seconds | long |
 

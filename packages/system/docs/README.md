@@ -1092,7 +1092,7 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| system.cpu.cores | The number of CPU cores present on the host. The non-normalized percentages will have a maximum value of `100% * cores`. The normalized percentages already take this value into account and have a maximum value of 100%. | long |  | gauge |
+| system.cpu.cores | The number of CPU cores present on the host. The non-normalized percentages will have a maximum value of `100% \* cores`. The normalized percentages already take this value into account and have a maximum value of 100%. | long |  | gauge |
 | system.cpu.idle.norm.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.cpu.idle.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.cpu.idle.ticks | The amount of CPU time spent idle. | long |  | counter |

@@ -123,7 +123,7 @@ An example event for `activitylogs` looks as following:
 | azure.activitylogs.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
 | azure.activitylogs.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
 | azure.activitylogs.identity.authorization.scope | Scope | keyword |
-| azure.activitylogs.identity.claims.* | Claims | object |
+| azure.activitylogs.identity.claims.\* | Claims | object |
 | azure.activitylogs.identity.claims_initiated_by_user.fullname | Fullname | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.givenname | Givenname | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |

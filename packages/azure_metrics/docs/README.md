@@ -63,13 +63,13 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -94,7 +94,7 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -125,14 +125,14 @@ so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.compute_vm.*.* | compute_vm | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.compute_vm.\*.\* | compute_vm | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -157,7 +157,7 @@ so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -188,14 +188,14 @@ so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.compute_vm_scaleset.*.* | compute_vm_scaleset | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.compute_vm_scaleset.\*.\* | compute_vm_scaleset | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -220,7 +220,7 @@ so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -251,15 +251,15 @@ so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
-| azure.storage_account.*.* | storage account | object |
+| azure.storage_account.\*.\* | storage account | object |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -283,7 +283,7 @@ so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -314,14 +314,14 @@ so the `period` for `container_instance` should be `300s` or multiples of `300s`
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.container_instance.*.* | container instance | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.container_instance.\*.\* | container instance | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -346,7 +346,7 @@ so the `period` for `container_instance` should be `300s` or multiples of `300s`
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -377,14 +377,14 @@ so the `period` for `container_registry` should be `300s` or multiples of `300s`
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.container_registry.*.* | container registry | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.container_registry.\*.\* | container registry | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -409,7 +409,7 @@ so the `period` for `container_registry` should be `300s` or multiples of `300s`
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -440,14 +440,14 @@ so the `period` for `container_service` should be `300s` or multiples of `300s`.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.container_service.*.* | container service | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.container_service.\*.\* | container service | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -472,7 +472,7 @@ so the `period` for `container_service` should be `300s` or multiples of `300s`.
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -503,14 +503,14 @@ so the `period` for `database_account` should be `300s` or multiples of `300s`.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.database_account.*.* | database account | object |
-| azure.dimensions.* | Azure metric dimensions. | object |
-| azure.metrics.*.* | Metrics returned. | object |
+| azure.database_account.\*.\* | database account | object |
+| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -535,7 +535,7 @@ so the `period` for `database_account` should be `300s` or multiples of `300s`.
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

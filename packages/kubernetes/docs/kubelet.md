@@ -200,7 +200,7 @@ An example event for `container` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |  | gauge |
 | kubernetes.container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float | percent | gauge |
 | kubernetes.container.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
@@ -227,7 +227,7 @@ An example event for `container` looks as following:
 | kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long | byte | gauge |
 | kubernetes.container.start_time | Start time | date |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -235,7 +235,7 @@ An example event for `container` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
@@ -437,11 +437,11 @@ An example event for `node` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.cpu.usage.core.ns | Node CPU Core usage nanoseconds | long |  | gauge |
 | kubernetes.node.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
@@ -471,7 +471,7 @@ An example event for `node` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
@@ -650,11 +650,11 @@ An example event for `pod` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -678,7 +678,7 @@ An example event for `pod` looks as following:
 | kubernetes.pod.start_time | Start time | date |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
@@ -833,11 +833,11 @@ An example event for `system` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -845,7 +845,7 @@ An example event for `system` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | kubernetes.system.container | Container name | keyword |  |  |
 | kubernetes.system.cpu.usage.core.ns | CPU Core usage nanoseconds | long |  | gauge |
@@ -1007,11 +1007,11 @@ An example event for `volume` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -1019,7 +1019,7 @@ An example event for `volume` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | kubernetes.volume.fs.available.bytes | Filesystem total available in bytes | long | byte | gauge |
 | kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long | byte | gauge |

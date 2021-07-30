@@ -482,15 +482,15 @@ The fields reported are:
 | haproxy.stat.agent.fall | Fall value of agent. | integer |
 | haproxy.stat.agent.health | Health parameter of agent. Between 0 and `agent.rise`+`agent.fall`-1. | integer |
 | haproxy.stat.agent.rise | Rise value of agent. | integer |
-| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -> unknown   INI     -> initializing   SOCKERR -> socket error   L4OK    -> check passed on layer 4, no upper layers enabled   L4TOUT  -> layer 1-4 timeout   L4CON   -> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -> agent reported "up"   L7STS   -> agent reported "fail", "stop" or "down" | keyword |
+| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -\> agent reported "up"   L7STS   -\> agent reported "fail", "stop" or "down" | keyword |
 | haproxy.stat.check.agent.last |  | integer |
 | haproxy.stat.check.code | Layer 5-7 code, if available. | long |
-| haproxy.stat.check.down | Number of UP->DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
+| haproxy.stat.check.down | Number of UP-\>DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
 | haproxy.stat.check.duration | Time in ms that it took to finish the last health check. | long |
 | haproxy.stat.check.failed | Number of checks that failed while the server was up. | long |
 | haproxy.stat.check.health.fail | Number of failed checks. | long |
 | haproxy.stat.check.health.last | The result of the last health check. | keyword |
-| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -> unknown   INI     -> initializing   SOCKERR -> socket error   L4OK    -> check passed on layer 4, no upper layers testing enabled   L4TOUT  -> layer 1-4 timeout   L4CON   -> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -> check passed on layer 6   L6TOUT  -> layer 6 (SSL) timeout   L6RSP   -> layer 6 invalid response - protocol error   L7OK    -> check passed on layer 7   L7OKC   -> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -> layer 7 (HTTP/SMTP) timeout   L7RSP   -> layer 7 invalid response - protocol error   L7STS   -> layer 7 response error, for example HTTP 5xx | keyword |
+| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers testing enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -\> check passed on layer 6   L6TOUT  -\> layer 6 (SSL) timeout   L6RSP   -\> layer 6 invalid response - protocol error   L7OK    -\> check passed on layer 7   L7OKC   -\> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -\> layer 7 (HTTP/SMTP) timeout   L7RSP   -\> layer 7 invalid response - protocol error   L7STS   -\> layer 7 response error, for example HTTP 5xx | keyword |
 | haproxy.stat.client.aborted | Number of data transfers aborted by the client. | integer |
 | haproxy.stat.component_type | Component type (0=frontend, 1=backend, 2=server, or 3=socket/listener). | integer |
 | haproxy.stat.compressor.bypassed.bytes | Number of bytes that bypassed the HTTP compressor (CPU/BW limit). | long |
@@ -512,7 +512,7 @@ The fields reported are:
 | haproxy.stat.downtime | Total downtime (in seconds). For backends, this value is the downtime for the whole backend, not the sum of the downtime for the servers. | long |
 | haproxy.stat.header.rewrite.failed.total | Number of failed header rewrite warnings. | long |
 | haproxy.stat.in.bytes | Bytes in. | long |
-| haproxy.stat.last_change | Number of seconds since the last UP->DOWN or DOWN->UP transition. | integer |
+| haproxy.stat.last_change | Number of seconds since the last UP-\>DOWN or DOWN-\>UP transition. | integer |
 | haproxy.stat.load_balancing_algorithm | Load balancing algorithm. | keyword |
 | haproxy.stat.out.bytes | Bytes out. | long |
 | haproxy.stat.proxy.id | Unique proxy ID. | integer |
@@ -521,10 +521,10 @@ The fields reported are:
 | haproxy.stat.queue.limit | Configured queue limit (maxqueue) for the server, or nothing if the value of maxqueue is 0 (meaning no limit). | integer |
 | haproxy.stat.queue.time.avg | The average queue time in ms over the last 1024 requests. | integer |
 | haproxy.stat.request.connection.errors | Number of requests that encountered an error trying to connect to a server. For backends, this field reports the sum of the stat for all backend servers, plus any connection errors not associated with a particular server (such as the backend having no active servers). | long |
-| haproxy.stat.request.denied | Requests denied because of security concerns.    * For TCP this is because of a matched tcp-request content rule.   * For HTTP this is because of a matched http-request or tarpit rule. | long |
+| haproxy.stat.request.denied | Requests denied because of security concerns.    \* For TCP this is because of a matched tcp-request content rule.   \* For HTTP this is because of a matched http-request or tarpit rule. | long |
 | haproxy.stat.request.denied_by_connection_rules | Requests denied because of TCP request connection rules. | long |
 | haproxy.stat.request.denied_by_session_rules | Requests denied because of TCP request session rules. | long |
-| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    * early termination from the client, before the request has been sent   * read error from the client   * client timeout   * client closed connection   * various bad requests from the client.   * request was tarpitted. | long |
+| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    \* early termination from the client, before the request has been sent   \* read error from the client   \* client timeout   \* client closed connection   \* various bad requests from the client.   \* request was tarpitted. | long |
 | haproxy.stat.request.intercepted | Number of intercepted requests. | long |
 | haproxy.stat.request.queued.current | Current queued requests. For backends, this field reports the number of requests queued without a server assigned. | long |
 | haproxy.stat.request.queued.max | Maximum value of queued.current. | long |
@@ -533,7 +533,7 @@ The fields reported are:
 | haproxy.stat.request.redispatched | Number of times a request was redispatched to another server. For servers, this field reports the number of times the server was switched away from. | long |
 | haproxy.stat.request.total | Total number of HTTP requests received. | long |
 | haproxy.stat.response.denied | Responses denied because of security concerns. For HTTP this is because of a matched http-request rule, or "option checkcache". | integer |
-| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: * write errors on the client socket (won't be counted for the server stat) * failure applying filters to the response | long |
+| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: \* write errors on the client socket (won't be counted for the server stat) \* failure applying filters to the response | long |
 | haproxy.stat.response.http.1xx | HTTP responses with 1xx code. | long |
 | haproxy.stat.response.http.2xx | HTTP responses with 2xx code. | long |
 | haproxy.stat.response.http.3xx | HTTP responses with 3xx code. | long |

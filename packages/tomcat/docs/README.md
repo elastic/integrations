@@ -50,7 +50,7 @@ The `log` dataset collects Apache Tomcat logs.
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -82,12 +82,12 @@ The `log` dataset collects Apache Tomcat logs.
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 * facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   * ingress   * egress   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -167,12 +167,12 @@ The `log` dataset collects Apache Tomcat logs.
 | rsa.email.subject | This key is used to capture the subject string from an Email only. | keyword |
 | rsa.email.trans_from | Deprecated key defined only in table map. | keyword |
 | rsa.email.trans_to | Deprecated key defined only in table map. | keyword |
-| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on | keyword |
+| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as \<strong\>blacklisted\</strong\>, \<strong\>infected\</strong\>, \<strong\>firewall disabled\</strong\> and so on | keyword |
 | rsa.endpoint.registry_key | This key captures the path to the registry key | keyword |
 | rsa.endpoint.registry_value | This key captures values or decorators used within a registry entry | keyword |
 | rsa.file.attachment | This key captures the attachment file name | keyword |
 | rsa.file.binary | Deprecated key defined only in table map. | keyword |
-| rsa.file.directory_dst | <span>This key is used to capture the directory of the target process or file</span> | keyword |
+| rsa.file.directory_dst | \<span\>This key is used to capture the directory of the target process or file\</span\> | keyword |
 | rsa.file.directory_src | This key is used to capture the directory of the source process or file | keyword |
 | rsa.file.file_entropy | This is used to capture entropy vale of a file | double |
 | rsa.file.file_vendor | This is used to capture Company name of file located in version_info | keyword |
@@ -297,7 +297,7 @@ The `log` dataset collects Apache Tomcat logs.
 | rsa.misc.agent_id | This key is used to capture agent id | keyword |
 | rsa.misc.alarm_id |  | keyword |
 | rsa.misc.alarmname |  | keyword |
-| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.app_id |  | keyword |
 | rsa.misc.audit |  | keyword |
 | rsa.misc.audit_object |  | keyword |
@@ -588,14 +588,14 @@ The `log` dataset collects Apache Tomcat logs.
 | rsa.misc.result | This key is used to capture the outcome/result string value of an action in a session. | keyword |
 | rsa.misc.result_code | This key is used to capture the outcome/result numeric value of an action in a session | keyword |
 | rsa.misc.risk | This key captures the non-numeric risk value | keyword |
-| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.risk_num | This key captures a Numeric Risk value | double |
 | rsa.misc.risk_num_comm | This key captures Risk Number Community | double |
 | rsa.misc.risk_num_next | This key captures Risk Number NextGen | double |
 | rsa.misc.risk_num_sand | This key captures Risk Number SandBox | double |
 | rsa.misc.risk_num_static | This key captures Risk Number Static | double |
-| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
-| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
+| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.ruid |  | keyword |
 | rsa.misc.rule | This key captures the Rule number | keyword |
 | rsa.misc.rule_group | This key captures the Rule group name | keyword |
@@ -660,7 +660,7 @@ The `log` dataset collects Apache Tomcat logs.
 | rsa.misc.version | This key captures Version of the application or OS which is generating the event. | keyword |
 | rsa.misc.virt_data |  | keyword |
 | rsa.misc.virusname | This key captures the name of the virus | keyword |
-| rsa.misc.vm_target | VMWare Target **VMWARE** only varaible. | keyword |
+| rsa.misc.vm_target | VMWare Target \*\*VMWARE\*\* only varaible. | keyword |
 | rsa.misc.vpnid |  | keyword |
 | rsa.misc.vsys | This key captures Virtual System Name | keyword |
 | rsa.misc.vuln_ref | This key captures the Vulnerability Reference details | keyword |

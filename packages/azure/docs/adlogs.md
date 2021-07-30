@@ -97,14 +97,14 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.operation_type | Operation type | keyword |
 | azure.auditlogs.properties.result | Log result | keyword |
 | azure.auditlogs.properties.result_reason | Reason for the log result | keyword |
-| azure.auditlogs.properties.target_resources.*.display_name | Display name | keyword |
-| azure.auditlogs.properties.target_resources.*.id | ID | keyword |
-| azure.auditlogs.properties.target_resources.*.ip_address | ip Address | keyword |
-| azure.auditlogs.properties.target_resources.*.modified_properties.*.display_name | Display value | keyword |
-| azure.auditlogs.properties.target_resources.*.modified_properties.*.new_value | New value | keyword |
-| azure.auditlogs.properties.target_resources.*.modified_properties.*.old_value | Old value | keyword |
-| azure.auditlogs.properties.target_resources.*.type | Type | keyword |
-| azure.auditlogs.properties.target_resources.*.user_principal_name | User principal name | keyword |
+| azure.auditlogs.properties.target_resources.\*.display_name | Display name | keyword |
+| azure.auditlogs.properties.target_resources.\*.id | ID | keyword |
+| azure.auditlogs.properties.target_resources.\*.ip_address | ip Address | keyword |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.display_name | Display value | keyword |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.new_value | New value | keyword |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
+| azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
+| azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
