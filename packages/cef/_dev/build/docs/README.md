@@ -33,7 +33,7 @@ Center (SMC).  In the SMC configure the logs to be forwarded to the address set
 in `var.syslog_host` in format CEF and service UDP on `var.syslog_port`.
 Instructions can be found in [KB
 15002](https://support.forcepoint.com/KBArticle?id=000015002) for configuring
-the SMC.  
+the SMC.
 
 Testing was done with CEF logs from SMC version 6.6.1 and custom string mappings
 were taken from 'CEF Connector Configuration Guide' dated December 5, 2011.
@@ -57,7 +57,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceInboundInterface     | -                           | observer.ingress.interface.name | -                       |
 | deviceOutboundInterface    | -                           | observer.egress.interface.name | -                        |
 | externalId                 | -                           | -                        | checkpoint.uuid                |
-| fileHash                   | -                           | file.hash.{md5,sha1}     | -                              |
+| fileHash                   | -                           | file.hash.\{md5,sha1\}   | -                              |
 | reason                     | -                           | -                        | checkpoint.termination_reason  |
 | requestCookies             | -                           | -                        | checkpoint.cookie              |
 | sourceNtDomain             | -                           | dns.question.name        | -                              |

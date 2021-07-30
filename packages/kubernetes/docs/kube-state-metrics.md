@@ -699,7 +699,7 @@ An example event for `state_job` looks as following:
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.job.completions.desired | The configured completion count for the job (Spec) | long | gauge |
 | kubernetes.job.name | The name of the job resource | keyword |  |
-| kubernetes.job.owner.is_controller | Owner is controller ("true", "false", or "<none>") | keyword |  |
+| kubernetes.job.owner.is_controller | Owner is controller ("true", "false", or `"<none>"`) | keyword |  |
 | kubernetes.job.owner.kind | The kind of resource that owns this job (eg. "CronJob") | keyword |  |
 | kubernetes.job.owner.name | The name of the resource that owns this job | keyword |  |
 | kubernetes.job.parallelism.desired | The configured parallelism of the job (Spec) | long | gauge |

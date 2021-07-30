@@ -634,7 +634,7 @@ An example event for `queue` looks as following:
 | rabbitmq.queue.messages.unacknowledged.count | Number of messages delivered to clients but not yet acknowledged. | long |
 | rabbitmq.queue.messages.unacknowledged.details.rate | How much the count of unacknowledged messages has changed per second in the most recent sampling interval. | float |
 | rabbitmq.queue.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |
-| rabbitmq.queue.state | The state of the queue. Normally 'running', but may be "{syncing, MsgCount}" if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'. | keyword |
+| rabbitmq.queue.state | The state of the queue. Normally 'running', but may be `"{syncing, MsgCount}"` if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'. | keyword |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |

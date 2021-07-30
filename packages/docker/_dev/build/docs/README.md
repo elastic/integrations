@@ -10,7 +10,7 @@ but it should also work there.
 
 ## Running from within Docker
 
-The `docker` Integration will try to connect to the docker socket, by default at `unix:///var/run/docker.sock`. 
+The `docker` Integration will try to connect to the docker socket, by default at `unix:///var/run/docker.sock`.
 If Elastic Agent is running inside docker, you'll need to mount the unix socket inside the container:
 
 ```
@@ -25,7 +25,8 @@ docker run -d \
 ## Module-specific configuration notes
 
 It is strongly recommended that you run Docker metricsets with a
-<<metricset-period,`period`>> that is 3 seconds or longer. The request to the
+[`period`](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-metricbeat.html#metricset-period)
+that is 3 seconds or longer. The request to the
 Docker API already takes up to 2 seconds. Specifying less than 3 seconds will
 result in requests that timeout, and no data will be reported for those
 requests.
@@ -41,7 +42,7 @@ running Docker containers.
 
 {{event "container"}}
 
-### CPU 
+### CPU
 
 The Docker `cpu` data stream collects runtime CPU metrics.
 
@@ -85,7 +86,7 @@ The Docker `image` data stream collects metrics on docker images
 
 {{event "image"}}
 
-### Info 
+### Info
 
 The Docker `info` data stream collects system-wide information based on the
 https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-system-wide-information[Docker Remote API].
