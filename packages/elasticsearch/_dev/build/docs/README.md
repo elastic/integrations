@@ -421,9 +421,9 @@ and  requires [Machine Learning](https://www.elastic.co/products/x-pack/machine-
 
 ### Node
 
-The `node` metricset interrogates the
+`node` interrogates the
 https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html[Cluster API endpoint] of
-Elasticsearch to get cluster nodes information. This metricset only fetches the data from the `_local` node so it must
+Elasticsearch to get cluster nodes information. It only fetches the data from the `_local` node so it must
 run on each Elasticsearch node.
 
 {{event "node"}}
@@ -453,9 +453,9 @@ run on each Elasticsearch node.
 
 ### Node stats
 
-The `node_stats` metricset interrogates the
+`node_stats` interrogates the
 https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html[Cluster API endpoint] of
-Elasticsearch to get the cluster nodes statistics. The data received is only for the local node so this Metricbeat has
+Elasticsearch to get the cluster nodes statistics. The data received is only for the local node so the Agent has
 to be run on each Elasticsearch node.
 
 NOTE: The indices stats are node-specific. That means for example the total number of docs reported by all nodes together is not the total number of documents in all indices as there can also be replicas.
@@ -571,8 +571,9 @@ NOTE: The indices stats are node-specific. That means for example the total numb
 
 # Shard
 
-The `shard` metricset interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html[Cluster State API endpoint] to fetch information about all shards.
+`shard` interrogates the
+https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html[Cluster State API endpoint] to fetch 
+information about all shards.
 
 {{event "shard"}}
 
