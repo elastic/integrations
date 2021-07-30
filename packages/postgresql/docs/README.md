@@ -6,7 +6,7 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
 
-The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions >= 9.
+The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
 
 ## Logs
 
@@ -104,7 +104,7 @@ persistent connections, so enable with care.
 | postgresql.log.internal_query_pos | Character count of the internal query (if any). | long |
 | postgresql.log.location | Location of the error in the PostgreSQL source code (if log_error_verbosity is set to verbose). | keyword |
 | postgresql.log.query | Query statement. In the case of CSV parse, look at command_tag to get more context. | keyword |
-| postgresql.log.query_name | Name given to a query when using extended query protocol. If it is "<unnamed>", or not present, this field is ignored. | keyword |
+| postgresql.log.query_name | Name given to a query when using extended query protocol. If it is `"<unnamed>"`, or not present, this field is ignored. | keyword |
 | postgresql.log.query_pos | Character count of the error position (if any). | long |
 | postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
 | postgresql.log.session_id | PostgreSQL session. | keyword |
