@@ -133,7 +133,7 @@ An example event for `log` looks as following:
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
-| network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
 | stan.log.client.id | The id of the client | integer |
@@ -359,7 +359,7 @@ An example event for `channels` looks as following:
 | service.type | Service type | keyword |
 | stan.channels.bytes | The number of STAN bytes in the channel | long |
 | stan.channels.depth | Queue depth based upon current sequence number and highest reported subscriber sequence number | long |
-| stan.channels.first_seq | First sequence number stored in the channel. If first_seq > min([seq in subscriptions]) data loss has possibly occurred | long |
+| stan.channels.first_seq | First sequence number stored in the channel. If first_seq \> min([seq in subscriptions]) data loss has possibly occurred | long |
 | stan.channels.last_seq | Last sequence number stored in the channel | long |
 | stan.channels.messages | The number of STAN streaming messages | long |
 | stan.channels.name | The name of the STAN streaming channel | keyword |
