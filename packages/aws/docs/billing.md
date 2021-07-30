@@ -60,7 +60,7 @@ An example event for `billing` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.billing.AmortizedCost.amount | Amortized cost amount. | double |
 | aws.billing.AmortizedCost.unit | Amortized cost unit. | keyword |
 | aws.billing.BlendedCost.amount | Blended cost amount. | double |
@@ -80,11 +80,11 @@ An example event for `billing` looks as following:
 | aws.billing.group_definition.type | The string that represents the type of group. | keyword |
 | aws.billing.start_date | Start date for retrieving AWS costs. | keyword |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.\* | Metric dimensions. | object |
 | aws.linked_account.id | ID used to identify linked account. | keyword |
 | aws.linked_account.name | Name or alias used to identify linked account. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
-| aws.tags.* | Tag key value pairs from aws resources. | object |
+| aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
