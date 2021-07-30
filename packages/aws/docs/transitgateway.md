@@ -75,13 +75,13 @@ An example event for `transitgateway` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |
 | aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
-| aws.tags.* | Tag key value pairs from aws resources. | object |
+| aws.tags.\* | Tag key value pairs from aws resources. | object |
 | aws.transitgateway.metrics.BytesIn.sum | The number of bytes received by the transit gateway. | long |
 | aws.transitgateway.metrics.BytesOut.sum | The number of bytes sent from the transit gateway. | long |
 | aws.transitgateway.metrics.PacketDropCountBlackhole.sum | The number of packets dropped because they matched a blackhole route. | long |
