@@ -937,7 +937,7 @@ Fields published for Memcached packets.
 | memcache.request.count_values | The number of values found in the memcache request message. If the command does not send any data, this field is missing. | long |
 | memcache.request.delta | The counter increment/decrement delta value. | long |
 | memcache.request.dest_class | The destination class id in 'slab reassign' command. | long |
-| memcache.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
+| memcache.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `\< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
 | memcache.request.flags | The memcache command flags sent in the request (if present). | long |
 | memcache.request.initial | The counter increment/decrement initial value parameter (binary protocol only). | long |
 | memcache.request.keys | The list of keys sent in the store or load commands. | array |
