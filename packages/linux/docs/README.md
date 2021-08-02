@@ -96,13 +96,8 @@ entropy will be out of a total pool size of 4096.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-<<<<<<< HEAD
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| service.version | Version of the service the data was collected from. This allows users to look at a data set for a specific version of a service. | keyword |
-=======
 | service.address | Service address | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
->>>>>>> upstream/master
 | system.entropy.available_bits | The available bits of entropy | long |
 | system.entropy.pct | The percentage of available entropy, relative to the pool size of 4096 | scaled_float |
 
@@ -133,11 +128,7 @@ operating system. These events are global and sorted by protocol.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-<<<<<<< HEAD
-| ecs.version | ECS version this event conforms to | keyword |
-=======
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
->>>>>>> upstream/master
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
@@ -157,18 +148,17 @@ operating system. These events are global and sorted by protocol.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-<<<<<<< HEAD
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | service.version | Version of the service the data was collected from. This allows users to look at a data set for a specific version of a service. | keyword |
-=======
 | service.address | Service address | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
->>>>>>> upstream/master
+
 | system.network_summary.icmp.* | ICMP counters | object |
 | system.network_summary.ip.* | IP counters | object |
 | system.network_summary.tcp.* | TCP counters | object |
 | system.network_summary.udp.* | UDP counters | object |
 | system.network_summary.udp_lite.* | UDP Lite counters | object |
+
 
 
 ### RAID
@@ -227,7 +217,7 @@ This data stream is available on:
 | system.raid.disks.active | Number of active disks. | long |
 | system.raid.disks.failed | Number of failed disks. | long |
 | system.raid.disks.spare | Number of spared disks. | long |
-| system.raid.disks.states.* | map of raw disk states | object |
+| system.raid.disks.states.\* | map of raw disk states | object |
 | system.raid.disks.total | Total number of disks the device consists of. | long |
 | system.raid.level | The raid level of the device | keyword |
 | system.raid.name | Name of the device. | keyword |
@@ -362,7 +352,7 @@ missing short-lived connections.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |

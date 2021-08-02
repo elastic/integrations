@@ -165,7 +165,7 @@ An example event for `activitylogs` looks as following:
 | azure.activitylogs.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
 | azure.activitylogs.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
 | azure.activitylogs.identity.authorization.scope | Scope | keyword |
-| azure.activitylogs.identity.claims.* | Claims | object |
+| azure.activitylogs.identity.claims.\* | Claims | object |
 | azure.activitylogs.identity.claims_initiated_by_user.fullname | Fullname | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.givenname | Givenname | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
@@ -535,14 +535,14 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.operation_type | Operation type | keyword |
 | azure.auditlogs.properties.result | Log result | keyword |
 | azure.auditlogs.properties.result_reason | Reason for the log result | keyword |
-| azure.auditlogs.properties.target_resources.*.display_name | Display name | keyword |
-| azure.auditlogs.properties.target_resources.*.id | ID | keyword |
-| azure.auditlogs.properties.target_resources.*.ip_address | ip Address | keyword |
-| azure.auditlogs.properties.target_resources.*.modified_properties.*.display_name | Display value | keyword |
-| azure.auditlogs.properties.target_resources.*.modified_properties.*.new_value | New value | keyword |
-| azure.auditlogs.properties.target_resources.*.modified_properties.*.old_value | Old value | keyword |
-| azure.auditlogs.properties.target_resources.*.type | Type | keyword |
-| azure.auditlogs.properties.target_resources.*.user_principal_name | User principal name | keyword |
+| azure.auditlogs.properties.target_resources.\*.display_name | Display name | keyword |
+| azure.auditlogs.properties.target_resources.\*.id | ID | keyword |
+| azure.auditlogs.properties.target_resources.\*.ip_address | ip Address | keyword |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.display_name | Display value | keyword |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.new_value | New value | keyword |
+| azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
+| azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
+| azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
