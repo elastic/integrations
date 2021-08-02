@@ -71,7 +71,7 @@ processors:
     field: source.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.ip == null"
+    if: "ctx.source?.ip != null"
 - rename:
     field: json.ClientCountry
     target_field: source.geo.country_iso_code
@@ -159,14 +159,10 @@ processors:
     target_field: http.response.status_code
     ignore_missing: true
 # URL Fields
-- rename:
-    field: json.ClientRequestURI
-    target_field: url.full
-    ignore_missing: true
 - uri_parts:
-    field: url.full
+    field: json.ClientRequestURI
     ignore_failure: true
-    if: ctx?.url?.full != null
+    if: ctx?.json?.ClientRequestURI != null
 - set:
     field: url.domain
     copy_from: json.ClientRequestHost
@@ -182,6 +178,40 @@ processors:
     copy_from: json.ClientRequestScheme
     ignore_empty_value: true
     if: ctx?.url?.scheme == null
+- set:
+    field: url.scheme
+    value: https
+    ignore_empty_value: true
+    if: ctx?.url?.scheme == null && ctx?.json?.ClientSSLProtocol != null
+- set:
+    field: url.scheme
+    value: http
+    ignore_empty_value: true
+    if: ctx?.url?.scheme == null
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+        def full = "";
+        if(ctx.url.scheme != null && ctx.url.scheme != "") {
+            full += ctx.url.scheme+"://";
+        }
+        if(ctx.url.domain != null && ctx.url.domain != "") {
+            full += ctx.url.domain;
+        }
+        if(ctx.url.path != null && ctx.url.path != "") {
+            full += ctx.url.path;
+        }
+        if(ctx.url.query != null && ctx.url.query != "") {
+            full += "?"+ctx.url.query;
+        }
+        if(full != "") {
+            ctx.url.full = full
+        }
+# - rename:
+#     field: json.ClientRequestURI
+#     target_field: url.full
+#     ignore_missing: true
 # User Agent Fields
 - user_agent:
     field: json.ClientRequestUserAgent
@@ -202,16 +232,20 @@ processors:
     ignore_failure: true
 # TLS Fields
 - rename:
+    field: json.ClientSSLProtocol
+    target_field: cloudflare.client.ssl.protocol
+    ignore_missing: true
+- rename:
     field: json.ClientSSLCipher
     target_field: tls.cipher
     ignore_missing: true
-- lowercase:
-    field: json.ClientSSLProtocol
-    ignore_missing: true
 - dissect:
-    field: json.ClientSSLProtocol
+    field: cloudflare.client.ssl.protocol
     pattern: "%{tls.version_protocol}v%{tls.version}"
     ignore_failure: true
+- lowercase:
+    field: tls.version_protocol
+    ignore_missing: true
 # Observer Fields
 - convert:
     field: clouflare.log.EdgeServerIP

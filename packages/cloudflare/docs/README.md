@@ -19,9 +19,11 @@ The Cloudflare Logpull records network events related to your organization in or
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.domain | Client domain. | keyword |
 | client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
 | client.geo.country_name | Country name. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.port | Port of the client. | long |
@@ -30,6 +32,7 @@ The Cloudflare Logpull records network events related to your organization in or
 | cloudflare.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
 | cloudflare.cache.tiered_fill | Tiered Cache was used to serve this request | boolean |
 | cloudflare.client.ip_class | Class of client, ex. badHost | searchEngine | allowlist | greylist.... | keyword |
+| cloudflare.client.ssl.protocol | Client SSL (TLS) protocol | keyword |
 | cloudflare.device_type | Client device type | keyword |
 | cloudflare.edge.colo.code | IATA airport code of data center that received the request | keyword |
 | cloudflare.edge.colo.id | Cloudflare edge colo id | long |
@@ -150,6 +153,7 @@ The Cloudflare Logpull records network events related to your organization in or
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url. | keyword |
 | url.extension | Extension of the requested file, such as ".jpg". | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | url.original | Unmodified original url as seen in the event source. | keyword |
 | url.password | Password of the request. | keyword |
 | url.path | Path of the request, such as "/search". | keyword |
