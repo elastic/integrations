@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing azure platform logs.
+description: Pipeline for parsing azure spring cloud logs.
 processors:
   - set:
       field: event.ingested
@@ -46,6 +46,9 @@ processors:
             field: error.message
             value: 'invalid json log'
             ignore_failure: true
+  - drop:
+      if: "ctx.azure.springcloudlogs.operationName != 'Microsoft.AppPlatform/Spring/logs'"
+      ignore_failure: true
   - date:
       field: azure.springcloudlogs.time
       target_field: '@timestamp'
