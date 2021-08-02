@@ -56,7 +56,7 @@ An example event for `springcloudlogs` looks as following:
     },
     "azure": {
         "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA",
-        "platformlogs": {
+        "springcloudlogs": {
             "Caller": "Portal",
             "ActivityId": "5890c6fc-fc6b-47cd-971a-2366a1641d99",
             "EventTimeString": "11/5/2020 2:07:32 PM +00:00",
