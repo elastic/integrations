@@ -166,4 +166,6 @@ An example event for `event` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.type | Service type | keyword |  |

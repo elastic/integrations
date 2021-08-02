@@ -292,5 +292,7 @@ An example event for `proxy` looks as following:
 | kubernetes.proxy.sync.rules.duration.us.bucket.\* | SyncProxyRules duration, histogram buckets | object |  |  |
 | kubernetes.proxy.sync.rules.duration.us.count | SyncProxyRules duration, number of operations | long |  | counter |
 | kubernetes.proxy.sync.rules.duration.us.sum | SyncProxyRules duration, sum of durations in microseconds | long |  | counter |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
