@@ -177,5 +177,7 @@ An example event for `scheduler` looks as following:
 | kubernetes.scheduler.scheduling.pod.preemption.victims.sum | Pod preemption victims sum | long |  | counter |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |

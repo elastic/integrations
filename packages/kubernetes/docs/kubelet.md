@@ -237,6 +237,8 @@ An example event for `container` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -473,6 +475,8 @@ An example event for `node` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -680,6 +684,8 @@ An example event for `pod` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -856,6 +862,8 @@ An example event for `system` looks as following:
 | kubernetes.system.memory.usage.bytes | Total memory usage | long | byte | gauge |
 | kubernetes.system.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
 | kubernetes.system.start_time | Start time | date |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -1029,5 +1037,7 @@ An example event for `volume` looks as following:
 | kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long | byte | gauge |
 | kubernetes.volume.fs.used.pct | Percentage of filesystem total used | long | percent | gauge |
 | kubernetes.volume.name | Volume name | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |

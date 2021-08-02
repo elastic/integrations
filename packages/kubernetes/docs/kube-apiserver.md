@@ -180,5 +180,7 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.subresource | Requested subresource | keyword |  |  |
 | kubernetes.apiserver.request.verb | HTTP verb | keyword |  |  |
 | kubernetes.apiserver.request.version | version for the group | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
