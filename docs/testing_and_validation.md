@@ -99,3 +99,27 @@ export ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic
 export ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme
 export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
 ```
+
+## Review test coverage
+
+The `elastic-package` tool can calculate test coverage for packages and export coverage reports in the [Cobertura](https://cobertura.github.io/cobertura/) format.
+Coverage reports contain information about present/missing pipeline, system and static tests, so they help in identifying untested
+integrations.
+
+The CI job runner collects coverage data and stores them together with build artifacts. The Cobertura plugin (*Coverage Report* tab) uses these data
+to visualize test coverage grouped by package, data stream and test type.
+
+See test coverage report for the *master* branch: [link](https://beats-ci.elastic.co/job/Ingest-manager/job/integrations/job/master/cobertura/)
+
+### Cobertura format vs. package domain language
+
+As the Cobertura report format refers to packages, classes, methods, etc., unfortunately it doesn't map easily onto the packages domain.
+We decided to make few assumptions for the Cobertura classification:
+
+**Package** - integration
+
+**File** - data stream
+
+**Class** - test type (pipeline tests, system tests, etc.)
+
+**Method** - "OK" if there are any tests present
