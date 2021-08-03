@@ -1100,31 +1100,64 @@ An example event for `node` looks as following:
     "agent": {
         "hostname": "docker-fleet-agent",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
+        "id": "27d29977-878e-4309-81ed-8788662503ad",
+        "ephemeral_id": "f8f510e7-9503-4e3d-af7f-da2992648d31",
         "type": "metricbeat",
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
+        "id": "27d29977-878e-4309-81ed-8788662503ad",
+        "version": "7.15.0",
         "snapshot": true
     },
-    "error": {
-        "message": "HTTP error 401 in : 401 Unauthorized"
+    "@timestamp": "2021-08-03T12:27:26.083Z",
+    "elasticsearch": {
+        "cluster": {
+            "name": "docker-cluster",
+            "id": "icut8oAwR--oCfUTlFaPMg"
+        },
+        "node": {
+            "jvm": {
+                "memory": {
+                    "heap": {
+                        "init": {
+                            "bytes": 1073741824
+                        },
+                        "max": {
+                            "bytes": 1073741824
+                        }
+                    },
+                    "nonheap": {
+                        "init": {
+                            "bytes": 7667712
+                        },
+                        "max": {
+                            "bytes": 0
+                        }
+                    }
+                },
+                "version": "16.0.1"
+            },
+            "process": {
+                "mlockall": false
+            },
+            "name": "2b8824139b92",
+            "id": "saWHxJSZQF6VqGZvEb45Uw",
+            "version": "7.15.0"
+        }
     },
-    "@timestamp": "2021-07-30T14:47:15.370Z",
     "ecs": {
         "version": "1.10.0"
+    },
+    "service": {
+        "address": "http://elasticsearch:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
         "dataset": "elasticsearch.node"
-    },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "type": "elasticsearch"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -1139,12 +1172,12 @@ An example event for `node` looks as following:
         },
         "containerized": true,
         "ip": [
-            "172.18.0.7"
+            "172.24.0.7"
         ],
         "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
+        "id": "1292624d19b2cee1a317ad634c9a8358",
         "mac": [
-            "02:42:ac:12:00:07"
+            "02:42:ac:18:00:07"
         ],
         "architecture": "x86_64"
     },
@@ -1153,9 +1186,9 @@ An example event for `node` looks as following:
         "name": "node"
     },
     "event": {
-        "duration": 1729899,
+        "duration": 9853150,
         "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:47:16.373035563Z",
+        "ingested": "2021-08-03T12:27:27.080460943Z",
         "module": "elasticsearch",
         "dataset": "elasticsearch.node"
     }
