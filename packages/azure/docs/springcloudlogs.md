@@ -21,25 +21,26 @@ An example event for `springcloudlogs` looks as following:
     "agent": {
         "hostname": "docker-fleet-agent",
         "name": "docker-fleet-agent",
-        "id": "f7a6804a-13bf-49cd-b20c-46f6166cfbae",
+        "id": "ef999bb2-fe83-4ffa-aa0c-0b54b7598df4",
         "type": "filebeat",
-        "ephemeral_id": "5af1248d-b4fa-42da-b3d9-d4a1af5caa99",
+        "ephemeral_id": "49d0a57c-119c-4a01-878c-d9b06fc81f65",
         "version": "7.14.0"
     },
     "log": {
         "level": "Informational"
     },
     "elastic_agent": {
-        "id": "f7a6804a-13bf-49cd-b20c-46f6166cfbae",
+        "id": "ef999bb2-fe83-4ffa-aa0c-0b54b7598df4",
         "version": "7.14.0",
         "snapshot": true
     },
+    "message": "2021-08-03 15:07:03.354  INFO [helloapp,,,] 1 --- [trap-executor-0] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration",
     "azure-eventhub": {
-        "sequence_number": 3,
+        "sequence_number": 80,
         "consumer_group": "$Default",
-        "offset": 2328,
+        "offset": 62080,
         "eventhub": "insights-logs-applicationconsole",
-        "enqueued_time": "2021-08-02T14:03:14.521Z"
+        "enqueued_time": "2021-08-03T15:08:14.477Z"
     },
     "tags": [
         "azure-springcloudlogs"
@@ -53,7 +54,7 @@ An example event for `springcloudlogs` looks as following:
     "input": {
         "type": "azure-eventhub"
     },
-    "@timestamp": "2021-08-02T14:02:03.176Z",
+    "@timestamp": "2021-08-03T15:07:03.354Z",
     "ecs": {
         "version": "1.10.0"
     },
@@ -75,18 +76,18 @@ An example event for `springcloudlogs` looks as following:
         },
         "containerized": true,
         "ip": [
-            "172.27.0.4"
+            "172.29.0.7"
         ],
         "name": "docker-fleet-agent",
         "id": "78315c3233258f2dcd540ed749ab1701",
         "mac": [
-            "02:42:ac:1b:00:04"
+            "02:42:ac:1d:00:07"
         ],
         "architecture": "x86_64"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2021-08-03T14:24:13.216041200Z",
+        "ingested": "2021-08-03T15:15:14.386889100Z",
         "kind": "event",
         "action": "Microsoft.AppPlatform/Spring/logs",
         "dataset": "azure.springcloudlogs"
@@ -94,18 +95,17 @@ An example event for `springcloudlogs` looks as following:
     "azure": {
         "subscription_id": "0E073EC1-C22F-4488-ADDE-DA35ED609CCD",
         "springcloudlogs": {
+            "log_format": "RAW",
             "operation_name": "Microsoft.AppPlatform/Spring/logs",
-            "LogFormat": "RAW",
             "category": "ApplicationConsole",
             "event_category": "Administrative",
             "logtag": "F",
             "properties": {
-                "InstanceName": "helloapp-default-8-56df6b7f56-4vr94",
-                "Log": "2021-08-02 14:02:03.175  INFO [helloapp,,,] 1 --- [trap-executor-0] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration",
-                "ServiceName": "obssprincloud",
-                "Stream": "stdout",
-                "AppName": "helloapp",
-                "ServiceId": "99070c7524f14eaf970bbdf35f357772"
+                "app_name": "helloapp",
+                "instance_name": "helloapp-default-8-56df6b7f56-4vr94",
+                "stream": "stdout",
+                "service_name": "obssprincloud",
+                "service_id": "99070c7524f14eaf970bbdf35f357772"
             }
         },
         "resource": {
