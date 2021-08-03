@@ -13,8 +13,8 @@ The Cloudflare Logpull records network events related to your organization in or
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
-| client.as.number | Unique number allocated to the autonomous system. | long |
+| client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.domain | Client domain. | keyword |
@@ -25,7 +25,7 @@ The Cloudflare Logpull records network events related to your organization in or
 | client.geo.location | Longitude and latitude. | geo_point |
 | client.geo.region_iso_code | Region ISO code. | keyword |
 | client.geo.region_name | Region name. | keyword |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | cloudflare.cache.bytes | Number of bytes returned by the cache | long |
 | cloudflare.cache.status | Status of cache | keyword |
@@ -71,29 +71,29 @@ The Cloudflare Logpull records network events related to your organization in or
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
-| destination.as.number | Unique number allocated to the autonomous system. | long |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
-| destination.bytes | Bytes sent from the destination to the server. | long |
+| destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
-| destination.ip | IP address of the destination. | ip |
-| ecs.version | ECS version this event conforms to. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
-| event.action | The action captured by the event. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
-| event.original | Raw text message of entire event. | keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, consider using the wildcard data type. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -111,7 +111,7 @@ The Cloudflare Logpull records network events related to your organization in or
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.method | HTTP request method. | keyword |
+| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -120,18 +120,27 @@ The Cloudflare Logpull records network events related to your organization in or
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | Log message optimized for viewing in a log viewer. | text |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| observer.type | The type of the observer the data is coming from. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| observer.geo.city_name | City name. | keyword |
+| observer.geo.continent_name | Name of the continent. | keyword |
+| observer.geo.country_iso_code | Country ISO code. | keyword |
+| observer.geo.country_name | Country name. | keyword |
+| observer.geo.location | Longitude and latitude. | geo_point |
+| observer.geo.region_iso_code | Region ISO code. | keyword |
+| observer.geo.region_name | Region name. | keyword |
+| observer.ip | IP addresses of the observer. | ip |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names seen on your event. | keyword |
-| server.address | Server network address. | keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. | long |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | Source domain. | keyword |
@@ -140,40 +149,32 @@ The Cloudflare Logpull records network events related to your organization in or
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
-| source.user.full_name | User’s full name, if available. | keyword |
-| source.user.id | Unique identifiers of the user. | keyword |
+| source.user.full_name | User's full name, if available. | keyword |
+| source.user.id | Unique identifier of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
-| url.domain | Domain of the url. | keyword |
-| url.extension | Extension of the requested file, such as ".jpg". | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | url.password | Password of the request. | keyword |
 | url.path | Path of the request, such as "/search". | keyword |
 | url.port | Port of the request, such as 443. | long |
-| url.query | Query of the request, such as "?search=asdf". | keyword |
-| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.username | Username of the request. | keyword |
-| user.domain | Name of the directory the user is a member of. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. | keyword |
-| user.target.email | User email address. | keyword |
-| user.target.full_name | User's full name, if available. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. | keyword |
-| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.target.group.name | Name of the group. | keyword |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |

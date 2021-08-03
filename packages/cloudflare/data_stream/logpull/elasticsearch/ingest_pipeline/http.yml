@@ -71,7 +71,6 @@ processors:
     field: source.ip
     target_field: source.geo
     ignore_missing: true
-    if: "ctx.source?.ip != null"
 - rename:
     field: json.ClientCountry
     target_field: source.geo.country_iso_code
@@ -158,6 +157,25 @@ processors:
     field: json.EdgeResponseStatus
     target_field: http.response.status_code
     ignore_missing: true
+# TLS Fields
+- rename:
+    field: json.ClientSSLProtocol
+    target_field: cloudflare.client.ssl.protocol
+    ignore_missing: true
+    if: ctx?.json?.ClientSSLProtocol.toLowerCase() != 'none'
+- rename:
+    field: json.ClientSSLCipher
+    target_field: tls.cipher
+    ignore_missing: true
+    if: ctx?.json?.ClientSSLCipher.toLowerCase() != 'none'
+- dissect:
+    field: cloudflare.client.ssl.protocol
+    pattern: "%{tls.version_protocol}v%{tls.version}"
+    ignore_failure: true
+    ignore_missing: true
+- lowercase:
+    field: tls.version_protocol
+    ignore_missing: true
 # URL Fields
 - uri_parts:
     field: json.ClientRequestURI
@@ -182,7 +200,7 @@ processors:
     field: url.scheme
     value: https
     ignore_empty_value: true
-    if: ctx?.url?.scheme == null && ctx?.json?.ClientSSLProtocol != null
+    if: ctx?.url?.scheme == null && ctx?.cloudflare?.client?.ssl?.protocol != null
 - set:
     field: url.scheme
     value: http
@@ -190,7 +208,7 @@ processors:
     if: ctx?.url?.scheme == null
 - script:
     lang: painless
-    description: This script processor iterates over the whole document to remove fields with null values.
+    description: This script builds the `url.full` field out of the available `url.*` parts.
     source: |
         def full = "";
         if(ctx.url.scheme != null && ctx.url.scheme != "") {
@@ -208,10 +226,6 @@ processors:
         if(full != "") {
             ctx.url.full = full
         }
-# - rename:
-#     field: json.ClientRequestURI
-#     target_field: url.full
-#     ignore_missing: true
 # User Agent Fields
 - user_agent:
     field: json.ClientRequestUserAgent
@@ -230,33 +244,16 @@ processors:
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
     if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
     ignore_failure: true
-# TLS Fields
-- rename:
-    field: json.ClientSSLProtocol
-    target_field: cloudflare.client.ssl.protocol
-    ignore_missing: true
-- rename:
-    field: json.ClientSSLCipher
-    target_field: tls.cipher
-    ignore_missing: true
-- dissect:
-    field: cloudflare.client.ssl.protocol
-    pattern: "%{tls.version_protocol}v%{tls.version}"
-    ignore_failure: true
-- lowercase:
-    field: tls.version_protocol
-    ignore_missing: true
 # Observer Fields
-- convert:
-    field: clouflare.log.EdgeServerIP
+- rename:
+    field: json.EdgeServerIP
     target_field: observer.ip
-    type: ip
     ignore_missing: true
+    if: ctx?.json?.EdgeServerIP != ''
 - geoip:
     field: observer.ip
     target_field: observer.geo
     ignore_missing: true
-    if: "ctx.observer?.ip == null"
 # Cloudflare Cache Fields
 - rename:
     field: json.CacheCacheStatus
@@ -271,11 +268,13 @@ processors:
     target_field: cloudflare.cache.bytes
     type: long
     ignore_missing: true
+    if: ctx?.json?.CacheResponseBytes != 0
 - convert:
     field: json.CacheResponseStatus
     target_field: cloudflare.cache.status_code
     type: long
     ignore_missing: true
+    if: ctx?.json?.CacheResponseStatus != 0
 # Cloudflare Edge Fields
 - rename:
     field: json.EdgeColoCode
@@ -435,6 +434,17 @@ processors:
     field: json.ClientDeviceType
     target_field: cloudflare.device_type
     ignore_missing: true
+- set:
+    field: event.category
+    value: network
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.type
+    value: denied
+    allow_duplicates: false
+    if: ctx?.cloudflare?.firewall?.actions.contains('block')
 on_failure:
 - set:
     field: error.message
