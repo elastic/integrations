@@ -8,11 +8,11 @@ There are several requirements before using the integration since the logs will 
    * to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
 
 
-Azure Spring Cloud logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
+Azure Spring Cloud logs provide system and application information for Azure Spring Cloud resources.
 
-### platformlogs
+### springcloudlogs
 
-This is the `springcloudlogs` data stream of the Azure Logs package. It will collect any platform events that have been streamed through an azure event hub.
+This is the `springcloudlogs` data stream of the Azure Logs package. It will collect any Spring Cloud logs that have been streamed through an azure event hub.
 
 {{event "springcloudlogs"}}
 
