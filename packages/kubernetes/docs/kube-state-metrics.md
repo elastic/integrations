@@ -161,8 +161,8 @@ An example event for `state_container` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name |  |  |  |  |
-| orchestrator.cluster.url |  |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -304,8 +304,8 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name |  |  |  |  |
-| orchestrator.cluster.url |  |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -439,8 +439,8 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
-| orchestrator.cluster.name |  |  |  |
-| orchestrator.cluster.url |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Service address | keyword |  |
 | service.type | Service type | keyword |  |
 
@@ -575,8 +575,8 @@ An example event for `state_deployment` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
-| orchestrator.cluster.name |  |  |  |
-| orchestrator.cluster.url |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Service address | keyword |  |
 | service.type | Service type | keyword |  |
 
@@ -728,8 +728,8 @@ An example event for `state_job` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
-| orchestrator.cluster.name |  |  |  |
-| orchestrator.cluster.url |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Service address | keyword |  |
 | service.type | Service type | keyword |  |
 
@@ -896,8 +896,8 @@ An example event for `state_node` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name |  |  |  |  |
-| orchestrator.cluster.url |  |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -1028,8 +1028,8 @@ An example event for `state_persistentvolume` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name |  |  |  |  |
-| orchestrator.cluster.url |  |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -1162,8 +1162,8 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name |  |  |  |  |
-| orchestrator.cluster.url |  |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -1305,8 +1305,8 @@ An example event for `state_pod` looks as following:
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| orchestrator.cluster.name |  |  |
-| orchestrator.cluster.url |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -1447,8 +1447,8 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.replicaset.replicas.ready | The number of ready replicas per ReplicaSet | long | gauge |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
-| orchestrator.cluster.name |  |  |  |
-| orchestrator.cluster.url |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Service address | keyword |  |
 | service.type | Service type | keyword |  |
 
@@ -1576,8 +1576,8 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.resourcequota.type | Quota information type, `hard` or `used` | keyword |  |  |
 | kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name |  |  |  |  |
-| orchestrator.cluster.url |  |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | Service type | keyword |  |  |
 
@@ -1715,8 +1715,8 @@ An example event for `state_service` looks as following:
 | kubernetes.service.name | Service name. | keyword |
 | kubernetes.service.type | Service type | keyword |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
-| orchestrator.cluster.name |  |  |
-| orchestrator.cluster.url |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -1850,8 +1850,8 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.statefulset.replicas.desired | The number of desired replicas per StatefulSet | long | gauge |
 | kubernetes.statefulset.replicas.observed | The number of observed replicas per StatefulSet | long | gauge |
 | kubernetes.statefulset.replicas.ready | The number of ready replicas per StatefulSet | long | gauge |
-| orchestrator.cluster.name |  |  |  |
-| orchestrator.cluster.url |  |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
 | service.address | Service address | keyword |  |
 | service.type | Service type | keyword |  |
 
@@ -1982,7 +1982,7 @@ An example event for `state_storageclass` looks as following:
 | kubernetes.storageclass.provisioner | Volume provisioner for the storage class. | keyword |
 | kubernetes.storageclass.reclaim_policy | Reclaim policy for dynamically created volumes | keyword |
 | kubernetes.storageclass.volume_binding_mode | Mode for default provisioning and binding | keyword |
-| orchestrator.cluster.name |  |  |
-| orchestrator.cluster.url |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
