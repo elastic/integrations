@@ -94,6 +94,9 @@ pipeline {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
+                          // Temporary workaround to collect internal fleet-server logs
+                          sh(label: "Collect internal fleet-server logs",
+                            script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/latest/${it}/logs/fleet-server-internal.log")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                           stashCoverageReport()
@@ -241,6 +244,9 @@ def checkPackageCompatibility(integrationName, stackVersion) {
   } finally {
     dir("${BASE_DIR}") {
       sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${stackVersion}/${integrationName}")
+      // Temporary workaround to collect internal fleet-server logs
+      sh(label: "Collect internal fleet-server logs",
+        script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/fleet-server-internal.log")
       archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/*.log")
       sh(label: "Take down the Elastic stack (${stackVersion})", script: 'build/elastic-package stack down -v')
     }
