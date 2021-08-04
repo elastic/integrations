@@ -137,7 +137,15 @@ An example event for `springcloudlogs` looks as following:
 | azure.springcloudlogs.ccpNamespace | ccpNamespace | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
 | azure.springcloudlogs.operation_name | Operation name | keyword |
-| azure.springcloudlogs.properties | Event properties | flattened |
+| azure.springcloudlogs.properties.app_name | Application name | keyword |
+| azure.springcloudlogs.properties.instance_name | Instance name | keyword |
+| azure.springcloudlogs.properties.logger | Logger | keyword |
+| azure.springcloudlogs.properties.service_id | Service ID | keyword |
+| azure.springcloudlogs.properties.service_name | Service name | keyword |
+| azure.springcloudlogs.properties.stack | Stack name | keyword |
+| azure.springcloudlogs.properties.stream | Stream | keyword |
+| azure.springcloudlogs.properties.thread | Thread | keyword |
+| azure.springcloudlogs.properties.type | Type | keyword |
 | azure.springcloudlogs.result_signature | Result signature | keyword |
 | azure.springcloudlogs.result_type | Result type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
