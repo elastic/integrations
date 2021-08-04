@@ -840,6 +840,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
@@ -848,7 +849,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Name of the module this data is coming from. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
@@ -931,6 +932,7 @@ The `syslog` dataset provides system logs on linux and MacOS.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to | keyword |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
@@ -938,15 +940,15 @@ The `syslog` dataset provides system logs on linux and MacOS.
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Name of the module this data is coming from. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.sequence | Sequence number of the event. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.domain | Name of the directory the group is a member of. | keyword |
+| host.hostname | Hostname of the host. | keyword |
 | host.id | Unique host id. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
