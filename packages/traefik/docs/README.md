@@ -15,7 +15,7 @@ The `access` data stream collects Traefik access logs.
 
 An example event for `access` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-03-18T20:39:44.000Z",
     "agent": {
@@ -132,6 +132,8 @@ An example event for `access` looks as following:
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -156,6 +158,7 @@ An example event for `access` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source. | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | traefik.access.backend_url | The url of the backend where request is forwarded | keyword |
 | traefik.access.frontend_name | The name of the frontend used | keyword |
 | traefik.access.request_count | The number of requests | long |
@@ -181,7 +184,7 @@ The `health` data stream collects metrics from the Traefik server.
 
 An example event for `health` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-03-18T20:40:18.823Z",
     "agent": {
@@ -247,11 +250,13 @@ An example event for `health` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.name | Name of the service data is collected from. | keyword |
 | service.type | Service type | keyword |
 | traefik.health.response.avg_time.us | Average response time in microseconds | long |
 | traefik.health.response.count | Number of responses | long |
-| traefik.health.response.status_codes.* | Number of responses per status code | object |
+| traefik.health.response.status_codes.\* | Number of responses per status code | object |
 | traefik.health.uptime.sec | Uptime of Traefik instance in seconds | long |
 

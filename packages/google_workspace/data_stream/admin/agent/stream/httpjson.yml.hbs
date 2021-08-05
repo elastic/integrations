@@ -5,7 +5,7 @@ auth.oauth2.google.jwt_file: {{jwt_file}}
 auth.oauth2.google.delegated_account: {{delegated_account}}
 auth.oauth2.scopes:
   - https://www.googleapis.com/auth/admin.reports.audit.readonly
-request.url: https://www.googleapis.com/admin/reports/v1/activity/users/{{user_key}}/applications/admin
+request.url: {{api_host}}/admin/reports/v1/activity/users/{{user_key}}/applications/admin
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
@@ -28,9 +28,16 @@ cursor:
   last_execution_datetime:
     value: "[[formatDate now]]"
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
- - {{tag}}
+  - {{tag}}
 {{/each}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

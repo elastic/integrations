@@ -12,9 +12,16 @@ alternative_host: {{alternative_host}}
 {{/if}}
 subscription.create: {{subscription_create}}
 tags:
-  {{#each tags as |tag i|}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
   - {{tag}}
-  {{/each}}
+{{/each}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

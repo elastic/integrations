@@ -17,6 +17,119 @@ datasets for receiving logs over syslog or read from a file:
 
 The `asa` dataset collects the Cisco firewall logs.
 
+An example event for `asa` looks as following:
+
+```json
+{
+    "@timestamp": "2018-10-10T12:34:56.000Z",
+    "agent": {
+        "ephemeral_id": "a548620b-0623-4130-b586-fe233f00e6e5",
+        "hostname": "docker-fleet-agent",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "cisco": {
+        "asa": {
+            "destination_interface": "outside",
+            "source_interface": "inside"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco.asa",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "100.66.98.44",
+        "ip": "100.66.98.44",
+        "port": 8256
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "firewall-rule",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "code": "305011",
+        "dataset": "cisco.asa",
+        "ingested": "2021-07-19T08:54:36.436846422Z",
+        "kind": "event",
+        "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:100.66.98.44/8256\n",
+        "severity": 6,
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "hostname": "localhost",
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "informational",
+        "source": {
+            "address": "172.23.0.4:59451"
+        }
+    },
+    "network": {
+        "iana_number": "6",
+        "transport": "tcp"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "outside"
+            }
+        },
+        "hostname": "localhost",
+        "ingress": {
+            "interface": {
+                "name": "inside"
+            }
+        },
+        "product": "asa",
+        "type": "firewall",
+        "vendor": "Cisco"
+    },
+    "process": {
+        "name": "CiscoASA",
+        "pid": 999
+    },
+    "related": {
+        "hosts": [
+            "localhost"
+        ],
+        "ip": [
+            "172.31.98.44",
+            "100.66.98.44"
+        ]
+    },
+    "source": {
+        "address": "172.31.98.44",
+        "ip": "172.31.98.44",
+        "port": 1772
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco-asa",
+        "forwarded"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -48,12 +161,15 @@ The `asa` dataset collects the Cisco firewall logs.
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
+| cisco.asa.security | Cisco FTD security event fields. | flattened |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
+| cisco.asa.termination_user | AAA name of user requesting termination | keyword |
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.asa.username |  | keyword |
+| cisco.asa.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -92,11 +208,13 @@ The `asa` dataset collects the Cisco firewall logs.
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
-| event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | keyword |
 | event.ingested | The timestamp when an event arrived in the central data store | date |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.provider | Source of the event (e.g. Server) | keyword |
 | event.severity | The timestamp when an event arrived in the central data store | long |
 | event.start | The date when the event started or when the activity was first observed. | date |
@@ -124,17 +242,18 @@ The `asa` dataset collects the Cisco firewall logs.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.facility.code | Syslog numeric facility of the event. | long |
-| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
+| network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.interface.name | Interface name | keyword |
 | observer.egress.zone | Observer Egress zone | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -169,8 +288,23 @@ The `asa` dataset collects the Cisco firewall logs.
 | source.nat.port | Source NAT port | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility.code | Syslog numeric facility of the event. | long |
+| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
@@ -179,11 +313,179 @@ The `asa` dataset collects the Cisco firewall logs.
 
 The `ftd` dataset collects the Firepower Threat Defense logs.
 
+An example event for `ftd` looks as following:
+
+```json
+{
+    "@timestamp": "2019-08-16T09:39:03.000Z",
+    "agent": {
+        "ephemeral_id": "915b9d78-907c-4615-90f8-e2997777f537",
+        "hostname": "docker-fleet-agent",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "cisco": {
+        "ftd": {
+            "rule_name": "malware-and-file-policy",
+            "security": {
+                "application_protocol": "HTTP",
+                "client": "cURL",
+                "dst_ip": "213.211.198.62",
+                "dst_port": "80",
+                "file_action": "Malware Cloud Lookup",
+                "file_direction": "Download",
+                "file_name": "eicar_com.zip",
+                "file_policy": "malware-and-file-policy",
+                "file_sandbox_status": "File Size Is Too Small",
+                "file_sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad",
+                "file_size": "184",
+                "file_storage_status": "Not Stored (Disposition Was Pending)",
+                "file_type": "ZIP",
+                "first_packet_second": "2019-08-16T09:39:02Z",
+                "protocol": "tcp",
+                "sha_disposition": "Unavailable",
+                "spero_disposition": "Spero detection not performed on file",
+                "src_ip": "10.0.1.20",
+                "src_port": "46004",
+                "threat_name": "Win.Ransomware.Eicar::95.sbx.tg",
+                "uri": "http://www.eicar.org/download/eicar_com.zip",
+                "user": "No Authentication Required"
+            },
+            "threat_category": "Win.Ransomware.Eicar::95.sbx.tg"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco.ftd",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "213.211.198.62",
+        "as": {
+            "number": 43341,
+            "organization": {
+                "name": "MDlink online service center GmbH"
+            }
+        },
+        "geo": {
+            "city_name": "Magdeburg",
+            "continent_name": "Europe",
+            "country_iso_code": "DE",
+            "country_name": "Germany",
+            "location": {
+                "lat": 52.1333,
+                "lon": 11.6167
+            },
+            "region_iso_code": "DE-ST",
+            "region_name": "Saxony-Anhalt"
+        },
+        "ip": "213.211.198.62",
+        "port": 80
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "malware-detected",
+        "agent_id_status": "verified",
+        "category": [
+            "malware"
+        ],
+        "code": "430005",
+        "dataset": "cisco.ftd",
+        "ingested": "2021-07-19T08:56:32.448763106Z",
+        "kind": "alert",
+        "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 213.211.198.62, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip\n",
+        "severity": 1,
+        "start": "2019-08-16T09:39:02Z",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "file": {
+        "hash": {
+            "sha256": "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
+        },
+        "name": "eicar_com.zip",
+        "size": 184
+    },
+    "host": {
+        "hostname": "firepower",
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "alert",
+        "source": {
+            "address": "172.23.0.4:41328"
+        }
+    },
+    "network": {
+        "application": "curl",
+        "iana_number": "6",
+        "protocol": "http",
+        "transport": "tcp"
+    },
+    "observer": {
+        "hostname": "firepower",
+        "product": "asa",
+        "type": "firewall",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hash": [
+            "2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad"
+        ],
+        "hosts": [
+            "firepower"
+        ],
+        "ip": [
+            "10.0.1.20",
+            "213.211.198.62"
+        ],
+        "user": [
+            "No Authentication Required"
+        ]
+    },
+    "source": {
+        "address": "10.0.1.20",
+        "ip": "10.0.1.20",
+        "port": 46004
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco-ftd",
+        "forwarded"
+    ],
+    "url": {
+        "domain": "www.eicar.org",
+        "extension": "zip",
+        "original": "http://www.eicar.org/download/eicar_com.zip",
+        "path": "/download/eicar_com.zip",
+        "scheme": "http"
+    },
+    "user": {
+        "id": "No Authentication Required",
+        "name": "No Authentication Required"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| @timestamp | Event timestamp. | date |
 | cisco.ftd.assigned_ip | The IP address assigned to a VPN client successfully connecting | ip |
 | cisco.ftd.burst.avg_rate | The current average burst rate seen | keyword |
 | cisco.ftd.burst.configured_avg_rate | The current configured average burst rate allowed | keyword |
@@ -214,9 +516,11 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.ftd.suffix | Optional suffix after %FTD identifier. | keyword |
+| cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
 | cisco.ftd.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.ftd.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
 | cisco.ftd.username |  | keyword |
+| cisco.ftd.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -260,10 +564,12 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | keyword |
 | event.ingested | The timestamp when an event arrived in the central data store | date |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.provider | Source of the event (e.g. Server) | keyword |
 | event.severity | The timestamp when an event arrived in the central data store | long |
 | event.start | The date when the event started or when the activity was first observed. | date |
@@ -296,18 +602,19 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.facility.code | Syslog numeric facility of the event. | long |
-| log.syslog.priority | Syslog priority of the event. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | network.application | Application level protocol name. | keyword |
 | network.bytes | Total bytes transferred in both directions. | long |
 | network.direction | Direction of the network traffic. | keyword |
 | network.iana_number | IANA Protocol Number. | keyword |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe  the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include  vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
+| network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | L7 Network protocol name. | keyword |
 | network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
 | observer.egress.interface.name | Interface name | keyword |
 | observer.egress.zone | Observer Egress zone | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
@@ -345,9 +652,23 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | source.user.name | Short name or login of the user. | keyword |
+| syslog.facility.code | Syslog numeric facility of the event. | long |
+| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -358,11 +679,99 @@ The `ftd` dataset collects the Firepower Threat Defense logs.
 
 The `ios` dataset collects the Cisco IOS router and switch logs.
 
+An example event for `ios` looks as following:
+
+```json
+{
+    "@timestamp": "2021-07-19T08:58:29.370Z",
+    "agent": {
+        "ephemeral_id": "7e9d4c95-b972-479d-bc6c-2ac0d05f3eb1",
+        "hostname": "docker-fleet-agent",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "cisco": {
+        "ios": {
+            "access_list": "177",
+            "facility": "SEC"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco.ios",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "224.0.0.22",
+        "ip": "224.0.0.22"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "deny",
+        "agent_id_status": "verified",
+        "category": "network",
+        "code": "IPACCESSLOGRP",
+        "dataset": "cisco.ios",
+        "ingested": "2021-07-19T08:58:30.397370366Z",
+        "original": "Feb  8 04:00:48 198.51.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet\n",
+        "provider": "firewall",
+        "sequence": 585917,
+        "severity": 6,
+        "timezone": "+00:00",
+        "type": "denied"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "informational",
+        "source": {
+            "address": "198.51.100.2"
+        }
+    },
+    "message": "list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet",
+    "network": {
+        "community_id": "1:Rt5RGlrNED3cg8Wokm4+KGsDz+4=",
+        "packets": 1,
+        "transport": "igmp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "198.51.100.197",
+            "224.0.0.22"
+        ]
+    },
+    "source": {
+        "address": "198.51.100.197",
+        "ip": "198.51.100.197",
+        "packets": 1
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco-ios",
+        "forwarded"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. example: '2016-05-23T08:05:34.853Z' | date |
+| @timestamp | Event timestamp. | date |
 | cisco.ios.access_list | Name of the IP access list. | keyword |
 | cisco.ios.action | Action taken by the device | keyword |
 | cisco.ios.facility | The facility to which the message refers (for example, SNMP, SYS, and so forth). A facility can be a hardware device, a protocol, or a module of the system software. It denotes the source or the cause of the system message. | keyword |
@@ -403,11 +812,13 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
-| event.created | The date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | The date when the event ended or when the activity was last observed. | date |
 | event.ingested | The timestamp when an event arrived in the central data store | date |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.provider | Source of the event (e.g. Server) | keyword |
 | event.severity | The timestamp when an event arrived in the central data store | long |
 | event.start | The date when the event started or when the activity was first observed. | date |
@@ -438,7 +849,6 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset |  | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. | text |
 | network.community_id | A hash of source and destination IPs and ports. | keyword |
@@ -461,6 +871,77 @@ The `ios` dataset collects the Cisco IOS router and switch logs.
 
 The `nexus` dataset collects Cisco Nexus logs.
 
+An example event for `nexus` looks as following:
+
+```json
+{
+    "@timestamp": "2021-07-19T09:05:27.398Z",
+    "agent": {
+        "ephemeral_id": "9cae1736-608e-4d97-9238-c5acffac7d36",
+        "hostname": "docker-fleet-agent",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "cisco.nexus",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "code": "pam_aaa",
+        "dataset": "cisco.nexus",
+        "ingested": "2021-07-19T09:05:28.421638917Z",
+        "original": "2012 Dec 18 14:51:08 Nexus5010-B %AUTHPRIV-3-SYSTEM_MSG: pam_aaa:Authentication failed for user en from 2.2.2.1 - login\n",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.23.0.4:37919"
+        }
+    },
+    "observer": {
+        "product": "Nexus",
+        "type": "Switches",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ]
+    },
+    "rsa": {
+        "internal": {
+            "messageid": "pam_aaa"
+        },
+        "time": {
+            "timezone": "Nexus5010-B %AUTHPRIV-3-SYSTEM_MSG"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco-nexus",
+        "forwarded"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -514,7 +995,9 @@ The `nexus` dataset collects Cisco Nexus logs.
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
@@ -557,12 +1040,12 @@ The `nexus` dataset collects Cisco Nexus logs.
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 * facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   * ingress   * egress   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -642,12 +1125,12 @@ The `nexus` dataset collects Cisco Nexus logs.
 | rsa.email.subject | This key is used to capture the subject string from an Email only. | keyword |
 | rsa.email.trans_from | Deprecated key defined only in table map. | keyword |
 | rsa.email.trans_to | Deprecated key defined only in table map. | keyword |
-| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on | keyword |
+| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as \<strong\>blacklisted\</strong\>, \<strong\>infected\</strong\>, \<strong\>firewall disabled\</strong\> and so on | keyword |
 | rsa.endpoint.registry_key | This key captures the path to the registry key | keyword |
 | rsa.endpoint.registry_value | This key captures values or decorators used within a registry entry | keyword |
 | rsa.file.attachment | This key captures the attachment file name | keyword |
 | rsa.file.binary | Deprecated key defined only in table map. | keyword |
-| rsa.file.directory_dst | <span>This key is used to capture the directory of the target process or file</span> | keyword |
+| rsa.file.directory_dst | \<span\>This key is used to capture the directory of the target process or file\</span\> | keyword |
 | rsa.file.directory_src | This key is used to capture the directory of the source process or file | keyword |
 | rsa.file.file_entropy | This is used to capture entropy vale of a file | double |
 | rsa.file.file_vendor | This is used to capture Company name of file located in version_info | keyword |
@@ -772,7 +1255,7 @@ The `nexus` dataset collects Cisco Nexus logs.
 | rsa.misc.agent_id | This key is used to capture agent id | keyword |
 | rsa.misc.alarm_id |  | keyword |
 | rsa.misc.alarmname |  | keyword |
-| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.app_id |  | keyword |
 | rsa.misc.audit |  | keyword |
 | rsa.misc.audit_object |  | keyword |
@@ -1063,14 +1546,14 @@ The `nexus` dataset collects Cisco Nexus logs.
 | rsa.misc.result | This key is used to capture the outcome/result string value of an action in a session. | keyword |
 | rsa.misc.result_code | This key is used to capture the outcome/result numeric value of an action in a session | keyword |
 | rsa.misc.risk | This key captures the non-numeric risk value | keyword |
-| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.risk_num | This key captures a Numeric Risk value | double |
 | rsa.misc.risk_num_comm | This key captures Risk Number Community | double |
 | rsa.misc.risk_num_next | This key captures Risk Number NextGen | double |
 | rsa.misc.risk_num_sand | This key captures Risk Number SandBox | double |
 | rsa.misc.risk_num_static | This key captures Risk Number Static | double |
-| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
-| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
+| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.ruid |  | keyword |
 | rsa.misc.rule | This key captures the Rule number | keyword |
 | rsa.misc.rule_group | This key captures the Rule group name | keyword |
@@ -1135,7 +1618,7 @@ The `nexus` dataset collects Cisco Nexus logs.
 | rsa.misc.version | This key captures Version of the application or OS which is generating the event. | keyword |
 | rsa.misc.virt_data |  | keyword |
 | rsa.misc.virusname | This key captures the name of the virus | keyword |
-| rsa.misc.vm_target | VMWare Target **VMWARE** only varaible. | keyword |
+| rsa.misc.vm_target | VMWare Target \*\*VMWARE\*\* only varaible. | keyword |
 | rsa.misc.vpnid |  | keyword |
 | rsa.misc.vsys | This key captures Virtual System Name | keyword |
 | rsa.misc.vuln_ref | This key captures the Vulnerability Reference details | keyword |
@@ -1279,8 +1762,8 @@ The `nexus` dataset collects Cisco Nexus logs.
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -1295,6 +1778,108 @@ The `nexus` dataset collects Cisco Nexus logs.
 
 The `meraki` dataset collects Cisco Meraki logs.
 
+An example event for `meraki` looks as following:
+
+```json
+{
+    "@timestamp": "2016-01-29T06:09:59.000Z",
+    "agent": {
+        "ephemeral_id": "9b0d0418-f480-4f0b-8017-4cb9d88c01d7",
+        "hostname": "docker-fleet-agent",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "cisco.meraki",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": [
+            "10.193.124.51"
+        ],
+        "port": 5293
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "action": "deny\n",
+        "agent_id_status": "verified",
+        "code": "security_event",
+        "dataset": "cisco.meraki",
+        "ingested": "2021-07-19T09:02:10.469724425Z",
+        "original": "modtempo 1454047799.olab nto_ security_event olaborissecurity_event tur url=https://example.org/odoco/ria.jpg?ritin=uredolor#tatemac src=10.15.44.253:5078 dst=10.193.124.51:5293 mac=01:00:5e:28:ae:7d name=psa sha256=umq disposition=ntium action=deny\n",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.23.0.4:44394"
+        }
+    },
+    "observer": {
+        "product": "Meraki",
+        "type": "Wireless",
+        "vendor": "Cisco"
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ],
+        "ip": [
+            "10.193.124.51",
+            "10.15.44.253"
+        ]
+    },
+    "rsa": {
+        "internal": {
+            "event_desc": "olaborissecurity_event tur",
+            "messageid": "security_event"
+        },
+        "misc": {
+            "action": [
+                "deny\n"
+            ],
+            "disposition": "ntium",
+            "event_type": "security_event",
+            "node": "nto_",
+            "sensor": "nto_"
+        },
+        "time": {
+            "event_time": "2016-01-29T06:09:59.000Z"
+        }
+    },
+    "source": {
+        "ip": [
+            "10.15.44.253"
+        ],
+        "mac": "01:00:5e:28:ae:7d",
+        "port": 5078
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco-meraki",
+        "forwarded"
+    ],
+    "url": {
+        "original": "https://example.org/odoco/ria.jpg?ritin=uredolor#tatemac"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -1348,7 +1933,9 @@ The `meraki` dataset collects Cisco Meraki logs.
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
@@ -1391,12 +1978,12 @@ The `meraki` dataset collects Cisco Meraki logs.
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 * facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   * ingress   * egress   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -1476,12 +2063,12 @@ The `meraki` dataset collects Cisco Meraki logs.
 | rsa.email.subject | This key is used to capture the subject string from an Email only. | keyword |
 | rsa.email.trans_from | Deprecated key defined only in table map. | keyword |
 | rsa.email.trans_to | Deprecated key defined only in table map. | keyword |
-| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on | keyword |
+| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as \<strong\>blacklisted\</strong\>, \<strong\>infected\</strong\>, \<strong\>firewall disabled\</strong\> and so on | keyword |
 | rsa.endpoint.registry_key | This key captures the path to the registry key | keyword |
 | rsa.endpoint.registry_value | This key captures values or decorators used within a registry entry | keyword |
 | rsa.file.attachment | This key captures the attachment file name | keyword |
 | rsa.file.binary | Deprecated key defined only in table map. | keyword |
-| rsa.file.directory_dst | <span>This key is used to capture the directory of the target process or file</span> | keyword |
+| rsa.file.directory_dst | \<span\>This key is used to capture the directory of the target process or file\</span\> | keyword |
 | rsa.file.directory_src | This key is used to capture the directory of the source process or file | keyword |
 | rsa.file.file_entropy | This is used to capture entropy vale of a file | double |
 | rsa.file.file_vendor | This is used to capture Company name of file located in version_info | keyword |
@@ -1606,7 +2193,7 @@ The `meraki` dataset collects Cisco Meraki logs.
 | rsa.misc.agent_id | This key is used to capture agent id | keyword |
 | rsa.misc.alarm_id |  | keyword |
 | rsa.misc.alarmname |  | keyword |
-| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.app_id |  | keyword |
 | rsa.misc.audit |  | keyword |
 | rsa.misc.audit_object |  | keyword |
@@ -1897,14 +2484,14 @@ The `meraki` dataset collects Cisco Meraki logs.
 | rsa.misc.result | This key is used to capture the outcome/result string value of an action in a session. | keyword |
 | rsa.misc.result_code | This key is used to capture the outcome/result numeric value of an action in a session | keyword |
 | rsa.misc.risk | This key captures the non-numeric risk value | keyword |
-| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.risk_num | This key captures a Numeric Risk value | double |
 | rsa.misc.risk_num_comm | This key captures Risk Number Community | double |
 | rsa.misc.risk_num_next | This key captures Risk Number NextGen | double |
 | rsa.misc.risk_num_sand | This key captures Risk Number SandBox | double |
 | rsa.misc.risk_num_static | This key captures Risk Number Static | double |
-| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
-| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
+| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.ruid |  | keyword |
 | rsa.misc.rule | This key captures the Rule number | keyword |
 | rsa.misc.rule_group | This key captures the Rule group name | keyword |
@@ -1969,7 +2556,7 @@ The `meraki` dataset collects Cisco Meraki logs.
 | rsa.misc.version | This key captures Version of the application or OS which is generating the event. | keyword |
 | rsa.misc.virt_data |  | keyword |
 | rsa.misc.virusname | This key captures the name of the virus | keyword |
-| rsa.misc.vm_target | VMWare Target **VMWARE** only varaible. | keyword |
+| rsa.misc.vm_target | VMWare Target \*\*VMWARE\*\* only varaible. | keyword |
 | rsa.misc.vpnid |  | keyword |
 | rsa.misc.vsys | This key captures Virtual System Name | keyword |
 | rsa.misc.vuln_ref | This key captures the Vulnerability Reference details | keyword |
@@ -2113,8 +2700,8 @@ The `meraki` dataset collects Cisco Meraki logs.
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |

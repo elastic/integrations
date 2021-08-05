@@ -33,7 +33,7 @@ Center (SMC).  In the SMC configure the logs to be forwarded to the address set
 in `var.syslog_host` in format CEF and service UDP on `var.syslog_port`.
 Instructions can be found in [KB
 15002](https://support.forcepoint.com/KBArticle?id=000015002) for configuring
-the SMC.  
+the SMC.
 
 Testing was done with CEF logs from SMC version 6.6.1 and custom string mappings
 were taken from 'CEF Connector Configuration Guide' dated December 5, 2011.
@@ -57,7 +57,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceInboundInterface     | -                           | observer.ingress.interface.name | -                       |
 | deviceOutboundInterface    | -                           | observer.egress.interface.name | -                        |
 | externalId                 | -                           | -                        | checkpoint.uuid                |
-| fileHash                   | -                           | file.hash.{md5,sha1}     | -                              |
+| fileHash                   | -                           | file.hash.\{md5,sha1\}   | -                              |
 | reason                     | -                           | -                        | checkpoint.termination_reason  |
 | requestCookies             | -                           | -                        | checkpoint.cookie              |
 | sourceNtDomain             | -                           | dns.question.name        | -                              |
@@ -130,7 +130,7 @@ This is the CEF `log` dataset.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "name": "mbp.local",
@@ -413,7 +413,9 @@ An example event for `log` looks as following:
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.module | Event module | constant_keyword |
 | file.group | Primary group name of the file. | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |

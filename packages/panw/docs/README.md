@@ -64,10 +64,12 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.severity | Numeric severity of the event. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
@@ -217,6 +219,6 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | syslog.priority | Syslog priority of the event. | long |
 | syslog.severity_label | Syslog text-based severity of the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | user_agent.original | Unparsed user_agent string. | keyword |
 

@@ -143,6 +143,37 @@
           type: text
           norms: false
           default_field: false
+    - name: path
+      type: keyword
+      ignore_above: 1024
+      description: Path of the request, such as "/search".
+    - name: extension
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The field contains the file extension from the original request url, excluding the leading dot.
+
+        The file extension is only set if it exists, as not every url has a file extension.
+
+        The leading period must not be included. For example, the value must be "png", not ".png".
+
+        Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz").'
+    - name: query
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'The query field describes the query string of the request, such as "q=elasticsearch".
+
+        The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.'
+    - name: domain
+      level: extended
+      type: keyword
+      ignore_above: 1024
+      description: 'Domain of the url, such as "www.elastic.co".
+
+        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
+
+        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
 - name: user
   title: User
   group: 2
@@ -242,3 +273,25 @@
       description: 'Reserved for future usage.
 
         Please avoid using this field for user data.'
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+  example: '["production", "env2"]'
+- name: error.message
+  type: text
+  description: Error message.
+- name: file
+  title: File
+  type: group
+  fields:
+    - name: path
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.

@@ -42,6 +42,8 @@ event log.
 The Windows `security` dataset provides events from the Windows
 `Security` event log.
 
+{{event "security"}}
+
 {{fields "security"}}
 
 ### Auth

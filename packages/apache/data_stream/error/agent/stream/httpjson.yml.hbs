@@ -1,7 +1,13 @@
 config_version: 2
 interval: {{interval}}
+{{#unless token}}
+{{#if username}}
+{{#if password}}
 auth.basic.user: {{username}}
 auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+{{/unless}}
 cursor:
   index_earliest:
     value: '[[.last_event.result.max_indextime]]'
@@ -28,6 +34,15 @@ request.transforms:
   - set:
       target: header.Content-Type
       value: application/x-www-form-urlencoded
+{{#unless username}}
+{{#unless password}}
+{{#if token}}
+  - set:
+      target: header.Authorization
+      value: {{token}}
+{{/if}}
+{{/unless}}
+{{/unless}}
 response.decode_as: application/x-ndjson
 response.split:
   target: body.result._raw
@@ -43,35 +58,7 @@ tags:
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if processors}}
 processors:
-  - decode_json_fields:
-      fields: message
-      target: json
-      add_error_key: true
-  - drop_event:
-      when:
-        not:
-          has_fields: ['json.result']
-  - fingerprint:
-      fields:
-        - json.result._cd
-        - json.result._indextime
-        - json.result._raw
-        - json.result._time
-        - json.result.host
-        - json.result.source
-      target_field: "@metadata._id"
-  - drop_fields:
-      fields: message
-  - rename:
-      fields:
-        - from: json.result._raw
-          to: message
-        - from: json.result.host
-          to: host.name
-        - from: json.result.source
-          to: file.path
-      ignore_missing: true
-      fail_on_error: false
-  - drop_fields:
-      fields: json
+{{processors}}
+{{/if}}

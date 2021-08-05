@@ -35,8 +35,12 @@ The `log` dataset collects the HAProxy application logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Hostname or IP address of the destination. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
+| ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | haproxy.backend_name | Name of the backend (or listener) which was selected to manage the connection to the server. | keyword |
 | haproxy.backend_queue | Total number of requests which were processed before this one in the backend's global queue. | long |
 | haproxy.bind_name | Name of the listening address which received the connection. | keyword |
@@ -81,17 +85,47 @@ The `log` dataset collects the HAProxy application logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.body.bytes | Size in bytes of the request body. | long |
+| http.request.body.content | The full HTTP request body. | keyword |
+| http.request.bytes | Total size in bytes of the request (body and headers). | long |
+| http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.body.content | The full HTTP response body. | keyword |
+| http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
+| http.version | HTTP version. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Full path to the log file this event came from. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pid | Process id. | long |
+| related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | keyword |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
+| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.username | Username of the request. | keyword |
 
 
 ## Metrics
@@ -102,7 +136,7 @@ The HAProxy `info` dataset collects general information about HAProxy processes.
 
 An example event for `info` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -239,6 +273,8 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | haproxy.info.busy_polling | Number of busy polling. | long |
 | haproxy.info.bytes.out.rate | Average bytes output rate. | long |
 | haproxy.info.bytes.out.total | Number of bytes sent out. | long |
@@ -325,7 +361,7 @@ See section "9.1. CSV format" of the official [HAProxy Management Guide](http://
 
 An example event for `stat` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -434,6 +470,8 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | haproxy.stat.agent.check.description | Human readable version of check. | keyword |
 | haproxy.stat.agent.check.fall | Fall value of server. | integer |
 | haproxy.stat.agent.check.health | Health parameter of server. Between 0 and `agent.check.rise`+`agent.check.fall`-1. | integer |
@@ -444,15 +482,15 @@ The fields reported are:
 | haproxy.stat.agent.fall | Fall value of agent. | integer |
 | haproxy.stat.agent.health | Health parameter of agent. Between 0 and `agent.rise`+`agent.fall`-1. | integer |
 | haproxy.stat.agent.rise | Rise value of agent. | integer |
-| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -> unknown   INI     -> initializing   SOCKERR -> socket error   L4OK    -> check passed on layer 4, no upper layers enabled   L4TOUT  -> layer 1-4 timeout   L4CON   -> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -> agent reported "up"   L7STS   -> agent reported "fail", "stop" or "down" | keyword |
+| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -\> agent reported "up"   L7STS   -\> agent reported "fail", "stop" or "down" | keyword |
 | haproxy.stat.check.agent.last |  | integer |
 | haproxy.stat.check.code | Layer 5-7 code, if available. | long |
-| haproxy.stat.check.down | Number of UP->DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
+| haproxy.stat.check.down | Number of UP-\>DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
 | haproxy.stat.check.duration | Time in ms that it took to finish the last health check. | long |
 | haproxy.stat.check.failed | Number of checks that failed while the server was up. | long |
 | haproxy.stat.check.health.fail | Number of failed checks. | long |
 | haproxy.stat.check.health.last | The result of the last health check. | keyword |
-| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -> unknown   INI     -> initializing   SOCKERR -> socket error   L4OK    -> check passed on layer 4, no upper layers testing enabled   L4TOUT  -> layer 1-4 timeout   L4CON   -> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -> check passed on layer 6   L6TOUT  -> layer 6 (SSL) timeout   L6RSP   -> layer 6 invalid response - protocol error   L7OK    -> check passed on layer 7   L7OKC   -> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -> layer 7 (HTTP/SMTP) timeout   L7RSP   -> layer 7 invalid response - protocol error   L7STS   -> layer 7 response error, for example HTTP 5xx | keyword |
+| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers testing enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -\> check passed on layer 6   L6TOUT  -\> layer 6 (SSL) timeout   L6RSP   -\> layer 6 invalid response - protocol error   L7OK    -\> check passed on layer 7   L7OKC   -\> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -\> layer 7 (HTTP/SMTP) timeout   L7RSP   -\> layer 7 invalid response - protocol error   L7STS   -\> layer 7 response error, for example HTTP 5xx | keyword |
 | haproxy.stat.client.aborted | Number of data transfers aborted by the client. | integer |
 | haproxy.stat.component_type | Component type (0=frontend, 1=backend, 2=server, or 3=socket/listener). | integer |
 | haproxy.stat.compressor.bypassed.bytes | Number of bytes that bypassed the HTTP compressor (CPU/BW limit). | long |
@@ -474,7 +512,7 @@ The fields reported are:
 | haproxy.stat.downtime | Total downtime (in seconds). For backends, this value is the downtime for the whole backend, not the sum of the downtime for the servers. | long |
 | haproxy.stat.header.rewrite.failed.total | Number of failed header rewrite warnings. | long |
 | haproxy.stat.in.bytes | Bytes in. | long |
-| haproxy.stat.last_change | Number of seconds since the last UP->DOWN or DOWN->UP transition. | integer |
+| haproxy.stat.last_change | Number of seconds since the last UP-\>DOWN or DOWN-\>UP transition. | integer |
 | haproxy.stat.load_balancing_algorithm | Load balancing algorithm. | keyword |
 | haproxy.stat.out.bytes | Bytes out. | long |
 | haproxy.stat.proxy.id | Unique proxy ID. | integer |
@@ -483,10 +521,10 @@ The fields reported are:
 | haproxy.stat.queue.limit | Configured queue limit (maxqueue) for the server, or nothing if the value of maxqueue is 0 (meaning no limit). | integer |
 | haproxy.stat.queue.time.avg | The average queue time in ms over the last 1024 requests. | integer |
 | haproxy.stat.request.connection.errors | Number of requests that encountered an error trying to connect to a server. For backends, this field reports the sum of the stat for all backend servers, plus any connection errors not associated with a particular server (such as the backend having no active servers). | long |
-| haproxy.stat.request.denied | Requests denied because of security concerns.    * For TCP this is because of a matched tcp-request content rule.   * For HTTP this is because of a matched http-request or tarpit rule. | long |
+| haproxy.stat.request.denied | Requests denied because of security concerns.    \* For TCP this is because of a matched tcp-request content rule.   \* For HTTP this is because of a matched http-request or tarpit rule. | long |
 | haproxy.stat.request.denied_by_connection_rules | Requests denied because of TCP request connection rules. | long |
 | haproxy.stat.request.denied_by_session_rules | Requests denied because of TCP request session rules. | long |
-| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    * early termination from the client, before the request has been sent   * read error from the client   * client timeout   * client closed connection   * various bad requests from the client.   * request was tarpitted. | long |
+| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    \* early termination from the client, before the request has been sent   \* read error from the client   \* client timeout   \* client closed connection   \* various bad requests from the client.   \* request was tarpitted. | long |
 | haproxy.stat.request.intercepted | Number of intercepted requests. | long |
 | haproxy.stat.request.queued.current | Current queued requests. For backends, this field reports the number of requests queued without a server assigned. | long |
 | haproxy.stat.request.queued.max | Maximum value of queued.current. | long |
@@ -495,7 +533,7 @@ The fields reported are:
 | haproxy.stat.request.redispatched | Number of times a request was redispatched to another server. For servers, this field reports the number of times the server was switched away from. | long |
 | haproxy.stat.request.total | Total number of HTTP requests received. | long |
 | haproxy.stat.response.denied | Responses denied because of security concerns. For HTTP this is because of a matched http-request rule, or "option checkcache". | integer |
-| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: * write errors on the client socket (won't be counted for the server stat) * failure applying filters to the response | long |
+| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: \* write errors on the client socket (won't be counted for the server stat) \* failure applying filters to the response | long |
 | haproxy.stat.response.http.1xx | HTTP responses with 1xx code. | long |
 | haproxy.stat.response.http.2xx | HTTP responses with 2xx code. | long |
 | haproxy.stat.response.http.3xx | HTTP responses with 3xx code. | long |

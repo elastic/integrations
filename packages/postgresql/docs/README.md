@@ -6,7 +6,7 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
 
-The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions >= 9.
+The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
 
 ## Logs
 
@@ -60,14 +60,17 @@ persistent connections, so enable with care.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.id | Unique identifier for the error. | keyword |
 | error.message | Error message. | text |
-| event.category | Event category (e.g. database) | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -101,7 +104,7 @@ persistent connections, so enable with care.
 | postgresql.log.internal_query_pos | Character count of the internal query (if any). | long |
 | postgresql.log.location | Location of the error in the PostgreSQL source code (if log_error_verbosity is set to verbose). | keyword |
 | postgresql.log.query | Query statement. In the case of CSV parse, look at command_tag to get more context. | keyword |
-| postgresql.log.query_name | Name given to a query when using extended query protocol. If it is "<unnamed>", or not present, this field is ignored. | keyword |
+| postgresql.log.query_name | Name given to a query when using extended query protocol. If it is `"\<unnamed\>"`, or not present, this field is ignored. | keyword |
 | postgresql.log.query_pos | Character count of the error position (if any). | long |
 | postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
 | postgresql.log.session_id | PostgreSQL session. | keyword |
@@ -113,6 +116,7 @@ persistent connections, so enable with care.
 | postgresql.log.virtual_transaction_id | Backend local transaction id. | keyword |
 | process.pid | Process id. | long |
 | related.user | All the user names seen on your event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
 
@@ -124,7 +128,7 @@ The `activity` dataset periodically fetches metrics from PostgreSQL servers.
 
 An example event for `activity` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -195,9 +199,9 @@ An example event for `activity` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -224,14 +228,14 @@ An example event for `activity` looks as following:
 | postgresql.activity.pid | Process ID of this backend. | long |
 | postgresql.activity.query | Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed. | keyword |
 | postgresql.activity.query_start | Time when the currently active query was started, or if state is not active, when the last query was started. | date |
-| postgresql.activity.state | Current overall state of this backend. Possible values are:    * active: The backend is executing a query.   * idle: The backend is waiting for a new client command.   * idle in transaction: The backend is in a transaction, but is not     currently executing a query.   * idle in transaction (aborted): This state is similar to idle in     transaction, except one of the statements in the transaction caused     an error.   * fastpath function call: The backend is executing a fast-path function.   * disabled: This state is reported if track_activities is disabled in this backend. | keyword |
+| postgresql.activity.state | Current overall state of this backend. Possible values are:    \* active: The backend is executing a query.   \* idle: The backend is waiting for a new client command.   \* idle in transaction: The backend is in a transaction, but is not     currently executing a query.   \* idle in transaction (aborted): This state is similar to idle in     transaction, except one of the statements in the transaction caused     an error.   \* fastpath function call: The backend is executing a fast-path function.   \* disabled: This state is reported if track_activities is disabled in this backend. | keyword |
 | postgresql.activity.state_change | Time when the state was last changed. | date |
 | postgresql.activity.transaction_start | Time when this process' current transaction was started. | date |
 | postgresql.activity.user.id | OID of the user logged into this backend. | long |
 | postgresql.activity.user.name | Name of the user logged into this backend. | keyword |
 | postgresql.activity.waiting | True if this backend is currently waiting on a lock. | boolean |
 | service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### bgwriter
@@ -240,7 +244,7 @@ The PostgreSQL `bgwriter` dataset collects data from PostgreSQL by running a `SE
 
 An example event for `bgwriter` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -310,9 +314,9 @@ An example event for `bgwriter` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -341,7 +345,7 @@ An example event for `bgwriter` looks as following:
 | postgresql.bgwriter.checkpoints.times.write.ms | Total amount of time that has been spent in the portion of checkpoint processing where files are written to disk, in milliseconds. | float |
 | postgresql.bgwriter.stats_reset | Time at which these statistics were last reset. | date |
 | service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### database
@@ -350,7 +354,7 @@ The `database` dataset periodically fetches metrics from PostgreSQL servers.
 
 An example event for `database` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "metricset": {
@@ -421,6 +425,8 @@ An example event for `database` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -457,7 +463,7 @@ An example event for `database` looks as following:
 | postgresql.database.transactions.commit | Number of transactions in this database that have been committed. | long |
 | postgresql.database.transactions.rollback | Number of transactions in this database that have been rolled back. | long |
 | service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### statement
@@ -466,7 +472,7 @@ The `statement` dataset periodically fetches metrics from PostgreSQL servers.
 
 An example event for `statement` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "agent": {
@@ -562,9 +568,9 @@ An example event for `statement` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -603,5 +609,5 @@ An example event for `statement` looks as following:
 | postgresql.statement.query.time.total.ms | Total number of milliseconds spent running query. | float |
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |
 | service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

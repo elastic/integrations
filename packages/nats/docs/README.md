@@ -16,7 +16,7 @@ The `log` dataset collects the NATS logs.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "nats": {
         "log": {
@@ -121,7 +121,9 @@ An example event for `log` looks as following:
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
@@ -137,9 +139,10 @@ An example event for `log` looks as following:
 | nats.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
 | nats.log.msg.subject | Subject name this message was received on | keyword |
 | nats.log.msg.type | The protocol message type | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -155,7 +158,7 @@ metrics from a Nats instance.
 
 An example event for `stats` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:55:12.889Z",
     "agent": {
@@ -261,6 +264,8 @@ An example event for `stats` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
 | nats.stats.cores | The number of logical cores the NATS process runs on | integer |
@@ -290,7 +295,7 @@ metrics about connections from a Nats instance.
 
 An example event for `connections` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:55:32.849Z",
     "metricset": {
@@ -369,6 +374,8 @@ An example event for `connections` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.connections.total | The number of currently active clients | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
@@ -383,7 +390,7 @@ metrics about routes from a Nats instance.
 
 An example event for `routes` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:54:52.887Z",
     "event": {
@@ -462,6 +469,8 @@ An example event for `routes` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.routes.total | The number of registered routes | integer |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
@@ -476,7 +485,7 @@ metrics about subscriptions from a Nats instance.
 
 An example event for `subscriptions` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:56:12.814Z",
     "service": {
@@ -562,6 +571,8 @@ An example event for `subscriptions` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.server.id | The server ID | keyword |
 | nats.server.time | Server time of metric creation | date |
 | nats.subscriptions.cache.fanout.avg | The average fanout served by cache | double |
@@ -583,7 +594,7 @@ metrics per connection from a Nats instance.
 
 An example event for `connection` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:55:52.814Z",
     "service": {
@@ -673,6 +684,8 @@ An example event for `connection` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.connection.idle_time | The period the connection is idle (sec) | long |
 | nats.connection.in.bytes | The amount of incoming bytes | long |
 | nats.connection.in.messages | The amount of incoming messages | long |
@@ -695,7 +708,7 @@ metric per route from a Nats instance.
 
 An example event for `route` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-11-25T11:54:22.920Z",
     "service": {
@@ -785,6 +798,8 @@ An example event for `route` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | nats.route.in.bytes | The amount of incoming bytes | long |
 | nats.route.in.messages | The amount of incoming messages | long |
 | nats.route.ip | The ip of the route | ip |

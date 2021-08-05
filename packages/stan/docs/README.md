@@ -16,7 +16,7 @@ The `log` dataset collects the STAN logs.
 
 An example event for `log` looks as following:
 
-```$json
+```json
 {
     "agent": {
         "hostname": "4d0d8c0f4097",
@@ -124,14 +124,16 @@ An example event for `log` looks as following:
 | ecs.version | ECS version | keyword |
 | error.message | Error message. | text |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Log level of the log event. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
-| network.direction | Direction of the network traffic. Recommended values are:   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view. When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter. | keyword |
 | process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
 | stan.log.client.id | The id of the client | integer |
@@ -143,6 +145,7 @@ An example event for `log` looks as following:
 | stan.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
 | stan.log.msg.subject | Subject name this message was received on | keyword |
 | stan.log.msg.type | The protocol message type | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -156,7 +159,7 @@ metrics from a STAN instance.
 
 An example event for `stats` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-01-15T12:26:32.467Z",
     "service": {
@@ -242,6 +245,8 @@ An example event for `stats` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | stan.cluster.id | The cluster ID | keyword |
@@ -262,7 +267,7 @@ metrics about channels from a STAN instance.
 
 An example event for `channels` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-01-15T12:23:32.592Z",
     "service": {
@@ -348,11 +353,13 @@ An example event for `channels` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | stan.channels.bytes | The number of STAN bytes in the channel | long |
 | stan.channels.depth | Queue depth based upon current sequence number and highest reported subscriber sequence number | long |
-| stan.channels.first_seq | First sequence number stored in the channel. If first_seq > min([seq in subscriptions]) data loss has possibly occurred | long |
+| stan.channels.first_seq | First sequence number stored in the channel. If first_seq \> min([seq in subscriptions]) data loss has possibly occurred | long |
 | stan.channels.last_seq | Last sequence number stored in the channel | long |
 | stan.channels.messages | The number of STAN streaming messages | long |
 | stan.channels.name | The name of the STAN streaming channel | keyword |
@@ -367,7 +374,7 @@ metrics about subscriptions from a STAN instance.
 
 An example event for `subscriptions` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2021-01-15T12:25:32.509Z",
     "ecs": {
@@ -453,6 +460,8 @@ An example event for `subscriptions` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 | stan.cluster.id | The cluster ID | keyword |

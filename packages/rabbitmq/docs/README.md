@@ -41,6 +41,10 @@ Application logs collects standard RabbitMQ logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| error.message | Error message. | text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -57,7 +61,10 @@ Application logs collects standard RabbitMQ logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| log.level | Log level of the log event. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | rabbitmq.log.pid | The Erlang process id | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -66,7 +73,7 @@ Application logs collects standard RabbitMQ logs.
 
 An example event for `connection` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "rabbitmq": {
@@ -139,6 +146,8 @@ An example event for `connection` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -181,7 +190,7 @@ An example event for `connection` looks as following:
 
 An example event for `exchange` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
     "rabbitmq": {
@@ -238,6 +247,8 @@ An example event for `exchange` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -279,11 +290,15 @@ It supports two modes to collect data which can be selected with the "Collection
 
 An example event for `node` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
+    "event": {
+        "dataset": "rabbitmq.node",
+        "duration": 115000,
+        "module": "rabbitmq"
+    },
     "rabbitmq": {
-        "vhost": "/",
         "node": {
             "disk": {
                 "free": {
@@ -402,21 +417,9 @@ An example event for `node` looks as following:
             "uptime": 155275
         }
     },
-    "metricset": {
-        "name": "exchange",
-        "period": 10000
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
     "service": {
         "address": "localhost:15672",
         "type": "rabbitmq"
-    },
-    "event": {
-        "dataset": "rabbitmq.exchange",
-        "module": "rabbitmq",
-        "duration": 4104737
     }
 }
 ```
@@ -443,6 +446,8 @@ An example event for `node` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -505,7 +510,7 @@ An example event for `node` looks as following:
 
 An example event for `queue` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:15:10.955Z",
     "rabbitmq": {
@@ -594,6 +599,8 @@ An example event for `queue` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -627,7 +634,7 @@ An example event for `queue` looks as following:
 | rabbitmq.queue.messages.unacknowledged.count | Number of messages delivered to clients but not yet acknowledged. | long |
 | rabbitmq.queue.messages.unacknowledged.details.rate | How much the count of unacknowledged messages has changed per second in the most recent sampling interval. | float |
 | rabbitmq.queue.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |
-| rabbitmq.queue.state | The state of the queue. Normally 'running', but may be "{syncing, MsgCount}" if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'. | keyword |
+| rabbitmq.queue.state | The state of the queue. Normally 'running', but may be `"\{syncing, MsgCount\}"` if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'. | keyword |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |

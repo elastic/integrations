@@ -26,7 +26,7 @@ performance. This parameter can only be enabled in combination with `Use Types`.
 
 When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 
-```$json
+```json
 {
   "_index": ".ds-metrics-prometheus.collector-default-000001",
   "_id": "JlK9AHMBeyDc0b9rCwVA",
@@ -109,7 +109,7 @@ We recommend using the Remote Write dataset for this, and make Prometheus push m
 
 In order to filter out/in metrics one can make use of `Metrics Filters Include`, `Metrics Filters Exclude` settings:
 
-```$yml
+```yml
 Metrics Filters Include: ["node_filesystem_*"]
 Metrics Filters Exclude: ["node_filesystem_device_*"]
 ```
@@ -122,13 +122,13 @@ To keep only specific metrics, anchor the start and the end of the regexp of eac
 - the caret ^ matches the beginning of a text or line,
 - the dollar sign $ matches the end of a text.
 
-```$yml
+```yml
 Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 ```
 
 An example event for `collector` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T10:22:23.034Z",
     "agent": {},
@@ -187,6 +187,8 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -203,12 +205,12 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| prometheus.*.counter | Prometheus counter metric | object |
-| prometheus.*.histogram | Prometheus histogram metric | object |
-| prometheus.*.rate | Prometheus rated counter metric | object |
-| prometheus.*.value | Prometheus gauge metric | object |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
+| prometheus.\*.counter | Prometheus counter metric | object |
+| prometheus.\*.histogram | Prometheus histogram metric | object |
+| prometheus.\*.rate | Prometheus rated counter metric | object |
+| prometheus.\*.value | Prometheus gauge metric | object |
+| prometheus.labels.\* | Prometheus metric labels | object |
+| prometheus.metrics.\* | Prometheus metric | object |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -220,7 +222,7 @@ The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 setting accordingly, for instance:
 
-```$yml
+```yml
 remote_write:
   - url: "http://localhost:9201/write"
 ```
@@ -245,7 +247,7 @@ be able to cover `max_samples_per_send`.
 Metrics sent to the http endpoint will be put by default under the `prometheus.metrics` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
-```$yml
+```yml
 host: "localhost"
 port: "9201"
 ```
@@ -253,7 +255,7 @@ port: "9201"
 
 Also consider using secure settings for the server, configuring the module with TLS/SSL as shown:
 
-```$yml
+```yml
 host: "localhost"
 ssl.certificate: "/etc/pki/server/cert.pem"
 ssl.key: "/etc/pki/server/cert.key"
@@ -262,7 +264,7 @@ port: "9201"
 
 and on Prometheus side:
 
-```$yml
+```yml
 remote_write:
   - url: "https://localhost:9201/write"
     tls_config:
@@ -274,7 +276,7 @@ remote_write:
 
 An example event for `remote_write` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T16:46:40.018Z",
     "ecs": {
@@ -336,6 +338,8 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -352,12 +356,12 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| prometheus.*.counter | Prometheus counter metric | object |
-| prometheus.*.histogram | Prometheus histogram metric | object |
-| prometheus.*.rate | Prometheus rated counter metric | object |
-| prometheus.*.value | Prometheus gauge metric | object |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.metrics.* | Prometheus metric | object |
+| prometheus.\*.counter | Prometheus counter metric | object |
+| prometheus.\*.histogram | Prometheus histogram metric | object |
+| prometheus.\*.rate | Prometheus rated counter metric | object |
+| prometheus.\*.value | Prometheus gauge metric | object |
+| prometheus.labels.\* | Prometheus metric labels | object |
+| prometheus.metrics.\* | Prometheus metric | object |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |
 
@@ -373,7 +377,7 @@ performance. This parameter can only be enabled in combination with `use_types`.
 
 When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
-```$json
+```json
 {
     "prometheus": {
         "labels": {
@@ -415,7 +419,7 @@ Summary's quantiles are handled as Gauges and Summary's sum and count as Counter
 
 Users have the flexibility to add their own patterns using the following configuration:
 
-```$yml
+```yml
 types_patterns:
     counter_patterns: ["_my_counter_suffix"]
     histogram_patterns: ["_my_histogram_suffix"]
@@ -430,7 +434,7 @@ To match only specific metrics, anchor the start and the end of the regexp of ea
 - the caret `^` matches the beginning of a text or line,
 - the dollar sign `$` matches the end of a text.
 
-```$yml
+```yml
 types_patterns:
     histogram_patterns: ["^my_histogram_metric$"]
 ```
@@ -446,7 +450,7 @@ The Prometheus `query` dataset to query from [querying API of Prometheus](https:
 #### Instant queries
 
 The following configuration performs an instant query for `up` metric at a single point in time:
-```$yml
+```yml
 queries:
 - name: 'up'
   path: '/api/v1/query'
@@ -457,7 +461,7 @@ queries:
 
 More complex PromQL expressions can also be used like the following one which calculates the per-second rate of HTTP
 requests as measured over the last 5 minutes.
-```$yml
+```yml
 queries:
 - name: "rate_http_requests_total"
   path: "/api/v1/query"
@@ -469,7 +473,7 @@ queries:
 
 
 The following example evaluates the expression `up` over a 30-second range with a query resolution of 15 seconds:
-```$yml
+```yml
 queries:
 - name: "up_master"
   path: "/api/v1/query_range"
@@ -482,7 +486,7 @@ queries:
 
 An example event for `query` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-29T15:36:54.000Z",
     "host": {},
@@ -542,6 +546,8 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -558,7 +564,7 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| prometheus.labels.* | Prometheus metric labels | object |
-| prometheus.query.* | Prometheus value resulted from PromQL | object |
+| prometheus.labels.\* | Prometheus metric labels | object |
+| prometheus.query.\* | Prometheus value resulted from PromQL | object |
 | service.address | Service address | keyword |
 | service.type | Service type | keyword |

@@ -159,6 +159,21 @@
         The query field describes the query string of the request, such as "q=elasticsearch".
         The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.
       ignore_above: 1024
+    - name: domain
+      type: keyword
+      description: 'Domain of the url, such as "www.elastic.co".'
+    - name: extension
+      type: keyword
+      ignore_above: 1024
+      description: "The field contains the file extension from the original request url, excluding the leading dot."
+    - name: original
+      type: keyword
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+      description: "Unmodified original url as seen in the event source."
 - name: user
   title: User
   group: 2
@@ -241,3 +256,17 @@
 - name: ecs.version
   type: keyword
   description: ECS version
+- name: tags
+  level: core
+  type: keyword
+  ignore_above: 1024
+  description: List of keywords used to tag each event.
+  example: '["production", "env2"]'
+- name: network
+  type: group
+  fields:
+    - name: forwarded_ip
+      level: core
+      type: ip
+      description: Host IP address when the source IP address is the proxy.
+      example: 192.1.1.2

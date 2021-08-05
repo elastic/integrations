@@ -11,7 +11,7 @@ This is the `audit` dataset.
 
 An example event for `audit` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/foo/logs/cloudaudit.googleapis.com%2Factivity"
@@ -134,7 +134,9 @@ An example event for `audit` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | gcp.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
@@ -198,6 +200,15 @@ An example event for `audit` looks as following:
 | log.logger |  | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| orchestrator.api_version | API version being used to carry out the action | keyword |
+| orchestrator.cluster.name | Name of the cluster. | keyword |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
+| orchestrator.cluster.version | The version of the cluster. | keyword |
+| orchestrator.namespace | Namespace in which the action is taking place. | keyword |
+| orchestrator.organization | Organization affected by the event (for multi-tenant orchestrator setups). | keyword |
+| orchestrator.resource.name | Name of the resource being acted upon. | keyword |
+| orchestrator.resource.type | Type of resource being acted upon. | keyword |
+| orchestrator.type | Orchestrator cluster type (e.g. kubernetes, nomad or cloudfoundry). | keyword |
 | service.name | Name of the service data is collected from. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -229,7 +240,7 @@ This is the `firewall` dataset.
 
 An example event for `firewall` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/test-beats/logs/compute.googleapis.com%2Ffirewall"
@@ -370,7 +381,9 @@ An example event for `firewall` looks as following:
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | gcp.destination.instance.project_id | ID of the project containing the VM. | keyword |
 | gcp.destination.instance.region | Region of the VM. | keyword |
@@ -450,7 +463,7 @@ This is the `VPC Flow` dataset.
 
 An example event for `vpcflow` looks as following:
 
-```$json
+```json
 {
     "log": {
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
@@ -586,7 +599,9 @@ An example event for `vpcflow` looks as following:
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | gcp.destination.instance.project_id | ID of the project containing the VM. | keyword |
 | gcp.destination.instance.region | Region of the VM. | keyword |

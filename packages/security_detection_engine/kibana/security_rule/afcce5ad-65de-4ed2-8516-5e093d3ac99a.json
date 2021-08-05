@@ -13,10 +13,10 @@
             "logs-endpoint.events.*",
             "logs-windows.*"
         ],
-        "language": "kuery",
+        "language": "eql",
         "license": "Elastic License v2",
-        "name": "Local Scheduled Task Commands",
-        "query": "event.category:process and event.type:(start or process_started) and process.name:schtasks.exe and process.args:(-change or -create or -run or -s or /S or /change or /create or /run)",
+        "name": "Local Scheduled Task Creation",
+        "query": "sequence with maxspan=1m\n  [process where event.type != \"end\" and\n    ((process.name : (\"cmd.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"wmic.exe\", \"mshta.exe\",\n                      \"powershell.exe\", \"pwsh.exe\", \"WmiPrvSe.exe\", \"wsmprovhost.exe\", \"winrshost.exe\") or\n    process.pe.original_file_name : (\"cmd.exe\", \"wscript.exe\", \"rundll32.exe\", \"regsvr32.exe\", \"wmic.exe\", \"mshta.exe\",\n                                     \"powershell.exe\", \"pwsh.exe\", \"WmiPrvSe.exe\", \"wsmprovhost.exe\",\n                                     \"winrshost.exe\")) or\n    process.code_signature.trusted == false)] by process.entity_id\n  [process where event.type == \"start\" and\n    (process.name : \"schtasks.exe\" or process.pe.original_file_name == \"schtasks.exe\") and\n    process.args : (\"/create\", \"-create\") and process.args : (\"/RU\", \"/SC\", \"/TN\", \"/TR\", \"/F\", \"/XML\") and\n    /* exclude SYSTEM SIDs - look for task creations by non-SYSTEM user */\n    not user.id : (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\")] by process.parent.entity_id\n",
         "risk_score": 21,
         "rule_id": "afcce5ad-65de-4ed2-8516-5e093d3ac99a",
         "severity": "low",
@@ -39,14 +39,21 @@
                     {
                         "id": "T1053",
                         "name": "Scheduled Task/Job",
-                        "reference": "https://attack.mitre.org/techniques/T1053/"
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
                     }
                 ]
             }
         ],
         "timestamp_override": "event.ingested",
-        "type": "query",
-        "version": 7
+        "type": "eql",
+        "version": 8
     },
     "id": "afcce5ad-65de-4ed2-8516-5e093d3ac99a",
     "type": "security-rule"

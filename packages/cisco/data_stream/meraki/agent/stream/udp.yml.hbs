@@ -1,8 +1,11 @@
 udp:
 host: "{{udp_host}}:{{udp_port}}"
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
- - {{tag}}
+  - {{tag}}
 {{/each}}
 fields_under_root: true
 fields:
@@ -15,6 +18,9 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
 - script:
     lang: javascript
     params:
@@ -1013,7 +1019,7 @@ processors:
       }
       
       var ecs_mappings = {
-          "_facility": {convert: to_long, to:[{field: "log.syslog.facility.code", setter: fld_set}]},
+          "_facility": {convert: to_long, to:[{field: "syslog.facility.code", setter: fld_set}]},
           "_pri": {convert: to_long, to:[{field: "log.syslog.priority", setter: fld_set}]},
           "_severity": {convert: to_long, to:[{field: "log.syslog.severity.code", setter: fld_set}]},
           "action": {to:[{field: "event.action", setter: fld_prio, prio: 0}]},
@@ -3246,7 +3252,3 @@ processors:
     target_subdomain_field: url.subdomain
     target_etld_field: url.top_level_domain
 - add_locale: ~
-- add_fields:
-    target: ''
-    fields:
-        ecs.version: 1.9.0

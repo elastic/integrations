@@ -307,6 +307,7 @@
         os_version.arch - OS Architecture
         pkg_packages.arch - Architecture(s) supported
         rpm_packages.arch - Architecture(s) supported
+        seccomp_events.arch - Information about the CPU architecture
         signature.arch - If applicable, the arch of the signed code
       type: keyword
       ignore_above: 1024
@@ -421,7 +422,7 @@
           type: long
           default_field: false
     - name: attributes
-      description: 'file.attributes - File attrib string. See: https://ss64.com/nt/attrib.html'
+      description: "file.attributes - File attrib string. See: https://ss64.com/nt/attrib.html"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -442,6 +443,7 @@
       description: |-
         process_events.auid - Audit User ID at process start
         process_file_events.auid - Audit user ID of the process using the file
+        seccomp_events.auid - Audit user ID (loginuid) of the user who started the analyzed process
         socket_events.auid - Audit User ID
         user_events.auid - Audit User ID
       type: keyword
@@ -911,7 +913,7 @@
           norms: false
           default_field: false
     - name: bsd_flags
-      description: 'file.bsd_flags - The BSD file flags (chflags). Possible values: NODUMP, UF_IMMUTABLE, UF_APPEND, OPAQUE, HIDDEN, ARCHIVED, SF_IMMUTABLE, SF_APPEND'
+      description: "file.bsd_flags - The BSD file flags (chflags). Possible values: NODUMP, UF_IMMUTABLE, UF_APPEND, OPAQUE, HIDDEN, ARCHIVED, SF_IMMUTABLE, SF_APPEND"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1123,7 +1125,7 @@
           type: long
           default_field: false
     - name: ca
-      description: 'certificates.ca - 1 if CA: true (certificate is an authority) else 0'
+      description: "certificates.ca - 1 if CA: true (certificate is an authority) else 0"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1273,7 +1275,7 @@
           norms: false
           default_field: false
     - name: change_type
-      description: 'docker_container_fs_changes.change_type - Type of change: C:Modified, A:Added, D:Deleted'
+      description: "docker_container_fs_changes.change_type - Type of change: C:Modified, A:Added, D:Deleted"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1609,6 +1611,15 @@
         - name: number
           type: long
           default_field: false
+    - name: code
+      description: seccomp_events.code - The seccomp action
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: code_integrity_policy_enforcement_status
       description: hvci_status.code_integrity_policy_enforcement_status - The status of the code integrity policy enforcement settings. Returns UNKNOWN if an error is encountered.
       type: keyword
@@ -1740,7 +1751,9 @@
           type: long
           default_field: false
     - name: comm
-      description: apparmor_events.comm - Command-line name of the command that was used to invoke the analyzed process
+      description: |-
+        apparmor_events.comm - Command-line name of the command that was used to invoke the analyzed process
+        seccomp_events.comm - Command-line name of the command that was used to invoke the analyzed process
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1753,6 +1766,15 @@
         crontab.command - Raw command string
         docker_containers.command - Command with arguments
         shell_history.command - Unparsed date/line/command history line
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: command_args
+      description: shortcut_files.command_args - Command args passed to lnk file.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1803,6 +1825,23 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: common_path
+      description: shortcut_files.common_path - Common system path to target file.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: compat
+      description: seccomp_events.compat - Is system call in compatibility mode
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: compiler
       description: apps.compiler - Info properties DTCompiler label
@@ -2605,6 +2644,7 @@
         safari_extensions.description - Optional extension description text
         services.description - Service Description
         shared_resources.description - A textual description of the object
+        shortcut_files.description - Lnk file description.
         smbios_tables.description - Table entry description
         systemd_units.description - Unit description
         users.description - Optional user description
@@ -2776,7 +2816,9 @@
           norms: false
           default_field: false
     - name: device_type
-      description: lxd_instance_devices.device_type - Device type
+      description: |-
+        lxd_instance_devices.device_type - Device type
+        shortcut_files.device_type - Device containing the target file.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3282,7 +3324,7 @@
           norms: false
           default_field: false
     - name: encryption_status
-      description: 'disk_encryption.encryption_status - Disk encryption status with one of following values: encrypted | not encrypted | undefined'
+      description: "disk_encryption.encryption_status - Disk encryption status with one of following values: encrypted | not encrypted | undefined"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3544,6 +3586,15 @@
           default_field: false
     - name: exception_type
       description: crashes.exception_type - Exception type of the crash
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: exe
+      description: seccomp_events.exe - The path to the executable that was used to invoke the analyzed process
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3866,7 +3917,7 @@
           norms: false
           default_field: false
     - name: filevault_status
-      description: 'disk_encryption.filevault_status - FileVault status with one of following values: on | off | unknown'
+      description: "disk_encryption.filevault_status - FileVault status with one of following values: on | off | unknown"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4123,6 +4174,7 @@
         process_events.gid - Group ID at process start
         process_file_events.gid - The gid of the process performing the action
         processes.gid - Unsigned group ID
+        seccomp_events.gid - Group ID of the user who started the analyzed process
         user_groups.gid - Group ID
         users.gid - Group ID (unsigned)
       type: keyword
@@ -4220,7 +4272,7 @@
           type: long
           default_field: false
     - name: guest_nice
-      description: 'cpu_time.guest_nice - Time spent running a niced guest '
+      description: "cpu_time.guest_nice - Time spent running a niced guest "
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4481,6 +4533,7 @@
     - name: hostname
       description: |-
         curl_certificate.hostname - Hostname (domain[:port]) to CURL
+        shortcut_files.hostname - Optional hostname of the target file.
         system_info.hostname - Network hostname including domain
         ycloud_instance_metadata.hostname - Hostname of the VM
       type: keyword
@@ -4586,6 +4639,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: icon_path
+      description: shortcut_files.icon_path - Lnk file icon location.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: id
       description: |-
@@ -5042,6 +5104,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: ip
+      description: seccomp_events.ip - Instruction pointer value
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: ip_address
       description: docker_container_networks.ip_address - IP address
@@ -5718,6 +5789,15 @@
           type: text
           norms: false
           default_field: false
+    - name: local_path
+      description: shortcut_files.local_path - Local system path to target file.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: local_port
       description: |-
         bpf_socket_events.local_port - Local network protocol port number
@@ -5942,7 +6022,7 @@
           norms: false
           default_field: false
     - name: magic_db_files
-      description: 'magic.magic_db_files - Colon(:) separated list of files where the magic db file can be found. By default one of the following is used: /usr/share/file/magic/magic, /usr/share/misc/magic or /usr/share/misc/magic.mgc'
+      description: "magic.magic_db_files - Colon(:) separated list of files where the magic db file can be found. By default one of the following is used: /usr/share/file/magic/magic, /usr/share/misc/magic or /usr/share/misc/magic.mgc"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6472,7 +6552,9 @@
           type: double
           default_field: false
     - name: mft_entry
-      description: shellbags.mft_entry - Directory master file table entry.
+      description: |-
+        shellbags.mft_entry - Directory master file table entry.
+        shortcut_files.mft_entry - Target mft entry.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6480,7 +6562,9 @@
           type: long
           default_field: false
     - name: mft_sequence
-      description: shellbags.mft_sequence - Directory master file table sequence.
+      description: |-
+        shellbags.mft_sequence - Directory master file table sequence.
+        shortcut_files.mft_sequence - Target mft sequence.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7681,6 +7765,7 @@
         shared_resources.path - Local path of the Windows share.
         shellbags.path - Directory name.
         shimcache.path - This is the path to the executed file.
+        shortcut_files.path - Directory name.
         signature.path - Must provide a path or directory
         socket_events.path - Path of executed file
         startup_items.path - Path of startup item
@@ -7934,6 +8019,7 @@
         process_open_sockets.pid - Process (or thread) ID
         processes.pid - Process (or thread) ID
         running_apps.pid - The pid of the application
+        seccomp_events.pid - Process ID
         services.pid - the Process ID of the service
         shared_memory.pid - Process ID to last use the segment
         socket_events.pid - Process (or thread) ID
@@ -8982,7 +9068,7 @@
           type: long
           default_field: false
     - name: refreshes
-      description: 'osquery_events.refreshes - Publisher only: number of runloop restarts'
+      description: "osquery_events.refreshes - Publisher only: number of runloop restarts"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9049,6 +9135,7 @@
           default_field: false
     - name: relative_path
       description: |-
+        shortcut_files.relative_path - Relative path to target file from lnk file.
         wmi_cli_event_consumers.relative_path - Relative path to the class or instance.
         wmi_event_filters.relative_path - Relative path to the class or instance.
         wmi_filter_consumer_binding.relative_path - Relative path to the class or instance.
@@ -9776,13 +9863,21 @@
           norms: false
           default_field: false
     - name: service_type
-      description: 'services.service_type - Service Type: OWN_PROCESS, SHARE_PROCESS and maybe Interactive (can interact with the desktop)'
+      description: "services.service_type - Service Type: OWN_PROCESS, SHARE_PROCESS and maybe Interactive (can interact with the desktop)"
       type: keyword
       ignore_above: 1024
       multi_fields:
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: ses
+      description: seccomp_events.ses - Session ID of the session from which the analyzed process was invoked
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: session_id
       description: |-
@@ -9891,6 +9986,15 @@
           type: text
           norms: false
           default_field: false
+    - name: share_name
+      description: shortcut_files.share_name - Share name of the target file.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: shared
       description: authorizations.shared - Label top-level key
       type: keyword
@@ -9939,6 +10043,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: sig
+      description: seccomp_events.sig - Signal value sent to process by seccomp
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: sig_group
       description: yara.sig_group - Signature group used
@@ -10339,7 +10451,7 @@
           type: long
           default_field: false
     - name: start_type
-      description: 'services.start_type - Service start type: BOOT_START, SYSTEM_START, AUTO_START, DEMAND_START, DISABLED'
+      description: "services.start_type - Service start type: BOOT_START, SYSTEM_START, AUTO_START, DEMAND_START, DISABLED"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10790,6 +10902,7 @@
         bpf_process_events.syscall - System call name
         bpf_socket_events.syscall - System call name
         process_events.syscall - Syscall name: fork, vfork, clone, execve, execveat
+        seccomp_events.syscall - Type of the system call
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10874,6 +10987,30 @@
         iptables.target - Target that applies for this rule.
       type: keyword
       ignore_above: 1024
+    - name: target_accessed
+      description: shortcut_files.target_accessed - Target Accessed time.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: target_created
+      description: shortcut_files.target_created - Target Created time.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: target_modified
+      description: shortcut_files.target_modified - Target Modified time.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: target_name
       description: prometheus_metrics.target_name - Address of prometheus target
       type: keyword
@@ -10886,6 +11023,7 @@
     - name: target_path
       description: |-
         file_events.target_path - The path associated with the event
+        shortcut_files.target_path - Target file path
         yara_events.target_path - The path scanned
       type: keyword
       ignore_above: 1024
@@ -10893,6 +11031,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: target_size
+      description: shortcut_files.target_size - Size of target file.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: task
       description: |-
@@ -10988,6 +11134,7 @@
         powershell_events.time - Timestamp the event was received by the osquery event publisher
         process_events.time - Time of execution in UNIX time
         process_file_events.time - Time of execution in UNIX time
+        seccomp_events.time - Time of execution in UNIX time
         selinux_events.time - Time of execution in UNIX time
         shell_history.time - Entry timestamp. It could be absent, default value is 0.
         socket_events.time - Time of execution in UNIX time
@@ -11188,6 +11335,7 @@
         process_file_events.uid - The uid of the process performing the action
         processes.uid - Unsigned user ID
         safari_extensions.uid - The local user that owns the extension
+        seccomp_events.uid - User ID of the user who started the analyzed process
         shell_history.uid - Shell history owner
         ssh_configs.uid - The local owner of the ssh_config file
         user_events.uid - User ID
@@ -11351,6 +11499,7 @@
         kernel_panics.uptime - System uptime at kernel panic in nanoseconds
         process_events.uptime - Time of execution in system uptime
         process_file_events.uptime - Time of execution in system uptime
+        seccomp_events.uptime - Time of execution in system uptime
         selinux_events.uptime - Time of execution in system uptime
         socket_events.uptime - Time of execution in system uptime
         user_events.uptime - Time of execution in system uptime
@@ -11814,7 +11963,9 @@
           type: long
           default_field: false
     - name: volume_serial
-      description: file.volume_serial - Volume serial number
+      description: |-
+        file.volume_serial - Volume serial number
+        shortcut_files.volume_serial - Volume serial number.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11940,6 +12091,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: working_path
+      description: shortcut_files.working_path - Target file directory.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: world
       description: portage_packages.world - If package is in the world file

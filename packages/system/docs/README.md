@@ -51,7 +51,9 @@ The Windows `application` dataset provides events from the Windows
 | error.message | Error message. | text |
 | event.code | Identification code for this event. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -234,9 +236,10 @@ event log.
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
+| event.module | Event module | constant_keyword |
 | event.original |  | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
@@ -398,6 +401,86 @@ event log.
 The Windows `security` dataset provides events from the Windows
 `Security` event log.
 
+An example event for `security` looks as following:
+
+```json
+{
+    "@timestamp": "2019-11-07T10:37:04.226Z",
+    "agent": {
+        "ephemeral_id": "a0a43394-02c9-45ec-b1be-07f107bcc5eb",
+        "hostname": "docker-fleet-agent",
+        "id": "ef9fa2de-d50b-435f-a12b-c84c87b1ad22",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.13.0"
+    },
+    "data_stream": {
+        "dataset": "system.security",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.9.0"
+    },
+    "elastic_agent": {
+        "id": "26eba643-ca27-421e-a6d9-a843188ba452",
+        "snapshot": true,
+        "version": "7.13.0"
+    },
+    "event": {
+        "action": "logging-service-shutdown",
+        "category": [
+            "process"
+        ],
+        "code": "1100",
+        "created": "2021-06-02T08:02:12.685Z",
+        "dataset": "system.security",
+        "ingested": "2021-06-02T08:02:13.706065692Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
+        "outcome": "success",
+        "provider": "Microsoft-Windows-Eventlog",
+        "type": [
+            "end"
+        ]
+    },
+    "host": {
+        "name": "WIN-41OB2LO92CR.wlbeat.local"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "information"
+    },
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "winlog": {
+        "channel": "Security",
+        "computer_name": "WIN-41OB2LO92CR.wlbeat.local",
+        "event_id": "1100",
+        "keywords": [
+            "Audit Success"
+        ],
+        "level": "information",
+        "opcode": "Info",
+        "outcome": "success",
+        "process": {
+            "pid": 1144,
+            "thread": {
+                "id": 4532
+            }
+        },
+        "provider_guid": "{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}",
+        "provider_name": "Microsoft-Windows-Eventlog",
+        "record_id": "14257",
+        "time_created": "2019-11-07T10:37:04.226Z"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -419,14 +502,12 @@ The Windows `security` dataset provides events from the Windows
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| dataset.name | Dataset name. | constant_keyword |
-| dataset.namespace | Dataset namespace. | constant_keyword |
-| dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to | keyword |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
@@ -444,7 +525,7 @@ The Windows `security` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -453,11 +534,12 @@ The Windows `security` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.level | Original log level of the log event. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
 | process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | wildcard |
 | process.entity_id | Unique identifier for the process. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. | keyword |
@@ -474,6 +556,7 @@ The Windows `security` dataset provides events from the Windows
 | source.domain | Source domain. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -757,11 +840,13 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
@@ -773,12 +858,12 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the directory the group is a member of. | keyword |
-| host.hostname | Hostname of the host. | keyword |
-| host.id | Unique host id. | keyword |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -847,10 +932,12 @@ The `syslog` dataset provides system logs on linux and MacOS.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to | keyword |
 | event.action | The action captured by the event. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
 | event.code | Identification code for this event, if one exists. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
 | event.module | Name of the module this data is coming from. | keyword |
@@ -916,13 +1003,15 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -985,14 +1074,16 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float | percent | gauge |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac addresses. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac address. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1003,7 +1094,7 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| system.cpu.cores | The number of CPU cores present on the host. The non-normalized percentages will have a maximum value of `100% * cores`. The normalized percentages already take this value into account and have a maximum value of 100%. | long |  | gauge |
+| system.cpu.cores | The number of CPU cores present on the host. The non-normalized percentages will have a maximum value of `100% \* cores`. The normalized percentages already take this value into account and have a maximum value of 100%. | long |  | gauge |
 | system.cpu.idle.norm.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.cpu.idle.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.cpu.idle.ticks | The amount of CPU time spent idle. | long |  | counter |
@@ -1065,6 +1156,8 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float | byte | gauge |
@@ -1072,7 +1165,7 @@ This dataset is available on:
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
+| host.ip | Host ip address. | ip |  |  |
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
@@ -1142,6 +1235,8 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1203,13 +1298,15 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac addresses. | keyword |  |  |
+| host.ip | Host ip address. | ip |  |  |
+| host.mac | Host mac address. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1219,7 +1316,7 @@ This dataset is available on:
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | system.fsstat.count | Number of file systems found. | long |  | gauge |
 | system.fsstat.total_files | Total number of files. | long |  | gauge |
 | system.fsstat.total_size.free | Total free space. | long | byte | gauge |
@@ -1259,13 +1356,15 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| event.dataset | Event dataset. | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac address. | keyword |  |
+| host.ip | Host ip address. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
@@ -1275,7 +1374,7 @@ This dataset is available on:
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | system.load.1 | Load average for the last minute. | scaled_float | gauge |
 | system.load.15 | Load average for the last 15 minutes. | scaled_float | gauge |
 | system.load.5 | Load average for the last 5 minutes. | scaled_float | gauge |
@@ -1318,13 +1417,15 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1384,7 +1485,7 @@ This dataset is available on:
 
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| @timestamp | Event timestamp. | date |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
@@ -1401,6 +1502,8 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
 | group.name | Name of the group. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
@@ -1412,9 +1515,9 @@ This dataset is available on:
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  |  |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |  |  |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -1480,12 +1583,14 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host mac address. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
@@ -1598,7 +1703,7 @@ This dataset is available on:
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -1615,6 +1720,8 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| event.dataset | Event dataset. | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
 | group.id | Unique identifier for the group on the system/platform. | keyword |  |
 | group.name | Name of the group. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
@@ -1692,6 +1799,8 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
 | group.name | Name of the group. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
@@ -1775,6 +1884,8 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |

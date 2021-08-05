@@ -19,7 +19,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. | date |
 | agent.id | Unique identifier of this agent. | keyword |
 | agent.name | Custom name of the agent. | keyword |
 | agent.type | Type of the agent. | keyword |
@@ -151,9 +151,10 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event. | keyword |
-| event.dataset | Name of the dataset. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | Event kind (e.g. event) | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome |  | keyword |
 | event.severity | Numeric severity of the event. | long |
 | event.type | Event type (e.g. info, error) | keyword |
@@ -168,7 +169,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |

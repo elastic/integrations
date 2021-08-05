@@ -16,7 +16,7 @@ Once added, a new Management > Osquery page is available in Kibana.
 
 ### Supported platforms
 
-This integration supports x86_64 bit Windows, Darwin, and Linux platforms.
+This integration supports x86_64 bit Windows, Darwin, Arm64, and Linux platforms.
 
 ### Access Osquery in Kibana
 After you add the Osquery Manager integration to an agent policy in Kibana Fleet, there are two ways to get to the Osquery app where you can run live queries and schedule query groups:
@@ -29,15 +29,18 @@ The **Live queries** page  allows you to run a query against one or more agents 
 
 To run a live query:
 
-1. From Kibana, go to Management > Osquery.
-2. Click the **New live query** button.
-3. Select the agents or groups you want to query. You can select one or more.
-4. Enter a SQL query. The query field provides intellisense suggestions based on the Osquery schema.
-5. Click **Submit**.
-6. Monitor the status and results of your request under the **Check results** section. Depending on the number of agents queried, this request may take some time. The status area is updated as query results are returned.
-7. To view the query results and data, click **Results**.
 
-> Note: If an agent is offline, the request Status remains in **pending** as we retry the request. The query request expires after 1 day.
+1. From Kibana, open the main menu and click **Management > Osquery**.
+2. On the Live queries history page, click the **New live query button**.
+3. Select one or more agents or groups to query. Note that agents with a green dot indicate that the agent is online, based on a check that runs every 5 minutes.
+4. (Optional) Select a saved query to run.
+5. Click **Submit**.
+6. Review the results. Depending on the number of agents queried, this request may take some time. Status info is updated as available.
+7. (Optional) Click the **Status** tab to view more info about the request, for example, if there are any failures.
+
+
+> Note: If an agent is offline, the request status remains in **pending** as Kibana retries the request.  By default, a query request times out after 5 minutes. Note that this time out applies to the time it takes to deliver the action request to an agent to run a query. If the action completes after the timeout period, the results are still returned.
+
 
 
 ### Schedule query groups
@@ -49,10 +52,22 @@ When you open the **Scheduled query groups** tab in the Osquery app, the table l
 
 After selecting a scheduled query group to edit or adding a new scheduled query group:
 
-- *To add queries individually*: Click **Add query**. In the fly-out, enter an ID for the query, the query, and the query interval (seconds).
+- *To add queries individually*: Click **Add query**. In the flyout, enter an ID for the query, the query, and the query interval (seconds). You can also optionally set the minimum osquery version required to run the query and set the platform required to run the query.
 - *To load queries from a .conf query pack*: Use the **Select or drag and drop zone** under the query table. You can upload your own pack or use a community pack. To explore the community packs that Osquery publishes, click Example packs. 
 
 To save your changes, click **Save query**. Once saved, the changes are pushed out to the agents in the policy. 
+
+### Saved queries
+The Saved queries page lists all queries that have been saved. From the Live queries page, you can create and save a new live query. From the **Scheduled query groups** page, you can add saved queries to a scheduled query group.
+
+Each query contains the following information:
+- ID: A unique identifier for the query.
+- Description: A brief description about the query.
+- Query: The SQL query.
+- Scheduled query group configuration (optional): These options only apply if the saved query is added to a scheduled query group.
+  - Interval: The frequency at which this query should be run
+  - Minimum Osquery version: Sets the minimum [version of osquery](https://github.com/osquery/osquery/releases) required to run the query. 
+  - Platform: Sets the operating system required to run the query. 
 
 
 ### Query statuses
@@ -62,19 +77,24 @@ To save your changes, click **Save query**. Once saved, the changes are pushed o
 | Successful | The query completed as expected.|
 | Failed | The query encountered a problem and might have failed, because there was an issue with the query or the agent was disconnected. |
 | Not yet responded | The query has not been sent to the agent. |
+| Expired | The action request timed out. The agent may be offline.|
 
 ### Default Osquery configuration
 The Osquery binary is executed with the standard osqueryd defaults. 
 
-### Osquery example result
+### Osquery results
 
-This is an example of what a successful osquery result looks like. Things to note about the response:
+When you run a live or scheduled query, note the following about Osquery responses:
 
 - Everything prefaced with `osquery.` is part of the query response. Note that these fields are not mapped to ECS.
 - The `host.*` and `agent.*` fields are mapped to ECS.
 - The `action_data.query` has the query that was sent.
+- All query results are [snapshot logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#snapshot-logs) that represent a point in time with a set of results, with no differentials. [Differential logs](https://osquery.readthedocs.io/en/stable/deployment/logging/#differential-logs) are not supported.
+- Osquery data is stored in the `logs-osquery_manager.result-default` datastream, and the result row data is under the `osquery` property in the document.
 
-*Example:*
+
+This is an example of a successful osquery result.
+
 
 ```
 {
@@ -231,8 +251,30 @@ This is an example of an **error response** for an undefined action query.
 }
 ```
 
+### Upgrade osquery versions
+The [osquery version](https://github.com/osquery/osquery/releases) available on an Elastic Agent is tied to the version of Osquery Beat on the Agent. When a new osquery version is released, we do our best to test and verify the impact of the update, then upgrade the osquery version available in Osquery Beat. To get the latest version of Osquery Beat, [upgrade your Elastic Agent](https://www.elastic.co/guide/en/fleet/master/upgrade-elastic-agent.html).
+
+### Debug issues
+If you encounter issues when using Osquery Manager, you can find relevant logs for the elastic-agent and Osquerybeat in the installed agent directory, which will look similar to the example paths below. Adjust the agent path as needed for your setup.
+- `/data/elastic-agent-054e22/logs/elastic-agent-json.log-*`
+- `/data/elastic-agent-054e22/logs/default/osquerybeat-json.log`
+
+To get more details in the logs, you can change the agent logging level to debug:
+1. From Kibana, go to **Fleet > Agents**, then select the agent you want to debug. 
+2. From the bottom of the **Logs** tab, change the **Agent logging level** to **debug**, then click **Apply changes**.
+
+This updates `agent.logging.level` in the `fleet.yml` file and sets the logging level to `debug`.
+
+
 
 ### Exported Fields
+This section describes the fields that can be returned in osquery results. Note the following about osquery fields:
+- Some fields list multiple descriptions because the one that applies depends on which table was queried. For example, a result stored in the `osquery.autoupdate` field may represent a response from the `firefox_addons` table or the `windows_security_center` table. 
+- In the cases where a field name is associated with more than one osquery table, we have made a best guess at what the data `type` should be. In the cases where it is unknown, the data type is set as a keyword object. 
+
+For more information about osquery tables, see the [osquery schema documentation](https://osquery.io/schema/).
+
+
 | Field | Description | Type |
 |---|---|---|
 | **@timestamp** | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
@@ -295,6 +337,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **os_version.arch** - OS Architecture |  |
 |  | **pkg_packages.arch** - Architecture(s) supported |  |
 |  | **rpm_packages.arch** - Architecture(s) supported |  |
+|  | **seccomp_events.arch** - Information about the CPU architecture |  |
 |  | **signature.arch** - If applicable, the arch of the signed code |  |
 | **architecture** | **docker_info.architecture** - Hardware architecture | keyword, text.text |
 |  | **ec2_instance_metadata.architecture** - Hardware architecture of this EC2 instance |  |
@@ -318,6 +361,7 @@ This is an example of an **error response** for an undefined action query.
 | **audible_alarm** | **chassis_info.audible_alarm** - If TRUE, the frame is equipped with an audible alarm. | keyword, text.text |
 | **auid** | **process_events.auid** - Audit User ID at process start | keyword |
 |  | **process_file_events.auid** - Audit user ID of the process using the file |  |
+|  | **seccomp_events.auid** - Audit user ID (loginuid) of the user who started the analyzed process |  |
 |  | **socket_events.auid** - Audit User ID |  |
 |  | **user_events.auid** - Audit User ID |  |
 | **authenticate_user** | **authorizations.authenticate_user** - Label top-level key | keyword, text.text |
@@ -493,6 +537,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **process_events.cmdline** - Command line arguments (argv) |  |
 |  | **processes.cmdline** - Complete argv |  |
 | **cmdline_size** | **process_events.cmdline_size** - Actual size (bytes) of command line arguments | keyword, number.long |
+| **code** | **seccomp_events.code** - The seccomp action | keyword, text.text |
 | **code_integrity_policy_enforcement_status** | **hvci_status.code_integrity_policy_enforcement_status** - The status of the code integrity policy enforcement settings. Returns UNKNOWN if an error is encountered. | keyword, text.text |
 | **codename** | **os_version.codename** - OS version codename | keyword, text.text |
 | **collect_cross_processes** | **carbon_black_info.collect_cross_processes** - If the sensor is configured to cross process events | keyword, number.long |
@@ -510,9 +555,11 @@ This is an example of an **error response** for an undefined action query.
 | **collisions** | **interface_details.collisions** - Packet Collisions detected | keyword, number.long |
 | **color_depth** | **video_info.color_depth** - The amount of bits per pixel to represent color. | keyword, number.long |
 | **comm** | **apparmor_events.comm** - Command-line name of the command that was used to invoke the analyzed process | keyword, text.text |
+|  | **seccomp_events.comm** - Command-line name of the command that was used to invoke the analyzed process |  |
 | **command** | **crontab.command** - Raw command string | keyword, text.text |
 |  | **docker_containers.command** - Command with arguments |  |
 |  | **shell_history.command** - Unparsed date/line/command history line |  |
+| **command_args** | **shortcut_files.command_args** - Command args passed to lnk file. | keyword, text.text |
 | **command_line** | **windows_crashes.command_line** - Command-line string passed to the crashed process | keyword, text.text |
 | **command_line_template** | **wmi_cli_event_consumers.command_line_template** - Standard string template that specifies the process to be started. This property can be NULL, and the ExecutablePath property is used as the command line. | keyword, text.text |
 | **comment** | **authorizations.comment** - Label top-level key | keyword, text.text |
@@ -523,6 +570,8 @@ This is an example of an **error response** for an undefined action query.
 |  | **keychain_items.comment** - Optional keychain comment |  |
 | **common_name** | **certificates.common_name** - Certificate CommonName | keyword, text.text |
 |  | **curl_certificate.common_name** - Common name of company issued to |  |
+| **common_path** | **shortcut_files.common_path** - Common system path to target file. | keyword, text.text |
+| **compat** | **seccomp_events.compat** - Is system call in compatibility mode | keyword, number.long |
 | **compiler** | **apps.compiler** - Info properties DTCompiler label | keyword, text.text |
 | **completed_time** | **cups_jobs.completed_time** - When the job completed printing | keyword, number.long |
 | **components** | **apt_sources.components** - Repository components | keyword, text.text |
@@ -666,6 +715,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **safari_extensions.description** - Optional extension description text |  |
 |  | **services.description** - Service Description |  |
 |  | **shared_resources.description** - A textual description of the object |  |
+|  | **shortcut_files.description** - Lnk file description. |  |
 |  | **smbios_tables.description** - Table entry description |  |
 |  | **systemd_units.description** - Unit description |  |
 |  | **users.description** - Optional user description |  |
@@ -705,6 +755,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **smart_drive_info.device_name** - Name of block device |  |
 | **device_path** | **iokit_devicetree.device_path** - Device tree path | keyword, text.text |
 | **device_type** | **lxd_instance_devices.device_type** - Device type | keyword, text.text |
+|  | **shortcut_files.device_type** - Device containing the target file. |  |
 | **dhcp_enabled** | **interface_details.dhcp_enabled** - If TRUE, the dynamic host configuration protocol (DHCP) server automatically assigns an IP address to the computer system when establishing a network connection. | keyword, number.long |
 | **dhcp_lease_expires** | **interface_details.dhcp_lease_expires** - Expiration date and time for a leased IP address that was assigned to the computer by the dynamic host configuration protocol (DHCP) server. | keyword, text.text |
 | **dhcp_lease_obtained** | **interface_details.dhcp_lease_obtained** - Date and time the lease was obtained for the IP address assigned to the computer by the dynamic host configuration protocol (DHCP) server. | keyword, text.text |
@@ -842,6 +893,7 @@ This is an example of an **error response** for an undefined action query.
 | **exception_message** | **windows_crashes.exception_message** - The NTSTATUS error message associated with the exception code | keyword, text.text |
 | **exception_notes** | **crashes.exception_notes** - Exception notes from the crash | keyword, text.text |
 | **exception_type** | **crashes.exception_type** - Exception type of the crash | keyword, text.text |
+| **exe** | **seccomp_events.exe** - The path to the executable that was used to invoke the analyzed process | keyword, text.text |
 | **executable** | **appcompat_shims.executable** - Name of the executable that is being shimmed. This is pulled from the registry. | keyword, text.text |
 |  | **process_file_events.executable** - The executable path |  |
 | **executable_path** | **wmi_cli_event_consumers.executable_path** - Module to execute. The string can specify the full path and file name of the module to execute, or it can specify a partial name. If a partial name is specified, the current drive and current directory are assumed. | keyword, text.text |
@@ -947,6 +999,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **process_events.gid** - Group ID at process start |  |
 |  | **process_file_events.gid** - The gid of the process performing the action |  |
 |  | **processes.gid** - Unsigned group ID |  |
+|  | **seccomp_events.gid** - Group ID of the user who started the analyzed process |  |
 |  | **user_groups.gid** - Group ID |  |
 |  | **users.gid** - Group ID (unsigned) |  |
 | **gid_signed** | **groups.gid_signed** - A signed int64 version of gid | keyword, number.long |
@@ -1005,6 +1058,7 @@ This is an example of an **error response** for an undefined action query.
 | **host_ip** | **docker_container_ports.host_ip** - Host IP address on which public port is listening | keyword, text.text |
 | **host_port** | **docker_container_ports.host_port** - Host port | keyword, number.long |
 | **hostname** | **curl_certificate.hostname** - Hostname (domain[:port]) to CURL | keyword, text.text |
+|  | **shortcut_files.hostname** - Optional hostname of the target file. |  |
 |  | **system_info.hostname** - Network hostname including domain |  |
 |  | **ycloud_instance_metadata.hostname** - Hostname of the VM |  |
 | **hostnames** | **etc_hosts.hostnames** - Raw hosts mapping | keyword, text.text |
@@ -1019,6 +1073,7 @@ This is an example of an **error response** for an undefined action query.
 | **ibrs_support_enabled** | **kva_speculative_info.ibrs_support_enabled** - Windows uses IBRS. | keyword, number.long |
 | **ibytes** | **interface_details.ibytes** - Input bytes | keyword, number.long |
 | **icon_mode** | **quicklook_cache.icon_mode** - Thumbnail icon mode | keyword, number.long |
+| **icon_path** | **shortcut_files.icon_path** - Lnk file icon location. | keyword, text.text |
 | **id** | **disk_info.id** - The unique identifier of the drive on the system. | keyword, text.text |
 |  | **dns_resolvers.id** - Address type index or order |  |
 |  | **docker_container_fs_changes.id** - Container ID |  |
@@ -1122,6 +1177,7 @@ This is an example of an **error response** for an undefined action query.
 | **interval** | **docker_container_stats.interval** - Difference between read and preread in nano-seconds | keyword, number.long |
 |  | **osquery_schedule.interval** - The interval in seconds to run this query, not an exact interval |  |
 | **iowait** | **cpu_time.iowait** - Time spent waiting for I/O to complete | keyword, number.long |
+| **ip** | **seccomp_events.ip** - Instruction pointer value | keyword, text.text |
 | **ip_address** | **docker_container_networks.ip_address** - IP address | keyword, text.text |
 | **ip_prefix_len** | **docker_container_networks.ip_prefix_len** - IP subnet prefix length | keyword, number.long |
 | **ipackets** | **interface_details.ipackets** - Input packets | keyword, number.long |
@@ -1245,6 +1301,7 @@ This is an example of an **error response** for an undefined action query.
 | **local_hostname** | **ec2_instance_metadata.local_hostname** - Private IPv4 DNS hostname of the first interface of this instance | keyword, text.text |
 |  | **system_info.local_hostname** - Local hostname (optional) |  |
 | **local_ipv4** | **ec2_instance_metadata.local_ipv4** - Private IPv4 address of the first interface of this instance | keyword, text.text |
+| **local_path** | **shortcut_files.local_path** - Local system path to target file. | keyword, text.text |
 | **local_port** | **bpf_socket_events.local_port** - Local network protocol port number | keyword, number.long |
 |  | **process_open_sockets.local_port** - Socket local port |  |
 |  | **socket_events.local_port** - Local network protocol port number |  |
@@ -1360,7 +1417,9 @@ This is an example of an **error response** for an undefined action query.
 | **metric_name** | **prometheus_metrics.metric_name** - Name of collected Prometheus metric | keyword, text.text |
 | **metric_value** | **prometheus_metrics.metric_value** - Value of collected Prometheus metric | keyword, number.double |
 | **mft_entry** | **shellbags.mft_entry** - Directory master file table entry. | keyword, number.long |
+|  | **shortcut_files.mft_entry** - Target mft entry. |  |
 | **mft_sequence** | **shellbags.mft_sequence** - Directory master file table sequence. | keyword, number.long |
+|  | **shortcut_files.mft_sequence** - Target mft sequence. |  |
 | **mime_encoding** | **magic.mime_encoding** - MIME encoding data from libmagic | keyword, text.text |
 | **mime_type** | **magic.mime_type** - MIME type data from libmagic | keyword, text.text |
 | **min** | **fan_speed_sensors.min** - Minimum speed | keyword, number.long |
@@ -1726,6 +1785,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **shared_resources.path** - Local path of the Windows share. |  |
 |  | **shellbags.path** - Directory name. |  |
 |  | **shimcache.path** - This is the path to the executed file. |  |
+|  | **shortcut_files.path** - Directory name. |  |
 |  | **signature.path** - Must provide a path or directory |  |
 |  | **socket_events.path** - Path of executed file |  |
 |  | **startup_items.path** - Path of startup item |  |
@@ -1788,6 +1848,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **process_open_sockets.pid** - Process (or thread) ID |  |
 |  | **processes.pid** - Process (or thread) ID |  |
 |  | **running_apps.pid** - The pid of the application |  |
+|  | **seccomp_events.pid** - Process ID |  |
 |  | **services.pid** - the Process ID of the service |  |
 |  | **shared_memory.pid** - Process ID to last use the segment |  |
 |  | **socket_events.pid** - Process (or thread) ID |  |
@@ -1950,7 +2011,8 @@ This is an example of an **error response** for an undefined action query.
 | **registry** | **osquery_registry.registry** - Name of the osquery registry | keyword, text.text |
 | **registry_hive** | **logged_in_users.registry_hive** - HKEY_USERS registry hive | keyword, text.text |
 | **registry_path** | **ie_extensions.registry_path** - Extension identifier | keyword, text.text |
-| **relative_path** | **wmi_cli_event_consumers.relative_path** - Relative path to the class or instance. | keyword, text.text |
+| **relative_path** | **shortcut_files.relative_path** - Relative path to target file from lnk file. | keyword, text.text |
+|  | **wmi_cli_event_consumers.relative_path** - Relative path to the class or instance. |  |
 |  | **wmi_event_filters.relative_path** - Relative path to the class or instance. |  |
 |  | **wmi_filter_consumer_binding.relative_path** - Relative path to the class or instance. |  |
 |  | **wmi_script_event_consumers.relative_path** - Relative path to the class or instance. |  |
@@ -2059,6 +2121,7 @@ This is an example of an **error response** for an undefined action query.
 | **service_exit_code** | **services.service_exit_code** - The service-specific error code that the service returns when an error occurs while the service is starting or stopping | keyword, number.long |
 | **service_key** | **drivers.service_key** - Driver service registry key | keyword, text.text |
 | **service_type** | **services.service_type** - Service Type: OWN_PROCESS, SHARE_PROCESS and maybe Interactive (can interact with the desktop) | keyword, text.text |
+| **ses** | **seccomp_events.ses** - Session ID of the session from which the analyzed process was invoked | keyword, number.long |
 | **session_id** | **logon_sessions.session_id** - The Terminal Services session identifier. | keyword, number.long |
 |  | **winbaseobj.session_id** - Terminal Services Session Id |  |
 | **session_owner** | **authorizations.session_owner** - Label top-level key | keyword, text.text |
@@ -2083,6 +2146,7 @@ This is an example of an **error response** for an undefined action query.
 | **sha256_fingerprint** | **curl_certificate.sha256_fingerprint** - SHA-256 fingerprint | keyword, text.text |
 | **shard** | **osquery_packs.shard** - Shard restriction limit, 1-100, 0 meaning no restriction | keyword, number.long |
 | **share** | **nfs_shares.share** - Filesystem path to the share | keyword, text.text |
+| **share_name** | **shortcut_files.share_name** - Share name of the target file. | keyword, text.text |
 | **shared** | **authorizations.shared** - Label top-level key | keyword, text.text |
 | **shell** | **users.shell** - User's configured default shell | keyword, text.text |
 | **shell_only** | **osquery_flags.shell_only** - Is the flag shell only? | keyword, number.long |
@@ -2093,6 +2157,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **office_mru.sid** - User SID |  |
 |  | **shellbags.sid** - User SID |  |
 |  | **userassist.sid** - User SID. |  |
+| **sig** | **seccomp_events.sig** - Signal value sent to process by seccomp | keyword, number.long |
 | **sig_group** | **yara.sig_group** - Signature group used | keyword, text.text |
 | **sigfile** | **yara.sigfile** - Signature file used | keyword, text.text |
 | **signature** | **curl_certificate.signature** - Signature | keyword, text.text |
@@ -2268,6 +2333,7 @@ This is an example of an **error response** for an undefined action query.
 | **syscall** | **bpf_process_events.syscall** - System call name | keyword, text.text |
 |  | **bpf_socket_events.syscall** - System call name |  |
 |  | **process_events.syscall** - Syscall name: fork, vfork, clone, execve, execveat |  |
+|  | **seccomp_events.syscall** - Type of the system call |  |
 | **system** | **cpu_time.system** - Time spent in system mode | keyword, number.long |
 | **system_cpu_usage** | **docker_container_stats.system_cpu_usage** - CPU system usage | keyword, number.long |
 | **system_model** | **kernel_panics.system_model** - Physical system model, for example 'MacBookPro12,1 (Mac-E43C1C25D4880AD6)' | keyword, text.text |
@@ -2283,9 +2349,14 @@ This is an example of an **error response** for an undefined action query.
 | **tapping_process** | **event_taps.tapping_process** - The process ID of the application that created the event tap. | keyword, number.long |
 | **target** | **fan_speed_sensors.target** - Target speed | keyword |
 |  | **iptables.target** - Target that applies for this rule. |  |
+| **target_accessed** | **shortcut_files.target_accessed** - Target Accessed time. | keyword, number.long |
+| **target_created** | **shortcut_files.target_created** - Target Created time. | keyword, number.long |
+| **target_modified** | **shortcut_files.target_modified** - Target Modified time. | keyword, number.long |
 | **target_name** | **prometheus_metrics.target_name** - Address of prometheus target | keyword, text.text |
 | **target_path** | **file_events.target_path** - The path associated with the event | keyword, text.text |
+|  | **shortcut_files.target_path** - Target file path |  |
 |  | **yara_events.target_path** - The path scanned |  |
+| **target_size** | **shortcut_files.target_size** - Size of target file. | keyword, number.long |
 | **task** | **windows_eventlog.task** - Task value associated with the event | keyword, number.long |
 |  | **windows_events.task** - Task value associated with the event |  |
 | **team** | **system_extensions.team** - Signing team ID | keyword, text.text |
@@ -2316,6 +2387,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **powershell_events.time** - Timestamp the event was received by the osquery event publisher |  |
 |  | **process_events.time** - Time of execution in UNIX time |  |
 |  | **process_file_events.time** - Time of execution in UNIX time |  |
+|  | **seccomp_events.time** - Time of execution in UNIX time |  |
 |  | **selinux_events.time** - Time of execution in UNIX time |  |
 |  | **shell_history.time** - Entry timestamp. It could be absent, default value is 0. |  |
 |  | **socket_events.time** - Time of execution in UNIX time |  |
@@ -2420,6 +2492,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **process_file_events.uid** - The uid of the process performing the action |  |
 |  | **processes.uid** - Unsigned user ID |  |
 |  | **safari_extensions.uid** - The local user that owns the extension |  |
+|  | **seccomp_events.uid** - User ID of the user who started the analyzed process |  |
 |  | **shell_history.uid** - Shell history owner |  |
 |  | **ssh_configs.uid** - The local owner of the ssh_config file |  |
 |  | **user_events.uid** - User ID |  |
@@ -2448,6 +2521,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **kernel_panics.uptime** - System uptime at kernel panic in nanoseconds |  |
 |  | **process_events.uptime** - Time of execution in system uptime |  |
 |  | **process_file_events.uptime** - Time of execution in system uptime |  |
+|  | **seccomp_events.uptime** - Time of execution in system uptime |  |
 |  | **selinux_events.uptime** - Time of execution in system uptime |  |
 |  | **socket_events.uptime** - Time of execution in system uptime |  |
 |  | **user_events.uptime** - Time of execution in system uptime |  |
@@ -2599,6 +2673,7 @@ This is an example of an **error response** for an undefined action query.
 | **voltage** | **battery.voltage** - The battery's current voltage in mV | keyword, number.long |
 | **volume_id** | **quicklook_cache.volume_id** - Parsed volume ID from fs_id | keyword, number.long |
 | **volume_serial** | **file.volume_serial** - Volume serial number | keyword, text.text |
+|  | **shortcut_files.volume_serial** - Volume serial number. |  |
 | **volume_size** | **platform_info.volume_size** - (Optional) size of firmware volume | keyword, number.long |
 | **wall_time** | **osquery_schedule.wall_time** - Total wall time spent executing | keyword, number.long |
 | **warning** | **shadow.warning** - Number of days before password expires to warn user about it | keyword, number.long |
@@ -2614,6 +2689,7 @@ This is an example of an **error response** for an undefined action query.
 |  | **processes.wired_size** - Bytes of unpageable memory used by process |  |
 | **working_directory** | **launchd.working_directory** - Key used to specify a directory to chdir to before launch | keyword, text.text |
 | **working_disks** | **md_devices.working_disks** - Number of working disks in array | keyword, number.long |
+| **working_path** | **shortcut_files.working_path** - Target file directory. | keyword, text.text |
 | **world** | **portage_packages.world** - If package is in the world file | keyword, number.long |
 | **writable** | **disk_events.writable** - 1 if writable, 0 if not | keyword, number.long |
 | **xpath** | **windows_eventlog.xpath** - The custom query to filter events | keyword, text.text |

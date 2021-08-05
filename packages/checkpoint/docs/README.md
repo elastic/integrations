@@ -21,6 +21,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | checkpoint.action_reason | Connection drop reason. | integer |
+| checkpoint.action_reason_msg | Connection drop reason message. | keyword |
 | checkpoint.additional_info | ID of original file/mail which are sent by admin. | keyword |
 | checkpoint.additional_ip | DNS host name. | keyword |
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
@@ -473,11 +474,12 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. | keyword |
 | event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
 | event.end | Contains the date when the event ended. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. | keyword |
 | event.risk_score | Risk score or priority of the event. | float |
 | event.sequence | Sequence number of the event. | long |

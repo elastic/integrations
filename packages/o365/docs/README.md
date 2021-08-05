@@ -33,6 +33,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.address | Client network address. | keyword |
+| client.domain | Client network domain. | keyword |
 | client.ip | IP address of the client. | ip |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -58,9 +59,11 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | event.action | The action captured by the event. | keyword |
 | event.category | Event category. The second categorization field in the hierarchy. | keyword |
 | event.code | Identification code for this event. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. | date |
 | event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
 | event.provider | Source of the event. | keyword |
 | event.severity | Numeric severity of the event. | long |
@@ -76,10 +79,10 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -120,11 +123,12 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.Data |  | keyword |
 | o365.audit.DataType |  | keyword |
 | o365.audit.EntityType |  | keyword |
+| o365.audit.ErrorNumber |  | keyword |
 | o365.audit.EventData |  | keyword |
 | o365.audit.EventSource |  | keyword |
-| o365.audit.ExceptionInfo.* |  | object |
-| o365.audit.ExchangeMetaData.* |  | object |
-| o365.audit.ExtendedProperties.* |  | object |
+| o365.audit.ExceptionInfo.\* |  | object |
+| o365.audit.ExchangeMetaData.\* |  | object |
+| o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExternalAccess |  | boolean |
 | o365.audit.GroupName |  | keyword |
 | o365.audit.Id |  | keyword |
@@ -133,8 +137,8 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.InterSystemsId |  | keyword |
 | o365.audit.InternalLogonType |  | keyword |
 | o365.audit.IntraSystemId |  | keyword |
-| o365.audit.Item.* |  | object |
-| o365.audit.Item.*.* |  | object |
+| o365.audit.Item.\* |  | object |
+| o365.audit.Item.\*.\* |  | object |
 | o365.audit.ItemName |  | keyword |
 | o365.audit.ItemType |  | keyword |
 | o365.audit.ListId |  | keyword |
@@ -147,15 +151,15 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.MailboxOwnerSid |  | keyword |
 | o365.audit.MailboxOwnerUPN |  | keyword |
 | o365.audit.Members |  | array |
-| o365.audit.Members.* |  | object |
-| o365.audit.ModifiedProperties.*.* |  | object |
+| o365.audit.Members.\* |  | object |
+| o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
 | o365.audit.ObjectId |  | keyword |
 | o365.audit.Operation |  | keyword |
 | o365.audit.OrganizationId |  | keyword |
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
-| o365.audit.Parameters.* |  | object |
+| o365.audit.Parameters.\* |  | object |
 | o365.audit.PolicyDetails |  | array |
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
@@ -163,7 +167,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
 | o365.audit.Severity |  | keyword |
-| o365.audit.SharePointMetaData.* |  | object |
+| o365.audit.SharePointMetaData.\* |  | object |
 | o365.audit.Site |  | keyword |
 | o365.audit.SiteUrl |  | keyword |
 | o365.audit.Source |  | keyword |
@@ -200,6 +204,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | rule.reference | Rule reference URL | keyword |
 | rule.ruleset | Rule ruleset | keyword |
 | server.address | Server network address. | keyword |
+| server.domain | Server network domain. | keyword |
 | server.ip | IP address of the server. | ip |
 | source.as.number | Unique number allocated to the autonomous system. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -216,7 +221,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | source.user.email | User email address. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.technique.id | Threat technique id. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.original | Unmodified original url as seen in the event source. | wildcard |
 | user.domain | Name of the directory the user is a member of. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
