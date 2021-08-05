@@ -157,12 +157,12 @@ An example event for `springcloudlogs` looks as following:
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
-| geo.ame | User-defined description of a location. | keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
 | geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
+| geo.name | User-defined description of a location. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
