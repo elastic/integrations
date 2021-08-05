@@ -7,7 +7,7 @@ There are several requirements before using the integration since the logs will 
    * to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export
    * to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
 
-The module contains the following filesets:
+The package contains the following data streams:
 
 ### activitylogs
 Will retrieve azure activity logs. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
@@ -20,6 +20,9 @@ Will retrieve azure Active Directory sign-in logs. The sign-ins report provides 
 
 ### auditlogs 
 Will retrieve azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
+
+### springcloudlogs 
+Will retrieve Azure Spring Cloud system and  application logs.
 
 ### Credentials
 
