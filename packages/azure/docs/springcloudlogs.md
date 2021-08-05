@@ -157,6 +157,7 @@ An example event for `springcloudlogs` looks as following:
 | event.type | Event type. The third categorization field in the hierarchy. | keyword |
 | file.mime_type | Media type of file, document, or arrangement of bytes. | keyword |
 | file.size | File size in bytes. | long |
+| geo.ame | User-defined description of a location. | keyword |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
 | geo.country_iso_code | Country ISO code. | keyword |
