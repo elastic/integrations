@@ -35,13 +35,6 @@ An example event for `springcloudlogs` looks as following:
         "snapshot": true
     },
     "message": "2021-08-03 15:07:03.354  INFO [helloapp,,,] 1 --- [trap-executor-0] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration",
-    "azure-eventhub": {
-        "sequence_number": 80,
-        "consumer_group": "$Default",
-        "offset": 62080,
-        "eventhub": "insights-logs-applicationconsole",
-        "enqueued_time": "2021-08-03T15:08:14.477Z"
-    },
     "tags": [
         "azure-springcloudlogs"
     ],
@@ -51,9 +44,6 @@ An example event for `springcloudlogs` looks as following:
     "cloud": {
         "provider": "azure"
     },
-    "input": {
-        "type": "azure-eventhub"
-    },
     "@timestamp": "2021-08-03T15:07:03.354Z",
     "ecs": {
         "version": "1.10.0"
@@ -62,28 +52,6 @@ An example event for `springcloudlogs` looks as following:
         "namespace": "default",
         "type": "logs",
         "dataset": "azure.springcloudlogs"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "4.19.128-microsoft-standard",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "172.29.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "78315c3233258f2dcd540ed749ab1701",
-        "mac": [
-            "02:42:ac:1d:00:07"
-        ],
-        "architecture": "x86_64"
     },
     "event": {
         "agent_id_status": "verified",
@@ -130,12 +98,10 @@ An example event for `springcloudlogs` looks as following:
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
-| azure.springcloudlogs.Cloud | Cloud | keyword |
-| azure.springcloudlogs.Environment | Environment | keyword |
-| azure.springcloudlogs.EventTimeString | EventTimeString | keyword |
 | azure.springcloudlogs.category | Category | keyword |
-| azure.springcloudlogs.ccpNamespace | ccpNamespace | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |
+| azure.springcloudlogs.log_format | ccpNamespace | keyword |
+| azure.springcloudlogs.logtag | Cloud | keyword |
 | azure.springcloudlogs.operation_name | Operation name | keyword |
 | azure.springcloudlogs.properties.app_name | Application name | keyword |
 | azure.springcloudlogs.properties.instance_name | Instance name | keyword |
@@ -146,8 +112,6 @@ An example event for `springcloudlogs` looks as following:
 | azure.springcloudlogs.properties.stream | Stream | keyword |
 | azure.springcloudlogs.properties.thread | Thread | keyword |
 | azure.springcloudlogs.properties.type | Type | keyword |
-| azure.springcloudlogs.result_signature | Result signature | keyword |
-| azure.springcloudlogs.result_type | Result type | keyword |
 | azure.springcloudlogs.status | Status | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
