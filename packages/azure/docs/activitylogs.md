@@ -123,7 +123,7 @@ An example event for `activitylogs` looks as following:
 | azure.activitylogs.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
 | azure.activitylogs.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
 | azure.activitylogs.identity.authorization.scope | Scope | keyword |
-| azure.activitylogs.identity.claims.* | Claims | object |
+| azure.activitylogs.identity.claims.\* | Claims | object |
 | azure.activitylogs.identity.claims_initiated_by_user.fullname | Fullname | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.givenname | Givenname | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
@@ -165,7 +165,7 @@ An example event for `activitylogs` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | geo | Geo fields can carry data about a specific location related to an event. This geolocation information can be derived from techniques such as Geo IP, or be user-supplied. | group |
-| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
