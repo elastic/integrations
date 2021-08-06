@@ -4,10 +4,10 @@ processors:
   - grok:
       field: message
       patterns:
-        - '%{WORD:event.action} %{MIDDLE} %{INTERFACE}' 
+        - '%{WORD:event.action} %{MIDDLE} via %{INTERFACE:observer.ingress.interface.name}' 
         - '%{GREEDYDATA}'
       pattern_definitions:
-        INTERFACE: 'via %{DATA:observer.ingress.interface.name}'
+        INTERFACE: '[a-z0-9\.]+'
         MAC_ADDRESS: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
         FROM: 'from %{MAC_ADDRESS:client.mac}'
         ON: 'on %{IP:client.address} to %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'

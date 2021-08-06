@@ -1,340 +1,221 @@
-- name: destination
-  title: Destination
-  group: 2
-  type: group
-  fields:
-    - name: as.number
-      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-      level: extended
-      type: long
-    - name: as.organization.name
-      description: Organization name.
-      ignore_above: 1024
-      level: extended
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.country_name
-      description: Country name.
-      ignore_above: 1024
-      level: core
-      type: keyword
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the destination (IPv4 or IPv6).
-    - name: address
-      level: extended
-      type: keyword
-      description: address of the destination (IP or Hostname).
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the destination.
+- name: client.as.number
+  external: ecs
+- name: client.as.organization.name
+  external: ecs
+- name: client.domain
+  external: ecs
+- name: client.geo.city_name
+  external: ecs
+- name: client.geo.country_name
+  external: ecs
+- name: client.geo.country_iso_code
+  external: ecs
+- name: client.geo.continent_name
+  external: ecs
+  ignore_above: 1024
+- name: client.geo.country_iso_code
+  external: ecs
+- name: client.geo.region_iso_code
+  external: ecs
+- name: client.geo.location
+  description: Longitude and latitude.
+  example: '{ "lon": -73.614830, "lat": 45.505918 }'
+  type: geo_point
+- name: client.geo.region_name
+  external: ecs
+- name: client.ip
+  external: ecs
+- name: client.address
+  external: ecs
+- name: client.bytes
+  external: ecs
+- name: client.port
+  external: ecs
+- name: destination.bytes
+  external: ecs
+- name: destination.as.number
+  external: ecs
+- name: destination.as.organization.name
+  external: ecs
+- name: destination.geo.city_name
+  external: ecs
+- name: destination.geo.continent_name
+  external: ecs
+- name: destination.geo.country_iso_code
+  external: ecs
+- name: destination.geo.country_name
+  external: ecs
+- name: destination.geo.location
+  description: Longitude and latitude.
+  example: '{ "lon": -73.614830, "lat": 45.505918 }'
+  type: geo_point
+- name: destination.geo.name
+  external: ecs
+- name: destination.geo.region_iso_code
+  external: ecs
+- name: destination.geo.region_name
+  external: ecs
+- name: destination.ip
+  external: ecs
+- name: destination.address
+  external: ecs
 - name: ecs.version
-  type: keyword
-  description: ECS version
-- name: event
-  title: Event
-  group: 2
-  type: group
-  fields:
-    - name: created
-      level: core
-      type: date
-    - name: ingested
-      level: core
-      type: date
-      default_field: false
-    - name: outcome
-      level: core
-      type: keyword
-      ignore_above: 1024
-    - name: provider
-      level: core
-      type: keyword
-      ignore_above: 1024
-- name: input.type
-  type: keyword
-  description: Input type
-- name: log
-  title: Log
-  group: 2
-  type: group
-  fields:
-    - name: file.path
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Full path to the log file this event came from, including the file name.'
-      default_field: false
-    - name: offset
-      type: long
-      description: Log offset
-    - name: original
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is the original log message and contains the full log message before splitting it up in multiple parts.'
-      index: false
-- name: network
-  title: Network
-  group: 2
-  type: group
-  fields:
-    - name: community_id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'A hash of source and destination IPs and ports, as well as the protocol used in a communication.'
-    - name: forwarded_ip
-      level: core
-      type: ip
-      description: Host IP address when the source IP address is the proxy.
-    - name: transport
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)'
-    - name: type
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc'
-    - name: bytes
-      level: core
-      type: long
-      ignore_above: 1024
-      description: Total bytes transferred in both directions.
-    - name: direction
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Direction of the network traffic.
-    - name: iana_number
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: IANA Protocol Number
-    - name: packets
-      level: core
-      type: long
-      description: Total packets transferred in both directions.
-    - name: protocol
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: L7 Network protocol name. ex. http, lumberjack, transport protocol.
-- name: observer
-  title: Observer
-  group: 2
-  type: group
-  fields:
-    - name: ingress.interface.name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Interface name as reported by the system.
-      default_field: false
-    - name: ingress.vlan.id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: VLAN ID as reported by the observer.
-      default_field: false
-    - name: name
-      level: extended
-      type: keyword
-      description: Custom name of the observer.
-- name: related
-  title: Related
-  group: 2
-  type: group
-  fields:
-    - name: hosts
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
-      default_field: false
-    - name: ip
-      level: extended
-      type: ip
-      description: All of the IPs seen on your event.
-- name: rule
-  title: Rule
-  group: 2
-  type: group
-  fields:
-    - name: id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event.
-      default_field: false
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: as.number
-      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-      level: extended
-      type: long
-    - name: as.organization.name
-      description: Organization name.
-      ignore_above: 1024
-      level: extended
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.country_name
-      description: Country name.
-      ignore_above: 1024
-      level: core
-      type: keyword
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the source (IPv4 or IPv6).
-    - name: address
-      level: extended
-      type: keyword
-      description: address of the source (IP or Hostname).
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the source.
-    - name: nat.ip
-      level: core
-      type: ip
-      format: string
-      description: NAT'd IP address of the source (IPv4 or IPv6).
-    - name: mac
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: MAC address of the source.
-- name: client
-  title: client
-  group: 2
-  type: group
-  fields:
-    - name: address
-      level: extended
-      type: keyword
-      description: address of the client (IP or Hostname).
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the client (IPv4 or IPv6).
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the client.
-    - name: mac
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: MAC address of the client.
-- name: server
-  title: client
-  group: 2
-  type: group
-  fields:
-    - name: address
-      level: extended
-      type: keyword
-      description: address of the server (IP or Hostname).
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the server (IPv4 or IPv6).
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the server.
-- name: tags
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-- name: log.syslog.priority
-  type: long
-  description: Syslog priority of the event.
+  external: ecs
+- name: error.message
+  external: ecs
+- name: event.action
+  external: ecs
+- name: event.category
+  external: ecs
+- name: event.id
+  external: ecs
+- name: event.ingested
+  external: ecs
+- name: event.kind
+  external: ecs
+- name: event.original
+  external: ecs
+- name: event.outcome
+  external: ecs
+- name: event.type
+  external: ecs
 - name: message
-  type: text
-  description: Log message optimized for viewing in a log viewer.
+  external: ecs
+- name: related.ip
+  external: ecs
+- name: related.user
+  external: ecs
+- name: source.address
+  external: ecs
+- name: source.as.number
+  external: ecs
+- name: source.as.organization.name
+  external: ecs
+- name: source.bytes
+  external: ecs
+- name: source.domain
+  external: ecs
+- name: source.geo.city_name
+  external: ecs
+- name: source.geo.continent_name
+  external: ecs
+- name: source.geo.country_iso_code
+  external: ecs
+- name: source.geo.country_name
+  external: ecs
+- name: source.geo.location
+  description: Longitude and latitude.
+  example: '{ "lon": -73.614830, "lat": 45.505918 }'
+  type: geo_point
+- name: source.geo.name
+  external: ecs
+- name: source.geo.region_iso_code
+  external: ecs
+- name: source.geo.region_name
+  external: ecs
+- name: source.ip
+  external: ecs
+- name: source.port
+  external: ecs
+- name: source.user.id
+  external: ecs
+- name: source.user.full_name
+  external: ecs
+- name: user_agent.device.name
+  external: ecs
+- name: user_agent.name
+  external: ecs
+- name: user_agent.original
+  external: ecs
+- name: user_agent.os.name
+  external: ecs
+- name: user_agent.os.version
+  external: ecs
+- name: user_agent.os.full
+  external: ecs
+- name: user_agent.version
+  external: ecs
+- name: tags
+  external: ecs
+- name: user.domain
+  external: ecs
+- name: user.email
+  external: ecs
+- name: user.id
+  external: ecs
 - name: user.name
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: Short name or login of the user.
+  external: ecs
+- name: user.full_name
+  external: ecs
+- name: url.domain
+  external: ecs
+- name: url.original
+  external: ecs
+- name: url.password
+  external: ecs
+- name: url.port
+  external: ecs
+- name: url.username
+  external: ecs
+- name: url.path
+  external: ecs
+- name: url.query
+  external: ecs
+- name: url.extension
+  external: ecs
+- name: url.scheme
+  external: ecs
+- name: url.full
+  external: ecs
+- name: tls.cipher
+  external: ecs
+- name: tls.version
+  external: ecs
+- name: tls.version_protocol
+  external: ecs
+- name: network.bytes
+  external: ecs
+- name: network.protocol
+  external: ecs
+- name: network.transport
+  external: ecs
+- name: http.response.status_code
+  external: ecs
+- name: http.request.body.bytes
+  external: ecs
+- name: http.response.body.bytes
+  external: ecs
+- name: http.request.method
+  external: ecs
+- name: http.request.referrer
+  external: ecs
+- name: http.version
+  external: ecs
+- name: observer.type
+  external: ecs
+- name: observer.vendor
+  external: ecs
+- name: observer.geo.city_name
+  external: ecs
+- name: observer.geo.continent_name
+  external: ecs
+- name: observer.geo.country_iso_code
+  external: ecs
+- name: observer.geo.country_name
+  external: ecs
+- name: observer.geo.region_iso_code
+  external: ecs
+- name: observer.geo.location
+  description: Longitude and latitude.
+  example: '{ "lon": -73.614830, "lat": 45.505918 }'
+  type: geo_point
+- name: observer.geo.region_name
+  external: ecs
+- name: observer.ip
+  external: ecs
+- name: server.address
+  external: ecs
+- name: server.bytes
+  external: ecs
+- name: server.ip
+  external: ecs
