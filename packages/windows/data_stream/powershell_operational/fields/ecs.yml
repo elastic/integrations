@@ -1,223 +1,76 @@
-- name: ecs.version
-  type: keyword
-  description: ECS version
-- name: event
-  title: Event
-  type: group
-  fields:
-    - name: action
-      type: keyword
-      ignore_above: 1024
-      description: 'The action captured by the event.'
-    - name: category
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
-    - name: code
-      type: keyword
-      ignore_above: 1024
-      description: 'Identification code for this event, if one exists.'
-    - name: created
-      type: date
-      description: 'event.created contains the date/time when the event was first read by an agent, or by your pipeline.'
-    - name: ingested
-      type: date
-      description: 'Timestamp when an event arrived in the central data store.'
-      default_field: false
-    - name: kind
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.'
-    - name: outcome
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.'
-    - name: provider
-      type: keyword
-      ignore_above: 1024
-      description: 'Source of the event.'
-    - name: sequence
-      type: long
-      format: string
-      description: 'Sequence number of the event.'
-    - name: type
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
-- name: host
-  title: Host
-  type: group
-  fields:
-    - name: name
-      type: keyword
-      ignore_above: 1024
-      description: 'Name of the host.'
-- name: log
-  title: Log
-  type: group
-  fields:
-    - name: level
-      type: keyword
-      ignore_above: 1024
-      description: 'Original log level of the log event.'
-- name: process
-  title: Process
-  type: group
-  fields:
-    - name: args
-      type: keyword
-      ignore_above: 1024
-      description: 'Array of process arguments, starting with the absolute path to the executable.'
-    - name: args_count
-      type: long
-      description: 'Length of the process.args array.'
-      default_field: false
-    - name: command_line
-      type: wildcard
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-      description: 'Full command line that started the process, including the absolute path to the executable, and all arguments.'
-      default_field: false
-    - name: entity_id
-      type: keyword
-      ignore_above: 1024
-      description: 'Unique identifier for the process.'
-      default_field: false
-    - name: executable
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Absolute path to the process executable.
-    - name: name
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: 'Process name.'
-    - name: title
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: 'Process title.'
-    - name: pid
-      type: long
-      description: Process PID.
-- name: file
-  title: File
-  type: group
-  fields:
-    - description: Name of the file including the extension, without the directory.
-      name: name
-      type: keyword
-    - name: directory
-      type: keyword
-      ignore_above: 1024
-      description: Directory where the file is located. It should include the drive letter, when appropriate.
-    - name: extension
-      type: keyword
-      ignore_above: 1024
-      description: 'File extension, excluding the leading dot.'
-    - name: path
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
-- name: user
-  title: User
-  type: group
-  fields:
-    - name: domain
-      type: keyword
-      ignore_above: 1024
-      description: 'Name of the directory the user is a member of.'
-    - name: id
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier of the user.
-    - name: name
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
-- name: source
-  title: Source
-  type: group
-  fields:
-    - name: user.domain
-      type: keyword
-      ignore_above: 1024
-      description: 'Name of the directory the user is a member of.'
-    - name: user.id
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier of the user.
-    - name: user.name
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
-- name: destination
-  title: Destination
-  type: group
-  fields:
-    - name: user.domain
-      type: keyword
-      ignore_above: 1024
-      description: 'Name of the directory the user is a member of.'
-    - name: user.id
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier of the user.
-    - name: user.name
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
-- name: related
-  title: Related
-  type: group
-  fields:
-    - name: hash
-      type: keyword
-      ignore_above: 1024
-      default_field: false
-    - name: hosts
-      type: keyword
-      ignore_above: 1024
-      default_field: false
-    - name: ip
-      type: ip
-    - name: user
-      type: keyword
-      ignore_above: 1024
-      default_field: false
+- external: ecs
+  name: destination.user.domain
+- external: ecs
+  name: destination.user.id
+- external: ecs
+  name: destination.user.name
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: event.action
+- external: ecs
+  name: event.category
+- external: ecs
+  name: event.code
+- external: ecs
+  name: event.created
+- external: ecs
+  name: event.ingested
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.outcome
+- external: ecs
+  name: event.provider
+- external: ecs
+  name: event.sequence
+- external: ecs
+  name: event.type
+- external: ecs
+  name: file.directory
+- external: ecs
+  name: file.extension
+- external: ecs
+  name: file.name
+- external: ecs
+  name: file.path
+- external: ecs
+  name: host.name
+- external: ecs
+  name: log.level
+- external: ecs
+  name: process.args
+- external: ecs
+  name: process.args_count
+- external: ecs
+  name: process.command_line
+- external: ecs
+  name: process.entity_id
+- external: ecs
+  name: process.executable
+- external: ecs
+  name: process.name
+- external: ecs
+  name: process.pid
+- external: ecs
+  name: process.title
+- external: ecs
+  name: related.hash
+- external: ecs
+  name: related.hosts
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: related.user
+- external: ecs
+  name: source.user.domain
+- external: ecs
+  name: source.user.id
+- external: ecs
+  name: source.user.name
+- external: ecs
+  name: user.domain
+- external: ecs
+  name: user.id
+- external: ecs
+  name: user.name
