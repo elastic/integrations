@@ -1,226 +1,227 @@
-- name: http
-  title: HTTP
-  group: 2
-  type: group
-  fields:
-    - name: request.method
-      level: extended
-      type: keyword
-      description: |-
-        HTTP request method.
-        The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".
+- fields:
+    - description: 'HTTP request method.
+
+        The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".'
       ignore_above: 1024
-    - name: request.referrer
       level: extended
+      name: request.method
       type: keyword
-      description: Referrer for this HTTP request.
+    - description: Referrer for this HTTP request.
       ignore_above: 1024
-    - name: response.body.bytes
       level: extended
-      type: long
+      name: request.referrer
+      type: keyword
+    - description: Size in bytes of the response body.
       format: bytes
-      description: Size in bytes of the response body.
-    - name: response.status_code
       level: extended
+      name: response.body.bytes
       type: long
+    - description: HTTP response status code.
       format: string
-      description: HTTP response status code.
-    - name: version
       level: extended
-      type: keyword
-      description: HTTP version.
+      name: response.status_code
+      type: long
+    - description: HTTP version.
       ignore_above: 1024
-- description: "Host ip addresses."
+      level: extended
+      name: version
+      type: keyword
+  group: 2
+  name: http
+  title: HTTP
+  type: group
+- description: Host ip addresses.
   name: host.ip
   type: ip
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
+- fields:
+    - description: City name.
       ignore_above: 1024
-    - name: geo.continent_name
       level: core
+      name: geo.city_name
       type: keyword
-      description: Name of the continent.
+    - description: Name of the continent.
       ignore_above: 1024
-    - name: geo.country_iso_code
       level: core
+      name: geo.continent_name
       type: keyword
-      description: Country ISO code.
+    - description: Country ISO code.
       ignore_above: 1024
-    - name: geo.location
       level: core
+      name: geo.country_iso_code
+      type: keyword
+    - description: Longitude and latitude.
+      level: core
+      name: geo.location
       type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
+    - description: Region ISO code.
       ignore_above: 1024
-    - name: geo.region_name
       level: core
+      name: geo.region_iso_code
       type: keyword
-      description: Region name.
+    - description: Region name.
       ignore_above: 1024
-- name: url
-  title: URL
+      level: core
+      name: geo.region_name
+      type: keyword
   group: 2
+  name: source
+  title: Source
   type: group
-  fields:
-    - name: original
-      level: extended
-      type: keyword
-      description: |-
-        Unmodified original url as seen in the event source.
+- fields:
+    - description: 'Unmodified original url as seen in the event source.
+
         Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path.
-        This field is meant to represent the URL as it was observed, complete or not.
+
+        This field is meant to represent the URL as it was observed, complete or not.'
       ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: domain
       level: extended
+      multi_fields:
+        - default_field: false
+          name: text
+          norms: false
+          type: text
+      name: original
       type: keyword
-      ignore_above: 1024
-      description: 'Domain of the url, such as "www.elastic.co".
+    - description: 'Domain of the url, such as "www.elastic.co".
 
         In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
 
         If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
-    - name: scheme
-      level: extended
-      type: keyword
       ignore_above: 1024
-      description: 'Scheme of the request, such as "https".
+      level: extended
+      name: domain
+      type: keyword
+    - description: 'Scheme of the request, such as "https".
 
         Note: The `:` is not part of the scheme.'
-    - name: fragment
-      type: keyword
       ignore_above: 1024
-      description: 'Portion of the url after the `#`, such as "top".
+      level: extended
+      name: scheme
+      type: keyword
+    - description: 'Portion of the url after the `#`, such as "top".
 
         The `#` is not part of the fragment.'
-    - name: extension
-      level: extended
-      type: keyword
       ignore_above: 1024
-      description: 'The field contains the file extension from the original request url.
+      name: fragment
+      type: keyword
+    - description: 'The field contains the file extension from the original request url.
 
         The file extension is only set if it exists, as not every url has a file extension.
 
         The leading period must not be included. For example, the value must be "png", not ".png".'
       example: png
-    - name: path
-      level: extended
-      type: keyword
       ignore_above: 1024
-      description: Path of the request, such as "/search".
-- name: user
-  title: User
+      level: extended
+      name: extension
+      type: keyword
+    - description: Path of the request, such as "/search".
+      ignore_above: 1024
+      level: extended
+      name: path
+      type: keyword
   group: 2
+  name: url
+  title: URL
   type: group
-  fields:
-    - name: name
+- fields:
+    - description: Short name or login of the user.
+      ignore_above: 1024
       level: core
-      type: keyword
-      description: Short name or login of the user.
-      ignore_above: 1024
       multi_fields:
-        - name: text
-          type: text
+        - default_field: false
+          name: text
           norms: false
-          default_field: false
-- name: user_agent
-  title: User agent
+          type: text
+      name: name
+      type: keyword
   group: 2
+  name: user
+  title: User
   type: group
-  fields:
-    - name: device.name
-      level: extended
-      type: keyword
-      description: Name of the device.
+- fields:
+    - description: Name of the device.
       ignore_above: 1024
-    - name: name
       level: extended
+      name: device.name
       type: keyword
-      description: Name of the user agent.
+    - description: Name of the user agent.
       ignore_above: 1024
-    - name: original
       level: extended
+      name: name
       type: keyword
-      description: Unparsed user_agent string.
+    - description: Unparsed user_agent string.
       ignore_above: 1024
+      level: extended
       multi_fields:
         - name: text
-          type: text
           norms: false
-    - name: os.name
-      level: extended
+          type: text
+      name: original
       type: keyword
-      description: Operating system name, without the version.
+    - description: Operating system name, without the version.
       ignore_above: 1024
+      level: extended
       multi_fields:
-        - name: text
-          type: text
+        - default_field: false
+          name: text
           norms: false
-          default_field: false
-    - name: os.version
+          type: text
+      name: os.name
       type: keyword
-      description: Operating system version as a raw string.
-    - name: version
+    - description: Operating system version as a raw string.
+      name: os.version
       type: keyword
-      description: Version of the user agent.
-- name: related.ip
+    - description: Version of the user agent.
+      name: version
+      type: keyword
+  group: 2
+  name: user_agent
+  title: User agent
+  type: group
+- description: All of the IPs seen on your event.
+  name: related.ip
   type: ip
-  description: All of the IPs seen on your event.
-- name: source.address
+- description: An IP address, a domain, a unix socket
+  name: source.address
   type: keyword
-  description: An IP address, a domain, a unix socket
-- name: source.ip
+- description: IP address of the source
+  name: source.ip
   type: ip
-  description: IP address of the source
-- name: ecs.version
+- description: ECS version
+  name: ecs.version
   type: keyword
-  description: ECS version
-- name: user_agent.os.full
+- description: Operating system name, including the version or code name.
+  name: user_agent.os.full
   type: keyword
-  description: Operating system name, including the version or code name.
-- name: source.as.organization.name
+- description: Organization name.
+  name: source.as.organization.name
   type: keyword
-  description: Organization name.
-- name: source.as.number
+- description: Unique number allocated to the autonomous system.
+  name: source.as.number
   type: long
-  description: Unique number allocated to the autonomous system.
-- name: source.geo.country_name
+- description: Country name.
+  name: source.geo.country_name
   type: keyword
-  description: Country name.
-- name: input.type
+- description: Input type
+  name: input.type
   type: keyword
-  description: Input type
-- name: log.file.path
+- description: Log path
+  name: log.file.path
   type: keyword
-  description: Log path
-- name: log.offset
+- description: Log offset
+  name: log.offset
   type: long
-  description: Log offset
-- name: destination.domain
-  description: Destination domain.
+- description: Destination domain.
+  name: destination.domain
   type: keyword
-- name: destination.ip
-  description: IP address of the destination.
+- description: IP address of the destination.
+  name: destination.ip
   type: ip
-- name: destination.port
-  description: Port of the destination.
+- description: Port of the destination.
+  name: destination.port
   type: long
-- name: tags
-  level: core
-  type: keyword
+- description: List of keywords used to tag each event.
   ignore_above: 1024
-  description: List of keywords used to tag each event.
+  level: core
+  name: tags
+  type: keyword
