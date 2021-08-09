@@ -12,7 +12,7 @@ processors:
     target_field: json
 - set:
     field: observer.vendor
-    value: Cloudflare
+    value: cloudflare
 - set:
     field: observer.type
     value: proxy
@@ -40,7 +40,7 @@ processors:
               handleList(x);
           }
         }
-        map.values().removeIf(v -> v == null || v == '');
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
       }
       void handleList(List list) {
         for (def x : list) {
@@ -50,6 +50,7 @@ processors:
                 handleList(x);
             }
         }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
       }
       handleMap(ctx);
 on_failure:

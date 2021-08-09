@@ -1,10 +1,7 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
-
-{{#if zone_id}}
-request.url: https://api.cloudflare.com/client/v4/zones/{{ zone_id }}/logs/received
-{{/if}}
+request.url: {{api_url}}/client/v4/zones/{{zone_id}}/logs/received
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -12,30 +9,36 @@ request.ssl: {{ssl}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
 
-{{!-- request.rate_limit:
-  limit: '[[.last_response.header.Get "X-Rate-Limit-Limit"]]'
-  remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
-  reset: '[[.last_response.header.Get "X-Rate-Limit-Reset"]]' --}}
 request.transforms:
+{{#if auth_token}}
+  - set:
+      target: header.Authorization
+      value: "Bearer {{auth_token}}"
+{{else}}
   - set:
       target: header.X-Auth-Email
       value: "{{auth_email}}"
   - set:
       target: header.X-Auth-Key
       value: "{{auth_key}}"
+{{/if}}
   - set:
       target: url.params.start
       value: "[[.cursor.last_execution_datetime]]"
-      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+      default: '[[formatDate (now (parseDuration "-{{interval}}"))]]'
   - set:
       target: url.params.end
-      value: '[[formatDate now]]'
+      value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
+      default: '[[formatDate (now (parseDuration "-1m"))]]'
+  - set:
+      target: url.params.fields
+      value: "CacheCacheStatus,CacheResponseBytes,CacheResponseStatus,CacheTieredFill,ClientASN,ClientCountry,ClientDeviceType,ClientIP,ClientIPClass,ClientRequestBytes,ClientRequestHost,ClientRequestMethod,ClientRequestPath,ClientRequestProtocol,ClientRequestReferer,ClientRequestURI,ClientRequestUserAgent,ClientSSLCipher,ClientSSLProtocol,ClientSrcPort,ClientXRequestedWith,EdgeColoCode,EdgeColoID,EdgeEndTimestamp,EdgePathingOp,EdgePathingSrc,EdgePathingStatus,EdgeRateLimitAction,EdgeRateLimitID,EdgeRequestHost,EdgeResponseBytes,EdgeResponseCompressionRatio,EdgeResponseContentType,EdgeResponseStatus,EdgeServerIP,EdgeStartTimestamp,FirewallMatchesActions,FirewallMatchesRuleIDs,FirewallMatchesSources,OriginIP,OriginResponseBytes,OriginResponseHTTPExpires,OriginResponseHTTPLastModified,OriginResponseStatus,OriginResponseTime,OriginSSLProtocol,ParentRayID,RayID,SecurityLevel,WAFAction,WAFFlags,WAFMatchedVar,WAFProfile,WAFRuleID,WAFRuleMessage,WorkerCPUTime,WorkerStatus,WorkerSubrequest,WorkerSubrequestCount,ZoneID,Action"
 
 response.decode_as: application/x-ndjson
+
 cursor:
   last_execution_datetime:
-    value: "[[formatDate now]]"
-
+    value: "[[.last_request.url.params.end]]"
 
 {{#if tags.length}}
 tags:
@@ -52,7 +55,7 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-fields:
-  _conf:
-    keep_original_message: {{keep_original_message}}
-fields_under_root: true
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
