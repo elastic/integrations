@@ -90,10 +90,12 @@ The Cloudflare Logpull records network events related to your organization in or
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, consider using the wildcard data type. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -139,7 +141,7 @@ The Cloudflare Logpull records network events related to your organization in or
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
@@ -187,3 +189,221 @@ The Cloudflare Logpull records network events related to your organization in or
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
+An example event for `logpull` looks as following:
+
+```json
+{
+    "@timestamp": "2019-08-02T15:29:08.000Z",
+    "agent": {
+        "ephemeral_id": "3c4ff675-b9b0-4088-91be-ceb05758b84d",
+        "hostname": "docker-fleet-agent",
+        "id": "215f4abb-ee20-49c3-9075-e8d3838466ba",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.15.0"
+    },
+    "client": {
+        "address": "35.232.161.245",
+        "as": {
+            "number": 15169,
+            "organization": {
+                "name": "Google LLC"
+            }
+        },
+        "bytes": 2577,
+        "geo": {
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 38.6583,
+                "lon": -77.2481
+            },
+            "region_iso_code": "US-VA",
+            "region_name": "Virginia"
+        },
+        "ip": "35.232.161.245",
+        "port": 55028
+    },
+    "cloudflare": {
+        "cache": {
+            "status": "unknown",
+            "tiered_fill": false
+        },
+        "client": {
+            "ip_class": "noRecord",
+            "ssl": {
+                "protocol": "TLSv1.2"
+            }
+        },
+        "device_type": "desktop",
+        "edge": {
+            "colo": {
+                "id": 14
+            },
+            "pathing": {
+                "op": "chl",
+                "src": "filterBasedFirewall",
+                "status": "captchaNew"
+            },
+            "rate_limit": {
+                "id": 0
+            },
+            "response": {
+                "bytes": 2848,
+                "compression_ratio": 2.64,
+                "content_type": "text/html",
+                "status_code": 403
+            }
+        },
+        "firewall": {
+            "actions": [
+                "simulate",
+                "challenge"
+            ],
+            "rule_ids": [
+                "094b71fea25d4860a61fa0c6fbbd8d8b",
+                "e454fd4a0ce546b3a9a462536613692c"
+            ],
+            "sources": [
+                "firewallRules",
+                "firewallRules"
+            ]
+        },
+        "origin": {
+            "response": {
+                "bytes": 0,
+                "status_code": 0,
+                "time": 0
+            },
+            "ssl": {
+                "protocol": "unknown"
+            }
+        },
+        "parent": {
+            "ray_id": "00"
+        },
+        "ray_id": "500115ec386354d8",
+        "security_level": "med",
+        "waf": {
+            "action": "unknown",
+            "flags": "0",
+            "profile": "unknown"
+        },
+        "worker": {
+            "cpu_time": 0,
+            "status": "unknown",
+            "subrequest": false,
+            "subrequest_count": 0
+        },
+        "zone": {
+            "id": 155978002
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare.logpull",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 2848
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "215f4abb-ee20-49c3-9075-e8d3838466ba",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2021-08-09T12:14:00.331Z",
+        "dataset": "cloudflare.logpull",
+        "duration": 0,
+        "end": "2019-08-02T15:29:08.000Z",
+        "ingested": "2021-08-09T12:14:04Z",
+        "kind": "event",
+        "original": "{\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"chl\",\"EdgePathingSrc\":\"filterBasedFirewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
+        "start": "2019-08-02T15:29:08.000Z"
+    },
+    "http": {
+        "request": {
+            "bytes": 2577,
+            "method": "POST",
+            "referrer": "https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000"
+        },
+        "response": {
+            "bytes": 2848,
+            "status_code": 403
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "network": {
+        "bytes": 5425,
+        "protocol": "http",
+        "transport": "tcp"
+    },
+    "observer": {
+        "type": "proxy",
+        "vendor": "cloudflare"
+    },
+    "server": {
+        "bytes": 2848
+    },
+    "source": {
+        "address": "35.232.161.245",
+        "as": {
+            "number": 15169,
+            "organization": {
+                "name": "Google LLC"
+            }
+        },
+        "bytes": 2577,
+        "geo": {
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 38.6583,
+                "lon": -77.2481
+            },
+            "region_iso_code": "US-VA",
+            "region_name": "Virginia"
+        },
+        "ip": "35.232.161.245",
+        "port": 55028
+    },
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "tls": {
+        "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256",
+        "version": "1.2",
+        "version_protocol": "tls"
+    },
+    "url": {
+        "domain": "cf-analytics.com",
+        "extension": "php",
+        "full": "https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000",
+        "original": "/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000",
+        "path": "/wp-cron.php",
+        "query": "doing_wp_cron=1564759748.3962020874023437500000",
+        "scheme": "https"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Spider"
+        },
+        "name": "WordPress",
+        "original": "WordPress/5.2.2;https://cf-analytics.com",
+        "version": "5.2.2"
+    }
+}
+```
