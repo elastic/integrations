@@ -72,11 +72,7 @@ entropy will be out of a total pool size of 4096.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-<<<<<<< HEAD
-| ecs.version | ECS version this event conforms to | keyword |
-=======
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
->>>>>>> upstream/master
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
@@ -148,17 +144,13 @@ operating system. These events are global and sorted by protocol.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| service.version | Version of the service the data was collected from. This allows users to look at a data set for a specific version of a service. | keyword |
 | service.address | Service address | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-
-| system.network_summary.icmp.* | ICMP counters | object |
-| system.network_summary.ip.* | IP counters | object |
-| system.network_summary.tcp.* | TCP counters | object |
-| system.network_summary.udp.* | UDP counters | object |
-| system.network_summary.udp_lite.* | UDP Lite counters | object |
-
+| system.network_summary.icmp.\* | ICMP counters | object |
+| system.network_summary.ip.\* | IP counters | object |
+| system.network_summary.tcp.\* | TCP counters | object |
+| system.network_summary.udp.\* | UDP counters | object |
+| system.network_summary.udp_lite.\* | UDP Lite counters | object |
 
 
 ### RAID
