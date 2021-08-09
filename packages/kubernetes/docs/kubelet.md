@@ -226,6 +226,7 @@ An example event for `container` looks as following:
 | kubernetes.container.rootfs.inodes.used | Used inodes | long |  | gauge |
 | kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long | byte | gauge |
 | kubernetes.container.start_time | Start time | date |  |  |
+| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
@@ -657,6 +658,7 @@ An example event for `pod` looks as following:
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
