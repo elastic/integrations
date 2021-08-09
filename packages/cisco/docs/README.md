@@ -23,9 +23,9 @@ An example event for `asa` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "ephemeral_id": "a548620b-0623-4130-b586-fe233f00e6e5",
         "hostname": "docker-fleet-agent",
-        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.14.0"
@@ -33,7 +33,6 @@ An example event for `asa` looks as following:
     "cisco": {
         "asa": {
             "destination_interface": "outside",
-            "message_id": "305011",
             "source_interface": "inside"
         }
     },
@@ -48,23 +47,24 @@ An example event for `asa` looks as following:
         "port": 8256
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "snapshot": true,
         "version": "7.14.0"
     },
     "event": {
         "action": "firewall-rule",
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "code": "305011",
         "dataset": "cisco.asa",
-        "ingested": "2021-06-03T09:22:20.519428820Z",
+        "ingested": "2021-07-19T08:54:36.436846422Z",
         "kind": "event",
-        "original": "%ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:100.66.98.44/8256",
+        "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:100.66.98.44/8256\n",
         "severity": 6,
         "timezone": "+00:00",
         "type": [
@@ -72,26 +72,8 @@ An example event for `asa` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
         "hostname": "localhost",
-        "id": "f46ddd9d65ff20633d9c337909855778",
-        "ip": [
-            "172.19.0.7"
-        ],
-        "mac": [
-            "02:42:ac:13:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.10.25-linuxkit",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
+        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "udp"
@@ -99,7 +81,7 @@ An example event for `asa` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.19.0.4:47315"
+            "address": "172.23.0.4:59451"
         }
     },
     "network": {
@@ -109,13 +91,13 @@ An example event for `asa` looks as following:
     "observer": {
         "egress": {
             "interface": {
-                "name": "inside"
+                "name": "outside"
             }
         },
         "hostname": "localhost",
         "ingress": {
             "interface": {
-                "name": "outside"
+                "name": "inside"
             }
         },
         "product": "asa",
@@ -141,8 +123,9 @@ An example event for `asa` looks as following:
         "port": 1772
     },
     "tags": [
+        "preserve_original_event",
         "cisco-asa",
-        "preserve_original_event"
+        "forwarded"
     ]
 }
 ```
@@ -336,16 +319,15 @@ An example event for `ftd` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "ephemeral_id": "915b9d78-907c-4615-90f8-e2997777f537",
         "hostname": "docker-fleet-agent",
-        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.14.0"
     },
     "cisco": {
         "ftd": {
-            "message_id": "430005",
             "rule_name": "malware-and-file-policy",
             "security": {
                 "application_protocol": "HTTP",
@@ -403,23 +385,24 @@ An example event for `ftd` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "snapshot": true,
         "version": "7.14.0"
     },
     "event": {
         "action": "malware-detected",
+        "agent_id_status": "verified",
         "category": [
             "malware"
         ],
         "code": "430005",
         "dataset": "cisco.ftd",
-        "ingested": "2021-06-03T09:24:01.526093450Z",
+        "ingested": "2021-07-19T08:56:32.448763106Z",
         "kind": "alert",
-        "original": "%FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 213.211.198.62, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
+        "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 213.211.198.62, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip\n",
         "severity": 1,
         "start": "2019-08-16T09:39:02Z",
         "timezone": "+00:00",
@@ -435,26 +418,8 @@ An example event for `ftd` looks as following:
         "size": 184
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
         "hostname": "firepower",
-        "id": "f46ddd9d65ff20633d9c337909855778",
-        "ip": [
-            "172.19.0.7"
-        ],
-        "mac": [
-            "02:42:ac:13:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.10.25-linuxkit",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
+        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "udp"
@@ -462,7 +427,7 @@ An example event for `ftd` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.19.0.4:46787"
+            "address": "172.23.0.4:41328"
         }
     },
     "network": {
@@ -498,11 +463,16 @@ An example event for `ftd` looks as following:
         "port": 46004
     },
     "tags": [
+        "preserve_original_event",
         "cisco-ftd",
-        "preserve_original_event"
+        "forwarded"
     ],
     "url": {
-        "original": "http://www.eicar.org/download/eicar_com.zip"
+        "domain": "www.eicar.org",
+        "extension": "zip",
+        "original": "http://www.eicar.org/download/eicar_com.zip",
+        "path": "/download/eicar_com.zip",
+        "scheme": "http"
     },
     "user": {
         "id": "No Authentication Required",
@@ -713,11 +683,11 @@ An example event for `ios` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-03T09:25:42.537Z",
+    "@timestamp": "2021-07-19T08:58:29.370Z",
     "agent": {
-        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "ephemeral_id": "7e9d4c95-b972-479d-bc6c-2ac0d05f3eb1",
         "hostname": "docker-fleet-agent",
-        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.14.0"
@@ -738,46 +708,29 @@ An example event for `ios` looks as following:
         "ip": "224.0.0.22"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "snapshot": true,
         "version": "7.14.0"
     },
     "event": {
         "action": "deny",
+        "agent_id_status": "verified",
         "category": "network",
         "code": "IPACCESSLOGRP",
         "dataset": "cisco.ios",
-        "ingested": "2021-06-03T09:25:43.560570635Z",
+        "ingested": "2021-07-19T08:58:30.397370366Z",
         "original": "Feb  8 04:00:48 198.51.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet\n",
         "provider": "firewall",
         "sequence": 585917,
         "severity": 6,
-        "type": "info"
+        "timezone": "+00:00",
+        "type": "denied"
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "f46ddd9d65ff20633d9c337909855778",
-        "ip": [
-            "172.19.0.7"
-        ],
-        "mac": [
-            "02:42:ac:13:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.10.25-linuxkit",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
+        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "udp"
@@ -807,8 +760,9 @@ An example event for `ios` looks as following:
         "packets": 1
     },
     "tags": [
+        "preserve_original_event",
         "cisco-ios",
-        "preserve_original_event"
+        "forwarded"
     ]
 }
 ```
@@ -921,11 +875,11 @@ An example event for `nexus` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-03T09:31:40.532Z",
+    "@timestamp": "2021-07-19T09:05:27.398Z",
     "agent": {
-        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "ephemeral_id": "9cae1736-608e-4d97-9238-c5acffac7d36",
         "hostname": "docker-fleet-agent",
-        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.14.0"
@@ -936,17 +890,18 @@ An example event for `nexus` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "snapshot": true,
         "version": "7.14.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "code": "pam_aaa",
         "dataset": "cisco.nexus",
-        "ingested": "2021-06-03T09:31:41.553114054Z",
+        "ingested": "2021-07-19T09:05:28.421638917Z",
         "original": "2012 Dec 18 14:51:08 Nexus5010-B %AUTHPRIV-3-SYSTEM_MSG: pam_aaa:Authentication failed for user en from 2.2.2.1 - login\n",
         "timezone": "+00:00"
     },
@@ -958,7 +913,7 @@ An example event for `nexus` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.4:46985"
+            "address": "172.23.0.4:37919"
         }
     },
     "observer": {
@@ -980,9 +935,9 @@ An example event for `nexus` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "cisco-nexus",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ]
 }
 ```
@@ -1041,7 +996,7 @@ An example event for `nexus` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -1085,12 +1040,12 @@ An example event for `nexus` looks as following:
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 * facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   * ingress   * egress   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -1170,12 +1125,12 @@ An example event for `nexus` looks as following:
 | rsa.email.subject | This key is used to capture the subject string from an Email only. | keyword |
 | rsa.email.trans_from | Deprecated key defined only in table map. | keyword |
 | rsa.email.trans_to | Deprecated key defined only in table map. | keyword |
-| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on | keyword |
+| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as \<strong\>blacklisted\</strong\>, \<strong\>infected\</strong\>, \<strong\>firewall disabled\</strong\> and so on | keyword |
 | rsa.endpoint.registry_key | This key captures the path to the registry key | keyword |
 | rsa.endpoint.registry_value | This key captures values or decorators used within a registry entry | keyword |
 | rsa.file.attachment | This key captures the attachment file name | keyword |
 | rsa.file.binary | Deprecated key defined only in table map. | keyword |
-| rsa.file.directory_dst | <span>This key is used to capture the directory of the target process or file</span> | keyword |
+| rsa.file.directory_dst | \<span\>This key is used to capture the directory of the target process or file\</span\> | keyword |
 | rsa.file.directory_src | This key is used to capture the directory of the source process or file | keyword |
 | rsa.file.file_entropy | This is used to capture entropy vale of a file | double |
 | rsa.file.file_vendor | This is used to capture Company name of file located in version_info | keyword |
@@ -1300,7 +1255,7 @@ An example event for `nexus` looks as following:
 | rsa.misc.agent_id | This key is used to capture agent id | keyword |
 | rsa.misc.alarm_id |  | keyword |
 | rsa.misc.alarmname |  | keyword |
-| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.app_id |  | keyword |
 | rsa.misc.audit |  | keyword |
 | rsa.misc.audit_object |  | keyword |
@@ -1591,14 +1546,14 @@ An example event for `nexus` looks as following:
 | rsa.misc.result | This key is used to capture the outcome/result string value of an action in a session. | keyword |
 | rsa.misc.result_code | This key is used to capture the outcome/result numeric value of an action in a session | keyword |
 | rsa.misc.risk | This key captures the non-numeric risk value | keyword |
-| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.risk_num | This key captures a Numeric Risk value | double |
 | rsa.misc.risk_num_comm | This key captures Risk Number Community | double |
 | rsa.misc.risk_num_next | This key captures Risk Number NextGen | double |
 | rsa.misc.risk_num_sand | This key captures Risk Number SandBox | double |
 | rsa.misc.risk_num_static | This key captures Risk Number Static | double |
-| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
-| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
+| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.ruid |  | keyword |
 | rsa.misc.rule | This key captures the Rule number | keyword |
 | rsa.misc.rule_group | This key captures the Rule group name | keyword |
@@ -1663,7 +1618,7 @@ An example event for `nexus` looks as following:
 | rsa.misc.version | This key captures Version of the application or OS which is generating the event. | keyword |
 | rsa.misc.virt_data |  | keyword |
 | rsa.misc.virusname | This key captures the name of the virus | keyword |
-| rsa.misc.vm_target | VMWare Target **VMWARE** only varaible. | keyword |
+| rsa.misc.vm_target | VMWare Target \*\*VMWARE\*\* only varaible. | keyword |
 | rsa.misc.vpnid |  | keyword |
 | rsa.misc.vsys | This key captures Virtual System Name | keyword |
 | rsa.misc.vuln_ref | This key captures the Vulnerability Reference details | keyword |
@@ -1829,9 +1784,9 @@ An example event for `meraki` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "f5535a1f-52da-44d4-a626-f85bbdc25e74",
+        "ephemeral_id": "9b0d0418-f480-4f0b-8017-4cb9d88c01d7",
         "hostname": "docker-fleet-agent",
-        "id": "37c96a8c-c323-4db5-b898-9ba84c49e2ea",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.14.0"
@@ -1848,18 +1803,19 @@ An example event for `meraki` looks as following:
         "port": 5293
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "732b7efe-6d7b-40fc-bbfe-799296be9d11",
+        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
         "snapshot": true,
         "version": "7.14.0"
     },
     "event": {
         "action": "deny\n",
+        "agent_id_status": "verified",
         "code": "security_event",
         "dataset": "cisco.meraki",
-        "ingested": "2021-06-03T09:28:46.590942659Z",
+        "ingested": "2021-07-19T09:02:10.469724425Z",
         "original": "modtempo 1454047799.olab nto_ security_event olaborissecurity_event tur url=https://example.org/odoco/ria.jpg?ritin=uredolor#tatemac src=10.15.44.253:5078 dst=10.193.124.51:5293 mac=01:00:5e:28:ae:7d name=psa sha256=umq disposition=ntium action=deny\n",
         "timezone": "+00:00"
     },
@@ -1871,7 +1827,7 @@ An example event for `meraki` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.4:37952"
+            "address": "172.23.0.4:44394"
         }
     },
     "observer": {
@@ -1884,8 +1840,8 @@ An example event for `meraki` looks as following:
             "docker-fleet-agent"
         ],
         "ip": [
-            "10.15.44.253",
-            "10.193.124.51"
+            "10.193.124.51",
+            "10.15.44.253"
         ]
     },
     "rsa": {
@@ -1914,9 +1870,9 @@ An example event for `meraki` looks as following:
         "port": 5078
     },
     "tags": [
+        "preserve_original_event",
         "cisco-meraki",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ],
     "url": {
         "original": "https://example.org/odoco/ria.jpg?ritin=uredolor#tatemac"
@@ -1978,7 +1934,7 @@ An example event for `meraki` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -2022,12 +1978,12 @@ An example event for `meraki` looks as following:
 | log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 * facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   * ingress   * egress   * inbound   * outbound   * internal   * external   * unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -2107,12 +2063,12 @@ An example event for `meraki` looks as following:
 | rsa.email.subject | This key is used to capture the subject string from an Email only. | keyword |
 | rsa.email.trans_from | Deprecated key defined only in table map. | keyword |
 | rsa.email.trans_to | Deprecated key defined only in table map. | keyword |
-| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on | keyword |
+| rsa.endpoint.host_state | This key is used to capture the current state of the machine, such as \<strong\>blacklisted\</strong\>, \<strong\>infected\</strong\>, \<strong\>firewall disabled\</strong\> and so on | keyword |
 | rsa.endpoint.registry_key | This key captures the path to the registry key | keyword |
 | rsa.endpoint.registry_value | This key captures values or decorators used within a registry entry | keyword |
 | rsa.file.attachment | This key captures the attachment file name | keyword |
 | rsa.file.binary | Deprecated key defined only in table map. | keyword |
-| rsa.file.directory_dst | <span>This key is used to capture the directory of the target process or file</span> | keyword |
+| rsa.file.directory_dst | \<span\>This key is used to capture the directory of the target process or file\</span\> | keyword |
 | rsa.file.directory_src | This key is used to capture the directory of the source process or file | keyword |
 | rsa.file.file_entropy | This is used to capture entropy vale of a file | double |
 | rsa.file.file_vendor | This is used to capture Company name of file located in version_info | keyword |
@@ -2237,7 +2193,7 @@ An example event for `meraki` looks as following:
 | rsa.misc.agent_id | This key is used to capture agent id | keyword |
 | rsa.misc.alarm_id |  | keyword |
 | rsa.misc.alarmname |  | keyword |
-| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.alert_id | Deprecated, New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.app_id |  | keyword |
 | rsa.misc.audit |  | keyword |
 | rsa.misc.audit_object |  | keyword |
@@ -2528,14 +2484,14 @@ An example event for `meraki` looks as following:
 | rsa.misc.result | This key is used to capture the outcome/result string value of an action in a session. | keyword |
 | rsa.misc.result_code | This key is used to capture the outcome/result numeric value of an action in a session | keyword |
 | rsa.misc.risk | This key captures the non-numeric risk value | keyword |
-| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_info | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.risk_num | This key captures a Numeric Risk value | double |
 | rsa.misc.risk_num_comm | This key captures Risk Number Community | double |
 | rsa.misc.risk_num_next | This key captures Risk Number NextGen | double |
 | rsa.misc.risk_num_sand | This key captures Risk Number SandBox | double |
 | rsa.misc.risk_num_static | This key captures Risk Number Static | double |
-| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
-| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*) | keyword |
+| rsa.misc.risk_suspicious | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
+| rsa.misc.risk_warning | Deprecated, use New Hunting Model (inv.\*, ioc, boc, eoc, analysis.\*) | keyword |
 | rsa.misc.ruid |  | keyword |
 | rsa.misc.rule | This key captures the Rule number | keyword |
 | rsa.misc.rule_group | This key captures the Rule group name | keyword |
@@ -2600,7 +2556,7 @@ An example event for `meraki` looks as following:
 | rsa.misc.version | This key captures Version of the application or OS which is generating the event. | keyword |
 | rsa.misc.virt_data |  | keyword |
 | rsa.misc.virusname | This key captures the name of the virus | keyword |
-| rsa.misc.vm_target | VMWare Target **VMWARE** only varaible. | keyword |
+| rsa.misc.vm_target | VMWare Target \*\*VMWARE\*\* only varaible. | keyword |
 | rsa.misc.vpnid |  | keyword |
 | rsa.misc.vsys | This key captures Virtual System Name | keyword |
 | rsa.misc.vuln_ref | This key captures the Vulnerability Reference details | keyword |
