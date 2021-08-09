@@ -5,24 +5,31 @@
             "searchSourceJSON": {
                 "filter": [
                     {
-                        "$state": {
-                            "store": "appState"
-                        },
                         "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "type": "phrases",
                             "key": "data_stream.dataset",
+                            "params": [
+                                "cloudflare.logpull"
+                            ],
+                            "alias": null,
                             "negate": false,
-                            "params": {
-                                "query": "cloudflare.log*"
-                            },
-                            "type": "phrase"
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index"
                         },
                         "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "cloudflare.log*"
+                            "bool": {
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "cloudflare.logpull"
+                                        }
+                                    }
+                                ],
+                                "minimum_should_match": 1
                             }
+                        },
+                        "$state": {
+                            "store": "appState"
                         }
                     }
                 ],
