@@ -1,8 +1,8 @@
 ---
-description: Pipeline for parsing azure springcloud logs.
+description: Pipeline for parsing azure spring cloud logs.
 processors:
   - script:
-      source:  ctx['_index'] = ctx['_index'].replace('platformlogs', 'springcloudlogs')
+      source: "ctx['_index'] = ctx['_index'].replace('platformlogs', 'springcloudlogs')"
       ignore_failure: true
   - rename:
       field: azure.platformlogs
@@ -63,7 +63,7 @@ processors:
       field: azure.springcloudlogs.level
       target_field: log.level
       ignore_missing: true
-   - rename:
+  - rename:
       field: azure.springcloudlogs.operationName
       target_field: azure.springcloudlogs.operation_name
       ignore_missing: true
@@ -74,5 +74,5 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
