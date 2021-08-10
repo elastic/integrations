@@ -181,6 +181,7 @@ An example event for `system` looks as following:
 | client.domain | Client domain. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.user.full_name | User's full name, if available. | keyword |
@@ -207,6 +208,7 @@ An example event for `system` looks as following:
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
 | destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
