@@ -2,35 +2,7 @@
     "attributes": {
         "description": "",
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {
-                "filter": [
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
-                            "negate": false,
-                            "params": {
-                                "query": "cloudflare.log*"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "cloudflare.log*"
-                            }
-                        }
-                    }
-                ],
-                "query": {
-                    "language": "lucene",
-                    "query": ""
-                }
-            }
+            "searchSourceJSON": {}
         },
         "title": "Cached vs Uncached Bandwidth Over Time [Cloudflare]",
         "uiStateJSON": {},
@@ -41,7 +13,6 @@
                 "axis_formatter": "number",
                 "axis_position": "left",
                 "axis_scale": "normal",
-                "default_index_pattern": "logs-*",
                 "id": "61ca57f0-469d-11e7-af02-69e470af7417",
                 "index_pattern": "logs-*",
                 "interval": "auto",
@@ -51,7 +22,10 @@
                         "chart_type": "line",
                         "color": "#68BC00",
                         "fill": 0.5,
-                        "filter": "cloudflare.cache.status:(hit OR stale OR updating OR ignored OR revalidated)",
+                        "filter": {
+                            "language": "lucene",
+                            "query": "cloudflare.cache.status:(hit OR stale OR updating OR ignored OR revalidated)"
+                        },
                         "formatter": "bytes",
                         "id": "61ca57f1-469d-11e7-af02-69e470af7417",
                         "label": "saved bandwidth",
@@ -65,6 +39,7 @@
                         ],
                         "point_size": 1,
                         "separate_axis": 0,
+                        "split_color_mode": "gradient",
                         "split_mode": "filter",
                         "stacked": "none"
                     },
@@ -73,7 +48,10 @@
                         "chart_type": "line",
                         "color": "rgba(244,78,59,1)",
                         "fill": 0.5,
-                        "filter": "cloudflare.cache.status:(-hit OR -stale OR -updating OR -ignored OR -revalidated)",
+                        "filter": {
+                            "language": "lucene",
+                            "query": "cloudflare.cache.status:(-hit OR -stale OR -updating OR -ignored OR -revalidated)"
+                        },
                         "formatter": "bytes",
                         "id": "73f43510-49a0-11e9-8499-d5aa4562b1c7",
                         "label": "uncached bandwidth",
@@ -87,6 +65,7 @@
                         ],
                         "point_size": 1,
                         "separate_axis": 0,
+                        "split_color_mode": "gradient",
                         "split_mode": "filter",
                         "stacked": "none"
                     }
@@ -94,16 +73,18 @@
                 "show_grid": 1,
                 "show_legend": 1,
                 "time_field": "@timestamp",
-                "type": "timeseries"
+                "type": "timeseries",
+                "use_kibana_indexes": false
             },
             "title": "Cached vs Uncached Bandwidth Over Time",
             "type": "metrics"
         }
     },
-    "id": "d4b02760-49a0-11e9-bd1f-75f359ac0c3f",
-    "namespaces": [
-        "default"
-    ],
+    "coreMigrationVersion": "7.15.0",
+    "id": "cloudflare-d4b02760-49a0-11e9-bd1f-75f359ac0c3f",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
     "references": [
         {
             "id": "logs-*",

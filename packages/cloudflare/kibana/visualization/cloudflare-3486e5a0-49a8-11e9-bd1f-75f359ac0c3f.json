@@ -2,35 +2,7 @@
     "attributes": {
         "description": "",
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {
-                "filter": [
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
-                            "negate": false,
-                            "params": {
-                                "query": "cloudflare.log*"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "cloudflare.log*"
-                            }
-                        }
-                    }
-                ],
-                "query": {
-                    "language": "lucene",
-                    "query": ""
-                }
-            }
+            "searchSourceJSON": {}
         },
         "title": "Total Bandwidth vs Origin Bandwidth in Mbps last 24 hours - 7.x [Cloudflare]",
         "uiStateJSON": {},
@@ -51,7 +23,6 @@
                         "id": "c6258770-1c6e-11ea-9387-9362a5ae410a"
                     }
                 ],
-                "default_index_pattern": "logs-*",
                 "gauge_color_rules": [
                     {
                         "id": "c7b83560-1c6e-11ea-9387-9362a5ae410a"
@@ -82,6 +53,7 @@
                         ],
                         "point_size": 1,
                         "separate_axis": 0,
+                        "split_color_mode": "gradient",
                         "split_mode": "everything",
                         "stacked": "none"
                     },
@@ -90,7 +62,10 @@
                         "chart_type": "line",
                         "color": "rgba(253,161,255,1)",
                         "fill": 0.5,
-                        "filter": "cloudflare.origin.response.status_code:\u003e0",
+                        "filter": {
+                            "language": "lucene",
+                            "query": "cloudflare.origin.response.status_code:\u003e0"
+                        },
                         "formatter": "bytes",
                         "id": "65f93df0-49a7-11e9-a870-03d340338f04",
                         "label": "origin bandwidth",
@@ -104,6 +79,7 @@
                         ],
                         "point_size": 1,
                         "separate_axis": 0,
+                        "split_color_mode": "gradient",
                         "split_mode": "filter",
                         "stacked": "none"
                     }
@@ -111,16 +87,18 @@
                 "show_grid": 1,
                 "show_legend": 1,
                 "time_field": "@timestamp",
-                "type": "timeseries"
+                "type": "timeseries",
+                "use_kibana_indexes": false
             },
             "title": "Total Bandwidth vs Origin Bandwidth in Mbps last 24 hours - 7.x",
             "type": "metrics"
         }
     },
-    "id": "3486e5a0-49a8-11e9-bd1f-75f359ac0c3f",
-    "namespaces": [
-        "default"
-    ],
+    "coreMigrationVersion": "7.15.0",
+    "id": "cloudflare-3486e5a0-49a8-11e9-bd1f-75f359ac0c3f",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
     "references": [
         {
             "id": "logs-*",
