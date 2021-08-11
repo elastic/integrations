@@ -83,8 +83,7 @@ Access logs collects the Apache access logs.
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -177,8 +176,7 @@ Error logs collects the Apache error logs.
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
