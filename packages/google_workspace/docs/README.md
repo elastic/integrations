@@ -252,8 +252,7 @@ An example event for `saml` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -465,8 +464,7 @@ An example event for `user_accounts` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -694,8 +692,7 @@ An example event for `login` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -995,8 +992,7 @@ An example event for `admin` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -1272,9 +1268,8 @@ An example event for `drive` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code |  |  |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
@@ -1517,8 +1512,7 @@ An example event for `groups` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
