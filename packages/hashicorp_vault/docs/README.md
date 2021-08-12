@@ -496,6 +496,7 @@ telemetry {
 | hashicorp_vault.metrics.vault_core_handle_request_sum.rate |  | float |
 | hashicorp_vault.metrics.vault_core_mount_table_num_entries.value |  | unsigned_long |
 | hashicorp_vault.metrics.vault_core_mount_table_size.value |  | unsigned_long |
+| hashicorp_vault.metrics.vault_core_performance_standby.value |  | unsigned_long |
 | hashicorp_vault.metrics.vault_core_post_unseal_count.counter |  | unsigned_long |
 | hashicorp_vault.metrics.vault_core_post_unseal_count.rate |  | float |
 | hashicorp_vault.metrics.vault_core_post_unseal_sum.counter |  | unsigned_long |
