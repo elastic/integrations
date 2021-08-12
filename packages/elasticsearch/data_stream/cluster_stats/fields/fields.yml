@@ -1,0 +1,91 @@
+- name: elasticsearch.cluster.stats
+  type: group
+  release: ga
+  fields:
+    - name: version
+      type: keyword
+    - name: state
+      type: group
+      fields:
+        - name: nodes_hash
+          type: keyword
+        - name: master_node
+          type: keyword
+        - name: version
+          type: keyword
+        - name: state_uuid
+          type: keyword
+    - name: status
+      type: keyword
+      description: Cluster status (green, yellow, red).
+    - name: nodes
+      type: group
+      fields:
+        - name: fs.total.bytes
+          type: long
+        - name: fs.available.bytes
+          type: long
+        - name: count
+          type: long
+          description: Total number of nodes in cluster.
+        - name: master
+          type: long
+          description: Number of master-eligible nodes in cluster.
+        - name: data
+          type: long
+        - name: stats.data
+          type: long
+          description: Number of data nodes in cluster.
+        - name: jvm
+          type: group
+          fields:
+            - name: max_uptime.ms
+              type: long
+            - name: memory.heap.max.bytes
+              type: long
+            - name: memory.heap.used.bytes
+              type: long
+    - name: indices
+      type: group
+      fields:
+        - name: store.size.bytes
+          type: long
+        - name: total
+          type: long
+        - name: docs.total
+          type: long
+          description: |
+            Total number of indices in cluster.
+        - name: shards
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Total number of shards in cluster.
+            - name: primaries
+              type: long
+              description: |
+                Total number of primary shards in cluster.
+        - name: fielddata.memory.bytes
+          type: long
+          description: |
+            Memory used for fielddata.
+    - name: license
+      type: group
+      fields:
+        - name: expiry_date_in_millis
+          type: long
+        - name: status
+          type: keyword
+        - name: type
+          type: keyword
+    - name: stack
+      type: group
+      fields:
+        - name: apm.found
+          type: boolean
+        - name: xpack.ccr.available
+          type: boolean
+        - name: xpack.ccr.enabled
+          type: boolean
