@@ -80,7 +80,7 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 
 #### kube-pod-logs
 
-The kube-pod-logs dataset requires access to the log files in each Kubernetes node where the pods' logs are stored.
+The kube-pod-logs dataset requires access to the log files in each Kubernetes node where the pod logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
 ## Compatibility
