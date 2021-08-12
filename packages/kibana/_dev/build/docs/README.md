@@ -25,12 +25,6 @@ UI in {kib}. To enable this usage, set `xpack.enabled: true` on the package conf
 
 ## Metrics
 
-### Settings
-
-Settings data stream uses the settings endpoint of Kibana, which is available in 6.4 by default.
-
-{{event "settings"}}
-
 **Exported fields**
 
 | Field | Description | Type |
