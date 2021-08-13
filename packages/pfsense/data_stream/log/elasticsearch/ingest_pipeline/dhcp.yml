@@ -1,5 +1,5 @@
 ---
-description: Pipeline for PFsense
+description: Pipeline for PFsense DHCP logs
 processors:
   - grok:
       field: message
@@ -11,7 +11,7 @@ processors:
         MAC_ADDRESS: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
         FROM: 'from %{MAC_ADDRESS:client.mac}'
         ON: 'on %{IP:client.address} to %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
-        FOR: 'for %{IP:client.address} \(%{IP:server.address}\) from %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
+        FOR: 'for %{IP:client.address} \(%{IP:server.address}\)? from %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
         MIDDLE: '(?:%{FROM}|%{ON}|%{FOR})'
   - set:
       field: event.kind

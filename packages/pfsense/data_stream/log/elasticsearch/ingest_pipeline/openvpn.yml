@@ -1,5 +1,5 @@
 ---
-description: Pipeline for PFsense
+description: Pipeline for PFsense OpenVPN logs
 processors:
   - grok:
       field: message
@@ -44,11 +44,6 @@ processors:
       field: source.ip
       value: "{{source.address}}"
       ignore_empty_value: true
-  - append:
-      field: related.ip
-      value: "{{source.ip}}"
-      allow_duplicates: false
-      if: ctx?.source?.ip != null
   - set:
       field: network.protocol
       value: openvpn
