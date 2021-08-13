@@ -2,16 +2,16 @@
 
 ## Configuration parameters
 
-If the Kibana instance is using a basepath in its URL, you must set the `basepath` setting for this module with the same value.
+If the Kibana instance is using a basepath in its URL, you must set the `basepath` setting for this integration with the same value.
 
 ## Compatibility
 
-The `kibana` package works with {kib} 6.7.0 and later.
+The `kibana` package works with Kibana 6.7.0 and later.
 
 ## Usage for Stack Monitoring
 
 The `kibana` package can be used to collect metrics shown in our Stack Monitoring
-UI in {kib}. To enable this usage, set `xpack.enabled: true` on the package config.
+UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package config.
 
 ## Logs
 
