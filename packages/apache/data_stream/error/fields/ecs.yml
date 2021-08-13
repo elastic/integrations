@@ -1,297 +1,82 @@
-- name: message
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: error.message
+- external: ecs
+  name: event.category
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.timezone
+- external: ecs
+  name: event.type
+- external: ecs
+  name: file.path
+- external: ecs
+  name: http.request.method
+- external: ecs
+  name: http.request.referrer
+- external: ecs
+  name: http.response.body.bytes
+- external: ecs
+  name: http.response.status_code
+- external: ecs
+  name: http.version
+- external: ecs
+  name: log.file.path
+- external: ecs
+  name: log.level
+- external: ecs
+  name: message
+- external: ecs
+  name: process.pid
+- external: ecs
+  name: process.thread.id
+- external: ecs
+  name: source.address
+- external: ecs
+  name: source.as.number
+- external: ecs
+  name: source.as.organization.name
+- external: ecs
+  name: source.geo.city_name
+- external: ecs
+  name: source.geo.continent_name
+- external: ecs
+  name: source.geo.country_iso_code
+- external: ecs
+  name: source.geo.country_name
+- description: Longitude and latitude.
   level: core
-  type: text
-  description: |-
-    For log events the message field contains the log message, optimized for viewing in a log viewer.
-    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
-    If multiple messages exist, they can be combined into one message.
-- name: http
-  title: HTTP
-  group: 2
-  type: group
-  fields:
-    - name: request.method
-      level: extended
-      type: keyword
-      description: |-
-        HTTP request method.
-        Prior to ECS 1.6.0 the following guidance was provided:
-        "The field value must be normalized to lowercase for querying."
-        As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0
-      ignore_above: 1024
-    - name: request.referrer
-      level: extended
-      type: keyword
-      description: Referrer for this HTTP request.
-      ignore_above: 1024
-    - name: response.body.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Size in bytes of the response body.
-      unit: byte
-      metric_type: gauge
-    - name: response.status_code
-      level: extended
-      type: long
-      format: string
-      description: HTTP response status code.
-    - name: version
-      level: extended
-      type: keyword
-      description: HTTP version.
-      ignore_above: 1024
-- name: log
-  title: Log
-  group: 2
-  type: group
-  fields:
-    - name: level
-      level: core
-      type: keyword
-      description: |-
-        Original log level of the log event.
-        If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity).
-        Some examples are `warn`, `err`, `i`, `informational`.
-      ignore_above: 1024
-- name: process
-  title: Process
-  group: 2
-  type: group
-  fields:
-    - name: pid
-      level: core
-      type: long
-      format: string
-      description: Process id.
-    - name: thread.id
-      level: extended
-      type: long
-      format: string
-      description: Thread ID.
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: address
-      level: extended
-      type: keyword
-      description: |-
-        Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
-        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
-      ignore_above: 1024
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: port
-      type: long
-      description: Source port.
-    - name: as.organization.name
-      type: keyword
-      description: Organization name.
-    - name: as.number
-      type: long
-      description: Unique number allocated to the autonomous system.
-    - name: geo.country_name
-      type: keyword
-      description: Country name.
-    - name: ip
-      type: ip
-      description: Source IP address.
-- name: url
-  title: URL
-  group: 2
-  type: group
-  fields:
-    - name: original
-      level: extended
-      type: keyword
-      description: |-
-        Unmodified original url as seen in the event source.
-        Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path.
-        This field is meant to represent the URL as it was observed, complete or not.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: path
-      type: keyword
-      ignore_above: 1024
-      description: Path of the request, such as "/search".
-    - name: extension
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The field contains the file extension from the original request url, excluding the leading dot.
-
-        The file extension is only set if it exists, as not every url has a file extension.
-
-        The leading period must not be included. For example, the value must be "png", not ".png".
-
-        Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz").'
-    - name: query
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The query field describes the query string of the request, such as "q=elasticsearch".
-
-        The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.'
-    - name: domain
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Domain of the url, such as "www.elastic.co".
-
-        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
-
-        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
-- name: user
-  title: User
-  group: 2
-  type: group
-  fields:
-    - name: name
-      level: core
-      type: keyword
-      description: Short name or login of the user.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-- name: user_agent
-  title: User agent
-  group: 2
-  type: group
-  fields:
-    - name: device.name
-      level: extended
-      type: keyword
-      description: Name of the device.
-      ignore_above: 1024
-    - name: name
-      level: extended
-      type: keyword
-      description: Name of the user agent.
-      ignore_above: 1024
-    - name: original
-      level: extended
-      type: keyword
-      description: Unparsed user_agent string.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-    - name: os.name
-      level: extended
-      type: keyword
-      description: Operating system name, without the version.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-- name: ecs.version
-  type: keyword
-  description: ECS version
-- name: input.type
-  type: keyword
-  description: Input type
-- name: log.file.path
-  type: keyword
-  description: Log path
-- name: log.offset
-  type: long
-  description: Log offset
-- name: event
-  title: Event
-  group: 2
-  description: 'The event fields are used for context information about the log or metric event itself.
-
-    A log is defined as an event containing details of something that happened. Log events must include the time at which the thing happened. Examples of log events include a process starting on a host, a network packet being sent from a source to a destination, or a network connection between a client and a server being initiated or closed. A metric is defined as an event containing one or more numerical or categorical measurements and the time at which the measurement was taken. Examples of metric events include memory pressure measured on a host, or vulnerabilities measured on a scanned host.'
-  type: group
-  fields:
-    - name: category
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Event category.
-
-        This contains high-level information about the contents of the event. It is more generic than `event.action`, in the sense that typically a category contains multiple actions. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution.'
-      example: user-management
-    - name: kind
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The kind of the event.
-
-        This gives information about what type of information the event contains, without being specific to the contents of the event.  Examples are `event`, `state`, `alarm`. Warning: In future versions of ECS, we plan to provide a list of acceptable values for this field, please use with caution.'
-      example: state
-    - name: timezone
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'This field should be populated when the event''s timestamp does not include timezone information already (e.g. default Syslog timestamps). It''s optional otherwise.
-
-        Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00").'
-    - name: type
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Reserved for future usage.
-
-        Please avoid using this field for user data.'
-- name: tags
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
-- name: error.message
-  type: text
-  description: Error message.
-- name: file
-  title: File
-  type: group
-  fields:
-    - name: path
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
+  name: source.geo.location
+  type: geo_point
+- external: ecs
+  name: source.geo.region_iso_code
+- external: ecs
+  name: source.geo.region_name
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: source.port
+- external: ecs
+  name: tags
+- external: ecs
+  name: url.domain
+- external: ecs
+  name: url.extension
+- external: ecs
+  name: url.original
+- external: ecs
+  name: url.path
+- external: ecs
+  name: url.query
+- external: ecs
+  name: user.name
+- external: ecs
+  name: user_agent.device.name
+- external: ecs
+  name: user_agent.name
+- external: ecs
+  name: user_agent.original
+- external: ecs
+  name: user_agent.os.name
