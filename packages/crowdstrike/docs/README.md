@@ -218,9 +218,9 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "f9cd1db0-0bb8-4bc0-b27d-93e1d331e8ec",
+        "ephemeral_id": "87e99c9b-69a6-41a6-bf36-43d9b6a8a9ed",
         "hostname": "docker-fleet-agent",
-        "id": "87ee99e5-0290-484d-bd57-5b0d96aba608",
+        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -273,7 +273,7 @@ An example event for `falcon` looks as following:
         "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "87ee99e5-0290-484d-bd57-5b0d96aba608",
+        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
         "snapshot": true,
         "version": "7.15.0"
     },
@@ -283,15 +283,15 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2021-08-11T07:43:42Z",
+        "ingested": "2021-08-13T09:28:52Z",
         "kind": "event",
+        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
         "type": [
             "change"
         ]
     },
     "event.action": "stream_started",
-    "host": {},
     "input": {
         "type": "log"
     },
@@ -317,6 +317,7 @@ An example event for `falcon` looks as following:
         "ip": "10.10.0.8"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "crowdstrike-falcon"
     ],
@@ -329,6 +330,87 @@ An example event for `falcon` looks as following:
 ### FDR
 
 The Falcon Data Replicator replicates log data from your CrowdStrike environment to a stand-alone target. This target can be a location on the file system, or an S3 bucket.
+
+
+#### Configuration for the S3 input
+
+AWS credentials are required for running this integration if you want to use the S3 input. 
+
+##### Configuration parameters
+* *access_key_id*: first part of access key.
+* *secret_access_key*: second part of access key.
+* *session_token*: required when using temporary security credentials.
+* *credential_profile_name*: profile name in shared credentials file.
+* *shared_credential_file*: directory of the shared credentials file.
+* *endpoint*: URL of the entry point for an AWS web service.
+* *role_arn*: AWS IAM Role to assume.
+
+##### Credential Types
+There are three types of AWS credentials can be used: access keys, temporary
+security credentials and IAM role ARN.
+
+##### Access keys
+
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are the two parts of access keys.
+They are long-term credentials for an IAM user, or the AWS account root user.
+Please see [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
+for more details.
+
+##### Temporary security credentials
+
+Temporary security credentials has a limited lifetime and consists of an
+access key ID, a secret access key, and a security token which typically returned
+from `GetSessionToken`. MFA-enabled IAM users would need to submit an MFA code
+while calling `GetSessionToken`. `default_region` identifies the AWS Region
+whose servers you want to send your first API request to by default. This is
+typically the Region closest to you, but it can be any Region. Please see
+[Temporary Security Credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html)
+for more details.
+
+`sts get-session-token` AWS CLI can be used to generate temporary credentials. 
+For example. with MFA-enabled:
+```js
+aws> sts get-session-token --serial-number arn:aws:iam::1234:mfa/your-email@example.com --duration-seconds 129600 --token-code 123456
+```
+
+Because temporary security credentials are short term, after they expire, the 
+user needs to generate new ones and manually update the package configuration in
+order to continue collecting `aws` metrics. This will cause data loss if the 
+configuration is not updated with new credentials before the old ones expire. 
+
+##### IAM role ARN
+
+An IAM role is an IAM identity that you can create in your account that has
+specific permissions that determine what the identity can and cannot do in AWS.
+A role does not have standard long-term credentials such as a password or access
+keys associated with it. Instead, when you assume a role, it provides you with 
+temporary security credentials for your role session. IAM role Amazon Resource 
+Name (ARN) can be used to specify which AWS IAM role to assume to generate 
+temporary credentials. Please see 
+[AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
+for more details.
+
+##### Supported Formats
+1. Use access keys: Access keys include `access_key_id`, `secret_access_key` 
+and/or `session_token`.
+2. Use `role_arn`: `role_arn` is used to specify which AWS IAM role to assume 
+for generating temporary credentials. If `role_arn` is given, the package will 
+check if access keys are given. If not, the package will check for credential 
+profile name. If neither is given, default credential profile will be used. 
+Please make sure credentials are given under either a credential profile or 
+access keys.
+3. Use `credential_profile_name` and/or `shared_credential_file`: 
+If `access_key_id`, `secret_access_key` and `role_arn` are all not given, then
+the package will check for `credential_profile_name`. If you use different 
+credentials for different tools or applications, you can use profiles to 
+configure multiple access keys in the same configuration file. If there is 
+no `credential_profile_name` given, the default profile will be used.
+`shared_credential_file` is optional to specify the directory of your shared
+credentials file. If it's empty, the default directory will be used.
+In Windows, shared credentials file is at `C:\Users\<yourUserName>\.aws\credentials`.
+For Linux, macOS or Unix, the file locates at `~/.aws/credentials`. Please see
+[Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
+for more details.
 
 **Exported fields**
 
@@ -734,9 +816,9 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "3812805a-843e-40b3-9fd2-7bb113f0c95b",
+        "ephemeral_id": "243badcf-20b4-4df7-b99c-b2438cc324cf",
         "hostname": "docker-fleet-agent",
-        "id": "a3700145-5551-419a-8558-890608d87c57",
+        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -768,7 +850,7 @@ An example event for `fdr` looks as following:
         "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "a3700145-5551-419a-8558-890608d87c57",
+        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
         "snapshot": true,
         "version": "7.15.0"
     },
@@ -778,10 +860,14 @@ An example event for `fdr` looks as following:
         "category": [
             "file"
         ],
+        "created": "2020-11-08T17:07:22.091Z",
+        "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2021-08-12T08:35:43Z",
+        "ingested": "2021-08-13T09:29:34Z",
         "kind": "alert",
+        "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"208.226.182.36\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
+        "timezone": "+00:00",
         "type": [
             "access"
         ]

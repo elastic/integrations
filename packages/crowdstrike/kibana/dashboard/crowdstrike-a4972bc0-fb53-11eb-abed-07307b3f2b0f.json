@@ -68,6 +68,11 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1928976e-020d-48bd-9887-d9fd1925f69e",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -114,7 +119,29 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "alert"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "alert"
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -269,7 +296,7 @@
                     "i": "396c3ab7-572c-41dc-af21-e8d3d6ad3fe0",
                     "w": 9,
                     "x": 26,
-                    "y": 0
+                    "y": 9
                 },
                 "panelIndex": "396c3ab7-572c-41dc-af21-e8d3d6ad3fe0",
                 "title": "Top DNS queries",
@@ -298,7 +325,6 @@
                                         "880420b9-97fb-4f5a-8dd2-36f95cb02182": {
                                             "columnOrder": [
                                                 "45f3413c-e658-43ec-bf3a-ad25977fb32c",
-                                                "aa7e6c24-0643-40a2-be70-a9aa5e8cb1af",
                                                 "c90d7c88-034f-42f4-94d2-605ae294940e"
                                             ],
                                             "columns": {
@@ -320,25 +346,6 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "user.name"
-                                                },
-                                                "aa7e6c24-0643-40a2-be70-a9aa5e8cb1af": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "user.roles",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": true,
-                                                        "orderBy": {
-                                                            "columnId": "c90d7c88-034f-42f4-94d2-605ae294940e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 3
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "user.roles"
                                                 },
                                                 "c90d7c88-034f-42f4-94d2-605ae294940e": {
                                                     "dataType": "number",
@@ -363,10 +370,6 @@
                                 "columns": [
                                     {
                                         "columnId": "45f3413c-e658-43ec-bf3a-ad25977fb32c",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "aa7e6c24-0643-40a2-be70-a9aa5e8cb1af",
                                         "isTransposed": false
                                     },
                                     {
@@ -489,7 +492,7 @@
                     "i": "757dd906-982e-437f-aac0-b090310b9288",
                     "w": 9,
                     "x": 26,
-                    "y": 11
+                    "y": 20
                 },
                 "panelIndex": "757dd906-982e-437f-aac0-b090310b9288",
                 "title": "DNS query types",
@@ -716,14 +719,33 @@
                                     "layers": {
                                         "35e353f8-fd89-43a0-ad8c-c5d202f098d2": {
                                             "columnOrder": [
-                                                "987e97f1-4010-4046-9229-c8fa1285a486"
+                                                "b00df131-3742-4fa3-8645-032847f0266b",
+                                                "b89debc2-4203-43c7-ba15-6612030f67bd"
                                             ],
                                             "columns": {
-                                                "987e97f1-4010-4046-9229-c8fa1285a486": {
+                                                "b00df131-3742-4fa3-8645-032847f0266b": {
                                                     "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top alerts",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b89debc2-4203-43c7-ba15-6612030f67bd",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                },
+                                                "b89debc2-4203-43c7-ba15-6612030f67bd": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Possible Ransomware Alerts",
+                                                    "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
                                                     "sourceField": "Records"
@@ -743,16 +765,16 @@
                                         "alias": null,
                                         "disabled": false,
                                         "indexRefName": "filter-index-pattern-0",
-                                        "key": "event.action",
+                                        "key": "event.kind",
                                         "negate": false,
                                         "params": {
-                                            "query": "RansomwareOpenFile"
+                                            "query": "alert"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.action": "RansomwareOpenFile"
+                                            "event.kind": "alert"
                                         }
                                     }
                                 }
@@ -762,13 +784,22 @@
                                 "query": "data_stream.dataset : \"crowdstrike.fdr\""
                             },
                             "visualization": {
-                                "accessor": "987e97f1-4010-4046-9229-c8fa1285a486",
+                                "columns": [
+                                    {
+                                        "columnId": "b00df131-3742-4fa3-8645-032847f0266b",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "b89debc2-4203-43c7-ba15-6612030f67bd",
+                                        "isTransposed": false
+                                    }
+                                ],
                                 "layerId": "35e353f8-fd89-43a0-ad8c-c5d202f098d2"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {}
                 },
@@ -777,7 +808,7 @@
                     "i": "32c13eb0-f12d-44d8-8ec4-ea778840fabf",
                     "w": 9,
                     "x": 26,
-                    "y": 17
+                    "y": 0
                 },
                 "panelIndex": "32c13eb0-f12d-44d8-8ec4-ea778840fabf",
                 "type": "lens",
@@ -812,6 +843,11 @@
         {
             "id": "logs-*",
             "name": "7564f2a4-7167-4d71-8ce2-ece32f217487:indexpattern-datasource-layer-1928976e-020d-48bd-9887-d9fd1925f69e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7564f2a4-7167-4d71-8ce2-ece32f217487:filter-index-pattern-0",
             "type": "index-pattern"
         },
         {
