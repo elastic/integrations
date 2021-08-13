@@ -47,7 +47,7 @@
 | destination.geo.region_name | Name of the region. | keyword |
 | destination.ip | IP address of the destination. | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.dataset | Event dataset | constant_keyword |

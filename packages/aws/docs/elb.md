@@ -65,7 +65,7 @@ For network load balancer, please follow [enable access log for network load bal
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | Destination domain. | keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -108,11 +108,11 @@ For network load balancer, please follow [enable access log for network load bal
 | source.port | Port of the source. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | url.path | Path of the request, such as "/search". | keyword |
 | url.port | Port of the request, such as 443. | long |
-| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
