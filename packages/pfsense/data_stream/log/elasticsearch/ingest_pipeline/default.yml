@@ -14,12 +14,14 @@ processors:
       description: Parse syslog header
       field: event.original
       patterns:
-        - '^%{ECS_SYSLOG_PRI}%{TIMESTAMP} %{GREEDYDATA:message}'
+        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP} %{GREEDYDATA:message}'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
-        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}%{SPACE}%{WORD:event.provider}\[%{POSINT:event.id}\]:'
-        SYSLOG_TIMESTAMP_FORMAT: '(\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})%{SPACE}%{WORD:event.provider}%{SPACE}%{POSINT:event.id} - -'
+        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{OBSERVER})?%{SPACE}%{WORD:event.provider}\[%{POSINT:event.id}\]:'
+        SYSLOG_TIMESTAMP_FORMAT: '(\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{WORD:event.provider}%{SPACE}%{POSINT:event.id} - -'
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         TIMESTAMP: '(?:%{BSD_TIMESTAMP_FORMAT}|%{SYSLOG_TIMESTAMP_FORMAT})'
+        OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
   - date:
       if: ctx?._tmp.timestamp8601 != null
       field: _tmp.timestamp8601

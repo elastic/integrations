@@ -4,9 +4,10 @@ processors:
   - grok:
       field: message
       patterns:        
-        - '%{LOGLEVEL:log.level}: %{IP:source.address} %{HOSTNAME:_tmp.question.name}(\.)? %{WORD:_tmp.question.type} %{WORD:_tmp.question.class}'
+        - '%{LOGLEVEL:log.level}: %{IP:source.address} %{HOSTNAME:_tmp.question.name}(\.) %{WORD:_tmp.question.type} %{WORD:_tmp.question.class}'
       on_failure:
-        - drop: ~
+        - drop:
+            description: Drop if not a query log
   - set:
       field: event.kind
       value: event
