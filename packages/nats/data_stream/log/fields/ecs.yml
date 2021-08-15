@@ -1,77 +1,26 @@
-- name: network
-  type: group
-  fields:
-    - name: direction
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: "Direction of the network traffic.\nRecommended values are:\n  * inbound\n  * outbound\n  * internal\n  * external\n  * unknown\n\nWhen mapping events from a host-based monitoring context, populate this field from the host's point of view.\nWhen mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of your network perimeter."
-      example: inbound
-- name: related
-  type: group
-  fields:
-    - name: ip
-      level: extended
-      type: ip
-      description: All of the IPs seen on your event.
-- name: error
-  type: group
-  fields:
-    - name: message
-      level: core
-      type: text
-      description: Error message.
-- name: client
-  type: group
-  fields:
-    - name: ip
-      level: extended
-      type: ip
-      description: IP address of the client.
-    - name: port
-      level: core
-      type: long
-      description: Port of the client.
-- name: event
-  type: group
-  fields:
-    - name: kind
-      description: The kind of the event. The highest categorization field in the hierarchy.
-      example: alert
-      ignore_above: 1024
-      type: keyword
-    - name: type
-      description: Event type. The third categorization field in the hierarchy.
-      ignore_above: 1024
-      type: keyword
-    - name: created
-      description: Time when the event was first read by an agent or by your pipeline.
-      example: '2016-05-23T08:05:34.857Z'
-      type: date
-- name: log
-  type: group
-  fields:
-    - name: level
-      description: Log level of the log event.
-      type: keyword
-- name: process.pid
-  type: long
-  description: Process id.
-- name: ecs.version
-  type: keyword
-  description: ECS version
-- name: message
-  level: core
-  type: text
-  description: 'For log events the message field contains the log message, optimized for viewing in a log viewer.
-
-    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
-
-    If multiple messages exist, they can be combined into one message.'
-  example: Hello World
-- name: tags
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
+- external: ecs
+  name: client.ip
+- external: ecs
+  name: client.port
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: error.message
+- external: ecs
+  name: event.created
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.type
+- external: ecs
+  name: log.level
+- external: ecs
+  name: message
+- external: ecs
+  name: network.direction
+- external: ecs
+  name: process.pid
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: tags
