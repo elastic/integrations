@@ -149,14 +149,14 @@ An example event for `log` looks as following:
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| destination.mac | MAC address of the destination. | keyword |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version | keyword |
-| event.created |  | date |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.ingested |  | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| event.outcome |  | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -203,19 +203,19 @@ An example event for `log` looks as following:
 | iptables.ubiquiti.rule_number | The rule number within the rule set. | keyword |
 | iptables.ubiquiti.rule_set | The rule set name. | keyword |
 | iptables.udp.length | Length of the UDP header and payload. | long |
-| log.file.path | Full path to the log file this event came from, including the file name. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
-| log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. | keyword |
+| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
-| log.syslog.priority | Syslog priority of the event. | long |
-| message | Log message optimized for viewing in a log viewer. | text |
-| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
-| observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress  traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
-| observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress  traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
-| observer.name | Custom name of the observer. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | process.program | Process from syslog header. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -231,7 +231,7 @@ An example event for `log` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.mac | MAC address of the source. | keyword |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 
