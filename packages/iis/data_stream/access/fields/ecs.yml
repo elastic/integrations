@@ -1,272 +1,94 @@
-- name: destination
-  title: Destination
-  group: 2
-  type: group
-  fields:
-    - name: address
-      level: extended
-      type: keyword
-      description: |-
-        Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
-        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
-      ignore_above: 1024
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the destination.
-    - name: domain
-      level: core
-      type: keyword
-      description: Destination domain.
-    - name: ip
-      level: core
-      type: ip
-- name: related.user
-  type: keyword
-  description: All the user names seen in the event.
-- name: related.ip
-  type: ip
-  description: All of the IPs seen in the event.
-- name: host
-  title: Host
-  group: 2
-  type: group
-  fields:
-    - name: hostname
-      level: core
-      type: keyword
-      description: |-
-        Hostname of the host.
-        It normally contains what the `hostname` command returns on the host machine.
-      ignore_above: 1024
-- name: http
-  title: HTTP
-  group: 2
-  type: group
-  fields:
-    - name: request.body.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Size in bytes of the request body.
-    - name: request.method
-      level: extended
-      type: keyword
-      description: |-
-        HTTP request method.
-        Prior to ECS 1.6.0 the following guidance was provided:
-        "The field value must be normalized to lowercase for querying."
-        As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0
-      ignore_above: 1024
-    - name: request.referrer
-      level: extended
-      type: keyword
-      description: Referrer for this HTTP request.
-      ignore_above: 1024
-    - name: response.body.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Size in bytes of the response body.
-    - name: response.status_code
-      level: extended
-      type: long
-      format: string
-      description: HTTP response status code.
-    - name: version
-      level: extended
-      type: keyword
-      description: HTTP version.
-      ignore_above: 1024
-- name: source.as.number
-  description: Unique number allocated to the autonomous system.
-  example: 15169
-  type: long
-- name: source.as.organization.name
-  description: Organization name.
-  example: Google LLC
-  ignore_above: 1024
-  multi_fields:
-    - flat_name: source.as.organization.name.text
-      name: text
-      norms: false
-      type: text
-  type: keyword
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: address
-      level: extended
-      type: keyword
-      description: |-
-        Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
-        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
-      ignore_above: 1024
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: ip
-      description: IP address of the source.
-      type: ip
-    - name: geo.country_name
-      description: Country name.
-      example: Canada
-      ignore_above: 1024
-      type: keyword
-- name: url
-  title: URL
-  group: 2
-  type: group
-  fields:
-    - name: path
-      level: extended
-      type: keyword
-      description: Path of the request, such as "/search".
-      ignore_above: 1024
-    - name: query
-      level: extended
-      type: keyword
-      description: |-
-        The query field describes the query string of the request, such as "q=elasticsearch".
-        The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases.
-      ignore_above: 1024
-    - name: domain
-      type: keyword
-      description: 'Domain of the url, such as "www.elastic.co".'
-    - name: extension
-      type: keyword
-      ignore_above: 1024
-      description: "The field contains the file extension from the original request url, excluding the leading dot."
-    - name: original
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: "Unmodified original url as seen in the event source."
-- name: user
-  title: User
-  group: 2
-  type: group
-  fields:
-    - name: name
-      level: core
-      type: keyword
-      description: Short name or login of the user.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-- name: user_agent
-  title: User agent
-  group: 2
-  type: group
-  fields:
-    - name: device.name
-      level: extended
-      type: keyword
-      description: Name of the device.
-      ignore_above: 1024
-    - name: name
-      level: extended
-      type: keyword
-      description: Name of the user agent.
-      ignore_above: 1024
-    - name: original
-      level: extended
-      type: keyword
-      description: Unparsed user_agent string.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-    - name: os.name
-      level: extended
-      type: keyword
-      description: Operating system name, without the version.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-- name: error.message
-  description: Error message.
-  type: text
-- description: Message.
+- external: ecs
+  name: destination.address
+- external: ecs
+  name: destination.domain
+- external: ecs
+  name: destination.ip
+- external: ecs
+  name: destination.port
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: error.message
+- external: ecs
+  name: host.hostname
+- external: ecs
+  name: http.request.body.bytes
+- external: ecs
+  name: http.request.method
+- external: ecs
+  name: http.request.referrer
+- external: ecs
+  name: http.response.body.bytes
+- external: ecs
+  name: http.response.status_code
+- external: ecs
+  name: http.version
+- external: ecs
   name: message
-  type: text
-- name: user_agent
-  type: group
-  fields:
-    - name: device.name
-      type: keyword
-      description: Name of the device.
-    - name: name
-      type: keyword
-      description: Name of the user agent.
-    - name: original
-      type: keyword
-      description: Unparsed user_agent string.
-    - name: version
-      type: keyword
-      description: Version.
-    - name: os.name
-      type: keyword
-      description: Operating system name, without the version.
-    - name: os.full
-      type: keyword
-      description: Operating system name, including the version or code name.
-    - name: os.version
-      type: keyword
-      description: Operating system version.
-- name: ecs.version
-  type: keyword
-  description: ECS version
-- name: tags
+- external: ecs
+  name: network.forwarded_ip
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: related.user
+- external: ecs
+  name: source.address
+- external: ecs
+  name: source.as.number
+- external: ecs
+  name: source.as.organization.name
+- external: ecs
+  name: source.geo.city_name
+- external: ecs
+  name: source.geo.continent_name
+- external: ecs
+  name: source.geo.country_iso_code
+- external: ecs
+  name: source.geo.country_name
+- description: Longitude and latitude.
   level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
-- name: network
-  type: group
-  fields:
-    - name: forwarded_ip
-      level: core
-      type: ip
-      description: Host IP address when the source IP address is the proxy.
-      example: 192.1.1.2
+  name: source.geo.location
+  type: geo_point
+- external: ecs
+  name: source.geo.region_iso_code
+- external: ecs
+  name: source.geo.region_name
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: tags
+- external: ecs
+  name: url.domain
+- external: ecs
+  name: url.extension
+- external: ecs
+  name: url.original
+- external: ecs
+  name: url.path
+- external: ecs
+  name: url.query
+- external: ecs
+  name: user.name
+- external: ecs
+  name: user_agent.device.name
+- external: ecs
+  name: user_agent.device.name
+- external: ecs
+  name: user_agent.name
+- external: ecs
+  name: user_agent.name
+- external: ecs
+  name: user_agent.original
+- external: ecs
+  name: user_agent.original
+- external: ecs
+  name: user_agent.os.full
+- external: ecs
+  name: user_agent.os.name
+- external: ecs
+  name: user_agent.os.name
+- external: ecs
+  name: user_agent.os.version
+- external: ecs
+  name: user_agent.version
