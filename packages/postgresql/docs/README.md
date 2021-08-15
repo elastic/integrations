@@ -115,7 +115,7 @@ persistent connections, so enable with care.
 | postgresql.log.transaction_id | The id of current transaction. | long |
 | postgresql.log.virtual_transaction_id | Backend local transaction id. | keyword |
 | process.pid | Process id. | long |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
