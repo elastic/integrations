@@ -1,261 +1,88 @@
-- name: destination
-  title: Destination
-  group: 2
-  type: group
-  fields:
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the destination (IPv4 or IPv6).
-    - name: address
-      level: core
-      type: keyword
-      description: Hostname or IP address of the destination.
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the destination.
-- name: http
-  title: HTTP
-  group: 2
-  type: group
-  fields:
-    - name: response.status_code
-      level: extended
-      type: long
-      format: string
-      description: HTTP response status code.
-- name: process
-  title: Process
-  group: 2
-  type: group
-  fields:
-    - name: name
-      level: extended
-      type: keyword
-      description: |-
-        Process name.
-        Sometimes called program name or similar.
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: pid
-      level: core
-      type: long
-      format: string
-      description: Process id.
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: address
-      level: extended
-      type: keyword
-      description: |-
-        Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field.
-        Then it should be duplicated to `.ip` or `.domain`, depending on which one it is.
-      ignore_above: 1024
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.country_name
-      description: Country name.
-      ignore_above: 1024
-      level: core
-      type: keyword
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the source.
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the source (IPv4 or IPv6).
-- name: ecs.version
-  type: keyword
-  description: ECS version
-- name: tags
+- external: ecs
+  name: destination.address
+- external: ecs
+  name: destination.ip
+- external: ecs
+  name: destination.port
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: http.request.body.bytes
+- external: ecs
+  name: http.request.body.content
+- external: ecs
+  name: http.request.bytes
+- external: ecs
+  name: http.request.method
+- external: ecs
+  name: http.request.referrer
+- external: ecs
+  name: http.response.body.bytes
+- external: ecs
+  name: http.response.body.content
+- external: ecs
+  name: http.response.bytes
+- external: ecs
+  name: http.response.status_code
+- external: ecs
+  name: http.version
+- external: ecs
+  name: log.file.path
+- external: ecs
+  name: process.name
+- external: ecs
+  name: process.pid
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: source.address
+- external: ecs
+  name: source.geo.city_name
+- external: ecs
+  name: source.geo.continent_name
+- external: ecs
+  name: source.geo.country_iso_code
+- external: ecs
+  name: source.geo.country_name
+- description: Longitude and latitude.
   level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-- name: related
-  title: Related
-  group: 2
-  type: group
-  fields:
-    - name: ip
-      level: extended
-      type: ip
-      description: All of the IPs seen on your event.
-- name: http
-  title: HTTP
-  group: 2
-  description: Fields related to HTTP activity. Use the `url` field set to store the url of the request.
-  type: group
-  fields:
-    - name: request.body.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Size in bytes of the request body.
-      example: 887
-    - name: request.body.content
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: The full HTTP request body.
-      example: Hello world
-    - name: request.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Total size in bytes of the request (body and headers).
-      example: 1437
-    - name: request.method
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'HTTP request method.
-
-        The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS".'
-      example: get, post, put
-    - name: request.referrer
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Referrer for this HTTP request.
-      example: https://blog.example.com/
-    - name: response.body.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Size in bytes of the response body.
-      example: 887
-    - name: response.body.content
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: The full HTTP response body.
-      example: Hello world
-    - name: response.bytes
-      level: extended
-      type: long
-      format: bytes
-      description: Total size in bytes of the response (body and headers).
-      example: 1437
-    - name: version
-      type: keyword
-      description: HTTP version.
-- name: url
-  title: URL
-  group: 2
-  type: group
-  fields:
-    - name: domain
-      type: keyword
-      description: 'Domain of the url, such as "www.elastic.co".'
-    - name: extension
-      type: keyword
-      ignore_above: 1024
-      description: "The field contains the file extension from the original request url, excluding the leading dot."
-    - name: fragment
-      type: keyword
-      ignore_above: 1024
-      description: 'Portion of the url after the `#`, such as "top".
-
-        The `#` is not part of the fragment.'
-    - name: full
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
-    - name: original
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: "Unmodified original url as seen in the event source."
-    - name: password
-      type: keyword
-      ignore_above: 1024
-      description: Password of the request.
-    - name: path
-      type: keyword
-      description: Path of the request, such as "/search".
-    - name: port
-      type: long
-      format: string
-      description: Port of the request, such as 443.
-    - name: query
-      type: keyword
-      ignore_above: 1024
-      description: 'The query field describes the query string of the request, such as "q=elasticsearch".'
-    - name: registered_domain
-      type: keyword
-      description: "The highest registered url domain, stripped of the subdomain."
-    - name: scheme
-      type: keyword
-      ignore_above: 1024
-      description: 'Scheme of the request, such as "https".'
-    - name: subdomain
-      type: keyword
-      ignore_above: 1024
-      description: "The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain."
-      default_field: false
-    - name: top_level_domain
-      type: keyword
-      ignore_above: 1024
-      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".'
-    - name: username
-      type: keyword
-      ignore_above: 1024
-      description: Username of the request.
-- name: input.type
-  description: Type of Filebeat input.
-  type: keyword
-- name: log.file.path
-  description: Full path to the log file this event came from.
-  example: /var/log/example.log
-  ignore_above: 1024
-  type: keyword
-- name: log.offset
-  description: Offset of the entry in the log file.
-  type: long
+  name: source.geo.location
+  type: geo_point
+- external: ecs
+  name: source.geo.region_iso_code
+- external: ecs
+  name: source.geo.region_name
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: source.port
+- external: ecs
+  name: tags
+- external: ecs
+  name: url.domain
+- external: ecs
+  name: url.extension
+- external: ecs
+  name: url.fragment
+- external: ecs
+  name: url.full
+- external: ecs
+  name: url.original
+- external: ecs
+  name: url.password
+- external: ecs
+  name: url.path
+- external: ecs
+  name: url.port
+- external: ecs
+  name: url.query
+- external: ecs
+  name: url.registered_domain
+- external: ecs
+  name: url.scheme
+- external: ecs
+  name: url.subdomain
+- external: ecs
+  name: url.top_level_domain
+- external: ecs
+  name: url.username
