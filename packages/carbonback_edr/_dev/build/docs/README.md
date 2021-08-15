@@ -19,23 +19,17 @@ For `http` output:
 
 For `tcp` output:
   - `output_type=tcp`
-  - `tcpout=<address of elastic agent>:<port number>`
+  - `tcpout=<Address of Elastic Agent>:<port>`
 
 For `udp` output:
 - `output_type=tcp`
-- `tcpout=<address of elastic agent>:<port number>`
+- `tcpout=<Address of Elastic Agent>:<port>`
 
 For `file` output:
 - `output_type=file`
-- `outfile=<path to a file readable by elastic agent>`
-
-## Logs
+- `outfile=<path to a file readable by Elastic Agent>`
 
 {{event "log"}}
 
-##fields "log"##
-
 {{fields "log"}}
-
-
 

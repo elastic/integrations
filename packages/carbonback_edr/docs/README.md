@@ -19,17 +19,15 @@ For `http` output:
 
 For `tcp` output:
   - `output_type=tcp`
-  - `tcpout=<address of elastic agent>:<port number>`
+  - `tcpout=<Address of Elastic Agent>:<port>`
 
 For `udp` output:
 - `output_type=tcp`
-- `tcpout=<address of elastic agent>:<port number>`
+- `tcpout=<Address of Elastic Agent>:<port>`
 
 For `file` output:
 - `output_type=file`
-- `outfile=<path to a file readable by elastic agent>`
-
-## Logs
+- `outfile=<path to a file readable by Elastic Agent>`
 
 An example event for `log` looks as following:
 
@@ -87,8 +85,6 @@ An example event for `log` looks as following:
     ]
 }
 ```
-
-##fields "log"##
 
 **Exported fields**
 
@@ -318,7 +314,5 @@ An example event for `log` looks as following:
 | threatintel.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threatintel.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
 | threatintel.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0 | keyword |
-
-
 
 
