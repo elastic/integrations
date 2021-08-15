@@ -32,9 +32,9 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.address | Client network address. | keyword |
-| client.domain | Client network domain. | keyword |
-| client.ip | IP address of the client. | ip |
+| client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| client.domain | Client domain. | keyword |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -52,24 +52,24 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.user.email | User email address. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.action | The action captured by the event. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.code | Identification code for this event. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
-| event.provider | Source of the event. | keyword |
-| event.severity | Numeric severity of the event. | long |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
-| file.directory | Directory where the file is located. | keyword |
-| file.extension | File extension. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.inode | Inode representing the file in the filesystem. | keyword |
 | file.mtime | Last time the file content was modified. | date |
 | file.name | Name of the file including the extension, without the directory. | keyword |
@@ -82,7 +82,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -95,8 +95,8 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | Log message optimized for viewing in a log viewer. | text |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | o365.audit.Actor.ID |  | keyword |
 | o365.audit.Actor.Type |  | keyword |
 | o365.audit.ActorContextId |  | keyword |
@@ -194,43 +194,43 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | o365.audit.YammerNetworkId |  | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | organization.name | Organization name. | keyword |
-| process.name | Process name. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
-| rule.category | Rule category | keyword |
-| rule.description | Rule description | keyword |
-| rule.id | Rule ID | keyword |
-| rule.name | Rule name | keyword |
-| rule.reference | Rule reference URL | keyword |
-| rule.ruleset | Rule ruleset | keyword |
-| server.address | Server network address. | keyword |
-| server.domain | Server network domain. | keyword |
-| server.ip | IP address of the server. | ip |
-| source.as.number | Unique number allocated to the autonomous system. | long |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| rule.reference | Reference URL to additional information about the rule used to generate this event. The URL can point to the vendor's documentation about the rule. If that's not available, it can also be a link to a more general page describing this type of alert. | keyword |
+| rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| server.domain | Server domain. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | source.user.email | User email address. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.technique.id | Threat technique id. | keyword |
-| url.original | Unmodified original url as seen in the event source. | wildcard |
-| user.domain | Name of the directory the user is a member of. | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| user.target.domain | Name of the directory the user is a member of. | keyword |
+| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.target.email | User email address. | keyword |
 | user.target.full_name | User's full name, if available. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
