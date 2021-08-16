@@ -1,0 +1,27 @@
+metricsets: ["collector"]
+period: {{period}}
+use_types: true
+rate_counters: true
+
+hosts:
+{{#each hosts}}
+    - {{this}}
+{{/each}}
+
+metrics_path: /v1/sys/metrics
+query:
+  format: prometheus
+
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+
+{{#if vault_token}}
+headers:
+  X-Vault-Token: {{vault_token}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
