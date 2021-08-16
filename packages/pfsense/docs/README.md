@@ -1,18 +1,20 @@
-# Iptables Integration
+# pfSense Integration
 
-This is an integration for `iptables` and `ip6tables` logs. It parses logs
-received over the network via syslog (UDP) or from a file. Also, it understands
-the prefix added by some Ubiquiti firewalls, which includes the rule set name,
-rule number, and the action performed on the traffic (allow/deny).
-
-The module is by default configured to run with the `udp` input on port `9001`.
+This is an integration to parse certain logs from the PFsense firewall. It parses logs
+received over the network via syslog (UDP). Currently the integration supports parsing the
+Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, and HAProxy logs.  All other events will be dropped.
+The firewall, VPN, DHCP, and DNS logs are able to be individually selected via the "Remote Logging Options"
+section within the pfSense settings page.  In order to collect HAProxy or other "package" logs, the "Everything" option
+must be selected. The module is by default configured to run with the `udp` input on port `9001`.
 However, it can also be configured to read from a file path.
+
+*The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
 
 ## Logs
 
-### Iptables log
+### pfSense log
 
-This is the Iptables `log` dataset.
+This is the pfSense `log` dataset.
 
 An example event for `log` looks as following:
 
@@ -135,6 +137,7 @@ An example event for `log` looks as following:
 | client.geo.region_iso_code | Region ISO code. | keyword |
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -165,6 +168,14 @@ An example event for `log` looks as following:
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
+| dns.question.class | The class of records being queried. | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
@@ -174,9 +185,37 @@ An example event for `log` looks as following:
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, consider using the wildcard data type. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| haproxy.backend_name | Name of the backend (or listener) which was selected to manage the connection to the server. | keyword |
+| haproxy.backend_queue | Total number of requests which were processed before this one in the backend's global queue. | long |
+| haproxy.bind_name | Name of the listening address which received the connection. | keyword |
+| haproxy.bytes_read | Total number of bytes transmitted to the client when the log is emitted. | long |
+| haproxy.connection_wait_time_ms | Total time in milliseconds spent waiting for the connection to establish to the final server | long |
+| haproxy.connections.active | Total number of concurrent connections on the process when the session was logged. | long |
+| haproxy.connections.backend | Total number of concurrent connections handled by the backend when the session was logged. | long |
+| haproxy.connections.frontend | Total number of concurrent connections on the frontend when the session was logged. | long |
+| haproxy.connections.retries | Number of connection retries experienced by this session when trying to connect to the server. | long |
+| haproxy.connections.server | Total number of concurrent connections still active on the server when the session was logged. | long |
+| haproxy.error_message | Error message logged by HAProxy in case of error. | text |
+| haproxy.frontend_name | Name of the frontend (or listener) which received and processed the connection. | keyword |
+| haproxy.http.request.captured_cookie | Optional "name=value" entry indicating that the server has returned a cookie with its request. | keyword |
+| haproxy.http.request.captured_headers | List of headers captured in the request due to the presence of the "capture request header" statement in the frontend. | keyword |
+| haproxy.http.request.raw_request_line | Complete HTTP request line, including the method, request and HTTP version string. | keyword |
+| haproxy.http.request.time_wait_ms | Total time in milliseconds spent waiting for a full HTTP request from the client (not counting body) after the first byte was received. | long |
+| haproxy.http.request.time_wait_without_data_ms | Total time in milliseconds spent waiting for the server to send a full HTTP response, not counting data. | long |
+| haproxy.http.response.captured_cookie | Optional "name=value" entry indicating that the client had this cookie in the response. | keyword |
+| haproxy.http.response.captured_headers | List of headers captured in the response due to the presence of the "capture response header" statement in the frontend. | keyword |
+| haproxy.mode | mode that the frontend is operating (TCP or HTTP) | keyword |
+| haproxy.server_name | Name of the last server to which the connection was sent. | keyword |
+| haproxy.server_queue | Total number of requests which were processed before this one in the server queue. | long |
+| haproxy.source | The HAProxy source of the log | keyword |
+| haproxy.tcp.connection_waiting_time_ms | Total time in milliseconds elapsed between the accept and the last close | long |
+| haproxy.termination_state | Condition the session was in when the session ended. | keyword |
+| haproxy.time_backend_connect | Total time in milliseconds spent waiting for the connection to establish to the final server, including retries. | long |
+| haproxy.time_queue | Total time in milliseconds spent waiting in the various queues. | long |
+| haproxy.total_waiting_time_ms | Total time in milliseconds spent waiting in the various queues | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -198,13 +237,21 @@ An example event for `log` looks as following:
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | observer.geo.city_name | City name. | keyword |
 | observer.geo.continent_name | Name of the continent. | keyword |
 | observer.geo.country_iso_code | Country ISO code. | keyword |
@@ -212,13 +259,16 @@ An example event for `log` looks as following:
 | observer.geo.location | Longitude and latitude. | geo_point |
 | observer.geo.region_iso_code | Region ISO code. | keyword |
 | observer.geo.region_name | Region name. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer | constant_keyword |
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
-| pfsense.icmp.id | ICMP ID. | long |
+| pfsense.icmp.id | ID of the echo request/reply | long |
 | pfsense.icmp.mtu | MTU to use for subsequent data to this destination | long |
 | pfsense.icmp.otime | Originate Timestamp | date |
 | pfsense.icmp.parameter | ICMP parameter. | long |
@@ -248,10 +298,12 @@ An example event for `log` looks as following:
 | pfsense.udp.length | Length of the UDP header and payload. | long |
 | process.program | Process from syslog header. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.port | Port of the server. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -266,6 +318,8 @@ An example event for `log` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.port | Port of the source. | long |
 | source.user.full_name | User's full name, if available. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |

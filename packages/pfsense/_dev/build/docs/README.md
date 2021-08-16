@@ -1,18 +1,20 @@
-# Iptables Integration
+# pfSense Integration
 
-This is an integration for `iptables` and `ip6tables` logs. It parses logs
-received over the network via syslog (UDP) or from a file. Also, it understands
-the prefix added by some Ubiquiti firewalls, which includes the rule set name,
-rule number, and the action performed on the traffic (allow/deny).
-
-The module is by default configured to run with the `udp` input on port `9001`.
+This is an integration to parse certain logs from the PFsense firewall. It parses logs
+received over the network via syslog (UDP). Currently the integration supports parsing the
+Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, and HAProxy logs.  All other events will be dropped.
+The firewall, VPN, DHCP, and DNS logs are able to be individually selected via the "Remote Logging Options"
+section within the pfSense settings page.  In order to collect HAProxy or other "package" logs, the "Everything" option
+must be selected. The module is by default configured to run with the `udp` input on port `9001`.
 However, it can also be configured to read from a file path.
+
+*The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
 
 ## Logs
 
-### Iptables log
+### pfSense log
 
-This is the Iptables `log` dataset.
+This is the pfSense `log` dataset.
 
 {{event "log"}}
 

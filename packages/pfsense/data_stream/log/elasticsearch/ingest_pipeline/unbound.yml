@@ -37,7 +37,7 @@ processors:
       target_field: dns.question
       ignore_missing: true
   - rename:
-      field: _tmp.question.name
+      field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
   - rename:
@@ -48,18 +48,22 @@ processors:
       field: _tmp.question.class
       target_field: dns.question.class
       ignore_missing: true
-  - set:
-      field: source.ip
-      value: "{{source.address}}"
-      ignore_empty_value: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
   - set:
       field: client
       copy_from: source
       ignore_empty_value: true
-  - set:
-      field: destination.ip
-      value: "{{destination.address}}"
-      ignore_empty_value: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - append:
       field: error.message
