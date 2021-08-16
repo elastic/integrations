@@ -1,0 +1,56 @@
+---
+description: Pipeline for processing Hashicorp Vault operational logs in JSON format.
+processors:
+  - json:
+      field: event.original
+      target_field: hashicorp_vault.log
+
+  #
+  # @timestamp
+  #
+  - date:
+      field: hashicorp_vault.log.@timestamp
+      formats:
+        - ISO8601
+  - remove:
+      field:
+        - hashicorp_vault.log.@timestamp
+      ignore_missing: true
+
+  #
+  # Rename standard fields to ECS.
+  #
+  - rename:
+      field: hashicorp_vault.log.@level
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      field: hashicorp_vault.log.@message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: hashicorp_vault.log.@module
+      target_field: log.logger
+      ignore_missing: true
+  - script:
+      description: Drop hashicorp_vault.log if empty.
+      tag: drop-empty-hashicorp_vault.log
+      lang: painless
+      if: ctx?.hashicorp_vault?.log != null && ctx.hashicorp_vault.log.isEmpty()
+      source: |
+        ctx.hashicorp_vault.remove("log");
+        if (ctx.hashicorp_vault.isEmpty()) {
+          ctx.remove("hashicorp_vault");
+        }
+
+  #
+  # Copy structured fields to ECS fields. Retain the originals for easy reference.
+  #
+  - set:
+      field: file.path
+      copy_from: hashicorp_vault.log.file_path
+      ignore_failure: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

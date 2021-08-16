@@ -1,0 +1,194 @@
+- name: hashicorp_vault
+  type: group
+  fields:
+    - name: audit
+      type: group
+      # For a description of the audit logs fields see:
+      # https://support.hashicorp.com/hc/en-us/articles/360000995548-Audit-and-Operational-Log-Details
+      # See FormatRequest and FormatResponse to see the JSON fields.
+      # https://github.com/hashicorp/vault/blob/86c1cdf9e61897dee14203c51d6ad3d971cfda1a/audit/format.go#L146
+      fields:
+        - name: auth
+          type: group
+          fields:
+            - name: accessor
+              type: keyword
+              description: This is an HMAC of the client token accessor
+            - name: client_token
+              type: keyword
+              description: This is an HMAC of the client's token ID.
+            - name: display_name
+              type: keyword
+              description: >
+                Display name is a non-security sensitive identifier that is applicable to this auth. It is used for logging and prefixing of dynamic secrets. For example, it may be "armon" for the github credential backend. If the client token is used to generate a SQL credential, the user may be "github-armon-uuid". This is to help identify the source without using audit tables.
+
+            - name: entity_id
+              type: keyword
+              description: >
+                Entity ID is the identifier of the entity in identity store to which the identity of the authenticating client belongs to.
+
+            - name: external_namespace_policies
+              type: flattened
+              description: External namespace policies represent the policies authorized from different namespaces indexed by respective namespace identifiers.
+            - name: identity_policies
+              type: keyword
+              description: These are the policies sourced from the identity.
+            - name: metadata
+              type: flattened
+              description: This will contain a list of metadata key/value pairs associated with the authenticated user.
+            - name: no_default_policy
+              type: boolean
+              description: >
+                Indicates that the default policy should not be added by core when creating a token. The default policy will still be added if it's explicitly defined.
+
+            - name: policies
+              type: keyword
+              description: Policies is the list of policies that the authenticated user is associated with.
+            - name: remaining_uses
+              type: long
+            - name: token_issue_time
+              type: date
+            - name: token_policies
+              type: keyword
+              description: These are the policies sourced from the token.
+            - name: token_ttl
+              type: long
+            - name: token_type
+              type: keyword
+        - name: error
+          type: keyword
+          description: If an error occurred with the request, the error message is included in this field's value.
+        - name: request
+          type: group
+          fields:
+            - name: client_token
+              type: keyword
+              description: This is an HMAC of the client's token ID.
+            - name: client_token_accessor
+              type: keyword
+              description: This is an HMAC of the client token accessor.
+            - name: data
+              type: flattened
+              description: The data object will contain secret data in key/value pairs.
+            - name: headers
+              type: flattened
+              description: Additional HTTP headers specified by the client as part of the request.
+            - name: id
+              type: keyword
+              description: This is the unique request identifier.
+            - name: mount_type
+              type: keyword
+            - name: namespace.id
+              type: keyword
+            - name: namespace.path
+              type: keyword
+            - name: operation
+              type: keyword
+              description: >
+                This is the type of operation which corresponds to path capabilities and is expected to be one of: create, read, update, delete, or list.
+
+            - name: path
+              type: keyword
+              description: The requested Vault path for operation.
+              multi_fields:
+                - name: text
+                  type: text
+            - name: policy_override
+              type: boolean
+              description: >
+                Policy override indicates that the requestor wishes to override soft-mandatory Sentinel policies.
+
+            - name: remote_address
+              type: ip
+              description: The IP address of the client making the request.
+            - name: wrap_ttl
+              type: long
+              description: If the token is wrapped, this displays configured wrapped TTL in seconds.
+        - name: response
+          type: group
+          fields:
+            - name: auth
+              type: group
+              description: Authentication information for this response.
+              fields:
+                - name: accessor
+                  type: keyword
+                - name: client_token
+                  type: keyword
+                - name: display_name
+                  type: keyword
+                - name: entity_id
+                  type: keyword
+                - name: external_namespace_policies
+                  type: flattened
+                - name: identity_policies
+                  type: keyword
+                - name: metadata
+                  type: flattened
+                - name: no_default_policy
+                  type: boolean
+                - name: num_uses
+                  type: long
+                - name: policies
+                - name: token_issue_time
+                  type: date
+                - name: token_policies
+                  type: keyword
+                - name: token_ttl
+                  type: long
+                  description: Time to live for the token in seconds.
+                - name: token_type
+                  type: keyword
+            - name: data
+              type: flattened
+              description: Response payload.
+            - name: headers
+              type: flattened
+              description: >
+                Headers will contain the http headers from the plugin that it wishes to have as part of the output.
+
+            - name: mount_type
+              type: keyword
+            - name: redirect
+              type: keyword
+              description: >
+                Redirect is an HTTP URL to redirect to for further authentication. This is only valid for credential backends. This will be blanked for any logical backend and ignored.
+
+            - name: wrap_info
+              type: group
+              description: Information for wrapping the response in a cubbyhole.
+              fields:
+                - name: accessor
+                  type: keyword
+                  description: The token accessor for the wrapped response token.
+                - name: creation_path
+                  type: keyword
+                  description: Creation path is the original request path that was used to create the wrapped response.
+                - name: creation_time
+                  type: date
+                  description: The creation time. This can be used with the TTL to figure out an expected expiration.
+                - name: token
+                  type: keyword
+                  description: The token containing the wrapped response.
+                - name: ttl
+                  type: long
+                  description: Specifies the desired TTL of the wrapping token.
+                - name: wrapped_accessor
+                  type: keyword
+                  description: The token accessor for the wrapped response token.
+        - name: type
+          type: keyword
+          description: Audit record type (request or response).
+# These names align with Nomad autodiscover in Beats.
+- name: nomad.allocation.id
+  type: keyword
+  description: Nomad allocation ID
+- name: nomad.namespace
+  type: keyword
+  description: Nomad namespace.
+- name: nomad.node.id
+  type: keyword
+  description: Nomad node ID.
+- name: nomad.task.name
+  type: keyword
+  description: Nomad task name.
