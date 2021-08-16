@@ -35,9 +35,60 @@ resources:
           namespace: "Microsoft.Compute/virtualMachines"
           timegrain: "PT5M"
           ignore_unsupported: true
-        - name: "*"
+        - name: ["Network Interface\\Bytes Received/sec", "Network Interface\\Packets/sec", "Network Interface\\Packets Received/sec", "Network Interface\\Packets Sent/sec","Network Interface\\Packets Outbound Errors", "Network Interface\\Bytes Total/sec", "Network Interface\\Packets Received Errors",
+    "Network Interface\\Bytes Sent/sec", "Processor Information\\% Processor Time", "Processor Information\\Processor Frequency", "Processor Information\\% User Time","Processor Information\\% Privileged Time", "Process\\Working Set - Private", "Process\\Working Set", "Process\\Thread Count",
+    "Process\\Handle Count","System\\Processes","System\\Processor Queue Length","System\\Context Switches/sec","System\\System Up Time","Memory\\Available Bytes","Memory\\Pool Paged Bytes","Memory\\Pool Nonpaged Bytes","Memory\\Page Faults/sec","Memory\\Pages/sec","Memory\\% Committed Bytes In Use",
+    "Memory\\Committed Bytes","Memory\\Cache Bytes"]
           namespace: "Azure.VM.Windows.GuestMetrics"
           timegrain: "PT5M"
+          dimensions:
+            - name: "Instance"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["disk/inodes_used_percent","disk/free","disk/used_percent","disk/inodes_free_percent","disk/free_percent","disk/used"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "device"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["diskio/io_time","diskio/write_bytes","diskio/total_bytes","diskio/write_time","diskio/read_bytes","diskio/read_time", "diskio/writes","diskio/reads", "diskio/total_transfers","diskio/iops_in_progress"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "Name"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["net/err_out","net/packets_sent","net/err_in","net/bytes_total","net/drop_total","net/packets_recv", "net/bytes_sent","net/bytes_recv"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "interface"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["cpu/usage_iowait","cpu/usage_user","cpu/usage_nice","cpu/usage_irq","cpu/usage_active","cpu/usage_system", "cpu/usage_idle"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "CPU"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["mem/available","mem/used_percent","mem/used","mem/available_percent","swap/used_percent","swap/free_percent", "swap/used","swap/free","kernel_vmstat/total_pages","kernel_vmstat/pgpgout","kernel_vmstat/pgpgin"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "Host"
+              value: "*"
           ignore_unsupported: true
 {{/each}}
 {{/if}}
@@ -46,13 +97,64 @@ resources:
     - resource_id: "{{this}}"
       metrics:
         - name: ["Available Memory Bytes","CPU Credits Consumed","CPU Credits Remaining", "Inbound Flows Maximum Creation Rate", "Outbound Flows Maximum Creation Rate", "Disk Read Bytes","Network In Total", "Disk Write Operations/Sec", "Network Out Total", "Disk Read Operations/Sec",
-    "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
+            "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
           namespace: "Microsoft.Compute/virtualMachines"
           timegrain: "PT5M"
           ignore_unsupported: true
-        - name: "*"
+        - name: ["Network Interface\\Bytes Received/sec", "Network Interface\\Packets/sec", "Network Interface\\Packets Received/sec", "Network Interface\\Packets Sent/sec","Network Interface\\Packets Outbound Errors", "Network Interface\\Bytes Total/sec", "Network Interface\\Packets Received Errors",
+            "Network Interface\\Bytes Sent/sec", "Processor Information\\% Processor Time", "Processor Information\\Processor Frequency", "Processor Information\\% User Time","Processor Information\\% Privileged Time", "Process\\Working Set - Private", "Process\\Working Set", "Process\\Thread Count",
+            "Process\\Handle Count","System\\Processes","System\\Processor Queue Length","System\\Context Switches/sec","System\\System Up Time","Memory\\Available Bytes","Memory\\Pool Paged Bytes","Memory\\Pool Nonpaged Bytes","Memory\\Page Faults/sec","Memory\\Pages/sec","Memory\\% Committed Bytes In Use",
+            "Memory\\Committed Bytes","Memory\\Cache Bytes"]
           namespace: "Azure.VM.Windows.GuestMetrics"
           timegrain: "PT5M"
+          dimensions:
+            - name: "Instance"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["disk/inodes_used_percent","disk/free","disk/used_percent","disk/inodes_free_percent","disk/free_percent","disk/used"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "device"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["diskio/io_time","diskio/write_bytes","diskio/total_bytes","diskio/write_time","diskio/read_bytes","diskio/read_time", "diskio/writes","diskio/reads", "diskio/total_transfers","diskio/iops_in_progress"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "Name"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["net/err_out","net/packets_sent","net/err_in","net/bytes_total","net/drop_total","net/packets_recv", "net/bytes_sent","net/bytes_recv"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "interface"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["cpu/usage_iowait","cpu/usage_user","cpu/usage_nice","cpu/usage_irq","cpu/usage_active","cpu/usage_system", "cpu/usage_idle"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "CPU"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["mem/available","mem/used_percent","mem/used","mem/available_percent","swap/used_percent","swap/free_percent", "swap/used","swap/free","kernel_vmstat/total_pages","kernel_vmstat/pgpgout","kernel_vmstat/pgpgin"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "Host"
+              value: "*"
           ignore_unsupported: true
 {{/each}}
 {{/if}}
@@ -61,13 +163,64 @@ resources:
     - resource_query: "resourceType eq 'Microsoft.Compute/virtualMachines'"
       metrics:
         - name: ["Available Memory Bytes","CPU Credits Consumed","CPU Credits Remaining", "Inbound Flows Maximum Creation Rate", "Outbound Flows Maximum Creation Rate", "Disk Read Bytes","Network In Total", "Disk Write Operations/Sec", "Network Out Total", "Disk Read Operations/Sec",
-    "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
+            "Inbound Flows", "Outbound Flows" , "Percentage CPU", "Disk Write Bytes", "OS Disk Queue Depth"]
           namespace: "Microsoft.Compute/virtualMachines"
           timegrain: "PT5M"
           ignore_unsupported: true
-        - name: "*"
+        - name: ["Network Interface\\Bytes Received/sec", "Network Interface\\Packets/sec", "Network Interface\\Packets Received/sec", "Network Interface\\Packets Sent/sec","Network Interface\\Packets Outbound Errors", "Network Interface\\Bytes Total/sec", "Network Interface\\Packets Received Errors",
+            "Network Interface\\Bytes Sent/sec", "Processor Information\\% Processor Time", "Processor Information\\Processor Frequency", "Processor Information\\% User Time","Processor Information\\% Privileged Time", "Process\\Working Set - Private", "Process\\Working Set", "Process\\Thread Count",
+            "Process\\Handle Count","System\\Processes","System\\Processor Queue Length","System\\Context Switches/sec","System\\System Up Time","Memory\\Available Bytes","Memory\\Pool Paged Bytes","Memory\\Pool Nonpaged Bytes","Memory\\Page Faults/sec","Memory\\Pages/sec","Memory\\% Committed Bytes In Use",
+            "Memory\\Committed Bytes","Memory\\Cache Bytes"]
           namespace: "Azure.VM.Windows.GuestMetrics"
           timegrain: "PT5M"
+          dimensions:
+            - name: "Instance"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["disk/inodes_used_percent","disk/free","disk/used_percent","disk/inodes_free_percent","disk/free_percent","disk/used"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "device"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["diskio/io_time","diskio/write_bytes","diskio/total_bytes","diskio/write_time","diskio/read_bytes","diskio/read_time", "diskio/writes","diskio/reads", "diskio/total_transfers","diskio/iops_in_progress"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "Name"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["net/err_out","net/packets_sent","net/err_in","net/bytes_total","net/drop_total","net/packets_recv", "net/bytes_sent","net/bytes_recv"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "interface"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["cpu/usage_iowait","cpu/usage_user","cpu/usage_nice","cpu/usage_irq","cpu/usage_active","cpu/usage_system", "cpu/usage_idle"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "CPU"
+              value: "*"
+          ignore_unsupported: true
+        - name: ["mem/available","mem/used_percent","mem/used","mem/available_percent","swap/used_percent","swap/free_percent", "swap/used","swap/free","kernel_vmstat/total_pages","kernel_vmstat/pgpgout","kernel_vmstat/pgpgin"]
+          namespace: "Azure.VM.Linux.GuestMetrics"
+          timegrain: "PT5M"
+          dimensions:
+            - name: "DeploymentId"
+              value: "*"
+            - name: "Host"
+              value: "*"
           ignore_unsupported: true
     {{/unless}}
 {{/unless}}
