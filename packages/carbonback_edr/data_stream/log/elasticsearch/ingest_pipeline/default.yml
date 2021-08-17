@@ -801,6 +801,28 @@ processors:
     ignore_missing: true
 
 #
+# Related fields
+#
+
+- append:
+    field: related.hash
+    value: '{{{ file.hash.md5 }}}'
+    allow_duplicates: false
+    if: 'ctx.file?.hash?.md5 != null'
+
+- append:
+    field: related.hash
+    value: '{{{ process.hash.md5 }}}'
+    allow_duplicates: false
+    if: 'ctx.process?.hash?.md5 != null'
+
+- append:
+    field: related.hash
+    value: '{{{ process.parent.hash.md5 }}}'
+    allow_duplicates: false
+    if: 'ctx.process?.parent?.hash?.md5 != null'
+
+#
 # Remove unneeded fields
 #
 - remove:
