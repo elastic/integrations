@@ -170,33 +170,12 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 		log.Printf("\tdashboard found: %s", moduleDashboard.Name())
 
 		dashboardFilePath := filepath.Join(moduleDashboardPath, moduleDashboard.Name())
-		dashboardFile, err := ioutil.ReadFile(dashboardFilePath)
+		extracted, idMap, err := extractDashboard(kibanaMigrator, dashboardFilePath, moduleName, dataStreamNames)
 		if err != nil {
-			return kibanaContent{}, errors.Wrapf(err, "reading dashboard file failed (path: %s)",
-				dashboardFilePath)
+			return kibanaContent{}, errors.Wrapf(err, "converting dashboard")
 		}
 
-		var extracted map[string]map[string][]byte
-		var tmpDashboardIDMap map[string]string
-		if filepath.Ext(dashboardFilePath) == ".ndjson" {
-			extracted, tmpDashboardIDMap, err = convertKibanaObjects(dashboardFile, moduleName, dataStreamNames)
-			if err != nil {
-				return kibanaContent{}, errors.Wrapf(err, "converting kibana saved objects")
-			}
-		} else {
-			migrated, err := kibanaMigrator.migrateDashboardFile(dashboardFile, moduleName, dataStreamNames)
-			if err != nil {
-				return kibanaContent{}, errors.Wrapf(err, "migrating dashboard file failed (path: %s)",
-					dashboardFilePath)
-			}
-
-			extracted, tmpDashboardIDMap, err = convertToKibanaObjects(migrated, moduleName, dataStreamNames)
-			if err != nil {
-				return kibanaContent{}, errors.Wrapf(err, "extracting kibana dashboards failed")
-			}
-		}
-
-		for origID, newID := range tmpDashboardIDMap {
+		for origID, newID := range idMap {
 			dashboardIDMap[origID] = newID
 		}
 
@@ -223,6 +202,24 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 	}
 
 	return kibana, nil
+}
+
+func extractDashboard(kibana *kibanaMigrator, path string, module string, dataStreams []string) (map[string]map[string][]byte, map[string]string, error) {
+	dashboardFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "reading dashboard file failed (path: %s)", path)
+	}
+
+	if filepath.Ext(path) == ".ndjson" {
+		return convertKibanaObjects(dashboardFile, module, dataStreams)
+	}
+
+	migrated, err := kibana.migrateDashboardFile(dashboardFile, module, dataStreams)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "migrating dashboard file failed (path: %s)", path)
+	}
+
+	return convertToKibanaObjects(migrated, module, dataStreams)
 }
 
 func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
