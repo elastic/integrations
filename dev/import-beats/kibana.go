@@ -12,7 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -150,7 +150,7 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 		return kibanaContent{}, nil
 	}
 
-	moduleDashboardPath := path.Join(modulePath, "_meta", "kibana", "7", "dashboard")
+	moduleDashboardPath := filepath.Join(modulePath, "_meta", "kibana", "7", "dashboard")
 	moduleDashboards, err := ioutil.ReadDir(moduleDashboardPath)
 	if os.IsNotExist(err) {
 		log.Printf("\tno dashboards present, skipped (modulePath: %s)", modulePath)
@@ -169,22 +169,31 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 	for _, moduleDashboard := range moduleDashboards {
 		log.Printf("\tdashboard found: %s", moduleDashboard.Name())
 
-		dashboardFilePath := path.Join(moduleDashboardPath, moduleDashboard.Name())
+		dashboardFilePath := filepath.Join(moduleDashboardPath, moduleDashboard.Name())
 		dashboardFile, err := ioutil.ReadFile(dashboardFilePath)
 		if err != nil {
 			return kibanaContent{}, errors.Wrapf(err, "reading dashboard file failed (path: %s)",
 				dashboardFilePath)
 		}
 
-		migrated, err := kibanaMigrator.migrateDashboardFile(dashboardFile, moduleName, dataStreamNames)
-		if err != nil {
-			return kibanaContent{}, errors.Wrapf(err, "migrating dashboard file failed (path: %s)",
-				dashboardFilePath)
-		}
+		var extracted map[string]map[string][]byte
+		var tmpDashboardIDMap map[string]string
+		if filepath.Ext(dashboardFilePath) == ".ndjson" {
+			extracted, tmpDashboardIDMap, err = convertKibanaObjects(dashboardFile, moduleName, dataStreamNames)
+			if err != nil {
+				return kibanaContent{}, errors.Wrapf(err, "converting kibana saved objects")
+			}
+		} else {
+			migrated, err := kibanaMigrator.migrateDashboardFile(dashboardFile, moduleName, dataStreamNames)
+			if err != nil {
+				return kibanaContent{}, errors.Wrapf(err, "migrating dashboard file failed (path: %s)",
+					dashboardFilePath)
+			}
 
-		extracted, tmpDashboardIDMap, err := convertToKibanaObjects(migrated, moduleName, dataStreamNames)
-		if err != nil {
-			return kibanaContent{}, errors.Wrapf(err, "extracting kibana dashboards failed")
+			extracted, tmpDashboardIDMap, err = convertToKibanaObjects(migrated, moduleName, dataStreamNames)
+			if err != nil {
+				return kibanaContent{}, errors.Wrapf(err, "extracting kibana dashboards failed")
+			}
 		}
 
 		for origID, newID := range tmpDashboardIDMap {
@@ -224,11 +233,31 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 		return nil, nil, errors.Wrapf(err, "unmarshalling migrated dashboard file failed")
 	}
 
-	dashboardIDMap := make(map[string]string, 0)
+	return migrateKibanaObjects(documents.Objects, moduleName, dataStreamNames)
+}
 
-	extracted := map[string]map[string][]byte{}
-	for _, object := range documents.Objects {
-		err = object.delete("updated_at")
+func convertKibanaObjects(dashboardFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
+	var objects []mapStr
+
+	decoder := json.NewDecoder(bytes.NewReader(dashboardFile))
+	for decoder.More() {
+		var object mapStr
+		err := decoder.Decode(&object)
+		if err != nil {
+			return nil, nil, fmt.Errorf("decoding object failed: %v", err)
+		}
+		objects = append(objects, object)
+	}
+
+	return migrateKibanaObjects(objects, moduleName, dataStreamNames)
+}
+
+func migrateKibanaObjects(objects []mapStr, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
+	extracted := make(map[string]map[string][]byte)
+	dashboardIDMap := make(map[string]string)
+
+	for _, object := range objects {
+		err := object.delete("updated_at")
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "removing field updated_at failed")
 		}
@@ -328,8 +357,6 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 		data = replaceFieldEventDatasetWithDataStreamDataset(data)
 		data = replaceBlacklistedWords(data)
 		data = removeECSTextualSuffixes(data)
-		dashboardIDMap[origID] = newID
-
 		err = verifyKibanaObjectConvertion(data)
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "Kibana object convertion failed")
@@ -339,6 +366,7 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 			extracted[aType.(string)] = map[string][]byte{}
 		}
 
+		dashboardIDMap[origID] = newID
 		extracted[aType.(string)][newID+".json"] = data
 	}
 
