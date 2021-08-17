@@ -1,160 +1,38 @@
-- name: ecs
-  title: ECS
-  group: 2
-  type: group
-  fields:
-    - name: version
-      level: core
-      required: true
-      type: keyword
-      ignore_above: 1024
-      description: 'ECS version this event conforms to.'
-- name: event
-  title: Event
-  group: 2
-  type: group
-  fields:
-    - name: ingested
-      level: core
-      type: date
-      description: 'Timestamp when an event arrived in the central data store.'
-      default_field: false
-- name: file
-  title: File
-  group: 2
-  type: group
-  fields:
-    - name: x509.issuer.common_name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: List of common name (CN) of issuing certificate authority.
-      example: Example SHA2 High Assurance Server CA
-      default_field: false
-- name: group
-  title: Group
-  group: 2
-  type: group
-  fields:
-    - name: id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier for the group on the system/platform.
-    - name: name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the group.
-- name: log
-  title: Log
-  group: 2
-  type: group
-  fields:
-    - name: file.path
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate.'
-      default_field: false
-    - name: level
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Original log level of the log event.'
-    - name: offset
-      type: long
-      description: Log offset
-    - name: original
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is the original log message and contains the full log message before splitting it up in multiple parts.'
-      index: false
-- name: process
-  title: Process
-  group: 2
-  type: group
-  fields:
-    - name: args
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Array of process arguments, starting with the absolute path to the executable.'
-    - name: executable
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Absolute path to the process executable.
-    - name: hash.sha256
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: SHA256 hash.
-    - name: pid
-      level: core
-      type: long
-      format: string
-      description: Process id.
-    - name: ppid
-      level: extended
-      type: long
-      format: string
-      description: Parent process' pid.
-    - name: start
-      level: extended
-      type: date
-      description: The time the process started.
-- name: related
-  title: Related
-  group: 2
-  type: group
-  fields:
-    - name: hash
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All the hashes seen on your event.
-      default_field: false
-    - name: user
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All the user names seen on your event.
-      default_field: false
-- name: user
-  title: User
-  group: 2
-  description: 'The user fields describe information about the user that is relevant to the event.
-
-    Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them.'
-  type: group
-  fields:
-    - name: id
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Unique identifier of the user.
-    - name: name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
-- name: input.type
-  type: keyword
-  description: Input type
-- name: tags
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
-  ignore_above: 1024
-  type: keyword
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: event.ingested
+- external: ecs
+  name: file.x509.issuer.common_name
+- external: ecs
+  name: group.id
+- external: ecs
+  name: group.name
+- external: ecs
+  name: log.file.path
+- external: ecs
+  name: log.level
+- external: ecs
+  name: log.original
+- external: ecs
+  name: process.args
+- external: ecs
+  name: process.executable
+- external: ecs
+  name: process.hash.sha256
+- external: ecs
+  name: process.pid
+- external: ecs
+  name: process.ppid
+- external: ecs
+  name: process.start
+- external: ecs
+  name: related.hash
+- external: ecs
+  name: related.user
+- external: ecs
+  name: tags
+- external: ecs
+  name: user.id
+- external: ecs
+  name: user.name
