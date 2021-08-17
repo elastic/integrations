@@ -1,0 +1,853 @@
+---
+description: Pipeline for parsing CarbonBlack EDR logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+
+- set:
+    field: ecs.version
+    value: 1.11.0
+
+# Validate that the input document conforms to the expected format
+# to avoid repetitive checks.
+- fail:
+    description: 'Validates input document format'
+    message: 'json object is missing from event'
+    if: 'ctx.json == null'
+
+# Fail if `docs` fields is an array with more than one element.
+# This is possible according to the documentation, but fortunately for us
+# CB Event Forwarded splits an input event with multiple docs into multiple
+# output events with a single doc each.
+- fail:
+    description: 'Validates that docs field contains a single document'
+    message: 'docs array has more than one entry, this is unsupported. Use CB Event Forwarder as source of events'
+    if: 'ctx.json.docs != null && ctx.json.docs instanceof List && ctx.json.docs.size() > 1'
+
+- script:
+    description: 'Selects a single document from docs input field'
+    lang: painless
+    if: 'ctx.json.docs != null'
+    source: |-
+      def docs = ctx.json.docs;
+      if (docs instanceof List && docs.size() > 0) {
+        ctx.json["doc"] = docs[0];
+      } else if (docs instanceof Map) {
+        ctx.json["doc"] = docs;
+      } else {
+        throw new Exception("Unexpected type");
+      }
+      ctx.json.remove("docs");
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Failed extracting docs field: {{{ _ingest.on_failure_message }}}'
+
+#
+# Convert some fields to their expected types.
+# These can be string if using the http_endpoint input due to
+# https://github.com/elastic/beats/issues/27382
+#
+- convert:
+    field: json.compressed_size
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.emet_timestamp
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.event_timestamp
+    type: double
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.feed_id
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.local_port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.parent_create_time
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.pid
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.doc.process_pid
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.doc.parent_pid
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.remote_port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.requested_access
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.size
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.doc.orig_mod_len
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.scores.alliance_score_virustotal
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.target_create_time
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.target_pid
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+- convert:
+    field: json.timestamp
+    type: double
+    ignore_missing: true
+    ignore_failure: true
+
+#
+# This flag is used to signal that it can write to host.* fields.
+#
+- set:
+    field: _tmp.forwarded
+    value: true
+    if: 'ctx.host?.name == null'
+
+- script:
+    description: 'Removes empty string fields'
+    lang: painless
+    source: |-
+      void removeEmptyStr(Map m) {
+        if (m != null) m.entrySet().removeIf( e -> e.value == "");
+      }
+      removeEmptyStr(ctx.json);
+      removeEmptyStr(ctx.json.doc);
+
+- rename:
+    description: 'Renames type field to ECS event action'
+    field: json.type
+    target_field: event.action
+    on_failure:
+      # This happens in cb_edr.log only.
+      # is this real or just an artifact in our samples?
+      #
+      #- append:
+      #    field: error.message
+      #    value: 'type field not present in document'
+      - set:
+          field: event.action
+          value: unknown
+
+- script:
+    description: 'Sets ECS categorisation fields from EDR Event ID.'
+    lang: painless
+    params:
+      "alert.watchlist.hit.ingress.host":
+        kind: alert
+        category: [ host ]
+        type: [ info ]
+
+      "alert.watchlist.hit.ingress.binary":
+        kind: alert
+        category: [ file ]
+        type: [ info ]
+
+      "alert.watchlist.hit.ingress.process":
+        kind: alert
+        category: [ process ]
+        type: [ info ]
+
+      "alert.watchlist.hit.query.binary":
+        kind: alert
+        category: [ file ]
+        type: [ info ]
+
+      "alert.watchlist.hit.query.process":
+        kind: alert
+        category: [ process ]
+        type: [ info ]
+
+      "binaryinfo.host.observed":
+        kind: event
+        category: [ host ]
+        type: [ info ]
+
+      "binaryinfo.group.observed":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "binaryinfo.observed":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "binarystore.file.added":
+        kind: event
+        category: [ file ]
+        type: [ creation ]
+
+      "feed.ingress.hit.host":
+        kind: event
+        category: [ host ]
+        type: [ info ]
+
+      "feed.ingress.hit.binary":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "feed.ingress.hit.process":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "feed.query.hit.binary":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "feed.query.hit.process":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "feed.storage.hit.binary":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "feed.storage.hit.process":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "watchlist.hit.process":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "watchlist.hit.binary":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "watchlist.storage.hit.binary":
+        kind: event
+        category: [ file ]
+        type: [ info ]
+
+      "watchlist.storage.hit.process":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "ingress.event.regmod":
+        kind: event
+        category: [ registry ]
+        type: [ change ]
+
+      "ingress.event.filemod":
+        kind: event
+        category: [ file ]
+        type: [ change ]
+
+      "ingress.event.netconn":
+        kind: event
+        category: [ network ]
+        type: [ connection, start ]
+
+      "ingress.event.module":
+        kind: event
+        category: [ process ]
+        type: [ start, info ]
+
+      "ingress.event.childproc":
+        kind: event
+        category: [ process ]
+        type: [ start, info ]
+
+      "ingress.event.process":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "ingress.event.crossprocopen":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "ingress.event.remotethread":
+        kind: event
+        category: [ process ]
+        type: [ info ]
+
+      "ingress.event.emetmitigation":
+        kind: event
+        category: [ process ]
+        type: [ info, end ]
+
+      "ingress.event.processblock":
+        kind: event
+        category: [ process ]
+        type: [ info, end ]
+
+      "ingress.event.tamper":
+        kind: event
+        category: [ process, driver ]
+        type: [ info ]
+
+      "unknown":
+        kind: event
+    source: |-
+      def clone(def ref) {
+        if (ref == null) return ref;
+        if (ref instanceof Map) {
+          ref = ref.entrySet().stream().collect(
+                  Collectors.toMap(
+                    e -> e.getKey(),
+                    e -> clone(e.getValue())
+                  )
+                );
+        } else if (ref instanceof List) {
+          ref = ref.stream().map(e -> clone(e)).collect(
+                  Collectors.toList()
+                );
+        }
+        return ref;
+      }
+      def event = ctx.event;
+      if (event == null) {
+        event = new HashMap();
+        ctx["event"] = event;
+      }
+      def type = ctx.event.action;
+      def fields = params[type] != null? params[type] : params["unknown"];
+      fields.forEach( (k, v) -> {
+        event[k] = clone(v);
+      });
+
+#
+# Set observer fields.
+#
+- set:
+    field: observer.vendor
+    value: 'VMWare'
+
+- set:
+    field: observer.product
+    value: 'Carbon Black EDR'
+
+- set:
+    field: observer.type
+    value: 'edr'
+
+- rename:
+    field: json.cb_version
+    target_field: observer.version
+    ignore_missing: true
+
+- rename:
+    field: json.cb_server
+    target_field: observer.name
+    ignore_missing: true
+
+- rename:
+    field: json.server_name
+    target_field: observer.name
+    ignore_missing: true
+    if: 'ctx.observer.name == null'
+
+#
+# Some events use ioc_attrs instead of ioc_attr.
+#
+- rename:
+    field: json.ioc_attrs
+    target_field: json.ioc_attr
+    ignore_missing: true
+
+#
+# A few events have ioc_attr as a JSON string
+# instead of an object.
+#
+- json:
+    field: json.ioc_attr
+    if: 'ctx.json.ioc_attr != null && ctx.json.ioc_attr instanceof String'
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Failed to parse string field ioc_attr as JSON (value:{{{ json.ioc_attr }}}): {{{ _ingest.on_failure_message }}}'
+      # Remove field to prevent ingest failure.
+      - remove:
+          field: json.ioc_attr
+#
+# Parse @timestamp from a few possible timestamp fields.
+#
+- convert:
+    field: json.timestamp
+    target_field: _tmp.timestamp
+    type: double
+    ignore_missing: true
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to convert numeric timestamp (value: {{{json.timestamp}}}): {{{_ingest.on_failure_message}}}'
+
+- convert:
+    field: json.event_timestamp
+    target_field: _tmp.timestamp
+    type: double
+    ignore_missing: true
+    if: 'ctx._tmp?.timestamp == null'
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to convert numeric event_timestamp (value: {{{json.event_timestamp}}}): {{{_ingest.on_failure_message}}}'
+
+- set:
+    field: _tmp.timestamp
+    value: '{{{ json.doc.timestamp }}}'
+    ignore_empty_value: true
+    if: 'ctx._tmp?.timestamp == null'
+
+- date:
+    field: _tmp.timestamp
+    formats:
+      - UNIX
+      - ISO8601
+    if: 'ctx._tmp?.timestamp != null'
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to parse timestamp (value: {{{ _tmp.timestamp }}}): {{{_ingest.on_failure_message}}}'
+
+#
+# Rule fields
+#
+- convert:
+    field: json.watchlist_id
+    target_field: rule.id
+    ignore_missing: true
+    type: string
+
+- rename:
+    field: json.watchlist_name
+    target_field: rule.name
+    ignore_missing: true
+
+# Most of the time doc.endpoint is an array. Convert it to array otherwise.
+- script:
+    description: 'Converts doc.endpoint to an array'
+    lang: painless
+    source: |-
+      def ep = ctx.json.doc?.endpoint;
+      if (ep != null && !(ep instanceof List)) {
+        ctx.json.doc.endpoint = [ ep ];
+      }
+
+#
+# Set host.name when unset from Filebeat (forwarded events).
+#
+- rename:
+    field: json.doc.hostname
+    target_field: host.name
+    ignore_missing: true
+    if: 'ctx.host?.name == null'
+
+- rename:
+    field: json.hostname
+    target_field: host.name
+    ignore_missing: true
+    if: 'ctx.host?.name == null'
+
+- foreach:
+    description: 'Sets host.name from docs.endpoint field'
+    field: json.doc.endpoint
+    ignore_missing: true
+    if: 'ctx.host?.name == null && ctx.json.doc?.hostname == null && ctx.json.doc?.endpoint != null'
+    processor:
+      grok:
+        field: '_ingest._value'
+        patterns:
+          # endpoint field format is "HOSTNAME|ID"
+          # This extracts the HOSTNAME part.
+          - '^%{NOT_SEPARATOR:host.name}%{SEPARATOR}'
+        pattern_definitions:
+          SEPARATOR: '|'
+          NOT_SEPARATOR: '[^|]*'
+
+#
+# Digital signature fields
+#
+- rename:
+    field: json.doc.digsig_subject
+    target_field: file.code_signature.subject_name
+    ignore_missing: true
+
+- rename:
+    field: json.doc.digsig_status
+    target_field: file.code_signature.status
+    ignore_missing: true
+
+- set:
+    field: file.code_signature.exists
+    value: true
+    if: 'ctx.file_signature != null'
+
+#
+# Source os_type can be Windows, Linux or Osx
+#
+- lowercase:
+    field: json.doc.os_type
+    target_field: host.os.type
+    ignore_missing: true
+    if: 'ctx._tmp?.forwarded != null'
+
+- set:
+    field: host.os.type
+    value: macos
+    if: 'ctx._tmp?.forwarded != null && ctx.host?.os?.type == "osx"'
+
+# Ensures that only accepted values are introduced in os.type.
+- remove:
+    field: host.os.type
+    if: 'ctx._tmp?.forwarded != null && ctx.json.doc?.os_type != null && !["windows","linux","macos"].contains(ctx.host.os.type)'
+
+- rename:
+    field: json.doc.os_name
+    target_field: host.os.name
+    ignore_missing: true
+    if: 'ctx._tmp?.forwarded != null'
+
+#
+# Assorted fields
+#
+- append:
+    field: file.attributes
+    value: 'executable'
+    if: 'ctx.json.doc?.is_executable_image == true || ctx.json.doc?.is_executable_image == "true"'
+
+- lowercase:
+    field: json.doc.md5
+    target_field: file.hash.md5
+    ignore_missing: true
+
+- foreach:
+    field: json.doc.observed_filename
+    ignore_missing: true
+    processor:
+      set:
+        field: file.path
+        value: '{{{ _ingest._value }}}'
+
+- rename:
+    field: json.file_path
+    target_field: file.path
+    ignore_missing: true
+
+- grok:
+    description: 'Extract registry path'
+    field: json.path
+    patterns:
+      - '(?i)\\registry\\%{GREEDYDATA:registry.path}'
+    ignore_failure: true
+    ignore_missing: true
+    if: 'ctx.event?.action == "ingress.event.regmod"'
+
+- rename:
+    field: json.doc.orig_mod_len
+    target_field: file.size
+    ignore_missing: true
+
+- rename:
+    field: json.size
+    target_field: file.size
+    ignore_missing: true
+    if: 'ctx.file?.size == null'
+
+- rename:
+    field: json.doc.cmdline
+    target_field: process.command_line
+    ignore_missing: true
+
+- rename:
+    field: json.doc.path
+    target_field: process.executable
+    ignore_missing: true
+
+- lowercase:
+    field: json.doc.process_md5
+    target_field: process.hash.md5
+    ignore_missing: true
+
+- rename:
+    field: json.doc.process_name
+    target_field: process.name
+    ignore_missing: true
+
+- rename:
+    field: json.doc.process_pid
+    target_field: process.pid
+    ignore_missing: true
+
+- rename:
+    field: json.doc.unique_id
+    target_field: process.entity_id
+    ignore_missing: true
+
+- date:
+    field: json.doc.start
+    target_field: process.start
+    formats:
+      - ISO8601
+      - UNIX
+    if: 'ctx.json.doc?.start != null'
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to parse process start timestamp (value: {{{ doc.start }}}): {{{_ingest.on_failure_message}}}'
+
+- rename:
+    field: json.doc.parent_name
+    target_field: process.parent.name
+    ignore_missing: true
+
+- rename:
+    field: json.doc.parent_pid
+    target_field: process.parent.pid
+    ignore_missing: true
+
+- rename:
+    field: json.doc.parent_unique_id
+    target_field: process.parent.entity_id
+    ignore_missing: true
+
+- lowercase:
+    field: json.doc.parent_md5
+    target_field: process.parent.hash.md5
+    ignore_missing: true
+
+- convert:
+    field: json.doc.is_64bit
+    type: boolean
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: json.doc.is_64bit
+
+- set:
+    field: file.pe.architecture
+    value: x64
+    if: 'ctx.json.doc?.is_64bit == true'
+
+- set:
+    field: file.pe.architecture
+    value: x86
+    if: 'ctx.json.doc?.is_64bit == false'
+
+- rename:
+    field: json.utf8_file_description
+    target_field: file.pe.description
+    ignore_missing: true
+
+- rename:
+    field: json.utf8_company_name
+    target_field: file.pe.company
+    ignore_missing: true
+
+- rename:
+    field: json.utf8_product
+    target_field: file.pe.product_name
+    ignore_missing: true
+
+- rename:
+    field: json.utf8_product_name
+    target_field: file.pe.product
+    ignore_missing: true
+
+- rename:
+    field: json.utf8_original_file_name
+    target_field: file.pe.original_file_name
+    ignore_missing: true
+
+- rename:
+    field: json.utf8_file_version
+    target_field: file.pe.file_version
+    ignore_missing: true
+
+#
+# Map ioc_type field to STIX 2.0 Cyber Observable values (threatintel.indicator.type).
+#
+- script:
+    lang: painless
+    if: 'ctx.json.ioc_type != null'
+    description: >
+      Maps ioc_type field to STIX 2.0 Cyber Observable values (threatintel.indicator.type).
+    params:
+      dns:
+        type: domain-name
+        target: threatintel.indicator.domain.name
+      ipv4:
+        type: ipv4-addr
+        target: threatintel.indicator.ip
+      ipv6:
+        type: ipv6-addr
+        target: threatintel.indicator.ip
+      md5:
+        type: file
+        target: threatintel.indicator.file.hash.md5
+
+    source: >
+      void _set(Map base, def path, def value) {
+        if (path.length == 0) return;
+        for (int i=0; i<path.length-1; i++) {
+          String c = path[i];
+          if (base[c] == null) base[c] = new HashMap();
+          base = base[c];
+        }
+        base[path[path.length-1]] = value;
+      }
+      void set(Map base, String path, def value) {
+        _set(base, path.splitOnToken("."), value);
+      }
+      def mapping = params[ctx.json.ioc_type.toLowerCase()];
+      if (mapping == null) return;
+      set(ctx, "threatintel.indicator.type", mapping.type);
+      def value = ctx.json.ioc_value;
+      if (value == null) return;
+      set(ctx, mapping.target, value);
+      ctx["_tmp_ioc_done"] = true;
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Unable to determine indicator type from "{{{ json.ioc_type }}}": {{{ _ingest.on_failure_message }}}'
+- remove:
+    if: 'ctx._tmp_ioc_done == true'
+    field:
+      - _tmp_ioc_done
+      - json.ioc_type
+      - json.ioc_value
+- lowercase:
+    field: threatintel.indicator.file.hash.md5
+    ignore_missing: true
+
+- convert:
+    field: json.ioc_attr.port
+    target_field: threatintel.indicator.port
+    type: long
+    ignore_missing: true
+
+- lowercase:
+    field: json.ioc_attr.direction
+    target_field: network.direction
+    ignore_missing: true
+
+- lowercase:
+    field: json.ioc_attr.protocol
+    target_field: network.transport
+    ignore_missing: true
+
+#
+# Related fields
+#
+
+- append:
+    field: related.hash
+    value: '{{{ file.hash.md5 }}}'
+    allow_duplicates: false
+    if: 'ctx.file?.hash?.md5 != null'
+
+- append:
+    field: related.hash
+    value: '{{{ process.hash.md5 }}}'
+    allow_duplicates: false
+    if: 'ctx.process?.hash?.md5 != null'
+
+- append:
+    field: related.hash
+    value: '{{{ process.parent.hash.md5 }}}'
+    allow_duplicates: false
+    if: 'ctx.process?.parent?.hash?.md5 != null'
+
+#
+# Remove unneeded fields
+#
+- remove:
+    field:
+    - message
+    - _tmp
+    - json.doc.is_executable_image
+    - json.doc.start
+    - json.doc.process_md5
+    - json.doc.parent_md5
+    - json.doc.md5
+    - json.ioc_attr.port
+    - json.ioc_attr.direction
+    - json.ioc_attr.protocol
+    - json.watchlist_id
+    ignore_missing: true
+
+#
+# Save payload fields as to custom fields under carbonblack.edr.
+#
+- rename:
+    field: json
+    target_field: carbonblack.edr
+    ignore_missing: true
+
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
