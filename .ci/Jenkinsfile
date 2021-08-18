@@ -209,14 +209,68 @@ def prepareStack() {
   if (manifest != null && manifest["conditions"] != null) {
     def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
     if (kibanaVersionCondition != null) {
-      def version = kibanaVersionCondition.substring(1)
-      // TODO: Check if version is released, and if not, try with snapshots.
+      def version = findStackVersion(kibanaVersionCondition)
       stackArgs += " --version ${version}"
     }
   }
 
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
+}
+
+def findStackVersion(String versionCondition) {
+  def version = versionCondition.substring(1)
+  def response = httpRequest(url: 'https://artifacts-api.elastic.co/v1/versions')
+  def availableVersions = readJSON(text: response)
+
+  parts = version.split('\\.')
+
+  // If this is specifying a major or a minor only, check with the zero version.
+  while (parts.size() < 3) {
+    version += ".0"
+    parts += "0"
+  }
+
+  // If the version exists, or has a snapshot, use it.
+  if (availableVersions.versions.contains(version)) {
+    return version
+  }
+  snapshotVersion = version + "-SNAPSHOT"
+  if (availableVersions.versions.contains(snapshotVersion)) {
+    return snapshotVersion
+  }
+
+  major = parts[0]
+  minor = parts[1]
+
+  // Old minors may not be available in artifacts-api, if it is older
+  // than the others in the same major, return the version as is.
+  older = true
+  for (availableVersion in availableVersions.versions) {
+    availableParts = availableVersion.split('\\.')
+    if (availableParts.size() < 2) {
+      continue
+    }
+    availableMajor = availableParts[0]
+    availableMinor = availableParts[1]
+    if (major == availableMajor && minor > availableMinor) {
+      older = false
+      break
+    }
+  }
+  if (older) {
+    return version
+  }
+
+  // If no version has been found so far, try with the snapshot of the next version
+  // in the current major.
+  majorSnapshot = major + ".x-SNAPSHOT"
+  if (availableVersion.aliases.contains(majorSnapshot)) {
+    return majorSnapshot
+  }
+
+  // Otherwise, return it, whatever this is.
+  return version
 }
 
 def withCloudTestEnv(Closure body) {
