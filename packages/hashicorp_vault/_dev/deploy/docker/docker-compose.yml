@@ -1,0 +1,59 @@
+version: '3.0'
+services:
+  hashicorp_vault:
+    image: vault:1.8.1
+    hostname: hashicorp_vault
+    ports:
+      - 8200
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/service_logs
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=vault_root_token
+      - VAULT_ADDR=http://localhost:8200
+      - VAULT_TOKEN=vault_root_token
+      - VAULT_LOCAL_CONFIG={"telemetry":{"disable_hostname":true,"enable_hostname_label":true},"log_level":"trace","log_format":"json"}
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: vault status > /dev/null
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    entrypoint: /bin/sh
+    # Create a log file for the operational log tests to read.
+    command:
+      - -c
+      - >
+        docker-entrypoint.sh server -dev 2>&1 | tee /service_logs/log.json
+
+  setup_vault:
+    image: vault:1.8.1
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/service_logs
+    environment:
+      - VAULT_ADDR=http://hashicorp_vault:8200
+      - VAULT_TOKEN=vault_root_token
+    # Setup audit logging and generate some activity.
+    command:
+      - /bin/ash
+      - -e
+      - -c
+      - |
+        mkdir -p /service_logs/vault;
+        chmod 0777 /service_logs/vault;
+        for i in 1 2 3 4 5 6 7 8; do vault status && break || sleep 10; done;
+        vault audit enable file file_path=/service_logs/vault/audit.json;
+        while true; do ls /service_logs/vault/audit.json && break; sleep 1; done;
+        chmod 0744 /service_logs/vault/audit.json;
+        vault kv put secret/hello foo=world;
+        vault kv get secret/hello;
+        vault kv delete secret/hello;
+        VAULT_TOKEN=s.wrong vault kv get secret/foo || true;
+        VAULT_TOKEN= vault login $$(vault token create -field=token);
+    depends_on:
+      - hashicorp_vault
+  hashicorp_vault-audit-tcp:
+    image: docker.elastic.co/observability/stream:v0.5.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9007 -p=tcp /sample_logs/audit.ndjson

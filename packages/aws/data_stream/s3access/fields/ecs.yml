@@ -1,168 +1,88 @@
-- name: related.user
-  type: keyword
-  description: All the user names seen on your event.
-- name: related.ip
-  type: ip
-  description: All of the IPs seen on your event.
-- name: client.ip
-  type: ip
-  description: IP address of the client.
-- name: client.address
-  type: keyword
-  description: Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field.
-- name: client.user.id
-  type: keyword
-  description: Unique identifiers of the user.
-- name: event.id
-  type: keyword
-  description: Unique ID to describe the event.
-- name: event.action
-  type: keyword
-  description: The action captured by the event.
-- name: event.outcome
-  type: keyword
-  description: This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.
-- name: event.code
-  type: keyword
-  description: Identification code for this event, if one exists.
-- name: event.duration
-  type: long
-  description: Duration of the event in nanoseconds.
-- name: http
-  title: HTTP
-  type: group
-  fields:
-    - name: request.method
-      type: keyword
-      ignore_above: 1024
-      description: 'HTTP request method.'
-    - name: request.referrer
-      type: keyword
-      ignore_above: 1024
-      description: Referrer for this HTTP request.
-    - name: response.body.bytes
-      type: long
-      format: bytes
-      description: Size in bytes of the response body.
-    - name: response.status_code
-      type: long
-      description: HTTP response status code.
-    - name: version
-      type: keyword
-      ignore_above: 1024
-      description: HTTP version.
-- name: url
-  title: URL
-  type: group
-  fields:
-    - name: original
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: 'Unmodified original url as seen in the event source.'
-    - name: path
-      type: keyword
-      ignore_above: 1024
-      description: Path of the request, such as "/search".
-    - name: query
-      type: keyword
-      ignore_above: 1024
-      description: 'The query field describes the query string of the request, such as "q=elasticsearch".'
-    - name: domain
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Domain of the url, such as "www.elastic.co".
-
-        In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field.
-
-        If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field.'
-      example: www.elastic.co
-    - name: scheme
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Scheme of the request, such as "https".
-
-        Note: The `:` is not part of the scheme.'
-    - name: extension
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The field contains the file extension from the original request url, excluding the leading dot.'
-- name: tls.cipher
-  type: keyword
-  description: String indicating the cipher used during the current connection.
-- name: tls.version
-  type: keyword
-  description: Numeric part of the version parsed from the original string.
-- name: tls.version_protocol
-  type: keyword
-  description: Normalized lowercase protocol name parsed from original string.
-- name: cloud.provider
-  type: keyword
-  description: Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean.
-- name: event.kind
-  type: keyword
-  description: Event kind (e.g. event, alert, metric, state, pipeline_error, signal)
-- name: geo.city_name
-  type: keyword
-  description: City name.
-- name: geo.country_name
-  type: keyword
-  description: Country name.
-- name: geo.continent_name
-  type: keyword
-  description: Name of the continent.
-- name: geo.country_iso_code
-  type: keyword
-  description: Country ISO code.
-- name: geo.location
+- external: ecs
+  name: client.address
+- external: ecs
+  name: client.ip
+- external: ecs
+  name: client.user.id
+- external: ecs
+  name: cloud.provider
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: error.message
+- external: ecs
+  name: event.action
+- external: ecs
+  name: event.code
+- external: ecs
+  name: event.duration
+- external: ecs
+  name: event.id
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.outcome
+- external: ecs
+  name: geo.city_name
+- external: ecs
+  name: geo.continent_name
+- external: ecs
+  name: geo.country_iso_code
+- external: ecs
+  name: geo.country_name
+- description: Longitude and latitude.
+  level: core
+  name: geo.location
   type: geo_point
-  description: Longitude and latitude.
-- name: geo.region_iso_code
-  type: keyword
-  description: Region ISO code.
-- name: geo.region_name
-  type: keyword
-  description: Region name.
-- name: user_agent.device.name
-  type: keyword
-  description: Name of the device.
-- name: user_agent.name
-  type: keyword
-  description: Name of the user agent.
-- name: user_agent.original
-  type: keyword
-  description: Unparsed user_agent string.
-- name: user_agent.os.full
-  type: keyword
-  description: Operating system name, including the version or code name.
-- name: user_agent.os.name
-  type: keyword
-  description: Operating system name, without the version.
-- name: user_agent.os.version
-  type: keyword
-  description: Operating system version as a raw string.
-- name: user_agent.version
-  type: keyword
-  description: Version of the user agent.
-- name: ecs.version
-  type: keyword
-  description: ECS version this event conforms to.
-- name: error
-  type: group
-  fields:
-    - name: message
-      level: core
-      type: text
-      description: Error message.
-- name: tags
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
-  ignore_above: 1024
-  type: keyword
+- external: ecs
+  name: geo.region_iso_code
+- external: ecs
+  name: geo.region_name
+- external: ecs
+  name: http.request.method
+- external: ecs
+  name: http.request.referrer
+- external: ecs
+  name: http.response.body.bytes
+- external: ecs
+  name: http.response.status_code
+- external: ecs
+  name: http.version
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: related.user
+- external: ecs
+  name: tags
+- external: ecs
+  name: tls.cipher
+- external: ecs
+  name: tls.version
+- external: ecs
+  name: tls.version_protocol
+- external: ecs
+  name: url.domain
+- external: ecs
+  name: url.extension
+- external: ecs
+  name: url.original
+- external: ecs
+  name: url.path
+- external: ecs
+  name: url.query
+- external: ecs
+  name: url.scheme
+- external: ecs
+  name: user_agent.device.name
+- external: ecs
+  name: user_agent.name
+- external: ecs
+  name: user_agent.original
+- external: ecs
+  name: user_agent.os.full
+- external: ecs
+  name: user_agent.os.name
+- external: ecs
+  name: user_agent.os.version
+- external: ecs
+  name: user_agent.version
