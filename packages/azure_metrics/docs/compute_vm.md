@@ -108,8 +108,13 @@ so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
+## Guest metrics 
+
+For more insight into the state of the virtual machines, users can collect guest-level metrics, logs and other diagnostic data using the Guest-Level Diagnostics feature. 
+Once this monitoring feature is enabled in the Diagnostic Settings area (Performance Counters tab for Windows VM's and Metrics tab for Linux VM's), a diagnostics agent is installed on the selected virtual machine and a set of extended metrics are added to collect usage data at each interval specified in the configuration. 
+
 ## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 
-Authentication: we are handling authentication on our side (creating/renewing the authentication token), so we advise users to use dedicated credentials for metricbeat only.
+Authentication: Dedicated authentication token will be created and updated regularly, it is advised to not share the credentials entered.
