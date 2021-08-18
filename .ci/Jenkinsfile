@@ -2,8 +2,6 @@
 
 @Library('apm@current') _
 
-import groovy.yaml.YamlSlurper
-
 pipeline {
   agent { label 'ubuntu-20 && immutable' }
   environment {
@@ -206,7 +204,7 @@ def withKubernetes(Closure body) {
 
 def prepareStack() {
   def stackArgs = '-v'
-  def manifest = new YamlSlurper().parse(new File("manifest.yml"))
+  def manifest = readYaml(file: "manifest.yml")
 
   if (manifest != null && manifest["conditions"] != null) {
     def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
