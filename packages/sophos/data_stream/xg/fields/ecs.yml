@@ -1,776 +1,268 @@
-- name: input.type
-  type: keyword
-- name: log.offset
-  type: long
-- name: log.source.address
-  level: extended
-  type: keyword
-  ignore_above: 1024
-- name: message
-  level: core
-  type: text
-  description: 'For log events the message field contains the log message, optimized for viewing in a log viewer.'
-- name: tags
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-- name: client
-  title: Client
-  group: 2
-  type: group
-  fields:
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: Bytes sent from the client to the server.
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the client (IPv4 or IPv6).
-    - name: mac
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: MAC address of the client.
-    - name: nat.port
-      level: extended
-      type: long
-      format: string
-      description: 'Translated port of source based NAT sessions (e.g. internal client to internet).'
-    - name: packets
-      level: core
-      type: long
-      description: Packets sent from the client to the server.
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the client.
-- name: destination
-  title: Destination
-  group: 2
-  type: group
-  fields:
-    - name: as.number
-      level: extended
-      type: long
-      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-    - name: as.organization.name
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Organization name.
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: Bytes sent from the destination to the source.
-    - name: geo.city_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: City name.
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Name of the continent.
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Country ISO code.
-    - name: geo.country_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Country name.
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.name
-      level: extended
-      type: wildcard
-      description: 'User-defined description of a location, at the level of granularity they care about.'
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Region ISO code.
-    - name: geo.region_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Region name.
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the destination (IPv4 or IPv6).
-    - name: mac
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: MAC address of the destination.
-    - name: nat.port
-      level: extended
-      type: long
-      format: string
-      description: 'Port the source session is translated to by NAT Device.'
-    - name: packets
-      level: core
-      type: long
-      description: Packets sent from the destination to the source.
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the destination.
-    - name: user.email
-      level: extended
-      type: wildcard
-      description: User email address.
-- name: ecs
-  title: ECS
-  group: 2
-  type: group
-  fields:
-    - name: version
-      level: core
-      required: true
-      type: keyword
-      ignore_above: 1024
-      description: 'ECS version this event conforms to. `ecs.version` is a required field and must exist in all events.'
-- name: event
-  title: Event
-  group: 2
-  type: group
-  fields:
-    - name: action
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'The action captured by the event.'
-    - name: category
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.'
-    - name: code
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Identification code for this event, if one exists.'
-    - name: created
-      level: core
-      type: date
-      description: 'event.created contains the date/time when the event was first read by an agent, or by your pipeline.'
-    - name: duration
-      level: core
-      type: long
-      format: duration
-      input_format: nanoseconds
-      output_format: asMilliseconds
-      output_precision: 1
-      description: 'Duration of the event in nanoseconds.'
-    - name: end
-      level: extended
-      type: date
-      description: event.end contains the date when the event ended or when the activity was last observed.
-    - name: hash
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Hash (perhaps logstash fingerprint) of raw field to be able to demonstrate log integrity.
-    - name: id
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Unique ID to describe the event.
-    - name: ingested
-      level: core
-      type: date
-      description: 'Timestamp when an event arrived in the central data store.'
-      default_field: false
-    - name: kind
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.'
-    - name: original
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Raw text message of entire event. Used to demonstrate log integrity.'
-      index: false
-    - name: outcome
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.'
-    - name: provider
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Source of the event.'
-    - name: sequence
-      level: extended
-      type: long
-      format: string
-      description: 'Sequence number of the event.'
-    - name: severity
-      level: core
-      type: long
-      format: string
-      description: 'The numeric severity of the event according to your event source.'
-    - name: start
-      level: extended
-      type: date
-      description: event.start contains the date when the event started or when the activity was first observed.
-    - name: timezone
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'This field should be populated when the event''s timestamp does not include timezone information already (e.g. default Syslog timestamps). It''s optional otherwise.'
-    - name: type
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.'
-- name: file
-  title: File
-  group: 2
-  type: group
-  fields:
-    - name: directory
-      level: extended
-      type: wildcard
-      description: Directory where the file is located. It should include the drive letter, when appropriate.
-    - name: extension
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'File extension, excluding the leading dot.'
-    - name: hash.md5
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: MD5 hash.
-    - name: hash.sha1
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: SHA1 hash.
-    - name: hash.sha256
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: SHA256 hash.
-    - name: hash.sha512
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: SHA512 hash.
-    - name: mime_type
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used.
-      default_field: false
-    - name: name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the file including the extension, without the directory.
-    - name: size
-      level: extended
-      type: long
-      description: 'File size in bytes.'
-- name: http
-  title: HTTP
-  group: 2
-  type: group
-  fields:
-    - name: request.method
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'HTTP request method.'
-    - name: request.referrer
-      level: extended
-      type: wildcard
-      description: Referrer for this HTTP request.
-    - name: response.status_code
-      level: extended
-      type: long
-      format: string
-      description: HTTP response status code.
-    - name: version
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: HTTP version.
-- name: log
-  title: Log
-  group: 2
-  type: group
-  fields:
-    - name: file.path
-      level: extended
-      type: wildcard
-      description: 'Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate.'
-      default_field: false
-    - name: level
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Original log level of the log event.'
-    - name: logger
-      level: core
-      type: wildcard
-      description: The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name.
-    - name: original
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'This is the original log message and contains the full log message before splitting it up in multiple parts.'
-      index: false
-- name: network
-  title: Network
-  group: 2
-  type: group
-  fields:
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: 'Total bytes transferred in both directions.'
-    - name: direction
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: "Direction of the network traffic."
-    - name: packets
-      level: core
-      type: long
-      description: 'Total packets transferred in both directions.'
-    - name: protocol
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'L7 Network protocol name. ex. http, lumberjack, transport protocol.'
-    - name: transport
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)'
-- name: observer
-  title: Observer
-  group: 2
-  type: group
-  fields:
-    - name: egress.interface.name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Interface name as reported by the system.
-      default_field: false
-    - name: egress.zone
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Network zone of outbound traffic as reported by the observer to categorize the destination area of egress  traffic, e.g. Internal, External, DMZ, HR, Legal, etc.
-      default_field: false
-    - name: ingress.interface.name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Interface name as reported by the system.
-      default_field: false
-    - name: ingress.zone
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Network zone of incoming traffic as reported by the observer to categorize the source area of ingress  traffic. e.g. internal, External, DMZ, HR, Legal, etc.
-      default_field: false
-    - name: product
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: The product name of the observer.
-    - name: serial_number
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Observer serial number.
-    - name: type
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'The type of the observer the data is coming from.'
-    - name: vendor
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Vendor name of the observer.
-- name: related
-  title: Related
-  group: 2
-  type: group
-  fields:
-    - name: hash
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search).
-      default_field: false
-    - name: hosts
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
-      default_field: false
-    - name: ip
-      level: extended
-      type: ip
-      description: All of the IPs seen on your event.
-    - name: user
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: All the user names seen on your event.
-      default_field: false
-- name: rule
-  title: Rule
-  group: 2
-  type: group
-  fields:
-    - name: category
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: A categorization value keyword used by the entity using the rule for detection of this event.
-      default_field: false
-    - name: id
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event.
-      default_field: false
-    - name: name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: The name of the rule or signature generating the event.
-      default_field: false
-    - name: ruleset
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member.
-      default_field: false
-- name: server
-  title: Server
-  group: 2
-  type: group
-  fields:
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: Bytes sent from the server to the client.
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the server (IPv4 or IPv6).
-    - name: nat.port
-      level: extended
-      type: long
-      format: string
-      description: 'Translated port of destination based NAT sessions (e.g. internet to private DMZ)'
-    - name: packets
-      level: core
-      type: long
-      description: Packets sent from the server to the client.
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the server.
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: as.number
-      level: extended
-      type: long
-      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-    - name: as.organization.name
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Organization name.
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: Bytes sent from the source to the destination.
-    - name: domain
-      level: core
-      type: wildcard
-      description: Source domain.
-    - name: geo.city_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: City name.
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Name of the continent.
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Country ISO code.
-    - name: geo.country_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Country name.
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.name
-      level: extended
-      type: wildcard
-      description: 'User-defined description of a location, at the level of granularity they care about.'
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Region ISO code.
-    - name: geo.region_name
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Region name.
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the source (IPv4 or IPv6).
-    - name: mac
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: MAC address of the source.
-    - name: nat.ip
-      level: extended
-      type: ip
-      description: 'Translated ip of source based NAT sessions (e.g. internal client to internet)'
-    - name: nat.port
-      level: extended
-      type: long
-      format: string
-      description: 'Translated port of source based NAT sessions. (e.g. internal client to internet)'
-    - name: packets
-      level: core
-      type: long
-      description: Packets sent from the source to the destination.
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the source.
-    - name: user.email
-      level: extended
-      type: wildcard
-      description: User email address.
-    - name: user.group.name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the group.
-    - name: user.name
-      level: core
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Short name or login of the user.
-- name: user.email
-  level: extended
-  type: wildcard
-  description: User email address.
-- name: user.name
-  level: core
-  type: wildcard
-  multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-  description: Short name or login of the user.
-- name: url
-  title: URL
-  group: 2
-  type: group
-  fields:
-    - name: domain
-      level: extended
-      type: wildcard
-      description: 'Domain of the url, such as "www.elastic.co".'
-    - name: extension
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The field contains the file extension from the original request url, excluding the leading dot.'
-    - name: fragment
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Portion of the url after the `#`, such as "top".'
-    - name: full
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source.
-    - name: original
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: 'Unmodified original url as seen in the event source.'
-    - name: password
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Password of the request.
-    - name: path
-      level: extended
-      type: wildcard
-      description: Path of the request, such as "/search".
-    - name: port
-      level: extended
-      type: long
-      format: string
-      description: Port of the request, such as 443.
-      example: 443
-    - name: query
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The query field describes the query string of the request, such as "q=elasticsearch".'
-    - name: registered_domain
-      level: extended
-      type: wildcard
-      description: 'The highest registered url domain, stripped of the subdomain.'
-    - name: scheme
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'Scheme of the request, such as "https".'
-    - name: subdomain
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain.'
-      default_field: false
-    - name: top_level_domain
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: 'The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com".'
-    - name: username
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Username of the request.
-- name: user_agent
-  title: User agent
-  group: 2
-  type: group
-  fields:
-    - name: device.name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the device.
-    - name: name
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Name of the user agent.
-    - name: original
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-      description: Unparsed user_agent string.
-    - name: os.family
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: OS family (such as redhat, debian, freebsd, windows).
-    - name: os.full
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Operating system name, including the version or code name.
-    - name: os.kernel
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Operating system kernel version as a raw string.
-    - name: os.name
-      level: extended
-      type: wildcard
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Operating system name, without the version.
-    - name: os.platform
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Operating system platform (such centos, ubuntu, windows).
-    - name: os.version
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Operating system version as a raw string.
-    - name: version
-      level: extended
-      type: keyword
-      ignore_above: 1024
-      description: Version of the user agent.
+- external: ecs
+  name: client.bytes
+- external: ecs
+  name: client.ip
+- external: ecs
+  name: client.mac
+- external: ecs
+  name: client.nat.port
+- external: ecs
+  name: client.packets
+- external: ecs
+  name: client.port
+- external: ecs
+  name: destination.as.number
+- external: ecs
+  name: destination.as.organization.name
+- external: ecs
+  name: destination.bytes
+- external: ecs
+  name: destination.geo.city_name
+- external: ecs
+  name: destination.geo.continent_name
+- external: ecs
+  name: destination.geo.country_iso_code
+- external: ecs
+  name: destination.geo.country_name
+- external: ecs
+  name: destination.geo.location
+- external: ecs
+  name: destination.geo.name
+- external: ecs
+  name: destination.geo.region_iso_code
+- external: ecs
+  name: destination.geo.region_name
+- external: ecs
+  name: destination.ip
+- external: ecs
+  name: destination.mac
+- external: ecs
+  name: destination.nat.port
+- external: ecs
+  name: destination.packets
+- external: ecs
+  name: destination.port
+- external: ecs
+  name: destination.user.email
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: event.action
+- external: ecs
+  name: event.category
+- external: ecs
+  name: event.code
+- external: ecs
+  name: event.created
+- external: ecs
+  name: event.duration
+- external: ecs
+  name: event.end
+- external: ecs
+  name: event.hash
+- external: ecs
+  name: event.id
+- external: ecs
+  name: event.ingested
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.original
+- external: ecs
+  name: event.outcome
+- external: ecs
+  name: event.provider
+- external: ecs
+  name: event.sequence
+- external: ecs
+  name: event.severity
+- external: ecs
+  name: event.start
+- external: ecs
+  name: event.timezone
+- external: ecs
+  name: event.type
+- external: ecs
+  name: file.directory
+- external: ecs
+  name: file.extension
+- external: ecs
+  name: file.hash.md5
+- external: ecs
+  name: file.hash.sha1
+- external: ecs
+  name: file.hash.sha256
+- external: ecs
+  name: file.hash.sha512
+- external: ecs
+  name: file.mime_type
+- external: ecs
+  name: file.name
+- external: ecs
+  name: file.size
+- external: ecs
+  name: http.request.method
+- external: ecs
+  name: http.request.referrer
+- external: ecs
+  name: http.response.status_code
+- external: ecs
+  name: http.version
+- external: ecs
+  name: log.file.path
+- external: ecs
+  name: log.level
+- external: ecs
+  name: log.logger
+- external: ecs
+  name: log.original
+- external: ecs
+  name: message
+- external: ecs
+  name: network.bytes
+- external: ecs
+  name: network.direction
+- external: ecs
+  name: network.packets
+- external: ecs
+  name: network.protocol
+- external: ecs
+  name: network.transport
+- external: ecs
+  name: observer.egress.interface.name
+- external: ecs
+  name: observer.egress.zone
+- external: ecs
+  name: observer.ingress.interface.name
+- external: ecs
+  name: observer.ingress.zone
+- external: ecs
+  name: observer.product
+- external: ecs
+  name: observer.serial_number
+- external: ecs
+  name: observer.type
+- external: ecs
+  name: observer.vendor
+- external: ecs
+  name: related.hash
+- external: ecs
+  name: related.hosts
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: related.user
+- external: ecs
+  name: rule.category
+- external: ecs
+  name: rule.id
+- external: ecs
+  name: rule.name
+- external: ecs
+  name: rule.ruleset
+- external: ecs
+  name: server.bytes
+- external: ecs
+  name: server.ip
+- external: ecs
+  name: server.nat.port
+- external: ecs
+  name: server.packets
+- external: ecs
+  name: server.port
+- external: ecs
+  name: source.as.number
+- external: ecs
+  name: source.as.organization.name
+- external: ecs
+  name: source.bytes
+- external: ecs
+  name: source.domain
+- external: ecs
+  name: source.geo.city_name
+- external: ecs
+  name: source.geo.continent_name
+- external: ecs
+  name: source.geo.country_iso_code
+- external: ecs
+  name: source.geo.country_name
+- external: ecs
+  name: source.geo.location
+- external: ecs
+  name: source.geo.name
+- external: ecs
+  name: source.geo.region_iso_code
+- external: ecs
+  name: source.geo.region_name
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: source.mac
+- external: ecs
+  name: source.nat.ip
+- external: ecs
+  name: source.nat.port
+- external: ecs
+  name: source.packets
+- external: ecs
+  name: source.port
+- external: ecs
+  name: source.user.email
+- external: ecs
+  name: source.user.group.name
+- external: ecs
+  name: source.user.name
+- external: ecs
+  name: tags
+- external: ecs
+  name: url.domain
+- external: ecs
+  name: url.extension
+- external: ecs
+  name: url.fragment
+- external: ecs
+  name: url.full
+- external: ecs
+  name: url.original
+- external: ecs
+  name: url.password
+- external: ecs
+  name: url.path
+- external: ecs
+  name: url.port
+- external: ecs
+  name: url.query
+- external: ecs
+  name: url.registered_domain
+- external: ecs
+  name: url.scheme
+- external: ecs
+  name: url.subdomain
+- external: ecs
+  name: url.top_level_domain
+- external: ecs
+  name: url.username
+- external: ecs
+  name: user.email
+- external: ecs
+  name: user.name
+- external: ecs
+  name: user_agent.device.name
+- external: ecs
+  name: user_agent.name
+- external: ecs
+  name: user_agent.original
+- external: ecs
+  name: user_agent.os.family
+- external: ecs
+  name: user_agent.os.full
+- external: ecs
+  name: user_agent.os.kernel
+- external: ecs
+  name: user_agent.os.name
+- external: ecs
+  name: user_agent.os.platform
+- external: ecs
+  name: user_agent.os.version
+- external: ecs
+  name: user_agent.version
