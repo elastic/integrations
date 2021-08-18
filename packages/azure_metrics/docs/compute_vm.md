@@ -111,7 +111,7 @@ so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
 ## Guest metrics 
 
 For more insight into the state of the virtual machines, users can collect guest-level metrics, logs and other diagnostic data using the Guest-Level Diagnostics feature. 
-Once this monitoring feature is enabled in the Diagnostics Settings area (Performance Counters tab for Windows VM's and Metrics tab for Linux VM's), a diagnostics agent is installed on the selected virtual machine and a set of extended metrics are added to collect usage data at each interval specified in the configuration. 
+Once this monitoring feature is enabled in the Diagnostic Settings area (Performance Counters tab for Windows VM's and Metrics tab for Linux VM's), a diagnostics agent is installed on the selected virtual machine and a set of extended metrics are added to collect usage data at each interval specified in the configuration. 
 
 ## Additional notes about metrics and costs
 
