@@ -46,10 +46,10 @@ processors:
             field: error.message
             value: 'Received invalid json from the Azure Cloud platform. Unable to parse the source log message'
             ignore_failure: true
-        - script:
-            lang: painless
+        - append:
+            field: tags
+            value: ["preserve_original_event"]
             ignore_failure: true
-            source: "ctx.tags.add('preserve_original_event')"
   - date:
       field: azure.platformlogs.time
       target_field: '@timestamp'
