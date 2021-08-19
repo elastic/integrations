@@ -22,7 +22,7 @@ Will retrieve azure Active Directory sign-in logs. The sign-ins report provides 
 Will retrieve azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
 
 ### springcloudlogs 
-Will retrieve Azure Spring Cloud system and  application logs.
+Will retrieve Azure Spring Cloud system and application logs.
 
 ### Credentials
 
