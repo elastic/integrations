@@ -1,6 +1,7 @@
-## Logs
+## Active Directory Logs
 
-The azure logs integration retrieves different types of log data from Azure.
+The Active Directory Logs integration retrieves sign-in and audit information from Azure.
+
 There are several requirements before using the integration since the logs will actually be read from azure event hubs.
 
    * the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
@@ -14,9 +15,46 @@ Sign-in logs – Information about sign-ins and how your resources are used by y
 
 Audit logs – Information about changes applied to your tenant such as users and group management or updates applied to your tenant’s resources.
 
+
+### Credentials
+
+`eventhub` :
+  _string_
+Is the fully managed, real-time data ingestion service.
+Default value `insights-operational-logs`.
+
+`consumer_group` :
+_string_
+ The publish/subscribe mechanism of Event Hubs is enabled through consumer groups. A consumer group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
+Default value: `$Default`
+
+`connection_string` :
+_string_
+The connection string required to communicate with Event Hubs, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
+
+A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
+
+`storage_account` :
+_string_
+The name of the storage account the state/offsets will be stored and updated.
+
+`storage_account_key` :
+_string_
+The storage account key, this key will be used to authorize access to data in your storage account.
+
+`resource_manager_endpoint` :
+_string_
+Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+Ex:
+https://management.chinacloudapi.cn/ for azure ChinaCloud
+https://management.microsoftazure.de/ for azure GermanCloud
+https://management.azure.com/ for azure PublicCloud
+https://management.usgovcloudapi.net/ for azure USGovernmentCloud
+Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
+
 ### auditlogs
 
-This is the `auditlogs` dataset of the Azure Logs package. It will collect any audit events that have been streamed through an azure event hub.
+The `auditlogs` dataset of the Azure Logs package will collect any audit events that have been streamed through an azure event hub.
 
 An example event for `auditlogs` looks as following:
 
@@ -117,14 +155,14 @@ An example event for `auditlogs` looks as following:
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -182,7 +220,7 @@ An example event for `auditlogs` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -205,7 +243,7 @@ An example event for `auditlogs` looks as following:
 
 ### signinlogs
 
-This is the `signinlogs` dataset of the Kubernetes package. It will collect any sign-in events that have been streamed through an azure event hub.
+The `signinlogs` dataset of the Kubernetes package will collect any sign-in events that have been streamed through an azure event hub.
 
 An example event for `signinlogs` looks as following:
 
@@ -322,14 +360,14 @@ An example event for `signinlogs` looks as following:
 | azure.tenant_id | tenant ID | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -387,7 +425,7 @@ An example event for `signinlogs` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
