@@ -1,0 +1,256 @@
+- name: beat.stats
+  description: Beat stats
+  type: group
+  fields:
+    - name: beat
+      type: group
+      fields:
+        - name: name
+          type: keyword
+        - name: host
+          type: keyword
+        - name: type
+          type: keyword
+        - name: uuid
+          type: keyword
+        - name: version
+          type: keyword
+    - name: system
+      type: group
+      fields:
+        - name: cpu.cores
+          type: long
+        - name: load
+          type: group
+          fields:
+            - name: "1"
+              type: double
+            - name: "15"
+              type: double
+            - name: "5"
+              type: double
+            - name: norm
+              type: group
+              fields:
+                - name: "1"
+                  type: double
+                - name: "15"
+                  type: double
+                - name: "5"
+                  type: double
+    - name: cpu
+      type: group
+      fields:
+        - name: system.ticks
+          type: long
+        - name: system.time.ms
+          type: long
+        - name: total.value
+          type: long
+        - name: total.ticks
+          type: long
+        - name: total.time.ms
+          type: long
+        - name: user.ticks
+          type: long
+        - name: user.time.ms
+          type: long
+    - name: info
+      type: group
+      fields:
+        - name: ephemeral_id
+          type: keyword
+        - name: uptime.ms
+          type: long
+    - name: cgroup
+      type: group
+      fields:
+        - name: cpu
+          type: group
+          fields:
+            - name: cfs.period.us
+              type: long
+            - name: cfs.quota.us
+              type: long
+            - name: id
+              type: keyword
+            - name: stats
+              type: group
+              fields:
+                - name: periods
+                  type: long
+                - name: throttled.periods
+                  type: long
+                - name: throttled.ns
+                  type: long
+        - name: cpuacct.id
+          type: keyword
+        - name: cpuacct.total.ns
+          type: long
+        - name: memory
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: mem.limit.bytes
+              type: long
+            - name: mem.usage.bytes
+              type: long
+    - name: memstats
+      type: group
+      fields:
+        - name: gc_next
+          type: long
+        - name: memory.alloc
+          type: long
+        - name: memory.total
+          type: long
+        - name: rss
+          type: long
+    - name: handles
+      type: group
+      fields:
+        - name: open
+          type: long
+        - name: limit.hard
+          type: long
+        - name: limit.soft
+          type: long
+    - name: uptime.ms
+      type: long
+      description: >
+        Beat uptime
+
+    - name: runtime.goroutines
+      type: long
+      description: >
+        Number of goroutines running in Beat
+
+    - name: libbeat
+      type: group
+      description: >
+        Fields common to all Beats
+
+      fields:
+        - name: pipeline
+          type: group
+          fields:
+            - name: clients
+              type: long
+            - name: queue.acked
+              type: long
+            - name: events
+              type: group
+              fields:
+                - name: active
+                  type: long
+                - name: dropped
+                  type: long
+                - name: failed
+                  type: long
+                - name: filtered
+                  type: long
+                - name: published
+                  type: long
+                - name: retry
+                  type: long
+                - name: total
+                  type: long
+        - name: config
+          type: group
+          fields:
+            - name: running
+              type: short
+            - name: starts
+              type: short
+            - name: stops
+              type: short
+        - name: output
+          type: group
+          description: >
+            Output stats
+
+          fields:
+            - name: type
+              type: keyword
+              description: >
+                Type of output
+
+            - name: events
+              type: group
+              description: >
+                Event counters
+
+              fields:
+                - name: acked
+                  type: long
+                  description: >
+                    Number of events acknowledged
+
+                - name: active
+                  type: long
+                  description: >
+                    Number of active events
+
+                - name: batches
+                  type: long
+                  description: >
+                    Number of event batches
+
+                - name: dropped
+                  type: long
+                  description: >
+                    Number of events dropped
+
+                - name: duplicates
+                  type: long
+                  description: >
+                    Number of events duplicated
+
+                - name: failed
+                  type: long
+                  description: >
+                    Number of events failed
+
+                - name: toomany
+                  type: long
+                  description: >
+                    Number of too many events
+
+                - name: total
+                  type: long
+                  description: >
+                    Total number of events
+
+            - name: read
+              type: group
+              description: >
+                Read stats
+
+              fields:
+                - name: bytes
+                  type: long
+                  description: >
+                    Number of bytes read
+
+                - name: errors
+                  type: long
+                  description: >
+                    Number of read errors
+
+            - name: write
+              type: group
+              description: >
+                Write stats
+
+              fields:
+                - name: bytes
+                  type: long
+                  description: >
+                    Number of bytes written
+
+                - name: errors
+                  type: long
+                  description: >
+                    Number of write errors
+
