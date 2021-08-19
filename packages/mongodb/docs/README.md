@@ -84,8 +84,10 @@ The `log` dataset collects the MongoDB logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of input. | constant_keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Log offset. | float |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | mongodb.log.attr | Attributes related to the log message. | flattened |
 | mongodb.log.component | Functional categorization of message | keyword |
@@ -113,37 +115,71 @@ An example event for `collstats` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "@timestamp": "2021-08-19T05:28:55.048Z",
+    "agent": {
+        "ephemeral_id": "2442d501-93b2-4a25-b8c0-ed8923d5ad74",
+        "hostname": "docker-fleet-agent",
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.15.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.collstats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mongodb.collstats",
+        "duration": 3918379,
+        "ingested": "2021-08-19T05:28:58Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "d03287130c55973b5da6a27a9638ce49",
+        "ip": [
+            "1.1.1.1"
+        ],
+        "mac": [
+            "02:42:ac:1e:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "3.10.0-1062.el7.x86_64",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
         "name": "collstats",
         "period": 10000
     },
-    "service": {
-        "address": "localhost:27017",
-        "type": "mongodb"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro"
-    },
-    "event": {
-        "dataset": "mongodb.collstats",
-        "module": "mongodb",
-        "duration": 3378520
-    },
     "mongodb": {
         "collstats": {
-            "collection": "startup_log",
+            "collection": "system.roles",
             "commands": {
                 "count": 0,
                 "time": {
                     "us": 0
                 }
             },
-            "db": "local",
+            "db": "admin",
             "getmore": {
                 "count": 0,
                 "time": {
@@ -158,23 +194,23 @@ An example event for `collstats` looks as following:
             },
             "lock": {
                 "read": {
-                    "count": 74,
+                    "count": 1,
                     "time": {
-                        "us": 443
+                        "us": 197
                     }
                 },
                 "write": {
-                    "count": 1,
+                    "count": 0,
                     "time": {
-                        "us": 8
+                        "us": 0
                     }
                 }
             },
-            "name": "local.startup_log",
+            "name": "admin.system.roles",
             "queries": {
-                "count": 0,
+                "count": 1,
                 "time": {
-                    "us": 0
+                    "us": 197
                 }
             },
             "remove": {
@@ -184,9 +220,9 @@ An example event for `collstats` looks as following:
                 }
             },
             "total": {
-                "count": 75,
+                "count": 1,
                 "time": {
-                    "us": 451
+                    "us": 197
                 }
             },
             "update": {
@@ -197,8 +233,9 @@ An example event for `collstats` looks as following:
             }
         }
     },
-    "ecs": {
-        "version": "1.5.0"
+    "service": {
+        "address": "mongodb://elastic-package-service_mongodb_1:27017",
+        "type": "mongodb"
     }
 }
 ```
@@ -286,52 +323,86 @@ An example event for `dbstats` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "@timestamp": "2021-08-19T05:36:46.863Z",
+    "agent": {
+        "ephemeral_id": "c9bf6636-60e2-4f4e-8db0-123d0cea05bc",
+        "hostname": "docker-fleet-agent",
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.15.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.dbstats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mongodb.dbstats",
+        "duration": 5285499,
+        "ingested": "2021-08-19T05:36:50Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "d03287130c55973b5da6a27a9638ce49",
+        "ip": [
+            "1.1.1.1"
+        ],
+        "mac": [
+            "02:42:ac:1e:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "3.10.0-1062.el7.x86_64",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
         "name": "dbstats",
         "period": 10000
     },
-    "service": {
-        "address": "localhost:27017",
-        "type": "mongodb"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro"
-    },
-    "event": {
-        "dataset": "mongodb.dbstats",
-        "module": "mongodb",
-        "duration": 3378520
-    },
     "mongodb": {
         "dbstats": {
+            "avg_obj_size": {
+                "bytes": 76
+            },
+            "collections": 2,
+            "data_size": {
+                "bytes": 229
+            },
+            "db": "admin",
             "file_size": {},
             "index_size": {
-                "bytes": 20480
+                "bytes": 40960
             },
+            "indexes": 2,
             "ns_size_mb": {},
+            "objects": 3,
             "storage_size": {
-                "bytes": 20480
-            },
-            "num_extents": 0,
-            "collections": 1,
-            "objects": 1,
-            "db": "admin",
-            "data_size": {
-                "bytes": 59
-            },
-            "indexes": 1,
-            "avg_obj_size": {
-                "bytes": 59
+                "bytes": 40960
             }
         }
     },
-    "ecs": {
-        "version": "1.5.0"
+    "service": {
+        "address": "mongodb://elastic-package-service_mongodb_1:27017",
+        "type": "mongodb"
     }
 }
 ```
@@ -408,34 +479,221 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "@timestamp": "2021-08-19T05:31:46.055Z",
+    "agent": {
+        "ephemeral_id": "2bce7265-de7e-4a63-97f9-4fd57f0e8be2",
+        "hostname": "docker-fleet-agent",
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.15.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.metrics",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mongodb.metrics",
+        "duration": 8536799,
+        "ingested": "2021-08-19T05:31:49Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "d03287130c55973b5da6a27a9638ce49",
+        "ip": [
+            "1.1.1.1"
+        ],
+        "mac": [
+            "02:42:ac:1e:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "3.10.0-1062.el7.x86_64",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "metricset": {
+        "name": "metrics",
+        "period": 10000
+    },
     "mongodb": {
         "metrics": {
+            "commands": {
+                "aggregate": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "build_info": {
+                    "failed": 0,
+                    "total": 29
+                },
+                "coll_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "connection_pool_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "count": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "db_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "distinct": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "find": {
+                    "failed": 0,
+                    "total": 6
+                },
+                "get_cmd_line_opts": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_last_error": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_log": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_more": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_parameter": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "host_info": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "insert": {
+                    "failed": 0,
+                    "total": 2
+                },
+                "is_master": {
+                    "failed": 0,
+                    "total": 32
+                },
+                "is_self": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "last_collections": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "last_commands": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "list_databased": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "list_indexes": {
+                    "failed": 1,
+                    "total": 1
+                },
+                "ping": {
+                    "failed": 0,
+                    "total": 2
+                },
+                "profile": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_get_rbid": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_get_status": {
+                    "failed": 1,
+                    "total": 27
+                },
+                "replset_heartbeat": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_update_position": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "server_status": {
+                    "failed": 0,
+                    "total": 16
+                },
+                "update": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "whatsmyuri": {
+                    "failed": 0,
+                    "total": 15
+                }
+            },
+            "cursor": {
+                "open": {
+                    "no_timeout": 0,
+                    "pinned": 0,
+                    "total": 0
+                },
+                "timed_out": 0
+            },
+            "document": {
+                "deleted": 0,
+                "inserted": 2,
+                "returned": 2,
+                "updated": 0
+            },
+            "get_last_error": {
+                "write_timeouts": 0,
+                "write_wait": {
+                    "count": 2,
+                    "ms": 0
+                }
+            },
+            "operation": {
+                "scan_and_order": 1,
+                "write_conflicts": 0
+            },
+            "query_executor": {
+                "scanned_documents": {
+                    "count": 2
+                },
+                "scanned_indexes": {
+                    "count": 0
+                }
+            },
             "replication": {
-                "network": {
-                    "ops": 0,
-                    "reders_created": 0,
-                    "bytes": 0,
-                    "getmores": {
-                        "count": 0,
-                        "time": {
-                            "ms": 0
-                        }
-                    }
-                },
-                "executor": {
-                    "shutting_down": false,
-                    "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
-                    "queues": {
-                        "in_progress": {
-                            "network": 0
-                        },
-                        "sleepers": 0
-                    },
-                    "unsignaled_events": 0
-                },
                 "apply": {
-                    "attempts_to_become_secondary": 0,
+                    "attempts_to_become_secondary": 1,
                     "batches": {
                         "count": 0,
                         "time": {
@@ -445,207 +703,55 @@ An example event for `metrics` looks as following:
                     "ops": 0
                 },
                 "buffer": {
+                    "count": 0,
                     "max_size": {
-                        "bytes": 0
+                        "bytes": 268435456
                     },
                     "size": {
                         "bytes": 0
+                    }
+                },
+                "executor": {
+                    "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
+                    "queues": {
+                        "in_progress": {
+                            "network": 0
+                        },
+                        "sleepers": 0
                     },
-                    "count": 0
+                    "shutting_down": false,
+                    "unsignaled_events": 0
                 },
                 "initial_sync": {
                     "completed": 0,
                     "failed_attempts": 0,
                     "failures": 0
+                },
+                "network": {
+                    "bytes": 0,
+                    "getmores": {
+                        "count": 0,
+                        "time": {
+                            "ms": 0
+                        }
+                    },
+                    "ops": 0,
+                    "reders_created": 0
                 }
             },
             "ttl": {
-                "passes": {
-                    "count": 433
-                },
                 "deleted_documents": {
-                    "count": 3
-                }
-            },
-            "commands": {
-                "replset_heartbeat": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "connection_pool_stats": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "host_info": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "aggregate": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "replset_update_position": {
-                    "total": 0,
-                    "failed": 0
-                },
-                "last_collections": {
-                    "failed": 0,
-                    "total": 458
-                },
-                "list_databased": {
-                    "total": 466,
-                    "failed": 0
-                },
-                "whatsmyuri": {
-                    "total": 2,
-                    "failed": 0
-                },
-                "profile": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "insert": {
-                    "failed": 0,
-                    "total": 7
-                },
-                "count": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "is_master": {
-                    "failed": 0,
-                    "total": 2332
-                },
-                "distinct": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "replset_get_status": {
-                    "failed": 2,
-                    "total": 2
-                },
-                "find": {
-                    "failed": 0,
-                    "total": 94
-                },
-                "replset_get_rbid": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "get_parameter": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "coll_stats": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "build_info": {
-                    "total": 6,
-                    "failed": 0
-                },
-                "last_commands": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "update": {
-                    "failed": 0,
-                    "total": 5
-                },
-                "is_self": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "db_stats": {
-                    "failed": 0,
-                    "total": 2044
-                },
-                "get_cmd_line_opts": {
-                    "failed": 0,
-                    "total": 2
-                },
-                "ping": {
-                    "total": 2290,
-                    "failed": 0
-                },
-                "server_status": {
-                    "total": 916,
-                    "failed": 0
-                },
-                "get_last_error": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "get_more": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "get_log": {
-                    "failed": 0,
-                    "total": 2
-                },
-                "list_indexes": {
-                    "failed": 0,
-                    "total": 174
-                }
-            },
-            "cursor": {
-                "timed_out": 0,
-                "open": {
-                    "pinned": 0,
-                    "total": 0,
-                    "no_timeout": 0
-                }
-            },
-            "get_last_error": {
-                "write_wait": {
-                    "ms": 0,
                     "count": 0
                 },
-                "write_timeouts": 0
-            },
-            "operation": {
-                "write_conflicts": 0,
-                "scan_and_order": 0
-            },
-            "document": {
-                "deleted": 15,
-                "inserted": 19,
-                "returned": 465,
-                "updated": 2
-            },
-            "query_executor": {
-                "scanned_indexes": {
-                    "count": 2
-                },
-                "scanned_documents": {
-                    "count": 24
+                "passes": {
+                    "count": 0
                 }
             }
         }
     },
-    "metricset": {
-        "period": 10000,
-        "name": "metrics"
-    },
-    "agent": {
-        "name": "KaiyanMacBookPro",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a"
-    },
     "service": {
-        "address": "localhost:27017",
+        "address": "mongodb://elastic-package-service_mongodb_1:27017",
         "type": "mongodb"
-    },
-    "event": {
-        "dataset": "mongodb.metrics",
-        "module": "mongodb",
-        "duration": 3039885
-    },
-    "ecs": {
-        "version": "1.5.0"
     }
 }
 ```
@@ -827,83 +933,129 @@ An example event for `replstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.457Z",
-    "service": {
-        "address": "localhost:27017",
-        "type": "mongodb"
+    "@timestamp": "2021-08-19T05:32:38.081Z",
+    "agent": {
+        "ephemeral_id": "7c59237b-6a5f-4366-ae3c-d05cc264c32a",
+        "hostname": "docker-fleet-agent",
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.15.0"
     },
-    "mongodb": {
-        "replstatus": {
-            "members": {
-                "arbiter": {
-                    "count": 0
-                },
-                "down": {
-                    "count": 0
-                },
-                "primary": {
-                    "host": "22b4e1fb8197:27017",
-                    "optime": 1550700559
-                },
-                "recovering": {
-                    "count": 0
-                },
-                "rollback": {
-                    "count": 0
-                },
-                "secondary": {
-                    "count": 0
-                },
-                "startup2": {
-                    "count": 0
-                },
-                "unhealthy": {
-                    "count": 0
-                },
-                "unknown": {
-                    "count": 0
-                }
-            },
-            "oplog": {
-                "first": {
-                    "timestamp": 1550700557
-                },
-                "last": {
-                    "timestamp": 1550700559
-                },
-                "size": {
-                    "allocated": 40572728934,
-                    "used": 180
-                },
-                "window": 2
-            },
-            "optimes": {
-                "applied": 1550700559,
-                "durable": 1550700559,
-                "last_committed": 1550700559
-            },
-            "server_date": "2019-02-20T23:09:23.733+01:00",
-            "set_name": "beats"
-        }
+    "data_stream": {
+        "dataset": "mongodb.replstatus",
+        "namespace": "ep",
+        "type": "metrics"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "snapshot": true,
+        "version": "7.15.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "mongodb.replstatus",
-        "module": "mongodb",
-        "duration": 1962467
+        "duration": 7619188,
+        "ingested": "2021-08-19T05:32:41Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "d03287130c55973b5da6a27a9638ce49",
+        "ip": [
+            "1.1.1.1"
+        ],
+        "mac": [
+            "02:42:ac:1e:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "3.10.0-1062.el7.x86_64",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
     },
     "metricset": {
         "name": "replstatus",
         "period": 10000
     },
-    "agent": {
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro",
-        "type": "metricbeat",
-        "version": "8.0.0"
+    "mongodb": {
+        "replstatus": {
+            "headroom": {},
+            "lag": {},
+            "members": {
+                "arbiter": {
+                    "count": 0,
+                    "hosts": []
+                },
+                "down": {
+                    "count": 0,
+                    "hosts": []
+                },
+                "primary": {
+                    "host": "elastic-package-service_mongodb_1:27017",
+                    "optime": 1629351144
+                },
+                "recovering": {
+                    "count": 0,
+                    "hosts": []
+                },
+                "rollback": {
+                    "count": 0,
+                    "hosts": []
+                },
+                "secondary": {
+                    "count": 0,
+                    "hosts": [],
+                    "optimes": []
+                },
+                "startup2": {
+                    "count": 0,
+                    "hosts": []
+                },
+                "unhealthy": {
+                    "count": 0,
+                    "hosts": []
+                },
+                "unknown": {
+                    "count": 0,
+                    "hosts": []
+                }
+            },
+            "oplog": {
+                "first": {
+                    "timestamp": 1629351141
+                },
+                "last": {
+                    "timestamp": 1629351144
+                },
+                "size": {
+                    "allocated": 3406920499,
+                    "used": 1390
+                },
+                "window": 3
+            },
+            "optimes": {
+                "applied": 1629351144,
+                "durable": 1629351144,
+                "last_committed": 1629351144
+            },
+            "server_date": "2021-08-19T05:32:38.089Z",
+            "set_name": "rs0"
+        }
+    },
+    "service": {
+        "address": "mongodb://elastic-package-service_mongodb_1:27017",
+        "type": "mongodb"
     }
 }
 ```
@@ -959,7 +1111,7 @@ The fields reported are:
 | mongodb.replstatus.members.down.count | Count of `down` members | long |
 | mongodb.replstatus.members.down.hosts | List of `down` members hosts | keyword |
 | mongodb.replstatus.members.primary.host | Host address of the primary | keyword |
-| mongodb.replstatus.members.primary.optime | Optime of primary | keyword |
+| mongodb.replstatus.members.primary.optime | Optime of primary | float |
 | mongodb.replstatus.members.recovering.count | Count of members in the `recovering` state | long |
 | mongodb.replstatus.members.recovering.hosts | List of recovering members hosts | keyword |
 | mongodb.replstatus.members.rollback.count | Count of members in the `rollback` state | long |
@@ -998,207 +1150,263 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:01.455Z",
+    "@timestamp": "2021-08-19T05:33:32.072Z",
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro",
-        "type": "metricbeat"
+        "ephemeral_id": "8b39e294-7915-4e3a-b4e5-4fffadfbbd6c",
+        "hostname": "docker-fleet-agent",
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.15.0"
     },
-    "process": {
-        "name": "mongod"
+    "data_stream": {
+        "dataset": "mongodb.status",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "snapshot": true,
+        "version": "7.15.0"
     },
     "event": {
-        "duration": 3581045,
+        "agent_id_status": "verified",
         "dataset": "mongodb.status",
+        "duration": 7079173,
+        "ingested": "2021-08-19T05:33:35Z",
         "module": "mongodb"
     },
-    "mongodb": {
-        "status": {
-            "locks": {
-                "global": {
-                    "acquire": {
-                        "count": {
-                            "w": 458,
-                            "W": 4,
-                            "r": 56961
-                        }
-                    },
-                    "wait": {},
-                    "deadlock": {}
-                },
-                "database": {
-                    "deadlock": {},
-                    "acquire": {
-                        "count": {
-                            "w": 453,
-                            "W": 5,
-                            "r": 5238
-                        }
-                    },
-                    "wait": {}
-                },
-                "collection": {
-                    "wait": {},
-                    "deadlock": {},
-                    "acquire": {
-                        "count": {
-                            "W": 3,
-                            "r": 8221,
-                            "w": 450
-                        }
-                    }
-                }
-            },
-            "network": {
-                "in": {
-                    "bytes": 687306
-                },
-                "out": {
-                    "bytes": 32519464
-                },
-                "requests": 11607
-            },
-            "extra_info": {
-                "page_faults": 0,
-                "heap_usage": {}
-            },
-            "local_time": "2020-06-29T21:20:01.457Z",
-            "storage_engine": {
-                "name": "wiredTiger"
-            },
-            "asserts": {
-                "user": 9,
-                "rollovers": 0,
-                "regular": 0,
-                "warning": 0,
-                "msg": 0
-            },
-            "global_lock": {
-                "total_time": {
-                    "us": 26003338000
-                },
-                "current_queue": {
-                    "total": 0,
-                    "readers": 0,
-                    "writers": 0
-                },
-                "active_clients": {
-                    "total": 1,
-                    "readers": 1,
-                    "writers": 0
-                }
-            },
-            "wired_tiger": {
-                "log": {
-                    "syncs": 67,
-                    "size": {
-                        "bytes": 33554432
-                    },
-                    "write": {
-                        "bytes": 46976
-                    },
-                    "max_file_size": {
-                        "bytes": 104857600
-                    },
-                    "flushes": 152183,
-                    "writes": 140,
-                    "scans": 6
-                },
-                "concurrent_transactions": {
-                    "write": {
-                        "out": 0,
-                        "available": 128,
-                        "total_tickets": 128
-                    },
-                    "read": {
-                        "available": 128,
-                        "total_tickets": 128,
-                        "out": 0
-                    }
-                },
-                "cache": {
-                    "dirty": {
-                        "bytes": 0
-                    },
-                    "pages": {
-                        "evicted": 0,
-                        "read": 14,
-                        "write": 111
-                    },
-                    "maximum": {
-                        "bytes": 16642998272
-                    },
-                    "used": {
-                        "bytes": 89236
-                    }
-                }
-            },
-            "memory": {
-                "mapped_with_journal": {},
-                "bits": 64,
-                "resident": {
-                    "mb": 44
-                },
-                "virtual": {
-                    "mb": 6971
-                },
-                "mapped": {}
-            },
-            "connections": {
-                "total_created": 2266,
-                "current": 5,
-                "available": 3271
-            },
-            "ops": {
-                "counters": {
-                    "delete": 3,
-                    "getmore": 452,
-                    "command": 11314,
-                    "insert": 19,
-                    "query": 94,
-                    "update": 5
-                },
-                "replicated": {
-                    "delete": 0,
-                    "getmore": 0,
-                    "command": 0,
-                    "insert": 0,
-                    "query": 0,
-                    "update": 0
-                },
-                "latencies": {
-                    "writes": {
-                        "latency": 103455,
-                        "count": 9
-                    },
-                    "commands": {
-                        "latency": 2055949,
-                        "count": 11138
-                    },
-                    "reads": {
-                        "latency": 14259,
-                        "count": 458
-                    }
-                }
-            },
-            "uptime": {
-                "ms": 26003340
-            }
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "d03287130c55973b5da6a27a9638ce49",
+        "ip": [
+            "1.1.1.1"
+        ],
+        "mac": [
+            "02:42:ac:1e:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "3.10.0-1062.el7.x86_64",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
         }
-    },
-    "service": {
-        "version": "4.2.0",
-        "address": "localhost:27017",
-        "type": "mongodb"
     },
     "metricset": {
         "name": "status",
         "period": 10000
     },
-    "ecs": {
-        "version": "1.5.0"
+    "mongodb": {
+        "status": {
+            "asserts": {
+                "msg": 0,
+                "regular": 0,
+                "rollovers": 0,
+                "user": 9,
+                "warning": 0
+            },
+            "connections": {
+                "available": 838859,
+                "current": 1,
+                "total_created": 16
+            },
+            "extra_info": {
+                "heap_usage": {},
+                "page_faults": 0
+            },
+            "global_lock": {
+                "active_clients": {
+                    "readers": 0,
+                    "total": 0,
+                    "writers": 0
+                },
+                "current_queue": {
+                    "readers": 0,
+                    "total": 0,
+                    "writers": 0
+                },
+                "total_time": {
+                    "us": 21862000
+                }
+            },
+            "local_time": "2021-08-19T05:33:32.075Z",
+            "locks": {
+                "collection": {
+                    "acquire": {
+                        "count": {
+                            "W": 6,
+                            "r": 46,
+                            "w": 174
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                },
+                "database": {
+                    "acquire": {
+                        "count": {
+                            "W": 15,
+                            "r": 76,
+                            "w": 173
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                },
+                "global": {
+                    "acquire": {
+                        "count": {
+                            "W": 5,
+                            "r": 369,
+                            "w": 193
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {
+                        "count": {
+                            "W": 1,
+                            "r": 3,
+                            "w": 1
+                        },
+                        "us": {
+                            "W": 611,
+                            "r": 175587,
+                            "w": 99091
+                        }
+                    }
+                },
+                "oplog": {
+                    "acquire": {
+                        "count": {
+                            "r": 18,
+                            "w": 2
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                }
+            },
+            "memory": {
+                "bits": 64,
+                "mapped": {},
+                "mapped_with_journal": {},
+                "resident": {
+                    "mb": 81
+                },
+                "virtual": {
+                    "mb": 1662
+                }
+            },
+            "network": {
+                "in": {
+                    "bytes": 19079
+                },
+                "out": {
+                    "bytes": 732865
+                },
+                "requests": 130
+            },
+            "ops": {
+                "counters": {
+                    "command": 131,
+                    "delete": 0,
+                    "getmore": 0,
+                    "insert": 2,
+                    "query": 6,
+                    "update": 0
+                },
+                "latencies": {
+                    "commands": {
+                        "count": 129,
+                        "latency": 651036
+                    },
+                    "reads": {
+                        "count": 0,
+                        "latency": 0
+                    },
+                    "writes": {
+                        "count": 0,
+                        "latency": 0
+                    }
+                },
+                "replicated": {
+                    "command": 0,
+                    "delete": 0,
+                    "getmore": 0,
+                    "insert": 0,
+                    "query": 0,
+                    "update": 0
+                }
+            },
+            "storage_engine": {
+                "name": "wiredTiger"
+            },
+            "uptime": {
+                "ms": 21865
+            },
+            "wired_tiger": {
+                "cache": {
+                    "dirty": {
+                        "bytes": 22357
+                    },
+                    "maximum": {
+                        "bytes": 3563061248
+                    },
+                    "pages": {
+                        "evicted": 0,
+                        "read": 0,
+                        "write": 49
+                    },
+                    "used": {
+                        "bytes": 149048
+                    }
+                },
+                "concurrent_transactions": {
+                    "read": {
+                        "available": 128,
+                        "out": 0,
+                        "total_tickets": 128
+                    },
+                    "write": {
+                        "available": 128,
+                        "out": 0,
+                        "total_tickets": 128
+                    }
+                },
+                "log": {
+                    "flushes": 170,
+                    "max_file_size": {
+                        "bytes": 104857600
+                    },
+                    "scans": 0,
+                    "size": {
+                        "bytes": 33554432
+                    },
+                    "syncs": 48,
+                    "write": {
+                        "bytes": 64000
+                    },
+                    "writes": 196
+                }
+            }
+        }
+    },
+    "process": {
+        "name": "mongod"
+    },
+    "service": {
+        "address": "mongodb://elastic-package-service_mongodb_1:27017",
+        "type": "mongodb",
+        "version": "4.4.8"
     }
 }
 ```

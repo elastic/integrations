@@ -1,0 +1,19 @@
+version: '2.3'
+services:
+  mongodb:
+    build: .
+    ports:
+      - 27017
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log/mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    entrypoint: >
+      bash -c "touch /var/log/mongodb/mongodb.log && chmod 777 /var/log/mongodb/mongodb.log && mongod --bind_ip_all --replSet rs0 --logpath /var/log/mongodb/mongodb.log --logappend"
+
+  creator:
+    build: creator
+    entrypoint: ["mongo", "--host", "elastic-package-service_mongodb_1", "--port", "27017", "--eval", 'rs.initiate( { _id : "rs0",members: [{ _id: 0, host: "elastic-package-service_mongodb_1:27017" }   ]})']
+    depends_on:
+      - mongodb
