@@ -1,0 +1,32 @@
+version: '2.3'
+services:
+  carbonblack_edr-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  carbonblack_edr-http:
+    image: akroh/stream:v0.2.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9080/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/cb_edr.ndjson.log
+  carbonblack_edr-tcp:
+    image: akroh/stream:v0.2.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=tcp
+      - STREAM_ADDR=elastic-agent:9081
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/cb_edr.ndjson.log
+  carbonblack_edr-udp:
+    image: akroh/stream:v0.2.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=udp
+      - STREAM_ADDR=elastic-agent:9081
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/cb_edr.ndjson.log

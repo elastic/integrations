@@ -2,6 +2,16 @@ paths:
 {{#each paths as |path i|}}
  - {{path}}
 {{/each}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 exclude_files: [".gz$"]
 # If the line doesn't start with a timestamp, consider it a continuation of the previous line
 # From https://www.elastic.co/guide/en/beats/filebeat/current/_examples_of_multiline_configuration.html#_timestamps
@@ -11,8 +21,7 @@ multiline:
   negate: true
   match: after
 processors:
-  - add_locale: ~
-  - add_fields:
-      target: ''
-      fields:
-        ecs.version: 1.9.0
+{{#if processors}}
+{{processors}}
+{{/if}}
+- add_locale: ~

@@ -1,0 +1,32 @@
+---
+description: Pipeline for parsing CloudTrail logs from third party api
+processors:
+  - drop:
+      if: ctx?.json?._raw == null
+      description: JSON doesn't have CloudTrail data
+  - fingerprint:
+      fields:
+        - _temp_.result._cd
+        - _temp_.result._indextime
+        - _temp_.result._raw
+        - _temp_.result._time
+      target_field: '_id'
+      ignore_missing: true
+  - set:
+      field: event.original
+      copy_from: json.result._raw
+      ignore_empty_value: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in third party api pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

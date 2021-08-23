@@ -14,7 +14,7 @@ The `connection` dataset fetches the data returned by the `cons` admin keyword.
 
 An example event for `connection` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T16:12:07.612Z",
     "host": {
@@ -82,6 +82,8 @@ An example event for `connection` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -112,7 +114,7 @@ The `mntr` Metricset fetches the data returned by the `mntr` admin keyword.
 
 An example event for `mntr` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T16:12:08.494Z",
     "zookeeper": {
@@ -189,6 +191,8 @@ An example event for `mntr` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -234,7 +238,7 @@ The `server` Metricset fetches the data returned by the `srvr` admin keyword.
 
 An example event for `server` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-07-06T16:12:12.409Z",
     "event": {
@@ -308,6 +312,8 @@ An example event for `server` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

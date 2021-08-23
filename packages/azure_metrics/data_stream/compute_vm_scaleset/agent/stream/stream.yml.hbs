@@ -1,0 +1,109 @@
+metricsets: ["monitor"]
+default_resource_type: "Microsoft.Compute/virtualMachineScaleSets"
+add_cloud_metadata: true
+period: {{period}}
+{{#if client_id}}
+client_id: {{client_id}}
+{{/if}}
+{{#if client_secret}}
+client_secret: {{client_secret}}
+{{/if}}
+{{#if tenant_id}}
+tenant_id: {{tenant_id}}
+{{/if}}
+{{#if subscription_id}}
+subscription_id: {{subscription_id}}
+{{/if}}
+{{#if refresh_list_interval}}
+refresh_list_interval: {{refresh_list_interval}}
+{{/if}}
+{{#if resource_manager_endpoint}}
+    resource_manager_endpoint: {{resource_manager_endpoint}}
+{{/if}}
+{{#if active_directory_endpoint}}
+    active_directory_endpoint: {{active_directory_endpoint}}
+{{/if}}
+
+resources:
+{{#if resource_groups}}
+    {{#each resource_groups}}
+        - resource_group: "{{this}}"
+          resource_type: "Microsoft.Compute/virtualMachineScaleSets"
+          metrics:
+            - name: ["CPU Credits Remaining", "CPU Credits Consumed"]
+              namespace: "Microsoft.Compute/virtualMachineScaleSets"
+              timegrain: "PT5M"
+              ignore_unsupported: true
+            - name: ["Available Memory Bytes", "Percentage CPU", "Disk Read Bytes", "Disk Write Bytes", "Disk Read Operations/Sec", "Disk Write Operations/Sec", "Data Disk Read Bytes/sec", "Data Disk Write Bytes/sec", "Network Out Total",
+                  "Network In Total", "Data Disk Read Operations/Sec", "Data Disk Write Operations/Sec", "Data Disk Queue Depth", "Data Disk Bandwidth Consumed Percentage",
+                  "Outbound Flows Maximum Creation Rate", "Inbound Flows Maximum Creation Rate", "Outbound Flows", "Inbound Flows",
+                  "OS Disk Queue Depth", "OS Disk Write Operations/Sec", "OS Disk Read Operations/Sec", "OS Disk Write Bytes/sec", "OS Disk Read Bytes/sec"]
+              namespace: "Microsoft.Compute/virtualMachineScaleSets"
+              ignore_unsupported: true
+              timegrain: "PT5M"
+              dimensions:
+                - name: "VMName"
+                  value: "*"
+            - name: ["Memory\\Commit Limit", "Memory\\Committed Bytes", "Memory\\% Committed Bytes In Use", "Memory\\Available Bytes"]
+              namespace: "Azure.VM.Windows.GuestMetrics"
+              timegrain: "PT5M"
+              dimensions:
+                - name: "VirtualMachine"
+                  value: "*"
+              ignore_unsupported: true
+    {{/each}}
+{{/if}}
+{{#if resource_ids}}
+    {{#each resource_ids}}
+        - resource_id: "{{this}}"
+          metrics:
+            - name: ["CPU Credits Remaining", "CPU Credits Consumed"]
+              namespace: "Microsoft.Compute/virtualMachineScaleSets"
+              timegrain: "PT5M"
+              ignore_unsupported: true
+            - name: ["Available Memory Bytes", "Percentage CPU", "Disk Read Bytes", "Disk Write Bytes", "Disk Read Operations/Sec", "Disk Write Operations/Sec", "Data Disk Read Bytes/sec", "Data Disk Write Bytes/sec", "Network Out Total",
+                "Network In Total", "Data Disk Read Operations/Sec", "Data Disk Write Operations/Sec", "Data Disk Queue Depth", "Data Disk Bandwidth Consumed Percentage",
+                "Outbound Flows Maximum Creation Rate", "Inbound Flows Maximum Creation Rate", "Outbound Flows", "Inbound Flows",
+                "OS Disk Queue Depth", "OS Disk Write Operations/Sec", "OS Disk Read Operations/Sec", "OS Disk Write Bytes/sec", "OS Disk Read Bytes/sec"]
+              namespace: "Microsoft.Compute/virtualMachineScaleSets"
+              ignore_unsupported: true
+              timegrain: "PT5M"
+              dimensions:
+                - name: "VMName"
+                  value: "*"
+            - name: ["Memory\\Commit Limit", "Memory\\Committed Bytes", "Memory\\% Committed Bytes In Use", "Memory\\Available Bytes"]
+              namespace: "Azure.VM.Windows.GuestMetrics"
+              timegrain: "PT5M"
+              dimensions:
+                - name: "VirtualMachine"
+                  value: "*"
+              ignore_unsupported: true
+    {{/each}}
+{{/if}}
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+        - resource_query: "resourceType eq 'Microsoft.Compute/virtualMachineScaleSets'"
+          metrics:
+            - name: ["CPU Credits Remaining", "CPU Credits Consumed"]
+              namespace: "Microsoft.Compute/virtualMachineScaleSets"
+              timegrain: "PT5M"
+              ignore_unsupported: true
+            - name: ["Available Memory Bytes", "Percentage CPU", "Disk Read Bytes", "Disk Write Bytes", "Disk Read Operations/Sec", "Disk Write Operations/Sec", "Data Disk Read Bytes/sec", "Data Disk Write Bytes/sec", "Network Out Total",
+                "Network In Total", "Data Disk Read Operations/Sec", "Data Disk Write Operations/Sec", "Data Disk Queue Depth", "Data Disk Bandwidth Consumed Percentage",
+                "Outbound Flows Maximum Creation Rate", "Inbound Flows Maximum Creation Rate", "Outbound Flows", "Inbound Flows",
+                "OS Disk Queue Depth", "OS Disk Write Operations/Sec", "OS Disk Read Operations/Sec", "OS Disk Write Bytes/sec", "OS Disk Read Bytes/sec"]
+              namespace: "Microsoft.Compute/virtualMachineScaleSets"
+              ignore_unsupported: true
+              timegrain: "PT5M"
+              dimensions:
+                - name: "VMName"
+                  value: "*"
+            - name: ["Memory\\Commit Limit", "Memory\\Committed Bytes", "Memory\\% Committed Bytes In Use", "Memory\\Available Bytes"]
+              namespace: "Azure.VM.Windows.GuestMetrics"
+              timegrain: "PT5M"
+              dimensions:
+                - name: "VirtualMachine"
+                  value: "*"
+              ignore_unsupported: true
+    {{/unless}}
+{{/unless}}
