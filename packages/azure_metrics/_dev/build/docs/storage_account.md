@@ -14,20 +14,20 @@ For a more detailed walk-through, have a look at using Azure PowerShell to creat
  It is also possible to create a service principal via the Azure portal https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal.
 Users will have to make sure the roles assigned to the application contain at least reading permissions to the monitor data, more on the roles here https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles.
 
-Required credentials for the `azure` resource metrics integration:
+Required credentials for the `azure_metrics` integration:
 
-`client_id`:: The unique identifier for the application (also known as Application Id)
+`Client ID`:: The unique identifier for the application (also known as Application Id)
 
-`client_secret`:: The client/application secret/key
+`Client Secret`:: The client/application secret/key
 
-`subscription_id`:: The unique identifier for the azure subscription
+`Subscription ID`:: The unique identifier for the azure subscription
 
-`tenant_id`:: The unique identifier of the Azure Active Directory instance
+`Tenant ID`:: The unique identifier of the Azure Active Directory instance
 
 
 The azure credentials keys can be used if configured `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
 
-`resource_manager_endpoint` ::
+`Resource Manager Endpoint` ::
 _string_
 Optional, by default the azure public environment will be used, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
 Ex:
@@ -36,7 +36,7 @@ https://management.microsoftazure.de for azure GermanCloud
 https://management.azure.com for azure PublicCloud
 https://management.usgovcloudapi.net for azure USGovernmentCloud
 
-`active_directory_endpoint` ::
+`Active Directory Endpoint` ::
 _string_
 Optional, by default the associated active directory endpoint to the resource manager endpoint will be used, to override, users can provide a specific active directory endpoint in order to use a different azure environment.
 Ex:
@@ -46,10 +46,20 @@ https://login.chinacloudapi.cn for azure PublicCloud
 https://login.microsoftonline.de for azure USGovernmentCloud
 
 
-The data stream will collect metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
-so the `period` for `storage_account` should be `300s` or multiples of `300s`.
+### Data stream specific configuration notes
 
-{{fields "storage_account"}}
+`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `storage_account` should have a value of `300s` or multiple of `300s`for relevant results.
+
+`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format /subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}.
+  Should return a list of resources.
+
+`Resource Groups`:: (_[]string_) This option will return all storage accounts inside the resource group.
+
+`Service Types`:: (_[]string_) The service type values allowed are `blob`, `table`, `queue`, `file`, they can be used to filter on the type of the storage account container.
+
+If no resource filter is specified, then all storage accounts inside the subscription will be considered.
+
+The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
 
 ## Additional notes about metrics and costs
@@ -57,3 +67,6 @@ so the `period` for `storage_account` should be `300s` or multiples of `300s`.
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/id-id/pricing/details/monitor/.
 
 Authentication: we are handling authentication on our side (creating/renewing the authentication token), so we advise users to use dedicated credentials for metricbeat only.
+
+{{fields "storage_account"}}
+
