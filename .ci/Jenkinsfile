@@ -223,7 +223,7 @@ def findStackVersion(String versionCondition) {
   def response = httpRequest(url: 'https://artifacts-api.elastic.co/v1/versions')
   def availableVersions = readJSON(text: response)
 
-  parts = version.split('\\.')
+  def parts = version.split('\\.')
 
   // If this is specifying a major or a minor only, check with the zero version.
   while (parts.size() < 3) {
@@ -231,28 +231,36 @@ def findStackVersion(String versionCondition) {
     parts += "0"
   }
 
-  // If the version exists, or has a snapshot, use it.
-  if (availableVersions.versions.contains(version)) {
-    return version
-  }
-  snapshotVersion = version + "-SNAPSHOT"
-  if (availableVersions.versions.contains(snapshotVersion)) {
+  def major = parts[0]
+  def minor = parts[1]
+  def patch = parts[2]
+
+  // Use the snapshot if this is the last patch version.
+  def nextPatch = major + "." + minor + "." + ((patch as Integer) + 1)
+  def nextPatchExists = (
+    availableVersions.versions.contains(nextPatch) ||
+    availableVersions.versions.contains(nextPatch + "-SNAPSHOT")
+  )
+  def snapshotVersion = version + "-SNAPSHOT"
+  if (!nextPatchExists && availableVersions.versions.contains(snapshotVersion)) {
     return snapshotVersion
   }
 
-  major = parts[0]
-  minor = parts[1]
+  // Use the version as is if it exists.
+  if (availableVersions.versions.contains(version)) {
+    return version
+  }
 
   // Old minors may not be available in artifacts-api, if it is older
   // than the others in the same major, return the version as is.
-  older = true
+  def older = true
   for (availableVersion in availableVersions.versions) {
-    availableParts = availableVersion.split('\\.')
+    def availableParts = availableVersion.split('\\.')
     if (availableParts.size() < 2) {
       continue
     }
-    availableMajor = availableParts[0]
-    availableMinor = availableParts[1]
+    def availableMajor = availableParts[0]
+    def availableMinor = availableParts[1]
     if (major == availableMajor && minor > availableMinor) {
       older = false
       break
@@ -264,7 +272,7 @@ def findStackVersion(String versionCondition) {
 
   // If no version has been found so far, try with the snapshot of the next version
   // in the current major.
-  majorSnapshot = major + ".x-SNAPSHOT"
+  def majorSnapshot = major + ".x-SNAPSHOT"
   if (availableVersion.aliases.contains(majorSnapshot)) {
     return majorSnapshot
   }
