@@ -157,26 +157,26 @@ An example event for `app_insights` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| app_state.browser_timings_network_duration.avg | Browser timings network duration | float |
-| app_state.browser_timings_processing_duration.avg | Browser timings processing duration | float |
-| app_state.browser_timings_receive_uration.avg | Browser timings receive duration | float |
-| app_state.browser_timings_send_duration.avg | Browser timings send duration | float |
-| app_state.browser_timings_total_duration.avg | Browser timings total duration | float |
-| app_state.end_date | The end date | date |
-| app_state.exceptions_browser.sum | Exception count at browser level | float |
-| app_state.exceptions_count.sum | Exception count | float |
-| app_state.exceptions_server.sum | Exception count at server level | float |
-| app_state.performance_counters_memory_available_bytes.avg | Performance counters memory available bytes | float |
-| app_state.performance_counters_process_cpu_percentage.avg | Performance counters process cpu percentage | float |
-| app_state.performance_counters_process_cpu_percentage_total.avg | Performance counters process cpu percentage total | float |
-| app_state.performance_counters_process_private_bytes.avg | Performance counters process private bytes | float |
-| app_state.performance_counters_processiobytes_per_second.avg | Performance counters process IO bytes per second | float |
-| app_state.requests_count.sum | Request count | float |
-| app_state.requests_failed.sum | Request failed count | float |
-| app_state.sessions_count.unique | Session count | float |
-| app_state.start_date | The start date | date |
-| app_state.users_authenticated.unique | Authenticated users count | float |
-| app_state.users_count.unique | User count | float |
+| azure.app_state.browser_timings_network_duration.avg | Browser timings network duration | float |
+| azure.app_state.browser_timings_processing_duration.avg | Browser timings processing duration | float |
+| azure.app_state.browser_timings_receive_uration.avg | Browser timings receive duration | float |
+| azure.app_state.browser_timings_send_duration.avg | Browser timings send duration | float |
+| azure.app_state.browser_timings_total_duration.avg | Browser timings total duration | float |
+| azure.app_state.end_date | The end date | date |
+| azure.app_state.exceptions_browser.sum | Exception count at browser level | float |
+| azure.app_state.exceptions_count.sum | Exception count | float |
+| azure.app_state.exceptions_server.sum | Exception count at server level | float |
+| azure.app_state.performance_counters_memory_available_bytes.avg | Performance counters memory available bytes | float |
+| azure.app_state.performance_counters_process_cpu_percentage.avg | Performance counters process cpu percentage | float |
+| azure.app_state.performance_counters_process_cpu_percentage_total.avg | Performance counters process cpu percentage total | float |
+| azure.app_state.performance_counters_process_private_bytes.avg | Performance counters process private bytes | float |
+| azure.app_state.performance_counters_processiobytes_per_second.avg | Performance counters process IO bytes per second | float |
+| azure.app_state.requests_count.sum | Request count | float |
+| azure.app_state.requests_failed.sum | Request failed count | float |
+| azure.app_state.sessions_count.unique | Session count | float |
+| azure.app_state.start_date | The start date | date |
+| azure.app_state.users_authenticated.unique | Authenticated users count | float |
+| azure.app_state.users_count.unique | User count | float |
 | azure.application_id | The application ID | keyword |
 | azure.dimensions.\* | Azure metric dimensions. | object |
 | azure.metrics.\*.\* | Metrics returned. | object |
