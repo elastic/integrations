@@ -19,6 +19,8 @@ license: basic
 categories:
   - azure
   - web
+conditions:
+  kibana.version: ^7.14.0
 vars:
   - name: application_id
     type: text
@@ -32,15 +34,46 @@ vars:
     multi: false
     required: true
     show_user: true
-conditions:
-  kibana.version: ^7.14.0
 policy_templates:
-  - name: application_insights
-    title: Azure Application Insights
-    description: Collect application insights metrics
+  - name: app_insights
+    title: Azure Application Insights metrics
+    description: Azure Application Insights Metrics Integration
+    data_streams:
+      - app_insights
     inputs:
-      - type: azure/metrics
-        title: Collect Azure Application Insights metrics
-        description: Collecting Azure Application Insights metrics
+      - type: "azure/metrics"
+        title: "Collect Azure Application Insights metrics"
+        description: "Collecting Azure Application Insights metrics"
+        input_group: metrics
+    icons:
+      - src: /img//app_insights.png
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/docker-overview.png
+        title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
+  - name: app_state
+    title: Azure Application State Insights metrics
+    description: Azure Application State Insights Metrics Integration
+    data_streams:
+      - app_state
+    inputs:
+      - type: "azure/metrics"
+        title: "Collect Azure Application State Insights metrics"
+        description: "Collecting Azure Application State Insights metrics"
+        input_group: metrics
+    icons:
+      - src: /img//app_insights.png
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/docker-overview.png
+        title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
 owner:
   github: elastic/integrations

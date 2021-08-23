@@ -9,12 +9,6 @@ The Application Insights Integration allows users to retrieve application insigh
 `Api Key`:: (_[]string_) The API key which will be generated, more on the steps here https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID.
 
 
-The integration contains the following data streams:
-
-### app_insights
-Users can retrieve any application insights metrics and make use of the filters below in order to concentrate on the type of data they want to collect.
-
-
 #### Configuration options
 
 `Metrics`:: List of different metrics to collect information
@@ -59,18 +53,12 @@ Example configuration:
 ```
 
 
-### app_state
-Will retrieve application related state metrics.
-
-
 ## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/en-us/pricing/details/monitor/.
 
 
 {{event "app_insights"}}
-
-{{fields "app_state"}}
 
 
 
