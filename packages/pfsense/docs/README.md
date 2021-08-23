@@ -6,7 +6,6 @@ Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, and HAProxy logs.  All other eve
 The firewall, VPN, DHCP, and DNS logs are able to be individually selected via the "Remote Logging Options"
 section within the pfSense settings page.  In order to collect HAProxy or other "package" logs, the "Everything" option
 must be selected. The module is by default configured to run with the `udp` input on port `9001`.
-However, it can also be configured to read from a file path.
 
 *The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
 
@@ -20,14 +19,10 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "offset": "0",
     "log": {
         "syslog": {
             "priority": 134
         }
-    },
-    "ip": {
-        "flags": "DF"
     },
     "destination": {
         "geo": {
@@ -57,15 +52,10 @@ An example event for `log` looks as following:
         "address": "10.170.12.50",
         "ip": "10.170.12.50"
     },
-    "transport": {
-        "data_length": "0"
-    },
     "message": "146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,12617,0,DF,6,tcp,60,10.170.12.50,1.1.1.1,49724,853,0,S,1891286705,,64240,,mss;sackOK;TS;nop;wscale",
-    "packet": {
-        "id": "12617"
-    },
-    "ttl": "63",
-    "tcp_options": "mss;sackOK;TS;nop;wscale",
+    "tags": [
+        "preserve_original_event"
+    ],
     "network": {
         "community_id": "1:sHss/MZhCpIXxOfJoM05khzrJ4k=",
         "transport": "tcp",
@@ -74,10 +64,6 @@ An example event for `log` looks as following:
         "iana_number": "6",
         "direction": "in"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
-    "window_size": 64240,
     "observer": {
         "ingress": {
             "vlan": {
@@ -92,17 +78,36 @@ An example event for `log` looks as following:
     "ecs": {
         "version": "1.10.0"
     },
+    "pfsense": {
+        "tcp": {
+            "flags": "S",
+            "length": 0,
+            "options": [
+                "mss",
+                "sackOK",
+                "TS",
+                "nop",
+                "wscale"
+            ],
+            "window": 64240
+        },
+        "ip": {
+            "flags": "DF",
+            "tos": "0x0",
+            "id": 12617,
+            "offset": 0,
+            "ttl": 63
+        }
+    },
     "related": {
         "ip": [
-            "10.170.12.50",
-            "1.1.1.1"
+            "1.1.1.1",
+            "10.170.12.50"
         ]
     },
-    "tcp_flags": "S",
-    "tos": "0x0",
     "event": {
         "reason": "match",
-        "ingested": "2021-07-04T02:30:40.666947269Z",
+        "ingested": "2021-08-15T21:51:26.914106944Z",
         "original": "\u003c134\u003eJul  3 19:10:30 filterlog[72237]: 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,12617,0,DF,6,tcp,60,10.170.12.50,1.1.1.1,49724,853,0,S,1891286705,,64240,,mss;sackOK;TS;nop;wscale",
         "provider": "filterlog",
         "kind": "event",
@@ -240,6 +245,7 @@ An example event for `log` looks as following:
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
@@ -264,17 +270,17 @@ An example event for `log` looks as following:
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer | constant_keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
-| pfsense.icmp.id | ID of the echo request/reply | long |
+| pfsense.icmp.id | ICMP ID. | long |
 | pfsense.icmp.mtu | MTU to use for subsequent data to this destination | long |
 | pfsense.icmp.otime | Originate Timestamp | date |
 | pfsense.icmp.parameter | ICMP parameter. | long |
 | pfsense.icmp.redirect | ICMP redirect address. | ip |
 | pfsense.icmp.rtime | Receive Timestamp | date |
-| pfsense.icmp.seq | ICMP sequence number. | long |
+| pfsense.icmp.seq | Sequence number of the echo request/reply | long |
 | pfsense.icmp.ttime | Transmit Timestamp | date |
 | pfsense.icmp.type | ICMP type. | keyword |
 | pfsense.icmp.unreachable.iana_number | Protocol ID number that was unreachable | long |
