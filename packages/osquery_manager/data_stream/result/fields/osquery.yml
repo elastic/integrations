@@ -38,6 +38,40 @@
           type: text
           norms: false
           default_field: false
+    - name: accessed_directories
+      description: prefetch.accessed_directories - Directories accessed by application within ten seconds of launch.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: accessed_directories_count
+      description: prefetch.accessed_directories_count - Number of directories accessed.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: accessed_files
+      description: prefetch.accessed_files - Files accessed by application within ten seconds of launch.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: accessed_files_count
+      description: prefetch.accessed_files_count - Number of files accessed.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: accessed_time
       description: shellbags.accessed_time - Directory Accessed time.
       type: keyword
@@ -1220,7 +1254,9 @@
           norms: false
           default_field: false
     - name: cdhash
-      description: signature.cdhash - Hash of the application Code Directory
+      description: |-
+        es_process_events.cdhash - Codesigning hash of the process
+        signature.cdhash - Hash of the application Code Directory
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1543,6 +1579,14 @@
           type: text
           norms: false
           default_field: false
+    - name: child_pid
+      description: es_process_events.child_pid - Process ID of a child process in case of a fork event
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: chunk_size
       description: md_devices.chunk_size - chunk size in bytes
       type: keyword
@@ -1594,6 +1638,7 @@
       description: |-
         bpf_process_events.cmdline - Command line arguments
         docker_container_processes.cmdline - Complete argv
+        es_process_events.cmdline - Command line arguments (argv)
         process_events.cmdline - Command line arguments (argv)
         processes.cmdline - Complete argv
       type: keyword
@@ -1602,6 +1647,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: cmdline_count
+      description: es_process_events.cmdline_count - Number of command line arguments
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: cmdline_size
       description: process_events.cmdline_size - Actual size (bytes) of command line arguments
@@ -2448,6 +2501,7 @@
     - name: cwd
       description: |-
         bpf_process_events.cwd - Current working directory
+        es_process_events.cwd - The process current working directory
         process_events.cwd - The process current working directory
         process_file_events.cwd - The current working directory of the process
         processes.cwd - Process current working directory
@@ -3211,6 +3265,7 @@
     - name: egid
       description: |-
         docker_container_processes.egid - Effective group ID
+        es_process_events.egid - Effective Group ID of the process
         process_events.egid - Effective group ID at process start
         process_file_events.egid - Effective group ID of the process using the file
         processes.egid - Unsigned effective group ID
@@ -3222,6 +3277,7 @@
         bpf_process_events.eid - Event ID
         bpf_socket_events.eid - Event ID
         disk_events.eid - Event ID
+        es_process_events.eid - Event ID
         file_events.eid - Event ID
         hardware_events.eid - Event ID
         ntfs_journal_events.eid - Event ID
@@ -3264,6 +3320,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: elevated_token
+      description: processes.elevated_token - Process uses elevated token yes=1, no=0
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: enable_ipv6
       description: docker_networks.enable_ipv6 - 1 if IPv6 is enabled on this network. 0 otherwise
@@ -3376,7 +3440,9 @@
           norms: false
           default_field: false
     - name: env
-      description: process_events.env - Environment variables delimited by spaces
+      description: |-
+        es_process_events.env - Environment variables delimited by spaces
+        process_events.env - Environment variables delimited by spaces
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3385,7 +3451,9 @@
           norms: false
           default_field: false
     - name: env_count
-      description: process_events.env_count - Number of environment variables
+      description: |-
+        es_process_events.env_count - Number of environment variables
+        process_events.env_count - Number of environment variables
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3482,6 +3550,7 @@
     - name: euid
       description: |-
         docker_container_processes.euid - Effective user ID
+        es_process_events.euid - Effective User ID of the process
         process_events.euid - Effective user ID at process start
         process_file_events.euid - Effective user ID of the process using the file
         processes.euid - Unsigned effective user ID
@@ -3514,6 +3583,15 @@
           default_field: false
     - name: event_tapped
       description: event_taps.event_tapped - The mask that identifies the set of events to be observed.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: event_type
+      description: es_process_events.event_type - Type of EndpointSecurity event
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3642,6 +3720,7 @@
       description: |-
         bpf_process_events.exit_code - Exit code of the system call
         bpf_socket_events.exit_code - Exit code of the system call
+        es_process_events.exit_code - Exit code of a process in case of an exit event
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3881,6 +3960,7 @@
         device_file.filename - Name portion of file path
         file.filename - Name portion of file path
         lxd_images.filename - Filename of the image file
+        prefetch.filename - Executable filename.
         xprotect_entries.filename - Use this file name to match
       type: keyword
       ignore_above: 1024
@@ -4167,6 +4247,7 @@
         bpf_socket_events.gid - Group ID
         device_file.gid - Owning group ID
         docker_container_processes.gid - Group ID
+        es_process_events.gid - Group ID of the process
         file.gid - Owning group ID
         file_events.gid - Owning group ID
         groups.gid - Unsigned int64 group ID
@@ -4197,6 +4278,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: global_seq_num
+      description: es_process_events.global_seq_num - Global sequence number
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: global_state
       description: alf.global_state - 1 If the firewall is enabled with exceptions, 2 if the firewall is configured to block all incoming connections, else 0
@@ -4376,6 +4465,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: hash
+      description: prefetch.hash - Prefetch CRC hash.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: hash_alg
       description: shadow.hash_alg - Password hashing algorithm
@@ -4684,7 +4782,7 @@
       description: |-
         browser_plugins.identifier - Plugin identifier
         chrome_extension_content_scripts.identifier - Extension identifier
-        chrome_extensions.identifier - Extension identifier (folder name)
+        chrome_extensions.identifier - Extension identifier, computed from its manifest. Empty in case of error.
         crashes.identifier - Identifier of the crashed process
         firefox_addons.identifier - Addon identifier
         safari_extensions.identifier - Extension identifier
@@ -5275,14 +5373,6 @@
         - name: number
           type: long
           default_field: false
-    - name: is_elevated_token
-      description: processes.is_elevated_token - Process uses elevated token yes=1, no=0
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: is_hidden
       description: |-
         groups.is_hidden - IsHidden attribute set in OpenDirectory
@@ -5424,6 +5514,7 @@
       description: |-
         authorized_keys.key - parsed authorized keys line
         azure_instance_tags.key - The tag key
+        chrome_extensions.key - The extension key, from the manifest file
         docker_container_labels.key - Label key
         docker_image_labels.key - Label key
         docker_network_labels.key - Label key
@@ -5647,7 +5738,9 @@
           norms: false
           default_field: false
     - name: last_run_time
-      description: scheduled_tasks.last_run_time - Timestamp the task last ran
+      description: |-
+        prefetch.last_run_time - Most recent time application was run.
+        scheduled_tasks.last_run_time - Timestamp the task last ran
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6231,6 +6324,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: mdm_managed
+      description: system_extensions.mdm_managed - 1 if managed by MDM system extension payload configuration, 0 otherwise
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: mechanism
       description: authorization_mechanisms.mechanism - Name of the mechanism that will be called
@@ -7328,6 +7429,14 @@
           type: text
           norms: false
           default_field: false
+    - name: original_parent
+      description: es_process_events.original_parent - Original parent process ID in case of reparenting
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: original_program_name
       description: authenticode.original_program_name - The original program name that the publisher has signed
       type: keyword
@@ -7372,6 +7481,15 @@
           default_field: false
     - name: other
       description: md_devices.other - Other information associated with array from /proc/mdstat
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: other_run_times
+      description: prefetch.other_run_times - Other execution times in prefetch file.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7564,6 +7682,7 @@
         bpf_socket_events.parent - Parent process ID
         crashes.parent - Parent PID of the crashed process
         docker_container_processes.parent - Process parent's PID
+        es_process_events.parent - Parent process ID
         iokit_devicetree.parent - Parent device registry ID
         iokit_registry.parent - Parent registry ID
         process_events.parent - Process parent's PID, or -1 if cannot be determined.
@@ -7718,6 +7837,7 @@
         elf_sections.path - Path to ELF file
         elf_segments.path - Path to ELF file
         elf_symbols.path - Path to ELF file
+        es_process_events.path - Path of executed file
         example.path - Path of example
         extended_attributes.path - Absolute file path
         file.path - Absolute file path
@@ -7747,6 +7867,7 @@
         package_bom.path - Path of package bom
         package_receipts.path - Path of receipt plist
         plist.path - (required) read preferences from a plist
+        prefetch.path - Prefetch file path.
         process_events.path - Path of executed file
         process_file_events.path - The path associated with the event
         process_memory_map.path - Path to mapped file or mapped type
@@ -8003,6 +8124,7 @@
         crashes.pid - Process (or thread) ID of the crashed process
         docker_container_processes.pid - Process ID
         docker_containers.pid - Identifier of the initial process
+        es_process_events.pid - Process (or thread) ID
         last.pid - Process (or thread) ID
         listening_ports.pid - Process (or thread) ID
         logged_in_users.pid - Process (or thread) ID
@@ -8082,6 +8204,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: platform_binary
+      description: es_process_events.platform_binary - Indicates if the binary is Apple signed binary (1) or not (0)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: platform_fault_domain
       description: azure_instance_metadata.platform_fault_domain - Fault domain the VM is running in
@@ -8568,6 +8698,15 @@
         - name: number
           type: long
           default_field: false
+    - name: prefix
+      description: homebrew_packages.prefix - Homebrew install prefix
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: preread
       description: docker_container_stats.preread - UNIX time when stats were last read
       type: keyword
@@ -8772,6 +8911,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: protection_type
+      description: processes.protection_type - The protection type of the process
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: protocol
       description: |-
@@ -9066,6 +9214,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: referenced_identifier
+      description: chrome_extensions.referenced_identifier - Extension identifier, as specified by the preferences file. Empty if the extension is not in the profile.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: refreshes
       description: "osquery_events.refreshes - Publisher only: number of runloop restarts"
@@ -9513,6 +9670,14 @@
           type: text
           norms: false
           default_field: false
+    - name: run_count
+      description: prefetch.run_count - Number of times the application has been run.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: rw
       description: docker_container_mounts.rw - 1 if read/write. 0 otherwise
       type: keyword
@@ -9686,6 +9851,14 @@
           type: text
           norms: false
           default_field: false
+    - name: secure_process
+      description: processes.secure_process - Process is secure (IUM) yes=1, no=0
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: security_breach
       description: chassis_info.security_breach - The physical status of the chassis such as Breach Successful, Breach Attempted, etc.
       type: keyword
@@ -9766,6 +9939,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: seq_num
+      description: es_process_events.seq_num - Per event sequence number
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: serial
       description: |-
@@ -10115,6 +10296,15 @@
           type: text
           norms: false
           default_field: false
+    - name: signing_id
+      description: es_process_events.signing_id - Signature identifier of the process
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: sigrule
       description: yara.sigrule - Signature strings used
       type: keyword
@@ -10159,6 +10349,7 @@
         package_bom.size - Expected file size
         platform_info.size - Size in bytes of firmware
         portage_packages.size - The size of the package
+        prefetch.size - Application file size.
         quicklook_cache.size - Parsed version size field
         rpm_package_files.size - Expected file size in bytes from RPM info DB
         rpm_packages.size - Package size in bytes
@@ -11059,6 +11250,15 @@
           type: text
           norms: false
           default_field: false
+    - name: team_id
+      description: es_process_events.team_id - Team identifier of thd process
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: team_identifier
       description: signature.team_identifier - The team signing identifier sealed into the signature
       type: keyword
@@ -11124,6 +11324,7 @@
         carves.time - Time at which the carve was kicked off
         disk_events.time - Time of appearance/disappearance in UNIX time
         docker_container_processes.time - Cumulative CPU time. [DD-]HH:MM:SS format
+        es_process_events.time - Time of execution in UNIX time
         file_events.time - Time of file event
         hardware_events.time - Time of hardware event
         kernel_panics.time - Formatted time of the event
@@ -11325,6 +11526,7 @@
         device_file.uid - Owning user ID
         disk_encryption.uid - Currently authenticated user if available
         docker_container_processes.uid - User ID
+        es_process_events.uid - User ID of the process
         file.uid - Owning user ID
         file_events.uid - Owning user ID
         firefox_addons.uid - The local user that owns the addon
@@ -11647,6 +11849,7 @@
     - name: username
       description: |-
         certificates.username - Username
+        es_process_events.username - Username
         last.username - Entry username
         launchd.username - Run this daemon or agent as this username
         managed_policies.username - Policy applies only this user
@@ -11847,6 +12050,7 @@
         docker_version.version - Docker version
         drivers.version - Driver version
         elf_info.version - Object file version
+        es_process_events.version - Version of EndpointSecurity event
         firefox_addons.version - Addon-supplied version string
         gatekeeper.version - Version of Gatekeeper's gke.bundle
         homebrew_packages.version - Current 'linked' version
@@ -11890,6 +12094,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: virtual_process
+      description: processes.virtual_process - Process is virtual (e.g. System, Registry, vmmem) yes=1, no=0
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: visible
       description: firefox_addons.visible - 1 If the addon is shown in browser else 0
@@ -11954,6 +12166,15 @@
         - name: number
           type: long
           default_field: false
+    - name: volume_creation
+      description: prefetch.volume_creation - Volume creation time.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: volume_id
       description: quicklook_cache.volume_id - Parsed volume ID from fs_id
       type: keyword
@@ -11965,6 +12186,7 @@
     - name: volume_serial
       description: |-
         file.volume_serial - Volume serial number
+        prefetch.volume_serial - Volume serial number.
         shortcut_files.volume_serial - Volume serial number.
       type: keyword
       ignore_above: 1024
