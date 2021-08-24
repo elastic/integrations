@@ -78,9 +78,9 @@ These datasets are not enabled by default.
 Note: In some "As a Service" Kubernetes implementations, like `GKE`, the master nodes or even the pods running on
 the masters won't be visible. In these cases it won't be possible to use `scheduler` and `controllermanager` metricsets.
 
-#### kube-pod-logs
+#### container-logs
 
-The kube-pod-logs dataset requires access to the log files in each Kubernetes node where the pod logs are stored.
+The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
 ## Compatibility
