@@ -20,15 +20,9 @@ Users can retrieve any application insights metrics and make use of the filters 
 `Metrics`:: List of different metrics to collect information
 
 `id`:: (_[]string_) IDs of the metrics that's being reported. Usually, the id is descriptive enough to help identify what's measured.
-A list of metric names can be entered as well.
-Default metricsets include: `requests/count` `requests/duration` `requests/failed` `users/count``users/authenticated`
-`pageViews/count` `pageViews/duration` `customEvents/count`
-`browserTimings/processingDuration` `browserTimings/receiveDuration` `browserTimings/networkDuration` `browserTimings/sendDuration`
-`browserTimings/totalDuration` `dependencies/count` `dependencies/duration` `dependencies/failed`
-`exceptions/count` `exceptions/browser` `exceptions/server` `sessions/count` `performanceCounters/requestExecutionTime` `performanceCounters/requestsPerSecond`
-`performanceCounters/requestsInQueue` `performanceCounters/memoryAvailableBytes` `performanceCounters/exceptionsPerSecond` `performanceCounters/processCpuPercentage`
-`performanceCounters/processIOBytesPerSecond` `performanceCounters/processPrivateBytes` `performanceCounters/processorCpuPercentage` `availabilityResults/count`
-`availabilityResults/availabilityPercentage` `availabilityResults/duration`
+A list of metric names can be entered as well. 
+Default metrics include a curated selection of requests counters, performance, and service availability. 
+The list of options can be found here https://docs.microsoft.com/en-us/rest/api/application-insights/metrics/get#metricid
 
 `interval`:: (_string_) The time interval to use when retrieving metric values. This is an ISO8601 duration.
 If interval is omitted, the metric value is aggregated across the entire timespan.
@@ -178,13 +172,13 @@ An example event for `app_insights` looks as following:
 | azure.app_state.users_authenticated.unique | Authenticated users count | float |
 | azure.app_state.users_count.unique | User count | float |
 | azure.application_id | The application ID | keyword |
-| azure.dimensions.\* | Azure metric dimensions. | object |
+| azure.dimensions.\* | Azure metric dimensions. | flattened |
 | azure.metrics.\*.\* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.\* | Azure resource tags. | object |
+| azure.resource.tags.\* | Azure resource tags. | flattened |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |

@@ -14,15 +14,8 @@ The Application Insights Integration allows users to retrieve application insigh
 `Metrics`:: List of different metrics to collect information
 
 `id`:: (_[]string_) IDs of the metrics that's being reported. Usually, the id is descriptive enough to help identify what's measured.
-A list of metric names can be entered as well.
-Default metricsets include: `requests/count` `requests/duration` `requests/failed` `users/count``users/authenticated`
-`pageViews/count` `pageViews/duration` `customEvents/count`
-`browserTimings/processingDuration` `browserTimings/receiveDuration` `browserTimings/networkDuration` `browserTimings/sendDuration`
-`browserTimings/totalDuration` `dependencies/count` `dependencies/duration` `dependencies/failed`
-`exceptions/count` `exceptions/browser` `exceptions/server` `sessions/count` `performanceCounters/requestExecutionTime` `performanceCounters/requestsPerSecond`
-`performanceCounters/requestsInQueue` `performanceCounters/memoryAvailableBytes` `performanceCounters/exceptionsPerSecond` `performanceCounters/processCpuPercentage`
-`performanceCounters/processIOBytesPerSecond` `performanceCounters/processPrivateBytes` `performanceCounters/processorCpuPercentage` `availabilityResults/count`
-`availabilityResults/availabilityPercentage` `availabilityResults/duration`
+Default metrics include a curated selection of requests counters, performance, and service availability. 
+The list of options can be found here https://docs.microsoft.com/en-us/rest/api/application-insights/metrics/get#metricid
 
 `interval`:: (_string_) The time interval to use when retrieving metric values. This is an ISO8601 duration.
 If interval is omitted, the metric value is aggregated across the entire timespan.
