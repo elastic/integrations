@@ -1,0 +1,15 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+exclude_lines: ["^(OpenJDK|Java HotSpot).* Server VM ", "^CommandLine flags: ", "^Memory: ", "^{"] # exclude JVM8 banner and JSON
+multiline:
+  pattern: '^(\[?[0-9]{4}-[0-9]{2}-[0-9]{2}|{)'
+  negate: true
+  match: after
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.10.0
