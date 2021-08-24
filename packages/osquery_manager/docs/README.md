@@ -282,6 +282,10 @@ For more information about osquery tables, see the [osquery schema documentation
 | **abi** | **elf_info.abi** - Section type | keyword, text.text |
 | **abi_version** | **elf_info.abi_version** - Section virtual address in memory | keyword, number.long |
 | **access** | **ntfs_acl_permissions.access** - Specific permissions that indicate the rights described by the ACE. | keyword, text.text |
+| **accessed_directories** | **prefetch.accessed_directories** - Directories accessed by application within ten seconds of launch. | keyword, text.text |
+| **accessed_directories_count** | **prefetch.accessed_directories_count** - Number of directories accessed. | keyword, number.long |
+| **accessed_files** | **prefetch.accessed_files** - Files accessed by application within ten seconds of launch. | keyword, text.text |
+| **accessed_files_count** | **prefetch.accessed_files_count** - Number of files accessed. | keyword, number.long |
 | **accessed_time** | **shellbags.accessed_time** - Directory Accessed time. | keyword, number.long |
 | **account_id** | **ec2_instance_metadata.account_id** - AWS account ID which owns this EC2 instance | keyword, text.text |
 | **action** | **disk_events.action** - Appear or disappear | keyword, text.text |
@@ -474,7 +478,8 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **power_sensors.category** - The sensor category: currents, voltage, wattage |  |
 |  | **system_extensions.category** - System extension category |  |
 |  | **yara_events.category** - The category of the file |  |
-| **cdhash** | **signature.cdhash** - Hash of the application Code Directory | keyword, text.text |
+| **cdhash** | **es_process_events.cdhash** - Codesigning hash of the process | keyword, text.text |
+|  | **signature.cdhash** - Hash of the application Code Directory |  |
 | **celsius** | **temperature_sensors.celsius** - Temperature in Celsius | keyword, number.double |
 | **certificate** | **lxd_certificates.certificate** - Certificate content | keyword, text.text |
 | **cgroup_driver** | **docker_info.cgroup_driver** - Control groups driver | keyword, text.text |
@@ -517,6 +522,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **check_array_progress** | **md_devices.check_array_progress** - Progress of the check array activity | keyword, text.text |
 | **check_array_speed** | **md_devices.check_array_speed** - Speed of the check array activity | keyword, text.text |
 | **checksum** | **disk_events.checksum** - UDIF Master checksum if available (CRC32) | keyword, text.text |
+| **child_pid** | **es_process_events.child_pid** - Process ID of a child process in case of a fork event | keyword, number.long |
 | **chunk_size** | **md_devices.chunk_size** - chunk size in bytes | keyword, number.long |
 | **cid** | **bpf_process_events.cid** - Cgroup ID | keyword, number.long |
 |  | **bpf_socket_events.cid** - Cgroup ID |  |
@@ -534,8 +540,10 @@ For more information about osquery tables, see the [osquery schema documentation
 | **client_site_name** | **ntdomains.client_site_name** - The name of the site where the domain controller is configured. | keyword, text.text |
 | **cmdline** | **bpf_process_events.cmdline** - Command line arguments | keyword, text.text |
 |  | **docker_container_processes.cmdline** - Complete argv |  |
+|  | **es_process_events.cmdline** - Command line arguments (argv) |  |
 |  | **process_events.cmdline** - Command line arguments (argv) |  |
 |  | **processes.cmdline** - Complete argv |  |
+| **cmdline_count** | **es_process_events.cmdline_count** - Number of command line arguments | keyword, number.long |
 | **cmdline_size** | **process_events.cmdline_size** - Actual size (bytes) of command line arguments | keyword, number.long |
 | **code** | **seccomp_events.code** - The seccomp action | keyword, text.text |
 | **code_integrity_policy_enforcement_status** | **hvci_status.code_integrity_policy_enforcement_status** - The status of the code integrity policy enforcement settings. Returns UNKNOWN if an error is encountered. | keyword, text.text |
@@ -663,6 +671,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **current_locale** | **chrome_extensions.current_locale** - Current locale supported by extension | keyword, text.text |
 | **current_value** | **system_controls.current_value** - Value of setting | keyword, text.text |
 | **cwd** | **bpf_process_events.cwd** - Current working directory | keyword, text.text |
+|  | **es_process_events.cwd** - The process current working directory |  |
 |  | **process_events.cwd** - The process current working directory |  |
 |  | **process_file_events.cwd** - The current working directory of the process |  |
 |  | **processes.cwd** - Process current working directory |  |
@@ -818,6 +827,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **bpf_socket_events.duration** - How much time was spent inside the syscall (nsecs) |  |
 | **eapi** | **portage_packages.eapi** - The eapi for the ebuild | keyword, number.long |
 | **egid** | **docker_container_processes.egid** - Effective group ID | keyword |
+|  | **es_process_events.egid** - Effective Group ID of the process |  |
 |  | **process_events.egid** - Effective group ID at process start |  |
 |  | **process_file_events.egid** - Effective group ID of the process using the file |  |
 |  | **processes.egid** - Unsigned effective group ID |  |
@@ -825,6 +835,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **bpf_process_events.eid** - Event ID |  |
 |  | **bpf_socket_events.eid** - Event ID |  |
 |  | **disk_events.eid** - Event ID |  |
+|  | **es_process_events.eid** - Event ID |  |
 |  | **file_events.eid** - Event ID |  |
 |  | **hardware_events.eid** - Event ID |  |
 |  | **ntfs_journal_events.eid** - Event ID |  |
@@ -839,6 +850,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **ejectable** | **disk_events.ejectable** - 1 if ejectable, 0 if not | keyword, number.long |
 | **elapsed_time** | **processes.elapsed_time** - Elapsed time in seconds this process has been running. | keyword, number.long |
 | **element** | **apps.element** - Does the app identify as a background agent | keyword, text.text |
+| **elevated_token** | **processes.elevated_token** - Process uses elevated token yes=1, no=0 | keyword, number.long |
 | **enable_ipv6** | **docker_networks.enable_ipv6** - 1 if IPv6 is enabled on this network. 0 otherwise | keyword, number.long |
 | **enabled** | **app_schemes.enabled** - 1 if this handler is the OS default, else 0 | keyword |
 |  | **event_taps.enabled** - Is the Event Tap enabled |  |
@@ -864,8 +876,10 @@ For more information about osquery tables, see the [osquery schema documentation
 | **entry** | **authorization_mechanisms.entry** - The whole string entry | keyword, text.text |
 |  | **elf_info.entry** - Entry point address |  |
 |  | **shimcache.entry** - Execution order. |  |
-| **env** | **process_events.env** - Environment variables delimited by spaces | keyword, text.text |
-| **env_count** | **process_events.env_count** - Number of environment variables | keyword, number.long |
+| **env** | **es_process_events.env** - Environment variables delimited by spaces | keyword, text.text |
+|  | **process_events.env** - Environment variables delimited by spaces |  |
+| **env_count** | **es_process_events.env_count** - Number of environment variables | keyword, number.long |
+|  | **process_events.env_count** - Number of environment variables |  |
 | **env_size** | **process_events.env_size** - Actual size (bytes) of environment list | keyword, number.long |
 | **env_variables** | **docker_containers.env_variables** - Container environmental variables | keyword, text.text |
 | **environment** | **apps.environment** - Application-set environment variables | keyword, text.text |
@@ -877,6 +891,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **error_resolution** | **memory_error_info.error_resolution** - Range, in bytes, within which this error can be determined, when an error address is given | keyword, text.text |
 | **error_type** | **memory_error_info.error_type** - type of error associated with current error status for array or device | keyword, text.text |
 | **euid** | **docker_container_processes.euid** - Effective user ID | keyword |
+|  | **es_process_events.euid** - Effective User ID of the process |  |
 |  | **process_events.euid** - Effective user ID at process start |  |
 |  | **process_file_events.euid** - Effective user ID of the process using the file |  |
 |  | **processes.euid** - Unsigned effective user ID |  |
@@ -884,6 +899,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **event_queue** | **carbon_black_info.event_queue** - Size in bytes of Carbon Black event files on disk | keyword, number.long |
 | **event_tap_id** | **event_taps.event_tap_id** - Unique ID for the Tap | keyword, number.long |
 | **event_tapped** | **event_taps.event_tapped** - The mask that identifies the set of events to be observed. | keyword, text.text |
+| **event_type** | **es_process_events.event_type** - Type of EndpointSecurity event | keyword, text.text |
 | **eventid** | **windows_eventlog.eventid** - Event ID of the event | keyword, number.long |
 |  | **windows_events.eventid** - Event ID of the event |  |
 | **events** | **osquery_events.events** - Number of events emitted or received since osquery started | keyword, number.long |
@@ -901,6 +917,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **executions** | **osquery_schedule.executions** - Number of times the query was executed | keyword, number.long |
 | **exit_code** | **bpf_process_events.exit_code** - Exit code of the system call | keyword, text.text |
 |  | **bpf_socket_events.exit_code** - Exit code of the system call |  |
+|  | **es_process_events.exit_code** - Exit code of a process in case of an exit event |  |
 | **expand** | **default_environment.expand** - 1 if the variable needs expanding, 0 otherwise | keyword, number.long |
 | **expire** | **shadow.expire** - Number of days since UNIX epoch date until account is disabled | keyword, number.long |
 | **expires_at** | **lxd_images.expires_at** - ISO time of image expiration | keyword, text.text |
@@ -939,6 +956,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **filename** | **device_file.filename** - Name portion of file path | keyword, text.text |
 |  | **file.filename** - Name portion of file path |  |
 |  | **lxd_images.filename** - Filename of the image file |  |
+|  | **prefetch.filename** - Executable filename. |  |
 |  | **xprotect_entries.filename** - Use this file name to match |  |
 | **filepath** | **package_bom.filepath** - Package file or directory | keyword, text.text |
 | **filesystem** | **disk_events.filesystem** - Filesystem if available | keyword, text.text |
@@ -992,6 +1010,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **bpf_socket_events.gid** - Group ID |  |
 |  | **device_file.gid** - Owning group ID |  |
 |  | **docker_container_processes.gid** - Group ID |  |
+|  | **es_process_events.gid** - Group ID of the process |  |
 |  | **file.gid** - Owning group ID |  |
 |  | **file_events.gid** - Owning group ID |  |
 |  | **groups.gid** - Unsigned int64 group ID |  |
@@ -1005,6 +1024,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **gid_signed** | **groups.gid_signed** - A signed int64 version of gid | keyword, number.long |
 |  | **users.gid_signed** - Default group ID as int64 signed (Apple) |  |
 | **git_commit** | **docker_version.git_commit** - Docker build git commit | keyword, text.text |
+| **global_seq_num** | **es_process_events.global_seq_num** - Global sequence number | keyword, number.long |
 | **global_state** | **alf.global_state** - 1 If the firewall is enabled with exceptions, 2 if the firewall is configured to block all incoming connections, else 0 | keyword, number.long |
 | **go_version** | **docker_version.go_version** - Go version | keyword, text.text |
 | **gpgcheck** | **yum_sources.gpgcheck** - Whether packages are GPG checked | keyword, text.text |
@@ -1035,6 +1055,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **hardware_vendor** | **system_info.hardware_vendor** - Hardware vendor | keyword, text.text |
 | **hardware_version** | **system_info.hardware_version** - Hardware version | keyword, text.text |
 | **has_expired** | **curl_certificate.has_expired** - 1 if the certificate has expired, 0 otherwise | keyword, number.long |
+| **hash** | **prefetch.hash** - Prefetch CRC hash. | keyword, text.text |
 | **hash_alg** | **shadow.hash_alg** - Password hashing algorithm | keyword, text.text |
 | **hash_resources** | **signature.hash_resources** - Set to 1 to also hash resources, or 0 otherwise. Default is 1 | keyword, number.long |
 | **hashed** | **file_events.hashed** - 1 if the file was hashed, 0 if not, -1 if hashing failed | keyword, number.long |
@@ -1098,7 +1119,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **systemd_units.id** - Unique unit identifier |  |
 | **identifier** | **browser_plugins.identifier** - Plugin identifier | keyword, text.text |
 |  | **chrome_extension_content_scripts.identifier** - Extension identifier |  |
-|  | **chrome_extensions.identifier** - Extension identifier (folder name) |  |
+|  | **chrome_extensions.identifier** - Extension identifier, computed from its manifest. Empty in case of error. |  |
 |  | **crashes.identifier** - Identifier of the crashed process |  |
 |  | **firefox_addons.identifier** - Addon identifier |  |
 |  | **safari_extensions.identifier** - Extension identifier |  |
@@ -1199,7 +1220,6 @@ For more information about osquery tables, see the [osquery schema documentation
 | **ipv6_subnet** | **connectivity.ipv6_subnet** - True if any interface is connected to the local subnet via IPv6 | keyword, number.long |
 | **irq** | **cpu_time.irq** - Time spent servicing interrupts | keyword, number.long |
 | **is_active** | **running_apps.is_active** - 1 if the application is in focus, 0 otherwise | keyword, number.long |
-| **is_elevated_token** | **processes.is_elevated_token** - Process uses elevated token yes=1, no=0 | keyword, number.long |
 | **is_hidden** | **groups.is_hidden** - IsHidden attribute set in OpenDirectory | keyword, number.long |
 |  | **users.is_hidden** - IsHidden attribute set in OpenDirectory |  |
 | **iso_8601** | **time.iso_8601** - Current time (ISO format) in the system | keyword, text.text |
@@ -1220,6 +1240,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **kernel_panics.kernel_version** - Version of the system kernel |  |
 | **key** | **authorized_keys.key** - parsed authorized keys line | keyword, text.text |
 |  | **azure_instance_tags.key** - The tag key |  |
+|  | **chrome_extensions.key** - The extension key, from the manifest file |  |
 |  | **docker_container_labels.key** - Label key |  |
 |  | **docker_image_labels.key** - Label key |  |
 |  | **docker_network_labels.key** - Label key |  |
@@ -1278,7 +1299,8 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **office_mru.last_opened_time** - Most recent opened time file was opened |  |
 | **last_run_code** | **scheduled_tasks.last_run_code** - Exit status code of the last task run | keyword, text.text |
 | **last_run_message** | **scheduled_tasks.last_run_message** - Exit status message of the last task run | keyword, text.text |
-| **last_run_time** | **scheduled_tasks.last_run_time** - Timestamp the task last ran | keyword, number.long |
+| **last_run_time** | **prefetch.last_run_time** - Most recent time application was run. | keyword, number.long |
+|  | **scheduled_tasks.last_run_time** - Timestamp the task last ran |  |
 | **last_unloaded** | **kernel_panics.last_unloaded** - Last unloaded module before panic | keyword, text.text |
 | **last_used_at** | **lxd_images.last_used_at** - ISO time for the most recent use of this image in terms of container spawn | keyword, text.text |
 | **launch_type** | **xprotect_entries.launch_type** - Launch services content type | keyword, text.text |
@@ -1373,6 +1395,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **hash.md5** - MD5 hash of provided filesystem data |  |
 |  | **smbios_tables.md5** - MD5 hash of table entry |  |
 | **md_device_name** | **md_drives.md_device_name** - md device name | keyword, text.text |
+| **mdm_managed** | **system_extensions.mdm_managed** - 1 if managed by MDM system extension payload configuration, 0 otherwise | keyword, number.long |
 | **mechanism** | **authorization_mechanisms.mechanism** - Name of the mechanism that will be called | keyword, text.text |
 | **med_capability_capabilities** | **lldp_neighbors.med_capability_capabilities** - Is MED capabilities enabled | keyword, number.long |
 | **med_capability_inventory** | **lldp_neighbors.med_capability_inventory** - Is MED inventory capability enabled | keyword, number.long |
@@ -1649,6 +1672,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **nfs_shares.options** - Options string set on the export share |  |
 | **organization** | **curl_certificate.organization** - Organization issued to | keyword, text.text |
 | **organization_unit** | **curl_certificate.organization_unit** - Organization unit issued to | keyword, text.text |
+| **original_parent** | **es_process_events.original_parent** - Original parent process ID in case of reparenting | keyword, number.long |
 | **original_program_name** | **authenticode.original_program_name** - The original program name that the publisher has signed | keyword, text.text |
 | **os** | **docker_info.os** - Operating system | keyword, text.text |
 |  | **docker_version.os** - Operating system |  |
@@ -1658,6 +1682,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **docker_info.os_type** - Operating system type |  |
 | **os_version** | **kernel_panics.os_version** - Version of the operating system | keyword, text.text |
 | **other** | **md_devices.other** - Other information associated with array from /proc/mdstat | keyword, text.text |
+| **other_run_times** | **prefetch.other_run_times** - Other execution times in prefetch file. | keyword, text.text |
 | **ouid** | **apparmor_events.ouid** - Object owner's user ID | keyword, number.long |
 | **outiface** | **iptables.outiface** - Output interface for the rule. | keyword, text.text |
 | **outiface_mask** | **iptables.outiface_mask** - Output interface mask for the rule. | keyword, text.text |
@@ -1689,6 +1714,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **bpf_socket_events.parent** - Parent process ID |  |
 |  | **crashes.parent** - Parent PID of the crashed process |  |
 |  | **docker_container_processes.parent** - Process parent's PID |  |
+|  | **es_process_events.parent** - Parent process ID |  |
 |  | **iokit_devicetree.parent** - Parent device registry ID |  |
 |  | **iokit_registry.parent** - Parent registry ID |  |
 |  | **process_events.parent** - Process parent's PID, or -1 if cannot be determined. |  |
@@ -1738,6 +1764,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **elf_sections.path** - Path to ELF file |  |
 |  | **elf_segments.path** - Path to ELF file |  |
 |  | **elf_symbols.path** - Path to ELF file |  |
+|  | **es_process_events.path** - Path of executed file |  |
 |  | **example.path** - Path of example |  |
 |  | **extended_attributes.path** - Absolute file path |  |
 |  | **file.path** - Absolute file path |  |
@@ -1767,6 +1794,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **package_bom.path** - Path of package bom |  |
 |  | **package_receipts.path** - Path of receipt plist |  |
 |  | **plist.path** - (required) read preferences from a plist |  |
+|  | **prefetch.path** - Prefetch file path. |  |
 |  | **process_events.path** - Path of executed file |  |
 |  | **process_file_events.path** - The path associated with the event |  |
 |  | **process_memory_map.path** - Path to mapped file or mapped type |  |
@@ -1832,6 +1860,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **crashes.pid** - Process (or thread) ID of the crashed process |  |
 |  | **docker_container_processes.pid** - Process ID |  |
 |  | **docker_containers.pid** - Identifier of the initial process |  |
+|  | **es_process_events.pid** - Process (or thread) ID |  |
 |  | **last.pid** - Process (or thread) ID |  |
 |  | **listening_ports.pid** - Process (or thread) ID |  |
 |  | **logged_in_users.pid** - Process (or thread) ID |  |
@@ -1868,6 +1897,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **placement_group_id** | **azure_instance_metadata.placement_group_id** - Placement group for the VM scale set | keyword, text.text |
 | **platform** | **os_version.platform** - OS Platform or ID | keyword, text.text |
 |  | **osquery_packs.platform** - Platforms this query is supported on |  |
+| **platform_binary** | **es_process_events.platform_binary** - Indicates if the binary is Apple signed binary (1) or not (0) | keyword, number.long |
 | **platform_fault_domain** | **azure_instance_metadata.platform_fault_domain** - Fault domain the VM is running in | keyword, text.text |
 | **platform_info** | **msr.platform_info** - Platform information. | keyword, number.long |
 | **platform_like** | **os_version.platform_like** - Closely related platforms | keyword, text.text |
@@ -1927,6 +1957,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **pre_cpu_usermode_usage** | **docker_container_stats.pre_cpu_usermode_usage** - Last read CPU user mode usage | keyword, number.long |
 | **pre_online_cpus** | **docker_container_stats.pre_online_cpus** - Last read online CPUs | keyword, number.long |
 | **pre_system_cpu_usage** | **docker_container_stats.pre_system_cpu_usage** - Last read CPU system usage | keyword, number.long |
+| **prefix** | **homebrew_packages.prefix** - Homebrew install prefix | keyword, text.text |
 | **preread** | **docker_container_stats.preread** - UNIX time when stats were last read | keyword, number.long |
 | **principal** | **ntfs_acl_permissions.principal** - User or group to which the ACE applies. | keyword, text.text |
 | **printer_sharing** | **sharing_preferences.printer_sharing** - 1 If printer sharing is enabled else 0 | keyword, number.long |
@@ -1955,6 +1986,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **protected** | **app_schemes.protected** - 1 if this handler is protected (reserved) by OS X, else 0 | keyword, number.long |
 | **protection_disabled** | **carbon_black_info.protection_disabled** - If the sensor is configured to report tamper events | keyword, number.long |
 | **protection_status** | **bitlocker_info.protection_status** - The bitlocker protection status of the drive. | keyword, number.long |
+| **protection_type** | **processes.protection_type** - The protection type of the process | keyword, text.text |
 | **protocol** | **bpf_socket_events.protocol** - The network protocol ID | keyword |
 |  | **etc_services.protocol** - Transport protocol (TCP/UDP) |  |
 |  | **iptables.protocol** - Protocol number identification. |  |
@@ -2001,6 +2033,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **ref_proc** | **asl.ref_proc** - Reference process for messages proxied by launchd | keyword, text.text |
 | **referenced** | **chrome_extension_content_scripts.referenced** - 1 if this extension is referenced by the Preferences file of the profile | keyword, number.long |
 |  | **chrome_extensions.referenced** - 1 if this extension is referenced by the Preferences file of the profile |  |
+| **referenced_identifier** | **chrome_extensions.referenced_identifier** - Extension identifier, as specified by the preferences file. Empty if the extension is not in the profile. | keyword, text.text |
 | **refreshes** | **osquery_events.refreshes** - Publisher only: number of runloop restarts | keyword, number.long |
 | **refs** | **fbsd_kmods.refs** - Module reverse dependencies | keyword, number.long |
 |  | **kernel_extensions.refs** - Reference count |  |
@@ -2068,6 +2101,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **rtadv_accept** | **interface_ipv6.rtadv_accept** - Accept ICMP Router Advertisement | keyword, number.long |
 | **rule_details** | **sudoers.rule_details** - Rule definition | keyword, text.text |
 | **run_at_load** | **launchd.run_at_load** - Should the program run on launch load | keyword, text.text |
+| **run_count** | **prefetch.run_count** - Number of times the application has been run. | keyword, number.long |
 | **rw** | **docker_container_mounts.rw** - 1 if read/write. 0 otherwise | keyword, number.long |
 | **sata_version** | **smart_drive_info.sata_version** - SATA version, if any | keyword, text.text |
 | **scheme** | **app_schemes.scheme** - Name of the scheme/protocol | keyword, text.text |
@@ -2090,6 +2124,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **uptime.seconds** - Seconds of uptime |  |
 | **section** | **deb_packages.section** - Package section | keyword, text.text |
 | **sector_sizes** | **smart_drive_info.sector_sizes** - Bytes of drive sector sizes | keyword, text.text |
+| **secure_process** | **processes.secure_process** - Process is secure (IUM) yes=1, no=0 | keyword, number.long |
 | **security_breach** | **chassis_info.security_breach** - The physical status of the chassis such as Breach Successful, Breach Attempted, etc. | keyword, text.text |
 | **security_groups** | **ec2_instance_metadata.security_groups** - Comma separated list of security group names | keyword, text.text |
 | **security_options** | **docker_containers.security_options** - List of container security options | keyword, text.text |
@@ -2100,6 +2135,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **sensor_backend_server** | **carbon_black_info.sensor_backend_server** - Carbon Black server | keyword, text.text |
 | **sensor_id** | **carbon_black_info.sensor_id** - Sensor ID of the Carbon Black sensor | keyword, number.long |
 | **sensor_ip_addr** | **carbon_black_info.sensor_ip_addr** - IP address of the sensor | keyword, text.text |
+| **seq_num** | **es_process_events.seq_num** - Per event sequence number | keyword, number.long |
 | **serial** | **certificates.serial** - Certificate serial number | keyword, text.text |
 |  | **chassis_info.serial** - The serial number of the chassis. |  |
 |  | **disk_info.serial** - The serial number of the disk. |  |
@@ -2166,6 +2202,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **signed** | **drivers.signed** - Whether the driver is signed or not | keyword, number.long |
 |  | **signature.signed** - 1 If the file is signed else 0 |  |
 | **signing_algorithm** | **certificates.signing_algorithm** - Signing algorithm used | keyword, text.text |
+| **signing_id** | **es_process_events.signing_id** - Signature identifier of the process | keyword, text.text |
 | **sigrule** | **yara.sigrule** - Signature strings used | keyword, text.text |
 | **sigurl** | **yara.sigurl** - Signature url | keyword, text.text |
 | **size** | **acpi_tables.size** - Size of compiled table data | keyword |
@@ -2192,6 +2229,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **package_bom.size** - Expected file size |  |
 |  | **platform_info.size** - Size in bytes of firmware |  |
 |  | **portage_packages.size** - The size of the package |  |
+|  | **prefetch.size** - Application file size. |  |
 |  | **quicklook_cache.size** - Parsed version size field |  |
 |  | **rpm_package_files.size** - Expected file size in bytes from RPM info DB |  |
 |  | **rpm_packages.size** - Package size in bytes |  |
@@ -2360,6 +2398,7 @@ For more information about osquery tables, see the [osquery schema documentation
 | **task** | **windows_eventlog.task** - Task value associated with the event | keyword, number.long |
 |  | **windows_events.task** - Task value associated with the event |  |
 | **team** | **system_extensions.team** - Signing team ID | keyword, text.text |
+| **team_id** | **es_process_events.team_id** - Team identifier of thd process | keyword, text.text |
 | **team_identifier** | **signature.team_identifier** - The team signing identifier sealed into the signature | keyword, text.text |
 | **temporarily_disabled** | **wifi_networks.temporarily_disabled** - 1 if this network is temporarily disabled, 0 otherwise | keyword, number.long |
 | **terminal** | **user_events.terminal** - The network protocol ID | keyword, text.text |
@@ -2377,6 +2416,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **carves.time** - Time at which the carve was kicked off |  |
 |  | **disk_events.time** - Time of appearance/disappearance in UNIX time |  |
 |  | **docker_container_processes.time** - Cumulative CPU time. [DD-]HH:MM:SS format |  |
+|  | **es_process_events.time** - Time of execution in UNIX time |  |
 |  | **file_events.time** - Time of file event |  |
 |  | **hardware_events.time** - Time of hardware event |  |
 |  | **kernel_panics.time** - Formatted time of the event |  |
@@ -2482,6 +2522,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **device_file.uid** - Owning user ID |  |
 |  | **disk_encryption.uid** - Currently authenticated user if available |  |
 |  | **docker_container_processes.uid** - User ID |  |
+|  | **es_process_events.uid** - User ID of the process |  |
 |  | **file.uid** - Owning user ID |  |
 |  | **file_events.uid** - Owning user ID |  |
 |  | **firefox_addons.uid** - The local user that owns the addon |  |
@@ -2551,6 +2592,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **processes.user_time** - CPU time in milliseconds spent in user space |  |
 | **user_uuid** | **disk_encryption.user_uuid** - UUID of authenticated user if available | keyword, text.text |
 | **username** | **certificates.username** - Username | keyword, text.text |
+|  | **es_process_events.username** - Username |  |
 |  | **last.username** - Entry username |  |
 |  | **launchd.username** - Run this daemon or agent as this username |  |
 |  | **managed_policies.username** - Policy applies only this user |  |
@@ -2634,6 +2676,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **docker_version.version** - Docker version |  |
 |  | **drivers.version** - Driver version |  |
 |  | **elf_info.version** - Object file version |  |
+|  | **es_process_events.version** - Version of EndpointSecurity event |  |
 |  | **firefox_addons.version** - Addon-supplied version string |  |
 |  | **gatekeeper.version** - Version of Gatekeeper's gke.bundle |  |
 |  | **homebrew_packages.version** - Current 'linked' version |  |
@@ -2663,6 +2706,7 @@ For more information about osquery tables, see the [osquery schema documentation
 |  | **usb_devices.version** - USB Device version number |  |
 |  | **windows_crashes.version** - File version info of the crashed process |  |
 | **video_mode** | **video_info.video_mode** - The current resolution of the display. | keyword, text.text |
+| **virtual_process** | **processes.virtual_process** - Process is virtual (e.g. System, Registry, vmmem) yes=1, no=0 | keyword, number.long |
 | **visible** | **firefox_addons.visible** - 1 If the addon is shown in browser else 0 | keyword, number.long |
 | **visible_alarm** | **chassis_info.visible_alarm** - If TRUE, the frame is equipped with a visual alarm. | keyword, text.text |
 | **vlans** | **lldp_neighbors.vlans** - Comma delimited list of vlan ids | keyword, text.text |
@@ -2671,8 +2715,10 @@ For more information about osquery tables, see the [osquery schema documentation
 | **vm_scale_set_name** | **azure_instance_metadata.vm_scale_set_name** - VM scale set name | keyword, text.text |
 | **vm_size** | **azure_instance_metadata.vm_size** - VM size | keyword, text.text |
 | **voltage** | **battery.voltage** - The battery's current voltage in mV | keyword, number.long |
+| **volume_creation** | **prefetch.volume_creation** - Volume creation time. | keyword, text.text |
 | **volume_id** | **quicklook_cache.volume_id** - Parsed volume ID from fs_id | keyword, number.long |
 | **volume_serial** | **file.volume_serial** - Volume serial number | keyword, text.text |
+|  | **prefetch.volume_serial** - Volume serial number. |  |
 |  | **shortcut_files.volume_serial** - Volume serial number. |  |
 | **volume_size** | **platform_info.volume_size** - (Optional) size of firmware volume | keyword, number.long |
 | **wall_time** | **osquery_schedule.wall_time** - Total wall time spent executing | keyword, number.long |
@@ -2697,3 +2743,4 @@ For more information about osquery tables, see the [osquery schema documentation
 | **zero_fill** | **virtual_memory_info.zero_fill** - Total number of zero filled pages. | keyword, number.long |
 | **zone** | **azure_instance_metadata.zone** - Availability zone of the VM | keyword, text.text |
 |  | **ycloud_instance_metadata.zone** - Availability zone of the VM |  |
+
