@@ -1,160 +1,88 @@
-- name: error.message
-  type: text
-  description: Error message.
-- name: event.action
-  type: keyword
-  description: The action captured by the event.
-- name: event.ingested
-  type: date
-  description: Timestamp when an event arrived in the central data store.
-- name: event.original
-  type: keyword
-  description: Raw text message of entire event. Used to demonstrate log integrity.
-- name: user.name
-  type: keyword
-  description: Short name or login of the user.
-- name: user.id
-  type: keyword
-  description: Unique identifier of the user.
-- name: user.target.name
-  type: keyword
-  description: Short name or login of the user.
-- name: user.target.id
-  type: keyword
-  description: Unique identifier of the user.
-- name: user.changes.name
-  type: keyword
-  description: Short name or login of the user.
-- name: group.id
-  type: keyword
-  description: Unique identifier for the group on the system/platform.
-- name: group.name
-  type: keyword
-  description: Name of the group.
-- name: file
-  title: File
-  type: group
-  fields:
-    - name: path
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-      description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
-    - name: hash.md5
-      type: keyword
-      ignore_above: 1024
-      description: MD5 hash.
-    - name: hash.sha1
-      type: keyword
-      ignore_above: 1024
-      description: SHA1 hash.
-    - name: hash.sha256
-      type: keyword
-      ignore_above: 1024
-      description: SHA256 hash.
-    - name: hash.sha512
-      type: keyword
-      ignore_above: 1024
-      description: SHA512 hash.
-- name: cloud.account.id
-  type: keyword
-  description: The cloud account or organization id used to identify different entities in a multi-tenant environment.
-- name: event.provider
-  type: keyword
-  description: Source of the event.
-- name: cloud.region
-  type: keyword
-  description: Region in which this host is running.
-- name: source.address
-  type: keyword
-  description: Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket. You should always store the raw address in the .address field.
-- name: source.ip
-  type: ip
-  description: IP address of the source (IPv4 or IPv6).
-- name: user_agent.device.name
-  type: keyword
-  description: Name of the device.
-- name: user_agent.name
-  type: keyword
-  description: Name of the user agent.
-- name: user_agent.original
-  type: keyword
-  description: Unparsed user_agent string.
-- name: user_agent.os.full
-  type: keyword
-  description: Operating system name, including the version or code name.
-- name: user_agent.os.name
-  type: keyword
-  description: Operating system name, without the version.
-- name: user_agent.os.version
-  type: keyword
-  description: Operating system version as a raw string.
-- name: user_agent.version
-  type: keyword
-  description: Version of the user agent.
-- name: related.user
-  type: keyword
-  description: All the user names seen on your event.
-- name: related.hash
-  type: keyword
-  description: All the hashes seen on your event.
-- name: event.kind
-  type: keyword
-  description: Event kind (e.g. event, alert, metric, state, pipeline_error, signal)
-- name: event.type
-  type: keyword
-  description: Event severity (e.g. info, error)
-- name: source.as.number
-  type: long
-  description: >-
-    Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-- name: source.as.organization.name
-  type: keyword
-  ignore_above: 1024
-  multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-  description: Organization name.
-- name: source.geo.city_name
-  type: keyword
-  ignore_above: 1024
-  description: City name.
-- name: source.geo.continent_name
-  type: keyword
-  ignore_above: 1024
-  description: Name of the continent.
-- name: source.geo.country_iso_code
-  type: keyword
-  ignore_above: 1024
-  description: Country ISO code.
-- name: source.geo.country_name
-  type: keyword
-  ignore_above: 1024
-  description: Country name.
-- name: source.geo.location
+- external: ecs
+  name: cloud.account.id
+- external: ecs
+  name: cloud.region
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: error.message
+- external: ecs
+  name: event.action
+- external: ecs
+  name: event.ingested
+- external: ecs
+  name: event.kind
+- external: ecs
+  name: event.original
+- external: ecs
+  name: event.provider
+- external: ecs
+  name: event.type
+- external: ecs
+  name: file.hash.md5
+- external: ecs
+  name: file.hash.sha1
+- external: ecs
+  name: file.hash.sha256
+- external: ecs
+  name: file.hash.sha512
+- external: ecs
+  name: file.path
+- external: ecs
+  name: group.id
+- external: ecs
+  name: group.name
+- external: ecs
+  name: related.hash
+- external: ecs
+  name: related.user
+- external: ecs
+  name: source.address
+- external: ecs
+  name: source.as.number
+- external: ecs
+  name: source.as.organization.name
+- external: ecs
+  name: source.geo.city_name
+- external: ecs
+  name: source.geo.continent_name
+- external: ecs
+  name: source.geo.country_iso_code
+- external: ecs
+  name: source.geo.country_name
+- description: Longitude and latitude.
+  level: core
+  name: source.geo.location
   type: geo_point
-  description: Longitude and latitude.
-- name: source.geo.region_iso_code
-  type: keyword
-  ignore_above: 1024
-  description: Region ISO code.
-- name: source.geo.region_name
-  type: keyword
-  ignore_above: 1024
-  description: Region name.
-- name: ecs.version
-  type: keyword
-  description: ECS version this event conforms to.
-  example: 1.0.0
-  ignore_above: 1024
-- name: tags
-  description: List of keywords used to tag each event.
-  example: '["production", "env2"]'
-  ignore_above: 1024
-  type: keyword
+- external: ecs
+  name: source.geo.region_iso_code
+- external: ecs
+  name: source.geo.region_name
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: tags
+- external: ecs
+  name: user.changes.name
+- external: ecs
+  name: user.id
+- external: ecs
+  name: user.name
+- external: ecs
+  name: user.target.id
+- external: ecs
+  name: user.target.name
+- external: ecs
+  name: user_agent.device.name
+- external: ecs
+  name: user_agent.name
+- external: ecs
+  name: user_agent.original
+- external: ecs
+  name: user_agent.os.full
+- external: ecs
+  name: user_agent.os.name
+- external: ecs
+  name: user_agent.os.version
+- external: ecs
+  name: user_agent.version

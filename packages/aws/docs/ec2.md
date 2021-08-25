@@ -29,7 +29,7 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -176,9 +176,9 @@ An example event for `ec2` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.AutoScalingGroupName | An Auto Scaling group is a collection of instances you define if you're using Auto Scaling. | keyword |
 | aws.dimensions.ImageId | This dimension filters the data you request for all instances running this Amazon EC2 Amazon Machine Image (AMI) | keyword |
 | aws.dimensions.InstanceId | Amazon EC2 instance ID | keyword |
@@ -218,7 +218,7 @@ An example event for `ec2` looks as following:
 | aws.ec2.status.check_failed_instance | Reports whether the instance has passed the instance status check in the last minute. | long |
 | aws.ec2.status.check_failed_system | Reports whether the instance has passed the system status check in the last minute. | long |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
-| aws.tags.* | Tag key value pairs from aws resources. | object |
+| aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |

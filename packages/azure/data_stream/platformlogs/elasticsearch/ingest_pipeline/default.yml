@@ -6,7 +6,7 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: "1.10.0"
+      value: '1.11.0'
   - rename:
       field: azure
       target_field: azure-eventhub
@@ -23,6 +23,33 @@ processors:
   - json:
       field: event.original
       target_field: azure.platformlogs
+      on_failure:
+        - grok:
+            field: event.original
+            patterns:
+              - "resourceId\": ?\"%{DATA:azure.platformlogs.resourceId}\""
+            ignore_failure: true
+            ignore_missing: true
+        - grok:
+            field: event.original
+            patterns:
+              - "category\": ?\"%{DATA:azure.platformlogs.category}\""
+            ignore_failure: true
+            ignore_missing: true
+        - grok:
+            field: event.original
+            patterns:
+              - "time\": ?\"%{DATA:azure.platformlogs.time}\""
+            ignore_failure: true
+            ignore_missing: true
+        - set:
+            field: error.message
+            value: 'Received invalid json from the Azure Cloud platform. Unable to parse the source log message'
+            ignore_failure: true
+        - append:
+            field: tags
+            value: ["preserve_original_event"]
+            ignore_failure: true
   - date:
       field: azure.platformlogs.time
       target_field: '@timestamp'
@@ -222,6 +249,9 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - pipeline:
+      if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
+      name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'
 on_failure:
 - set:
     field: error.message

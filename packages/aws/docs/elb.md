@@ -65,7 +65,7 @@ For network load balancer, please follow [enable access log for network load bal
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | Destination domain. | keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
 | event.category | Event category (e.g. database) | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -108,11 +108,11 @@ For network load balancer, please follow [enable access log for network load bal
 | source.port | Port of the source. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tracing.trace.id | Unique identifier of the trace. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
 | url.path | Path of the request, such as "/search". | keyword |
 | url.port | Port of the request, such as 443. | long |
-| url.scheme | Scheme of the request, such as "https". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
@@ -194,7 +194,7 @@ An example event for `elb` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.applicationelb.metrics.ActiveConnectionCount.sum | The total number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | long |
 | aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum | The number of TLS connections initiated by the client that did not establish a session with the load balancer due to a TLS error. | long |
 | aws.applicationelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double |
@@ -216,7 +216,7 @@ An example event for `elb` looks as following:
 | aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long |
 | aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |
 | aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |
 | aws.dimensions.LoadBalancerName | Filters the metric data by the specified load balancer. | keyword |
@@ -255,7 +255,7 @@ An example event for `elb` looks as following:
 | aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a TLS listener and a target. | long |
 | aws.networkelb.metrics.UnHealthyHostCount.max | The number of targets that are considered unhealthy. | long |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
-| aws.tags.* | Tag key value pairs from aws resources. | object |
+| aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |

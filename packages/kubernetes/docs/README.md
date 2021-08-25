@@ -1,6 +1,6 @@
 # Kubernetes integration
 
-This integration is used to collect metrics from 
+This integration is used to collect logs and metrics from 
 [Kubernetes clusters](https://kubernetes.io/).
 
 As one of the main pieces provided for Kubernetes monitoring, this integration is capable of fetching metrics from several components:
@@ -78,7 +78,19 @@ These datasets are not enabled by default.
 Note: In some "As a Service" Kubernetes implementations, like `GKE`, the master nodes or even the pods running on
 the masters won't be visible. In these cases it won't be possible to use `scheduler` and `controllermanager` metricsets.
 
+#### container-logs
+
+The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
+This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
+
 ## Compatibility
 
 The Kubernetes package is tested with Kubernetes 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, and 1.18.x
 
+## Dashboard
+
+Kubernetes integration is shipped including default dashboards for `apiserver`, `controllermanager`, `overview`, `proxy` and `scheduler`.
+
+If you are using HA for those components, be aware that when gathering data from all instances the dashboard will usually show the average of the metrics. For those scenarios filtering by hosts or service address is possible.
+
+Cluster selector in `overview` dashboard helps in distinguishing and filtering metrics collected from multiple clusters. If you want to focus on a subset of the Kubernetes clusters for monitoring a specific scenario, this cluster selector could be a handy tool. Note that this selector gets populated from the `orchestrator.cluster.name` field that may not always be available. This field gets its value from sources like `kube_config`, `kubeadm-config` configMap, and Google Cloud's meta API for GKE. If the sources mentioned above don't provide this value, metricbeat will not report it. However, you can always use [processors](https://www.elastic.co/guide/en/beats/metricbeat/current/defining-processors.html) to set this field and utilize it in the `cluster overview` dashboard.

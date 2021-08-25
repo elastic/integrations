@@ -63,15 +63,15 @@ An example event for `usage` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.Class | The class of resource being tracked. | keyword |
 | aws.dimensions.Resource | The name of the API operation. | keyword |
 | aws.dimensions.Service | The name of the AWS service containing the resource. | keyword |
 | aws.dimensions.Type | The type of resource being tracked. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
-| aws.tags.* | Tag key value pairs from aws resources. | object |
+| aws.tags.\* | Tag key value pairs from aws resources. | object |
 | aws.usage.metrics.CallCount.sum | The number of specified API operations performed in your account. | long |
 | aws.usage.metrics.ResourceCount.sum | The number of the specified resources running in your account. The resources are defined by the dimensions associated with the metric. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
