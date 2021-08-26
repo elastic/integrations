@@ -16,8 +16,6 @@ pipeline {
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
-    ELASTIC_STACK_VERSION_PREV = "7.14.0-SNAPSHOT"
-    ELASTIC_STACK_VERSION_PREV_PREV = "7.13.4-SNAPSHOT"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -69,8 +67,7 @@ pipeline {
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          sh(label: "Update the Elastic stack", script: '../../build/elastic-package stack update -v')
-                          sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                          prepareStack()
                           withKubernetes() {
                             withCloudTestEnv() {
                               sh(label: "Test integration: ${it}", script: '''
@@ -102,10 +99,6 @@ pipeline {
                           stashCoverageReport()
                         }
                       }
-
-                      // Check compatibility with previous stacks
-                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
-                      checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
@@ -209,6 +202,22 @@ def withKubernetes(Closure body) {
     }
 }
 
+def prepareStack() {
+  def stackArgs = '-v'
+  def manifest = readYaml(file: "manifest.yml")
+
+  if (manifest != null && manifest["conditions"] != null) {
+    def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
+    if (kibanaVersionCondition != null) {
+      def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
+      stackArgs += " --version ${version}"
+    }
+  }
+
+  sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
+  sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
+}
+
 def withCloudTestEnv(Closure body) {
   def maskedVars = []
   // AWS
@@ -225,46 +234,6 @@ def withCloudTestEnv(Closure body) {
   ])
   withEnvMask(vars: maskedVars) {
     body()
-  }
-}
-
-def checkPackageCompatibility(integrationName, stackVersion) {
-  if (!isPackageCompatible(integrationName, stackVersion)) {
-    return // the package doesn't have to be supported by this stack
-  }
-
-  try {
-    dir("${BASE_DIR}/packages/${integrationName}") {
-      sh(label: "Update the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack update -v --version ${stackVersion}")
-      sh(label: "Boot up the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack up -d -v --version ${stackVersion}")
-      sh(label: "Install integration: ${integrationName}", script: '''
-        eval "$(../../build/elastic-package stack shellinit)"
-        ../../build/elastic-package install -v''')
-    }
-  } finally {
-    dir("${BASE_DIR}") {
-      sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${stackVersion}/${integrationName}")
-      // Temporary workaround to collect internal fleet-server logs
-      sh(label: "Collect internal fleet-server logs",
-        script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/fleet-server-internal.log")
-      archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/*.log")
-      sh(label: "Take down the Elastic stack (${stackVersion})", script: 'build/elastic-package stack down -v')
-    }
-  }
-}
-
-def isPackageCompatible(integrationName, stackVersion) {
-  dir("${BASE_DIR}/packages/${integrationName}") {
-    def r = sh(label: "Check compatibility with ${stackVersion}",
-      script: "../../build/elastic-package install -v -c kibana.version=${stackVersion}",
-      returnStatus: true)
-    if (r == 0) {
-      echo "Package should be compatible"
-      return true
-    }
-
-    echo "Package is not compatible. Skipping."
-    return false
   }
 }
 
