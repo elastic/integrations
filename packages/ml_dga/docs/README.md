@@ -1,5 +1,5 @@
 # ML Domain Generated Algorithm detection model
 
-This is a new integration created using the [elastic-package](https://github.com/elastic/elastic-package) tool.
+The ML DGA model package stores the Domain Generated Algorithm detection [model and associated assets] (https://www.elastic.co/guide/en/security/7.13/detection-engine-overview.html).
 
-Consider using the README template file `_dev/build/docs/README.md`to generate a list of exported fields or include a sample event.
+To download the assets, click **Settings** > **Install DGA Model and assets**.
