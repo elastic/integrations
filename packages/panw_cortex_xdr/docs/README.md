@@ -63,7 +63,7 @@ https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-ap
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -82,15 +82,17 @@ https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-ap
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.serial_number | Observer serial number. | keyword |
 | panw_cortex.xdr.action_pretty | Pretty description of the action type. | keyword |
-| panw_cortex.xdr.agent_data_collection_status | Collection status of the agent. | keyword |
+| panw_cortex.xdr.agent_data_collection_status | Collection status of the agent. | boolean |
 | panw_cortex.xdr.agent_is_vdi | If agent is running inside a Virtual Desktop. | keyword |
 | panw_cortex.xdr.agent_version | Version of the XDR Endpoint agent. | keyword |
 | panw_cortex.xdr.alert_id | The ID of the alert. | keyword |
 | panw_cortex.xdr.attempt_counter | Attempts to block or stop the malicious process. | long |
 | panw_cortex.xdr.bioc_category_enum_key | Behavior Indicator type key. | keyword |
+| panw_cortex.xdr.bioc_description | A description of the related bioc event. | object |
 | panw_cortex.xdr.bioc_indicator | The Behavioral Indicator type matching to the event. | keyword |
 | panw_cortex.xdr.category | The Alert category. | keyword |
 | panw_cortex.xdr.deduplicate_tokens |  | keyword |
+| panw_cortex.xdr.description | A description of the related event. | keyword |
 | panw_cortex.xdr.end_match_attempt_ts |  | date |
 | panw_cortex.xdr.endpoint_id | The unique ID of the endpoint. | keyword |
 | panw_cortex.xdr.events.action_country |  | keyword |
@@ -146,7 +148,7 @@ https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-ap
 | panw_cortex.xdr.events.story_id |  | keyword |
 | panw_cortex.xdr.external_id | External ID related to the Alert itself. | keyword |
 | panw_cortex.xdr.filter_rule_id | ID of the filter rule. | keyword |
-| panw_cortex.xdr.is_whitelisted | If process is whitelisted. | keyword |
+| panw_cortex.xdr.is_whitelisted | If process is whitelisted. | boolean |
 | panw_cortex.xdr.local_insert_ts |  | date |
 | panw_cortex.xdr.mac | Main MAC address of the agent. | keyword |
 | panw_cortex.xdr.mac_address | Array of all the MAC addresses related to the agent. | keyword |
@@ -155,7 +157,7 @@ https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-ap
 | panw_cortex.xdr.mitre_tactic_id_and_name |  | keyword |
 | panw_cortex.xdr.mitre_technique_id_and_name |  | keyword |
 | panw_cortex.xdr.source |  | keyword |
-| panw_cortex.xdr.starred | If alert type is prioritized (starred). | keyword |
+| panw_cortex.xdr.starred | If alert type is prioritized (starred). | boolean |
 | process.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
 | process.code_signature.subject_name | Subject name of the code signer | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |

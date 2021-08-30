@@ -94,6 +94,16 @@ processors:
           field: panw_cortex.xdr.description
           target_field: event.reason
           ignore_missing: true
+          if: 'ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex.xdr.description instanceof String'
+    - rename:
+          field: panw_cortex.xdr.description
+          target_field: panw_cortex.xdr.bioc_description
+          ignore_missing: true
+          if: 'ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex?.xdr?.description instanceof List'
+    - set:
+          field: event.reason
+          value: Bioc Event
+          if: 'ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null'
     - rename:
           field: panw_cortex.xdr.agent_device_domain
           target_field: host.domain
