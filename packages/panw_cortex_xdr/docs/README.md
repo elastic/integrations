@@ -191,4 +191,5 @@ https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-ap
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
