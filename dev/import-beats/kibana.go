@@ -8,10 +8,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -57,11 +57,6 @@ func newKibanaMigrator(hostPort string, username string, password string, skipKi
 }
 
 func (km *kibanaMigrator) migrateDashboardFile(dashboardFile []byte, moduleName string, dataStreamNames []string) ([]byte, error) {
-	dashboardFile, err := prepareDashboardFile(dashboardFile)
-	if err != nil {
-		return nil, errors.Wrapf(err, "preparing file failed")
-	}
-
 	request, err := http.NewRequest("POST",
 		fmt.Sprintf("%s/api/kibana/dashboards/import?force=true", km.hostPort),
 		bytes.NewReader(dashboardFile))
@@ -89,31 +84,49 @@ func (km *kibanaMigrator) migrateDashboardFile(dashboardFile []byte, moduleName 
 	return saved, nil
 }
 
-func prepareDashboardFile(dashboardFile []byte) ([]byte, error) {
-	var documents kibanaDocuments
-
+func prepareDashboardFile(dashboardFile []byte) (data []byte, needsMigration bool, err error) {
 	// Rename indices (metricbeat, filebeat)
 	dashboardFile = bytes.ReplaceAll(dashboardFile, []byte(`metricbeat-*`), []byte(`metrics-*`))
 	dashboardFile = bytes.ReplaceAll(dashboardFile, []byte(`filebeat-*`), []byte(`logs-*`))
 
-	err := json.Unmarshal(dashboardFile, &documents)
+	var documents kibanaDocuments
+	err = json.Unmarshal(dashboardFile, &documents)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unmarshalling dashboard file failed")
+		return nil, false, errors.Wrapf(err, "unmarshalling dashboard file failed")
 	}
 
+	// Single Kibana object, to be used with the saved objects API doesn't need migration.
+	if len(documents.Objects) == 0 {
+		var object mapStr
+		err := json.Unmarshal(dashboardFile, &object)
+		if err != nil {
+			return nil, false, errors.Wrapf(err, "unmarshalling kibana object failed")
+		}
+		object, err = encodeFields(object)
+		if err != nil {
+			return nil, false, errors.Wrapf(err, "encoding fields failed")
+		}
+		data, err := json.Marshal(object)
+		if err != nil {
+			return nil, false, errors.Wrap(err, "marshalling kibana object")
+		}
+		return data, false, nil
+	}
+
+	// Full dashboard, to be used with the old import/export API, needs migration.
 	for i, object := range documents.Objects {
 		object, err = encodeFields(object)
 		if err != nil {
-			return nil, errors.Wrapf(err, "encoding fields failed")
+			return nil, false, errors.Wrapf(err, "encoding fields failed")
 		}
 		documents.Objects[i] = object
 	}
 
-	data, err := json.Marshal(&documents)
+	data, err = json.Marshal(&documents)
 	if err != nil {
-		return nil, errors.Wrapf(err, "marshalling dashboard file failed")
+		return nil, false, errors.Wrapf(err, "marshalling dashboard file failed")
 	}
-	return data, nil
+	return data, true, nil
 }
 
 func encodeFields(ms mapStr) (mapStr, error) {
@@ -150,29 +163,21 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 		return kibanaContent{}, nil
 	}
 
-	moduleDashboardPath := filepath.Join(modulePath, "_meta", "kibana", "7", "dashboard")
-	moduleDashboards, err := ioutil.ReadDir(moduleDashboardPath)
-	if os.IsNotExist(err) {
-		log.Printf("\tno dashboards present, skipped (modulePath: %s)", modulePath)
-		return kibanaContent{}, nil
-	}
-	if err != nil {
-		return kibanaContent{}, errors.Wrapf(err, "reading module dashboard directory failed (path: %s)",
-			moduleDashboardPath)
-	}
-
 	kibana := kibanaContent{
 		files: map[string]map[string][]byte{},
 	}
 
+	kibanaPath := filepath.Join(modulePath, "_meta", "kibana", "7")
 	dashboardIDMap := make(map[string]string, 0)
-	for _, moduleDashboard := range moduleDashboards {
-		log.Printf("\tdashboard found: %s", moduleDashboard.Name())
+	err := filepath.Walk(kibanaPath, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		log.Printf("\tkibana file found: %s", info.Name())
 
-		dashboardFilePath := filepath.Join(moduleDashboardPath, moduleDashboard.Name())
-		extracted, idMap, err := extractDashboard(kibanaMigrator, dashboardFilePath, moduleName, dataStreamNames)
+		extracted, idMap, err := extractKibanaObject(kibanaMigrator, path, moduleName, dataStreamNames)
 		if err != nil {
-			return kibanaContent{}, errors.Wrapf(err, "converting dashboard")
+			return errors.Wrapf(err, "converting kibana file")
 		}
 
 		for origID, newID := range idMap {
@@ -189,6 +194,11 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 				kibana.files[objectType][kk] = v
 			}
 		}
+
+		return nil
+	})
+	if err != nil {
+		return kibanaContent{}, err
 	}
 
 	// Make a pass over all asset files and replace dashboard links in them
@@ -204,27 +214,31 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 	return kibana, nil
 }
 
-func extractDashboard(kibana *kibanaMigrator, path string, module string, dataStreams []string) (map[string]map[string][]byte, map[string]string, error) {
+func extractKibanaObject(kibana *kibanaMigrator, path string, module string, dataStreams []string) (map[string]map[string][]byte, map[string]string, error) {
 	dashboardFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "reading dashboard file failed (path: %s)", path)
 	}
 
-	if filepath.Ext(path) == ".ndjson" {
-		return convertKibanaObjects(dashboardFile, module, dataStreams)
-	}
-
-	migrated, err := kibana.migrateDashboardFile(dashboardFile, module, dataStreams)
+	dashboardFile, needsMigration, err := prepareDashboardFile(dashboardFile)
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "migrating dashboard file failed (path: %s)", path)
+		return nil, nil, errors.Wrapf(err, "preparing file failed")
 	}
 
-	return convertToKibanaObjects(migrated, module, dataStreams)
+	if needsMigration {
+		migrated, err := kibana.migrateDashboardFile(dashboardFile, module, dataStreams)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "migrating dashboard file failed (path: %s)", path)
+		}
+
+		return convertToKibanaObjects(migrated, module, dataStreams)
+	}
+
+	return convertSingleObject(dashboardFile, module, dataStreams)
 }
 
 func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
 	var documents kibanaDocuments
-
 	err := json.Unmarshal(dashboardFile, &documents)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "unmarshalling migrated dashboard file failed")
@@ -233,20 +247,14 @@ func convertToKibanaObjects(dashboardFile []byte, moduleName string, dataStreamN
 	return migrateKibanaObjects(documents.Objects, moduleName, dataStreamNames)
 }
 
-func convertKibanaObjects(dashboardFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
-	var objects []mapStr
-
-	decoder := json.NewDecoder(bytes.NewReader(dashboardFile))
-	for decoder.More() {
-		var object mapStr
-		err := decoder.Decode(&object)
-		if err != nil {
-			return nil, nil, fmt.Errorf("decoding object failed: %v", err)
-		}
-		objects = append(objects, object)
+func convertSingleObject(objectFile []byte, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
+	var object mapStr
+	err := json.Unmarshal(objectFile, &object)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "unmarshalling saved object file failed")
 	}
 
-	return migrateKibanaObjects(objects, moduleName, dataStreamNames)
+	return migrateKibanaObjects([]mapStr{object}, moduleName, dataStreamNames)
 }
 
 func migrateKibanaObjects(objects []mapStr, moduleName string, dataStreamNames []string) (map[string]map[string][]byte, map[string]string, error) {
@@ -254,26 +262,6 @@ func migrateKibanaObjects(objects []mapStr, moduleName string, dataStreamNames [
 	dashboardIDMap := make(map[string]string)
 
 	for _, object := range objects {
-		err := object.delete("updated_at")
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "removing field updated_at failed")
-		}
-
-		err = object.delete("version")
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "removing field version failed")
-		}
-
-		object, err = decodeFields(object)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "decoding fields failed")
-		}
-
-		object, err = stripReferencesToEventModule(object, moduleName, dataStreamNames)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "stripping references to event module failed")
-		}
-
 		aType, err := object.getValue("type")
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "retrieving type failed")
@@ -283,91 +271,124 @@ func migrateKibanaObjects(objects []mapStr, moduleName string, dataStreamNames [
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "retrieving id failed")
 		}
-
 		origID, ok := id.(string)
 		if !ok {
 			return nil, nil, errors.New("expected id to be a string")
 		}
 
-		newID := updateObjectID(origID, moduleName)
-
-		_, err = object.put("id", newID)
+		data, newID, err := migrateObject(object, moduleName, dataStreamNames)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "putting new ID failed")
+			return nil, nil, err
 		}
-
-		// Update any references to other objects in this object
-		refs, err := object.getValue("references")
-		if err != nil {
-			return nil, nil, errors.Wrap(err, "retrieving references failed")
-		}
-
-		references, ok := refs.([]interface{})
-		if !ok {
-			return nil, nil, errors.New("expected references to be an array of objects")
-		}
-
-		for _, r := range references {
-			ref, ok := r.(map[string]interface{})
-			if !ok {
-				return nil, nil, errors.New("expected reference to be an object")
-			}
-
-			reference := mapStr(ref)
-
-			// Exclude index pattern references
-			rt, err := reference.getValue("type")
-			if err != nil {
-				return nil, nil, errors.Wrap(err, "retrieving reference type failed")
-			}
-			refType, ok := rt.(string)
-			if !ok {
-				return nil, nil, errors.New("expected reference type to be a string")
-			}
-
-			if refType == "index-pattern" {
-				continue
-			}
-
-			refID, err := reference.getValue("id")
-			if err != nil {
-				return nil, nil, errors.Wrapf(err, "retrieving reference id failed")
-			}
-
-			origRefID, ok := refID.(string)
-			if !ok {
-				return nil, nil, errors.New("expected reference id to be a string")
-			}
-
-			newRefID := updateObjectID(origRefID, moduleName)
-
-			if _, err := reference.put("id", newRefID); err != nil {
-				return nil, nil, errors.Wrapf(err, "putting new reference ID failed")
-			}
-		}
-
-		data, err := json.MarshalIndent(object, "", "    ")
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "marshalling object failed")
-		}
-
-		data = replaceFieldEventDatasetWithDataStreamDataset(data)
-		data = replaceBlacklistedWords(data)
-		data = removeECSTextualSuffixes(data)
-		err = verifyKibanaObjectConvertion(data)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "Kibana object convertion failed")
-		}
+		dashboardIDMap[origID] = newID
 
 		if _, ok := extracted[aType.(string)]; !ok {
 			extracted[aType.(string)] = map[string][]byte{}
 		}
-
-		dashboardIDMap[origID] = newID
 		extracted[aType.(string)][newID+".json"] = data
 	}
 
 	return extracted, dashboardIDMap, nil
+}
+
+func migrateObject(object mapStr, moduleName string, dataStreamNames []string) (data []byte, newID string, err error) {
+	err = object.delete("updated_at")
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "removing field updated_at failed")
+	}
+
+	err = object.delete("version")
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "removing field version failed")
+	}
+
+	object, err = decodeFields(object)
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "decoding fields failed")
+	}
+
+	object, err = stripReferencesToEventModule(object, moduleName, dataStreamNames)
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "stripping references to event module failed")
+	}
+
+	id, err := object.getValue("id")
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "retrieving id failed")
+	}
+	origID, ok := id.(string)
+	if !ok {
+		return nil, "", errors.New("expected id to be a string")
+	}
+	newID = updateObjectID(origID, moduleName)
+	_, err = object.put("id", newID)
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "putting new ID failed")
+	}
+
+	// Update any references to other objects in this object
+	refs, err := object.getValue("references")
+	if err != nil {
+		return nil, "", errors.Wrap(err, "retrieving references failed")
+	}
+
+	references, ok := refs.([]interface{})
+	if !ok {
+		return nil, "", errors.New("expected references to be an array of objects")
+	}
+
+	for _, r := range references {
+		ref, ok := r.(map[string]interface{})
+		if !ok {
+			return nil, "", errors.New("expected reference to be an object")
+		}
+
+		reference := mapStr(ref)
+
+		// Exclude index pattern references
+		rt, err := reference.getValue("type")
+		if err != nil {
+			return nil, "", errors.Wrap(err, "retrieving reference type failed")
+		}
+		refType, ok := rt.(string)
+		if !ok {
+			return nil, "", errors.New("expected reference type to be a string")
+		}
+		if refType == "index-pattern" {
+			continue
+		}
+
+		refID, err := reference.getValue("id")
+		if err != nil {
+			return nil, "", errors.Wrapf(err, "retrieving reference id failed")
+		}
+
+		origRefID, ok := refID.(string)
+		if !ok {
+			return nil, "", errors.New("expected reference id to be a string")
+		}
+
+		newRefID := updateObjectID(origRefID, moduleName)
+
+		if _, err := reference.put("id", newRefID); err != nil {
+			return nil, "", errors.Wrapf(err, "putting new reference ID failed")
+		}
+	}
+
+	data, err = json.MarshalIndent(object, "", "    ")
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "marshalling object failed")
+	}
+
+	data = replaceFieldEventDatasetWithDataStreamDataset(data)
+	data = replaceBlacklistedWords(data)
+	data = removeECSTextualSuffixes(data)
+	err = verifyKibanaObjectConvertion(data)
+	if err != nil {
+		return nil, "", errors.Wrapf(err, "Kibana object convertion failed")
+	}
+
+	return data, newID, nil
 }
 
 func decodeFields(ms mapStr) (mapStr, error) {
