@@ -1,0 +1,81 @@
+name: activemq
+title: ActiveMQ
+version: 0.0.1
+release: beta
+description: ActiveMQ Integration
+type: integration
+icons:
+  - src: /img/activemq.svg
+    title: activemq
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories:
+  - web
+conditions:
+  kibana.version: ^7.14.1
+screenshots:
+  - src: /img/filebeat-activemq-application-events.png
+    title: filebeat activemq application events
+    size: 4102x2424
+    type: image/png
+  - src: /img/filebeat-activemq-audit-events.png
+    title: filebeat activemq audit events
+    size: 4102x2480
+    type: image/png
+  - src: /img/metricbeat-activemq-broker-overview.png
+    title: metricbeat activemq broker overview
+    size: 2560x2032
+    type: image/png
+  - src: /img/metricbeat-activemq-queues-overview.png
+    title: metricbeat activemq queues overview
+    size: 2560x3712
+    type: image/png
+  - src: /img/metricbeat-activemq-topics-overview.png
+    title: metricbeat activemq topics overview
+    size: 2560x3712
+    type: image/png
+policy_templates:
+  - name: activemq
+    title: ActiveMQ logs and metrics
+    description: Collect logs and metrics from ActiveMQ instances
+    inputs:
+      - type: logfile
+        title: 'Collect ActiveMQ audit and application logs (input: logfile)'
+        description: 'Collecting audit and application logs from ActiveMQ instances (input: logfile)'
+      - type: activemq/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - localhost:8161
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: true
+            show_user: true
+            default: admin
+          - name: path
+            type: text
+            title: Path
+            multi: false
+            required: true
+            show_user: true
+            default: /api/jolokia/?ignoreErrors=true&canonicalNaming=false
+          - name: username
+            type: text
+            title: Username
+            multi: false
+            required: true
+            show_user: true
+            default: admin
+        title: Collect ActiveMQ broker, queue and topic metrics
+        description: Collecting broker, queue and topic metrics from ActiveMQ instances
+owner:
+  github: elastic/integrations
