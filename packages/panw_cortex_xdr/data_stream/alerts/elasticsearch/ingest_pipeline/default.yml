@@ -87,6 +87,10 @@ processors:
       value: 4
       if: ctx.panw_cortex?.xdr?.severity == "high"
   - rename:
+      field: panw_cortex.xdr.external_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
       field: panw_cortex.xdr.action
       target_field: event.action
       ignore_missing: true
@@ -378,6 +382,34 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: "{{process.parent.hash.md5}}"
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{process.parent.hash.sha256}}"
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{process.hash.md5}}"
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{process.hash.sha256}}"
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{file.hash.sha256}}"
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{file.hash.md5}}"
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
   - remove:
       field:
         - panw_cortex.xdr.host_name
