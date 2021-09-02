@@ -1,0 +1,62 @@
+---
+description: Initial pipeline for parsing Zoom webhooks
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: "1.11.0"
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: threat
+  - set:
+      field: event.type
+      value: indicator
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: _temp_
+  - rename:
+      field: _temp_.cybersixgill
+      target_field: cybersixgill
+      ignore_missing: true
+  - rename:
+      field: _temp_.threat
+      target_field: threat
+      ignore_missing: true
+  - foreach:
+      field: _temp_.tags
+      processor:
+        append:
+          field: tags
+          value: "{{_ingest._value}}"
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp_?.tags != null
+  - uri_parts:
+      field: threat.indicator.url.full
+      target_field: threat.indicator.url
+      keep_original: true
+      ignore_failure: true
+      if: ctx.threat?.indicator?.url?.full != null
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _temp_
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

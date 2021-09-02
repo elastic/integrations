@@ -1,0 +1,67 @@
+type: logs
+title: Zoom webhook logs
+release: beta
+streams:
+  - input: http_endpoint
+    template_path: http_endpoint.yml.hbs
+    title: Zoom webhook logs
+    description: Collect Zoom logs via Webhook
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        multi: false
+        required: true
+        show_user: true
+        default: 8181
+      - name: url
+        type: text
+        title: Webhook path
+        description: URL path where the webhook will accept requests.
+        multi: false
+        required: true
+        show_user: true
+        default: /zoom-webhook
+      - name: secret_value
+        type: text
+        title: Zoom verification token
+        description: Verification token used to validate the authenticity of incoming Zoom POST requests. Zoom sends this as the Authorization header.
+        multi: false
+        required: true
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. Zoom requires webhooks listen on HTTPS. You must either provide a valid TLS certificate or use a reverse proxy in front of the integration. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - zoom-webhook
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
