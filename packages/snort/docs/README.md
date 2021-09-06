@@ -74,14 +74,34 @@ and the Alert Fast output either via reading a local logfile or receiving messag
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| observer.ip | IP addresses of the observer. | ip |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.description | The description of the rule generating the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
+| snort.dgm.length | Length of | long |
+| snort.eth.length | Length of the Ethernet header and payload. | long |
 | snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires. | long |
-| snort.id | ID of the flow?? | long |
+| snort.icmp.code | ICMP code. | long |
+| snort.icmp.id | ID of the echo request/reply | long |
+| snort.icmp.seq | ICMP sequence number. | long |
+| snort.icmp.type | ICMP type. | long |
+| snort.ip.flags | IP flags. | keyword |
+| snort.ip.id | ID of the packet | long |
+| snort.ip.length | Length of the IP header and payload. | long |
+| snort.ip.tos | IP Type of Service identification. | long |
+| snort.ip.ttl | Time To Live (TTL) of the packet | long |
+| snort.tcp.ack | TCP Acknowledgment number. | long |
+| snort.tcp.flags | TCP flags. | keyword |
+| snort.tcp.length | Length of the TCP header and payload. | long |
+| snort.tcp.seq | TCP sequence number. | long |
+| snort.tcp.window | Advertised TCP window size. | long |
+| snort.udp.length | Length of the UDP header and payload. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
