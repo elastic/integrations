@@ -163,6 +163,11 @@ processors:
         - panw.panos.payload_protocol_id
         - panw.panos.http_headers
 
+  - set:
+      field: event.timezone
+      value: "{{_conf.tz_offset}}"
+      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+
 # Set @timestamp to the time when the entry was generated at the data plane.
   - date:
       if: "ctx?.event?.timezone == null"
