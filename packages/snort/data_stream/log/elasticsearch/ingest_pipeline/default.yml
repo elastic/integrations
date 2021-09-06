@@ -1,6 +1,5 @@
 ---
 description: Pipeline for parsing Snort logs
-
 processors:
   - set:
       field: event.ingested
@@ -41,12 +40,12 @@ processors:
         SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
   - set:
       field: event.timezone
-      value: _tmp.tz_offset
+      value: "{{_tmp.tz_offset}}"
       if: ctx?._tmp?.tz_offset != null && ctx?._tmp?.tz_offset != 'local'
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
-      timezone: event.timezone
+      timezone: "{{ event.timezone }}"
       formats:
       - MM/dd-HH:mm:ss.SSSSSS
       - MM/dd/YY-HH:mm:ss.SSSSSS
