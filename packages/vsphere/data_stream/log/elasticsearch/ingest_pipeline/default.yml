@@ -14,7 +14,7 @@ processors:
       description: Parse syslog header
       field: event.original
       patterns:
-        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name} (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}'
+        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name} (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>(\d )?'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
@@ -32,6 +32,11 @@ processors:
         EVENT1: "%{TIMESTAMP_ISO8601}(( '%{NOTSPACE:event.action}' %{POSINT})|:) %{LOGLEVEL:log.level} %{GREEDYDATA:message}"
         EVENT2: 'Event \[%{POSINT:event.id}\] %{NOTSPACE} \[%{TIMESTAMP_ISO8601}\] \[%{JAVACLASS:log.logger}\] \[%{LOGLEVEL:log.level}\] \[%{VSPHERE_USER}\] \[(%{NOTSPACE:vsphere.log.datacenter}|)\] \[(%{POSINT}|)\]'
         VSPHERE_USER: '(%{HOSTNAME:user.domain}\\%{USERNAME:user.name}|)'
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+      - ISO8601
   - remove:
       field:
         - _tmp
