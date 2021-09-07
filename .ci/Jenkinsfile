@@ -16,6 +16,7 @@ pipeline {
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
+    STACK_VERSION = "${params.stackVersion}"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -30,6 +31,9 @@ pipeline {
   triggers {
     issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|/test)')
     cron(env.CHANGE_ID?.trim() ? '' : 'H H(2-5) * * *')
+  }
+  parameters {
+    string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
   }
   stages {
     stage('Prepare workspace') {
@@ -204,13 +208,18 @@ def withKubernetes(Closure body) {
 
 def prepareStack() {
   def stackArgs = '-v'
-  def manifest = readYaml(file: "manifest.yml")
 
-  if (manifest != null && manifest["conditions"] != null) {
-    def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
-    if (kibanaVersionCondition != null) {
-      def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
-      stackArgs += " --version ${version}"
+  if ( env.STACK_VERSION != '' ) {
+    stackArgs += " --version ${env.STACK_VERSION}"
+  } else {
+    def manifest = readYaml(file: "manifest.yml")
+
+    if (manifest != null && manifest["conditions"] != null) {
+      def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
+      if (kibanaVersionCondition != null) {
+        def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
+        stackArgs += " --version ${version}"
+      }
     }
   }
 
