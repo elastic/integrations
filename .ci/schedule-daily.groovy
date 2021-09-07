@@ -23,7 +23,7 @@ pipeline {
     stage('Daily integration builds') {
       steps {
         build(
-          job: 'Ingest-manager/Integrations',
+          job: 'Ingest-manager/Integrations/master',
           parameters: [stringParam(name: 'stackVersion', value: '7.x-SNAPSHOT')],
           quietPeriod: 0,
           wait: false,
