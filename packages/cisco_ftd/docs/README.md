@@ -17,12 +17,12 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "915b9d78-907c-4615-90f8-e2997777f537",
+        "ephemeral_id": "14895236-8960-4b48-8533-e54c600a477e",
         "hostname": "docker-fleet-agent",
-        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "id": "6ea4215e-f526-4b01-9c83-867bed71a188",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "cisco": {
         "ftd": {
@@ -55,7 +55,7 @@ An example event for `log` looks as following:
         }
     },
     "data_stream": {
-        "dataset": "cisco.ftd",
+        "dataset": "cisco_ftd.log",
         "namespace": "ep",
         "type": "logs"
     },
@@ -83,12 +83,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "id": "6ea4215e-f526-4b01-9c83-867bed71a188",
         "snapshot": true,
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "event": {
         "action": "malware-detected",
@@ -97,10 +97,10 @@ An example event for `log` looks as following:
             "malware"
         ],
         "code": "430005",
-        "dataset": "cisco.ftd",
-        "ingested": "2021-07-19T08:56:32.448763106Z",
+        "dataset": "cisco_ftd.log",
+        "ingested": "2021-09-07T12:25:14Z",
         "kind": "alert",
-        "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 213.211.198.62, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip\n",
+        "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 213.211.198.62, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
         "start": "2019-08-16T09:39:02Z",
         "timezone": "+00:00",
@@ -120,13 +120,14 @@ An example event for `log` looks as following:
         "name": "docker-fleet-agent"
     },
     "input": {
-        "type": "udp"
+        "type": "log"
     },
     "log": {
+        "file": {
+            "path": "/tmp/service_logs/cisco-ftd.log"
+        },
         "level": "alert",
-        "source": {
-            "address": "172.23.0.4:41328"
-        }
+        "offset": 0
     },
     "network": {
         "application": "curl",
