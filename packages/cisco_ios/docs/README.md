@@ -11,14 +11,14 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-07-19T08:58:29.370Z",
+    "@timestamp": "2021-09-07T08:52:57.573Z",
     "agent": {
-        "ephemeral_id": "7e9d4c95-b972-479d-bc6c-2ac0d05f3eb1",
+        "ephemeral_id": "765b4904-7081-42ae-b0ad-d83c71a18761",
         "hostname": "docker-fleet-agent",
-        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "id": "547db394-bd43-42b1-bec4-98d5ca28ab8f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "cisco": {
         "ios": {
@@ -27,7 +27,7 @@ An example event for `log` looks as following:
         }
     },
     "data_stream": {
-        "dataset": "cisco.ios",
+        "dataset": "cisco_ios.log",
         "namespace": "ep",
         "type": "logs"
     },
@@ -36,21 +36,21 @@ An example event for `log` looks as following:
         "ip": "224.0.0.22"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "id": "547db394-bd43-42b1-bec4-98d5ca28ab8f",
         "snapshot": true,
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "event": {
         "action": "deny",
         "agent_id_status": "verified",
         "category": "network",
         "code": "IPACCESSLOGRP",
-        "dataset": "cisco.ios",
-        "ingested": "2021-07-19T08:58:30.397370366Z",
-        "original": "Feb  8 04:00:48 198.51.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet\n",
+        "dataset": "cisco_ios.log",
+        "ingested": "2021-09-07T08:52:58Z",
+        "original": "Feb  8 04:00:48 198.51.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet",
         "provider": "firewall",
         "sequence": 585917,
         "severity": 6,
@@ -61,10 +61,14 @@ An example event for `log` looks as following:
         "name": "docker-fleet-agent"
     },
     "input": {
-        "type": "udp"
+        "type": "log"
     },
     "log": {
+        "file": {
+            "path": "/tmp/service_logs/cisco-ios.log"
+        },
         "level": "informational",
+        "offset": 0,
         "source": {
             "address": "198.51.100.2"
         }
