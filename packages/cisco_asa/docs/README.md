@@ -17,12 +17,12 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "a548620b-0623-4130-b586-fe233f00e6e5",
+        "ephemeral_id": "a76b1659-e559-45c5-8c31-ad90afee7171",
         "hostname": "docker-fleet-agent",
-        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "id": "5c16565e-6eac-4cf7-a493-40706ec45783",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "cisco": {
         "asa": {
@@ -31,7 +31,7 @@ An example event for `log` looks as following:
         }
     },
     "data_stream": {
-        "dataset": "cisco.asa",
+        "dataset": "cisco_asa.log",
         "namespace": "ep",
         "type": "logs"
     },
@@ -41,12 +41,12 @@ An example event for `log` looks as following:
         "port": 8256
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "3c803d12-46a2-48a4-a206-8fd3630cc2a9",
+        "id": "5c16565e-6eac-4cf7-a493-40706ec45783",
         "snapshot": true,
-        "version": "7.14.0"
+        "version": "7.15.0"
     },
     "event": {
         "action": "firewall-rule",
@@ -55,10 +55,10 @@ An example event for `log` looks as following:
             "network"
         ],
         "code": "305011",
-        "dataset": "cisco.asa",
-        "ingested": "2021-07-19T08:54:36.436846422Z",
+        "dataset": "cisco_asa.log",
+        "ingested": "2021-09-07T09:10:52Z",
         "kind": "event",
-        "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:100.66.98.44/8256\n",
+        "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:100.66.98.44/8256",
         "severity": 6,
         "timezone": "+00:00",
         "type": [
@@ -70,13 +70,14 @@ An example event for `log` looks as following:
         "name": "docker-fleet-agent"
     },
     "input": {
-        "type": "udp"
+        "type": "log"
     },
     "log": {
+        "file": {
+            "path": "/tmp/service_logs/cisco-asa.log"
+        },
         "level": "informational",
-        "source": {
-            "address": "172.23.0.4:59451"
-        }
+        "offset": 0
     },
     "network": {
         "iana_number": "6",
