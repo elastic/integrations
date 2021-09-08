@@ -1111,14 +1111,14 @@ The fields reported are:
 | mongodb.replstatus.members.down.count | Count of `down` members | long |
 | mongodb.replstatus.members.down.hosts | List of `down` members hosts | keyword |
 | mongodb.replstatus.members.primary.host | Host address of the primary | keyword |
-| mongodb.replstatus.members.primary.optime | Optime of primary | float |
+| mongodb.replstatus.members.primary.optime | Information regarding the last operation from the operation log that this member has applied of primary. | float |
 | mongodb.replstatus.members.recovering.count | Count of members in the `recovering` state | long |
 | mongodb.replstatus.members.recovering.hosts | List of recovering members hosts | keyword |
 | mongodb.replstatus.members.rollback.count | Count of members in the `rollback` state | long |
 | mongodb.replstatus.members.rollback.hosts | List of members in the `rollback` state | keyword |
 | mongodb.replstatus.members.secondary.count |  | long |
 | mongodb.replstatus.members.secondary.hosts | List of secondary hosts | keyword |
-| mongodb.replstatus.members.secondary.optimes | Optimes of secondaries | keyword |
+| mongodb.replstatus.members.secondary.optimes | Information regarding the last operation from the operation log that this member has applied of secondaries. | float |
 | mongodb.replstatus.members.startup2.count | Count of members in the `startup2` state | long |
 | mongodb.replstatus.members.startup2.hosts | List of initializing members hosts | keyword |
 | mongodb.replstatus.members.unhealthy.count | Count of unhealthy members | long |
