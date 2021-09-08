@@ -1,0 +1,128 @@
+---
+description: Pipeline for modsecurity audit log.
+
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - community_id:
+      source_ip: json.transaction.client_ip
+      source_port: json.transaction.client_port
+      destination_ip: json.transaction.host_ip
+      destination_port: json.transaction.host_port
+# parse date
+  - script:
+     lang: painless
+     source: >-
+        String datetime = ctx.json.transaction.response.headers.Date;
+        ZonedDateTime zdt = ZonedDateTime.parse(datetime,DateTimeFormatter.RFC_1123_DATE_TIME);
+        ctx._tempts = zdt;
+  - date:
+     field: _tempts
+     formats:
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ssz
+        - ISO8601
+# rename ecs
+  - rename:
+      field: json.transaction.request.method
+      target_field: http.request.method
+      ignore_missing: true
+  - convert:
+      field: json.transaction.request.http_version
+      target_field: http.version
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.transaction.request.uri
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      field: json.transaction.request.headers.host
+      target_field: url.domain
+      ignore_missing: true
+  - rename:
+      field: json.transaction.response.http_code
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: json.transaction.response.headers.Content-Type
+      target_field: http.response.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.transaction.response.Content-Length
+      target_field: http.response.bytes
+      ignore_missing: true
+  - rename:
+      field: json.transaction.messages.message
+      target_field: modsec.audit.message
+      ignore_missing: true
+  - rename:
+      field: json.transaction.messages.details.match
+      target_field: modsec.audit.detail
+      ignore_missing: true
+  - rename:
+      field: json.transaction.messages.details.ruleID
+      target_field: modsec.audit.ruleid
+      ignore_missing: true
+# user agent and geoip enrich
+  - user_agent:
+      field: json.transaction.request.headers.User-Agent
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+  - append:
+      field: event.type
+      value: access
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _tempts
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
