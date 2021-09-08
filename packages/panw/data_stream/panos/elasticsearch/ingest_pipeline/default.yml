@@ -163,13 +163,12 @@ processors:
         - panw.panos.payload_protocol_id
         - panw.panos.http_headers
 
+  - set:
+      field: event.timezone
+      value: "{{_conf.tz_offset}}"
+      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+
 # Set @timestamp to the time when the entry was generated at the data plane.
-  - date:
-      if: "ctx?.event?.timezone == null"
-      field: "_temp_.generated_time"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
       if: "ctx?.event?.timezone != null"
       field: "_temp_.generated_time"
@@ -179,13 +178,6 @@ processors:
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # event.created is the time the event was received at the management plane.
-  - date:
-      if: "ctx?.event?.timezone == null && ctx?.event?.created != null "
-      field: "event.created"
-      target_field: "event.created"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
       if: "ctx?.event?.timezone != null && ctx?.event?.created != null "
       field: "event.created"
@@ -197,13 +189,6 @@ processors:
 
 # event.start (traffic only) is the time the session started.
   - date:
-      if: "ctx?.event?.timezone == null && ctx?.event?.start != null"
-      field: "event.start"
-      target_field: "event.start"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
-  - date:
       if: "ctx?.event?.timezone != null && ctx?.event?.start != null"
       field: "event.start"
       target_field: "event.start"
@@ -214,14 +199,7 @@ processors:
 
 # Time the parent_session of the tunnel started, (traffic only).
   - date:
-      if: "ctx?.event?.timezone == null && ctx?.panw?.panos?.parent_session?.start_time != null"
-      field: "panw.panos.parent_session.start_time"
-      target_field: "panw.panos.parent_session.start_time"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
-  - date:
-      if: "ctx?.event?.timezone == null && ctx?.panw?.panos?.parent_session?.start_time != null"
+      if: "ctx?.event?.timezone != null && ctx?.panw?.panos?.parent_session?.start_time != null"
       field: "panw.panos.parent_session.start_time"
       target_field: "panw.panos.parent_session.start_time"
       timezone: "{{ event.timezone }}"
