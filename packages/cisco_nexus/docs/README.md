@@ -1,4 +1,4 @@
-# Cisco Integration
+# Cisco Nexus Integration
 
 This integration is for Cisco Nexus device logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
