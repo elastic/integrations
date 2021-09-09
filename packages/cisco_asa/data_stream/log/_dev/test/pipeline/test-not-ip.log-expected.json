@@ -1,0 +1,234 @@
+{
+    "expected": [
+        {
+            "log": {
+                "level": "notification"
+            },
+            "destination": {
+                "port": 53,
+                "address": "203.0.113.42",
+                "ip": "203.0.113.42"
+            },
+            "syslog": {
+                "facility": {
+                    "code": 165
+                }
+            },
+            "source": {
+                "port": 27218,
+                "address": "WHAT-IS-THIS-A-HOSTNAME-192.0.2.244",
+                "domain": "WHAT-IS-THIS-A-HOSTNAME-192.0.2.244"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "network": {
+                "iana_number": "6",
+                "transport": "tcp"
+            },
+            "observer": {
+                "ingress": {
+                    "interface": {
+                        "name": "LB-DMZ"
+                    }
+                },
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco",
+                "egress": {
+                    "interface": {
+                        "name": "OUTSIDE"
+                    }
+                }
+            },
+            "@timestamp": "2019-10-04T15:27:55.000Z",
+            "ecs": {
+                "version": "1.11.0"
+            },
+            "related": {
+                "hosts": [
+                    "WHAT-IS-THIS-A-HOSTNAME-192.0.2.244"
+                ],
+                "ip": [
+                    "203.0.113.42"
+                ]
+            },
+            "event": {
+                "severity": 5,
+                "ingested": "2021-09-07T09:06:17.331620300Z",
+                "original": "\u003c165\u003eOct 04 2019 15:27:55: %ASA-5-106100: access-list AL-DMZ-LB-IN denied tcp LB-DMZ/WHAT-IS-THIS-A-HOSTNAME-192.0.2.244(27218) -\u003e OUTSIDE/203.0.113.42(53) hit-cnt 1 first hit [0x16847359, 0x00000000]",
+                "code": "106100",
+                "kind": "event",
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "type": [
+                    "info",
+                    "denied"
+                ],
+                "outcome": "failure"
+            },
+            "cisco": {
+                "asa": {
+                    "destination_interface": "OUTSIDE",
+                    "rule_name": "AL-DMZ-LB-IN",
+                    "source_interface": "LB-DMZ"
+                }
+            }
+        },
+        {
+            "log": {
+                "level": "informational"
+            },
+            "destination": {
+                "address": "172.24.177.29",
+                "ip": "172.24.177.29"
+            },
+            "source": {
+                "address": "192.168.132.46",
+                "ip": "192.168.132.46"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "network": {
+                "iana_number": "1",
+                "transport": "icmp"
+            },
+            "observer": {
+                "hostname": "localhost",
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco"
+            },
+            "@timestamp": "2020-01-01T10:42:53.000Z",
+            "ecs": {
+                "version": "1.11.0"
+            },
+            "related": {
+                "hosts": [
+                    "localhost"
+                ],
+                "ip": [
+                    "192.168.132.46",
+                    "172.24.177.29"
+                ]
+            },
+            "host": {
+                "hostname": "localhost"
+            },
+            "event": {
+                "severity": 6,
+                "ingested": "2021-09-07T09:06:17.331627700Z",
+                "original": "Jan  1 2020 10:42:53 localhost : %ASA-6-302021: Teardown ICMP connection for faddr 172.24.177.29/0 gaddr mydomain.example.net/17233 laddr 192.168.132.46/17233",
+                "code": "302021",
+                "kind": "event",
+                "action": "flow-expiration",
+                "category": [
+                    "network"
+                ],
+                "type": [
+                    "connection",
+                    "end"
+                ]
+            },
+            "cisco": {
+                "asa": {
+                    "mapped_source_host": "mydomain.example.net"
+                }
+            }
+        },
+        {
+            "server": {
+                "domain": "example.org"
+            },
+            "log": {
+                "level": "warning"
+            },
+            "destination": {
+                "address": "172.24.177.3",
+                "port": 80,
+                "domain": "example.org",
+                "ip": "172.24.177.3"
+            },
+            "source": {
+                "nat": {
+                    "port": 11234
+                },
+                "address": "10.10.10.1",
+                "port": 1234,
+                "ip": "10.10.10.1"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "network": {
+                "iana_number": "6",
+                "transport": "tcp"
+            },
+            "observer": {
+                "ingress": {
+                    "interface": {
+                        "name": "eth0"
+                    }
+                },
+                "hostname": "localhost",
+                "product": "asa",
+                "type": "firewall",
+                "vendor": "Cisco",
+                "egress": {
+                    "interface": {
+                        "name": "wan"
+                    }
+                }
+            },
+            "@timestamp": "2020-01-02T11:33:20.000Z",
+            "ecs": {
+                "version": "1.11.0"
+            },
+            "related": {
+                "hosts": [
+                    "localhost",
+                    "example.org"
+                ],
+                "ip": [
+                    "10.10.10.1",
+                    "172.24.177.3"
+                ]
+            },
+            "host": {
+                "hostname": "localhost"
+            },
+            "event": {
+                "severity": 4,
+                "ingested": "2021-09-07T09:06:17.331629800Z",
+                "original": "Jan  2 2020 11:33:20 localhost : %ASA-4-338204: Dynamic filter dropped greylisted TCP traffic from eth0:10.10.10.1/1234 (source.example.net/11234) to wan:172.24.177.3/80 (www.example.org/80), destination malicious address resolved from dynamic list: example.org, threat-level: high, category: malware",
+                "code": "338204",
+                "kind": "event",
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "type": [
+                    "info",
+                    "denied"
+                ],
+                "outcome": "failure"
+            },
+            "cisco": {
+                "asa": {
+                    "mapped_destination_host": "www.example.org",
+                    "destination_interface": "wan",
+                    "mapped_source_port": 11234,
+                    "threat_level": "high",
+                    "mapped_source_host": "source.example.net",
+                    "rule_name": "dynamic",
+                    "source_interface": "eth0",
+                    "mapped_destination_port": 80,
+                    "threat_category": "malware"
+                }
+            }
+        }
+    ]
+}
