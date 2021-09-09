@@ -29,17 +29,29 @@ An example event for `billing` looks as following:
     },
     "aws": {
         "billing": {
-            "metrics": {
-                "EstimatedCharges": {
-                    "max": 1625.41
-                }
+            "Currency": "USD",
+            "EstimatedCharges": 39.26,
+            "ServiceName": "AmazonEKS",
+            "AmortizedCost": {
+                "amount": 51.6,
+                "unit": "USD"
+            },
+            "BlendedCost": {
+                "amount": 51.6,
+                "unit": "USD"
+            },
+            "NormalizedUsageAmount": {
+                "amount": 672,
+                "unit": "N/A"
+            },
+            "UnblendedCost": {
+                "amount": 51.6,
+                "unit": "USD"
+            },
+            "UsageQuantity": {
+                "amount": 168,
+                "unit": "N/A"
             }
-        },
-        "cloudwatch": {
-            "namespace": "AWS/Billing"
-        },
-        "dimensions": {
-            "Currency": "USD"
         }
     },
     "service": {
@@ -66,7 +78,7 @@ An example event for `billing` looks as following:
 | aws.billing.BlendedCost.amount | Blended cost amount. | double |
 | aws.billing.BlendedCost.unit | Blended cost unit. | keyword |
 | aws.billing.Currency | Currency name. | keyword |
-| aws.billing.EstimatedCharges.max | Maximum estimated charges for AWS acccount. | long |
+| aws.billing.EstimatedCharges | Maximum estimated charges for AWS acccount. | long |
 | aws.billing.NormalizedUsageAmount.amount | Normalized usage amount. | double |
 | aws.billing.NormalizedUsageAmount.unit | Normalized usage amount unit. | keyword |
 | aws.billing.ServiceName | AWS service name. | keyword |
