@@ -1,0 +1,244 @@
+---
+description: Pipeline for Cisco IOS logs.
+
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: network
+  - set:
+      field: event.provider
+      value: firewall
+  - set:
+      field: event.type
+      value: info
+  - dissect:
+      field: event.original
+      pattern: "%{_temp_.ts->} %{+_temp_.ts} %{+_temp_.ts->} %{log.source.address} %{event.sequence}: %{_temp_.timestamp}: %{_temp_.message}"
+  - grok:
+      field: _temp_.message
+      patterns:
+        - "%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}: %{GREEDYDATA:message}"
+  - convert:
+      field: event.severity
+      type: long
+      ignore_missing: true
+  - convert:
+      field: event.sequence
+      type: long
+      ignore_missing: true
+  - dissect:
+      field: message
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address}(%{source.port}) %{} %{destination.address}(%{destination.port}), %{source.packets} packet"
+      if: "['IPACCESSLOGP', 'ACCESSLOGP'].contains(ctx.event?.code)"
+  - dissect:
+      field: message
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{icmp.type}/%{icmp.code}), %{source.packets} packet"
+      if: "['IPACCESSLOGDP', 'ACCESSLOGDP'].contains(ctx.event?.code)"
+  - dissect:
+      field: message
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      if: "ctx.event?.code == 'IPACCESSLOGRP'"
+  - dissect:
+      field: message
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
+      if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx.event?.code)"
+  - dissect:
+      field: message
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.iana_number} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      if: "['IPACCESSLOGNP', 'ACCESSLOGNP'].contains(ctx.event?.code)"
+  - dissect:
+      field: message
+      pattern: "%{cisco.ios.action} %{_temp_.event.action} [user: %{source.user.name}] [Source: %{source.address}] [localport: %{destination.port}] at %{}"
+      if: "ctx.event?.code == 'LOGIN_SUCCESS'"
+  - dissect:
+      field: message
+      pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
+      if: "ctx.event?.code == 'LOGOUT'"
+  - grok:
+      field: message
+      patterns: 
+        - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
+      pattern_definitions:
+        PIM_SOURCE: (%{IP:cisco.ios.pim.source.ip}|%{DATA})
+      if: "ctx.event?.code == 'INVALID_RP_JOIN'"
+  - set:
+       field: event.action
+       value: "multicast-join"
+       if: ctx.event?.code == "INVALID_RP_JOIN"
+  - set:
+       field: event.outcome
+       value: "failure"
+       if: ctx.event?.code == "INVALID_RP_JOIN"
+  - set:
+       field: event.reason
+       value: "Invalid RP"
+       if: ctx.event?.code == "INVALID_RP_JOIN"      
+  - set:
+      field: destination.ip
+      value: '{{ destination.address }}'
+      if: ctx.destination?.address != null
+  - set:
+      field: source.ip
+      value: '{{ source.address }}'
+      if: ctx.source?.address != null
+  - convert:
+        field: cisco.ios.pim.source.ip
+        type: ip
+        ignore_missing: true
+  - convert:
+      field: source.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: source.packets
+      type: long
+      ignore_missing: true
+  - convert:
+      field: destination.port
+      type: long
+      ignore_missing: true
+  - set:
+      field: network.packets
+      copy_from: source.packets
+      if: ctx.source?.packets != null
+  - set:
+      field: network.type
+      value: ipv4
+      if: "ctx.source?.ip != null && ctx.source?.ip.contains('.')"
+  - set:
+      field: network.type
+      value: ipv6
+      if: "ctx.source?.ip != null && ctx.network?.type == null"
+  - set:
+      field: event.action
+      value: deny
+      if: "ctx._temp_?.event?.action == 'denied'"
+  - set:
+      field: event.type
+      value: denied
+      if: "ctx.event?.action == 'deny'"
+  - set:
+      field: event.action
+      value: allow
+      if: "ctx._temp_?.event?.action == 'permitted'"
+  - set:
+      field: event.type
+      value: allowed
+      if: "ctx.event?.action == 'allow'"
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 0"
+      value: emergencies
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 1"
+      value: alert
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 2"
+      value: critical
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 3"
+      value: error
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 4"
+      value: warning
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 5"
+      value: notification
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 6"
+      value: informational
+  - set:
+      field: "log.level"
+      if: "ctx.event.severity == 7"
+      value: debug
+
+    # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+# IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      value: "{{source.user.name}}"
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: _temp_
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
