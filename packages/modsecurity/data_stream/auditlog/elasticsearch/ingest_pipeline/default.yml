@@ -16,25 +16,22 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
-  - community_id:
-      source_ip: json.transaction.client_ip
-      source_port: json.transaction.client_port
-      destination_ip: json.transaction.host_ip
-      destination_port: json.transaction.host_port
 # parse date
-  - script:
-     lang: painless
-     source: >-
-        String datetime = ctx.json.transaction.response.headers.Date;
-        ZonedDateTime zdt = ZonedDateTime.parse(datetime,DateTimeFormatter.RFC_1123_DATE_TIME);
-        ctx._tempts = zdt;
   - date:
-     field: _tempts
+     field: json.transaction.response.headers.Date
      formats:
-        - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ssz
-        - ISO8601
+        - RFC_1123_DATE_TIME
+        - E, dd MMM yyyy HH:mm:ss zz
+        - EEE, dd MMM yyyy HH:mm:ssZZZ
 # rename ecs
+  - rename:
+      field: json.transaction.client_ip
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: json.transaction.client_port
+      target_field: source.port
+      ignore_missing: true
   - rename:
       field: json.transaction.request.method
       target_field: http.request.method
@@ -66,7 +63,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.transaction.messages.message
-      target_field: modsec.audit.message
+      target_field: message
       ignore_missing: true
   - rename:
       field: json.transaction.messages.details.match
@@ -74,7 +71,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.transaction.messages.details.ruleID
-      target_field: modsec.audit.ruleid
+      target_field: rule.id
       ignore_missing: true
 # user agent and geoip enrich
   - user_agent:
@@ -115,11 +112,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: _tempts
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: json
+      field:
+        - json
+        - _tempts
       ignore_failure: true
       ignore_missing: true
 on_failure:
