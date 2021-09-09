@@ -1,4 +1,4 @@
-# Cisco Integration
+# Cisco FTD Integration
 
 This integration is for Cisco Firepower Threat Defence (FTD) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
