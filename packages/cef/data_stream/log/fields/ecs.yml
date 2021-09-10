@@ -1,409 +1,152 @@
-- name: message
+- external: ecs
+  name: destination.as.number
+- external: ecs
+  name: destination.as.organization.name
+- external: ecs
+  name: destination.bytes
+- external: ecs
+  name: destination.domain
+- external: ecs
+  name: destination.geo.city_name
+- external: ecs
+  name: destination.geo.continent_name
+- external: ecs
+  name: destination.geo.country_iso_code
+- external: ecs
+  name: destination.geo.country_name
+- description: Longitude and latitude.
   level: core
-  type: text
-  description: |-
-    For log events the message field contains the log message, optimized for viewing in a log viewer.
-    For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event.
-    If multiple messages exist, they can be combined into one message.
-- name: destination
-  title: Destination
-  group: 2
-  type: group
-  fields:
-    - name: as.number
-      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-      level: extended
-      type: long
-    - name: as.organization.name
-      description: Organization name.
-      ignore_above: 1024
-      level: extended
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: Bytes sent from the destination to the source.
-    - name: domain
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Destination domain.
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.country_name
-      description: Country name.
-      ignore_above: 1024
-      level: core
-      type: keyword
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the source (IPv4 or IPv6).
-    - name: nat.ip
-      level: extended
-      type: ip
-      description: 'Translated ip of destination based NAT sessions (e.g. internet to private DMZ)
-
-        Typically used with load balancers, firewalls, or routers.'
-    - name: nat.port
-      level: extended
-      type: long
-      format: string
-      description: 'Port the source session is translated to by NAT Device.
-
-        Typically used with load balancers, firewalls, or routers.'
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the destination.
-    - name: user
-      title: User
-      group: 2
-      type: group
-      fields:
-        - name: group.id
-          level: extended
-          type: keyword
-          description: Unique identifier for the group on the system/platform.
-          ignore_above: 1024
-        - name: group.name
-          level: extended
-          type: keyword
-          ignore_above: 1024
-          description: Name of the group.
-        - name: id
-          level: core
-          type: keyword
-          description: Unique identifier of the user.
-          ignore_above: 1024
-        - name: name
-          level: core
-          type: keyword
-          description: Short name or login of the user.
-          ignore_above: 1024
-          multi_fields:
-            - name: text
-              type: text
-              norms: false
-              default_field: false
-- name: ecs.version
-  type: keyword
-  description: ECS version
-- name: file.hash.md5
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: MD5 hash.
-- name: file.hash.sha1
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: SHA1 hash.
-- name: http.request.method
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: 'HTTP request method.'
-- name: network.application
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: 'A name given to an application level protocol.'
-- name: network.community_id
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: 'A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows.'
-- name: network.direction
+  name: destination.geo.location
+  type: geo_point
+- external: ecs
+  name: destination.geo.region_iso_code
+- external: ecs
+  name: destination.geo.region_name
+- external: ecs
+  name: destination.ip
+- external: ecs
+  name: destination.nat.ip
+- external: ecs
+  name: destination.nat.port
+- external: ecs
+  name: destination.port
+- external: ecs
+  name: destination.user.group.id
+- external: ecs
+  name: destination.user.group.name
+- external: ecs
+  name: destination.user.id
+- external: ecs
+  name: destination.user.name
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: event.ingested
+- external: ecs
+  name: event.original
+- external: ecs
+  name: file.group
+- external: ecs
+  name: file.hash.md5
+- external: ecs
+  name: file.hash.sha1
+- external: ecs
+  name: file.inode
+- external: ecs
+  name: file.type
+- external: ecs
+  name: http.request.method
+- external: ecs
+  name: http.request.referrer
+- external: ecs
+  name: log.file.path
+- external: ecs
+  name: log.syslog.priority
+- external: ecs
+  name: message
+- external: ecs
+  name: network.application
+- external: ecs
+  name: network.community_id
+- external: ecs
+  name: network.direction
+- external: ecs
+  name: network.transport
+- external: ecs
+  name: observer.egress.zone
+- external: ecs
+  name: observer.hostname
+- external: ecs
+  name: observer.ingress.interface.name
+- external: ecs
+  name: observer.ingress.zone
+- external: ecs
+  name: observer.ip
+- external: ecs
+  name: observer.product
+- external: ecs
+  name: observer.type
+- external: ecs
+  name: observer.vendor
+- external: ecs
+  name: observer.version
+- external: ecs
+  name: related.hash
+- external: ecs
+  name: related.hosts
+- external: ecs
+  name: related.ip
+- external: ecs
+  name: related.user
+- external: ecs
+  name: rule.category
+- external: ecs
+  name: rule.id
+- external: ecs
+  name: rule.uuid
+- external: ecs
+  name: source.as.number
+- external: ecs
+  name: source.as.organization.name
+- external: ecs
+  name: source.bytes
+- external: ecs
+  name: source.domain
+- external: ecs
+  name: source.geo.city_name
+- external: ecs
+  name: source.geo.continent_name
+- external: ecs
+  name: source.geo.country_iso_code
+- external: ecs
+  name: source.geo.country_name
+- description: Longitude and latitude.
   level: core
-  type: keyword
-  ignore_above: 1024
-  description: "Direction of the network traffic."
-- name: network.transport
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: 'Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.)'
-- name: http.request.referrer
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: Referrer for this HTTP request.
-- name: input.type
-  type: keyword
-  description: Input type
-- name: log.file.path
-  type: keyword
-  description: Log path
-- name: log.offset
-  type: long
-  description: Log offset
-- name: observer.egress.zone
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: Network zone of outbound traffic as reported by the observer.
-- name: observer.hostname
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: Hostname of the observer.
-- name: observer.ingress.interface.name
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: Interface name as reported by the system.
-- name: observer.ingress.zone
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: Network zone of incoming traffic as reported by the observer.
-- name: observer.ip
-  level: core
-  type: ip
-  description: IP addresses of the observer.
-- name: observer.product
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: The product name of the observer.
-- name: observer.type
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: 'The type of the observer the data is coming from.'
-- name: observer.vendor
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: Vendor name of the observer.
-- name: observer.version
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: Observer version.
-- name: related.hash
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: All the hashes seen on your event.
-  default_field: false
-- name: related.ip
-  level: extended
-  type: ip
-  description: All of the IPs seen on your event.
-- name: related.user
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: All the user names seen on your event.
-  default_field: false
-- name: related.hosts
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: All the host names seen on your event.
-  default_field: false
-- name: rule.category
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: A categorization value keyword used by the entity using the rule for detection of this event.
-- name: rule.id
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event.
-- name: rule.uuid
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  description: A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event.
-- name: source
-  title: Source
-  group: 2
-  type: group
-  fields:
-    - name: as.number
-      description: Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet.
-      level: extended
-      type: long
-    - name: as.organization.name
-      description: Organization name.
-      ignore_above: 1024
-      level: extended
-      type: keyword
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
-    - name: bytes
-      level: core
-      type: long
-      format: bytes
-      description: Bytes sent from the source to the destination.
-    - name: domain
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: Destination domain.
-    - name: geo.city_name
-      level: core
-      type: keyword
-      description: City name.
-      ignore_above: 1024
-    - name: geo.continent_name
-      level: core
-      type: keyword
-      description: Name of the continent.
-      ignore_above: 1024
-    - name: geo.country_iso_code
-      level: core
-      type: keyword
-      description: Country ISO code.
-      ignore_above: 1024
-    - name: geo.country_name
-      description: Country name.
-      ignore_above: 1024
-      level: core
-      type: keyword
-    - name: geo.location
-      level: core
-      type: geo_point
-      description: Longitude and latitude.
-    - name: geo.region_iso_code
-      level: core
-      type: keyword
-      description: Region ISO code.
-      ignore_above: 1024
-    - name: geo.region_name
-      level: core
-      type: keyword
-      description: Region name.
-      ignore_above: 1024
-    - name: ip
-      level: core
-      type: ip
-      description: IP address of the source (IPv4 or IPv6).
-    - name: nat.ip
-      level: extended
-      type: ip
-      description: 'Translated ip of source based NAT sessions (e.g. internal client to internet)
-
-        Typically connections traversing load balancers, firewalls, or routers.'
-    - name: nat.port
-      level: extended
-      type: long
-      format: string
-      description: 'Translated port of source based NAT sessions. (e.g. internal client to internet)
-
-        Typically used with load balancers, firewalls, or routers.'
-    - name: port
-      level: core
-      type: long
-      format: string
-      description: Port of the source.
-    - name: user
-      title: User
-      group: 2
-      type: group
-      fields:
-        - name: group.id
-          level: extended
-          type: keyword
-          description: Unique identifier for the group on the system/platform.
-          ignore_above: 1024
-        - name: group.name
-          level: extended
-          type: keyword
-          ignore_above: 1024
-          description: Name of the group.
-        - name: id
-          level: core
-          type: keyword
-          description: Unique identifier of the user.
-          ignore_above: 1024
-        - name: name
-          level: core
-          type: keyword
-          description: Short name or login of the user.
-          ignore_above: 1024
-          multi_fields:
-            - name: text
-              type: text
-              norms: false
-              default_field: false
-- name: tags
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: List of keywords used to tag each event.
-- name: event.ingested
-  level: core
-  type: date
-  description: 'Timestamp when an event arrived in the central data store.'
-- name: original
-  level: core
-  type: keyword
-  ignore_above: 1024
-  description: 'Raw text message of entire event. Used to demonstrate log integrity.'
-- name: url.original
-  level: extended
-  type: keyword
-  ignore_above: 1024
-  multi_fields:
-    - name: text
-      type: text
-      norms: false
-      default_field: false
-  description: 'Unmodified original url as seen in the event source.'
-- name: file.group
-  type: keyword
-  description: Primary group name of the file.
-- name: file.inode
-  type: keyword
-  description: Inode representing the file in the filesystem.
-- name: file.type
-  type: keyword
-  description: File type (file, dir, or symlink).
-- name: user_agent.original
-  type: keyword
-  description: Unparsed user_agent string.
-- name: log.syslog.priority
-  type: long
-  description: Syslog priority of the event.
+  name: source.geo.location
+  type: geo_point
+- external: ecs
+  name: source.geo.region_iso_code
+- external: ecs
+  name: source.geo.region_name
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: source.nat.ip
+- external: ecs
+  name: source.nat.port
+- external: ecs
+  name: source.port
+- external: ecs
+  name: source.user.group.id
+- external: ecs
+  name: source.user.group.name
+- external: ecs
+  name: source.user.id
+- external: ecs
+  name: source.user.name
+- external: ecs
+  name: tags
+- external: ecs
+  name: url.original
+- external: ecs
+  name: user_agent.original

@@ -42,6 +42,8 @@ The Windows `service` dataset provides service details.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -96,6 +98,8 @@ The Windows `perfmon` dataset provides performance counter values.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -113,7 +117,7 @@ The Windows `perfmon` dataset provides performance counter values.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | windows.perfmon.instance | Instance value. | keyword |
-| windows.perfmon.metrics.*.* | Metric values returned. | object |
+| windows.perfmon.metrics.\*.\* | Metric values returned. | object |
 | windows.perfmon.object | Object value. | keyword |
 
 
@@ -132,6 +136,95 @@ channel specific datasets.
 
 The Windows `powershell` dataset provides events from the Windows
 `Windows PowerShell` event log.
+
+An example event for `powershell` looks as following:
+
+```json
+{
+    "@timestamp": "2020-05-13T13:21:43.183Z",
+    "agent": {
+        "ephemeral_id": "0db86869-9076-44ed-acbc-32415bdaa793",
+        "hostname": "docker-fleet-agent",
+        "id": "8a695e28-aed6-4bbf-90be-5a9b7f99eab9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "windows.powershell",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "24ec544f-3818-44a4-ac26-223be6af154a",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "agent_id_mismatch",
+        "category": "process",
+        "code": "600",
+        "created": "2021-06-14T13:43:24.815Z",
+        "dataset": "windows.powershell",
+        "ingested": "2021-06-14T13:43:25.859030600Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:21:43.183180900Z'/\u003e\u003cEventRecordID\u003e1089\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=35\n\n\tHostName=Windows PowerShell ISE Host\n\tHostVersion=5.1.17763.1007\n\tHostId=86edc16f-6943-469e-8bd8-ef1857080206\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1\n\tEngineVersion=5.1.17763.1007\n\tRunspaceId=9d21da0b-e402-40e1-92ff-98c5ab1137a9\n\tPipelineId=15\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:25:04.656426900Z'/\u003e\u003cEventRecordID\u003e1266\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eRegistry\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Registry\n\tNewProviderState=Started\n\n\tSequenceNumber=1\n\n\tHostName=ConsoleHost\n\tHostVersion=5.1.17763.1007\n\tHostId=44b8d66c-f5a2-4abb-ac7d-6db73990a6d3\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -noexit -command 'C:\\Gopath\\src\\github.com\\elastic\\beats'\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-06-04T07:25:04.857430200Z'/\u003e\u003cEventRecordID\u003e18640\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=8\n\n\tHostName=ConsoleHost\n\tHostVersion=2.0\n\tHostId=99a16837-7392-463d-afe5-5f3ed24bd358\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "PowerShell",
+        "sequence": 35,
+        "type": "info"
+    },
+    "host": {
+        "name": "vagrant"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "information"
+    },
+    "powershell": {
+        "engine": {
+            "version": "5.1.17763.1007"
+        },
+        "pipeline_id": "15",
+        "process": {
+            "executable_version": "5.1.17763.1007"
+        },
+        "provider": {
+            "name": "Certificate",
+            "new_state": "Started"
+        },
+        "runspace_id": "9d21da0b-e402-40e1-92ff-98c5ab1137a9"
+    },
+    "process": {
+        "args": [
+            "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe",
+            "C:\\Users\\vagrant\\Desktop\\lateral.ps1"
+        ],
+        "args_count": 2,
+        "command_line": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1",
+        "entity_id": "86edc16f-6943-469e-8bd8-ef1857080206",
+        "title": "Windows PowerShell ISE Host"
+    },
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "winlog": {
+        "channel": "Windows PowerShell",
+        "computer_name": "vagrant",
+        "event_id": "600",
+        "keywords": [
+            "Classic"
+        ],
+        "provider_name": "PowerShell",
+        "record_id": "1089"
+    }
+}
+```
 
 **Exported fields**
 
@@ -157,23 +250,24 @@ The Windows `powershell` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| destination.user.domain | Name of the directory the user is a member of. | keyword |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
-| ecs.version | ECS version | keyword |
-| event.action | The action captured by the event. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
-| event.code | Identification code for this event, if one exists. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
-| event.provider | Source of the event. | keyword |
-| event.sequence | Sequence number of the event. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
-| file.extension | File extension, excluding the leading dot. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -192,7 +286,8 @@ The Windows `powershell` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Original log level of the log event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
@@ -217,23 +312,23 @@ The Windows `powershell` dataset provides events from the Windows
 | powershell.runspace_id | Runspace id. | keyword |
 | powershell.sequence | Sequence number of the powershell execution. | long |
 | powershell.total | Total number of messages in the sequence. | long |
-| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
-| process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
-| process.entity_id | Unique identifier for the process. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
-| process.name | Process name. | keyword |
-| process.pid | Process PID. | long |
-| process.title | Process title. | keyword |
-| related.hash |  | keyword |
-| related.hosts |  | keyword |
-| related.ip |  | ip |
-| related.user |  | keyword |
-| source.user.domain | Name of the directory the user is a member of. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.pid | Process id. | long |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
@@ -375,6 +470,88 @@ The Windows `powershell` dataset provides events from the Windows
 The Windows `powershell_operational` dataset provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
+An example event for `powershell_operational` looks as following:
+
+```json
+{
+    "@timestamp": "2020-05-13T09:04:04.755Z",
+    "agent": {
+        "ephemeral_id": "0db86869-9076-44ed-acbc-32415bdaa793",
+        "hostname": "docker-fleet-agent",
+        "id": "8a695e28-aed6-4bbf-90be-5a9b7f99eab9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "windows.powershell_operational",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "24ec544f-3818-44a4-ac26-223be6af154a",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "agent_id_mismatch",
+        "category": "process",
+        "code": "4105",
+        "created": "2021-06-14T13:44:07.370Z",
+        "dataset": "windows.powershell_operational",
+        "ingested": "2021-06-14T13:44:08.399097100Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/\u003e\u003cEventID\u003e4105\u003c/EventID\u003e\u003cVersion\u003e1\u003c/Version\u003e\u003cLevel\u003e5\u003c/Level\u003e\u003cTask\u003e102\u003c/Task\u003e\u003cOpcode\u003e15\u003c/Opcode\u003e\u003cKeywords\u003e0x0\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/\u003e\u003cEventRecordID\u003e790\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/\u003e\u003cExecution ProcessID='4204' ThreadID='1476'/\u003e\u003cChannel\u003eMicrosoft-Windows-PowerShell/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='ScriptBlockId'\u003ef4a378ab-b74f-41a7-a5ef-6dd55562fdb9\u003c/Data\u003e\u003cData Name='RunspaceId'\u003e9c031e5c-8d5a-4b91-a12e-b3624970b623\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "Microsoft-Windows-PowerShell",
+        "type": "start"
+    },
+    "host": {
+        "name": "vagrant"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "verbose"
+    },
+    "powershell": {
+        "file": {
+            "script_block_id": "f4a378ab-b74f-41a7-a5ef-6dd55562fdb9"
+        },
+        "runspace_id": "9c031e5c-8d5a-4b91-a12e-b3624970b623"
+    },
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "user": {
+        "id": "S-1-5-21-1350058589-2282154016-2764056528-1000"
+    },
+    "winlog": {
+        "activity_id": "{dd68516a-2930-0000-5962-68dd3029d601}",
+        "channel": "Microsoft-Windows-PowerShell/Operational",
+        "computer_name": "vagrant",
+        "event_id": "4105",
+        "process": {
+            "pid": 4204,
+            "thread": {
+                "id": 1476
+            }
+        },
+        "provider_guid": "{a0c1853b-5c40-4b15-8766-3cf1c58f985a}",
+        "provider_name": "Microsoft-Windows-PowerShell",
+        "record_id": "790",
+        "user": {
+            "identifier": "S-1-5-21-1350058589-2282154016-2764056528-1000"
+        },
+        "version": 1
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -399,23 +576,24 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| destination.user.domain | Name of the directory the user is a member of. | keyword |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
-| ecs.version | ECS version | keyword |
-| event.action | The action captured by the event. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
-| event.code | Identification code for this event, if one exists. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
-| event.provider | Source of the event. | keyword |
-| event.sequence | Sequence number of the event. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
-| file.extension | File extension, excluding the leading dot. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -434,7 +612,8 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Original log level of the log event. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | powershell.command.invocation_details | An array of objects containing detailed information of the executed command. | array |
 | powershell.command.invocation_details.name | Only used for ParameterBinding detail type. Indicates the parameter name. | keyword |
 | powershell.command.invocation_details.related_command | The command to which the detail is related to. | keyword |
@@ -459,23 +638,23 @@ The Windows `powershell_operational` dataset provides events from the Windows
 | powershell.runspace_id | Runspace id. | keyword |
 | powershell.sequence | Sequence number of the powershell execution. | long |
 | powershell.total | Total number of messages in the sequence. | long |
-| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
-| process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
-| process.entity_id | Unique identifier for the process. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
-| process.name | Process name. | keyword |
-| process.pid | Process PID. | long |
-| process.title | Process title. | keyword |
-| related.hash |  | keyword |
-| related.hosts |  | keyword |
-| related.ip |  | ip |
-| related.user |  | keyword |
-| source.user.domain | Name of the directory the user is a member of. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.pid | Process id. | long |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
@@ -617,6 +796,137 @@ The Windows `powershell_operational` dataset provides events from the Windows
 The Windows `sysmon_operational` dataset provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
 
+An example event for `sysmon_operational` looks as following:
+
+```json
+{
+    "@timestamp": "2019-07-18T03:34:01.261Z",
+    "agent": {
+        "ephemeral_id": "0db86869-9076-44ed-acbc-32415bdaa793",
+        "hostname": "docker-fleet-agent",
+        "id": "8a695e28-aed6-4bbf-90be-5a9b7f99eab9",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "windows.sysmon_operational",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "dns": {
+        "answers": [
+            {
+                "data": "www-msn-com.a-0003.a-msedge.net",
+                "type": "CNAME"
+            },
+            {
+                "data": "a-0003.a-msedge.net",
+                "type": "CNAME"
+            },
+            {
+                "data": "204.79.197.203",
+                "type": "A"
+            }
+        ],
+        "question": {
+            "name": "www.msn.com",
+            "registered_domain": "msn.com",
+            "subdomain": "www",
+            "top_level_domain": "com"
+        },
+        "resolved_ip": [
+            "204.79.197.203"
+        ]
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "24ec544f-3818-44a4-ac26-223be6af154a",
+        "snapshot": true,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "agent_id_mismatch",
+        "category": [
+            "network"
+        ],
+        "code": "22",
+        "created": "2019-07-18T03:34:02.025Z",
+        "dataset": "windows.sysmon_operational",
+        "ingested": "2021-06-14T13:44:51.825787300Z",
+        "kind": "event",
+        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/\u003e\u003cEventID\u003e22\u003c/EventID\u003e\u003cVersion\u003e5\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e22\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/\u003e\u003cEventRecordID\u003e67\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='2828' ThreadID='1684'/\u003e\u003cChannel\u003eMicrosoft-Windows-Sysmon/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant-2016\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='RuleName'\u003e\u003c/Data\u003e\u003cData Name='UtcTime'\u003e2019-07-18 03:34:01.261\u003c/Data\u003e\u003cData Name='ProcessGuid'\u003e{fa4a0de6-e8a9-5d2f-0000-001053699900}\u003c/Data\u003e\u003cData Name='ProcessId'\u003e2736\u003c/Data\u003e\u003cData Name='QueryName'\u003ewww.msn.com\u003c/Data\u003e\u003cData Name='QueryStatus'\u003e0\u003c/Data\u003e\u003cData Name='QueryResults'\u003etype:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;\u003c/Data\u003e\u003cData Name='Image'\u003eC:\\Program Files (x86)\\Internet Explorer\\iexplore.exe\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
+        "provider": "Microsoft-Windows-Sysmon",
+        "type": [
+            "connection",
+            "protocol",
+            "info"
+        ]
+    },
+    "host": {
+        "name": "vagrant-2016"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "log": {
+        "level": "information"
+    },
+    "network": {
+        "protocol": "dns"
+    },
+    "process": {
+        "entity_id": "{fa4a0de6-e8a9-5d2f-0000-001053699900}",
+        "executable": "C:\\Program Files (x86)\\Internet Explorer\\iexplore.exe",
+        "name": "iexplore.exe",
+        "pid": 2736
+    },
+    "related": {
+        "hosts": [
+            "www-msn-com.a-0003.a-msedge.net",
+            "a-0003.a-msedge.net",
+            "www.msn.com"
+        ],
+        "ip": [
+            "204.79.197.203"
+        ]
+    },
+    "sysmon": {
+        "dns": {
+            "status": "SUCCESS"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "user": {
+        "id": "S-1-5-18"
+    },
+    "winlog": {
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer_name": "vagrant-2016",
+        "event_id": "22",
+        "opcode": "Info",
+        "process": {
+            "pid": 2828,
+            "thread": {
+                "id": 1684
+            }
+        },
+        "provider_guid": "{5770385f-c22a-43e0-bf4c-06f5698ffbd9}",
+        "provider_name": "Microsoft-Windows-Sysmon",
+        "record_id": "67",
+        "user": {
+            "identifier": "S-1-5-18"
+        },
+        "version": 5
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -644,45 +954,46 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | destination.domain | Destination domain. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| dns.answers | An array containing an object for each answer section returned by the server. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
 | dns.answers.class | The class of DNS data contained in this resource record. | keyword |
-| dns.answers.data | The data describing the resource. | keyword |
-| dns.answers.name | The domain name to which this resource record pertains. | keyword |
+| dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
+| dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
-| dns.question.name | The name being queried. | keyword |
-| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
-| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. | keyword |
-| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
-| dns.resolved_ip | Array containing all IPs seen in `answers.data`. | ip |
+| dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | dns.response_code | The DNS response code. | keyword |
-| dns.type | The type of DNS event captured, query or answer. | keyword |
-| ecs.version | ECS version | keyword |
+| dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | text |
-| event.action | The action captured by the event. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. | keyword |
-| event.code | Identification code for this event, if one exists. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. | date |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. | keyword |
-| event.module | Name of the module this data is coming from. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. | keyword |
-| event.provider | Source of the event. | keyword |
-| event.sequence | Sequence number of the event. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.code_signature.exists | Boolean to capture if a signature is present. | boolean |
-| file.code_signature.status | Additional information about the certificate status. | keyword |
+| file.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
 | file.code_signature.subject_name | Subject name of the code signer | keyword |
-| file.code_signature.trusted | Stores the trust status of the certificate chain. | boolean |
-| file.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. | boolean |
+| file.code_signature.trusted | Stores the trust status of the certificate chain. Validating the trust of the certificate chain may be complicated, and this field should only be populated by tools that actively check the status. | boolean |
+| file.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. Leave unpopulated if a certificate was unchecked. | boolean |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
-| file.extension | File extension, excluding the leading dot. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
@@ -693,10 +1004,10 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | file.pe.company | Internal company name of the file, provided at compile-time. | keyword |
 | file.pe.description | Internal description of the file, provided at compile-time. | keyword |
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
-| file.pe.imphash | A hash of the imports in a PE file. | keyword |
+| file.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | file.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| group.domain | Name of the directory the group is a member of. | keyword |
+| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -706,7 +1017,7 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -715,63 +1026,65 @@ The Windows `sysmon_operational` dataset provides events from the Windows
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Original log level of the log event. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. | text |
-| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
-| process.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
-| process.args_count | Length of the process.args array. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
-| process.entity_id | Unique identifier for the process. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha1 | SHA1 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.hash.sha512 | SHA512 hash. | keyword |
-| process.name | Process name. | keyword |
-| process.parent.args | Array of process arguments, starting with the absolute path to the executable. | keyword |
-| process.parent.args_count | Length of the process.args array. | long |
-| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. | keyword |
-| process.parent.entity_id | Unique identifier for the process. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.parent.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
+| process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
-| process.parent.name | Process name. | keyword |
+| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.pid | Process id. | long |
 | process.pe.architecture | CPU architecture target for the file. | keyword |
 | process.pe.company | Internal company name of the file, provided at compile-time. | keyword |
 | process.pe.description | Internal description of the file, provided at compile-time. | keyword |
 | process.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
-| process.pe.imphash | A hash of the imports in a PE file. | keyword |
+| process.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
 | process.pid | Process id. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.working_directory | The working directory of the process. | keyword |
-| registry.data.strings | Content when writing string types. | keyword |
+| registry.data.strings | Content when writing string types. Populated as an array when writing string data to the registry. For single string registry types (REG_SZ, REG_EXPAND_SZ), this should be an array with one string. For sequences of string with REG_MULTI_SZ, this array will be variable length. For numeric data, such as REG_DWORD and REG_QWORD, this should be populated with the decimal representation (e.g `"1"`). | keyword |
 | registry.data.type | Standard registry type for encoding contents | keyword |
 | registry.hive | Abbreviated name for the hive. | keyword |
 | registry.key | Hive-relative path of keys. | keyword |
-| registry.path | Full path, including hive, key and value Options\winword.exe\Debugger | keyword |
+| registry.path | Full path, including hive, key and value | keyword |
 | registry.value | Name of the value written. | keyword |
-| related.hash |  | keyword |
-| related.hosts |  | keyword |
-| related.ip |  | ip |
-| related.user |  | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| service.name | Name of the service data is collected from. | keyword |
-| service.type | The type of the service data is collected from. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | source.domain | Source domain. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | sysmon.dns.status | Windows status code returned for the DNS query. | keyword |
 | sysmon.file.archived | Indicates if the deleted file was archived. | boolean |
 | sysmon.file.is_executable | Indicates if the deleted file was an executable. | boolean |
-| user.domain | Name of the directory the user is a member of. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| user.target.group.domain | Name of the directory the group is a member of. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.name | Short name or login of the user. | keyword |

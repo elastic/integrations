@@ -8,7 +8,7 @@ The `log` and `slowlog` datasets were tested with logs from Redis versions 1.2.6
 compatibility with any version 1.x, 2.x, or 3.x.
 
 The `info`, `key` and `keyspace` datasets were tested with Redis 3.2.12, 4.0.11 and 5.0-rc4, and are expected to work
-with all versions >= 3.0.
+with all versions `>= 3.0`.
 
 ## Logs
 
@@ -37,7 +37,11 @@ The `log` dataset collects the Redis standard logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | text |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -58,6 +62,7 @@ The `log` dataset collects the Redis standard logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.pid | Process id. | long |
 | redis.log.role | The role of the Redis instance. Can be one of `master`, `slave`, `child` (for RDF/AOF writing child), or `sentinel`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ### slowlog
@@ -85,7 +90,11 @@ The `slowlog` dataset collects the Redis slow logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | text |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -106,6 +115,7 @@ The `slowlog` dataset collects the Redis slow logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | process.pid | Process id. | long |
 | redis.log.role | The role of the Redis instance. Can be one of `master`, `slave`, `child` (for RDF/AOF writing child), or `sentinel`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -117,7 +127,7 @@ result.
 
 An example event for `info` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -325,6 +335,8 @@ An example event for `info` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -449,7 +461,7 @@ An example event for `info` looks as following:
 | redis.info.stats.sync.full | The number of full resyncs with slaves | long |
 | redis.info.stats.sync.partial.err | The number of denied partial resync requests | long |
 | redis.info.stats.sync.partial.ok | The number of accepted partial resync requests | long |
-| service.address | Service address | keyword |
+| service.address | Client address | keyword |
 | service.type | Service type | keyword |
 | service.version | Service version | keyword |
 
@@ -469,7 +481,7 @@ Patterns are configured as a list containing these fields:
 
 An example event for `key` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -524,6 +536,8 @@ An example event for `key` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -541,7 +555,7 @@ An example event for `key` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | redis.key.expire.ttl | Seconds to expire. | long |
-| redis.key.id | Unique id for this key (With the form <keyspace>:<name>). | keyword |
+| redis.key.id | Unique id for this key (With the form `\<keyspace\>:\<name\>`). | keyword |
 | redis.key.length | Length of the key (Number of elements for lists, length for strings, cardinality for sets). | long |
 | redis.key.name | Key name. | keyword |
 | redis.key.type | Key type as shown by `TYPE` command. | keyword |
@@ -556,7 +570,7 @@ Elasticsearch. The keyspace information is fetched from the `INFO` command.
 
 An example event for `keyspace` looks as following:
 
-```$json
+```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
     "redis": {
@@ -608,6 +622,8 @@ An example event for `keyspace` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

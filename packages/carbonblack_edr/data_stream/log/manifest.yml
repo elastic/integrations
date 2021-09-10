@@ -1,0 +1,179 @@
+type: logs
+title: Carbon Black EDR logs
+release: experimental
+streams:
+  - input: http_endpoint
+    template_path: http_endpoint.yml.hbs
+    title: Carbon Black EDR logs
+    description: Receive Carbon Black EDR logs via HTTP.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen address
+        description: The bind address for the HTTP server.
+        multi: false
+        required: true
+        show_user: true
+      - name: listen_port
+        type: integer
+        title: Listen port
+        description: Port number for the HTTP server.
+        multi: false
+        required: false
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - carbonblack_edr-log
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+  - input: tcp
+    enabled: false
+    template_path: tcpudp.yml.hbs
+    title: Carbon Black EDR logs
+    description: Receive Carbon Black EDR logs via TCP.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen address
+        description: The bind address for receiving TCP connections.
+        multi: false
+        required: true
+        show_user: true
+      - name: listen_port
+        type: integer
+        title: Listen port
+        description: Port number to listen for TCP connections.
+        multi: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - carbonblack_edr-log
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+  - input: udp
+    enabled: false
+    template_path: tcpudp.yml.hbs
+    title: Carbon Black EDR logs
+    description: Receive Carbon Black EDR logs via UDP.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen address
+        description: The bind address for receiving UDP packets.
+        multi: false
+        required: true
+        show_user: true
+      - name: listen_port
+        type: integer
+        title: Listen port
+        description: Port number to listen for UDP packets.
+        multi: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - carbonblack_edr-log
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+  - input: logfile
+    enabled: false
+    template_path: log.yml.hbs
+    title: Carbon Black EDR logs
+    description: Read Carbon Black EDR logs from a file.
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/cb/data/event_bridge_output.json
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - carbonblack_edr-log
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"

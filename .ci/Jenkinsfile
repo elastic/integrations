@@ -11,12 +11,12 @@ pipeline {
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
-    KIND_VERSION = "v0.10.0"
+    KIND_VERSION = "v0.11.1"
     K8S_VERSION = "v1.20.2"
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
-    ELASTIC_STACK_VERSION_PREV = "7.12.0-SNAPSHOT"
-    ELASTIC_STACK_VERSION_PREV_PREV = "7.11.2-SNAPSHOT"
+    JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
+    STACK_VERSION = "${params.stackVersion}"
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -30,7 +30,9 @@ pipeline {
   }
   triggers {
     issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|/test)')
-    cron(env.CHANGE_ID?.trim() ? '' : 'H H(2-5) * * *')
+  }
+  parameters {
+    string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
   }
   stages {
     stage('Prepare workspace') {
@@ -68,13 +70,12 @@ pipeline {
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          sh(label: "Update the Elastic stack", script: '../../build/elastic-package stack update -v')
-                          sh(label: "Boot up the Elastic stack", script: '../../build/elastic-package stack up -d -v')
+                          prepareStack()
                           withKubernetes() {
                             withCloudTestEnv() {
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package test -v --report-format xUnit --report-output file
+                                ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
                                 ''')
                             }
                           }
@@ -92,16 +93,15 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/latest/${it}")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/latest/${it}/logs/*.log")
+                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
+                          // Temporary workaround to collect internal fleet-server logs
+                          sh(label: "Collect internal fleet-server logs",
+                            script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/${it}/logs/fleet-server-internal.log")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+                          stashCoverageReport()
                         }
                       }
-
-                      // Check compatibility with previous stacks
-                      // FIXME: Enable compatibility check once we have a new stack released (compatibility with Fleet Server)
-                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV)
-                      // checkPackageCompatibility(it, ELASTIC_STACK_VERSION_PREV_PREV)
                     }
                   }
                 }
@@ -114,6 +114,9 @@ pipeline {
     }
   }
   post {
+    always {
+      publishCoverageReports()
+    }
     cleanup {
       notifyBuildResult(prComment: true)
     }
@@ -190,12 +193,37 @@ def withKubernetes(Closure body) {
         sh(label: "Create kind cluster", script: 'kind create cluster --config ../../kind-config.yaml')
       }
 
-      body()
-
-      if (r == 0) {
-        sh(label: "Delete kind cluster", script: 'kind delete cluster')
+      try {
+        body()
+      } catch(error) {
+        throw error // rethrow error up if there is any, but delete k8s cluster first
+      } finally {
+        if (r == 0) {
+          sh(label: "Delete kind cluster", script: 'kind delete cluster')
+        }
       }
     }
+}
+
+def prepareStack() {
+  def stackArgs = '-v'
+
+  if ( env.STACK_VERSION?.trim() ) {
+    stackArgs += " --version ${env.STACK_VERSION}"
+  } else {
+    def manifest = readYaml(file: "manifest.yml")
+
+    if (manifest != null && manifest["conditions"] != null) {
+      def kibanaVersionCondition = manifest["conditions"]["kibana.version"]
+      if (kibanaVersionCondition != null) {
+        def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
+        stackArgs += " --version ${version}"
+      }
+    }
+  }
+
+  sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
+  sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
 }
 
 def withCloudTestEnv(Closure body) {
@@ -217,39 +245,30 @@ def withCloudTestEnv(Closure body) {
   }
 }
 
-def checkPackageCompatibility(integrationName, stackVersion) {
-  if (!isPackageCompatible(integrationName, stackVersion)) {
-    return // the package doesn't have to be supported by this stack
+def stashCoverageReport() {
+  r = sh(label: "isCoverageReportPresent", script: "ls build/test-coverage/*.xml", returnStatus: true)
+  if (r != 0) {
+    echo "isCoverageReportPresent: coverage files not found, report won't be stashed"
+    return
   }
 
-  try {
-    dir("${BASE_DIR}/packages/${integrationName}") {
-      sh(label: "Update the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack update -v --version ${stackVersion}")
-      sh(label: "Boot up the Elastic stack (${stackVersion})", script: "../../build/elastic-package stack up -d -v --version ${stackVersion}")
-      sh(label: "Install integration: ${integrationName}", script: '''
-        eval "$(../../build/elastic-package stack shellinit)"
-        ../../build/elastic-package install -v''')
-    }
-  } finally {
+  googleStorageUploadExt(bucket: getCoverageBucketURI(), credentialsId: "${JOB_GCS_EXT_CREDENTIALS}", pattern: "build/test-coverage/*.xml")
+}
+
+def publishCoverageReports() {
+  stage('Publish coverage reports') {
     dir("${BASE_DIR}") {
-      sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${stackVersion}/${integrationName}")
-      archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${stackVersion}/${integrationName}/logs/*.log")
-      sh(label: "Take down the Elastic stack (${stackVersion})", script: 'build/elastic-package stack down -v')
+      def bucketUri = getCoverageBucketURI() + "*.xml"
+      googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
+      coverageReport('build/test-coverage')
     }
   }
 }
 
-def isPackageCompatible(integrationName, stackVersion) {
-  dir("${BASE_DIR}/packages/${integrationName}") {
-    def r = sh(label: "Check compatibility with ${stackVersion}",
-      script: "../../build/elastic-package install -v -c kibana.version=${stackVersion}",
-      returnStatus: true)
-    if (r == 0) {
-      echo "Package should be compatible"
-      return true
-    }
+def getCoverageBucketURI() {
+  return "gs://${JOB_GCS_BUCKET}/" + getCoveragePathPrefix()
+}
 
-    echo "Package is not compatible. Skipping."
-    return false
-  }
+def getCoveragePathPrefix() {
+  return "${env.JOB_NAME}-${env.BUILD_ID}/test-coverage/"
 }

@@ -4,9 +4,12 @@ paths:
   {{/each}}
 exclude_files: [".gz$"]
 tags:
-  {{#each tags as |tag i|}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
   - {{tag}}
-  {{/each}}
+{{/each}}
 {{#contains tags "forwarded"}}
 publisher_pipeline.disable_host: true
 {{/contains}}
@@ -16,4 +19,6 @@ processors:
       - {from: "message", to: "event.original"}
 - decode_cef:
     field: event.original
+{{#if processors}}
 {{processors}}
+{{/if}}

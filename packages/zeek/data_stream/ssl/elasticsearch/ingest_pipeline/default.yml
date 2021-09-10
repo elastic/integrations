@@ -1,6 +1,21 @@
 ---
 description: Pipeline for normalizing Zeek ssl.log
 processors:
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: _temp_
+  - pipeline:
+      if: ctx?._temp_?.result != null
+      name: '{{ IngestPipeline "third-party" }}'
+  - drop:
+      description: Drop if no timestamp (invalid json)
+      if: 'ctx?._temp_?.ts == null'
+  - rename:
+      field: _temp_
+      target_field: zeek.ssl
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
@@ -13,7 +28,7 @@ processors:
       value: event
   - set:
       field: ecs.version
-      value: '1.9.0'
+      value: '1.11.0'
   - append:
       field: event.category
       value: network
@@ -26,44 +41,6 @@ processors:
   - set:
       field: network.transport
       value: tcp
-  - json:
-      field: message
-      target_field: json
-      ignore_failure: true
-      if: ctx?.message != null
-  - drop:
-      if: 'ctx?.json?.result == null && ctx?.json?.ts == null'
-  - rename:
-      field: json
-      target_field: zeek.ssl
-      if: ctx?.json?.ts != null
-  - fingerprint:
-      fields: 
-        - json.result._cd
-        - json.result._indextime
-        - json.result._raw
-        - json.result._time
-        - json.result.host
-        - json.result.source
-      target_field: '_id'
-      if: 'ctx?.json?.result != null && ctx?.json?.ts == null'
-  - rename:
-      field: json.result._raw
-      target_field: event.original
-      ignore_missing: true
-  - rename:
-      field: json.result.host
-      target_field: host.name
-      ignore_missing: true
-  - rename:
-      field: json.result.source
-      target_field: log.file.path
-      ignore_missing: true
-  - json:
-      field: event.original
-      target_field: zeek.ssl
-      ignore_failure: true
-      if: ctx?.event?.original != null
   - dot_expander:
       path: zeek.ssl
       field: id.orig_p
@@ -152,6 +129,7 @@ processors:
       field: zeek.ssl.ts
       formats:
         - UNIX
+        - ISO8601
   - remove:
       field: zeek.ssl.ts
   - date:
@@ -160,12 +138,14 @@ processors:
       target_field: tls.server.not_before
       formats:
         - UNIX
+        - ISO8601
   - date:
       if: ctx.tls?.server?.not_after != null
       field: tls.server.not_after
       target_field: tls.server.not_after
       formats:
         - UNIX
+        - ISO8601
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -512,9 +492,12 @@ processors:
       if: 'ctx?.zeek?.ssl?.client == null || ctx?.zeek?.ssl?.client.isEmpty()'
   - remove:
       field: 
-        - message
-        - json
         - zeek.ssl.id
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:
