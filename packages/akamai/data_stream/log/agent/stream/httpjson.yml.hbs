@@ -1,0 +1,58 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{scheme}}://{{host}}/siem/v1/configs/{{config_ids}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+auth.edgegrid:
+  client_token: {{client_token}}
+  client_secret: {{client_secret}}
+  access_token: {{access_token}}
+  host: {{host}}
+request.transforms:
+  - set:
+      target: url.params.from
+      value: "[[.cursor.last_execution_datetime]]"
+      default: '[[formatDate (now (parseDuration "-{{interval}}"))]]'
+  - set:
+      target: url.params.to
+      value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
+      default: '[[formatDate (now (parseDuration "-1m"))]]'
+{{!-- response.pagination:
+  - set:
+      target: url.params.offset
+      value: '[[.last_event.body.offset]]'
+  - delete
+      target: 
+        - url.params.from
+        - url.params.to --}}
+
+response.decode_as: application/x-ndjson
+
+cursor:
+  last_execution_datetime:
+    value: "[[formatDate (now (parseDuration "-1m"))]]"
+
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
