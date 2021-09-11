@@ -1,18 +1,23 @@
-# Cloudflare Integration
+# Akamai Integration
 
-The Cloudflare integration collects events from the Cloudflare API, specifically reading from the Cloudflare Logpull API.
+The Akamai integration collects events from the Akamai API, specifically reading from the [Akamai SIEM API](https://techdocs.akamai.com/siem-integration/reference/api).
 
 ## Logs
 
-### Logpull
+### SIEM
 
-The Cloudflare Logpull records network events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input.
+The Security Information and Event Management API allows you to capture security events generated on the ​Akamai​ platform in your SIEM application.
+
+Use this API to get security event data generated on the ​Akamai​ platform and correlate it with data from other sources in your SIEM solution. Capture security event data incrementally, or replay missed security events from the past 12 hours. You can store, query, and analyze the data delivered through this API on your end, then go back and adjust your Akamai security settings. If you’re coding your own SIEM connector, it needs to adhere to these specifications in order to pull in security events from Akamai Security Events Collector (ASEC) and process them properly.
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| akamai.siem.request.headers | HTTP Request headers | flattened |
+| akamai.siem.response.headers | HTTP response headers | flattened |
+| akamai.siem.rules | Rules triggered by this request | flattened |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
@@ -27,74 +32,15 @@ The Cloudflare Logpull records network events related to your organization in or
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
-| cloudflare.cache.bytes | Number of bytes returned by the cache | long |
-| cloudflare.cache.status | Status of cache | keyword |
-| cloudflare.cache.status_code | HTTP status code returned by the cache to the edge. All requests (including non-cacheable ones) go through the cache. | long |
-| cloudflare.cache.tiered_fill | Tiered Cache was used to serve this request | boolean |
-| cloudflare.client.ip_class | Class of client, ex. badHost | searchEngine | allowlist | greylist.... | keyword |
-| cloudflare.client.ssl.protocol | Client SSL (TLS) protocol | keyword |
-| cloudflare.device_type | Client device type | keyword |
-| cloudflare.edge.colo.code | IATA airport code of data center that received the request | keyword |
-| cloudflare.edge.colo.id | Cloudflare edge colo id | long |
-| cloudflare.edge.pathing.op | Indicates what type of response was issued for this request (unknown = no specific action) | keyword |
-| cloudflare.edge.pathing.src | Details how the request was classified based on security checks (unknown = no specific classification) | keyword |
-| cloudflare.edge.pathing.status | Indicates what data was used to determine the handling of this request (unknown = no data) | keyword |
-| cloudflare.edge.rate_limit.action | The action taken by the blocking rule; empty if no action taken | keyword |
-| cloudflare.edge.rate_limit.id | The internal rule ID of the rate-limiting rule that triggered a block (ban) or log action. 0 if no action taken. | long |
-| cloudflare.edge.request.host | Host header on the request from the edge to the origin | keyword |
-| cloudflare.edge.response.bytes | Number of bytes returned by the edge to the client | long |
-| cloudflare.edge.response.compression_ratio | Edge response compression ratio | long |
-| cloudflare.edge.response.content_type | Edge response Content-Type header value | keyword |
-| cloudflare.edge.response.status_code | HTTP status code returned by Cloudflare to the client | long |
-| cloudflare.firewall.actions | Array of actions the Cloudflare firewall products performed on this request. The individual firewall products associated with this action be found in FirewallMatchesSources and their respective RuleIds can be found in FirewallMatchesRuleIDs. The length of the array is the same as FirewallMatchesRuleIDs and FirewallMatchesSources. | array |
-| cloudflare.firewall.rule_ids | Array of RuleIDs of the firewall product that has matched the request. The firewall product associated with the RuleID can be found in FirewallMatchesSources. The length of the array is the same as FirewallMatchesActions and FirewallMatchesSources. | array |
-| cloudflare.firewall.sources | The firewall products that matched the request. The same product can appear multiple times, which indicates different rules or actions that were activated. The RuleIDs can be found in FirewallMatchesRuleIDs, the actions can be found in FirewallMatchesActions. The length of the array is the same as FirewallMatchesRuleIDs and FirewallMatchesActions. | array |
-| cloudflare.origin.response.bytes | Number of bytes returned by the origin server | long |
-| cloudflare.origin.response.expires | Value of the origin 'expires' header | date |
-| cloudflare.origin.response.last_modified | Value of the origin 'last-modified' header | date |
-| cloudflare.origin.response.status_code | Status returned by the origin server | long |
-| cloudflare.origin.response.time | Number of nanoseconds it took the origin to return the response to edge | long |
-| cloudflare.origin.ssl.protocol | SSL (TLS) protocol used to connect to the origin | keyword |
-| cloudflare.parent.ray_id | Ray ID of the parent request if this request was made using a Worker script | keyword |
-| cloudflare.ray_id | Ray ID of the parent request if this request was made using a Worker script | keyword |
-| cloudflare.security_level | The security level configured at the time of this request. This is used to determine the sensitivity of the IP Reputation system. | keyword |
-| cloudflare.waf.action | Action taken by the WAF, if triggered | keyword |
-| cloudflare.waf.flags | Additional configuration flags: simulate (0x1) | null | keyword |
-| cloudflare.waf.matched_var | The full name of the most-recently matched variable | keyword |
-| cloudflare.waf.profile | low | med | high | keyword |
-| cloudflare.waf.rule.id | ID of the applied WAF rule | keyword |
-| cloudflare.waf.rule.message | Rule message associated with the triggered rule | keyword |
-| cloudflare.worker.cpu_time | Amount of time in microseconds spent executing a worker, if any | long |
-| cloudflare.worker.status | Status returned from worker daemon | keyword |
-| cloudflare.worker.subrequest | Whether or not this request was a worker subrequest | boolean |
-| cloudflare.worker.subrequest_count | Number of subrequests issued by a worker when handling this request | long |
-| cloudflare.zone.id | Internal zone ID | long |
-| cloudflare.zone.name | The human-readable name of the zone (e.g. 'cloudflare.com'). | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| destination.as.organization.name | Organization name. | keyword |
-| destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.geo.city_name | City name. | keyword |
-| destination.geo.continent_name | Name of the continent. | keyword |
-| destination.geo.country_iso_code | Country ISO code. | keyword |
-| destination.geo.country_name | Country name. | keyword |
-| destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| destination.geo.region_iso_code | Region ISO code. | keyword |
-| destination.geo.region_name | Region name. | keyword |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -118,11 +64,8 @@ The Cloudflare Logpull records network events related to your organization in or
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.bytes | Total size in bytes of the request (body and headers). | long |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
-| http.request.referrer | Referrer for this HTTP request. | keyword |
-| http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
@@ -130,25 +73,11 @@ The Cloudflare Logpull records network events related to your organization in or
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
-| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| observer.geo.city_name | City name. | keyword |
-| observer.geo.continent_name | Name of the continent. | keyword |
-| observer.geo.country_iso_code | Country ISO code. | keyword |
-| observer.geo.country_name | Country name. | keyword |
-| observer.geo.location | Longitude and latitude. | geo_point |
-| observer.geo.region_iso_code | Region ISO code. | keyword |
-| observer.geo.region_name | Region name. | keyword |
-| observer.ip | IP addresses of the observer. | ip |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -164,8 +93,6 @@ The Cloudflare Logpull records network events related to your organization in or
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
-| source.user.full_name | User's full name, if available. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
@@ -180,234 +107,129 @@ The Cloudflare Logpull records network events related to your organization in or
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.username | Username of the request. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.email | User email address. | keyword |
-| user.full_name | User's full name, if available. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user_agent.device.name | Name of the device. | keyword |
-| user_agent.name | Name of the user agent. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
-| user_agent.os.full | Operating system name, including the version or code name. | keyword |
-| user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
-| user_agent.version | Version of the user agent. | keyword |
 
 
-An example event for `logpull` looks as following:
+An example event for `siem` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-08-02T15:29:08.000Z",
-    "agent": {
-        "ephemeral_id": "3c4ff675-b9b0-4088-91be-ceb05758b84d",
-        "hostname": "docker-fleet-agent",
-        "id": "215f4abb-ee20-49c3-9075-e8d3838466ba",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.15.0"
-    },
-    "client": {
-        "address": "35.232.161.245",
-        "as": {
-            "number": 15169,
-            "organization": {
-                "name": "Google LLC"
-            }
-        },
-        "bytes": 2577,
-        "geo": {
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 38.6583,
-                "lon": -77.2481
-            },
-            "region_iso_code": "US-VA",
-            "region_name": "Virginia"
-        },
-        "ip": "35.232.161.245",
-        "port": 55028
-    },
-    "cloudflare": {
-        "cache": {
-            "status": "unknown",
-            "tiered_fill": false
-        },
-        "client": {
-            "ip_class": "noRecord",
-            "ssl": {
-                "protocol": "TLSv1.2"
-            }
-        },
-        "device_type": "desktop",
-        "edge": {
-            "colo": {
-                "id": 14
-            },
-            "pathing": {
-                "op": "chl",
-                "src": "filterBasedFirewall",
-                "status": "captchaNew"
-            },
-            "rate_limit": {
-                "id": 0
+    "akamai": {
+        "siem": {
+            "request": {
+                "headers": {
+                    "Accept": "text/html,application/xhtml xml",
+                    "User-Agent": "BOT/0.1 (BOT for JCE)"
+                }
             },
             "response": {
-                "bytes": 2848,
-                "compression_ratio": 2.64,
-                "content_type": "text/html",
-                "status_code": 403
-            }
-        },
-        "firewall": {
-            "actions": [
-                "simulate",
-                "challenge"
-            ],
-            "rule_ids": [
-                "094b71fea25d4860a61fa0c6fbbd8d8b",
-                "e454fd4a0ce546b3a9a462536613692c"
-            ],
-            "sources": [
-                "firewallRules",
-                "firewallRules"
+                "headers": {
+                    "Server": "AkamaiGHost",
+                    "Mime-Version": "1.0",
+                    "Content-Type": "text/html"
+                }
+            },
+            "rules": [
+                {
+                    "ruleSelectors": "ARGS:a",
+                    "rules": "950004",
+                    "ruleMessages": "Cross-site Scripting (XSS) Attack",
+                    "ruleTags": "WEB_ATTACK/XSS",
+                    "ruleData": "alert(",
+                    "ruleActions": "ALERT"
+                },
+                {
+                    "ruleSelectors": "REQUEST_HEADERS:User-Agent",
+                    "rules": "990011",
+                    "ruleMessages": "Request Indicates an automated program explored the site",
+                    "ruleTags": "AUTOMATION/MISC",
+                    "ruleData": "curl",
+                    "ruleActions": "DENY"
+                }
             ]
-        },
-        "origin": {
-            "response": {
-                "bytes": 0,
-                "status_code": 0,
-                "time": 0
-            },
-            "ssl": {
-                "protocol": "unknown"
-            }
-        },
-        "parent": {
-            "ray_id": "00"
-        },
-        "ray_id": "500115ec386354d8",
-        "security_level": "med",
-        "waf": {
-            "action": "unknown",
-            "flags": "0",
-            "profile": "unknown"
-        },
-        "worker": {
-            "cpu_time": 0,
-            "status": "unknown",
-            "subrequest": false,
-            "subrequest_count": 0
-        },
-        "zone": {
-            "id": 155978002
         }
     },
-    "data_stream": {
-        "dataset": "cloudflare.logpull",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "destination": {
-        "bytes": 2848
-    },
-    "ecs": {
-        "version": "1.10.0"
-    },
-    "elastic_agent": {
-        "id": "215f4abb-ee20-49c3-9075-e8d3838466ba",
-        "snapshot": true,
-        "version": "7.15.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": "network",
-        "created": "2021-08-09T12:14:00.331Z",
-        "dataset": "cloudflare.logpull",
-        "duration": 0,
-        "end": "2019-08-02T15:29:08.000Z",
-        "ingested": "2021-08-09T12:14:04Z",
-        "kind": "event",
-        "original": "{\"CacheCacheStatus\":\"unknown\",\"CacheResponseBytes\":0,\"CacheResponseStatus\":0,\"CacheTieredFill\":false,\"ClientASN\":15169,\"ClientCountry\":\"us\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"35.232.161.245\",\"ClientIPClass\":\"noRecord\",\"ClientRequestBytes\":2577,\"ClientRequestHost\":\"cf-analytics.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/wp-cron.php\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestURI\":\"/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000\",\"ClientRequestUserAgent\":\"WordPress/5.2.2;https://cf-analytics.com\",\"ClientSSLCipher\":\"ECDHE-ECDSA-AES128-GCM-SHA256\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":55028,\"EdgeColoID\":14,\"EdgeEndTimestamp\":\"2019-08-02T15:29:08Z\",\"EdgePathingOp\":\"chl\",\"EdgePathingSrc\":\"filterBasedFirewall\",\"EdgePathingStatus\":\"captchaNew\",\"EdgeRateLimitAction\":\"\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"\",\"EdgeResponseBytes\":2848,\"EdgeResponseCompressionRatio\":2.64,\"EdgeResponseContentType\":\"text/html\",\"EdgeResponseStatus\":403,\"EdgeServerIP\":\"\",\"EdgeStartTimestamp\":\"2019-08-02T15:29:08Z\",\"FirewallMatchesActions\":[\"simulate\",\"challenge\"],\"FirewallMatchesRuleIDs\":[\"094b71fea25d4860a61fa0c6fbbd8d8b\",\"e454fd4a0ce546b3a9a462536613692c\"],\"FirewallMatchesSources\":[\"firewallRules\",\"firewallRules\"],\"OriginIP\":\"\",\"OriginResponseBytes\":0,\"OriginResponseHTTPExpires\":\"\",\"OriginResponseHTTPLastModified\":\"\",\"OriginResponseStatus\":0,\"OriginResponseTime\":0,\"OriginSSLProtocol\":\"unknown\",\"ParentRayID\":\"00\",\"RayID\":\"500115ec386354d8\",\"SecurityLevel\":\"med\",\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"\",\"WAFRuleMessage\":\"\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":false,\"WorkerSubrequestCount\":0,\"ZoneID\":155978002}",
-        "start": "2019-08-02T15:29:08.000Z"
-    },
-    "http": {
-        "request": {
-            "bytes": 2577,
-            "method": "POST",
-            "referrer": "https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000"
+    "source": {
+        "geo": {
+            "continent_name": "North America",
+            "region_iso_code": "US-VA",
+            "city_name": "Ashburn",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "region_name": "Virginia",
+            "location": {
+                "lon": -77.4728,
+                "lat": 39.0481
+            }
         },
-        "response": {
-            "bytes": 2848,
-            "status_code": 403
+        "as": {
+            "number": 14618,
+            "organization": {
+                "name": "Amazon.com, Inc."
+            }
         },
-        "version": "1.1"
+        "address": "52.91.36.10",
+        "ip": "52.91.36.10"
     },
-    "input": {
-        "type": "httpjson"
+    "url": {
+        "path": "/examples/1/",
+        "port": 80,
+        "domain": "www.example.com",
+        "query": "a=../../../etc/passwd",
+        "full": "www.example.com/examples/1/?a%3D..%2F..%2F..%2Fetc%2Fpasswd"
     },
+    "tags": [
+        "preserve_original_event"
+    ],
     "network": {
-        "bytes": 5425,
         "protocol": "http",
         "transport": "tcp"
     },
     "observer": {
         "type": "proxy",
-        "vendor": "cloudflare"
+        "vendor": "akamai"
     },
-    "server": {
-        "bytes": 2848
-    },
-    "source": {
-        "address": "35.232.161.245",
-        "as": {
-            "number": 15169,
-            "organization": {
-                "name": "Google LLC"
-            }
+    "@timestamp": "2016-08-11T13:45:33.026Z",
+    "http": {
+        "request": {
+            "method": "POST",
+            "id": "2ab418ac8515f33"
         },
-        "bytes": 2577,
+        "version": "2",
+        "response": {
+            "bytes": 34523,
+            "status_code": 301
+        }
+    },
+    "client": {
         "geo": {
             "continent_name": "North America",
+            "region_iso_code": "US-VA",
+            "city_name": "Ashburn",
             "country_iso_code": "US",
             "country_name": "United States",
+            "region_name": "Virginia",
             "location": {
-                "lat": 38.6583,
-                "lon": -77.2481
-            },
-            "region_iso_code": "US-VA",
-            "region_name": "Virginia"
+                "lon": -77.4728,
+                "lat": 39.0481
+            }
         },
-        "ip": "35.232.161.245",
-        "port": 55028
+        "as": {
+            "number": 14618,
+            "organization": {
+                "name": "Amazon.com, Inc."
+            }
+        },
+        "address": "52.91.36.10",
+        "ip": "52.91.36.10"
     },
-    "tags": [
-        "forwarded",
-        "preserve_original_event"
-    ],
     "tls": {
-        "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256",
         "version": "1.2",
         "version_protocol": "tls"
     },
-    "url": {
-        "domain": "cf-analytics.com",
-        "extension": "php",
-        "full": "https://cf-analytics.com/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000",
-        "original": "/wp-cron.php?doing_wp_cron=1564759748.3962020874023437500000",
-        "path": "/wp-cron.php",
-        "query": "doing_wp_cron=1564759748.3962020874023437500000",
-        "scheme": "https"
-    },
-    "user_agent": {
-        "device": {
-            "name": "Spider"
-        },
-        "name": "WordPress",
-        "original": "WordPress/5.2.2;https://cf-analytics.com",
-        "version": "5.2.2"
+    "event": {
+        "start": "2016-08-11T13:45:33.026Z",
+        "ingested": "2021-09-11T17:34:26.800509760Z",
+        "original": "{\"format\":\"json\",\"type\":\"akamai_siem\",\"version\":\"1.0\",\"attackData\":{\"clientIP\":\"52.91.36.10\",\"configId\":\"6724\",\"policyId\":\"scoe_5426\",\"ruleActions\":\"QUxFUlQ;REVOWQ==\",\"ruleData\":\"YWxlcnQo;Y3VybA==\",\"ruleMessages\":\"Q3Jvc3Mtc2l0ZSBTY3 JpcHRpbmcgKFhTUykgQXR0YWNr; UmVxdWVzdCBJbmRpY2F0ZXMgYW4 gYXV0b21hdGVkIHByb2 dyYW0gZXhwbG9yZWQgdGhlIHNpdGU=\",\"ruleSelectors\":\"QVJHUzph;UkVRVUVTVF9IRU FERVJTOlVzZXItQWdlbnQ=\",\"ruleTags\":\"V0VCX0FUVEFDSy9YU1M=;QV VUT01BVElPTi9NSVND\",\"ruleVersions\":\";\",\"rules\":\"OTUwMDA0;OTkwMDEx\"},\"geo\":{\"asn\":\"12271\",\"city\":\"NEWYORK\",\"continent\":\"NA\",\"country\":\"US\",\"regionCode\":\"NY\"},\"httpMessage\":{\"bytes\":\"34523\",\"host\":\"www.example.com\",\"method\":\"POST\",\"path\":\"/examples/1/\",\"port\":\"80\",\"protocol\":\"http/2\",\"query\":\"a%3D..%2F..%2F..%2Fetc%2Fpasswd\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"2ab418ac8515f33\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml\",\"start\":\"1470923133.026\",\"status\":\"301\",\"tls\": \"TLSv1.2\"},\"userRiskData\":{\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\",\"status\":\"0\",\"score\":\"75\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"trust\":\"ugp:US\",\"general\":\"duc_1h:10|duc_1d:30\",\"allow\":\"0\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"}}"
     }
 }
 ```
