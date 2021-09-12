@@ -1,7 +1,7 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
-request.url: {{scheme}}://{{host}}/siem/v1/configs/{{config_ids}}
+request.url: "{{scheme}}://{{host}}/siem/v1/configs/{{config_ids}}"
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -22,14 +22,6 @@ request.transforms:
       target: url.params.to
       value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
       default: '[[formatDate (now (parseDuration "-1m"))]]'
-{{!-- response.pagination:
-  - set:
-      target: url.params.offset
-      value: '[[.last_event.body.offset]]'
-  - delete
-      target: 
-        - url.params.from
-        - url.params.to --}}
 
 response.decode_as: application/x-ndjson
 

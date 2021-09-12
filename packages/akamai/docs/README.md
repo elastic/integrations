@@ -10,14 +10,34 @@ The Security Information and Event Management API allows you to capture security
 
 Use this API to get security event data generated on the ​Akamai​ platform and correlate it with data from other sources in your SIEM solution. Capture security event data incrementally, or replay missed security events from the past 12 hours. You can store, query, and analyze the data delivered through this API on your end, then go back and adjust your Akamai security settings. If you’re coding your own SIEM connector, it needs to adhere to these specifications in order to pull in security events from Akamai Security Events Collector (ASEC) and process them properly.
 
+See https://techdocs.akamai.com/siem-integration/reference/api-get-started to setup your Akamai account and obtain your credentials
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| akamai.siem.bot.response_segment | Numeric response segment indicator. Segments are used to group and categorize bot scores. | long |
+| akamai.siem.bot.score | Score assigned to the request by Botman Manager. | long |
+| akamai.siem.client_data.app_bundle_id | Unique identifier of the app bundle. An app bundle contains both the software itself and the accompanying configuration information. | keyword |
+| akamai.siem.client_data.app_version | Version number of the app. | keyword |
+| akamai.siem.client_data.sdk_version | SDK version | keyword |
+| akamai.siem.client_data.telemetry_type | Specifies the telemetry type in use. | long |
+| akamai.siem.client_reputation | Client IP scores for Client Reputation. | keyword |
+| akamai.siem.config_id | ID of the Security Configuration applied to the request. | keyword |
+| akamai.siem.policy_id | ID of the Firewall policy applied to the request. | keyword |
 | akamai.siem.request.headers | HTTP Request headers | flattened |
 | akamai.siem.response.headers | HTTP response headers | flattened |
-| akamai.siem.rules | Rules triggered by this request | flattened |
+| akamai.siem.rules | Rules triggered by this request | nested |
+| akamai.siem.slow_post_action | Action taken if a Slow POST attack is detected: W for Warn or A for deny (abort). | keyword |
+| akamai.siem.slow_post_rate | Recorded rate of a detected Slow POST attack. | long |
+| akamai.siem.user_risk.allow | Indicates whether the user is on the allow list. A 0 indicates that the user was not on the list; a 1 indicates that the user was on the list. | long |
+| akamai.siem.user_risk.general | Indicators of general behavior observed for relevant attributes. For example, duc_1h represents the number of users recorded on a specific device in the past hour. | flattened |
+| akamai.siem.user_risk.risk | Indicators that increased the calculated risk score. For example, the value udfp represents the risk of the device fingerprint based on the user's behavioral profile. | flattened |
+| akamai.siem.user_risk.score | Calculated risk scores. Scores range from 0 (no risk) to 100 (the highest possible risk). | long |
+| akamai.siem.user_risk.status | Status code indicating any errors that might have occurred when calculating the risk score. | long |
+| akamai.siem.user_risk.trust | Indicators that were trusted. For example, the value ugp indicates that the user’s country or area is trusted. | flattened |
+| akamai.siem.user_risk.uuid | Unique identifier of the user whose risk data is being provided. | keyword |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
@@ -115,35 +135,74 @@ An example event for `siem` looks as following:
 {
     "akamai": {
         "siem": {
+            "client_data": {
+                "sdk_version": "4.7.1",
+                "app_version": "1.23",
+                "telemetry_type": 2,
+                "app_bundle_id": "com.mydomain.myapp"
+            },
             "request": {
                 "headers": {
                     "Accept": "text/html,application/xhtml xml",
                     "User-Agent": "BOT/0.1 (BOT for JCE)"
                 }
             },
+            "policy_id": "qik1_26545",
+            "config_id": "14227",
             "response": {
                 "headers": {
                     "Server": "AkamaiGHost",
                     "Mime-Version": "1.0",
+                    "Content-Length": "150",
                     "Content-Type": "text/html"
                 }
             },
+            "bot": {
+                "score": 100,
+                "response_segment": 3
+            },
+            "user_risk": {
+                "allow": 0,
+                "trust": {
+                    "ugp": "US"
+                },
+                "score": 75,
+                "general": {
+                    "duc_1d": "30",
+                    "duc_1h": "10"
+                },
+                "risk": {
+                    "unp": "74256/H",
+                    "udfp": "1325gdg4g4343g/M"
+                },
+                "uuid": "964d54b7-0821-413a-a4d6-8131770ec8d5",
+                "status": 0
+            },
             "rules": [
                 {
-                    "ruleSelectors": "ARGS:a",
-                    "rules": "950004",
-                    "ruleMessages": "Cross-site Scripting (XSS) Attack",
-                    "ruleTags": "WEB_ATTACK/XSS",
-                    "ruleData": "alert(",
-                    "ruleActions": "ALERT"
+                    "ruleSelectors": "ARGS:option",
+                    "ruleVersions": "4",
+                    "ruleMessages": "System Command Access",
+                    "ruleTags": "OWASP_CRS/WEB_ATTACK/FILE_INJECTION",
+                    "ruleActions": "alert",
+                    "rules": "950002",
+                    "ruleData": "telnet.exe"
                 },
                 {
-                    "ruleSelectors": "REQUEST_HEADERS:User-Agent",
-                    "rules": "990011",
-                    "ruleMessages": "Request Indicates an automated program explored the site",
-                    "ruleTags": "AUTOMATION/MISC",
-                    "ruleData": "curl",
-                    "ruleActions": "DENY"
+                    "ruleSelectors": "ARGS:option",
+                    "ruleVersions": "4",
+                    "ruleMessages": "System Command Injection",
+                    "ruleTags": "OWASP_CRS/WEB_ATTACK/COMMAND_INJECT",
+                    "ruleActions": "alert",
+                    "rules": "950006",
+                    "ruleData": "telnet.exe"
+                },
+                {
+                    "ruleVersions": "1",
+                    "rules": "CMD-INJECTION-ANOMALY",
+                    "ruleMessages": "Anomaly Score Exceeded fo",
+                    "ruleData": "Vector Score: 10, DENY threshold: 9, Ale",
+                    "ruleActions": "deny"
                 }
             ]
         }
@@ -171,11 +230,11 @@ An example event for `siem` looks as following:
         "ip": "52.91.36.10"
     },
     "url": {
-        "path": "/examples/1/",
+        "path": "/",
         "port": 80,
-        "domain": "www.example.com",
-        "query": "a=../../../etc/passwd",
-        "full": "www.example.com/examples/1/?a%3D..%2F..%2F..%2Fetc%2Fpasswd"
+        "domain": "www.hmapi.com",
+        "query": "option=com_jce telnet.exe",
+        "full": "www.hmapi.com/?option=com_jce%20telnet.exe"
     },
     "tags": [
         "preserve_original_event"
@@ -188,16 +247,21 @@ An example event for `siem` looks as following:
         "type": "proxy",
         "vendor": "akamai"
     },
-    "@timestamp": "2016-08-11T13:45:33.026Z",
+    "@timestamp": "2017-04-04T10:57:02.000Z",
+    "related": {
+        "ip": [
+            "52.91.36.10"
+        ]
+    },
     "http": {
         "request": {
-            "method": "POST",
-            "id": "2ab418ac8515f33"
+            "method": "GET",
+            "id": "1158db1758e37bfe67b7c09"
         },
-        "version": "2",
+        "version": "1.1",
         "response": {
-            "bytes": 34523,
-            "status_code": 301
+            "bytes": 266,
+            "status_code": 200
         }
     },
     "client": {
@@ -222,14 +286,12 @@ An example event for `siem` looks as following:
         "address": "52.91.36.10",
         "ip": "52.91.36.10"
     },
-    "tls": {
-        "version": "1.2",
-        "version_protocol": "tls"
-    },
     "event": {
-        "start": "2016-08-11T13:45:33.026Z",
-        "ingested": "2021-09-11T17:34:26.800509760Z",
-        "original": "{\"format\":\"json\",\"type\":\"akamai_siem\",\"version\":\"1.0\",\"attackData\":{\"clientIP\":\"52.91.36.10\",\"configId\":\"6724\",\"policyId\":\"scoe_5426\",\"ruleActions\":\"QUxFUlQ;REVOWQ==\",\"ruleData\":\"YWxlcnQo;Y3VybA==\",\"ruleMessages\":\"Q3Jvc3Mtc2l0ZSBTY3 JpcHRpbmcgKFhTUykgQXR0YWNr; UmVxdWVzdCBJbmRpY2F0ZXMgYW4 gYXV0b21hdGVkIHByb2 dyYW0gZXhwbG9yZWQgdGhlIHNpdGU=\",\"ruleSelectors\":\"QVJHUzph;UkVRVUVTVF9IRU FERVJTOlVzZXItQWdlbnQ=\",\"ruleTags\":\"V0VCX0FUVEFDSy9YU1M=;QV VUT01BVElPTi9NSVND\",\"ruleVersions\":\";\",\"rules\":\"OTUwMDA0;OTkwMDEx\"},\"geo\":{\"asn\":\"12271\",\"city\":\"NEWYORK\",\"continent\":\"NA\",\"country\":\"US\",\"regionCode\":\"NY\"},\"httpMessage\":{\"bytes\":\"34523\",\"host\":\"www.example.com\",\"method\":\"POST\",\"path\":\"/examples/1/\",\"port\":\"80\",\"protocol\":\"http/2\",\"query\":\"a%3D..%2F..%2F..%2Fetc%2Fpasswd\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"2ab418ac8515f33\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml\",\"start\":\"1470923133.026\",\"status\":\"301\",\"tls\": \"TLSv1.2\"},\"userRiskData\":{\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\",\"status\":\"0\",\"score\":\"75\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"trust\":\"ugp:US\",\"general\":\"duc_1h:10|duc_1d:30\",\"allow\":\"0\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"}}"
+        "start": "2017-04-04T10:57:02.000Z",
+        "ingested": "2021-09-12T14:04:53.349612247Z",
+        "original": "{\"format\":\"json\",\"type\":\"akamai_siem\",\"version\":\"1.0\",\"attackData\":{\"clientIP\":\"52.91.36.10\",\"configId\":\"14227\",\"policyId\":\"qik1_26545\",\"ruleActions\":\"YWxlcnQ%3d%3bYWxlcnQ%3d%3bZGVueQ%3d%3d\",\"ruleData\":\"dGVsbmV0LmV4ZQ%3d%3d%3bdGVsbmV0LmV4ZQ%3d%3d%3bVmVjdG9yIFNjb3JlOiAxMCwgREVOWSB0aHJlc2hvbGQ6IDksIEFsZX \",\"ruleMessages\":\"U3lzdGVtIENvbW1hbmQgQWNjZXNz%3bU3lzdGVtIENvbW1hbmQgSW5qZWN0aW9u%3bQW5vbWFseSBTY29yZSBFeGNlZWRlZCBmb3 \",\"ruleSelectors\":\"QVJHUzpvcHRpb24%3d%3bQVJHUzpvcHRpb24%3d%3b\",\"ruleTags\":\"T1dBU1BfQ1JTL1dFQl9BVFRBQ0svRklMRV9JTkpFQ1RJT04%3d%3bT1dBU1BfQ1JTL1dFQl9BVFRBQ0svQ09NTUFORF9JTkpFQ1R \",\"ruleVersions\":\"NA%3d%3d%3bNA%3d%3d%3bMQ%3d%3d\",\"rules\":\"OTUwMDAy%3bOTUwMDA2%3bQ01ELUlOSkVDVElPTi1BTk9NQUxZ\"},\"geo\":{\"asn\":\"14618\",\"city\":\"ASHBURN\",\"continent\":\"288\",\"country\":\"US\",\"regionCode\":\"VA\"},\"httpMessage\":{\"bytes\":\"266\",\"host\":\"www.hmapi.com\",\"method\":\"GET\",\"path\":\"/\",\"port\":\"80\",\"protocol\":\"HTTP/1.1\",\"query\":\"option=com_jce%20telnet.exe\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"1158db1758e37bfe67b7c09\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml%0d%0aContent-Length%3a%20150\",\"start\":\"1491303422\",\"status\":\"200\"},\"userRiskData\":{\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\",\"status\":\"0\",\"score\":\"75\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"trust\":\"ugp:US\",\"general\":\"duc_1h:10|duc_1d:30\",\"allow\":\"0\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"}}",
+        "category": "network",
+        "kind": "event"
     }
 }
 ```

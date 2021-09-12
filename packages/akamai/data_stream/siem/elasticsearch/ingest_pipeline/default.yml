@@ -34,6 +34,7 @@ processors:
 - convert:
     field: http.response.status_code
     type: long
+    ignore_missing: true
 - rename:
     field: json.httpMessage.bytes
     target_field: http.response.bytes
@@ -41,6 +42,7 @@ processors:
 - convert:
     field: http.response.bytes
     type: long
+    ignore_missing: true
 - rename:
     field: json.httpMessage.requestId
     target_field: http.request.id
@@ -68,6 +70,7 @@ processors:
 - convert:
     field: url.port
     type: long
+    ignore_missing: true
 - urldecode:
     field: json.httpMessage.responseHeaders
     target_field: _tmp.response.headers
@@ -177,9 +180,7 @@ processors:
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
-- set:
-    field: client
-    copy_from: source
+## Attack Data
 - urldecode:
     field: json.attackData.ruleActions
     target_field: json.attackData.ruleActions
@@ -261,6 +262,116 @@ processors:
             rules_array.add(map);
         }
         ctx.akamai.siem.rules = rules_array;
+- rename:
+    field: json.attackData.configId
+    target_field: akamai.siem.config_id
+    ignore_missing: true
+- rename:
+    field: json.attackData.policyId
+    target_field: akamai.siem.policy_id
+    ignore_missing: true
+- rename:
+    field: json.attackData.policyId
+    target_field: akamai.siem.policy_id
+    ignore_missing: true
+- rename:
+    field: json.attackData.slowPostAction
+    target_field: akamai.siem.slow_post_action
+    ignore_missing: true
+- convert:
+    field: json.attackData.slowPostRate
+    target_field: akamai.siem.slow_post_rate
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.attackData.clientReputation
+    target_field: akamai.siem.client_reputation
+    ignore_missing: true
+- rename:
+    field: json.attackData.clientReputation
+    target_field: akamai.siem.client_reputation
+    ignore_missing: true
+## Bot Data
+- convert:
+    field: json.botData.botScore
+    target_field: akamai.siem.bot.score
+    type: long
+    ignore_missing: true
+- convert:
+    field: json.botData.responseSegment
+    target_field: akamai.siem.bot.response_segment
+    type: long
+    ignore_missing: true
+## Client Data
+- rename:
+    field: json.clientData.appBundleId
+    target_field: akamai.siem.client_data.app_bundle_id
+    ignore_missing: true
+- rename:
+    field: json.clientData.appVersion
+    target_field: akamai.siem.client_data.app_version
+    ignore_missing: true
+- convert:
+    field: json.clientData.telemetryType	
+    target_field: akamai.siem.client_data.telemetry_type
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.clientData.sdkVersion	
+    target_field: akamai.siem.client_data.sdk_version
+    ignore_missing: true
+## User Risk Data
+- rename:
+    field: json.userRiskData.uuid
+    target_field: akamai.siem.user_risk.uuid
+    ignore_missing: true
+- convert:
+    field: json.userRiskData.status	
+    target_field: akamai.siem.user_risk.status
+    type: long
+    ignore_missing: true
+- convert:
+    field: json.userRiskData.score	
+    target_field: akamai.siem.user_risk.score
+    type: long
+    ignore_missing: true
+- convert:
+    field: json.userRiskData.allow	
+    target_field: akamai.siem.user_risk.allow
+    type: long
+    ignore_missing: true
+- kv:
+    field: json.userRiskData.risk
+    target_field: akamai.siem.user_risk.risk
+    field_split: '\|'
+    value_split: ':'
+    ignore_missing: true
+- kv:
+    field: json.userRiskData.trust
+    target_field: akamai.siem.user_risk.trust
+    field_split: '\|'
+    value_split: ':'
+    ignore_missing: true
+- kv:
+    field: json.userRiskData.general
+    target_field: akamai.siem.user_risk.general
+    field_split: '\|'
+    value_split: ':'
+    ignore_missing: true
+##
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    allow_duplicates: false
+- set:
+    field: client
+    copy_from: source
+- set:
+    field: event.category
+    value: network
+- set:
+    field: event.kind
+    value: event
 - remove:
     field:
       - json
