@@ -61,49 +61,10 @@ pipeline {
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
-                integrations[it] = {
-                  withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
-                    stage("${it}: check") {
-                      deleteDir()
-                      unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
-                      useElasticPackage()
-                      try {
-                        dir("${BASE_DIR}/packages/${it}") {
-                          sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
-                          prepareStack()
-                          withKubernetes() {
-                            withCloudTestEnv() {
-                              sh(label: "Test integration: ${it}", script: '''
-                                eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
-                                ''')
-                            }
-                          }
-
-                          // Publish package to the Package Storage
-                          if (env.BRANCH_NAME == 'master') {
-                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
-                              sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
-                              sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
-                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
-                            }
-                          }
-                        }
-                      } finally {
-                        dir("${BASE_DIR}") {
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
-                          junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          // Temporary workaround to collect internal fleet-server logs
-                          sh(label: "Collect internal fleet-server logs",
-                            script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/${it}/logs/fleet-server-internal.log")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
-                          sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
-                          stashCoverageReport()
-                        }
-                      }
-                    }
-                  }
+                if (isWindows()) {
+                  integrations[it] = integrationForWindows(it)
+                } else {
+                  integrations[it] = integrationForLinux(it)
                 }
               }
             }
@@ -119,6 +80,70 @@ pipeline {
     }
     cleanup {
       notifyBuildResult(prComment: true)
+    }
+  }
+}
+
+
+def isIntegrationForWindows(name) {
+  return false
+}
+
+def integrationForLinux(name) {
+  return {
+    withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
+      stage("${name}: check") {
+        deleteDir()
+        unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+        useElasticPackage()
+        try {
+          dir("${BASE_DIR}/packages/${name}") {
+            sh(label: "Check integration: ${name}", script: '../../build/elastic-package check -v')
+            prepareStack()
+            withKubernetes() {
+              withCloudTestEnv() {
+                sh(label: "Test integration: ${name}", script: '''
+                  eval "$(../../build/elastic-package stack shellinit)"
+                  ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+                  ''')
+              }
+            }
+
+            // Publish package to the Package Storage
+            if (env.BRANCH_NAME == 'master') {
+              withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
+                sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
+                sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
+                sh(label: "Publish integration: ${name}", script: '../../build/elastic-package publish -v --fork=false')
+              }
+            }
+          }
+        } finally {
+          dir("${BASE_DIR}") {
+            archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
+            junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+            sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${name}")
+            // Temporary workaround to collect internal fleet-server logs
+            sh(label: "Collect internal fleet-server logs",
+              script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/${name}/logs/fleet-server-internal.log")
+            archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${name}/logs/*.log")
+            sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
+            stashCoverageReport()
+          }
+        }
+      }
+    }
+  }
+}
+
+def integrationForLinux(name) {
+  return {
+    withNode(labels: 'windows-2019 && docker && immutable', sleepMin: 10, sleepMax: 100) {
+      stage("${name}: check") {
+        deleteDir()
+        unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+        echo 'TBC'
+      }
     }
   }
 }
