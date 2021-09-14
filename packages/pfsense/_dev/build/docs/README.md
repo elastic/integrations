@@ -9,6 +9,12 @@ must be selected. The module is by default configured to run with the `udp` inpu
 
 *The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
 
+**Important**  
+The pfSense integration supports both the BSD logging format and the Syslog format.
+However the syslog format is recommended. It will provide the firewall hostname and timestamps with timezone information.
+When using the BSD format, the `Timezone Offset` config must be set when deploying the agent or else the timezone will default to the timezone of the agent. See `https://<pfsense url>/status_logs_settings.php` and https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html for more information.
+
+
 ## Logs
 
 ### pfSense log

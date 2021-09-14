@@ -7,7 +7,8 @@ processors:
         - "%{PF_LOG_ENTRY}%{GREEDYDATA}"
         pattern_definitions:
             PF_LOG_ENTRY: "%{PF_LOG_DATA}%{PF_IP_SPECIFIC_DATA}%{PF_IP_DATA}%{PF_PROTOCOL_DATA}?"
-            PF_LOG_DATA: "%{INT},%{INT}?,,%{INT:rule.id},%{DATA:observer.ingress.interface.name},%{WORD:event.reason},%{WORD:event.action},%{WORD:network.direction},"
+            PF_LOG_DATA: "%{INT},%{INT}?,,%{INT:rule.id},%{DATA:observer.ingress.interface.name},%{PF_REASON:event.reason},%{WORD:event.action},%{WORD:network.direction},"
+            PF_REASON: '[a-zA-Z-]+'
             PF_IP_DATA: "%{NONNEGINT:network.bytes:long},%{IP:source.address},%{IP:destination.address},"
             PF_IP_SPECIFIC_DATA: "%{PF_IPv4_SPECIFIC_DATA}|%{PF_IPv6_SPECIFIC_DATA}"
             PF_IPv4_SPECIFIC_DATA: "(?<network.type>(4)),%{BASE16NUM:pfsense.ip.tos},%{WORD:pfsense.ip.ecn}?,%{NONNEGINT:pfsense.ip.ttl:long},%{NONNEGINT:pfsense.ip.id:long},%{NONNEGINT:pfsense.ip.offset:long},(?:%{WORD:pfsense.ip.flags}|%{PF_SPEC:pfsense.ip.flags}),%{INT:network.iana_number},%{WORD:network.transport},"

@@ -10,6 +10,10 @@ processors:
   - rename:
       field: message
       target_field: event.original
+  - set:
+      field: event.timezone
+      value: "{{_tmp.tz_offset}}"
+      if: ctx?._tmp?.tz_offset != null && ctx?._tmp?.tz_offset != 'local'
   - grok:
       description: Parse syslog header
       field: event.original
@@ -17,26 +21,17 @@ processors:
         - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP} %{GREEDYDATA:message}'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
-        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{OBSERVER})?%{SPACE}%{WORD:event.provider}\[%{POSINT:event.id}\]:'
-        SYSLOG_TIMESTAMP_FORMAT: '(\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{WORD:event.provider}%{SPACE}%{POSINT:event.id} - -'
+        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{OBSERVER})?%{SPACE}%{PROVIDER}(\[%{POSINT:event.id}\])?:'
+        SYSLOG_TIMESTAMP_FORMAT: '(\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROVIDER}%{SPACE}(%{POSINT:event.id}|-) - -'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         TIMESTAMP: '(?:%{BSD_TIMESTAMP_FORMAT}|%{SYSLOG_TIMESTAMP_FORMAT})'
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
+        PROVIDER: '(%{UNIXPATH}/)?%{WORD:event.provider}'
   - date:
       if: ctx?._tmp.timestamp8601 != null
       field: _tmp.timestamp8601
       formats:
         - ISO8601
-  - date:
-      if: ctx?.event?.timezone == null && ctx?._tmp?.timestamp != null
-      field: _tmp.timestamp
-      formats:
-      - MMM  d HH:mm:ss
-      - MMM dd HH:mm:ss
-      on_failure:
-      - append:
-          field: error.message
-          value: '{{ _ingest.on_failure_message }}'
   - date:
       if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
@@ -44,10 +39,6 @@ processors:
       - MMM  d HH:mm:ss
       - MMM dd HH:mm:ss
       timezone: '{{ event.timezone }}'
-      on_failure:
-      - append:
-          field: error.message
-          value: '{{ _ingest.on_failure_message }}'
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
       if: ctx.event.provider == 'filterlog'
