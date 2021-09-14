@@ -1,0 +1,65 @@
+config_version: 2
+interval: {{interval}}
+request.url: {{url}}/api/v1/itemusages
+request.method: POST
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - set:
+      target: "header.Content-Type"
+      value: "application/json"
+  - set:
+      target: "header.User-Agent"
+      value: "1Password-Elastic-Filebeat/0.0.1"
+  - set:
+      target: "header.Authorization"
+      value: 'Bearer {{token}}'
+  - set:
+      target: body.cursor
+      value: '[[if not (eq (len .cursor) 0)]][[.cursor.last_cursor]][[end]]'
+{{#if start_time}}
+  - set:
+      target: body.start_time
+      value: '[[if eq (len .cursor) 0]]{{start_time}}[[end]]'
+{{/if}}
+{{#if end_time}}
+  - set:
+      target: body.end_time
+      value: '[[if eq (len .cursor) 0]]{{end_time}}[[end]]'
+{{/if}}
+  - set:
+      target: body.limit
+      value_type: int
+      value: '[[if eq (len .cursor) 0]]{{limit}}[[end]]'
+cursor:
+  last_cursor:
+    value: '[[.last_response.body.cursor]]'
+response.decode_as: application/json
+response.split:
+  target: body.items
+  type: array
+response.pagination:
+  - set:
+      target: body.cursor
+      value: '[[.last_response.body.cursor]]'
+  - delete:
+      target: body.start_time
+  - delete:
+      target: body.end_time
+  - delete:
+      target: body.limit
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
