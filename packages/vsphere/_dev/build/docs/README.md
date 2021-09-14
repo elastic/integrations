@@ -1,4 +1,4 @@
-# Apache Integration
+# VMware vSphere Integration
 
 This integration periodically fetches logs and metrics from [vSphere](https://www.vmware.com/products/vsphere.html) vCenter servers. 
 
