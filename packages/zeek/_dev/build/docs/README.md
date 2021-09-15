@@ -124,6 +124,13 @@ Zeek notices.
 
 {{fields "notice"}}
 
+### ntp
+
+The `ntp` dataset collects the Zeek ntp.log file, which contains
+NTP data.
+
+{{fields "ntp"}}
+
 ### ntlm
 
 The `ntlm` dataset collects the Zeek ntlm.log file, which contains NT
@@ -165,6 +172,13 @@ The `rfb` dataset collects the Zeek rfb.log file, which contains
 Remote Framebuffer (RFB) data.
 
 {{fields "rfb"}}
+
+### signature
+
+The `signature` dataset collects the Zeek signature.log file, which contains
+Zeek signature matches.
+
+{{fields "signature"}}
 
 ### sip
 
