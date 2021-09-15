@@ -1,0 +1,81 @@
+format_version: 1.0.0
+name: vsphere
+title: VMware vSphere
+version: 0.0.1
+license: basic
+description: This Elastic integration collects logs from vSphere/vCenter servers
+type: integration
+categories:
+  - monitoring
+  - os_system
+release: beta
+conditions:
+  kibana.version: "^7.15.0"
+screenshots:
+  - src: /img/vsphere_dashboard.png
+    title: vSphere Dashboard
+    size: 3744x4832
+    type: image/png
+  - src: /img/vsphere_vm_dashboard.png
+    title: vSphere VM Dashboard
+    size: 3744x4048
+    type: image/png
+icons:
+  - src: /img/vmware.svg
+    title: VMware logo
+    size: 512×83
+    type: image/svg+xml
+policy_templates:
+  - name: vsphere
+    title: vSphere logs and metrics
+    description: vSphere logs and metrics
+    inputs:
+      - type: udp
+        title: Collect logs from vSphere via UDP
+        description: Collecting logs from vSphere via UDP
+      - type: tcp
+        title: Collect logs from vSphere via TCP
+        description: Collecting logs from vSphere via TCP
+      - type: vsphere/metrics
+        title: Collect vSphere metrics
+        description: Collect vSphere metrics
+        input_group: metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - https://127.0.0.1/sdk
+          - name: username
+            type: text
+            title: Username
+            multi: false
+            required: true
+            show_user: true
+            default: ""
+            description: vSphere account username (not root VMAMI account)
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: true
+            show_user: true
+            default: ""
+            description: vSphere account password (not root VMAMI account)
+          - name: period
+            type: text
+            title: Period
+            default: 10s
+          - name: insecure
+            required: true
+            show_user: true
+            title: Don't verify certificate chain
+            description: If insecure is true, don't verify the server's certificate chain
+            type: bool
+            multi: false
+            default: false
+owner:
+  github: elastic/integrations
