@@ -1,33 +1,54 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
-request.url: "{{scheme}}://{{host}}/siem/v1/configs/{{config_ids}}"
+request.url: "{{api_host}}/siem/v1/configs/{{config_ids}}"
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
-auth.edgegrid:
-  client_token: {{client_token}}
-  client_secret: {{client_secret}}
-  access_token: {{access_token}}
-  host: {{host}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
 request.transforms:
   - set:
       target: url.params.from
       value: "[[.cursor.last_execution_datetime]]"
-      default: '[[formatDate (now (parseDuration "-{{interval}}"))]]'
+      default: '[[ (now (parseDuration "-24h")).Unix ]]'
   - set:
       target: url.params.to
-      value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
-      default: '[[formatDate (now (parseDuration "-1m"))]]'
+      value: '[[ ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}")).Unix ]]'
+      default: '[[ (now (parseDuration "-1m")).Unix ]]'
+  - set:
+      target: header.XTimestamp
+      value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
+  - set:
+      target: header.XSignatureBase
+      value: '[[ sprintf "EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;" "a" "b" (.header.Get "XTimestamp") uuid ]]'
+  - set:
+      target: header.XSignatureKey
+      value: '[[ hmacBase64 "sha256" "c" (.header.Get "XTimestamp") ]]'
+  - set:
+      target: header.XSignature
+      value: '[[ hmacBase64 "sha256" (.header.Get "XSignatureKey") "GET\t" .url.Scheme "\t" .url.Host "\t" .url.Path "?" .url.RawQuery "\t\t\t" (.header.Get "XSignatureBase") ]]'
+  - set:
+      target: header.Authorization
+      value: '[[ sprintf "%ssignature=%s" (.header.Get "XSignatureBase") (.header.Get "XSignature") ]]'
+  - delete:
+      target: header.XSignature
+  - delete:
+      target: header.XSignatureKey
+  - delete:
+      target: header.XSignatureBase
+  - delete:
+      target: header.XTimestamp
 
 response.decode_as: application/x-ndjson
 
 cursor:
   last_execution_datetime:
-    value: "[[formatDate (now (parseDuration "-1m"))]]"
+    value: '[[ (now (parseDuration "-1m")).Unix ]]'
 
 {{#if tags.length}}
 tags:
