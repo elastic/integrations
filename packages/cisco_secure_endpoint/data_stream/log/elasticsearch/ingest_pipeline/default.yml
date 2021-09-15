@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing Cisco AMP logs
+description: Pipeline for parsing Cisco Secure Endpoint logs
 processors:
 - rename:
     field: message
@@ -14,10 +14,10 @@ processors:
 #########################
 - rename:
     field: json.data
-    target_field: cisco.amp
+    target_field: cisco.secure_endpoint
     ignore_missing: true
 - date:
-    field: cisco.amp.timestamp
+    field: cisco.secure_endpoint.timestamp
     formats:
       - UNIX
     ignore_failure: true
@@ -35,64 +35,64 @@ processors:
     field: event.kind
     value: alert
 - convert:
-    field: cisco.amp.id
+    field: cisco.secure_endpoint.id
     target_field: event.id
     type: string
     ignore_missing: true
 - append:
     field: event.category
     value: file
-    if: ctx?.cisco?.amp?.file?.file_name != null
+    if: ctx?.cisco?.secure_endpoint?.file?.file_name != null
 - append:
     field: event.category
     value: malware
-    if: 'ctx?.cisco?.amp?.file?.disposition == "Malicious"'
+    if: 'ctx?.cisco?.secure_endpoint?.file?.disposition == "Malicious"'
 - rename:
-    field: cisco.amp.event_type
+    field: cisco.secure_endpoint.event_type
     target_field: event.action
     ignore_missing: true
 - set:
     field: event.severity
     value: 1
-    if: ctx?.cisco?.amp?.severity == 'Low'
+    if: ctx?.cisco?.secure_endpoint?.severity == 'Low'
 - set:
     field: event.severity
     value: 2
-    if: ctx?.cisco?.amp?.severity == 'Medium'
+    if: ctx?.cisco?.secure_endpoint?.severity == 'Medium'
 - set:
     field: event.severity
     value: 3
-    if: ctx?.cisco?.amp?.severity == 'High'
+    if: ctx?.cisco?.secure_endpoint?.severity == 'High'
 - set:
     field: event.severity
     value: 4
-    if: ctx?.cisco?.amp?.severity == 'Critical'
+    if: ctx?.cisco?.secure_endpoint?.severity == 'Critical'
 - set:
     field: event.severity
     value: 0
-    if: ctx?.cisco?.amp?.severity == null
+    if: ctx?.cisco?.secure_endpoint?.severity == null
 - date:
-    field: cisco.amp.start_timestamp
+    field: cisco.secure_endpoint.start_timestamp
     target_field: event.start
     formats: 
       - UNIX
     ignore_failure: true
-    if: ctx?.cisco?.amp?.start_timestamp != null
+    if: ctx?.cisco?.secure_endpoint?.start_timestamp != null
 
 - rename:
-    field: cisco.amp.techniques
-    target_field: cisco.amp.mitre_techniques
-    if: "ctx?.cisco?.amp?.techniques != null && ctx?.cisco?.amp?.techniques.length > 0 && ctx?.cisco?.amp?.techniques[0] instanceof String"
+    field: cisco.secure_endpoint.techniques
+    target_field: cisco.secure_endpoint.mitre_techniques
+    if: "ctx?.cisco?.secure_endpoint?.techniques != null && ctx?.cisco?.secure_endpoint?.techniques.length > 0 && ctx?.cisco?.secure_endpoint?.techniques[0] instanceof String"
 - rename:
-    field: cisco.amp.tactics
-    target_field: cisco.amp.mitre_tactics
-    if: "ctx?.cisco?.amp?.tactics != null && ctx?.cisco?.amp?.tactics.length > 0 && ctx?.cisco?.amp?.tactics[0] instanceof String"
+    field: cisco.secure_endpoint.tactics
+    target_field: cisco.secure_endpoint.mitre_tactics
+    if: "ctx?.cisco?.secure_endpoint?.tactics != null && ctx?.cisco?.secure_endpoint?.tactics.length > 0 && ctx?.cisco?.secure_endpoint?.tactics[0] instanceof String"
 
 ######################
 ## ECS Host Mapping ##
 ######################
 - rename:
-    field: cisco.amp.computer.hostname
+    field: cisco.secure_endpoint.computer.hostname
     target_field: host.name
     ignore_missing: true
 - set:
@@ -100,7 +100,7 @@ processors:
     value: "{{ host.name }}"
     if: ctx?.host?.name != null
 - rename:
-    field: cisco.amp.computer.user
+    field: cisco.secure_endpoint.computer.user
     target_field: host.user.name
     ignore_missing: true
 
@@ -108,29 +108,29 @@ processors:
 ## ECS Network Mapping ##
 #########################
 - rename:
-    field: cisco.amp.network_info.nfm.protocol
+    field: cisco.secure_endpoint.network_info.nfm.protocol
     target_field: network.transport
     ignore_missing: true
 - set:
     field: network.direction
     value: egress
-    if: "ctx?.cisco?.amp?.network_info?.nfm?.direction == 'Outgoing connection from'"
+    if: "ctx?.cisco?.secure_endpoint?.network_info?.nfm?.direction == 'Outgoing connection from'"
 - set:
     field: network.direction
     value: ingress
-    if: "ctx?.cisco?.amp?.network_info?.nfm?.direction != null && ctx?.cisco?.amp?.network_info?.nfm?.direction != 'Outgoing connection from'"
+    if: "ctx?.cisco?.secure_endpoint?.network_info?.nfm?.direction != null && ctx?.cisco?.secure_endpoint?.network_info?.nfm?.direction != 'Outgoing connection from'"
 
 #####################
 ## ECS URL Mapping ##
 #####################
 - uri_parts:
-    field: cisco.amp.network_info.dirty_url
+    field: cisco.secure_endpoint.network_info.dirty_url
     target_field: url
     keep_original: true
     remove_if_successful: true
-    if: ctx?.cisco?.amp?.network_info?.dirty_url != null
+    if: ctx?.cisco?.secure_endpoint?.network_info?.dirty_url != null
 - rename:
-    field: cisco.amp.network_info.dirty_url
+    field: cisco.secure_endpoint.network_info.dirty_url
     target_field: url.original
     ignore_missing: true
 
@@ -138,11 +138,11 @@ processors:
 ## ECS Source Mapping ##
 ########################
 - rename:
-    field: cisco.amp.network_info.local_ip
+    field: cisco.secure_endpoint.network_info.local_ip
     target_field: source.ip
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.local_port
+    field: cisco.secure_endpoint.network_info.local_port
     target_field: source.port
     ignore_missing: true
 
@@ -150,11 +150,11 @@ processors:
 ## ECS Destination Mapping ##
 #############################
 - rename:
-    field: cisco.amp.network_info.remote_ip
+    field: cisco.secure_endpoint.network_info.remote_ip
     target_field: destination.ip
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.remote_port
+    field: cisco.secure_endpoint.network_info.remote_port
     target_field: destination.port
     ignore_missing: true
 
@@ -162,23 +162,23 @@ processors:
 ## ECS File Mapping ##
 ######################
 - rename:
-    field: cisco.amp.file.file_name
+    field: cisco.secure_endpoint.file.file_name
     target_field: file.name
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.file_path
+    field: cisco.secure_endpoint.file.file_path
     target_field: file.path
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.identity.sha256
+    field: cisco.secure_endpoint.file.identity.sha256
     target_field: file.hash.sha256
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.identity.sha1
+    field: cisco.secure_endpoint.file.identity.sha1
     target_field: file.hash.sha1
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.identity.md5
+    field: cisco.secure_endpoint.file.identity.md5
     target_field: file.hash.md5
     ignore_missing: true
 
@@ -198,47 +198,47 @@ processors:
 ## ECS Process Mapping ##
 #########################
 - rename:
-    field: cisco.amp.file.parent.process_id
+    field: cisco.secure_endpoint.file.parent.process_id
     target_field: process.pid
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.parent.process_id
+    field: cisco.secure_endpoint.network_info.parent.process_id
     target_field: process.pid
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.parent.file_name
+    field: cisco.secure_endpoint.file.parent.file_name
     target_field: process.name
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.parent.identity.sha256
+    field: cisco.secure_endpoint.file.parent.identity.sha256
     target_field: process.hash.sha256
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.parent.identity.sha1
+    field: cisco.secure_endpoint.file.parent.identity.sha1
     target_field: process.hash.sha1
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.parent.identity.md5
+    field: cisco.secure_endpoint.file.parent.identity.md5
     target_field: process.hash.md5
     ignore_missing: true
 - rename:
-    field: cisco.amp.file.parent.identity.md5
+    field: cisco.secure_endpoint.file.parent.identity.md5
     target_field: process.hash.md5
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.parent.file_name
+    field: cisco.secure_endpoint.network_info.parent.file_name
     target_field: process.name
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.parent.identity.sha256
+    field: cisco.secure_endpoint.network_info.parent.identity.sha256
     target_field: process.hash.sha256
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.parent.identity.sha1
+    field: cisco.secure_endpoint.network_info.parent.identity.sha1
     target_field: process.hash.sha1
     ignore_missing: true
 - rename:
-    field: cisco.amp.network_info.parent.identity.md5
+    field: cisco.secure_endpoint.network_info.parent.identity.md5
     target_field: process.hash.md5
     ignore_missing: true
 
@@ -282,18 +282,18 @@ processors:
     allow_duplicates: false
 - append:
     field: related.hash
-    value: "{{ cisco.amp.network_info.parent.identity.sha256 }}"
-    if: ctx?.cisco?.amp?.network_info?.parent?.identity?.sha256 != null
+    value: "{{ cisco.secure_endpoint.network_info.parent.identity.sha256 }}"
+    if: ctx?.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha256 != null
     allow_duplicates: false
 - append:
     field: related.hash
-    value: "{{ cisco.amp.network_info.parent.identity.md5 }}"
-    if: ctx?.cisco?.amp?.network_info?.parent?.identity?.md5 != null
+    value: "{{ cisco.secure_endpoint.network_info.parent.identity.md5 }}"
+    if: ctx?.cisco?.secure_endpoint?.network_info?.parent?.identity?.md5 != null
     allow_duplicates: false
 - append:
     field: related.hash
-    value: "{{ cisco.amp.network_info.parent.identity.sha1 }}"
-    if: ctx?.cisco?.amp?.network_info?.parent?.identity?.sha1 != null
+    value: "{{ cisco.secure_endpoint.network_info.parent.identity.sha1 }}"
+    if: ctx?.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha1 != null
     allow_duplicates: false
 - append:
     field: related.hosts
@@ -312,8 +312,8 @@ processors:
     allow_duplicates: false
 - append:
     field: related.ip
-    value: "{{ cisco.amp.computer.external_ip }}"
-    if: ctx?.cisco?.amp?.computer?.external_ip != null
+    value: "{{ cisco.secure_endpoint.computer.external_ip }}"
+    if: ctx?.cisco?.secure_endpoint?.computer?.external_ip != null
     allow_duplicates: false
 - script:
     lang: painless
@@ -324,39 +324,39 @@ processors:
         if (ctx?.related?.ip == null) {
             ctx.related.ip = new ArrayList();
         }
-        for (addr in ctx?.cisco?.amp?.computer?.network_addresses) {
+        for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.ip != null && !addr.ip.isEmpty()) {
                 if (!ctx?.related?.ip.contains(addr.ip)) {
                     ctx?.related?.ip.add(addr.ip);  
                 }
             }
         }
-    if: ctx?.cisco?.amp?.computer?.network_addresses != null
+    if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
 - script:
     lang: painless
     source: |
-        if (ctx?.cisco?.amp?.related == null) {
-            ctx.cisco.amp.related = new HashMap();
+        if (ctx?.cisco?.secure_endpoint?.related == null) {
+            ctx.cisco.secure_endpoint.related = new HashMap();
         }
-        if (ctx?.cisco?.amp?.related?.mac == null) {
-            ctx.cisco.amp.related.mac = new ArrayList();
+        if (ctx?.cisco?.secure_endpoint?.related?.mac == null) {
+            ctx.cisco.secure_endpoint.related.mac = new ArrayList();
         }
-        for (addr in ctx?.cisco?.amp?.computer?.network_addresses) {
+        for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.mac != null && !addr.mac.isEmpty()) {
-                if (!ctx?.cisco?.amp?.related?.mac.contains(addr.mac)) {
-                    ctx?.cisco?.amp?.related?.mac.add(addr.mac);  
+                if (!ctx?.cisco?.secure_endpoint?.related?.mac.contains(addr.mac)) {
+                    ctx?.cisco?.secure_endpoint?.related?.mac.add(addr.mac);  
                 }
             }
         }
-    if: ctx?.cisco?.amp?.computer?.network_addresses != null
+    if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
 - foreach:
-    field: cisco.amp.vulnerabilities
+    field: cisco.secure_endpoint.vulnerabilities
     processor:
       append:
-        field: cisco.amp.related.cve
+        field: cisco.secure_endpoint.related.cve
         value: "{{ _ingest._value.cve }}"
         allow_duplicates: false
-    if: ctx?.cisco?.amp?.vulnerabilities != null
+    if: ctx?.cisco?.secure_endpoint?.vulnerabilities != null
 
 #############
 ## GeoIP ##
@@ -408,19 +408,19 @@ processors:
 ## Cleanup ##
 #############
 - date:
-    field: cisco.amp.threat_hunting.incident_start_time
-    target_field: cisco.amp.threat_hunting.incident_start_time
+    field: cisco.secure_endpoint.threat_hunting.incident_start_time
+    target_field: cisco.secure_endpoint.threat_hunting.incident_start_time
     formats: 
       - UNIX
     ignore_failure: true
-    if: ctx?.cisco?.amp?.threat_hunting?.incident_start_time != null
+    if: ctx?.cisco?.secure_endpoint?.threat_hunting?.incident_start_time != null
 - date:
-    field: cisco.amp.threat_hunting.incident_end_time
-    target_field: cisco.amp.threat_hunting.incident_end_time
+    field: cisco.secure_endpoint.threat_hunting.incident_end_time
+    target_field: cisco.secure_endpoint.threat_hunting.incident_end_time
     formats: 
       - UNIX
     ignore_failure: true
-    if: ctx?.cisco?.amp?.threat_hunting?.incident_end_time != null
+    if: ctx?.cisco?.secure_endpoint?.threat_hunting?.incident_end_time != null
 - script:
     lang: painless
     description: This script processor iterates over the whole document to remove fields with null values.
@@ -453,15 +453,15 @@ processors:
     ignore_missing: true
 - remove:
     field:
-    - cisco.amp.timestamp
-    - cisco.amp.computer.links
+    - cisco.secure_endpoint.timestamp
+    - cisco.secure_endpoint.computer.links
     - json
-    - cisco.amp.severity
-    - cisco.amp.start_timestamp
-    - cisco.amp.date
-    - cisco.amp.timestamp_nanoseconds
-    - cisco.amp.start_date
-    - cisco.amp.id
+    - cisco.secure_endpoint.severity
+    - cisco.secure_endpoint.start_timestamp
+    - cisco.secure_endpoint.date
+    - cisco.secure_endpoint.timestamp_nanoseconds
+    - cisco.secure_endpoint.start_date
+    - cisco.secure_endpoint.id
     ignore_missing: true
 on_failure:
 - set:
