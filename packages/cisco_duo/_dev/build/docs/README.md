@@ -14,7 +14,7 @@ In order to ingest data from the Cisco Duo Admin API you must:
 
 This is the `admin` dataset.
 
-{{fields "admin"}}
+{{event "admin"}}
 
 {{fields "admin"}}
 
@@ -22,7 +22,7 @@ This is the `admin` dataset.
 
 This is the `auth` dataset.
 
-{{fields "auth"}}
+{{event "auth"}}
 
 {{fields "auth"}}
 
@@ -30,7 +30,7 @@ This is the `auth` dataset.
 
 This is the `offline_enrollment` dataset.
 
-{{fields "offline_enrollment"}}
+{{event "offline_enrollment"}}
 
 {{fields "offline_enrollment"}}
 
@@ -38,7 +38,7 @@ This is the `offline_enrollment` dataset.
 
 This is the `summary` dataset.
 
-{{fields "summary"}}
+{{event "summary"}}
 
 {{fields "summary"}}
 
@@ -46,6 +46,6 @@ This is the `summary` dataset.
 
 This is the `telephony` dataset.
 
-{{fields "telephony"}}
+{{event "telephony"}}
 
 {{fields "telephony"}}

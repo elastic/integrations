@@ -40,12 +40,15 @@ processors:
   - set: 
       field: event.reason
       copy_from: json.reason
+      ignore_failure: true
   - set: 
       field: source.ip
       copy_from: json.access_device.ip
+      ignore_failure: true
   - set: 
       field: source.address
       copy_from: json.access_device.ip
+      ignore_failure: true
   - set: 
       field: source.address
       copy_from: json.access_device.hostname
@@ -53,15 +56,19 @@ processors:
   - set: 
       field: source.user.email
       copy_from: json.email
+      ignore_failure: true
   - set:
       field: source.user.id
       copy_from: json.user.key
+      ignore_failure: true
   - set:
       field: source.user.name
       copy_from: json.user.name
+      ignore_failure: true
   - rename: 
       field: json.user.groups
       target_field: source.user.group.name
+      ignore_missing: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -73,6 +80,7 @@ processors:
       properties:
         - asn
         - organization_name
+      ignore_missing: true
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -92,6 +100,7 @@ processors:
       properties:
         - asn
         - organization_name
+      ignore_missing: true
   - rename:
       field: cisco_duo.auth.auth_device.as.asn
       target_field: cisco_duo.auth.auth_device.as.number
@@ -103,33 +112,43 @@ processors:
   - set: 
       field: user.email
       copy_from: json.email
+      ignore_failure: true
   - set: 
       field: user.name
       copy_from: json.user.name
+      ignore_failure: true
   - set: 
       field: user.id
       copy_from: json.user.key
+      ignore_failure: true
   - set:
       field: user_agent.name
       copy_from: json.access_device.browser
+      ignore_failure: true
   - set:
       field: user_agent.version
       copy_from: json.access_device.browser_version
+      ignore_failure: true
   - set:
       field: user_agent.os.name
       copy_from: json.access_device.os
+      ignore_failure: true
   - set:
       field: user_agent.os.version
       copy_from: json.access_device.os_version
+      ignore_failure: true
   - rename: 
       field: json.email
       target_field: cisco_duo.auth.email
+      ignore_missing: true
   - rename: 
       field: json.event_type
       target_field: cisco_duo.auth.event_type
+      ignore_missing: true
   - rename:
       field: json.factor
       target_field: cisco_duo.auth.factor
+      ignore_missing: true
   - rename:
       field: json.ood_software
       target_field: cisco_duo.auth.ood_software
@@ -137,16 +156,15 @@ processors:
   - rename:
       field: json.reason
       target_field: cisco_duo.auth.reason
+      ignore_missing: true
   - rename:
       field: json.result
       target_field: cisco_duo.auth.result
-  - rename:
-      field: json.trusted_endpoint
-      target_field: cisco_duo.auth.trusted_endpoint
       ignore_missing: true
   - rename:
       field: json.txid
       target_field: cisco_duo.auth.txid
+      ignore_missing: true
   - rename:
       field: json.alias
       target_field: cisco_duo.auth.alias
@@ -154,6 +172,7 @@ processors:
   - rename:
       field: json.access_device.flash_version
       target_field: cisco_duo.auth.access_device.flash_version
+      ignore_missing: true
   - rename:
       field: json.access_device.hostname
       target_field: cisco_duo.auth.access_device.hostname
@@ -161,37 +180,47 @@ processors:
   - rename:
       field: json.access_device.ip
       target_field: cisco_duo.auth.access_device.ip
-  
+      ignore_missing: true
   - rename:
       field: json.access_device.is_encryption_enabled
       target_field: cisco_duo.auth.access_device.is_encryption_enabled
+      ignore_missing: true
   - convert: 
       field: cisco_duo.auth.access_device.is_encryption_enabled
       type: string  
+      ignore_failure: true
   - rename:
       field: json.access_device.is_firewall_enabled
       target_field: cisco_duo.auth.access_device.is_firewall_enabled
+      ignore_missing: true
   - convert: 
       field: cisco_duo.auth.access_device.is_firewall_enabled
       type: string 
+      ignore_failure: true
   - rename:
       field: json.access_device.is_password_set
       target_field: cisco_duo.auth.access_device.is_password_set
+      ignore_missing: true
   - convert: 
       field: cisco_duo.auth.access_device.is_password_set
       type: string 
+      ignore_failure: true
   - rename:
       field: json.access_device.java_version
       target_field: cisco_duo.auth.access_device.java_version
+      ignore_missing: true
   - rename:
       field: json.access_device.location.city
       target_field: cisco_duo.auth.access_device.location.city
+      ignore_missing: true
   - rename:
       field: json.access_device.location.country
       target_field: cisco_duo.auth.access_device.location.country
+      ignore_missing: true
   - rename:
       field: json.access_device.location.state
       target_field: cisco_duo.auth.access_device.location.state
+      ignore_missing: true
   - rename:
       field: json.access_device.security_agents
       target_field: cisco_duo.auth.access_device.security_agents
@@ -199,24 +228,31 @@ processors:
   - rename:
       field: json.application.key
       target_field: cisco_duo.auth.application.key
+      ignore_missing: true
   - rename:
       field: json.application.name
       target_field: cisco_duo.auth.application.name
+      ignore_missing: true
   - rename:
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.ip
+      ignore_missing: true
   - rename:
       field: json.auth_device.location.city
       target_field: cisco_duo.auth.auth_device.location.city
+      ignore_missing: true
   - rename:
       field: json.auth_device.location.country
       target_field: cisco_duo.auth.auth_device.location.country
+      ignore_missing: true
   - rename:
       field: json.auth_device.location.state
       target_field: cisco_duo.auth.auth_device.location.state
+      ignore_missing: true
   - rename:
       field: json.auth_device.name
       target_field: cisco_duo.auth.auth_device.name
+      ignore_missing: true
   - rename:
       field: json.trusted_endpoint_status
       target_field: cisco_duo.auth.trusted_endpoint_status
@@ -226,11 +262,13 @@ processors:
       value: "{{source.ip}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
+      ignore_failure: true
   - append: 
       field: related.ip
       value: "{{cisco_duo.auth.auth_device.ip}}"
-      if: ctx.cisco_duo.auth.auth_device.ip != null
+      if: ctx?.cisco_duo?.auth?.auth_device?.ip != null
       allow_duplicates: false
+      ignore_failure: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -250,6 +288,7 @@ processors:
         drop(ctx);
   - remove:
       field: json
+      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

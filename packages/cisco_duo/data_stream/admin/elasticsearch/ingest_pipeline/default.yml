@@ -24,6 +24,11 @@ processors:
   - set:
       field: event.category
       value: iam
+      if: ctx?.json?.action instanceof String && ['admin_2fa_error','admin_account_switch','admin_activation_create','admin_activation_delete','admin_activate_duo_push','admin_create','admin_delete','admin_factor_restrictions_update','admin_login','admin_login_error','admin_reactivates_duo_push','admin_reset_password','admin_send_reset_password_email','admin_update','adminapi_request_ip_denied',
+          'bypass_create','bypass_delete','bypass_view',
+          'phone_associate','phone_create','phone_delete','phone_disassociate','phone_update',
+          'group_create','group_delete','group_update',
+          'user_bulk_activate','user_bulk_enroll','user_create','user_delete','user_import','user_pending_delete','user_restore','user_update'].contains(ctx?.json?.action) 
   - set:
       field: event.kind
       value: event
@@ -33,10 +38,35 @@ processors:
   - set: 
       field: event.outcome
       value: failed
-      if: ctx?.json?.action instanceof String && ['ad_sync_failed', 'azure_sync_fail', 'azure_sync_fail'].contains(ctx?.json?.action)
-  - set:
+      if: ctx?.json?.action instanceof String && ['ad_sync_failed', 'admin_2fa_error', 'admin_login_error', 'azure_sync_fail', 'openldap_sync_failed'].contains(ctx?.json?.action)
+  - append:
       field: event.type
       value: admin
+      if: ctx?.json?.action instanceof String && ['admin_2fa_error','admin_account_switch','admin_activation_create','admin_activation_delete','admin_activate_duo_push','admin_create','admin_delete','admin_factor_restrictions_update','admin_login','admin_login_error','admin_reactivates_duo_push','admin_reset_password','admin_send_reset_password_email','admin_update','adminapi_request_ip_denied'].contains(ctx?.json?.action)
+  - append:
+      field: event.type
+      value: group
+      if: ctx?.json?.action instanceof String && ['group_create','group_delete','group_update'].contains(ctx?.json?.action)  
+  - append:
+      field: event.type
+      value: user
+      if: ctx?.json?.action instanceof String && ['user_bulk_activate','user_bulk_enroll','user_create','user_delete','user_import','user_pending_delete','user_restore','user_update'].contains(ctx?.json?.action)  
+  - append:
+      field: event.type
+      value: info
+      if: ctx?.json?.action instanceof String && ['ad_sync_begin','ad_sync_failed','ad_sync_finish','azure_directory_create','azure_directory_update','azure_directory_delete','azure_sync_begin','azure_sync_finish','azure_sync_fail','create_child_customer','credits_update','customer_update','delete_child_customer','directory_create','directory_delete','directory_groups_update','directory_sync_pause','directory_sync_resume','directory_update','edition_update','feature_add','feature_delete','hardtoken_create','hardtoken_delete','hardtoken_resync','hardtoken_update','integration_create','integration_delete','integration_policy_assign','integration_policy_unassign','integration_skey_view','integration_update','openldap_sync_by_user_finish','openldap_sync_config_download','openldap_sync_failed','openldap_sync_finish','regen_mobile','regen_sms','resend_enroll_codes','send_enroll_code'].contains(ctx?.json?.action)
+  - append: 
+      field: event.type
+      value: creation
+      if: ctx?.json?.action instanceof String && ctx?.json?.action?.contains("create")
+  - append: 
+      field: event.type
+      value: change
+      if: ctx?.json?.action instanceof String && ctx?.json?.action?.contains("update")
+  - append: 
+      field: event.type
+      value: deletion
+      if: ctx?.json?.action instanceof String && ctx?.json?.action?.contains("delete")
   - set: 
       field: message
       copy_from: json.description
@@ -57,6 +87,16 @@ processors:
       field: user.name
       copy_from: json.username
       if: ctx?.json?.username != null
+  - set: 
+      field: user.changes.name
+      copy_from: cisco_duo.admin.flattened.realname
+      if: ctx?.event?.action == "user_update"
+      ignore_failure: true
+  - set: 
+      field: user.changes.email
+      copy_from: cisco_duo.admin.flattened.email
+      if: ctx?.event?.action == "user_update"
+      ignore_failure: true
   - set:
       field: user.target.name
       copy_from: json.object
