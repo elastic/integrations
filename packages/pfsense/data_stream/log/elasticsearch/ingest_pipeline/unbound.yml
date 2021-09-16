@@ -1,0 +1,70 @@
+---
+description: Pipeline for PFsense Unbound DNS logs
+processors:
+  - grok:
+      field: message
+      patterns:        
+        - '%{LOGLEVEL:log.level}: %{IP:source.address} %{HOSTNAME:_tmp.question.name}(\.) %{WORD:_tmp.question.type} %{WORD:_tmp.question.class}'
+      on_failure:
+        - drop:
+            description: Drop if not a query log
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: ctx?.source?.address != null
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx?.message.toLowerCase().contains('disconnected')
+  - set:
+      field: network.protocol
+      value: dns
+  - set:
+      field: dns.type
+      value: question
+      if: ctx?._tmp?.question?.name != null
+  - registered_domain:
+      field: _tmp.question.name
+      target_field: dns.question
+      ignore_missing: true
+  - rename:
+      field: dns.question.domain
+      target_field: dns.question.name
+      ignore_missing: true
+  - rename:
+      field: _tmp.question.type
+      target_field: dns.question.type
+      ignore_missing: true
+  - rename:
+      field: _tmp.question.class
+      target_field: dns.question.class
+      ignore_missing: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: client
+      copy_from: source
+      ignore_empty_value: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

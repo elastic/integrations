@@ -1,0 +1,53 @@
+---
+description: Pipeline for PFsense OpenVPN logs
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '%{SOURCE}%{SPACE}peer%{SPACE}info:%{SPACE}%{GREEDYDATA:pfsense.openvpn.peer_info}'
+        - '%{SOURCE}%{SPACE}\[%{USERNAME:user.name}\]%{SPACE}%{GREEDYDATA}'
+        - "user%{SPACE}'%{USERNAME:user.name}'%{GREEDYDATA}"
+        - '%{USERNAME:user.name}/%{SOURCE}%{DATA}IPv4=(%{IP:source.nat.ip}|%{GREEDYDATA}),%{SPACE}IPv6=(%{IP:source.nat.ip}|%{GREEDYDATA})'
+        - '%{GREEDYDATA}%{SOURCE}'
+        - '%{GREEDYDATA}'
+      pattern_definitions:
+        SOURCE: '%{IP:source.address}:%{NONNEGINT:source.port:long}'
+        USERNAME: '[a-zA-Z0-9._-]+'
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx?.message.contains('auth')
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: ctx?.source?.address != null
+  - append:
+      field: event.type
+      value: error
+      allow_duplicates: false
+      if: ctx?.message.toLowerCase().contains('error') || ctx?.message.toLowerCase().contains('not auth') 
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx?.message.toLowerCase().contains('initiat')
+  - set:
+      field: source.ip
+      value: "{{source.address}}"
+      ignore_empty_value: true
+  - set:
+      field: network.protocol
+      value: openvpn
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

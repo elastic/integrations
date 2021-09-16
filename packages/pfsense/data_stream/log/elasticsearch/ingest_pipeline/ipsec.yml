@@ -1,0 +1,44 @@
+---
+description: Pipeline for PFsense IPSEC logs
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '%{PREFIX}%{GREEDYDATA}%{SOURCE} to %{DEST} \(%{NONNEGINT:network.bytes:long} bytes\)'
+        - '%{GREEDYDATA}'
+      pattern_definitions:
+        PREFIX: '\d+\[%{WORD}\]'
+        SOURCE: '%{IP:source.address}\[%{NONNEGINT:source.port:long}\]'
+        DEST: '%{IP:destination.address}\[%{NONNEGINT:destination.port:long}\]'
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: ctx?.source?.address != null
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx?.message.toLowerCase().contains('disconnected')
+  - set:
+      field: source.ip
+      value: "{{source.address}}"
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      value: "{{destination.address}}"
+      ignore_empty_value: true  
+  - set:
+      field: network.protocol
+      value: ipsec
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

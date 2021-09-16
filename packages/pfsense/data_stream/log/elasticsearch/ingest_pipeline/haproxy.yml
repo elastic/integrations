@@ -1,0 +1,129 @@
+---
+description: Pipeline for parsing PFsense HAProxy http, tcp and default logs.
+processors:
+  - grok:
+      field: message
+      patterns:
+      - 'Connect from (%{IPORHOST:source.address}|-):%{POSINT:source.port:long} %{WORD} %{IPORHOST:destination.ip}:%{POSINT:destination.port:long} \(%{WORD:haproxy.frontend_name}/%{WORD:haproxy.mode}\)'
+      - '(%{IPORHOST:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{WORD:haproxy.frontend_name}~ %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} 
+        %{NUMBER:haproxy.http.request.time_wait_ms:long}/%{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:haproxy.http.request.time_wait_without_data_ms:long}/%{NUMBER:temp.duration:long} 
+        %{NUMBER:http.response.status_code:long} %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.http.request.captured_cookie} %{NOTSPACE:haproxy.http.response.captured_cookie} %{NOTSPACE:haproxy.termination_state} 
+        %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long} 
+        (\{%{DATA:haproxy.http.request.captured_headers}\} \{%{DATA:haproxy.http.response.captured_headers}\} |\{%{DATA}\} )?"%{GREEDYDATA:haproxy.http.request.raw_request_line}"'
+      ignore_missing: false
+      pattern_definitions:
+        HAPROXY_DATE: (%{MONTHDAY}[/-]%{MONTH}[/-]%{YEAR}:%{HOUR}:%{MINUTE}:%{SECOND})|%{SYSLOGTIMESTAMP}
+      on_failure:
+        - drop:
+            description: Drop if not a connection log
+  - date:
+      if: ctx?.haproxy?.request_date != null && ctx?.event?.timezone == null
+      field: haproxy.request_date
+      target_field: '@timestamp'
+      formats:
+      - dd/MMM/yyyy:HH:mm:ss.SSS
+      - MMM dd HH:mm:ss
+  - date:
+      if: ctx?.haproxy?.request_date != null && ctx?.event?.timezone != null
+      field: haproxy.request_date
+      target_field: '@timestamp'
+      formats:
+      - dd/MMM/yyyy:HH:mm:ss.SSS
+      - MMM dd HH:mm:ss
+      timezone: '{{ event.timezone }}'
+  - remove:
+      field: haproxy.request_date
+  - grok:
+      field: haproxy.http.request.raw_request_line
+      patterns:
+        - '%{WORD:http.request.method}%{SPACE}%{URIPATHPARAM:url.original}%{SPACE}HTTP/%{NUMBER:http.version}'
+      ignore_missing: true
+      if: 'ctx.haproxy?.http?.request?.raw_request_line != null && !ctx.haproxy?.http?.request?.raw_request_line.isEmpty() && ctx.haproxy?.http?.request?.raw_request_line != "<BADREQ>"'
+  - uri_parts:
+      field: url.original
+      ignore_failure: true
+      if: ctx?.url?.original != null
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - split:
+      field: haproxy.http.request.captured_headers
+      separator: \|
+      ignore_failure: true
+      ignore_missing: true
+  - split:
+      field: haproxy.http.response.captured_headers
+      separator: \|
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
+      params:
+        scale: 1000000
+      if: ctx.temp?.duration != null
+  - remove:
+      field: temp.duration
+      ignore_missing: true
+  - convert:
+      field: haproxy.bytes_read
+      target_field: http.response.bytes
+      type: long
+      ignore_missing: true
+      if: ctx.containsKey('http')
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+      if: "ctx?.haproxy?.mode == 'HTTP' || ctx?.haproxy?.http != null"
+  - append:
+      field: event.category
+      value: network
+      if: "ctx?.source.ip != null && ctx?.destination?.ip != null"
+  - append:
+      field: event.type
+      value: connection
+      if: "ctx?.source.ip != null && ctx?.destination?.ip != null"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+  - set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

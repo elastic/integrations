@@ -1,0 +1,111 @@
+---
+description: Pipeline for PFsense Firewall logs
+processors:
+    - grok:
+        field: message
+        patterns:
+        - "%{PF_LOG_ENTRY}%{GREEDYDATA}"
+        pattern_definitions:
+            PF_LOG_ENTRY: "%{PF_LOG_DATA}%{PF_IP_SPECIFIC_DATA}%{PF_IP_DATA}%{PF_PROTOCOL_DATA}?"
+            PF_LOG_DATA: "%{INT},%{INT}?,,%{INT:rule.id},%{DATA:observer.ingress.interface.name},%{PF_REASON:event.reason},%{WORD:event.action},%{WORD:network.direction},"
+            PF_REASON: '[a-zA-Z-]+'
+            PF_IP_DATA: "%{NONNEGINT:network.bytes:long},%{IP:source.address},%{IP:destination.address},"
+            PF_IP_SPECIFIC_DATA: "%{PF_IPv4_SPECIFIC_DATA}|%{PF_IPv6_SPECIFIC_DATA}"
+            PF_IPv4_SPECIFIC_DATA: "(?<network.type>(4)),%{BASE16NUM:pfsense.ip.tos},%{WORD:pfsense.ip.ecn}?,%{NONNEGINT:pfsense.ip.ttl:long},%{NONNEGINT:pfsense.ip.id:long},%{NONNEGINT:pfsense.ip.offset:long},(?:%{WORD:pfsense.ip.flags}|%{PF_SPEC:pfsense.ip.flags}),%{INT:network.iana_number},%{WORD:network.transport},"
+            PF_IPv6_SPECIFIC_DATA: "(?<network.type>(6)),%{BASE16NUM:pfsense.ip.tos},%{WORD:pfsense.ip.flow_label},%{WORD:pfsense.ip.flags},%{WORD:network.transport},%{INT:network.iana_number},"
+            PF_PROTOCOL_DATA: "%{PF_TCP_DATA}|%{PF_UDP_DATA}|%{PF_ICMP_DATA}|%{PF_IGMP_DATA}|%{PF_IPv6_VAR}|%{PF_IPv6_ICMP}"
+            PF_IPv6_VAR: "%{GREEDYDATA}"
+            PF_IPv6_ICMP: ''
+            PF_TCP_DATA: "%{INT:source.port:long},%{INT:destination.port:long},%{NONNEGINT:pfsense.tcp.length:long},%{WORD:pfsense.tcp.flags}?,%{NONNEGINT:pfsense.tcp.seq:long}?:?%{NONNEGINT},%{NONNEGINT:pfsense.tcp.ack:long}?,%{NONNEGINT:pfsense.tcp.window:long}?,%{WORD:pfsense.tcp.urg}?,%{GREEDYDATA:pfsense.tcp.options}"
+            PF_UDP_DATA: "%{INT:source.port:long},%{INT:destination.port:long},%{NONNEGINT:pfsense.udp.length:long}$"
+            PF_IGMP_DATA: "datalength=%{NONNEGINT:network.packets:long}"
+            PF_ICMP_DATA: "%{PF_ICMP_TYPE}%{PF_ICMP_RESPONSE}"
+            PF_ICMP_TYPE: "(?<pfsense.icmp.type>(request|reply|unreachproto|unreachport|unreach|timeexceed|paramprob|redirect|maskreply|needfrag|tstamp|tstampreply)),"
+            PF_ICMP_RESPONSE: "%{PF_ICMP_ECHO_REQ_REPLY}|%{PF_ICMP_UNREACHPORT}|%{PF_ICMP_UNREACHPROTO}|%{PF_ICMP_UNREACHABLE}|%{PF_ICMP_NEED_FLAG}|%{PF_ICMP_TSTAMP}|%{PF_ICMP_TSTAMP_REPLY}"
+            PF_ICMP_ECHO_REQ_REPLY: "%{NONNEGINT:pfsense.icmp.id:long},%{NONNEGINT:pfsense.icmp.seq:long}"
+            PF_ICMP_UNREACHPORT: "%{IP:[pfsense.icmp.destination.ip]},%{WORD:pfsense.icmp.unreachable.iana_number},%{NONNEGINT:pfsense.icmp.unreachable.port:long}"
+            PF_ICMP_UNREACHPROTO: "%{IP:[pfsense.icmp.destination.ip]},%{WORD:[pfsense.icmp.unreachable.iana_number]}"
+            PF_ICMP_UNREACHABLE: "%{GREEDYDATA:pfsense.icmp.unreachable.other}"
+            PF_ICMP_NEED_FLAG: "%{IP:pfsense.icmp.destination.ip},%{NONNEGINT:pfsense.icmp.mtu:long}"
+            PF_ICMP_TSTAMP: "%{INT:pfsense.icmp.id},%{INT:pfsense.icmp.seq}"
+            PF_ICMP_TSTAMP_REPLY: "%{INT:pfsense.icmp.id},%{INT:pfsense.icmp.seq},%{INT:pfsense.icmp.otime},%{INT:pfsense.icmp.rtime},%{INT:pfsense.icmp.ttime}"
+            PF_SPEC: "[+]"
+    - set:
+        field: event.kind
+        value: event
+    - append:
+        field: event.category
+        value: network
+        allow_duplicates: false
+    - set:
+        field: source.ip
+        value: "{{source.address}}"
+        ignore_empty_value: true
+    - set:
+        field: destination.ip
+        value: "{{destination.address}}"
+        ignore_empty_value: true
+    - append:
+        field: event.type
+        value: connection
+        allow_duplicates: false
+        if: ctx?.source?.ip != null && ctx?.destination?.ip != null
+    - append:
+        field: event.type
+        value: denied
+        allow_duplicates: false
+        if: ctx?.event.action == 'block'
+    - append:
+        field: event.type
+        value: allowed
+        allow_duplicates: false
+        if: ctx?.event.action == 'pass'
+    - set:
+        field: network.type
+        value: ipv{{network.type}}
+        if: ctx?.network?.type == '4' || ctx?.network?.type == '6'
+    - lowercase:
+        field: network.transport
+        ignore_missing: true
+    - remove:
+        field: ack_number
+        ignore_missing: true
+        if: ctx?.ack_number == null || ctx?.ack_number == ''
+    - network_direction:
+        internal_networks_field: _tmp.internal_networks
+    - community_id:
+        target_field: network.community_id
+        ignore_failure: true
+    - grok:
+        field: observer.ingress.interface.name
+        patterns:
+        - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
+        ignore_missing: true
+        ignore_failure: true
+    - split:
+        field: pfsense.tcp.options
+        separator: ';'
+        ignore_missing: true
+        ignore_failure: true
+    - date:
+        field: pfsense.icmp.otime
+        ignore_failure: true
+        formats:
+            - UNIX
+            - UNIX_MS
+    - date:
+        field: pfsense.icmp.rtime
+        ignore_failure: true
+        formats:
+            - UNIX
+            - UNIX_MS
+    - date:
+        field: pfsense.icmp.ttime
+        ignore_failure: true
+        formats:
+            - UNIX
+            - UNIX_MS
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
