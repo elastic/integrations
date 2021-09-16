@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "description": "Unbound request heat map by IP address",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "savedSearchRefName": "search_0",
+        "title": "Unbound - Request Rate [pfSense]",
+        "uiStateJSON": {},
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {},
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "drop_partials": false,
+                        "extended_bounds": {},
+                        "field": "@timestamp",
+                        "interval": "auto",
+                        "min_doc_count": 1,
+                        "scaleMetricValues": false,
+                        "timeRange": {
+                            "from": "now-7h",
+                            "to": "now"
+                        },
+                        "useNormalizedEsInterval": true
+                    },
+                    "schema": "segment",
+                    "type": "date_histogram"
+                },
+                {
+                    "enabled": true,
+                    "id": "3",
+                    "params": {
+                        "field": "client.ip",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "order": "desc",
+                        "orderBy": "1",
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "size": 10
+                    },
+                    "schema": "group",
+                    "type": "terms"
+                }
+            ],
+            "params": {
+                "addLegend": true,
+                "addTooltip": true,
+                "colorSchema": "Green to Red",
+                "colorsNumber": 10,
+                "colorsRange": [],
+                "enableHover": false,
+                "invertColors": false,
+                "legendPosition": "top",
+                "percentageMode": false,
+                "setColorRange": false,
+                "times": [],
+                "type": "heatmap",
+                "valueAxes": [
+                    {
+                        "id": "ValueAxis-1",
+                        "labels": {
+                            "color": "black",
+                            "overwriteColor": false,
+                            "rotate": 0,
+                            "show": false
+                        },
+                        "scale": {
+                            "defaultYExtents": false,
+                            "type": "linear"
+                        },
+                        "show": false,
+                        "type": "value"
+                    }
+                ]
+            },
+            "title": "Unbound - Request Rate",
+            "type": "heatmap"
+        }
+    },
+    "coreMigrationVersion": "7.15.0",
+    "id": "pfsense-f554afa0-3a98-11eb-96b2-e765737b7534",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
+    "references": [
+        {
+            "id": "pfsense-f9ed8947-6d26-4497-905f-57d08ee304f4",
+            "name": "search_0",
+            "type": "search"
+        }
+    ],
+    "type": "visualization"
+}
