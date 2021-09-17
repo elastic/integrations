@@ -19,7 +19,12 @@ processors:
 # parse date
   - set:
      field: _temps.date
+     if: ctx?.tz_offset != null
      value: '{{json.transaction.time_stamp}}{{tz_offset}}'
+  - set:
+     field: _temps.date
+     if: ctx?.tz_offset == null
+     value: '{{json.transaction.time_stamp}}{{event.timezone }}'
   - date:
      field: _temps.date
      formats:
