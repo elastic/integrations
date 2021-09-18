@@ -160,9 +160,11 @@ An example event for `log` looks as following:
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
+| cisco.asa.termination_initiator | Interface name of the side that initiated the teardown | keyword |
 | cisco.asa.termination_user | AAA name of user requesting termination | keyword |
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
+| cisco.asa.tunnel_type | SA type (remote access or L2L) | keyword |
 | cisco.asa.username |  | keyword |
 | cisco.asa.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -202,6 +204,7 @@ An example event for `log` looks as following:
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | text |
@@ -244,6 +247,7 @@ An example event for `log` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
@@ -288,6 +292,7 @@ An example event for `log` looks as following:
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | syslog.facility.code | Syslog numeric facility of the event. | long |
 | syslog.priority | Syslog priority of the event. | long |
