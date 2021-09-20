@@ -189,7 +189,7 @@ processors:
         def list = ctx.o365audit.AlertLinks;
         def links = new ArrayList();
         for (int i = 0; i < list.length; ++i) {
-          if (list[i].containsKey("AlertLinkHref") && list[i]["AlertLinkHref"] != null && list[i]["AlertLinkHref"] instanceof String) {
+          if (list[i] instanceof Map && list[i].containsKey("AlertLinkHref") && list[i]["AlertLinkHref"] != null && list[i]["AlertLinkHref"] instanceof String) {
             links.add(list[i]["AlertLinkHref"]);
           }
         }
@@ -541,7 +541,7 @@ processors:
         }
         ctx.destination.user.email = new ArrayList();
         for (int i = 0; i < fields.length; ++i) {
-          if (ctx.o365audit.ExchangeMetaData.containsKey(fields[i])) {
+          if (ctx.o365audit.ExchangeMetaData instanceof Map && ctx.o365audit.ExchangeMetaData.containsKey(fields[i])) {
             def emails = ctx.o365audit.ExchangeMetaData[fields[i]];
             if (emails instanceof List){
               for (int e = 0; e < emails.length; ++e) {
@@ -592,7 +592,7 @@ processors:
         }
         def maxSeverity = 0;
         def allowed = true;
-        for (int i = 0; i < policies.length; ++i) {
+        for (int i = 0; i < policies.length && policies instanceof List; ++i) {
           def rules = policies[i].Rules;
           if (rules == null) {
             continue;
@@ -770,7 +770,7 @@ processors:
       if: 'ctx.event?.code == "MicrosoftTeams" && ctx.event?.action == "deleted-user-account"'
   - script:
       lang: painless
-      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.o365audit?.Members != null'
+      if: 'ctx.event?.code == "MicrosoftTeams" && ctx.o365audit?.Members != null && ctx.o365audit.Members instanceof List'
       source: >
         def members = ctx.o365audit?.Members;
         if (ctx.related == null) {
@@ -780,7 +780,7 @@ processors:
           ctx.related.user = new ArrayList();
         }
         for (int i = 0; i < members.length; ++i) {
-          if (members[i].containsKey("UPN") && !members[i]["UPN"].isEmpty()) {
+          if (members[i] instanceof Map && members[i].containsKey("UPN") && !members[i]["UPN"].isEmpty()) {
             ctx.related.user.add(members[i]["UPN"]);
           }
         }
@@ -808,7 +808,7 @@ processors:
       if: 'ctx.client?._temp != null && !ctx.client?._temp.isEmpty()'
   - gsub:
       field: server._temp
-      pattern: "\n"
+      pattern: "[\n\r]"
       replacement: ""
       ignore_missing: true
   - grok:
@@ -955,7 +955,7 @@ processors:
       source: >
         def conftenants = ctx._conf.tenants;
         def orgid = ctx.organization.id;
-        if (conftenants.containsKey(orgid)) {
+        if (conftenants instanceof Map && conftenants.containsKey(orgid)) {
           ctx.organization.name = conftenants[orgid];
           ctx.host.name = conftenants[orgid];
         }
