@@ -128,8 +128,8 @@ The `log` dataset collects netflow logs.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.id | Unique identifier for the error. | keyword |
-| error.message | Error message. | text |
-| error.stack_trace | The stack trace of this error in plain text. | keyword |
+| error.message | Error message. | match_only_text |
+| error.stack_trace | The stack trace of this error in plain text. | wildcard |
 | error.type | The type of the error, for example the class name of the exception. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -228,12 +228,12 @@ The `log` dataset collects netflow logs.
 | host.user.id | Unique identifier of the user. | keyword |
 | host.user.name | Short name or login of the user. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.body.content | The full HTTP request body. | keyword |
+| http.request.body.content | The full HTTP request body. | wildcard |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
-| http.response.body.content | The full HTTP response body. | keyword |
+| http.response.body.content | The full HTTP response body. | wildcard |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
@@ -251,7 +251,7 @@ The `log` dataset collects netflow logs.
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | netflow.absolute_error |  | double |
 | netflow.address_pool_high_threshold |  | long |
 | netflow.address_pool_low_threshold |  | long |
@@ -1724,10 +1724,10 @@ The `log` dataset collects netflow logs.
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
