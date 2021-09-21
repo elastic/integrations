@@ -368,6 +368,6 @@ An example event for `result` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | user.name | Short name or login of the user. | keyword |
 
