@@ -1,0 +1,44 @@
+---
+description: Pipeline for parsing cassandra metrics.
+processors:
+  - rename:
+      field: jolokia
+      target_field: cassandra
+      ignore_missing: true
+  - set:
+      field: 'cassandra.metrics.storage.mbean'
+      value: 'org.apache.cassandra.metrics:type=Storage,name=*'
+  - set:
+      field: 'cassandra.metrics.gc.mbean'
+      value: 'java.lang:type=GarbageCollector,name=*'
+  - set:
+      field: 'cassandra.metrics.memory.mbean'
+      value: 'java.lang:type=Memory'
+  - set:
+      field: 'cassandra.metrics.task.mbean'
+      value: 'org.apache.cassandra.metrics:type=CommitLog,name=*'
+  - set:
+      field: 'cassandra.metrics.client_request.mbean'
+      value: 'org.apache.cassandra.metrics:type=ClientRequest,scope=*,name=*'
+  - set:
+      field: 'cassandra.metrics.compaction.mbean'
+      value: 'org.apache.cassandra.metrics:type=Compaction,name=*'
+  - set:
+      field: 'cassandra.metrics.table.mbean'
+      value: 'org.apache.cassandra.metrics:type=Table,name=*'
+  - set:
+      field: 'cassandra.metrics.cache.mbean'
+      value: 'org.apache.cassandra.metrics:type=Cache,scope=*,name=*'
+  - set:
+      field: 'cassandra.metrics.threadPools.mbean'
+      value: 'org.apache.cassandra.metrics:type=ThreadPools,scope=*,path=*,name=*'
+  - set:
+      field: 'cassandra.metrics.table.mbean'
+      value: 'org.apache.cassandra.metrics:type=Table,name=*'
+  - set:
+      field: 'cassandra.metrics.columnFamily.mbean'
+      value: 'org.apache.cassandra.metrics:type=ColumnFamily,name=TotalDiskSpaceUsed'
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

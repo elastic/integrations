@@ -1,0 +1,185 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{period}}
+username: {{username}}
+password: {{password}}
+jmx.mappings:
+  - mbean: 'org.apache.cassandra.metrics:name=TotalHintsInProgress,type=Storage'
+    attributes:
+    - attr: Count
+      field: storage.TotalHintsInProgress
+  - mbean: 'org.apache.cassandra.metrics:name=TotalHints,type=Storage'
+    attributes:
+    - attr: Count
+      field: storage.TotalHints
+  - mbean: 'org.apache.cassandra.metrics:name=Exceptions,type=Storage'
+    attributes:
+    - attr: Count
+      field: storage.Exceptions
+  - mbean: 'org.apache.cassandra.metrics:name=Load,type=Storage'
+    attributes:
+    - attr: Count
+      field: storage.Load
+  - mbean: 'java.lang:type=GarbageCollector,name=ConcurrentMarkSweep'
+    attributes:
+    - attr: CollectionTime
+      field: gc.ConcurrentMarkSweep.CollectionTime
+    - attr: CollectionCount
+      field: gc.ConcurrentMarkSweep.CollectionCount
+  - mbean: 'java.lang:type=GarbageCollector,name=ParNew'
+    attributes:
+    - attr: CollectionTime
+      field: gc.ParNew.CollectionTime
+    - attr: CollectionCount
+      field: gc.ParNew.CollectionCount
+  - mbean: 'java.lang:type=Memory'
+    attributes:
+    - attr: HeapMemoryUsage
+      field: memory.heap.usage
+    - attr: NonHeapMemoryUsage
+      field: memory.other.usage
+  - mbean: 'org.apache.cassandra.metrics:name=CompletedTasks,type=CommitLog'
+    attributes:
+    - attr: Value
+      field: task.complete
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,type=CommitLog'
+    attributes:
+    - attr: Value
+      field: task.pending
+  - mbean: 'org.apache.cassandra.metrics:name=TotalCommitLogSize,type=CommitLog'
+    attributes:
+    - attr: Value
+      field: task.total.commitlogSize
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Timeouts,scope=Write'
+    attributes:
+    - attr: Count
+      field: client_request.write.timeouts
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Unavailables,scope=Write'
+    attributes:
+    - attr: Count
+      field: client_request.write.unavailables
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Latency,scope=Write'
+    attributes:
+    - attr: OneMinuteRate
+      field: client_request.write.OneMinuteRate
+    - attr: 75thPercentile
+      field: client_request.write.75thPercentile
+    - attr: 95thPercentile
+      field: client_request.write.95thPercentile
+    - attr: 99thPercentile
+      field: client_request.write.99thPercentile
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Timeouts,scope=Read'
+    attributes:
+    - attr: Count
+      field: client_request.read.timeouts
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Unavailables,scope=Read'
+    attributes:
+    - attr: Count
+      field: client_request.read.unavailables
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Latency,scope=Read'
+    attributes:
+    - attr: OneMinuteRate
+      field: client_request.read.OneMinuteRate
+    - attr: 75thPercentile
+      field: client_request.read.75thPercentile
+    - attr: 95thPercentile
+      field: client_request.read.95thPercentile
+    - attr: 99thPercentile
+      field: client_request.read.99thPercentile
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Latency,scope=RangeSlice'
+    attributes:
+    - attr: OneMinuteRate
+      field: client_request.rangeSlice.OneMinuteRate
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Latency,scope=CASWrite'
+    attributes:
+    - attr: OneMinuteRate
+      field: client_request.CASWrite.OneMinuteRate
+  - mbean: 'org.apache.cassandra.metrics:type=ClientRequest,name=Latency,scope=CASRead'
+    attributes:
+    - attr: OneMinuteRate
+      field: client_request.CASRead.OneMinuteRate
+  - mbean: 'org.apache.cassandra.metrics:name=CompletedTasks,type=Compaction'
+    attributes:
+    - attr: Value
+      field: compaction.completedTasks
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,type=Compaction'
+    attributes:
+    - attr: Value
+      field: compaction.pendingTasks
+  - mbean: 'org.apache.cassandra.metrics:type=Table,name=LiveSSTableCount'
+    attributes:
+    - attr: Value
+      field: table.LiveSSTableCount
+  - mbean: 'org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Requests'
+    attributes:
+    - attr: OneMinuteRate
+      field: cache.keyCache.requests.OneMinuteRate
+  - mbean: 'org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Capacity'
+    attributes:
+    - attr: Value
+      field: cache.keyCache.capacity
+  - mbean: 'org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=OneMinuteHitRate'
+    attributes:
+    - attr: Value
+      field: cache.keyCache.OneMinuteHitRate
+  - mbean: 'org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Requests'
+    attributes:
+    - attr: OneMinuteRate
+      field: cache.rowCache.requests.OneMinuteRate
+  - mbean: 'org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Capacity'
+    attributes:
+    - attr: Value
+      field: cache.rowCache.capacity
+  - mbean: 'org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=OneMinuteHitRate'
+    attributes:
+    - attr: Value
+      field: cache.rowCache.OneMinuteHitRate
+  - mbean: 'org.apache.cassandra.metrics:name=ActiveTasks,path=request,scope=CounterMutationStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.CounterMutationStage.request.ActiveTasks
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,path=request,scope=CounterMutationStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.CounterMutationStage.request.PendingTasks
+  - mbean: 'org.apache.cassandra.metrics:name=ActiveTasks,path=request,scope=MutationStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.MutationStage.request.ActiveTasks
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,path=request,scope=MutationStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.MutationStage.request.PendingTasks
+  - mbean: 'org.apache.cassandra.metrics:name=ActiveTasks,path=request,scope=ReadRepairStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.ReadRepairStage.request.ActiveTasks
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,path=request,scope=ReadRepairStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.ReadRepairStage.request.PendingTasks
+  - mbean: 'org.apache.cassandra.metrics:name=ActiveTasks,path=request,scope=ReadStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.ReadStage.request.ActiveTasks
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,path=request,scope=ReadStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.ReadStage.request.PendingTasks
+  - mbean: 'org.apache.cassandra.metrics:name=ActiveTasks,path=request,scope=RequestResponseStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.RequestResponseStage.request.ActiveTasks
+  - mbean: 'org.apache.cassandra.metrics:name=PendingTasks,path=request,scope=RequestResponseStage,type=ThreadPools'
+    attributes:
+    - attr: Value
+      field: threadPools.RequestResponseStage.request.PendingTasks
+  - mbean: 'org.apache.cassandra.metrics:name=TotalDiskSpaceUsed,type=ColumnFamily'
+    attributes:
+    - attr: Value
+      field: columnFamily.totalDiskSpaceUsed
