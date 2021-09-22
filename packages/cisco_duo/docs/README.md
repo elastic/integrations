@@ -1,4 +1,4 @@
-# CiscoDuo
+# Cisco Duo
 
 The Cisco Duo integration collects and parses data from the Cisco Duo Admin APIs.
 
@@ -139,6 +139,7 @@ An example event for `admin` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.changes.email | User email address. | keyword |
 | user.changes.name | Short name or login of the user. | keyword |
+| user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
 

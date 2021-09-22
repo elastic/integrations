@@ -1,4 +1,4 @@
-# CiscoDuo
+# Cisco Duo
 
 The Cisco Duo integration collects and parses data from the Cisco Duo Admin APIs.
 

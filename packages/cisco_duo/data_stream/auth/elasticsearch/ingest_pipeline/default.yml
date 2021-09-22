@@ -3,7 +3,7 @@ description: Pipeline for parsing cisco_duo authentication logs
 processors:
   - set:
       field: event.ingested
-      value: "{{ _ingest.timestamp }}"
+      value: "{{{_ingest.timestamp}}}"
   - set:
       field: ecs.version
       value: '1.11.0'
@@ -15,6 +15,12 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.timestamp
+        - json.txid
+      target_field: _id
+      ignore_missing: true
   - date:
       field: json.timestamp
       target_field: "@timestamp"
@@ -259,13 +265,13 @@ processors:
       ignore_missing: true 
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append: 
       field: related.ip
-      value: "{{cisco_duo.auth.auth_device.ip}}"
+      value: "{{{cisco_duo.auth.auth_device.ip}}}"
       if: ctx?.cisco_duo?.auth?.auth_device?.ip != null
       allow_duplicates: false
       ignore_failure: true
@@ -297,4 +303,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{_ingest.on_failure_message}}}"
