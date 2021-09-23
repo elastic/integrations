@@ -62,7 +62,12 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
                 integrations[it] = {
-                  withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
+                  // Workaround: https://github.com/elastic/integrations/pull/1754
+                  def workerNode = "ubuntu-20"
+                  if (it == "kubernetes") {
+                    workerNode = "ubuntu-18"
+                  }
+                  withNode(labels: "${workerNode} && immutable", sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
                       deleteDir()
                       unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
