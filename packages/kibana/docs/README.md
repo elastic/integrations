@@ -64,7 +64,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | kibana.session_id | The ID of the user session associated with this event. Each login attempt results in a unique session id. | keyword |
 | kibana.space_id | The id of the space associated with this event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
 
