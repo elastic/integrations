@@ -62,6 +62,7 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
                 integrations[it] = {
+                  // Workaround: https://github.com/elastic/integrations/pull/1754
                   def workerNode = "ubuntu-20"
                   if (it == "kubernetes") {
                     workerNode = "ubuntu-18"
