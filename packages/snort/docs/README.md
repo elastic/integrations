@@ -10,6 +10,82 @@ and the Alert Fast output either via reading a local logfile or receiving messag
 
 ## Log
 
+An example event for `log` looks as following:
+
+```json
+{
+    "destination": {
+        "geo": {
+            "continent_name": "North America",
+            "country_name": "United States",
+            "location": {
+                "lon": -97.822,
+                "lat": 37.751
+            },
+            "country_iso_code": "US"
+        },
+        "as": {
+            "number": 3356,
+            "organization": {
+                "name": "Level 3 Parent, LLC"
+            }
+        },
+        "address": "4.2.2.3",
+        "port": 53,
+        "ip": "4.2.2.3"
+    },
+    "rule": {
+        "description": "ET DNS DNS Query to a .tk domain - Likely Hostile",
+        "id": "2012811",
+        "category": "Potentially Bad Traffic",
+        "version": "2"
+    },
+    "source": {
+        "port": 1029,
+        "address": "192.168.88.10",
+        "ip": "192.168.88.10"
+    },
+    "tags": [
+        "preserve_original_event"
+    ],
+    "network": {
+        "community_id": "1:V4msnhdD0i+Grd4gC2ZiJJzsFr4=",
+        "transport": "udp",
+        "type": "ipv4",
+        "direction": "outbound"
+    },
+    "observer": {
+        "type": "ids",
+        "product": "ids",
+        "vendor": "snort"
+    },
+    "@timestamp": "2021-05-30T19:09:28.472-05:00",
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "related": {
+        "ip": [
+            "192.168.88.10",
+            "4.2.2.3"
+        ]
+    },
+    "event": {
+        "severity": 2,
+        "ingested": "2021-09-20T12:26:46.712455162Z",
+        "original": "05/30-19:09:28.472094  [**] [1:2012811:2] ET DNS DNS Query to a .tk domain - Likely Hostile [**] [Classification: Potentially Bad Traffic] [Priority: 2] {UDP} 192.168.88.10:1029 -\u003e 4.2.2.3:53",
+        "timezone": "America/Chicago",
+        "created": "2021-05-30T19:09:28.472-05:00",
+        "kind": "alert",
+        "category": [
+            "network"
+        ]
+    },
+    "snort": {
+        "gid": 1
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -68,6 +144,11 @@ and the Alert Fast output either via reading a local logfile or receiving messag
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
@@ -89,7 +170,7 @@ and the Alert Fast output either via reading a local logfile or receiving messag
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
 | snort.dgm.length | Length of | long |
 | snort.eth.length | Length of the Ethernet header and payload. | long |
-| snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires. | long |
+| snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires.dd | long |
 | snort.icmp.code | ICMP code. | long |
 | snort.icmp.id | ID of the echo request/reply | long |
 | snort.icmp.seq | ICMP sequence number. | long |

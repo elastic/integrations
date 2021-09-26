@@ -10,4 +10,6 @@ and the Alert Fast output either via reading a local logfile or receiving messag
 
 ## Log
 
+{{event "log"}}
+
 {{fields "log"}}
