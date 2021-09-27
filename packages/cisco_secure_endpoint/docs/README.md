@@ -15,21 +15,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-01-14T14:41:05.000Z",
-    "file": {
-        "hash": {
-            "sha256": "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa"
-        }
-    },
+    "@timestamp": "2021-01-15T11:59:52.000Z",
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12.0"
     },
     "related": {
         "hosts": [
-            "Demo_WannaCry_Ransomware"
-        ],
-        "hash": [
-            "ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa"
+            "Demo_Threat_Hunting"
         ],
         "ip": [
             "8.8.8.8",
@@ -37,52 +29,122 @@ An example event for `log` looks as following:
         ]
     },
     "host": {
-        "name": "Demo_WannaCry_Ransomware",
-        "hostname": "Demo_WannaCry_Ransomware"
+        "name": "Demo_Threat_Hunting",
+        "hostname": "Demo_Threat_Hunting"
+    },
+    "threat": {
+        "technique": {
+            "reference": [
+                "https://attack.mitre.org/techniques/T1005",
+                "https://attack.mitre.org/techniques/T1053",
+                "https://attack.mitre.org/techniques/T1064"
+            ],
+            "name": [
+                "Data from Local System",
+                "Scheduled Task/Job",
+                "Scripting"
+            ],
+            "id": [
+                "T1005",
+                "T1053",
+                "T1064"
+            ]
+        },
+        "tactic": {
+            "reference": [
+                "https://attack.mitre.org/tactics/TA0005"
+            ],
+            "name": [
+                "Defense Evasion"
+            ],
+            "id": [
+                "TA0005"
+            ]
+        }
     },
     "event": {
-        "severity": 2,
-        "ingested": "2021-09-12T17:32:10.094015339Z",
-        "original": "{\"version\":\"v1.2.0\",\"metadata\":{\"links\":{\"self\":\"https://api.eu.amp.cisco.com/v1/events?limit=500\u0026offset=500\",\"prev\":\"https://api.eu.amp.cisco.com/v1/events?limit=500\u0026offset=0\"},\"results\":{\"total\":972,\"current_item_count\":472,\"index\":500,\"items_per_page\":500}},\"data\":{\"id\":6419229331435815000,\"timestamp\":1610635265,\"timestamp_nanoseconds\":166000000,\"date\":\"2021-01-14T14:41:05+00:00\",\"event_type\":\"Quarantine Failure\",\"event_type_id\":2164260880,\"detection_id\":\"6419229327140847663\",\"connector_guid\":\"test_connector_guid\",\"group_guids\":[\"test_group_guid\"],\"severity\":\"Medium\",\"error\":{\"error_code\":3221225558,\"description\":\"Delete pending\"},\"computer\":{\"connector_guid\":\"test_connector_guid\",\"hostname\":\"Demo_WannaCry_Ransomware\",\"external_ip\":\"8.8.8.8\",\"active\":true,\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"53:74:31:cb:37:50\"}],\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\"}},\"file\":{\"disposition\":\"Malicious\",\"identity\":{\"sha256\":\"ed01ebfbc9eb5bbea545af4d01bf5f1071661840480439c6e5babe8e080e41aa\"}}}}",
-        "kind": "alert",
-        "action": "Quarantine Failure",
-        "id": "6419229331435815000",
-        "category": [
-            "malware"
-        ]
+        "severity": 4,
+        "action": "SecureX Threat Hunting Incident",
+        "ingested": "2021-09-27T00:41:08.619280442Z",
+        "original": "{\"version\":\"v1.2.0\",\"metadata\":{\"links\":{\"self\":\"https://api.eu.amp.cisco.com/v1/events?limit=500\",\"next\":\"https://api.eu.amp.cisco.com/v1/events?limit=500\u0026offset=500\"},\"results\":{\"total\":972,\"current_item_count\":500,\"index\":0,\"items_per_page\":500}},\"data\":{\"timestamp\":1610711992,\"timestamp_nanoseconds\":155518026,\"date\":\"2021-01-15T11:59:52+00:00\",\"event_type\":\"SecureX Threat Hunting Incident\",\"event_type_id\":1107296344,\"connector_guid\":\"test_connector_guid\",\"severity\":\"Critical\",\"computer\":{\"connector_guid\":\"test_connector_guid\",\"hostname\":\"Demo_Threat_Hunting\",\"external_ip\":\"8.8.8.8\",\"active\":true,\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"87:c2:d9:a2:8c:74\"}],\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\"}},\"threat_hunting\":{\"incident_report_guid\":\"6e5292d5-248c-49dc-839d-201bcba64562\",\"incident_hunt_guid\":\"4bdbaf20-020f-4bb5-9da9-585da0e07817\",\"incident_title\":\"Valak Variant\",\"incident_summary\":\"The host Demo_Threat_Hunting is compromised by a Valak malware variant.  Valak is a multi-stage malware attack that uses screen capture, reconnaissance, geolocation, and fileless execution techniques to infiltrate and exfiltrate sensitive information.  Based on the event details listed and the techniques used, we recommend the host in question be investigated further.\",\"incident_remediation\":\"We recommend the following:\\r\\n\\r\\n- Isolation of the affected hosts from the network\\r\\n- Perform forensic investigation\\r\\n    - Review all activity performed by the user\\r\\n    - Upload any suspicious files to ThreatGrid for analysis\\r\\n    - Search the registry for data \\\"var config = ( COMMAND_C2\\\" and remove the key\\r\\n    - Review scheduled tasks and cancel any involving the execution of WSCRIPT.EXE //E:jscript C:\\\\Users\\\\Public\\\\PowerManagerSpm.jar:LocalZone lqjsxokgowhbxjaetyrifnbigtcxmuj eimljujnv\\r\\n    - Remove the Alternate Data Stream file located C:\\\\Users\\\\Public\\\\PowerManagerSpm.jar:LocalZone.\\r\\n- If possible, reimage the affected system to prevent potential unknown persistence methods.\",\"incident_id\":416,\"tactics\":[{\"name\":\"Defense Evasion\",\"description\":\"\u003cp\u003eThe adversary is trying to avoid being detected.\u003c/p\u003e\\n\\n\u003cp\u003eDefense Evasion consists of techniques that adversaries use to avoid detection throughout their compromise. Techniques used for defense evasion include uninstalling/disabling security software or obfuscating/encrypting data and scripts. Adversaries also leverage and abuse trusted processes to hide and masquerade their malware. Other tactics’ techniques are cross-listed here when those techniques include the added benefit of subverting defenses.\u003c/p\u003e\\n\",\"external_id\":\"TA0005\",\"mitre_name\":\"tactic\",\"mitre_url\":\"https://attack.mitre.org/tactics/TA0005\"}],\"techniques\":[{\"name\":\"Data from Local System\",\"description\":\"\u003cp\u003eAdversaries may search local system sources, such as file systems or local databases, to find files of interest and sensitive data prior to Exfiltration.\u003c/p\u003e\\n\\n\u003cp\u003eAdversaries may do this using a \u003ca href=\\\"https://attack.mitre.org/techniques/T1059\\\"\u003eCommand and Scripting Interpreter\u003c/a\u003e, such as \u003ca href=\\\"https://attack.mitre.org/software/S0106\\\"\u003ecmd\u003c/a\u003e, which has functionality to interact with the file system to gather information. Some adversaries may also use \u003ca href=\\\"https://attack.mitre.org/techniques/T1119\\\"\u003eAutomated Collection\u003c/a\u003e on the local system.\u003c/p\u003e\\n\",\"external_id\":\"T1005\",\"mitre_name\":\"technique\",\"mitre_url\":\"https://attack.mitre.org/techniques/T1005\",\"tactics_names\":\"Collection\",\"platforms\":\"Linux, macOS, Windows\",\"system_requirements\":\"Privileges to access certain files and directories\",\"permissions\":\"\",\"data_sources\":\"File monitoring, Process monitoring, Process command-line parameters\"},{\"name\":\"Scheduled Task/Job\",\"description\":\"\u003cp\u003eAdversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code. Utilities exist within all major operating systems to schedule programs or scripts to be executed at a specified date and time. A task can also be scheduled on a remote system, provided the proper authentication is met (ex: RPC and file and printer sharing in Windows environments). Scheduling a task on a remote system typically requires being a member of an admin or otherwise privileged group on the remote system.(Citation: TechNet Task Scheduler Security)\u003c/p\u003e\\n\\n\u003cp\u003eAdversaries may use task scheduling to execute programs at system startup or on a scheduled basis for persistence. These mechanisms can also be abused to run a process under the context of a specified account (such as one with elevated permissions/privileges).\u003c/p\u003e\\n\",\"external_id\":\"T1053\",\"mitre_name\":\"technique\",\"mitre_url\":\"https://attack.mitre.org/techniques/T1053\",\"tactics_names\":\"Execution, Persistence, Privilege Escalation\",\"platforms\":\"Windows, Linux, macOS\",\"system_requirements\":null,\"permissions\":\"Administrator, SYSTEM, User\",\"data_sources\":\"File monitoring, Process monitoring, Process command-line parameters, Windows event logs\"},{\"name\":\"Scripting\",\"description\":\"\u003cp\u003e\u003cstrong\u003eThis technique has been deprecated. Please use \u003ca href=\\\"https://attack.mitre.org/techniques/T1059\\\"\u003eCommand and Scripting Interpreter\u003c/a\u003e where appropriate.\u003c/strong\u003e\u003c/p\u003e\\n\\n\u003cp\u003eAdversaries may use scripts to aid in operations and perform multiple actions that would otherwise be manual. Scripting is useful for speeding up operational tasks and reducing the time required to gain access to critical resources. Some scripting languages may be used to bypass process monitoring mechanisms by directly interacting with the operating system at an API level instead of calling other programs. Common scripting languages for Windows include VBScript and \u003ca href=\\\"https://attack.mitre.org/techniques/T1086\\\"\u003ePowerShell\u003c/a\u003e but could also be in the form of command-line batch scripts.\u003c/p\u003e\\n\\n\u003cp\u003eScripts can be embedded inside Office documents as macros that can be set to execute when files used in \u003ca href=\\\"https://attack.mitre.org/techniques/T1193\\\"\u003eSpearphishing Attachment\u003c/a\u003e and other types of spearphishing are opened. Malicious embedded macros are an alternative means of execution than software exploitation through \u003ca href=\\\"https://attack.mitre.org/techniques/T1203\\\"\u003eExploitation for Client Execution\u003c/a\u003e, where adversaries will rely on macros being allowed or that the user will accept to activate them.\u003c/p\u003e\\n\\n\u003cp\u003eMany popular offensive frameworks exist which use forms of scripting for security testers and adversaries alike. Metasploit (Citation: Metasploit_Ref), Veil (Citation: Veil_Ref), and PowerSploit (Citation: Powersploit) are three examples that are popular among penetration testers for exploit and post-compromise operations and include many features for evading defenses. Some adversaries are known to use PowerShell. (Citation: Alperovitch 2014)\u003c/p\u003e\\n\",\"external_id\":\"T1064\",\"mitre_name\":\"technique\",\"mitre_url\":\"https://attack.mitre.org/techniques/T1064\",\"tactics_names\":\"Defense Evasion, Execution\",\"platforms\":\"Linux, macOS, Windows\",\"system_requirements\":null,\"permissions\":\"User\",\"data_sources\":\"Process monitoring, File monitoring, Process command-line parameters\"}],\"severity\":\"critical\",\"incident_start_time\":1610707688,\"incident_end_time\":1592478770},\"tactics\":[{\"name\":\"Defense Evasion\",\"description\":\"\u003cp\u003eThe adversary is trying to avoid being detected.\u003c/p\u003e\\n\\n\u003cp\u003eDefense Evasion consists of techniques that adversaries use to avoid detection throughout their compromise. Techniques used for defense evasion include uninstalling/disabling security software or obfuscating/encrypting data and scripts. Adversaries also leverage and abuse trusted processes to hide and masquerade their malware. Other tactics’ techniques are cross-listed here when those techniques include the added benefit of subverting defenses.\u003c/p\u003e\\n\",\"external_id\":\"TA0005\",\"mitre_name\":\"tactic\",\"mitre_url\":\"https://attack.mitre.org/tactics/TA0005\"}],\"techniques\":[{\"name\":\"Data from Local System\",\"description\":\"\u003cp\u003eAdversaries may search local system sources, such as file systems or local databases, to find files of interest and sensitive data prior to Exfiltration.\u003c/p\u003e\\n\\n\u003cp\u003eAdversaries may do this using a \u003ca href=\\\"https://attack.mitre.org/techniques/T1059\\\"\u003eCommand and Scripting Interpreter\u003c/a\u003e, such as \u003ca href=\\\"https://attack.mitre.org/software/S0106\\\"\u003ecmd\u003c/a\u003e, which has functionality to interact with the file system to gather information. Some adversaries may also use \u003ca href=\\\"https://attack.mitre.org/techniques/T1119\\\"\u003eAutomated Collection\u003c/a\u003e on the local system.\u003c/p\u003e\\n\",\"external_id\":\"T1005\",\"mitre_name\":\"technique\",\"mitre_url\":\"https://attack.mitre.org/techniques/T1005\",\"tactics_names\":\"Collection\",\"platforms\":\"Linux, macOS, Windows\",\"system_requirements\":\"Privileges to access certain files and directories\",\"permissions\":\"\",\"data_sources\":\"File monitoring, Process monitoring, Process command-line parameters\"},{\"name\":\"Scheduled Task/Job\",\"description\":\"\u003cp\u003eAdversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code. Utilities exist within all major operating systems to schedule programs or scripts to be executed at a specified date and time. A task can also be scheduled on a remote system, provided the proper authentication is met (ex: RPC and file and printer sharing in Windows environments). Scheduling a task on a remote system typically requires being a member of an admin or otherwise privileged group on the remote system.(Citation: TechNet Task Scheduler Security)\u003c/p\u003e\\n\\n\u003cp\u003eAdversaries may use task scheduling to execute programs at system startup or on a scheduled basis for persistence. These mechanisms can also be abused to run a process under the context of a specified account (such as one with elevated permissions/privileges).\u003c/p\u003e\\n\",\"external_id\":\"T1053\",\"mitre_name\":\"technique\",\"mitre_url\":\"https://attack.mitre.org/techniques/T1053\",\"tactics_names\":\"Execution, Persistence, Privilege Escalation\",\"platforms\":\"Windows, Linux, macOS\",\"system_requirements\":null,\"permissions\":\"Administrator, SYSTEM, User\",\"data_sources\":\"File monitoring, Process monitoring, Process command-line parameters, Windows event logs\"},{\"name\":\"Scripting\",\"description\":\"\u003cp\u003e\u003cstrong\u003eThis technique has been deprecated. Please use \u003ca href=\\\"https://attack.mitre.org/techniques/T1059\\\"\u003eCommand and Scripting Interpreter\u003c/a\u003e where appropriate.\u003c/strong\u003e\u003c/p\u003e\\n\\n\u003cp\u003eAdversaries may use scripts to aid in operations and perform multiple actions that would otherwise be manual. Scripting is useful for speeding up operational tasks and reducing the time required to gain access to critical resources. Some scripting languages may be used to bypass process monitoring mechanisms by directly interacting with the operating system at an API level instead of calling other programs. Common scripting languages for Windows include VBScript and \u003ca href=\\\"https://attack.mitre.org/techniques/T1086\\\"\u003ePowerShell\u003c/a\u003e but could also be in the form of command-line batch scripts.\u003c/p\u003e\\n\\n\u003cp\u003eScripts can be embedded inside Office documents as macros that can be set to execute when files used in \u003ca href=\\\"https://attack.mitre.org/techniques/T1193\\\"\u003eSpearphishing Attachment\u003c/a\u003e and other types of spearphishing are opened. Malicious embedded macros are an alternative means of execution than software exploitation through \u003ca href=\\\"https://attack.mitre.org/techniques/T1203\\\"\u003eExploitation for Client Execution\u003c/a\u003e, where adversaries will rely on macros being allowed or that the user will accept to activate them.\u003c/p\u003e\\n\\n\u003cp\u003eMany popular offensive frameworks exist which use forms of scripting for security testers and adversaries alike. Metasploit (Citation: Metasploit_Ref), Veil (Citation: Veil_Ref), and PowerSploit (Citation: Powersploit) are three examples that are popular among penetration testers for exploit and post-compromise operations and include many features for evading defenses. Some adversaries are known to use PowerShell. (Citation: Alperovitch 2014)\u003c/p\u003e\\n\",\"external_id\":\"T1064\",\"mitre_name\":\"technique\",\"mitre_url\":\"https://attack.mitre.org/techniques/T1064\",\"tactics_names\":\"Defense Evasion, Execution\",\"platforms\":\"Linux, macOS, Windows\",\"system_requirements\":null,\"permissions\":\"User\",\"data_sources\":\"Process monitoring, File monitoring, Process command-line parameters\"}]}}",
+        "kind": "alert"
     },
     "cisco": {
-        "amp": {
+        "secure_endpoint": {
             "computer": {
                 "active": true,
                 "network_addresses": [
                     {
-                        "mac": "53:74:31:cb:37:50",
+                        "mac": "87:c2:d9:a2:8c:74",
                         "ip": "10.10.10.10"
                     }
                 ],
                 "connector_guid": "test_connector_guid",
                 "external_ip": "8.8.8.8"
             },
-            "file": {
-                "disposition": "Malicious",
-                "identity": {}
+            "threat_hunting": {
+                "severity": "critical",
+                "incident_title": "Valak Variant",
+                "incident_id": 416,
+                "incident_end_time": "2020-06-18T11:12:50.000Z",
+                "incident_start_time": "2021-01-15T10:48:08.000Z",
+                "incident_summary": "The host Demo_Threat_Hunting is compromised by a Valak malware variant.  Valak is a multi-stage malware attack that uses screen capture, reconnaissance, geolocation, and fileless execution techniques to infiltrate and exfiltrate sensitive information.  Based on the event details listed and the techniques used, we recommend the host in question be investigated further.",
+                "incident_remediation": "We recommend the following:\r\n\r\n- Isolation of the affected hosts from the network\r\n- Perform forensic investigation\r\n    - Review all activity performed by the user\r\n    - Upload any suspicious files to ThreatGrid for analysis\r\n    - Search the registry for data \"var config = ( COMMAND_C2\" and remove the key\r\n    - Review scheduled tasks and cancel any involving the execution of WSCRIPT.EXE //E:jscript C:\\Users\\Public\\PowerManagerSpm.jar:LocalZone lqjsxokgowhbxjaetyrifnbigtcxmuj eimljujnv\r\n    - Remove the Alternate Data Stream file located C:\\Users\\Public\\PowerManagerSpm.jar:LocalZone.\r\n- If possible, reimage the affected system to prevent potential unknown persistence methods.",
+                "incident_report_guid": "6e5292d5-248c-49dc-839d-201bcba64562",
+                "incident_hunt_guid": "4bdbaf20-020f-4bb5-9da9-585da0e07817"
             },
             "connector_guid": "test_connector_guid",
             "related": {
                 "mac": [
-                    "53:74:31:cb:37:50"
+                    "87:c2:d9:a2:8c:74"
                 ]
             },
-            "group_guids": [
-                "test_group_guid"
+            "techniques": [
+                {
+                    "mitre_name": "technique",
+                    "tactics_names": "Collection",
+                    "system_requirements": "Privileges to access certain files and directories",
+                    "permissions": "",
+                    "name": "Data from Local System",
+                    "description": "\u003cp\u003eAdversaries may search local system sources, such as file systems or local databases, to find files of interest and sensitive data prior to Exfiltration.\u003c/p\u003e\n\n\u003cp\u003eAdversaries may do this using a \u003ca href=\"https://attack.mitre.org/techniques/T1059\"\u003eCommand and Scripting Interpreter\u003c/a\u003e, such as \u003ca href=\"https://attack.mitre.org/software/S0106\"\u003ecmd\u003c/a\u003e, which has functionality to interact with the file system to gather information. Some adversaries may also use \u003ca href=\"https://attack.mitre.org/techniques/T1119\"\u003eAutomated Collection\u003c/a\u003e on the local system.\u003c/p\u003e\n",
+                    "external_id": "T1005",
+                    "mitre_url": "https://attack.mitre.org/techniques/T1005",
+                    "data_sources": "File monitoring, Process monitoring, Process command-line parameters",
+                    "platforms": "Linux, macOS, Windows"
+                },
+                {
+                    "mitre_name": "technique",
+                    "tactics_names": "Execution, Persistence, Privilege Escalation",
+                    "permissions": "Administrator, SYSTEM, User",
+                    "name": "Scheduled Task/Job",
+                    "description": "\u003cp\u003eAdversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code. Utilities exist within all major operating systems to schedule programs or scripts to be executed at a specified date and time. A task can also be scheduled on a remote system, provided the proper authentication is met (ex: RPC and file and printer sharing in Windows environments). Scheduling a task on a remote system typically requires being a member of an admin or otherwise privileged group on the remote system.(Citation: TechNet Task Scheduler Security)\u003c/p\u003e\n\n\u003cp\u003eAdversaries may use task scheduling to execute programs at system startup or on a scheduled basis for persistence. These mechanisms can also be abused to run a process under the context of a specified account (such as one with elevated permissions/privileges).\u003c/p\u003e\n",
+                    "external_id": "T1053",
+                    "mitre_url": "https://attack.mitre.org/techniques/T1053",
+                    "data_sources": "File monitoring, Process monitoring, Process command-line parameters, Windows event logs",
+                    "platforms": "Windows, Linux, macOS"
+                },
+                {
+                    "mitre_name": "technique",
+                    "tactics_names": "Defense Evasion, Execution",
+                    "permissions": "User",
+                    "name": "Scripting",
+                    "description": "\u003cp\u003e\u003cstrong\u003eThis technique has been deprecated. Please use \u003ca href=\"https://attack.mitre.org/techniques/T1059\"\u003eCommand and Scripting Interpreter\u003c/a\u003e where appropriate.\u003c/strong\u003e\u003c/p\u003e\n\n\u003cp\u003eAdversaries may use scripts to aid in operations and perform multiple actions that would otherwise be manual. Scripting is useful for speeding up operational tasks and reducing the time required to gain access to critical resources. Some scripting languages may be used to bypass process monitoring mechanisms by directly interacting with the operating system at an API level instead of calling other programs. Common scripting languages for Windows include VBScript and \u003ca href=\"https://attack.mitre.org/techniques/T1086\"\u003ePowerShell\u003c/a\u003e but could also be in the form of command-line batch scripts.\u003c/p\u003e\n\n\u003cp\u003eScripts can be embedded inside Office documents as macros that can be set to execute when files used in \u003ca href=\"https://attack.mitre.org/techniques/T1193\"\u003eSpearphishing Attachment\u003c/a\u003e and other types of spearphishing are opened. Malicious embedded macros are an alternative means of execution than software exploitation through \u003ca href=\"https://attack.mitre.org/techniques/T1203\"\u003eExploitation for Client Execution\u003c/a\u003e, where adversaries will rely on macros being allowed or that the user will accept to activate them.\u003c/p\u003e\n\n\u003cp\u003eMany popular offensive frameworks exist which use forms of scripting for security testers and adversaries alike. Metasploit (Citation: Metasploit_Ref), Veil (Citation: Veil_Ref), and PowerSploit (Citation: Powersploit) are three examples that are popular among penetration testers for exploit and post-compromise operations and include many features for evading defenses. Some adversaries are known to use PowerShell. (Citation: Alperovitch 2014)\u003c/p\u003e\n",
+                    "external_id": "T1064",
+                    "mitre_url": "https://attack.mitre.org/techniques/T1064",
+                    "data_sources": "Process monitoring, File monitoring, Process command-line parameters",
+                    "platforms": "Linux, macOS, Windows"
+                }
             ],
-            "error": {
-                "description": "Delete pending",
-                "error_code": 3221225558
-            },
-            "detection_id": "6419229327140847663",
-            "event_type_id": 2164260880
+            "tactics": [
+                {
+                    "name": "Defense Evasion",
+                    "description": "\u003cp\u003eThe adversary is trying to avoid being detected.\u003c/p\u003e\n\n\u003cp\u003eDefense Evasion consists of techniques that adversaries use to avoid detection throughout their compromise. Techniques used for defense evasion include uninstalling/disabling security software or obfuscating/encrypting data and scripts. Adversaries also leverage and abuse trusted processes to hide and masquerade their malware. Other tactics’ techniques are cross-listed here when those techniques include the added benefit of subverting defenses.\u003c/p\u003e\n",
+                    "mitre_name": "tactic",
+                    "external_id": "TA0005",
+                    "mitre_url": "https://attack.mitre.org/tactics/TA0005"
+                }
+            ],
+            "event_type_id": 1107296344
         }
     },
     "tags": [
@@ -215,10 +277,6 @@ An example event for `log` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from. | keyword |
-| log.flags | Flags for the log file. | keyword |
-| log.offset | Offset of the entry in the log file. | long |
-| log.source.address | Source address from which the log event was read / sent from. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
@@ -233,4 +291,10 @@ An example event for `log` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
+| threat.tactic.reference | The reference url of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.reference | The reference url of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 

@@ -78,27 +78,98 @@ processors:
       - UNIX
     ignore_failure: true
     if: ctx?.cisco?.secure_endpoint?.start_timestamp != null
-
 - rename:
     field: cisco.secure_endpoint.techniques
-    target_field: cisco.secure_endpoint.mitre_techniques
+    target_field: threat.technique.id
     if: "ctx?.cisco?.secure_endpoint?.techniques != null && ctx?.cisco?.secure_endpoint?.techniques.length > 0 && ctx?.cisco?.secure_endpoint?.techniques[0] instanceof String"
 - rename:
     field: cisco.secure_endpoint.tactics
-    target_field: cisco.secure_endpoint.mitre_tactics
+    target_field: threat.tactic.id
     if: "ctx?.cisco?.secure_endpoint?.tactics != null && ctx?.cisco?.secure_endpoint?.tactics.length > 0 && ctx?.cisco?.secure_endpoint?.tactics[0] instanceof String"
+- script:
+    lang: painless
+    source: |
+        if (ctx?.threat == null) {
+            ctx.threat = new HashMap();
+        }
+        if (ctx?.threat.technique == null) {
+            ctx.threat.technique = new HashMap();
+        }
+        if (ctx?.threat.technique.id == null) {
+            ctx.threat.technique.id = new ArrayList();
+        }
+        if (ctx?.threat.technique.name == null) {
+            ctx.threat.technique.name = new ArrayList();
+        }
+        if (ctx?.threat.technique.reference == null) {
+            ctx.threat.technique.reference = new ArrayList();
+        }
+        for (technique in ctx?.cisco?.secure_endpoint?.techniques) {
+            if (technique.name != null) {
+                if (!ctx?.threat.technique.name.contains(technique.name)) {
+                    ctx?.threat.technique.name.add(technique.name);  
+                }
+            }
+            if (technique.external_id != null) {
+                if (!ctx?.threat.technique.id.contains(technique.external_id)) {
+                    ctx?.threat.technique.id.add(technique.external_id);  
+                }
+            }
+            if (technique.mitre_url != null) {
+                if (!ctx?.threat.technique.reference.contains(technique.mitre_url)) {
+                    ctx?.threat.technique.reference.add(technique.mitre_url);  
+                }
+            }
+        }
+    if: ctx?.cisco?.secure_endpoint?.tactics != null
+- script:
+    lang: painless
+    source: |
+        if (ctx?.threat == null) {
+            ctx.threat = new HashMap();
+        }
+        if (ctx?.threat.tactic == null) {
+            ctx.threat.tactic = new HashMap();
+        }
+        if (ctx?.threat.tactic.id == null) {
+            ctx.threat.tactic.id = new ArrayList();
+        }
+        if (ctx?.threat.tactic.name == null) {
+            ctx.threat.tactic.name = new ArrayList();
+        }
+        if (ctx?.threat.tactic.reference == null) {
+            ctx.threat.tactic.reference = new ArrayList();
+        }
+        for (tactic in ctx?.cisco?.secure_endpoint?.tactics) {
+            if (tactic.name != null) {
+                if (!ctx?.threat.tactic.name.contains(tactic.name)) {
+                    ctx?.threat.tactic.name.add(tactic.name);  
+                }
+            }
+            if (tactic.external_id != null) {
+                if (!ctx?.threat.tactic.id.contains(tactic.external_id)) {
+                    ctx?.threat.tactic.id.add(tactic.external_id);  
+                }
+            }
+            if (tactic.mitre_url != null) {
+                if (!ctx?.threat.tactic.reference.contains(tactic.mitre_url)) {
+                    ctx?.threat.tactic.reference.add(tactic.mitre_url);  
+                }
+            }
+        }
+    if: ctx?.cisco?.secure_endpoint?.tactics != null
 
 ######################
 ## ECS Host Mapping ##
 ######################
-- rename:
-    field: cisco.secure_endpoint.computer.hostname
-    target_field: host.name
-    ignore_missing: true
+- set:
+    field: host.name
+    copy_from: cisco.secure_endpoint.computer.hostname
+    ignore_empty_value: true
 - set:
     field: host.hostname
-    value: "{{ host.name }}"
-    if: ctx?.host?.name != null
+    copy_from: host.name
+    ignore_empty_value: true
 - rename:
     field: cisco.secure_endpoint.computer.user
     target_field: host.user.name
@@ -462,6 +533,9 @@ processors:
     - cisco.secure_endpoint.timestamp_nanoseconds
     - cisco.secure_endpoint.start_date
     - cisco.secure_endpoint.id
+    - cisco.secure_endpoint.threat_hunting.techniques
+    - cisco.secure_endpoint.threat_hunting.tactics
+    - cisco.secure_endpoint.computer.hostname
     ignore_missing: true
 on_failure:
 - set:
