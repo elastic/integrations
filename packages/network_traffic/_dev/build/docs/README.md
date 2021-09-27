@@ -1,4 +1,4 @@
-# Network Traffic Integration
+# Network Packet Capture Integration
 
 This integration sniffs network packets on a host and dissects
 known protocols.
