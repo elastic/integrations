@@ -1,0 +1,52 @@
+name: kibana
+title: Kibana
+version: 1.0.0
+release: ga
+description: Kibana Integration
+type: integration
+icons:
+  - src: /img/logo_kibana.svg
+    title: logo kibana
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories: ["elastic_stack"]
+conditions:
+  kibana.version: ^7.15.0
+policy_templates:
+  - name: kibana
+    title: Kibana logs and metrics
+    description: Collect logs and metrics from Kibana instances
+    inputs:
+      - type: logfile
+        title: 'Collect Kibana logs'
+        description: 'Collecting audit and application logs from Kibana instances'
+      - type: kibana/metrics
+        title: Collect Kibana metrics
+        description: Collecting stats and status metrics from Kibana instances
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:5601
+          - name: username
+            type: text
+            title: Username
+            description: Use when connecting to Kibana
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            description: Use when connecting to Kibana
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/integrations
