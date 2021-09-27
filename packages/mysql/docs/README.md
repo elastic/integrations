@@ -67,7 +67,7 @@ The `error` dataset collects the MySQL error logs.
 | log.flags | Log flags. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mysql.thread_id | The connection or thread ID for the query. | long |
 
 
@@ -354,7 +354,7 @@ An example event for `galera_status` looks as following:
 | mysql.galera_status.repl.keys | Total number of keys replicated. | long |
 | mysql.galera_status.repl.keys_bytes | Total size of keys replicated. | long |
 | mysql.galera_status.repl.other_bytes | Total size of other bits replicated. | long |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
@@ -615,6 +615,6 @@ An example event for `status` looks as following:
 | mysql.status.threads.connected | The number of connected threads. | long |
 | mysql.status.threads.created | The number of created threads. | long |
 | mysql.status.threads.running | The number of running threads. | long |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

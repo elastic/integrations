@@ -29,7 +29,7 @@ pipeline {
     quietPeriod(10)
   }
   triggers {
-    issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|/test)')
+    issueCommentTrigger("${obltGitHubComments()}")
   }
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
@@ -62,7 +62,12 @@ pipeline {
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
                 integrations[it] = {
-                  withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
+                  // Workaround: https://github.com/elastic/integrations/pull/1754
+                  def workerNode = "ubuntu-20"
+                  if (it == "kubernetes") {
+                    workerNode = "ubuntu-18"
+                  }
+                  withNode(labels: "${workerNode} && immutable", sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
                       deleteDir()
                       unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
@@ -94,10 +99,8 @@ pipeline {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
-                          // Temporary workaround to collect internal fleet-server logs
-                          sh(label: "Collect internal fleet-server logs",
-                            script: "docker exec -t elastic-package-stack_fleet-server_1 sh -c \"find data/logs/default/fleet-server-json* -printf '%p\\n' -exec cat {} \\;\" > build/elastic-stack-dump/${it}/logs/fleet-server-internal.log")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
+                          archiveArtifactsSafe(it, "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                           stashCoverageReport()
                         }
@@ -271,4 +274,17 @@ def getCoverageBucketURI() {
 
 def getCoveragePathPrefix() {
   return "${env.JOB_NAME}-${env.BUILD_ID}/test-coverage/"
+}
+
+def archiveArtifactsSafe(integrationName, artifacts) {
+  r = sh(label: "areArtifactsPresent", script: "ls ${artifacts}", returnStatus: true)
+  if (r != 0) {
+    echo "areArtifactsPresent: artifacts files not found, nothing will be archived"
+    return
+  }
+
+  googleStorageUploadExt(
+    bucket: "gs://${JOB_GCS_BUCKET}/${env.JOB_NAME}-${env.BUILD_ID}/insecure-logs/${integrationName}",
+    credentialsId: "${JOB_GCS_EXT_CREDENTIALS}",
+    pattern: artifacts)
 }
