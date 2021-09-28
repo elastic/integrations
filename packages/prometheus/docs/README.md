@@ -186,7 +186,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -211,8 +211,8 @@ The fields reported are:
 | prometheus.\*.value | Prometheus gauge metric | object |
 | prometheus.labels.\* | Prometheus metric labels | object |
 | prometheus.metrics.\* | Prometheus metric | object |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 
@@ -337,7 +337,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -362,8 +362,8 @@ The fields reported are:
 | prometheus.\*.value | Prometheus gauge metric | object |
 | prometheus.labels.\* | Prometheus metric labels | object |
 | prometheus.metrics.\* | Prometheus metric | object |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 #### Histograms and types [x-pack]
@@ -545,7 +545,7 @@ The fields reported are:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -566,5 +566,5 @@ The fields reported are:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | prometheus.labels.\* | Prometheus metric labels | object |
 | prometheus.query.\* | Prometheus value resulted from PromQL | object |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
