@@ -18,7 +18,7 @@ processors:
   - set:
       field: event.category
       value: network_traffic
-  - drop: 
+  - drop:
       if: 'ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id")'
   - script:
       lang: painless
@@ -63,7 +63,7 @@ processors:
       formats:
         - UNIX
   - remove:
-      field: 
+      field:
         - aws.vpcflow.start
         - aws.vpcflow.end
       ignore_missing: true
@@ -120,7 +120,7 @@ processors:
   - set:
       field: destination.ip
       copy_from: destination.address
-      if: ctx.destination?.address != null 
+      if: ctx.destination?.address != null
   - convert:
       field: aws.vpcflow.dstport
       target_field: destination.port
@@ -159,11 +159,11 @@ processors:
   - set:
       field: network.transport
       value: tcp
-      if: ctx.network?.iana_number == 6
+      if: ctx.network?.iana_number == "6"
   - set:
       field: network.transport
       value: udp
-      if: ctx.network?.iana_number == 17
+      if: ctx.network?.iana_number == "17"
   - community_id:
       target_field: network.community_id
       ignore_failure: true
@@ -228,6 +228,36 @@ processors:
   - set:
       field: event.kind
       value: event
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: "ctx.aws?.vpcflow?.tcp_flags != null"
+      source: |
+        if (ctx.aws.vpcflow.tcp_flags_array == null) {
+          ArrayList al = new ArrayList();
+          ctx.aws.vpcflow.put("tcp_flags_array", al);
+        }
+
+        def flags = Integer.parseUnsignedInt(ctx.aws.vpcflow.tcp_flags);
+
+        if ((flags & 0x01) != 0) {
+          ctx.aws.vpcflow.tcp_flags_array.add('fin');
+        }
+        if ((flags & 0x02) != 0) {
+          ctx.aws.vpcflow.tcp_flags_array.add('syn');
+        }
+        if ((flags & 0x04) != 0) {
+          ctx.aws.vpcflow.tcp_flags_array.add('rst');
+        }
+        if ((flags & 0x08) != 0) {
+          ctx.aws.vpcflow.tcp_flags_array.add('psh');
+        }
+        if ((flags & 0x10) != 0) {
+          ctx.aws.vpcflow.tcp_flags_array.add('ack');
+        }
+        if ((flags & 0x20) != 0) {
+          ctx.aws.vpcflow.tcp_flags_array.add('urg');
+        }
   - remove:
       field:
         - _temp_
