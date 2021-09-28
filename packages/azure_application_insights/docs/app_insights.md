@@ -73,7 +73,7 @@ An example event for `app_insights` looks as following:
     },
     "@timestamp": "2021-08-23T14:37:42.268Z",
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12.0"
     },
     "service": {
         "type": "azure"
