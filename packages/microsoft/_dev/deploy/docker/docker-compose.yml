@@ -16,3 +16,15 @@ services:
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/microsoft-dhcp.log
+  microsoft-defender-mock:
+    image: docker.elastic.co/observability/stream:v0.5.0
+    ports:
+      - 8080
+    volumes:
+      - ./http-mock-config.yml:/config.yml
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
