@@ -1,0 +1,50 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+
+{{#if url}}
+request.url: {{url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+
+request.rate_limit:
+  limit: '[[.last_response.header.Get "X-Rate-Limit-Limit"]]'
+  remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
+  reset: '[[.last_response.header.Get "X-Rate-Limit-Reset"]]'
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: "SSWS {{api_key}}"
+  - set:
+      target: url.params.since
+      value: "[[.cursor.published]]"
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339"]]'
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[ getRFC5988Link "next" .last_response.header.Link ]]'
+      fail_on_template_error: true
+
+cursor:
+  published:
+    value: "[[.last_event.published]]"
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

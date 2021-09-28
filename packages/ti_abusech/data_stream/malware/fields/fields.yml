@@ -1,0 +1,262 @@
+- name: okta.uuid
+  title: UUID
+  type: keyword
+  description: |
+    The unique identifier of the Okta LogEvent.
+- name: okta.event_type
+  title: Event Type
+  type: keyword
+  description: |
+    The type of the LogEvent.
+- name: okta.version
+  title: Version
+  type: keyword
+  description: |
+    The version of the LogEvent.
+- name: okta.severity
+  title: Severity
+  type: keyword
+  description: |
+    The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR.
+- name: okta.display_message
+  title: Display Message
+  type: keyword
+  description: |
+    The display message of the LogEvent.
+- name: okta.actor
+  title: Actor
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: |
+        Identifier of the actor.
+    - name: type
+      type: keyword
+      description: |
+        Type of the actor.
+    - name: alternate_id
+      type: keyword
+      description: |
+        Alternate identifier of the actor.
+    - name: display_name
+      type: keyword
+      description: |
+        Display name of the actor.
+- name: okta.client
+  title: Client
+  type: group
+  fields:
+    - name: ip
+      type: ip
+      description: |
+        The IP address of the client.
+    - name: user_agent
+      type: group
+      fields:
+        - name: raw_user_agent
+          type: keyword
+          description: |
+            The raw informaton of the user agent.
+        - name: os
+          type: keyword
+          description: |
+            The OS informaton.
+        - name: browser
+          type: keyword
+          description: |
+            The browser informaton of the client.
+    - name: zone
+      type: keyword
+      description: |
+        The zone information of the client.
+    - name: device
+      type: keyword
+      description: |
+        The information of the client device.
+    - name: id
+      type: keyword
+      description: |
+        The identifier of the client.
+- name: okta.outcome
+  title: Outcome of the LogEvent.
+  type: group
+  fields:
+    - name: reason
+      type: keyword
+      description: |
+        The reason of the outcome.
+    - name: result
+      type: keyword
+      description: |
+        The result of the outcome. Must be one of: SUCCESS, FAILURE, SKIPPED, ALLOW, DENY, CHALLENGE, UNKNOWN.
+- name: okta.target
+  title: Target
+  type: flattened
+  description: |
+    The list of targets.
+  fields:
+    - name: id
+      type: keyword
+      description: |
+        Identifier of the actor.
+    - name: type
+      type: keyword
+      description: |
+        Type of the actor.
+    - name: alternate_id
+      type: keyword
+      description: |
+        Alternate identifier of the actor.
+    - name: display_name
+      type: keyword
+      description: |
+        Display name of the actor.
+- name: okta.transaction
+  title: Transaction
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: |
+        Identifier of the transaction.
+    - name: type
+      type: keyword
+      description: |
+        The type of transaction. Must be one of "WEB", "JOB".
+- name: okta.debug_context
+  title: Debug Context
+  type: group
+  fields:
+    - name: debug_data
+      type: group
+      fields:
+        - name: device_fingerprint
+          type: keyword
+          description: |
+            The fingerprint of the device.
+        - name: request_id
+          type: keyword
+          description: |
+            The identifier of the request.
+        - name: request_uri
+          type: keyword
+          description: |
+            The request URI.
+        - name: threat_suspected
+          type: keyword
+          description: |
+            Threat suspected.
+        - name: url
+          type: keyword
+          description: |
+            The URL.
+- name: okta.authentication_context
+  title: Authentication Context
+  type: group
+  fields:
+    - name: authentication_provider
+      type: keyword
+      description: |
+        The information about the authentication provider. Must be one of OKTA_AUTHENTICATION_PROVIDER, ACTIVE_DIRECTORY, LDAP, FEDERATION, SOCIAL, FACTOR_PROVIDER.
+    - name: authentication_step
+      type: integer
+      description: |
+        The authentication step.
+    - name: credential_provider
+      type: keyword
+      description: |
+        The information about credential provider. Must be one of OKTA_CREDENTIAL_PROVIDER, RSA, SYMANTEC, GOOGLE, DUO, YUBIKEY.
+    - name: credential_type
+      type: keyword
+      description: |
+        The information about credential type. Must be one of OTP, SMS, PASSWORD, ASSERTION, IWA, EMAIL, OAUTH2, JWT, CERTIFICATE, PRE_SHARED_SYMMETRIC_KEY, OKTA_CLIENT_SESSION, DEVICE_UDID.
+    - name: issuer
+      type: array
+      description: |
+        The information about the issuer.
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            The identifier of the issuer.
+        - name: type
+          type: keyword
+          description: |
+            The type of the issuer.
+    - name: external_session_id
+      type: keyword
+      description: |
+        The session identifer of the external session if any.
+    - name: interface
+      type: keyword
+      description: |
+        The interface used. e.g., Outlook, Office365, wsTrust
+- name: okta.security_context
+  title: Security Context
+  type: group
+  fields:
+    - name: as
+      type: group
+      fields:
+        - name: number
+          type: integer
+          description: |
+            The AS number.
+        - name: organization
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: |
+                The organization name.
+    - name: isp
+      type: keyword
+      description: |
+        The Internet Service Provider.
+    - name: domain
+      type: keyword
+      description: |
+        The domain name.
+    - name: is_proxy
+      type: boolean
+      description: |
+        Whether it is a proxy or not.
+- name: okta.request
+  title: Request
+  type: group
+  fields:
+    - name: ip_chain
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: |
+            IP address.
+        - name: version
+          type: keyword
+          description: |
+            IP version. Must be one of V4, V6.
+        - name: source
+          type: keyword
+          description: |
+            Source information.
+        - name: geographical_context
+          type: group
+          fields:
+            - name: city
+              type: keyword
+              description: The city.
+            - name: state
+              type: keyword
+              description: The state.
+            - name: postal_code
+              type: keyword
+              description: The postal code.
+            - name: country
+              type: keyword
+              description: The country.
+            - name: geolocation
+              type: geo_point
+              description: |
+                Geolocation information.
