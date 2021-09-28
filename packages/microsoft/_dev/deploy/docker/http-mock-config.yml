@@ -1,0 +1,32 @@
+rules:
+  - path: /tenant_id/oauth2/token
+    methods: [POST]
+    query_params:
+      client_id: test-app-id
+      client_secret: test-secret
+      grant_type: client_credentials
+      resource: "{resource:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN","token_type": "Bearer","not_before": 1549647431,"expires_in": 3600,"resource": "f2a76e08-93f2-4350-833c-965c02483b11"}
+  - path: /api/alerts
+    methods: [GET]
+    query_params:
+      $expand: evidence
+    request_headers:
+      Authorization:
+        - "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"value":[{"evidence":[{"userPrincipalName":"temp123@microsoft.com","aadUserId":"11118379-2a59-1111-ac3c-a51eb4a3c627","userSid":"S-1-5-21-11111607-1111760036-109187956-75141","domainName":"DOMAIN","accountName":"name","registryValue":null,"registryValueType":null,"registryHive":null,"registryKey":null,"url":null,"ipAddress":null,"parentProcessCreationTime":null,"parentProcessId":null,"processCreationTime":null,"processCommandLine":null,"processId":null,"filePath":null,"fileName":null,"sha256":null,"sha1":null,"entityType":"User"},{"userPrincipalName":null,"aadUserId":null,"userSid":null,"domainName":null,"accountName":null,"registryValue":null,"registryValueType":null,"registryHive":null,"registryKey":null,"url":null,"ipAddress":null,"parentProcessCreationTime":"2021-01-26T20:31:32.9004163Z","parentProcessId":8420,"processCreationTime":"2021-01-26T20:31:32.9581596Z","processCommandLine":"rundll32.exe  c:\\temp\\suspicious.dll,RepeatAfterMe","processId":3276,"filePath":"C:\\Windows\\SysWOW64","fileName":"rundll32.exe","sha256":"a4752c71d81afd3d5865d24ddb11a6b0c615062fcc448d24050c2172d2cbccd6","sha1":"ff836cfb1af40252bd2a2ea843032e99a5b262ed","entityType":"Process"},{"userPrincipalName":null,"aadUserId":null,"userSid":null,"domainName":null,"accountName":null,"registryValue":null,"registryValueType":null,"registryHive":null,"registryKey":null,"url":null,"ipAddress":null,"parentProcessCreationTime":null,"parentProcessId":null,"processCreationTime":null,"processCommandLine":null,"processId":null,"filePath":"c:\\temp","fileName":"suspicious.dll","sha256":"dc0ade0c95d6db98882bc8fa6707e64353cd6f7767ff48d6a81a6c2aef21c608","sha1":"8563f95b2f8a284fc99da44500cd51a77c1ff36c","entityType":"File"}],"comments":[{"createdTime":"2021-01-26T01:00:37.8404534Z","createdBy":"secop123@contoso.com","comment":"test comment for docs"}],"relatedUser":{"domainName":"DOMAIN","userName":"temp123"},"threatName":null,"aadTenantId":"a839b112-1253-6432-9bf6-94542403f21c","rbacGroupName":"A","computerDnsName":"temp123.middleeast.corp.microsoft.com","machineId":"111e6dd8c833c8a052ea231ec1b19adaf497b625","resolvedTime":null,"lastUpdateTime":"2021-01-26T20:33:59.2Z","lastEventTime":"2021-01-26T20:31:33.0577322Z","firstEventTime":"2021-01-26T20:31:32.9562661Z","alertCreationTime":"2021-01-26T20:33:57.7220239Z","description":"Binaries signed by Microsoft can be used to run low-reputation arbitrary code. This technique hides the execution of malicious code within a trusted process. As a result, the trusted process might exhibit suspicious behaviors, such as opening a listening port or connecting to a command-and-control (C&C) server.","title":"Low-reputation arbitrary code executed by signed executable","threatFamilyName":null,"category":"Execution","detectionSource":"WindowsDefenderAtp","investigationState":"Queued","determination":null,"classification":null,"status":"New","severity":"Low","assignedTo":null,"investigationId":null,"incidentId":1126093,"id":"da637472900382838869_1364969609"}]}
