@@ -1,12 +1,12 @@
-config_version: "2"
+config_version: 2
 interval: {{interval}}
-request.method: "GET"
+request.method: GET
 request.url: {{hostname}}/admin/v1/logs/offline_enrollment
 request.transforms:
   - set: 
       target: url.params.mintime
       value: '[[.cursor.last_published]]'
-      default: '[[(now (parseDuration "-2m")).Add (parseDuration "-{{interval}}").Unix]]'
+      default: '[[((now (parseDuration "-2m")).Add (parseDuration "-{{interval}}")).Unix]]'
   - set:
       target: header.Date
       value: '[[formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700"]]'
@@ -25,7 +25,7 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
-{{#contains tags "forwarded"}}
+{{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if processors}}
