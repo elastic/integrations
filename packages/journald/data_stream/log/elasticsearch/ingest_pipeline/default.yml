@@ -4,15 +4,8 @@ processors:
   - remove:
       field:
         - container.id_truncated # CONTAINER_ID from journald driver.
-        - log.syslog.facility.name # Duplicated as syslog.facility.
+        - syslog.facility # Duplicated as log.syslog.facility.code.
         - syslog.priority # Duplicated as log.syslog.priority.
-      ignore_missing: true
-
-  # Journald _CAP_EFFECTIVE.
-  # There is a typo in the field name from the input.
-  - rename:
-      field: journald.process.capabilites
-      target_field: journald.process.capabilities
       ignore_missing: true
 
   # Journald CODE_FILE, CODE_LINE, CODE_FUNC.
@@ -29,7 +22,7 @@ processors:
       target_field: log.origin.function
       ignore_missing: true
 
-  # Journald SYSLOG_FACILITY, SYSLOG_IDENTIFIER, SYSLOG_PID.
+  # Journald SYSLOG_IDENTIFIER, SYSLOG_PID.
   - rename:
       field: syslog.pid
       target_field: log.syslog.pid
@@ -37,10 +30,6 @@ processors:
   - rename:
       field: syslog.identifier
       target_field: log.syslog.identifier
-      ignore_missing: true
-  - rename:
-      field: syslog.facility
-      target_field: log.syslog.facility.code
       ignore_missing: true
 
   # Cleanup an empty syslog object.

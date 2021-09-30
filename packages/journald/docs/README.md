@@ -16,8 +16,8 @@ The journald input is available on Linux systems with `systemd` installed.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host.hostname | The name of the originating host (from journald). | keyword |
-| host.id | The machine ID of the originating host (from `machine-id`). | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | input.type |  | keyword |
 | journald.audit.login_uid | The login UID of the process the journal entry originates from, as maintained by the kernel audit subsystem. | long |
 | journald.audit.session | The session of the process the journal entry originates from, as maintained by the kernel audit subsystem. | keyword |
