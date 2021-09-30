@@ -1,0 +1,37 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+{{#if multiline_full}}
+multiline:
+  type: pattern
+  pattern: '^\[\*\*\]'
+  negate: true
+  match: after
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
+- add_locale: ~
+{{#if internal_networks.length}}
+- add_fields:
+    target: _tmp
+    fields:
+      tz_offset: {{tz_offset}}
+      internal_networks:
+        {{#each internal_networks as |ntwrk i|}}
+        - {{ntwrk}}
+        {{/each}}
+{{/if}} 
