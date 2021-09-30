@@ -3,15 +3,15 @@
 This integration is for Cisco Secure Endpoint logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
 
-- `log` dataset: supports Cisco Secure Endpoint logs.
+- `event` dataset: supports Cisco Secure Endpoint Event logs.
 
 ## Logs
 
 ### Secure Endpoint
 
-The `log` dataset collects Cisco Secure Endpoint logs.
+The `event` dataset collects Cisco Secure Endpoint logs.
 
-An example event for `log` looks as following:
+An example event for `event` looks as following:
 
 ```json
 {
@@ -184,8 +184,6 @@ An example event for `log` looks as following:
 | cisco.secure_endpoint.file.disposition | Categorization of file, for example "Malicious" or "Clean". | keyword |
 | cisco.secure_endpoint.file.parent.disposition | Categorization of parrent, for example "Malicious" or "Clean". | keyword |
 | cisco.secure_endpoint.group_guids | An array of group GUIDS related to the connector sending information to AMP. | keyword |
-| cisco.secure_endpoint.mitre_tactics | Array of all related mitre tactic ID's | keyword |
-| cisco.secure_endpoint.mitre_techniques | Array of all related mitre technique ID's | keyword |
 | cisco.secure_endpoint.network_info.disposition | Categorization of a network event related to a file, for example "Malicious" or "Clean". | keyword |
 | cisco.secure_endpoint.network_info.nfm.direction | The current direction based on source and destination IP. | keyword |
 | cisco.secure_endpoint.network_info.parent.disposition | Categorization of a IOC for example "Malicious" or "Clean". | keyword |
