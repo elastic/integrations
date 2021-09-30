@@ -1,0 +1,131 @@
+type: logs
+title: Snort
+streams:
+  - input: logfile
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/snort/alert.log
+      - name: multiline_full
+        required: true
+        show_user: true
+        title: Multi-line Alert Full logs
+        description: Enables multiline support if reading the Snort Alert Full log fomat
+        type: bool
+        multi: false
+        default: false
+      - name: internal_networks
+        type: text
+        title: Internal Networks
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - private
+        description: The internal IP subnet(s) of the network.
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: true
+        show_user: true
+        default: local
+        description: >-
+          By default, datetimes in the logs will be interpreted as relative to the timezone configured in the host where the agent is running. If ingesting logs from a host on a different timezone, use this field to set the timezone offset so that datetimes are correctly parsed. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00") from UCT.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - snort.log
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: log.yml.hbs
+    title: Snort logs (Logfile)
+    description: Collect Snort logs using logfile input
+  - input: udp
+    vars:
+      - name: syslog_host
+        type: text
+        title: Syslog Host
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: text
+        title: Syslog Port
+        multi: false
+        required: true
+        show_user: true
+        default: 9514
+      - name: internal_networks
+        type: text
+        title: Internal Networks
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - private
+        description: The internal IP subnet(s) of the network.
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: true
+        show_user: true
+        default: local
+        description: >-
+          By default, datetimes in the logs will be interpreted as relative to the timezone configured in the host where the agent is running. If ingesting logs from a host on a different timezone, use this field to set the timezone offset so that datetimes are correctly parsed. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00") from UCT.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - snort.log
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: udp.yml.hbs
+    title: Snort logs (udp)
+    description: Collect Snort logs using udp input
