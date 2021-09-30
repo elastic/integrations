@@ -71,7 +71,7 @@ if [ "$1" = 'cassandra' ]; then
 
 		# Update JMX agent configuration
 		if [ "$JOLOKIA_ENABLED" = 'yes' ]; then
-			sed -ri 's:(JVM_OPTS=\"\$JVM_OPTS).*(\$JVM_EXTRA_OPTS)\":\1 -javaagent\:'`echo ${CASSANDRA_LIB}/jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=${JOLOKIA_PORT},user=${JMX_USERNAME},password=${JMX_PASSWORD}`' \2":' "$CASSANDRA_CONF/cassandra-env.sh"
+			sed -ri 's:(JVM_OPTS=\"\$JVM_OPTS).*(\$JVM_EXTRA_OPTS)\":\1 -javaagent\:'`echo jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=${JOLOKIA_PORT},user=${JMX_USERNAME},password=${JMX_PASSWORD}`' \2":' "$CASSANDRA_CONF/cassandra-env.sh"
 		fi
 	else
 		sed -ri 's:(LOCAL_JMX=).*:\1yes:' "$CASSANDRA_CONF/cassandra-env.sh"

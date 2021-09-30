@@ -2,46 +2,67 @@
   type: group
   release: beta
   fields:
+    - name: system
+      type: group
+      fields:
+        - name: version
+          type: keyword
+        - name: cluster
+          type: keyword
+        - name: live_nodes
+          type: keyword
+        - name: unreachable_nodes
+          type: keyword
+        - name: leaving_nodes
+          type: keyword
+        - name: joining_nodes
+          type: keyword
+        - name: moving_nodes
+          type: keyword
+        - name: data_center
+          type: keyword
+        - name: rack
+          type: keyword
     - name: storage
       type: group
       fields:
         - name: mbean
           type: keyword
           description: Mbean that this event is related to
-        - name: TotalHintsInProgress
+        - name: total_hint_in_progress
           type: long
           description: The number of the total hits in progress
-        - name: TotalHints
+        - name: total_hints
           type: long
           description: The number of the total hits
-        - name: Exceptions
+        - name: exceptions
           type: long
           description: The number of the total exceptions
-        - name: Load
+        - name: load
           type: long
-          description: The Load in storage
+          description: Storage used for Cassandra data in bytes
     - name: gc
       type: group
       fields:
         - name: mbean
           type: keyword
           description: Mbean that this event is related to
-        - name: ConcurrentMarkSweep
+        - name: concurrent_mark_sweep
           type: group
           fields:
-            - name: CollectionTime
+            - name: collection_time
               type: long
               description: Approximate accumulated CMS collection elapsed time in milliseconds.
-            - name: CollectionCount
+            - name: collection_count
               type: long
               description: Total number of CMS collections that have occurred.
-        - name: ParNew
+        - name: par_new
           type: group
           fields:
-            - name: CollectionTime
+            - name: collection_time
               type: long
               description: Approximate accumulated ParNew collection elapsed time in milliseconds.
-            - name: CollectionCount
+            - name: collection_count
               type: long
               description: Total number of ParNew collections that have occurred.
     - name: memory
@@ -50,251 +71,240 @@
         - name: mbean
           type: keyword
           description: Mbean that this event is related to
-        - name: heap
+        - name: heap_usage
           type: group
           fields:
-            - name: usage
-              type: group
-              fields:
-                - name: committed
-                  description: Committed heap memory usage
-                  type: long
-                - name: max
-                  description: Max heap memory usage
-                  type: long
-                - name: used
-                  description: Used heap memory usage
-                  type: long
-                - name: init
-                  description: Initial heap memory usage
-                  type: long
-        - name: other
+            - name: committed
+              description: Committed heap memory usage
+              type: long
+            - name: max
+              description: Max heap memory usage
+              type: long
+            - name: used
+              description: Used heap memory usage
+              type: long
+            - name: init
+              description: Initial heap memory usage
+              type: long
+        - name: other_usage
           type: group
           fields:
-            - name: usage
-              type: group
-              fields:
-                - name: committed
-                  description: Committed non-heap memory usage
-                  type: long
-                - name: max
-                  description: Max non-heap memory usage
-                  type: long
-                - name: used
-                  description: Used non-heap memory usage
-                  type: long
-                - name: init
-                  description: Initial non-heap memory usage
-                  type: long
+            - name: committed
+              description: Committed non-heap memory usage
+              type: long
+            - name: max
+              description: Max non-heap memory usage
+              type: long
+            - name: used
+              description: Used non-heap memory usage
+              type: long
+            - name: init
+              description: Initial non-heap memory usage
+              type: long
+    - name: client
+      type: group
+      fields:
+        - name: connected_native_clients
+          type: long
     - name: client_request
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
         - name: write
           type: group
           fields:
+            - name: count
+              type: long
+            - name: total_latency
+              type: double
             - name: timeouts
-              description: Number of read timeouts encountered
-              type: long
+              type: double
+            - name: timeoutsms
+              type: double
             - name: unavailables
-              description: Number of read unavailables encountered
-              type: long
-            - name: OneMinuteRate
-              type: long
-            - name: 75thPercentile
-              type: long
-            - name: 95thPercentile
-              type: long
-            - name: 99thPercentile
-              type: long
+              type: double
+            - name: unavailablesms
+              type: double
+            - name: one_minute_rate
+              type: double
         - name: read
           type: group
           fields:
+            - name: count
+              type: long
+            - name: total_latency
+              type: double
             - name: timeouts
-              type: long
+              description: Number of read timeouts encountered
+              type: double
+            - name: timeoutsms
+              type: double
             - name: unavailables
-              type: long
-            - name: OneMinuteRate
-              type: long
-            - name: 75thPercentile
-              type: long
-            - name: 95thPercentile
-              type: long
-            - name: 99thPercentile
-              type: long
-        - name: rangeSlice
+              description: Number of read unavailables encountered
+              type: double
+            - name: unavailablesms
+              type: double
+            - name: one_minute_rate
+              type: double
+        - name: range_slice
           type: group
           fields:
-            - name: OneMinuteRate
-              type: long
-        - name: CASWrite
+            - name: one_minute_rate
+              type: double
+            - name: total_latency
+              type: double
+        - name: caswrite
           type: group
           fields:
-            - name: OneMinuteRate
-              type: long
-        - name: CASRead
+            - name: one_minute_rate
+              type: double
+        - name: casread
           type: group
           fields:
-            - name: OneMinuteRate
-              type: long
+            - name: one_minute_rate
+              type: double
+    - name: dropped_message
+      type: group
+      fields:
+        - name: batch_remove
+          type: long
+        - name: batch_store
+          type: long
+        - name: counter_mutation
+          type: long
+        - name: hint
+          type: long
+        - name: mutation
+          type: long
+        - name: paged_range
+          type: long
+        - name: range_slice
+          type: long
+        - name: read
+          type: long
+        - name: read_repair
+          type: long
+        - name: request_response
+          type: long
+        - name: trace
+          type: long
     - name: task
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
         - name: complete
           description: completed tasks
           type: long
         - name: pending
           description: pending tasks
           type: long
-        - name: total.commitlogSize
+        - name: total_commitlog_size
           description: total commitlog size of tasks
           type: long
     - name: compaction
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: completedTasks
+        - name: completed
           description: compaction completed tasks
           type: long
-        - name: pendingTasks
+        - name: pending
           description: compaction pending tasks
           type: long
     - name: table
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: LiveSSTableCount
+        - name: live_ss_table_count
+          type: long
+        - name: all_memtables_heap_size
+          type: long
+        - name: all_memtables_off_heap_size
+          type: long
+        - name: live_disk_space_used
           type: long
     - name: cache
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: keyCache
+        - name: key_cache
           type: group
           fields:
-            - name: requests.OneMinuteRate
+            - name: requests.one_minute_rate
               type: long
             - name: capacity
               type: long
-            - name: OneMinuteHitRate
+            - name: one_minute_hit_rate
               type: long
-        - name: rowCache
+        - name: row_cache
           type: group
           fields:
-            - name: requests.OneMinuteRate
+            - name: requests.one_minute_rate
               type: long
             - name: capacity
               type: long
-            - name: OneMinuteHitRate
+            - name: one_minute_hit_rate
               type: long
-    - name: threadPools
+    - name: thread_pools
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: CounterMutationStage
+        - name: counter_mutation_stage
           type: group
           fields:
             - name: request
               type: group
               fields:
-                - name: PendingTasks
+                - name: pending
                   type: long
-                - name: ActiveTasks
+                - name: active
                   type: long
-        - name: MutationStage
+        - name: mutation_stage
           type: group
           fields:
             - name: request
               type: group
               fields:
-                - name: PendingTasks
+                - name: pending
                   type: long
-                - name: ActiveTasks
+                - name: active
                   type: long
-        - name: ReadRepairStage
+        - name: read_repair_stage
           type: group
           fields:
             - name: request
               type: group
               fields:
-                - name: PendingTasks
+                - name: pending
                   type: long
-                - name: ActiveTasks
+                - name: active
                   type: long
-        - name: RequestResponseStage
+        - name: request_response_stage
           type: group
           fields:
             - name: request
               type: group
               fields:
-                - name: PendingTasks
+                - name: pending
                   type: long
-                - name: ActiveTasks
+                - name: active
                   type: long
-        - name: RequestResponseStage
+        - name: request_response_stage
           type: group
           fields:
             - name: request
               type: group
               fields:
-                - name: PendingTasks
+                - name: pending
                   type: long
-                - name: ActiveTasks
+                - name: active
                   type: long
-        - name: ReadStage
+        - name: read_stage
           type: group
           fields:
             - name: request
               type: group
               fields:
-                - name: PendingTasks
+                - name: pending
                   type: long
-                - name: ActiveTasks
+                - name: active
                   type: long
-    - name: columnFamily
+    - name: column_family
       type: group
       fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: totalDiskSpaceUsed
+        - name: total_disk_space_used
           type: long
-- name: service
-  title: Service
-  group: 2
-  description: 'The service fields describe the service for or from which the data was collected.
-
-    These fields help you find and correlate logs for a specific service and version.'
-  type: group
-  fields:
-    - name: type
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'The type of the service data is collected from.
-
-        The type can be used to group and correlate logs and metrics from one service type.
-
-        Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`.'
-    - name: address
-      level: core
-      type: keyword
-      ignore_above: 1024
-      description: 'The type of the service data is collected from.
-
-        The type can be used to group and correlate logs and metrics from one service address.
-
-        Example: If logs or metrics are collected from Elasticsearch, `service.address` would be `elasticsearch`.'

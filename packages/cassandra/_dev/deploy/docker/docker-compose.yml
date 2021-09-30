@@ -2,11 +2,21 @@ version: '2.3'
 services:
   cassandra:
     build: .
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log/cassandra/
     ports:
       - 8778
-  # cassandra-logfile:
-  #   image: alpine
-  #   volumes:
-  #     - ./sample_logs:/sample_logs:ro
-  #     - ${SERVICE_LOGS_DIR}:/opt/cassandra/data/
-  #   command: /bin/sh -c "cp /sample_logs/* /opt/cassandra/data/"
+  cassandra-node-1:
+    image: cassandra:3.11.11
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 30 && /docker-entrypoint.sh cassandra -f"
+    environment:
+      - "CASSANDRA_SEEDS=elastic-package-service_cassandra_1"
+    depends_on:
+      - "cassandra"
+  cassandra-node-2:
+    image: cassandra:3.11.11
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 80 && /docker-entrypoint.sh cassandra -f"
+    environment:
+      - "CASSANDRA_SEEDS=elastic-package-service_cassandra_1"
+    depends_on:
+      - "cassandra"
