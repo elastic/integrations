@@ -50,7 +50,7 @@ processors:
   - set:
       field: event.timezone
       value: "{{_tmp.tz_offset}}"
-      if: ctx?._tmp?.tz_offset != null && ctx?._tmp?.tz_offset != 'local'
+      if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -60,7 +60,7 @@ processors:
       - MM/dd/YY-HH:mm:ss.SSSSSS
       - MMM  d HH:mm:ss
       - MMM dd HH:mm:ss
-      if: ctx?.event?.timezone != null   
+      if: ctx.event?.timezone != null   
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -69,7 +69,7 @@ processors:
       - MM/dd/YY-HH:mm:ss.SSSSSS
       - MMM  d HH:mm:ss
       - MMM dd HH:mm:ss
-      if: ctx?.event?.timezone == null      
+      if: ctx.event?.timezone == null      
   - set:
       field: event.created
       copy_from: '@timestamp'
@@ -96,15 +96,15 @@ processors:
   - set: 
       field: network.direction
       value: unknown
-      if: ctx?.network?.direction == null
+      if: ctx.network?.direction == null
   - set:
       field: network.type
       value: ipv4
-      if: ctx?.source?.ip != null && ctx?.source?.ip.contains(".") 
+      if: ctx.source?.ip != null && ctx.source?.ip.contains(".") 
   - set:
       field: network.type
       value: ipv6
-      if: ctx?.source?.ip != null && !ctx?.source?.ip.contains(".")
+      if: ctx.source?.ip != null && !ctx.source?.ip.contains(".")
   - network_direction:
       internal_networks_field: _tmp.internal_networks
   - community_id:
@@ -113,19 +113,19 @@ processors:
   - script:
       lang: painless
       source: >-
-        if (ctx?.snort?.ip?.tos != null && ctx?.snort?.ip?.tos instanceof String) {
+        if (ctx.snort?.ip?.tos != null && ctx.snort?.ip?.tos instanceof String) {
             ctx.snort.ip.tos = Long.decode(ctx.snort.ip.tos);
         }
-        if (ctx?.snort?.eth?.length != null && ctx?.snort?.eth?.length instanceof String) {
+        if (ctx.snort?.eth?.length != null && ctx.snort?.eth?.length instanceof String) {
             ctx.snort.eth.length = Long.decode(ctx.snort.eth.length);
         }
-        if (ctx?.snort?.tcp?.ack != null && ctx?.snort?.tcp?.ack instanceof String) {
+        if (ctx.snort?.tcp?.ack != null && ctx.snort?.tcp?.ack instanceof String) {
             ctx.snort.tcp.ack = Long.decode(ctx.snort.tcp.ack);
         }
-        if (ctx?.snort?.tcp?.seq != null && ctx?.snort?.tcp?.seq instanceof String) {
+        if (ctx.snort?.tcp?.seq != null && ctx.snort?.tcp?.seq instanceof String) {
             ctx.snort.tcp.seq = Long.decode(ctx.snort.tcp.seq);
         }
-        if (ctx?.snort?.tcp?.window != null && ctx?.snort?.tcp?.window instanceof String) {
+        if (ctx.snort?.tcp?.window != null && ctx.snort?.tcp?.window instanceof String) {
             ctx.snort.tcp.window = Long.decode(ctx.snort.tcp.window);
         }
   - gsub:
@@ -136,11 +136,11 @@ processors:
   - append:
       field: event.type
       value: allowed
-      if: ctx?._tmp?.action == 'Allow'
+      if: ctx._tmp?.action == 'Allow'
   - append:
       field: event.type
       value: denied
-      if: ctx?._tmp?.action == 'Block'
+      if: ctx._tmp?.action == 'Block'
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -185,12 +185,12 @@ processors:
       target_field: destination.as.organization.name
       ignore_missing: true
   - append:
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
   - append:
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
       field: related.ip
       value: '{{destination.ip}}'
       allow_duplicates: false    
@@ -200,7 +200,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
