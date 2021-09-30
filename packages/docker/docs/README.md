@@ -46,7 +46,7 @@ running Docker containers.
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
-| container.runtime | Container runtime. | keyword |  |
+| container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -58,12 +58,13 @@ running Docker containers.
 | docker.container.size.rw | Size of the files that have been created or changed since creation. | long | gauge |
 | docker.container.status | Container status. | keyword |  |
 | docker.container.tags | Image tags. | keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
-| host.ip | Host ip address. | ip |  |
-| host.mac | Host mac address. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
@@ -71,9 +72,9 @@ running Docker containers.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `container` looks as following:
@@ -152,7 +153,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
-| container.runtime | Container runtime. | keyword |  |  |
+| container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -171,12 +172,13 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | docker.cpu.user.norm.pct | Percentage of time in user space normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | docker.cpu.user.pct | Percentage of time in user space. | scaled_float | percent | gauge |
 | docker.cpu.user.ticks | CPU ticks in user space. | long |  | counter |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
@@ -184,9 +186,9 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `cpu` looks as following:
@@ -328,7 +330,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
-| container.runtime | Container runtime. | keyword |  |  |
+| container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -354,12 +356,13 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | docker.diskio.write.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
 | docker.diskio.writes | Number of current writes per second | scaled_float |  | gauge |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
@@ -367,9 +370,9 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `diskio` looks as following:
@@ -444,7 +447,7 @@ The Docker `event` data stream collects docker events
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.name | Container name. | keyword |
-| container.runtime | Container runtime. | keyword |
+| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -456,12 +459,13 @@ The Docker `event` data stream collects docker events
 | docker.event.id | Event id when available | keyword |
 | docker.event.status | Event status | keyword |
 | docker.event.type | The type of object emitting the event | keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
-| host.ip | Host ip address. | ip |
-| host.mac | Host mac address. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
@@ -469,9 +473,9 @@ The Docker `event` data stream collects docker events
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 An example event for `event` looks as following:
@@ -524,7 +528,7 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
-| container.runtime | Container runtime. | keyword |  |
+| container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -535,12 +539,13 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | docker.healthcheck.event.start_date | Healthcheck start date | date |  |
 | docker.healthcheck.failingstreak | concurent failed check | integer | counter |
 | docker.healthcheck.status | Healthcheck status code | keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
-| host.ip | Host ip address. | ip |  |
-| host.mac | Host mac address. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
@@ -548,9 +553,9 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `healthcheck` looks as following:
@@ -629,7 +634,7 @@ The Docker `image` data stream collects metrics on docker images
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
-| container.runtime | Container runtime. | keyword |  |
+| container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -640,12 +645,13 @@ The Docker `image` data stream collects metrics on docker images
 | docker.image.size.regular | Total size of the all cached images associated to the current image. | long | counter |
 | docker.image.size.virtual | Size of the image. | long | gauge |
 | docker.image.tags | Image tags. | keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
-| host.ip | Host ip address. | ip |  |
-| host.mac | Host mac address. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
@@ -653,9 +659,9 @@ The Docker `image` data stream collects metrics on docker images
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `image` looks as following:
@@ -718,7 +724,7 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
-| container.runtime | Container runtime. | keyword |  |
+| container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -728,12 +734,13 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | docker.info.containers.total | Total number of existing containers. | long | counter |
 | docker.info.id | Unique Docker host identifier. | keyword |  |
 | docker.info.images | Total number of existing images. | long | counter |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
-| host.ip | Host ip address. | ip |  |
-| host.mac | Host mac address. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
@@ -741,9 +748,9 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `info` looks as following:
@@ -791,7 +798,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
-| container.runtime | Container runtime. | keyword |  |  |
+| container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -807,12 +814,13 @@ The Docker `memory` data stream collects memory metrics from docker.
 | docker.memory.usage.max | Max memory usage. | long | byte | gauge |
 | docker.memory.usage.pct | Memory usage percentage. | scaled_float | percent | gauge |
 | docker.memory.usage.total | Total memory usage. | long | byte | gauge |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
@@ -820,9 +828,9 @@ The Docker `memory` data stream collects memory metrics from docker.
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `memory` looks as following:
@@ -917,7 +925,7 @@ The Docker `network` data stream collects network metrics.
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
-| container.runtime | Container runtime. | keyword |  |
+| container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
@@ -939,12 +947,13 @@ The Docker `network` data stream collects network metrics.
 | docker.network.outbound.dropped | Total number of dropped outgoing packets. | long | counter |
 | docker.network.outbound.errors | Total errors on outgoing packets. | long | counter |
 | docker.network.outbound.packets | Total number of outgoing packets. | long | counter |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
-| host.ip | Host ip address. | ip |  |
-| host.mac | Host mac address. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
@@ -952,9 +961,9 @@ The Docker `network` data stream collects network metrics.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `network` looks as following:
