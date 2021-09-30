@@ -167,9 +167,6 @@ An example event for `metrics` looks as following:
                     "total_latency": 0
                 },
                 "read": {
-                    "75thPercentile": 0,
-                    "95thPercentile": 0,
-                    "99thPercentile": 0,
                     "count": 0,
                     "one_minute_rate": 0,
                     "timeouts": 0,
@@ -177,9 +174,6 @@ An example event for `metrics` looks as following:
                     "unavailables": 0
                 },
                 "write": {
-                    "75thPercentile": 0,
-                    "95thPercentile": 0,
-                    "99thPercentile": 0,
                     "count": 0,
                     "one_minute_rate": 0,
                     "timeouts": 0,
@@ -366,9 +360,6 @@ An example event for `metrics` looks as following:
 | cassandra.metrics.client_request.caswrite.one_minute_rate |  | double |
 | cassandra.metrics.client_request.range_slice.one_minute_rate |  | double |
 | cassandra.metrics.client_request.range_slice.total_latency |  | double |
-| cassandra.metrics.client_request.read.75thPercentile |  | double |
-| cassandra.metrics.client_request.read.95thPercentile |  | double |
-| cassandra.metrics.client_request.read.99thPercentile |  | double |
 | cassandra.metrics.client_request.read.count |  | long |
 | cassandra.metrics.client_request.read.one_minute_rate |  | double |
 | cassandra.metrics.client_request.read.timeouts | Number of read timeouts encountered | double |
@@ -376,9 +367,6 @@ An example event for `metrics` looks as following:
 | cassandra.metrics.client_request.read.total_latency |  | double |
 | cassandra.metrics.client_request.read.unavailables | Number of read unavailables encountered | double |
 | cassandra.metrics.client_request.read.unavailablesms |  | double |
-| cassandra.metrics.client_request.write.75thPercentile |  | double |
-| cassandra.metrics.client_request.write.95thPercentile |  | double |
-| cassandra.metrics.client_request.write.99thPercentile |  | double |
 | cassandra.metrics.client_request.write.count |  | long |
 | cassandra.metrics.client_request.write.one_minute_rate |  | double |
 | cassandra.metrics.client_request.write.timeouts |  | double |
