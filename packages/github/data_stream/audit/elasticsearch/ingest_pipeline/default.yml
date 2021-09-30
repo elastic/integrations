@@ -31,7 +31,7 @@ processors:
 - append:
     field: related.user
     value: "{{user.name}}"
-    if: ctx?.user?.name != null
+    if: ctx.user?.name != null
 - rename:
     field: json.org
     target_field: github.org
@@ -43,7 +43,7 @@ processors:
 - append:
     field: related.user
     value: "{{user.target.name}}"
-    if: ctx?.user?.target?.name != null
+    if: ctx.user?.target?.name != null
 - rename:
     field: json.repo
     target_field: github.repo
@@ -56,27 +56,27 @@ processors:
     field: json.data.team
     target_field: github.team
     ignore_missing: true
-    if: ctx?.github?.team == null
+    if: ctx.github?.team == null
 - set:
     field: group.name
     copy_from: github.team
     ignore_empty_value: true
-    if: ctx?.event?.action.startsWith("team.")
+    if: ctx.event?.action.startsWith("team.")
 - set:
     field: user.target.group.name
     copy_from: github.team
     ignore_empty_value: true
-    if: ctx?.event?.action.startsWith("team.") && ctx?.user?.target?.name != null
+    if: ctx.event?.action.startsWith("team.") && ctx.user?.target?.name != null
 - set:
     field: group.name
     copy_from: github.org
     ignore_empty_value: true
-    if: ctx?.event?.action.startsWith("org.")
+    if: ctx.event?.action.startsWith("org.")
 - set:
     field: user.target.group.name
     copy_from: github.org
     ignore_empty_value: true
-    if: ctx?.event?.action.startsWith("org.") && ctx?.user?.target?.name != null
+    if: ctx.event?.action.startsWith("org.") && ctx.user?.target?.name != null
 - rename:
     field: json.data.old_user
     target_field: user.target.group.name
@@ -85,7 +85,7 @@ processors:
     field: json.data.old_user
     target_field: user.target.group.name
     ignore_missing: true
-    if: ctx?.user?.target?.group?.name == null
+    if: ctx.user?.target?.group?.name == null
 - rename:
     field: json.actor_location.country_code
     target_field: client.geo.country_iso_code
@@ -103,7 +103,7 @@ processors:
     ignore_missing: true  
 - remove:
     field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_failure: true
     ignore_missing: true
 - script:
