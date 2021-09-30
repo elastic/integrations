@@ -1,0 +1,209 @@
+---
+description: Pipeline for parsing Snort logs
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.12.0'
+  - rename:
+      field: message
+      target_field: event.original
+  - set:
+      field: observer.vendor
+      value: snort
+  - set:
+      field: observer.product
+      value: ids
+  - set:
+      field: observer.type
+      value: ids
+  - grok:
+      field: event.original
+      patterns:
+        # Syslog
+        - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} (?:%{SYSLOGFACILITY} )?%{OBSERVER} %{SYSLOGPROG}:%{HEADER}%{FAST_BODY}'
+        # PFsense CSV
+        - '%{CSV_START},%{NONNEGINT:snort.ip.id:long},(%{DATA:rule.category}|),%{NONNEGINT:event.severity:long},%{WORD},%{WORD:_tmp.action}'
+        # Alert CSV (Default)
+        - '%{CSV_START},(%{MAC:source.mac}|),(%{MAC:destination.mac}|),(%{DATA:snort.eth.length}|),(%{DATA:snort.tcp.flags}|),(%{BASE16NUM:snort.tcp.seq}|),(%{BASE16NUM:snort.tcp.ack}|),(|%{DATA:snort.tcp.length}),(%{BASE16NUM:snort.tcp.window}|),(%{NONNEGINT:snort.ip.ttl:long}|),(%{NONNEGINT:snort.ip.tos:long}|),(%{NONNEGINT:snort.ip.id:long}|),(%{NONNEGINT:snort.dgm.length:long}|),(%{NONNEGINT:snort.ip.length:long}|),(%{NONNEGINT:snort.icmp.type:long}|),(%{NONNEGINT:snort.icmp.code:long}|),(%{NONNEGINT:snort.icmp.id:long}|),(%{NONNEGINT:snort.icmp.seq:long}|)'
+        # Snort Alert Fast
+        - '%{SNORT_DATE:_tmp.timestamp}%{SPACE}%{FAST_HEADER}%{FAST_BODY}'
+        # Snort Alert Full (Multiline)
+        - '%{FAST_HEADER}\n(%{CLASSIFICATION} )?%{PRIORITY} \n%{SNORT_DATE:_tmp.timestamp} %{IP:source.address}(:%{POSINT:source.port:long}|) -> %{IP:destination.address}(:%{POSINT:destination.port:long}|)\n%{WORD:network.transport} (TTL:%{NONNEGINT:snort.ip.ttl:long}|) (TOS:%{BASE16NUM:snort.ip.tos}|) (ID:%{NONNEGINT:snort.ip.id:long}|) (IpLen:%{NONNEGINT:snort.ip.length:long}|) (DgmLen:%{NONNEGINT:snort.dgm.length:long}|)(%{SPACE}%{NOTSPACE:snort.ip.flags})?\n(%{UDP_DATA}|%{ICMP_DATA}|%{TCP_DATA})'
+      pattern_definitions:
+        SNORT_DATE: '%{MONTHNUM}/%{MONTHDAY}(/%{YEAR})?-%{TIME}'
+        SEP: '(\[\*\*\])'
+        CSV_START: '%{SNORT_DATE:_tmp.timestamp}(%{SPACE})?,%{NONNEGINT:snort.gid:long},%{NONNEGINT:rule.id},%{NONNEGINT:rule.version},("?%{DATA:rule.description}"?|),%{WORD:network.transport},%{IP:source.address},(%{POSINT:source.port:long}|),%{IP:destination.address},(%{POSINT:destination.port:long}|)'
+        HEADER: '%{SPACE}\[%{NONNEGINT:snort.gid:long}:%{NONNEGINT:rule.id}:%{NONNEGINT:rule.version}\]%{SPACE}%{DATA:rule.description}%{SPACE}'
+        FAST_HEADER: '%{SEP}%{HEADER}%{SEP}'
+        FAST_BODY: '%{SPACE}%{CLASSIFICATION} %{PRIORITY} \{%{WORD:network.transport}\} %{IP:source.address}(:%{POSINT:source.port:long}|) -> %{IP:destination.address}(:%{POSINT:destination.port:long}|)'
+        TCP_DATA: '(%{NOTSPACE:snort.tcp.flags}|)%{SPACE}(Seq: %{BASE16NUM:snort.tcp.seq}|)%{SPACE}(Ack: %{BASE16NUM:snort.tcp.ack}|)%{SPACE}(Win: %{BASE16NUM:snort.tcp.window}|)%{SPACE}(TcpLen: %{NONNEGINT:snort.tcp.length:long}|)'
+        UDP_DATA: '(Len: %{NONNEGINT:snort.udp.length:long})'
+        ICMP_DATA: '(Type:%{NONNEGINT:snort.icmp.type:long}|)%{SPACE}(Code:%{NONNEGINT:snort.icmp.code:long}|)%{SPACE}(ID:%{NONNEGINT:snort.icmp.id:long}|)%{SPACE}(Seq:%{NONNEGINT:snort.icmp.seq:long}|)%{GREEDYDATA}'
+        CLASSIFICATION: '(\[Classification: %{DATA:rule.category}\])?'
+        PRIORITY: '\[Priority: %{NONNEGINT:event.severity:long}\]'
+        OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+        SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
+  - set:
+      field: event.timezone
+      value: "{{_tmp.tz_offset}}"
+      if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      timezone: "{{ event.timezone }}"
+      formats:
+      - MM/dd-HH:mm:ss.SSSSSS
+      - MM/dd/YY-HH:mm:ss.SSSSSS
+      - MMM  d HH:mm:ss
+      - MMM dd HH:mm:ss
+      if: ctx.event?.timezone != null   
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+      - MM/dd-HH:mm:ss.SSSSSS
+      - MM/dd/YY-HH:mm:ss.SSSSSS
+      - MMM  d HH:mm:ss
+      - MMM dd HH:mm:ss
+      if: ctx.event?.timezone == null      
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - set: 
+      field: network.direction
+      value: unknown
+      if: ctx.network?.direction == null
+  - set:
+      field: network.type
+      value: ipv4
+      if: ctx.source?.ip != null && ctx.source?.ip.contains(".") 
+  - set:
+      field: network.type
+      value: ipv6
+      if: ctx.source?.ip != null && !ctx.source?.ip.contains(".")
+  - network_direction:
+      internal_networks_field: _tmp.internal_networks
+  - community_id:
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: >-
+        if (ctx.snort?.ip?.tos != null && ctx.snort?.ip?.tos instanceof String) {
+            ctx.snort.ip.tos = Long.decode(ctx.snort.ip.tos);
+        }
+        if (ctx.snort?.eth?.length != null && ctx.snort?.eth?.length instanceof String) {
+            ctx.snort.eth.length = Long.decode(ctx.snort.eth.length);
+        }
+        if (ctx.snort?.tcp?.ack != null && ctx.snort?.tcp?.ack instanceof String) {
+            ctx.snort.tcp.ack = Long.decode(ctx.snort.tcp.ack);
+        }
+        if (ctx.snort?.tcp?.seq != null && ctx.snort?.tcp?.seq instanceof String) {
+            ctx.snort.tcp.seq = Long.decode(ctx.snort.tcp.seq);
+        }
+        if (ctx.snort?.tcp?.window != null && ctx.snort?.tcp?.window instanceof String) {
+            ctx.snort.tcp.window = Long.decode(ctx.snort.tcp.window);
+        }
+  - gsub:
+      field: snort.tcp.flags
+      pattern: \*
+      replacement: ''
+      ignore_missing: true
+  - append:
+      field: event.type
+      value: allowed
+      if: ctx._tmp?.action == 'Allow'
+  - append:
+      field: event.type
+      value: denied
+      if: ctx._tmp?.action == 'Block'
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{source.ip}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.destination?.ip != null
+      field: related.ip
+      value: '{{destination.ip}}'
+      allow_duplicates: false    
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
