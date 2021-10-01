@@ -26,9 +26,9 @@ An example event for `log` looks as following:
         "thread": "main"
     },
     "agent": {
-        "ephemeral_id": "455fde0e-ea09-4fc9-83b7-7f1d2d68ddfb",
+        "ephemeral_id": "25872b0f-3987-4b56-8a85-0c5cc3b781c5",
         "hostname": "docker-fleet-agent",
-        "id": "cfafc253-2181-48d2-9472-2140fc84b83f",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -39,17 +39,17 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "cfafc253-2181-48d2-9472-2140fc84b83f",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.log",
-        "ingested": "2021-08-23T09:33:31Z",
+        "ingested": "2021-09-28T09:17:42Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": "info"
@@ -58,18 +58,18 @@ An example event for `log` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "580a45537756c4473f429cc0906ea81d",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.112.5"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:05"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "3.10.0-1062.el7.x86_64",
+            "kernel": "5.10.47-linuxkit",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -104,7 +104,7 @@ An example event for `log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | Destination domain. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -120,7 +120,7 @@ An example event for `log` looks as following:
 | log.flags | Log flags | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -141,8 +141,8 @@ An example event for `log` looks as following:
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -162,15 +162,15 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-08-23T09:26:32.646Z",
+    "@timestamp": "2021-09-28T09:15:45.696Z",
     "activemq": {
         "thread": "qtp443290224-47",
         "user": "anonymous"
     },
     "agent": {
-        "ephemeral_id": "b3f0f1bb-239a-4259-b208-59316cab72ad",
+        "ephemeral_id": "749d825d-e21b-425d-9a78-435f24b0d99b",
         "hostname": "docker-fleet-agent",
-        "id": "cfafc253-2181-48d2-9472-2140fc84b83f",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -181,17 +181,17 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "cfafc253-2181-48d2-9472-2140fc84b83f",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.audit",
-        "ingested": "2021-08-23T09:26:36Z",
+        "ingested": "2021-09-28T09:15:49Z",
         "kind": "event",
         "type": "info"
     },
@@ -199,18 +199,18 @@ An example event for `audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "580a45537756c4473f429cc0906ea81d",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.112.5"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:05"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "3.10.0-1062.el7.x86_64",
+            "kernel": "5.10.47-linuxkit",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -260,7 +260,7 @@ An example event for `audit` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | Destination domain. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -291,7 +291,7 @@ An example event for `audit` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -312,8 +312,8 @@ An example event for `audit` looks as following:
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -335,11 +335,11 @@ An example event for `broker` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-08-24T05:39:15.938Z",
+    "@timestamp": "2021-09-28T09:16:43.707Z",
     "activemq": {
         "broker": {
             "connections": {
-                "count": 43
+                "count": 11
             },
             "consumers": {
                 "count": 0
@@ -357,12 +357,12 @@ An example event for `broker` looks as following:
                 }
             },
             "messages": {
-                "count": 43,
+                "count": 11,
                 "dequeue": {
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 88
+                    "count": 24
                 }
             },
             "name": "localhost",
@@ -372,9 +372,9 @@ An example event for `broker` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "20164b8e-deb9-4749-984a-3a4a80560d9e",
+        "ephemeral_id": "ec4b57d3-beb8-43d6-8844-702f75a21fa3",
         "hostname": "docker-fleet-agent",
-        "id": "bcafd08c-1efb-4e67-9e34-2386cd55d250",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.15.0"
@@ -388,33 +388,33 @@ An example event for `broker` looks as following:
         "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "bcafd08c-1efb-4e67-9e34-2386cd55d250",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.broker",
-        "duration": 18179587,
-        "ingested": "2021-08-24T05:39:19Z",
+        "duration": 11296900,
+        "ingested": "2021-09-28T09:16:44Z",
         "module": "activemq"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "16924b286c22d14f9d0cbe63c5287620",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.32.6"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:20:06"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "3.10.0-1062.el7.x86_64",
+            "kernel": "5.10.47-linuxkit",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -453,7 +453,7 @@ An example event for `broker` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | Destination domain. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -466,7 +466,7 @@ An example event for `broker` looks as following:
 | http.version | HTTP version. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | service.address | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service address. Example: If logs or metrics are collected from Elasticsearch, `service.address` would be `elasticsearch`. | keyword |
@@ -489,8 +489,8 @@ An example event for `broker` looks as following:
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -510,7 +510,7 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-08-20T10:40:28.590Z",
+    "@timestamp": "2021-09-28T09:18:39.882Z",
     "activemq": {
         "queue": {
             "consumers": {
@@ -530,7 +530,7 @@ An example event for `queue` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 16,
+                    "count": 11,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -551,13 +551,13 @@ An example event for `queue` looks as following:
             "producers": {
                 "count": 0
             },
-            "size": 16
+            "size": 11
         }
     },
     "agent": {
-        "ephemeral_id": "c6efe04e-ad0a-4536-af4f-634439297c0a",
+        "ephemeral_id": "30c7946c-1a1e-4925-8269-683f5b13de28",
         "hostname": "docker-fleet-agent",
-        "id": "8f7cec6c-1176-4088-b24d-6ebdc359b0c0",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.15.0"
@@ -568,36 +568,36 @@ An example event for `queue` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "8f7cec6c-1176-4088-b24d-6ebdc359b0c0",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.queue",
-        "duration": 17572578,
-        "ingested": "2021-08-20T10:40:32Z",
+        "duration": 15094500,
+        "ingested": "2021-09-28T09:18:43Z",
         "module": "activemq"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "d03287130c55973b5da6a27a9638ce49",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "172.23.0.9"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:ac:17:00:09"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "3.10.0-1062.el7.x86_64",
+            "kernel": "5.10.47-linuxkit",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -640,7 +640,7 @@ An example event for `queue` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | Destination domain. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -653,7 +653,7 @@ An example event for `queue` looks as following:
 | http.version | HTTP version. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | service.address | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service address. Example: If logs or metrics are collected from Elasticsearch, `service.address` would be `elasticsearch`. | keyword |
@@ -676,8 +676,8 @@ An example event for `queue` looks as following:
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
@@ -697,7 +697,7 @@ An example event for `topic` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-08-19T10:43:58.872Z",
+    "@timestamp": "2021-09-28T09:19:34.266Z",
     "activemq": {
         "topic": {
             "consumers": {
@@ -741,9 +741,9 @@ An example event for `topic` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "26c6b37e-aa80-4fee-895b-1edd9b8cf9d8",
+        "ephemeral_id": "f5635b0d-b202-4fa6-9624-9248bd61b9ef",
         "hostname": "docker-fleet-agent",
-        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.15.0"
@@ -754,36 +754,36 @@ An example event for `topic` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "1.11.0"
     },
     "elastic_agent": {
-        "id": "f3e6e9fd-d576-4907-a8bf-65005a48d03c",
+        "id": "2bc8293d-05be-4978-829c-195a572275bb",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.topic",
-        "duration": 10054918,
-        "ingested": "2021-08-19T10:44:02Z",
+        "duration": 13002400,
+        "ingested": "2021-09-28T09:19:37Z",
         "module": "activemq"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "d03287130c55973b5da6a27a9638ce49",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "172.30.0.7"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:ac:1e:00:07"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "3.10.0-1062.el7.x86_64",
+            "kernel": "5.10.47-linuxkit",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -825,7 +825,7 @@ An example event for `topic` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | Destination domain. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -838,7 +838,7 @@ An example event for `topic` looks as following:
 | http.version | HTTP version. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | service.address | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service address. Example: If logs or metrics are collected from Elasticsearch, `service.address` would be `elasticsearch`. | keyword |
@@ -861,8 +861,8 @@ An example event for `topic` looks as following:
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
