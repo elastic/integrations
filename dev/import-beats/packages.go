@@ -41,11 +41,11 @@ func newPackageContent(name string) packageContent {
 				Version: "0.0.1", // TODO
 				Type:    "integration",
 				Release: "experimental",
+				Owner: &util.Owner{
+					Github: "elastic/integrations",
+				},
 			},
 			License: "basic",
-			Owner: &util.Owner{
-				Github: "elastic/integrations",
-			},
 		},
 		kibana: kibanaContent{
 			files: map[string]map[string][]byte{},
