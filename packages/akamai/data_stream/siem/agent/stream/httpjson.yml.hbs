@@ -20,7 +20,7 @@ request.transforms:
       target: url.params.to
       value: '[[ ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}")).Unix ]]'
       default: '[[ (now (parseDuration "-1m")).Unix ]]'
-  {{!-- - set:
+  - set:
       target: header.XTimestamp
       value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
   - set:
@@ -42,15 +42,15 @@ request.transforms:
   - delete:
       target: header.XSignatureBase
   - delete:
-      target: header.XTimestamp --}}
+      target: header.XTimestamp
 
 response.decode_as: application/x-ndjson
 
-{{!-- response.pagination:
+response.pagination:
   - set:
       target: url.params.offset
       value: '[[ .last_response.body.offset ]]'
-      fail_on_template_error: true --}}
+      fail_on_template_error: true
 
 cursor:
   last_execution_datetime:
