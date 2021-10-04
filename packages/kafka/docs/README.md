@@ -38,7 +38,7 @@ The `log` dataset collects and parses logs from Kafka servers.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -63,7 +63,7 @@ The `log` dataset collects and parses logs from Kafka servers.
 | kafka.log.trace.class | Java class the trace is coming from. | keyword |
 | kafka.log.trace.message | Message part of the trace. | text |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 
 
@@ -184,7 +184,7 @@ An example event for `broker` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
@@ -313,7 +313,7 @@ An example event for `consumergroup` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
@@ -442,5 +442,5 @@ An example event for `partition` looks as following:
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
 | kafka.topic.name | Topic name | keyword |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
