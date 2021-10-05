@@ -1,0 +1,45 @@
+config_version: "2"
+interval: {{interval}}
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/oauth2/token
+auth.oauth2.provider: azure
+auth.oauth2.azure.resource: https://api.securitycenter.windows.com/
+request.url: {{request_url}}
+request.method: GET
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+request.transforms:
+  - set:
+      target: "header.User-Agent"
+      value: "MdatpPartner-Elastic-Filebeat/1.0.0"
+  - set:
+      target: "url.params.$expand"
+      value: evidence
+  - set:
+      target: "url.params.$filter"
+      value: 'lastUpdateTime gt [[formatDate .cursor.lastUpdateTime "2006-01-02T15:04:05.9999999Z"]]'
+      default: 'lastUpdateTime gt [[formatDate (now (parseDuration "-5m")) "2006-01-02T15:04:05.9999999Z"]]'
+response.split:
+  target: body.value
+  split:
+    target: body.evidence
+    keep_parent: true
+cursor:
+  lastUpdateTime:
+    value: "[[.last_response.body.lastUpdateTime]]"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
