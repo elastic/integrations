@@ -199,7 +199,6 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      ignore_failure: true
       params:
         "write":
           type:
@@ -217,7 +216,11 @@ processors:
         if (ctx?.azure?.platformlogs?.category == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.azure.platformlogs.category.toLowerCase()));
+        def category = ctx.azure.platformlogs.category.toLowerCase();
+        if (params.get(category) == null) {
+          return;
+        }
+        def hm = new HashMap(params.get(category));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - geoip:
       field: source.ip
@@ -255,4 +258,5 @@ processors:
 on_failure:
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: |-
+      Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
