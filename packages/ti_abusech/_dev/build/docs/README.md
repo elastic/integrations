@@ -1,11 +1,23 @@
-# Okta Integration
+# AbuseCH integration
 
-The Okta integration collects events from the Okta API, specifically reading from the Okta System Log API.
+This integration is for AbuseCH logs. It includes the following datasets for retrieving logs from the AbuseCH API:
+
+- `url` dataset: Supports URL based indicators from AbuseCH API.
+- `malware` dataset: Supports Malware based indicators from AbuseCH API.
+- `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
 
 ## Logs
 
-### System
+### URL
 
-The Okta System Log records system events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input and is configured to paginate through the logs while honoring any rate-limiting headers sent by Okta.
+The AbuseCH URL data_stream retrieves threat intelligence indicators from the URL API endpoint `https://urlhaus-api.abuse.ch/v1/urls/recent/`.
 
-{{fields "threat"}}
+{{fields "url"}}
+
+The AbuseCH malware data_stream retrieves threat intelligence indicators from the payload API endpoint `https://urlhaus-api.abuse.ch/v1/payloads/recent/`.
+
+{{fields "malware"}}
+
+The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators from the MalwareBazaar API endpoint `https://mb-api.abuse.ch/api/v1/`.
+
+{{fields "malwarebazaar"}}

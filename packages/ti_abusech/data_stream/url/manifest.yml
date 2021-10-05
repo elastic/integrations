@@ -1,8 +1,42 @@
 type: logs
-title: Okta system logs
+title: AbuseCH URL logs
 streams:
   - input: httpjson
     vars:
+      - name: url
+        type: text
+        title: AbuseCH URL API endpoint
+        multi: false
+        required: true
+        show_user: false
+        default: https://urlhaus-api.abuse.ch/v1/urls/recent/
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 10m
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: true
       - name: tags
         type: text
         title: Tags
@@ -11,7 +45,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - okta-system
+          - abusech-url
       - name: preserve_original_event
         required: true
         show_user: true
@@ -30,5 +64,5 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: httpjson.yml.hbs
-    title: Okta system logs
-    description: Collect Okta system logs
+    title: AbuseCH URL logs
+    description: Collect AbuseCH URL logs
