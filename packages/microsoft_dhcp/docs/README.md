@@ -4,7 +4,7 @@ This integration collects logs and metrics from Microsoft DHCP logs.
 
 ## Compatibility
 
-This integration has been made to support the DHCP log format Windows Server 2008 and later.
+This integration has been made to support the DHCP log format from Windows Server 2008 and later.
 
 ### Logs
 
@@ -17,31 +17,63 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-07-09T17:20:27.182Z",
+    "@timestamp": "2001-01-01T01:01:01.000-05:00",
+    "agent": {
+        "ephemeral_id": "7b80c5f6-3f5b-436f-aab7-ad35bc17cde9",
+        "hostname": "docker-fleet-agent",
+        "id": "303093f0-28ce-40db-ad0f-05f02e31b666",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.15.0"
+    },
+    "data_stream": {
+        "dataset": "microsoft_dhcp.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "1.12.0"
     },
-    "event": {
-        "ingested": "2021-07-22T19:26:33.689669663Z",
-        "kind": "event",
-        "original": "{\"@level\":\"info\",\"@message\":\"starting listener\",\"@module\":\"core.cluster-listener.tcp\",\"@timestamp\":\"2021-07-09T17:20:27.182327Z\",\"listener_address\":{\"IP\":\"0.0.0.0\",\"Port\":8201,\"Zone\":\"\"}}"
+    "elastic_agent": {
+        "id": "303093f0-28ce-40db-ad0f-05f02e31b666",
+        "snapshot": true,
+        "version": "7.15.0"
     },
-    "hashicorp_vault": {
-        "log": {
-            "listener_address": {
-                "IP": "0.0.0.0",
-                "Port": 8201,
-                "Zone": ""
-            }
-        }
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "code": "35",
+        "dataset": "microsoft_dhcp.log",
+        "ingested": "2021-10-05T12:12:13Z",
+        "kind": "event",
+        "original": "35,01/01/01,01:01:01,DNS update request failed,192.0.2.1,host.test.com,000000000000,",
+        "outcome": "success",
+        "timezone": "America/New_York",
+        "type": [
+            "connection"
+        ]
+    },
+    "host": {
+        "domain": "host.test.com",
+        "ip": "192.0.2.1",
+        "mac": "00-00-00-00-00-00"
+    },
+    "input": {
+        "type": "log"
     },
     "log": {
-        "level": "info",
-        "logger": "core.cluster-listener.tcp"
+        "file": {
+            "path": "/tmp/service_logs/test-dhcp.log"
+        },
+        "offset": 646
     },
-    "message": "starting listener",
+    "message": "DNS update request failed",
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "microsoft_dhcp"
     ]
 }
 ```
@@ -67,6 +99,7 @@ An example event for `log` looks as following:
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | microsoft.dhcp.correlation_id | The NAP correlation ID related to the client/server transaction. | keyword |

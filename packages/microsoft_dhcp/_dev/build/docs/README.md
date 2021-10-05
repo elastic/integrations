@@ -4,7 +4,7 @@ This integration collects logs and metrics from Microsoft DHCP logs.
 
 ## Compatibility
 
-This integration has been made to support the DHCP log format Windows Server 2008 and later.
+This integration has been made to support the DHCP log format from Windows Server 2008 and later.
 
 ### Logs
 

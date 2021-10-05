@@ -50,6 +50,10 @@ processors:
       formats:
         - "MM/dd/yy HH:mm:ss"
       timezone: "{{event.timezone}}"
+      on_failure:
+        - append:
+            field: error.message
+            value: "date processor failed to convert the timestamp"
   - convert:
       field: event.code
       target_field: _tmp_.code
@@ -130,6 +134,6 @@ processors:
         - _conf
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
