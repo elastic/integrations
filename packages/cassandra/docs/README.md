@@ -10,11 +10,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-28T12:27:25.586Z",
+    "@timestamp": "2021-10-05T07:40:26.558Z",
     "agent": {
-        "ephemeral_id": "422b82bd-635e-4763-aa39-1d393142d193",
+        "ephemeral_id": "37f2fc52-9bf4-4fe3-a5c6-ac3a89d10c87",
         "hostname": "docker-fleet-agent",
-        "id": "c8846775-e0a2-444c-b5fe-d12cb3b642ab",
+        "id": "55e3ef5d-1870-4291-8cff-32abd8b8b84b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -33,7 +33,7 @@ An example event for `log` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "c8846775-e0a2-444c-b5fe-d12cb3b642ab",
+        "id": "55e3ef5d-1870-4291-8cff-32abd8b8b84b",
         "snapshot": true,
         "version": "7.15.0"
     },
@@ -43,9 +43,9 @@ An example event for `log` looks as following:
             "database"
         ],
         "dataset": "cassandra.log",
-        "ingested": "2021-09-28T12:27:44Z",
+        "ingested": "2021-10-05T07:40:53Z",
         "kind": "event",
-        "original": "INFO  [main] 2021-09-28 12:27:25,586 YamlConfigurationLoader.java:92 - Configuration location: file:/etc/cassandra/cassandra.yaml",
+        "original": "INFO  [main] 2021-10-05 07:40:26,558 YamlConfigurationLoader.java:92 - Configuration location: file:/etc/cassandra/cassandra.yaml",
         "type": "info"
     },
     "host": {
@@ -54,10 +54,10 @@ An example event for `log` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.0.7"
+            "172.27.0.10"
         ],
         "mac": [
-            "02:42:c0:a8:00:07"
+            "02:42:ac:1b:00:0a"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -75,7 +75,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/system.log"
+            "path": "/tmp/service_logs/cassandra/system.log"
         },
         "level": "INFO",
         "offset": 0,
@@ -129,11 +129,11 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-28T12:39:22.426Z",
+    "@timestamp": "2021-10-05T07:38:10.135Z",
     "agent": {
-        "ephemeral_id": "3fba7a7b-123e-4ad4-97a0-e1cb57e4a7d7",
+        "ephemeral_id": "d0cc6862-f7cf-4d0c-8ab1-f5bf6f859ed8",
         "hostname": "docker-fleet-agent",
-        "id": "c8846775-e0a2-444c-b5fe-d12cb3b642ab",
+        "id": "55e3ef5d-1870-4291-8cff-32abd8b8b84b",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.15.0"
@@ -143,9 +143,9 @@ An example event for `metrics` looks as following:
             "cache": {
                 "key_cache": {
                     "capacity": 99614720,
-                    "one_minute_hit_rate": 0.8265306122448979,
+                    "one_minute_hit_rate": 0.704736648238381,
                     "requests": {
-                        "one_minute_rate": 19.6
+                        "one_minute_rate": 8.440473533066658
                     }
                 },
                 "row_cache": {
@@ -155,6 +155,9 @@ An example event for `metrics` looks as following:
                     }
                 }
             },
+            "client": {
+                "connected_native_clients": 0
+            },
             "client_request": {
                 "casread": {
                     "one_minute_rate": 0
@@ -163,31 +166,31 @@ An example event for `metrics` looks as following:
                     "one_minute_rate": 0
                 },
                 "range_slice": {
-                    "one_minute_rate": 0,
-                    "total_latency": 0
+                    "one_minute_rate": 0.014712537947741825,
+                    "total_latency": 45132
                 },
                 "read": {
-                    "count": 0,
-                    "one_minute_rate": 0,
+                    "count": 2,
+                    "one_minute_rate": 0.02942507589548365,
                     "timeouts": 0,
-                    "total_latency": 0,
+                    "total_latency": 190512,
                     "unavailables": 0
                 },
                 "write": {
-                    "count": 0,
-                    "one_minute_rate": 0,
+                    "count": 1,
+                    "one_minute_rate": 0.014712537947741825,
                     "timeouts": 0,
                     "timeoutsms": 0,
-                    "total_latency": 0,
+                    "total_latency": 147610,
                     "unavailables": 0,
                     "unavailablesms": 0
                 }
             },
             "column_family": {
-                "total_disk_space_used": 102622
+                "total_disk_space_used": 72600
             },
             "compaction": {
-                "completed": 7,
+                "completed": 44,
                 "pending": 0
             },
             "dropped_message": {
@@ -206,11 +209,11 @@ An example event for `metrics` looks as following:
             "gc": {
                 "concurrent_mark_sweep": {
                     "collection_count": 1,
-                    "collection_time": 249
+                    "collection_time": 139
                 },
                 "par_new": {
                     "collection_count": 2,
-                    "collection_time": 206
+                    "collection_time": 188
                 }
             },
             "memory": {
@@ -218,18 +221,18 @@ An example event for `metrics` looks as following:
                     "committed": 2009071616,
                     "init": 2051014656,
                     "max": 2009071616,
-                    "used": 161875344
+                    "used": 210515520
                 },
                 "other_usage": {
-                    "committed": 57532416,
+                    "committed": 62955520,
                     "init": 2555904,
                     "max": -1,
-                    "used": 55918320
+                    "used": 61118512
                 }
             },
             "storage": {
                 "exceptions": 0,
-                "load": 102622,
+                "load": 72600,
                 "total_hint_in_progress": 0,
                 "total_hints": 0
             },
@@ -239,7 +242,7 @@ An example event for `metrics` looks as following:
                 "joining_nodes": [],
                 "leaving_nodes": [],
                 "live_nodes": [
-                    "192.168.128.2"
+                    "172.28.0.2"
                 ],
                 "moving_nodes": [],
                 "rack": "rack1",
@@ -247,13 +250,13 @@ An example event for `metrics` looks as following:
                 "version": "3.11.11"
             },
             "table": {
-                "all_memtables_heap_size": 1523,
+                "all_memtables_heap_size": 5148,
                 "all_memtables_off_heap_size": 0,
-                "live_disk_space_used": 102622,
-                "live_ss_table_count": 17
+                "live_disk_space_used": 72600,
+                "live_ss_table_count": 11
             },
             "task": {
-                "complete": 45,
+                "complete": 56,
                 "pending": 0,
                 "total_commitlog_size": 67108864
             },
@@ -297,18 +300,18 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "c8846775-e0a2-444c-b5fe-d12cb3b642ab",
+        "id": "55e3ef5d-1870-4291-8cff-32abd8b8b84b",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cassandra.metrics",
-        "duration": 767899380,
-        "ingested": "2021-09-28T12:39:25Z",
+        "duration": 321822352,
+        "ingested": "2021-10-05T07:38:13Z",
         "module": "jolokia"
     },
     "host": {
@@ -317,10 +320,10 @@ An example event for `metrics` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.0.7"
+            "172.27.0.10"
         ],
         "mac": [
-            "02:42:c0:a8:00:07"
+            "02:42:ac:1b:00:0a"
         ],
         "name": "docker-fleet-agent",
         "os": {

@@ -126,4 +126,6 @@ if [ "$1" = 'cassandra' ]; then
 	done
 fi
 
+chmod -R 777 /var/log/cassandra/
+chmod g+s /var/log/cassandra/
 exec "$@"
