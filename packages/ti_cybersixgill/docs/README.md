@@ -24,13 +24,13 @@ INCLUDE LINK TO Python script and documentation
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| cybersixgill.actor | The related actor for the indicator. | keyword |
-| cybersixgill.feedname | Name of the Threat Intel feed. | keyword |
-| cybersixgill.mitre.description | The mitre description of the indicator | keyword |
-| cybersixgill.title | The title of the indicator. | keyword |
-| cybersixgill.valid_from | At what date the indicator is valid from. | date |
-| cybersixgill.virustotal.pr | The Virustotal positive rate. | keyword |
-| cybersixgill.virustotal.url | The related Virustotal URL. | date |
+| cybersixgill.threat.actor | The related actor for the indicator. | keyword |
+| cybersixgill.threat.feedname | Name of the Threat Intel feed. | keyword |
+| cybersixgill.threat.mitre.description | The mitre description of the indicator | keyword |
+| cybersixgill.threat.title | The title of the indicator. | keyword |
+| cybersixgill.threat.valid_from | At what date the indicator is valid from. | date |
+| cybersixgill.threat.virustotal.pr | The Virustotal positive rate. | keyword |
+| cybersixgill.threat.virustotal.url | The related Virustotal URL. | date |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

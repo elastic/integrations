@@ -17,19 +17,20 @@ processors:
       field: event.type
       value: indicator
   - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-  - json:
-      field: event.original
-      target_field: _temp_
-  - rename:
-      field: _temp_.cybersixgill
+      field: json.cybersixgill
       target_field: cybersixgill
       ignore_missing: true
   - rename:
-      field: _temp_.threat
+      field: json.threat
       target_field: threat
+      ignore_missing: true
+  - rename:
+      field: json.tags
+      target_field: _temp_.tags
+      ignore_missing: true
+  - rename:
+      field: json.event.severity
+      target_field: event.severity
       ignore_missing: true
   - foreach:
       field: _temp_.tags
@@ -58,6 +59,7 @@ processors:
   - remove:
       field:
         - _temp_
+        - json
       ignore_missing: true
       ignore_failure: true
 on_failure:
