@@ -71,13 +71,10 @@ pipeline {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
-                          withKubernetes() {
-                            withCloudTestEnv() {
-                              sh(label: "Test integration: ${it}", script: '''
-                                eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
-                                ''')
-                            }
+                          if (isIntegrationForWindows(it)) {
+                            runWindowsSystemTests(it)
+                          } else {
+                            runLinuxSystemTests(it)
                           }
 
                           // Publish package to the Package Storage
@@ -117,6 +114,35 @@ pipeline {
     }
     cleanup {
       notifyBuildResult(prComment: true)
+    }
+  }
+}
+
+
+def isIntegrationForWindows(name) {
+  return false
+}
+
+def runLinuxSystemTests(name) {
+  return {
+    withKubernetes() {
+      withCloudTestEnv() {
+        sh(label: "Test integration: ${it}", script: '''
+          eval "$(../../build/elastic-package stack shellinit)"
+          ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+          ''')
+      }
+    }
+  }
+}
+
+def runWindowsSystemTests(name) {
+  return {
+    withNode(labels: 'windows-2019 && docker && immutable', sleepMin: 10, sleepMax: 100) {
+      sh(label: "Test integration: ${it}", script: '''
+          eval "$(../../build/elastic-package stack shellinit)"
+          ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+          ''')
     }
   }
 }
