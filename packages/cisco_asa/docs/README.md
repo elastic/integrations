@@ -273,9 +273,6 @@ An example event for `log` looks as following:
 | server.domain | Server domain. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
-| sip.from.uri.host | The host of the SIP source | keyword |
-| sip.to.uri.host | The host of the SIP destination | keyword |
-| sip.to.uri.port | The host port of the SIP destination | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
