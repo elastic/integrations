@@ -744,7 +744,7 @@ processors:
             - end
           action: windows-firewall-driver-error
       source: |-
-        if (ctx?.event?.code == null) {
+        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
           return;
         }
         def hm = new HashMap(params.get(ctx.event.code));
@@ -3178,4 +3178,5 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
