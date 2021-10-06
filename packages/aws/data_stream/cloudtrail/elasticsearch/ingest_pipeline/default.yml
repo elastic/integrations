@@ -295,7 +295,7 @@ processors:
         }
   - script:
       lang: painless
-      ignore_failure: true
+      tag: Add ECS categorization
       params:
         AddUserToGroup:
           category:
@@ -609,7 +609,7 @@ processors:
         ctx.event.kind = 'event';
         ctx.event.type = 'info';
 
-        if (ctx.aws.cloudtrail.error_code != null || ctx.aws.cloudtrail.error_message != null) {
+        if (ctx?.aws?.cloudtrail?.error_code != null || ctx?.aws?.cloudtrail?.error_message != null) {
             ctx.event.outcome = 'failure'
         } else {
             ctx.event.outcome = 'success'
@@ -621,6 +621,10 @@ processors:
 
         if (ctx.event.action == 'ConsoleLogin' && ctx?.aws?.cloudtrail?.flattened?.response_elements.ConsoleLogin != null) {
             ctx.event.outcome = Processors.lowercase(ctx.aws.cloudtrail.flattened.response_elements.ConsoleLogin);
+        }
+
+        if (params.get(ctx.event.action) == null) {
+            return;
         }
 
         def hm = new HashMap(params.get(ctx.event.action));
@@ -745,4 +749,5 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
