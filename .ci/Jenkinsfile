@@ -96,7 +96,7 @@ pipeline {
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
                           archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
-                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", it, "build/container-logs/*.log")
+                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                           stashCoverageReport()
                         }
