@@ -114,16 +114,6 @@ An example event for `status` looks as following:
             "rebalancing_range_rebalances": {
                 "counter": 0
             },
-            "txnwaitqueue_query_wait_time": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
             "follower_reads_success_count": {
                 "counter": 0
             },
@@ -257,16 +247,6 @@ An example event for `status` looks as following:
             },
             "queue_tsmaintenance_pending": {
                 "value": 0
-            },
-            "raft_process_handleready_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
             },
             "requests_slow_raft": {
                 "value": 0
@@ -439,16 +419,6 @@ An example event for `status` looks as following:
             "queue_replicate_removelearnerreplica": {
                 "counter": 0
             },
-            "raft_scheduler_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
             "raft_heartbeats_pending": {
                 "value": 0
             },
@@ -470,16 +440,6 @@ An example event for `status` looks as following:
             "leases_transfers_success": {
                 "counter": 0
             },
-            "raft_process_applycommitted_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
             "intents_poison_attempts": {
                 "counter": 0
             },
@@ -488,16 +448,6 @@ An example event for `status` looks as following:
             },
             "range_splits": {
                 "counter": 0
-            },
-            "raft_process_commandcommit_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
             },
             "intents_resolve_attempts": {
                 "counter": 0
@@ -625,16 +575,6 @@ An example event for `status` looks as following:
             "range_snapshots_applied_initial": {
                 "counter": 0
             },
-            "raft_process_logcommit_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
             "queue_raftlog_pending": {
                 "value": 0
             },
@@ -643,16 +583,6 @@ An example event for `status` looks as following:
             },
             "raft_rcvd_heartbeat": {
                 "counter": 0
-            },
-            "txnwaitqueue_pusher_wait_time": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
             },
             "queue_replicagc_process_success": {
                 "counter": 0
