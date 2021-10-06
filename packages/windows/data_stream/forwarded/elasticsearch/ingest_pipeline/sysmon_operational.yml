@@ -146,8 +146,11 @@ processors:
             - process
           type:
             - change
-      if: ctx?.event?.code != null
+      tag: Set ECS categorization fields
       source: |-
+        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+          return;
+        }
         def hm = new HashMap(params[ctx.event.code]);
         hm.forEach((k, v) -> ctx.event[k] = v);
   - convert:
@@ -1245,4 +1248,5 @@ processors:
 on_failure:
   - set:
       field: "error.message"
-      value: "{{ _ingest.on_failure_message }}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
