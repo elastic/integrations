@@ -26,7 +26,11 @@ exposing metrics in Prometheus format.
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| cockroachdb.confidence_level | Confidence level determined by ThreatCloud. | integer |
+| cockroachdb.status.\*.counter | Prometheus counter metric | object |
+| cockroachdb.status.\*.histogram | Prometheus histogram metric | object |
+| cockroachdb.status.\*.rate | Prometheus rated counter metric | object |
+| cockroachdb.status.\*.value | Prometheus gauge metric | object |
+| cockroachdb.status.labels.\* | Prometheus metric labels | object |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -66,31 +70,28 @@ An example event for `status` looks as following:
     "agent": {
         "hostname": "docker-fleet-agent",
         "name": "docker-fleet-agent",
-        "id": "6493df64-791a-4b55-b2e9-c5b1dd347fe7",
+        "id": "eb2e981c-294d-4d5f-a50f-1bd7ef455552",
         "type": "metricbeat",
-        "ephemeral_id": "833a8afe-815e-4ed5-b7a1-bd0e30d626ed",
-        "version": "7.14.0"
+        "ephemeral_id": "6d9d501b-bc9c-4db0-9d41-18fef45e1680",
+        "version": "7.15.0"
     },
     "elastic_agent": {
-        "id": "6493df64-791a-4b55-b2e9-c5b1dd347fe7",
-        "version": "7.14.0",
+        "id": "eb2e981c-294d-4d5f-a50f-1bd7ef455552",
+        "version": "7.15.0",
         "snapshot": true
     },
-    "cloud": {
-        "provider": "azure",
-        "region": "westeurope"
-    },
-    "@timestamp": "2021-07-26T08:02:00.000Z",
+    "@timestamp": "2021-10-05T14:19:33.288Z",
     "ecs": {
-        "version": "1.10.0"
-    },
-    "service": {
-        "type": "azure"
+        "version": "1.11.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "azure.storage_account"
+        "dataset": "cockroachdb.status"
+    },
+    "service": {
+        "address": "http://host.docker.internal:8081/_status/vars",
+        "type": "cockroachdb"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -105,45 +106,37 @@ An example event for `status` looks as following:
         },
         "containerized": true,
         "ip": [
-            "172.20.0.7"
+            "172.22.0.7"
         ],
         "name": "docker-fleet-agent",
-        "id": "d4845dae196bc2de62b7b208c215d5bc",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:ac:16:00:07"
         ],
         "architecture": "x86_64"
     },
     "metricset": {
-        "period": 300000,
-        "name": "storage"
+        "period": 10000,
+        "name": "status"
+    },
+    "prometheus": {
+        "node_id": {
+            "value": 1
+        },
+        "labels": {
+            "instance": "host.docker.internal:8081",
+            "http_addr": "localhost:8081",
+            "sql_addr": "localhost:26257",
+            "job": "cockroachdb",
+            "advertise_addr": "localhost:26257"
+        }
     },
     "event": {
-        "duration": 4780565600,
+        "duration": 16047300,
         "agent_id_status": "verified",
-        "ingested": "2021-07-26T10:02:22.993256Z",
-        "module": "azure",
-        "dataset": "azure.storage_account"
-    },
-    "azure": {
-        "subscription_id": "70bd6e77-4b1e-4835-8896-db77b8eef364",
-        "timegrain": "PT1H",
-        "resource": {
-            "name": "blobtestobs",
-            "id": "/subscriptions/70bd6e77-4b1e-4835-8896-db77b8eef364/resourceGroups/obs-infrastructure/providers/Microsoft.Storage/storageAccounts/blobtestobs",
-            "type": "Microsoft.Storage/storageAccounts",
-            "tags": {
-                "test_ye": "valuw1.value1",
-                "test": "value.value"
-            },
-            "group": "obs-infrastructure"
-        },
-        "namespace": "Microsoft.Storage/storageAccounts",
-        "storage_account": {
-            "used_capacity": {
-                "avg": 6976
-            }
-        }
+        "ingested": "2021-10-05T14:19:34Z",
+        "module": "cockroachdb",
+        "dataset": "cockroachdb.status"
     }
 }
 ```
