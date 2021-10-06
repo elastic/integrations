@@ -633,6 +633,14 @@ processors:
       description: "607001"
       field: sip.to.uri.port
       value: "{{destination.port}}"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '607001'"
+      description: "607001"
+      field: "_temp_.cisco.connection_type"
+      patterns:
+        - "%{PROTOCOLS:network.transport}"
+      pattern_definitions:
+        PROTOCOLS: "(UDP|TCP|RTP|RTCP)"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '609002'"
       field: "message"
