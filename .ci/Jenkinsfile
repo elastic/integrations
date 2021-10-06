@@ -136,13 +136,40 @@ def integrationForLinux(name) {
   }
 }
 
-def integrationForLinux(name) {
+def grabWorkerIP(){
+  def linuxIp = ''
+  retryWithSleep(retries: 3, seconds: 5, backoff: true){
+    linuxIp = sh(label: 'Get IP', script: '''hostname -I | awk '{print $1}' ''', returnStdout: true)?.trim()
+    log(level: 'INFO', text: "Worker IP '${linuxIp}'")
+    if(!linuxIp?.trim()){
+      error('Unable to get the Linux worker IP')
+    }
+  }
+  return linuxIp
+}
+
+def integrationForWindows(name) {
   return {
-    withNode(labels: 'windows-2019 && docker && immutable', sleepMin: 10, sleepMax: 100) {
-      stage("${name}: check") {
-        deleteDir()
-        unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
-        echo 'TBC'
+    withNode(labels: 'ubuntu-20 && immutable', sleepMax: 20, forceWorkspace: true){
+      deleteDir()
+      unstash 'source'
+      def linuxIp = grabWorkerIP()
+      // TODO: run the stack that's needed
+
+      // Setup environment for platform
+      def envContext = []
+      envContext.add("KIBANA_URL=https://${linuxIp}:5601")
+      envContext.add("ELASTICSEARCH_URL=https://${linuxIp}:9200")
+
+      withNode(labels: 'windows-2019 && docker && immutable', sleepMin: 10, sleepMax: 100) {
+        stage("${name}: check") {
+          deleteDir()
+          unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+          withEnv(envContext) {
+            // TODO: run the integration on windows
+            echo 'TBC'
+          }
+        }
       }
     }
   }
