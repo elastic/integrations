@@ -7,13 +7,13 @@ package main
 import (
 	"github.com/blang/semver"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 var zeroVersion = semver.MustParse("0.0.0")
 
-func createConditions() *util.Conditions {
-	return &util.Conditions{
-		Kibana: &util.KibanaConditions{Version: "^7.15.0"},
+func createConditions() *packages.Conditions {
+	return &packages.Conditions{
+		Kibana: &packages.KibanaConditions{Version: "^7.15.0"},
 	}
 }
