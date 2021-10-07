@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 type streamConfigParsed struct {
@@ -273,9 +273,9 @@ func writeHandlebarsCmdDecl(decl []*parse.VariableNode) []byte {
 	return buffer.Bytes()
 }
 
-func (scp *streamConfigParsed) filterVarsForInput(inputType string, vars []util.Variable) []util.Variable {
+func (scp *streamConfigParsed) filterVarsForInput(inputType string, vars []packages.Variable) []packages.Variable {
 	variableNamesForInput := scp.variableNamesForInput(inputType)
-	var filtered []util.Variable
+	var filtered []packages.Variable
 	for _, aVar := range vars {
 		var found bool
 		for _, variableName := range variableNamesForInput {

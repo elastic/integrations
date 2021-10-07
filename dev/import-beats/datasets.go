@@ -13,14 +13,14 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 type dataStreamContent struct {
 	name     string
 	beatType string
 
-	manifest util.DataStream
+	manifest packages.DataStream
 
 	agent         agentContent
 	elasticsearch elasticsearchContent
@@ -119,7 +119,7 @@ func createDataStreams(beatType, modulePath, moduleName, moduleTitle string, mod
 		}
 
 		// manifest
-		manifest := util.DataStream{
+		manifest := packages.DataStream{
 			Title:   fmt.Sprintf("%s %s %s", moduleTitle, dataStreamName, beatType),
 			Release: "experimental",
 			Type:    beatType,

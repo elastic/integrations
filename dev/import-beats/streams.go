@@ -14,14 +14,14 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 // createStreams method builds a set of stream inputs including configuration variables.
 // Stream definitions depend on a beat type - log or metric.
 // At the moment, the array returns only one stream.
-func createStreams(modulePath, moduleName, moduleTitle, dataStreamName, beatType string) ([]util.Stream, agentContent, error) {
-	var streams []util.Stream
+func createStreams(modulePath, moduleName, moduleTitle, dataStreamName, beatType string) ([]packages.Stream, agentContent, error) {
+	var streams []packages.Stream
 	var agent agentContent
 	var err error
 
@@ -46,7 +46,7 @@ func createStreams(modulePath, moduleName, moduleTitle, dataStreamName, beatType
 
 // createLogStreams method builds a set of stream inputs for logs oriented dataStream.
 // The method unmarshals "manifest.yml" file and picks all configuration variables.
-func createLogStreams(modulePath, moduleTitle, dataStreamName string) ([]util.Stream, agentContent, error) {
+func createLogStreams(modulePath, moduleTitle, dataStreamName string) ([]packages.Stream, agentContent, error) {
 	manifestPath := filepath.Join(modulePath, dataStreamName, "manifest.yml")
 	manifestFile, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
@@ -67,7 +67,7 @@ func createLogStreams(modulePath, moduleTitle, dataStreamName string) ([]util.St
 		return nil, agentContent{}, fmt.Errorf("expected at least one config file (modulePath: %s, dataStreamName: %s)", modulePath, dataStreamName)
 	}
 
-	var streams []util.Stream
+	var streams []packages.Stream
 	var agent agentContent
 	for _, configFilePath := range configFilePaths {
 		fileName := extractInputConfigFilename(configFilePath)
@@ -102,7 +102,7 @@ func createLogStreams(modulePath, moduleTitle, dataStreamName string) ([]util.St
 				body:           inputConfig,
 			})
 
-			streams = append(streams, util.Stream{
+			streams = append(streams, packages.Stream{
 				Input:        aType,
 				Title:        fmt.Sprintf("%s %s logs (%s)", moduleTitle, dataStreamName, inputType),
 				Description:  fmt.Sprintf("Collect %s %s logs using %s input", moduleTitle, dataStreamName, inputType),
@@ -120,7 +120,7 @@ func createLogStreams(modulePath, moduleTitle, dataStreamName string) ([]util.St
 //
 // The method skips commented variables, but keeps arrays of structures (even if it's not possible to render them using
 // UI).
-func createMetricStreams(modulePath, moduleName, moduleTitle, dataStreamName string) ([]util.Stream, agentContent, error) {
+func createMetricStreams(modulePath, moduleName, moduleTitle, dataStreamName string) ([]packages.Stream, agentContent, error) {
 	merged, err := mergeMetaConfigFiles(modulePath)
 	if err != nil {
 		return nil, agentContent{}, errors.Wrapf(err, "merging config files failed")
@@ -130,7 +130,7 @@ func createMetricStreams(modulePath, moduleName, moduleTitle, dataStreamName str
 	if err != nil {
 		return nil, agentContent{}, errors.Wrapf(err, "creating metric stream variables failed (modulePath: %s)", modulePath)
 	}
-	streams := []util.Stream{
+	streams := []packages.Stream{
 		{
 			Input:       moduleName + "/metrics",
 			Title:       fmt.Sprintf("%s %s metrics", moduleTitle, dataStreamName),

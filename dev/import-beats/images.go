@@ -18,7 +18,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 var (
@@ -91,8 +91,8 @@ func extractImages(beatDocsPath string, docsFile []byte) []imageContent {
 	return contents
 }
 
-func (images imageContentArray) toManifestImages() ([]util.Image, error) {
-	var imgs []util.Image
+func (images imageContentArray) toManifestImages() ([]packages.Image, error) {
+	var imgs []packages.Image
 	for _, image := range images {
 		i := strings.LastIndex(image.source, "/")
 		sourceFileName := image.source[i:]
@@ -107,7 +107,7 @@ func (images imageContentArray) toManifestImages() ([]util.Image, error) {
 			return nil, errors.Wrapf(err, "extracting image type failed")
 		}
 
-		imgs = append(imgs, util.Image{
+		imgs = append(imgs, packages.Image{
 			Src:   path.Join("/img", sourceFileName),
 			Title: toImageTitle(sourceFileName),
 			Size:  imageSize,
