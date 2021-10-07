@@ -71,10 +71,17 @@ pipeline {
                         dir("${BASE_DIR}/packages/${it}") {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
-                          if (isIntegrationForWindows(it)) {
+                          withKubernetes() {
+                            withCloudTestEnv() {
+                              sh(label: "Test integration: ${it}", script: '''
+                                eval "$(../../build/elastic-package stack shellinit)"
+                                ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+                                ''')
+                            }
+                          }
+
+                          if (hasWindowsSystemTests(it)) {
                             runWindowsSystemTests(it)
-                          } else {
-                            runLinuxSystemTests(it)
                           }
 
                           // Publish package to the Package Storage
@@ -119,21 +126,8 @@ pipeline {
 }
 
 
-def isIntegrationForWindows(name) {
+def hasWindowsSystemTests(name) {
   return false
-}
-
-def runLinuxSystemTests(name) {
-  return {
-    withKubernetes() {
-      withCloudTestEnv() {
-        sh(label: "Test integration: ${it}", script: '''
-          eval "$(../../build/elastic-package stack shellinit)"
-          ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
-          ''')
-      }
-    }
-  }
 }
 
 def grabWorkerIP(){
@@ -150,20 +144,18 @@ def grabWorkerIP(){
 
 def runWindowsSystemTests(name) {
   return {
-    def linuxIp = grabWorkerIP()
-    // TODO: run the stack that's needed
-
     // Setup environment for platform
+    def linuxIp = grabWorkerIP()
     def envContext = []
-    envContext.add("KIBANA_URL=https://${linuxIp}:5601")
-    envContext.add("ELASTICSEARCH_URL=https://${linuxIp}:9200")
+    envContext.add("ELASTIC_PACKAGE_ELASTICSEARCH_HOST=http://${linuxIp}:9200")
+    envContext.add("ELASTIC_PACKAGE_ELASTICSEARCH_USERNAME=elastic")
+    envContext.add("ELASTIC_PACKAGE_ELASTICSEARCH_PASSWORD=changeme")
+    envContext.add("ELASTIC_PACKAGE_KIBANA_HOST=http://${linuxIp}:5601")
 
     withNode(labels: 'windows-2019 && docker && immutable', sleepMin: 10, sleepMax: 100) {
       withEnv(envContext) {
-        // TOOD use the batch syntax in the pipelien and in the script
-        sh(label: "Test integration: ${name}", script: '''
-            eval "$(../../build/elastic-package stack shellinit)"
-            ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
+        bat(label: "Test integration: ${name}", script: '''
+            ..\\..\\build\\elastic-package test system -v --report-format xUnit --report-output file --test-coverage
             ''')
       }
     }
