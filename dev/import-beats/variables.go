@@ -12,11 +12,11 @@ import (
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 type manifestWithVars struct {
-	Vars []util.Variable `yaml:"var"`
+	Vars []packages.Variable `yaml:"var"`
 }
 
 var ignoredConfigOptions = []string{
@@ -25,7 +25,7 @@ var ignoredConfigOptions = []string{
 	"enabled",
 }
 
-func createLogStreamVariables(manifestFile []byte) ([]util.Variable, error) {
+func createLogStreamVariables(manifestFile []byte) ([]packages.Variable, error) {
 	var mwv manifestWithVars
 	err := yaml.Unmarshal(manifestFile, &mwv)
 	if err != nil {
@@ -39,8 +39,8 @@ func createLogStreamVariables(manifestFile []byte) ([]util.Variable, error) {
 	return adjusted.Vars, nil
 }
 
-func createMetricStreamVariables(configFileContent []byte, moduleName, dataStreamName string) ([]util.Variable, error) {
-	var vars []util.Variable
+func createMetricStreamVariables(configFileContent []byte, moduleName, dataStreamName string) ([]packages.Variable, error) {
+	var vars []packages.Variable
 	if len(configFileContent) == 0 {
 		return vars, nil
 	}
@@ -81,7 +81,7 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, dataStrea
 				} else {
 					_, isArray = value.([]interface{})
 				}
-				aVar := util.Variable{
+				aVar := packages.Variable{
 					Name:     name,
 					Type:     variableType,
 					Title:    toVariableTitle(name),
