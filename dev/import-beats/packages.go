@@ -18,13 +18,13 @@ import (
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 var ignoredModules = map[string]bool{"apache2": true}
 
 type packageContent struct {
-	manifest       util.Package
+	manifest       packages.Package
 	dataStreams    dataStreamContentArray
 	images         []imageContent
 	kibana         kibanaContent
@@ -34,14 +34,14 @@ type packageContent struct {
 
 func newPackageContent(name string) packageContent {
 	return packageContent{
-		manifest: util.Package{
+		manifest: packages.Package{
 			FormatVersion: "1.0.0",
-			BasePackage: util.BasePackage{
+			BasePackage: packages.BasePackage{
 				Name:    name,
 				Version: "0.0.1", // TODO
 				Type:    "integration",
 				Release: "experimental",
-				Owner: &util.Owner{
+				Owner: &packages.Owner{
 					Github: "elastic/integrations",
 				},
 			},
@@ -325,7 +325,7 @@ func (r *packageRepository) save(outputDir string) error {
 
 			// dataStream/elasticsearch
 			if len(dataStream.elasticsearch.ingestPipelines) > 0 {
-				ingestPipelinesPath := filepath.Join(dataStreamPath, "elasticsearch", util.DirIngestPipeline)
+				ingestPipelinesPath := filepath.Join(dataStreamPath, "elasticsearch", packages.DirIngestPipeline)
 				err := os.MkdirAll(ingestPipelinesPath, 0755)
 				if err != nil {
 					return errors.Wrapf(err, "cannot make directory for data stream ingest pipelines: '%s'", ingestPipelinesPath)
