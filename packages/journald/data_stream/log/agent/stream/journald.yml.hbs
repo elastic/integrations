@@ -1,0 +1,29 @@
+condition: ${host.platform} == 'linux'
+
+{{#if paths}}
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+{{/if}}
+
+{{#if include_matches}}
+include_matches:
+{{#each include_matches as |include_match i|}}
+  - '{{include_match}}'
+{{/each}}
+{{/if}}
+
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -14,6 +14,6 @@ var zeroVersion = semver.MustParse("0.0.0")
 
 func createConditions() *util.Conditions {
 	return &util.Conditions{
-		KibanaVersion: "^7.9.0",
+		Kibana: &util.KibanaConditions{Version: "^7.15.0"},
 	}
 }
