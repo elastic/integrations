@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 type agentContent struct {
@@ -26,7 +26,7 @@ func extractInputConfigFilename(configFilePath string) string {
 	return configFilePath[i+1:]
 }
 
-func createAgentContentForMetrics(moduleName, dataStreamName string, streams []util.Stream) (agentContent, error) {
+func createAgentContentForMetrics(moduleName, dataStreamName string, streams []packages.Stream) (agentContent, error) {
 	inputName := moduleName + "/metrics"
 	vars := extractVarsFromStream(streams, inputName)
 
@@ -60,11 +60,11 @@ func createAgentContentForMetrics(moduleName, dataStreamName string, streams []u
 	}, nil
 }
 
-func extractVarsFromStream(streams []util.Stream, inputName string) []util.Variable {
+func extractVarsFromStream(streams []packages.Stream, inputName string) []packages.Variable {
 	for _, stream := range streams {
 		if stream.Input == inputName {
 			return stream.Vars
 		}
 	}
-	return []util.Variable{}
+	return []packages.Variable{}
 }
