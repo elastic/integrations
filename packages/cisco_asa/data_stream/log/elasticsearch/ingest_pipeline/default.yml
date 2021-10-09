@@ -623,6 +623,15 @@ processors:
       field: "message"
       description: "611102, 611101"
       pattern: 'User authentication %{event.outcome}: IP address: %{source.address}, Uname: %{host.user.name}'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '607001'"      
+      field: "message"
+      description: "607001"
+      patterns:
+      - "Pre-allocate SIP %{CONNECTION_TYPE:cisco.asa.connection_type} secondary channel for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{POSINT:source.port} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address} from %{WORD} message"
+      pattern_definitions:
+        CONNECTION_TYPE: "((SIGNALLING|SUBSCRIBE|NOTIFY) %{WORD:network.transport}|Via %{WORD:network.transport}|Route|RTP|RTCP)"
+        NOTCOLON: "[^:]*"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710003'"
       field: "message"
@@ -726,6 +735,10 @@ processors:
       if: '["419002"].contains(ctx._temp_.cisco.message_id)'
       field: "network.protocol"
       value: "tcp"
+  - set:
+      if: '["607001"].contains(ctx._temp_.cisco.message_id)'
+      field: "network.protocol"
+      value: "sip"
   - set:
       if: '["110002"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
