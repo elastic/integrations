@@ -623,9 +623,19 @@ processors:
       description: "607001"
       field: "_temp_.cisco.connection_type"
       patterns:
-        - "%{PROTOCOLS:network.transport}"
+        - "%{TRANSPORTS:network.transport}"
       pattern_definitions:
-        PROTOCOLS: "(UDP|TCP|RTP|RTCP)"
+        TRANSPORTS: "(UDP|TCP)"
+      ignore_failure: true
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '607001'"
+      description: "607001"
+      field: "_temp_.cisco.connection_type"
+      patterns:
+        - "%{PROTOCOLS:network.protocol}"
+      pattern_definitions:
+        PROTOCOLS: "(RTP|RTCP)"
+      ignore_failure: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '609002'"
       field: "message"
