@@ -1,0 +1,81 @@
+---
+description: Pipeline for processing fireeye nx logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: "1.12.0"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - json:
+      field: json.rawmsg
+      target_field: rawmsg
+      ignore_failure: true
+  # rename raw fields
+  - pipeline:
+      name: '{{ IngestPipeline "renaming-raws" }}'
+  - date:
+      field: temp_ts
+      formats:
+      - strict_date_optional_time_nanos
+  - remove:
+      field: temp_ts
+  - geoip:
+      field: destination.address
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      field: source.address
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.address
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.address
+      target_field: destination.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+  - remove:
+      field: rawmsg    
+  - remove:
+      field: json        
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
