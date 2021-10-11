@@ -1,0 +1,92 @@
+title: Cisco Secure Endpoint logs
+release: beta
+type: logs
+streams:
+  - input: httpjson
+    vars:
+      - name: client_id
+        type: text
+        title: Client ID
+        description: Cisco Secure Endpoint Client ID
+        multi: false
+        required: true
+        show_user: true
+      - name: api_key
+        type: password
+        title: API Key
+        description: Cisco Secure Endpoint API Key
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        default: 1h
+      - name: url
+        type: text
+        title: API URL.
+        description: The API URL
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.amp.cisco.com/v1/events?offset=0&limit=300
+      - name: limit
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: false
+        description: Max number of logs pulled on each request
+        default: 100
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Initial Interval for first log pull
+        default: 24h
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - cisco-secure_endpoint
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+    template_path: httpjson.yml.hbs
+    title: Cisco Secure Endpoint logs
+    description: Collect Cisco Secure Endpoint logs via the API
