@@ -152,6 +152,7 @@ An example event for `log` looks as following:
 | cisco.asa.mapped_source_host |  | keyword |
 | cisco.asa.mapped_source_ip | The translated source IP address. | ip |
 | cisco.asa.mapped_source_port | The translated source port. | long |
+| cisco.asa.message | The message associated with SIP and Skinny VoIP events | keyword |
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
