@@ -1,0 +1,34 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{hostname}}/admin/v1/logs/administrator
+request.transforms:
+  - set: 
+      target: url.params.mintime
+      value: '[[.cursor.last_published]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: header.Date
+      value: '[[formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700"]]'
+  - set: 
+      target: header.Authorization
+      value: '[[sprintf "Basic %s" (base64Encode (sprintf "%s:%s" "{{integration_key}}" (hmac "sha1" "{{secret_key}}" (formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700") "\n" "GET" "\n" .url.Host "\n" "/admin/v1/logs/administrator" "\n" .url.RawQuery)))]]'
+response.split:
+  target: body.response
+cursor:
+  last_published:
+    value: '[[toInt .last_event.timestamp]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

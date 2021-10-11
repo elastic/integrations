@@ -1,0 +1,62 @@
+---
+description: Pipeline for parsing cisco_duo telephony logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+  - set:
+      field: ecs.version
+      value: '1.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.timestamp
+        - json.phone
+        - json.context
+        - json.type
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.timestamp
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - UNIX
+  - rename:
+      field: json.context
+      target_field: cisco_duo.telephony.event_type
+      ignore_missing: true
+  - rename:
+      field: json.credits
+      target_field: cisco_duo.telephony.credits
+      ignore_missing: true
+  - rename:
+      field: json.phone
+      target_field: cisco_duo.telephony.phone_number
+      ignore_missing: true
+  - rename:
+      field: json.type  
+      target_field: cisco_duo.telephony.type
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
