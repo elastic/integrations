@@ -1,0 +1,67 @@
+---
+description: Pipeline for parsing azure activity logs.
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.12.0'
+  - rename:
+      if: "ctx?.parse_message == true"
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      if: "ctx?.parse_message == true"
+      field: event.original
+      target_field: azure.message
+  - date:
+      if: "ctx?.parse_message == true"
+      field: azure.message.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - rename:
+      if: "ctx?.parse_message == true"
+      field: azure.message.resourceId
+      target_field: azure.resource_id
+      ignore_missing: true
+  - rename:
+      if: "ctx?.parse_message == true"
+      field: azure.message.durationMs
+      target_field: event.duration
+      ignore_missing: true
+  - script:
+      if: "ctx?.parse_message == true"
+      lang: painless
+      source: ctx.event.duration = ctx.event.duration * params.param_nano
+      params:
+        param_nano: 1000000
+  - rename:
+      if: "ctx?.parse_message == true"
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      if: "ctx?.parse_message == true"
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      if: "ctx?.parse_message == true"
+      field: event.kind
+      value: event
+  - pipeline:
+      if: "ctx?.parse_message == true"
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - remove:
+      field: event.original
+      if: "(ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))) && (ctx?.parse_message == true)"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
