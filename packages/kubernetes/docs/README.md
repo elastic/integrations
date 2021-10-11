@@ -16,9 +16,6 @@ Some of the previous components are running on each of the Kubernetes nodes (lik
 a single cluster-wide endpoint. This is important to determine the optimal configuration and running strategy
 for the different datasets included in the integration.
 
-For a complete reference on how to configure and run this package on Kubernetes as part of a `DaemonSet` and a `Deployment`,
-there's a complete [example manifest](https://github.com/elastic/beats/blob/master/deploy/kubernetes/elastic-agent-kubernetes.yaml)
-available.
 
 #### Kubernetes endpoints and metricsets
 
