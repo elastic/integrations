@@ -95,7 +95,8 @@ pipeline {
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
-                          archiveArtifactsSafe(it, "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
+                          archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
+                          archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                           stashCoverageReport()
                         }
@@ -271,7 +272,7 @@ def getCoveragePathPrefix() {
   return "${env.JOB_NAME}-${env.BUILD_ID}/test-coverage/"
 }
 
-def archiveArtifactsSafe(integrationName, artifacts) {
+def archiveArtifactsSafe(remotePath, artifacts) {
   r = sh(label: "areArtifactsPresent", script: "ls ${artifacts}", returnStatus: true)
   if (r != 0) {
     echo "areArtifactsPresent: artifacts files not found, nothing will be archived"
@@ -279,7 +280,7 @@ def archiveArtifactsSafe(integrationName, artifacts) {
   }
 
   googleStorageUploadExt(
-    bucket: "gs://${JOB_GCS_BUCKET}/${env.JOB_NAME}-${env.BUILD_ID}/insecure-logs/${integrationName}",
+    bucket: "gs://${JOB_GCS_BUCKET}/${env.JOB_NAME}-${env.BUILD_ID}/${remotePath}",
     credentialsId: "${JOB_GCS_EXT_CREDENTIALS}",
     pattern: artifacts)
 }
