@@ -1,0 +1,78 @@
+---
+description: Pipeline for parsing cisco_duo offline enrollment logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+  - set:
+      field: ecs.version
+      value: '1.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.timestamp
+        - json.action
+        - json.description
+        - json.object
+        - json.username
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.timestamp
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - UNIX
+  - json: 
+      field: json.description
+      target_field: json_description
+      ignore_failure: true
+  - set: 
+      field: user.name
+      copy_from: json.username
+      ignore_failure: true
+  - rename:
+      field: json.action
+      target_field: cisco_duo.offline_enrollment.action
+      ignore_missing: true
+  - rename: 
+      field: json_description.hostname
+      target_field: cisco_duo.offline_enrollment.description.hostname
+      ignore_missing: true
+  - rename: 
+      field: json_description.user_agent
+      target_field: cisco_duo.offline_enrollment.description.user_agent
+      ignore_missing: true
+  - rename: 
+      field: json_description.factor
+      target_field: cisco_duo.offline_enrollment.description.factor
+      ignore_missing: true
+  - rename: 
+      field: json.object
+      target_field: cisco_duo.offline_enrollment.object
+      ignore_missing: true
+  - rename: 
+      field: json.username
+      target_field: cisco_duo.offline_enrollment.user.name
+      ignore_missing: true
+  - remove:
+      field: json
+  - remove:
+        field: json_description
+        if: ctx?.json_description != null
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
