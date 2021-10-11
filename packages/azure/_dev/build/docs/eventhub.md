@@ -1,6 +1,8 @@
 ## Azure Eventhub Input
 
-The Azure Eventhub Input integration provides insight into the operations that were performed on resources in your subscription.
+The Azure Eventhub Input integration allows users to collect events from Azure event hubs.
+ The azure-eventhub input implementation is based on the the event processor host (EPH is intended to be run across multiple processes and machines while load balancing message consumers more on this here https://github.com/Azure/azure-event-hubs-go#event-processor-host, https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). State such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. 
+ For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
 
 There are several requirements before using the integration since the logs will actually be read from azure event hubs.
 
@@ -45,9 +47,9 @@ https://management.azure.com/ for azure PublicCloud
 https://management.usgovcloudapi.net/ for azure USGovernmentCloud
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
-### activitylogs
+### eventhub
 
-The `activitylogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
+The `eventhub` data stream of the Azure Logs package will collect any  events that have been streamed through an azure event hub.
 
 
 {{event "activitylogs"}}
