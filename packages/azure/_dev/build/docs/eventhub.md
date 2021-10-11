@@ -1,14 +1,11 @@
 ## Azure Eventhub Input
 
 The Azure Eventhub Input integration allows users to collect events from Azure event hubs.
- The azure-eventhub input implementation is based on the the event processor host (EPH is intended to be run across multiple processes and machines while load balancing message consumers more on this here https://github.com/Azure/azure-event-hubs-go#event-processor-host, https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). State such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. 
+ The azure-eventhub input functionality is based on the the event processor host (EPH is intended to be run across multiple processes and machines while load balancing message consumers more on this here https://github.com/Azure/azure-event-hubs-go#event-processor-host, https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). State such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. 
  For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
 
 There are several requirements before using the integration since the logs will actually be read from azure event hubs.
-
-   * the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
-   * to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export
-   * to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
+   * the logs/metrics have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
 
 
 ### Credentials
@@ -52,6 +49,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 The `eventhub` data stream of the Azure Logs package will collect any  events that have been streamed through an azure event hub.
 
 
-{{event "activitylogs"}}
+{{event "eventhub"}}
 
-{{fields "activitylogs"}}
+{{fields "eventhub"}}

@@ -1,21 +1,20 @@
 type: logs
-title: Azure eventhub input
+title: Azure Event Hub Input
 release: beta
 streams:
   - input: "azure-eventhub"
     template_path: "stream.yml.hbs"
-    title: "Azure eventhub input"
+    title: "Azure Eventhub Input"
     description: "Collect Azure events using azure-eventhub input"
     vars:
       - name: parse_message
         type: bool
         title: Parse azure message
-        description: Apply minimal parsing of the message, for fields as `resourceId`, `time`
+        description: Apply minimal parsing of the message, for fields as `resourceId`, `time`.
         multi: false
         required: false
         show_user: true
-        default:
-          - false
+        default: false
       - name: tags
         type: text
         title: Tags
@@ -24,14 +23,6 @@ streams:
         show_user: false
         default:
           - azure-eventhub
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -41,3 +32,11 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false

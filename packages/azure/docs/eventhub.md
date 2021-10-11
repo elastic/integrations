@@ -1,12 +1,11 @@
 ## Azure Eventhub Input
 
-The Azure Eventhub Input integration provides insight into the operations that were performed on resources in your subscription.
+The Azure Eventhub Input integration allows users to collect events from Azure event hubs.
+ The azure-eventhub input functionality is based on the the event processor host (EPH is intended to be run across multiple processes and machines while load balancing message consumers more on this here https://github.com/Azure/azure-event-hubs-go#event-processor-host, https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). State such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. 
+ For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
 
 There are several requirements before using the integration since the logs will actually be read from azure event hubs.
-
-   * the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
-   * to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export
-   * to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
+   * the logs/metrics have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
 
 
 ### Credentials
@@ -45,12 +44,12 @@ https://management.azure.com/ for azure PublicCloud
 https://management.usgovcloudapi.net/ for azure USGovernmentCloud
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
-### activitylogs
+### eventhub
 
-The `activitylogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
+The `eventhub` data stream of the Azure Logs package will collect any  events that have been streamed through an azure event hub.
 
 
-An example event for `activitylogs` looks as following:
+An example event for `eventhub` looks as following:
 
 ```json
 {
@@ -67,78 +66,39 @@ An example event for `activitylogs` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "logs",
-        "dataset": "azure.activitylogs"
+        "dataset": "azure.auditlogs"
     },
     "event": {
         "duration": "0",
         "ingested": "2020-10-30T20:47:48.123859400Z",
         "kind": "event",
         "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-        "dataset": "azure.activitylogs",
+        "dataset": "azure.auditlogs",
         "outcome": "success"
     },
-    "azure": {
-        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
-        "resource": {
-            "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS",
-            "name": "NOMARKETPLACE",
-            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
-            "group": "OBS-TEST"
-        },
-        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
-        "activitylogs": {
-            "operation_name": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-            "result_type": "Success",
-            "identity": {
-                "authorization": {
-                    "evidence": {
-                        "role_definition_id": "8e3af657a8ff443ca75c2fe8c4bcb635",
-                        "role": "Owner",
-                        "role_assignment_scope": "/providers/Microsoft.Management/managementGroups/5341238b-665c-4eb4-b259-b250371ae430",
-                        "role_assignment_id": "7f06f09dd6764b44930adbec3f10e92b",
-                        "principal_type": "User",
-                        "principal_id": "68b1adf93eb744b08eb8ce96522a08d3"
-                    },
-                    "scope": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace",
-                    "action": "Microsoft.Resources/deployments/write"
-                },
-                "claims": {
-                    "xms_tcdt": "1469565974",
-                    "aio": "ATQAy/8RAAAAsL67UQMOHZv3izTDRJfvJN5UyON9ktUszzPj08K8aURsbhxhR0niz9s1Pxm9U1lI",
-                    "iss": "https://sts.windows.net/4fa94b7d-a743-486f-abcc-6c276c44cf4b/",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/nameidentifier": "a9L2WR3XZN5ANzAqwLx_4aamU49JG6kqaE5JZkXdeNs",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname": "Doe",
-                    "http://schemas_microsoft_com/identity/claims/scope": "user_impersonation",
-                    "http://schemas_microsoft_com/identity/claims/tenantid": "4fa94b7d-a743-486f-abcc-6c276c44cf4b",
-                    "puid": "1003200045B17AD4",
-                    "wids": "5d6b6bb7-de71-4623-b4af-96380a352509",
-                    "http://schemas_microsoft_com/claims/authnclassreference": "1",
-                    "exp": "1604310019",
-                    "ipaddr": "77.170.179.229",
-                    "iat": "1604306119",
-                    "http://schemas_microsoft_com/identity/claims/objectidentifier": "68b1adf9-3eb7-44b0-8eb8-ce96522a08d3",
-                    "http://schemas_microsoft_com/claims/authnmethodsreferences": "pwd",
-                    "ver": "1.0",
-                    "groups": "644c6686-9ef1-4b69-9410-107664a9e1f0,9ed1993c-ce9c-4915-a04d-58c6f5f7ee12",
-                    "uti": "rqr63RW_Kk6ztuomENMQAA",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/upn": "john@gmail.com",
-                    "aud": "https://management.core.windows.net/",
-                    "nbf": "1604306119",
-                    "appidacr": "2",
-                    "rh": "0.AAAAfUupT0Onb0irzGwnbETPS4NAS8SwO8FJtH2XTlPL3zxRAA8.",
-                    "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname": "John",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name": "john@gmail.com"
-                },
-                "claims_initiated_by_user": {
-                    "schema": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims"
-                }
-            },
-            "category": "Administrative",
-            "event_category": "Administrative",
-            "result_signature": "Succeeded."
-        }
-    }
+    "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
+    "azure.resource.provider": "Microsoft.aadiam",
+    "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.category": "AuditLogs",
+    "azure.auditlogs.identity": "Device Registration Service",
+    "azure.auditlogs.operation_name": "Update device",
+    "azure.auditlogs.operation_version": "1.0",
+    "azure.auditlogs.properties.activity_datetime": "2019-10-18T15:30:51.0273716+00:00",
+    "azure.auditlogs.properties.activity_display_name": "Update device",
+    "azure.auditlogs.properties.category": "Device",
+    "azure.auditlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.properties.id": "Directory_ESQ",
+    "azure.auditlogs.properties.initiated_by.app.displayName": "Device Registration Service",
+    "azure.auditlogs.properties.initiated_by.app.servicePrincipalId": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.properties.logged_by_service": "Core Directory",
+    "azure.auditlogs.properties.operation_type": "Update",
+    "azure.auditlogs.properties.result_reason": "",
+    "azure.auditlogs.properties.target_resources.0.display_name": "LAPTOP-12",
+    "azure.auditlogs.properties.target_resources.0.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value": "\"\"",
+    "azure.auditlogs.properties.target_resources.0.type": "Device",
+    "azure.auditlogs.result_signature": "None"
 }
 ```
 
@@ -147,27 +107,13 @@ An example event for `activitylogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.activitylogs.category | Category | keyword |
-| azure.activitylogs.event_category | Event Category | keyword |
-| azure.activitylogs.identity.authorization.action | Action | keyword |
-| azure.activitylogs.identity.authorization.evidence.principal_id | Principal ID | keyword |
-| azure.activitylogs.identity.authorization.evidence.principal_type | Principal type | keyword |
-| azure.activitylogs.identity.authorization.evidence.role | Role | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
-| azure.activitylogs.identity.authorization.scope | Scope | keyword |
-| azure.activitylogs.identity.claims.\* | Claims | object |
-| azure.activitylogs.identity.claims_initiated_by_user.fullname | Fullname | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.givenname | Givenname | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.schema | Schema | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.surname | Surname | keyword |
-| azure.activitylogs.operation_name | Operation name | keyword |
-| azure.activitylogs.properties | Event properties | flattened |
-| azure.activitylogs.result_signature | Result signature | keyword |
-| azure.activitylogs.result_type | Result type | keyword |
 | azure.correlation_id | Correlation ID | keyword |
+| azure.eventhub.consumer_group | consumer group | keyword |
+| azure.eventhub.enqueued_time | The enqueued time. | keyword |
+| azure.eventhub.name | Event hub name. | keyword |
+| azure.eventhub.offset | Offset | keyword |
+| azure.eventhub.partition_id | Partition ID | keyword |
+| azure.eventhub.sequence_number | Sequence number | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
@@ -176,7 +122,6 @@ An example event for `activitylogs` looks as following:
 | azure.resource.provider | Resource type/namespace | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
