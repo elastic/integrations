@@ -614,6 +614,22 @@ processors:
       description: "609001"
       pattern: "Built local-host %{_temp_.cisco.source_interface}:%{source.address}"
   - dissect:
+      if: "ctx._temp_.cisco.message_id == '607001'"
+      field: "message"
+      description: "607001"
+      pattern: "Pre-allocate SIP %{_temp_.cisco.connection_type} secondary channel for %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} to %{_temp_.cisco.source_interface}:%{source.address} from %{_temp_.cisco.message} message"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '607001'"
+      description: "607001"
+      field: "_temp_.cisco.connection_type"
+      patterns:
+        - "%{CONNECTION}"
+      pattern_definitions:
+        TRANSPORTS: "(?:UDP|TCP)"
+        PROTOCOLS: "(?:RTP|RTCP)"
+        CONNECTION: "(?:%{TRANSPORTS:network.transport}|%{PROTOCOLS:network.protocol})"
+      ignore_failure: true
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '609002'"
       field: "message"
       description: "609002"
@@ -1481,6 +1497,10 @@ processors:
   - convert:
       field: network.iana_number
       type: string
+      ignore_failure: true
+  - convert:
+      field: sip.to.uri.port
+      type: integer
       ignore_failure: true
   #
   # Assign ECS .ip fields from .address is a valid IP address is found,
