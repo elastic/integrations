@@ -158,6 +158,7 @@ An example event for `log` looks as following:
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.asa.security | Cisco FTD security event fields. | flattened |
+| cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
@@ -289,6 +290,7 @@ An example event for `log` looks as following:
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
+| source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | syslog.facility.code | Syslog numeric facility of the event. | long |
 | syslog.priority | Syslog priority of the event. | long |
