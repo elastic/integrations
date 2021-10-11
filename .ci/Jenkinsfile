@@ -14,6 +14,7 @@ pipeline {
     KIND_VERSION = "v0.11.1"
     K8S_VERSION = "v1.20.2"
     JOB_GCS_BUCKET = 'beats-ci-temp'
+    JOB_GCS_BUCKET_INTERNAL = 'beats-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
@@ -280,7 +281,7 @@ def archiveArtifactsSafe(remotePath, artifacts) {
   }
 
   googleStorageUploadExt(
-    bucket: "gs://${JOB_GCS_BUCKET}/${env.JOB_NAME}-${env.BUILD_ID}/${remotePath}",
+    bucket: "gs://${JOB_GCS_BUCKET_INTERNAL}/${env.JOB_NAME}-${env.BUILD_ID}/${remotePath}",
     credentialsId: "${JOB_GCS_EXT_CREDENTIALS}",
     pattern: artifacts)
 }
