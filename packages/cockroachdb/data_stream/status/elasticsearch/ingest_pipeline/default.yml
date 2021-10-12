@@ -1,0 +1,11 @@
+---
+description: Pipeline for renaming object
+processors:
+  - rename:
+      field: prometheus
+      target_field: cockroachdb.status
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
