@@ -101,7 +101,13 @@ processors:
               return hex;
           }
 
+          Boolean convertStringToBoolean(String value) {
+              value = value.toLowerCase();
+              return value == "yes" || value == "true" || value == "1";
+          }
+
           def possibleHexKeys = ["exe", "cmd", "data", "path", "comm", "file", "name", "watch", "cwd", "acct", "dir", "vm", "old-chardev", "new-chardev", "old-disk", "new-disk", "old-fs", "new-fs", "old-net", "new-net", "device", "cgroup", "apparmor", "operation", "denied_mask", "info", "profile", "requested_mask", "old-rng", "new-rng", "ocomm", "grp", "new_group", "invalid_context", "sw", "root_dir", "proctitle"];
+          def possibleBooleanKeys = ["success", "key_enforce"];
           def audit = ctx.auditd.get("log");
           Iterator entries = audit.entrySet().iterator();
 
@@ -119,6 +125,12 @@ processors:
               // Convert hex values to ASCII.
               if (possibleHexKeys.contains(k) && isHexAscii(v)) {
                   v = convertHexToString(v);
+                  audit.put(k, v);
+              }
+
+              // Convert string values to boolean.
+              if (possibleBooleanKeys.contains(k) && v instanceof String) {
+                  v = convertStringToBoolean(v);
                   audit.put(k, v);
               }
 
@@ -1978,10 +1990,10 @@ processors:
         ctx.auditd.log?.syscall == 'sendmsg' || ctx.auditd.log?.syscall == '46')
       field: network.direction
       value: egress
-  - rename:
-      ignore_failure: true
-      field: auditd.log.arch
-      target_field: host.architecture
+  - set:
+      copy_from: auditd.log.arch
+      field: host.architecture
+      if: ctx.auditd.log?.arch != null
   - rename:
       ignore_failure: true
       field: auditd.log.acct
@@ -2160,6 +2172,7 @@ processors:
         - auditd.log.sub_kv
         - auditd.log.epoch
         - auditd.log.copy
+        - auditd.log.arch
       ignore_failure: true
       ignore_missing: true
   - remove:
