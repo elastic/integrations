@@ -22,12 +22,12 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "1b7a9fbb-a90d-470e-9811-e1fd7c4f6c55",
+        "ephemeral_id": "fb887d16-d8b1-413d-82d6-25070087272d",
         "hostname": "docker-fleet-agent",
-        "id": "5b16b48b-68d1-4589-bba4-76bdb4090be8",
+        "id": "efa53f45-863c-4532-b896-0748b5888221",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "anomali": {
         "limo": {
@@ -45,19 +45,19 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12"
     },
     "elastic_agent": {
-        "id": "5b16b48b-68d1-4589-bba4-76bdb4090be8",
+        "id": "efa53f45-863c-4532-b896-0748b5888221",
         "snapshot": true,
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-12T14:55:11.905Z",
+        "created": "2021-10-12T19:09:18.878Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2021-10-12T14:55:13Z",
+        "ingested": "2021-10-12T19:09:20Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -182,59 +182,80 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-01-20T00:00:00.000Z",
+    "@timestamp": "2021-10-12T19:10:53.003Z",
     "agent": {
-        "ephemeral_id": "0711d005-3220-4a48-98bb-a34766cceac3",
+        "ephemeral_id": "650730db-b44b-4c25-9547-8a0e91a389d6",
         "hostname": "docker-fleet-agent",
-        "id": "2459bb20-8e28-46dc-aefa-ec5305227277",
+        "id": "efa53f45-863c-4532-b896-0748b5888221",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "anomali": {
-        "limo": {
-            "definition": {
-                "tlp": "green"
-            },
-            "definition_type": "tlp",
-            "id": "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
-            "type": "marking-definition"
+        "threatstream": {
+            "classification": "public",
+            "confidence": 56,
+            "detail2": "imported by user 723",
+            "id": "1785659799",
+            "import_session_id": "244",
+            "itype": "mal_md5",
+            "md5": "6466e2",
+            "resource_uri": "/api/v1/intelligence/P44706407813/",
+            "severity": "very-high",
+            "source_feed_id": "3759",
+            "state": "active",
+            "trusted_circle_ids": [
+                "439",
+                "942",
+                "801"
+            ],
+            "update_id": "3898969521",
+            "value_type": "md5"
         }
     },
     "data_stream": {
-        "dataset": "ti_anomali.limo",
+        "dataset": "ti_anomali.threatstream",
         "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12"
     },
     "elastic_agent": {
-        "id": "2459bb20-8e28-46dc-aefa-ec5305227277",
+        "id": "efa53f45-863c-4532-b896-0748b5888221",
         "snapshot": true,
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-12T11:41:01.365Z",
-        "dataset": "ti_anomali.limo",
-        "ingested": "2021-10-12T11:41:02Z",
+        "dataset": "ti_anomali.threatstream",
+        "ingested": "2021-10-12T19:10:54Z",
         "kind": "enrichment",
-        "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
+        "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
+        "severity": 9,
         "type": "indicator"
     },
     "input": {
-        "type": "httpjson"
+        "type": "http_endpoint"
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "anomali-limo"
+        "anomali-threatstream"
     ],
     "threat": {
         "indicator": {
-            "type": "unknown"
+            "confidence": "Med",
+            "first_seen": "2020-10-08T12:22:16.000Z",
+            "last_seen": "2020-10-08T12:24:42.000Z",
+            "marking": {
+                "tlp": [
+                    "White"
+                ]
+            },
+            "provider": "Default Organization",
+            "type": "file"
         }
     }
 }
