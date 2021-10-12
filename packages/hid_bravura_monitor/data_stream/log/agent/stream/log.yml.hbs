@@ -1,0 +1,21 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+line_terminator: carriage_return_line_feed
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        ecs.version: 1.7.0
+        hid_bravura_monitor.instancename: {{instancename}}
+        hid_bravura_monitor.node: {{node}}
+        hid_bravura_monitor.environment: {{environment}}
+        hid_bravura_monitor.instancetype: {{instancetype}}
+        event.timezone: {{timezone}}
+multiline:
+  type: pattern
+  pattern: ^[[:cntrl:]]
+  negate: true
+  match: after
