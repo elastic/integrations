@@ -1,0 +1,97 @@
+---
+description: Pipeline for parsing keycloak http logs
+processors:
+- kv:
+    field: message
+    target_field: json
+    field_split: ", "
+    value_split: "="
+    ignore_missing: true
+- rename:
+    field: json.error
+    target_field: event.code
+    ignore_missing: true
+    if: ctx.event?.code == null
+- rename:
+    field: json.type
+    target_field: keycloak.log.type
+    ignore_missing: true
+- rename:
+    field: json.realmId
+    target_field: keycloak.realm.id
+    ignore_missing: true
+- rename:
+    field: json.clientId
+    target_field: keycloak.client.id
+    ignore_missing: true
+- rename:
+    field: json.userId
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.ipAddress
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_failure: true
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.redirect_uri
+    target_field: keycloak.log.redirect_uri
+    ignore_missing: 
+- rename:
+    field: json.auth_method
+    target_field: keycloak.log.auth_method
+    ignore_missing: true
+- rename:
+    field: json.auth_type
+    target_field: keycloak.log.auth_type
+    ignore_missing: true
+- rename:
+    field: json.code_id
+    target_field: keycloak.log.code_id
+    ignore_missing: true
+- rename:
+    field: json.username
+    target_field: user.name
+    ignore_missing: true
+- rename:
+    field: json.authSessionParentId
+    target_field: keycloak.log.auth_session_parent_id
+    ignore_missing: true
+- rename:
+    field: json.authSessionTabId
+    target_field: keycloak.log.auth_session_tab_id
+    ignore_missing: true
+- remove:
+    field:
+      - message
+      - json
+    ignore_missing: true  
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
