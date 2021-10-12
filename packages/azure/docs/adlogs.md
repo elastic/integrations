@@ -250,61 +250,123 @@ An example event for `signinlogs` looks as following:
 ```json
 {
     "log": {
-        "level": "Information"
+        "level": "4"
+    },
+    "source": {
+        "geo": {
+            "continent_name": "Oceania",
+            "country_name": "Australia",
+            "location": {
+                "lon": 143.2104,
+                "lat": -33.494
+            },
+            "country_iso_code": "AU"
+        },
+        "as": {
+            "number": 13335,
+            "organization": {
+                "name": "Cloudflare, Inc."
+            }
+        },
+        "address": "1.1.1.1",
+        "ip": "1.1.1.1"
+    },
+    "message": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.",
+    "tags": [
+        "preserve_original_event"
+    ],
+    "geo": {
+        "country_name": "Seine-Et-Marne",
+        "city_name": "Champs-Sur-Marne",
+        "location": {
+            "lon": 2.12341234,
+            "lat": 48.12341234
+        },
+        "country_iso_code": "FR"
     },
     "cloud": {
         "provider": "azure"
     },
-    "@timestamp": "2020-11-02T08:51:36.997Z",
+    "@timestamp": "2019-10-18T09:45:48.072Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "1.11.0"
     },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "azure.auditlogs"
+    "related": {
+        "ip": [
+            "1.1.1.1"
+        ]
     },
-    "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
-    "azure.resource.provider": "Microsoft.aadiam",
-    "azure.signinlogs.category": "SignInLogs",
-    "azure.signinlogs.identity": "Test LTest",
-    "azure.signinlogs.operation_name": "Sign-in activity",
-    "azure.signinlogs.operation_version": "1.0",
-    "azure.signinlogs.properties.app_display_name": "Office 365",
-    "azure.signinlogs.properties.app_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.signinlogs.properties.client_app_used": "Browser",
-    "azure.signinlogs.properties.conditional_access_status": "notApplied",
-    "azure.signinlogs.properties.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.signinlogs.properties.created_at": "2019-10-18T04:45:48.0729893-05:00",
-    "azure.signinlogs.properties.device_detail.browser": "Chrome 77.0.3865",
-    "azure.signinlogs.properties.device_detail.device_id": "",
-    "azure.signinlogs.properties.device_detail.operating_system": "MacOs",
-    "azure.signinlogs.properties.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.signinlogs.properties.ip_address": "81.171.241.231",
-    "azure.signinlogs.properties.is_interactive": false,
-    "azure.signinlogs.properties.original_request_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.signinlogs.properties.processing_time_ms": 239,
-    "azure.signinlogs.properties.risk_detail": "none",
-    "azure.signinlogs.properties.risk_level_aggregated": "none",
-    "azure.signinlogs.properties.risk_level_during_signin": "none",
-    "azure.signinlogs.properties.risk_state": "none",
-    "azure.signinlogs.properties.service_principal_id": "",
-    "azure.signinlogs.properties.status.error_code": 50140,
-    "azure.signinlogs.properties.token_issuer_name": "",
-    "azure.signinlogs.properties.token_issuer_type": "AzureAD",
-    "azure.signinlogs.properties.user_display_name": "Test LTest",
-    "azure.signinlogs.properties.user_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.signinlogs.properties.user_principal_name": "test@elastic.co",
-    "azure.signinlogs.result_description": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.",
-    "azure.signinlogs.result_signature": "None",
-    "azure.signinlogs.result_type": "50140",
-    "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "cloud.provider": "azure",
-    "event.action": "Sign-in activity",
-    "event.category": [
-        "authentication"
-    ]
+    "client": {
+        "ip": "1.1.1.1"
+    },
+    "event": {
+        "duration": 0,
+        "ingested": "2021-09-14T17:20:47.736433526Z",
+        "original": "{\"Level\":\"4\",\"callerIpAddress\":\"1.1.1.1\",\"category\":\"SignInLogs\",\"correlationId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"durationMs\":0,\"identity\":\"Test LTest\",\"location\":\"FR\",\"operationName\":\"Sign-in activity\",\"operationVersion\":\"1.0\",\"properties\":{\"appDisplayName\":\"Office 365\",\"appId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"clientAppUsed\":\"Browser\",\"conditionalAccessStatus\":\"notApplied\",\"correlationId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"createdDateTime\":\"2019-10-18T04:45:48.0729893-05:00\",\"deviceDetail\":{\"browser\":\"Chrome 77.0.3865\",\"deviceId\":\"\",\"operatingSystem\":\"MacOs\"},\"id\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"ipAddress\":\"1.1.1.1\",\"isInteractive\":false,\"location\":{\"city\":\"Champs-Sur-Marne\",\"countryOrRegion\":\"FR\",\"geoCoordinates\":{\"latitude\":48.12341234,\"longitude\":2.12341234},\"state\":\"Seine-Et-Marne\"},\"originalRequestId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"processingTimeInMilliseconds\":239,\"riskDetail\":\"none\",\"riskLevelAggregated\":\"none\",\"riskLevelDuringSignIn\":\"none\",\"riskState\":\"none\",\"servicePrincipalId\":\"\",\"status\":{\"errorCode\":50140,\"failureReason\":\"This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.\"},\"tokenIssuerName\":\"\",\"tokenIssuerType\":\"AzureAD\",\"userDisplayName\":\"Test LTest\",\"userId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"userPrincipalName\":\"test@elastic.co\"},\"resourceId\":\"/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam\",\"resultDescription\":\"This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.\",\"resultSignature\":\"None\",\"resultType\":\"50140\",\"tenantId\":\"8a4de8b5-095c-47d0-a96f-a75130c61d53\",\"time\":\"2019-10-18T09:45:48.0729893Z\"}",
+        "kind": "event",
+        "action": "Sign-in activity",
+        "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+        "category": [
+            "authentication"
+        ],
+        "type": [
+            "info"
+        ],
+        "outcome": "failure"
+    },
+    "user": {
+        "name": "test",
+        "full_name": "Test LTest",
+        "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+        "domain": "elastic.co"
+    },
+    "azure": {
+        "tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+        "correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+        "signinlogs": {
+            "operation_name": "Sign-in activity",
+            "result_description": "This error occurred due to 'Keep me signed in' interrupt when the user was signing-in.",
+            "result_type": "50140",
+            "operation_version": "1.0",
+            "identity": "Test LTest",
+            "result_signature": "None",
+            "category": "SignInLogs",
+            "properties": {
+                "risk_level_aggregated": "none",
+                "client_app_used": "Browser",
+                "is_interactive": false,
+                "service_principal_id": "",
+                "app_display_name": "Office 365",
+                "created_at": "2019-10-18T04:45:48.0729893-05:00",
+                "risk_level_during_signin": "none",
+                "device_detail": {
+                    "device_id": "",
+                    "operating_system": "MacOs",
+                    "browser": "Chrome 77.0.3865"
+                },
+                "risk_detail": "none",
+                "token_issuer_name": "",
+                "risk_state": "none",
+                "user_principal_name": "test@elastic.co",
+                "token_issuer_type": "AzureAD",
+                "processing_time_ms": 239,
+                "original_request_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+                "user_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+                "conditional_access_status": "notApplied",
+                "correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+                "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+                "user_display_name": "Test LTest",
+                "app_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+                "status": {
+                    "error_code": 50140
+                }
+            }
+        },
+        "resource": {
+            "provider": "Microsoft.aadiam",
+            "id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam"
+        }
+    }
 }
 ```
 
@@ -326,32 +388,49 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.operation_version | The operation version | keyword |
 | azure.signinlogs.properties.app_display_name | App display name | keyword |
 | azure.signinlogs.properties.app_id | App ID | keyword |
+| azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | array |
+| azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | array |
+| azure.signinlogs.properties.authentication_processing_details | Additional authentication processing details, such as the agent name in case of PTA/PHS or Server/farm name in case of federated authentication. | flattened |
+| azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
+| azure.signinlogs.properties.authentication_requirement_policies | Set of CA policies that apply to this sign-in, each as CA: policy name, and/or MFA: Per-user | keyword |
+| azure.signinlogs.properties.autonomous_system_number | Autonomous system number. | long |
 | azure.signinlogs.properties.client_app_used | Client app used | keyword |
 | azure.signinlogs.properties.conditional_access_status | Conditional access status | keyword |
 | azure.signinlogs.properties.correlation_id | Correlation ID | keyword |
-| azure.signinlogs.properties.created_at | Created date time | date |
+| azure.signinlogs.properties.created_at | Date and time (UTC) the sign-in was initiated. | date |
+| azure.signinlogs.properties.cross_tenant_access_type |  | keyword |
 | azure.signinlogs.properties.device_detail.browser | Browser | keyword |
 | azure.signinlogs.properties.device_detail.device_id | Device ID | keyword |
 | azure.signinlogs.properties.device_detail.display_name | Display name | keyword |
 | azure.signinlogs.properties.device_detail.operating_system | Operating system | keyword |
 | azure.signinlogs.properties.device_detail.trust_type | Trust type | keyword |
-| azure.signinlogs.properties.id | ID | keyword |
-| azure.signinlogs.properties.ip_address | Ip address | keyword |
+| azure.signinlogs.properties.flagged_for_review |  | boolean |
+| azure.signinlogs.properties.home_tenant_id |  | keyword |
+| azure.signinlogs.properties.id | Unique ID representing the sign-in activity. | keyword |
 | azure.signinlogs.properties.is_interactive | Is interactive | boolean |
+| azure.signinlogs.properties.is_tenant_restricted |  | boolean |
+| azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | array |
 | azure.signinlogs.properties.original_request_id | Original request ID | keyword |
 | azure.signinlogs.properties.processing_time_ms | Processing time in milliseconds | float |
 | azure.signinlogs.properties.resource_display_name | Resource display name | keyword |
+| azure.signinlogs.properties.resource_id | The identifier of the resource that the user signed in to. | keyword |
+| azure.signinlogs.properties.resource_tenant_id |  | keyword |
 | azure.signinlogs.properties.risk_detail | Risk detail | keyword |
+| azure.signinlogs.properties.risk_event_types | The list of risk event types associated with the sign-in. Possible values: unlikelyTravel, anonymizedIPAddress, maliciousIPAddress, unfamiliarFeatures, malwareInfectedIPAddress, suspiciousIPAddress, leakedCredentials, investigationsThreatIntelligence, generic, or unknownFutureValue. | keyword |
+| azure.signinlogs.properties.risk_event_types_v2 | The list of risk event types associated with the sign-in. Possible values: unlikelyTravel, anonymizedIPAddress, maliciousIPAddress, unfamiliarFeatures, malwareInfectedIPAddress, suspiciousIPAddress, leakedCredentials, investigationsThreatIntelligence, generic, or unknownFutureValue. | keyword |
 | azure.signinlogs.properties.risk_level_aggregated | Risk level aggregated | keyword |
 | azure.signinlogs.properties.risk_level_during_signin | Risk level during signIn | keyword |
 | azure.signinlogs.properties.risk_state | Risk state | keyword |
-| azure.signinlogs.properties.service_principal_id | Status | keyword |
+| azure.signinlogs.properties.service_principal_id | The application identifier used for sign-in. This field is populated when you are signing in using an application. | keyword |
+| azure.signinlogs.properties.service_principal_name | The application name used for sign-in. This field is populated when you are signing in using an application. | keyword |
+| azure.signinlogs.properties.sso_extension_version |  | keyword |
 | azure.signinlogs.properties.status.error_code | Error code | long |
 | azure.signinlogs.properties.token_issuer_name | Token issuer name | keyword |
 | azure.signinlogs.properties.token_issuer_type | Token issuer type | keyword |
 | azure.signinlogs.properties.user_display_name | User display name | keyword |
 | azure.signinlogs.properties.user_id | User ID | keyword |
 | azure.signinlogs.properties.user_principal_name | User principal name | keyword |
+| azure.signinlogs.properties.user_type |  | keyword |
 | azure.signinlogs.result_description | Result description | keyword |
 | azure.signinlogs.result_signature | Result signature | keyword |
 | azure.signinlogs.result_type | Result type | keyword |
@@ -444,3 +523,10 @@ An example event for `signinlogs` looks as following:
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user_agent.device.name | Name of the device. | keyword |
+| user_agent.name | Name of the user agent. | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
