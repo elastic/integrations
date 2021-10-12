@@ -65,42 +65,68 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "github": {
-        "category": "team",
-        "org": "Example-Org",
-        "team": "Example-Org/admins"
+    "@timestamp": "2020-11-18T17:05:48.837Z",
+    "agent": {
+        "ephemeral_id": "5633bb96-3750-418a-a27c-e58227dafdd9",
+        "hostname": "docker-fleet-agent",
+        "id": "7ff657e8-482e-4c52-b7d7-394247247d53",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
     },
-    "@timestamp": "2021-01-25T23:46:49.430Z",
-    "related": {
-        "user": [
-            "github-actor",
-            "github-user"
-        ]
+    "data_stream": {
+        "dataset": "github.audit",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "client": {
-        "geo": {
-            "country_iso_code": "US"
-        }
+    "ecs": {
+        "version": "1.12"
+    },
+    "elastic_agent": {
+        "id": "7ff657e8-482e-4c52-b7d7-394247247d53",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
-        "action": "team.add_member",
-        "ingested": "2021-09-27T04:56:34.871123332Z",
-        "original": "{\"actor\":\"github-actor\",\"data\":{\"team\":\"Example-Org/admins\"},\"org\":\"Example-Org\",\"created_at\":1611618409430,\"action\":\"team.add_member\",\"actor_location\":{\"country_code\":\"US\"},\"user\":\"github-user\"}"
+        "action": "repo.destroy",
+        "agent_id_status": "verified",
+        "category": [
+            "web",
+            "iam"
+        ],
+        "created": "2021-10-12T20:42:48.203Z",
+        "dataset": "github.audit",
+        "id": "LwW2vpJZCDS-WUmo9Z-ifw",
+        "ingested": "2021-10-12T20:42:49Z",
+        "kind": "event",
+        "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
+        "type": [
+            "access"
+        ]
     },
-    "user": {
-        "name": "github-actor",
-        "target": {
-            "name": "github-user",
-            "group": {
-                "name": "Example-Org/admins"
-            }
-        }
+    "github": {
+        "category": "repo",
+        "org": "mona-org",
+        "repo": "mona-org/mona-test-repo"
+    },
+    "host": {
+        "name": "docker-fleet-agent"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "user": [
+            "monalisa"
+        ]
     },
     "tags": [
+        "forwarded",
+        "github-audit",
         "preserve_original_event"
     ],
-    "group": {
-        "name": "Example-Org/admins"
+    "user": {
+        "name": "monalisa"
     }
 }
 ```
