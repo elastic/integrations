@@ -1,0 +1,204 @@
+---
+description: "Pipeline for WAF logs"
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- set:
+    field: event.category
+    value: web
+- append:
+    field: event.type
+    value: access
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: json
+- date:
+    field: json.timestamp'
+    target_field: '@timestamp'
+    ignore_failure: true
+    formats:
+    - UNIX_MS
+- rename:
+    field: json.httpRequest.clientIp
+    target_field: source.ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- rename:
+    field: json.httpRequest.country
+    target_field: source.geo.country_iso_code
+    ignore_missing: true
+    if: ctx.source?.geo.country_iso_code == null
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: json.ClientASN
+    target_field: source.as.number
+    ignore_missing: true
+    if: ctx?.source?.as?.number == null
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.httpRequest.requestId
+    target_field: http.request.id
+    ignore_missing: true
+- rename:
+    field: json.httpRequest.httpMethod
+    target_field: http.request.method
+    ignore_missing: true
+- dissect:
+    field: json.httpRequest.httpVersion
+    pattern: "%{network.protocol}/%{http.version}"
+    ignore_failure: true
+- lowercase:
+    field: network.protocol
+    ignore_missing: true
+- set:
+    field: network.transport
+    value: tcp
+    if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
+- rename:
+    field: json.httpRequest.args
+    target_field: url.query
+    ignore_missing: true
+- rename:
+    field: json.httpRequest.uri
+    target_field: url.path
+    ignore_missing: true
+- rename:
+    field: json.terminatingRuleMatchDetails
+    target_field: aws.waf.terminating_rule_match_details
+    ignore_missing: true
+- rename:
+    field: json.ruleGroupList
+    target_field: aws.waf.rule_group_list
+    ignore_missing: true
+- rename:
+    field: json.rateBasedRuleList
+    target_field: aws.waf.rate_based_rule_list
+    ignore_missing: true
+- rename:
+    field: json.nonTerminatingMatchingRules
+    target_field: aws.waf.non_terminating_matching_rules
+    ignore_missing: true
+- script:
+    lang: painless
+    source: >-
+      if (ctx.json.httpRequest.headers != null) {
+        ctx.aws.waf.request = new HashMap();
+        ctx.aws.waf.request.headers = new HashMap();
+        for (def i = 0; i < ctx.json.httpRequest.headers.length; i++) {
+          ctx.aws.waf.request.headers[ctx.json.httpRequest.headers[i].name] = ctx.json.httpRequest.headers[i].value;
+        }
+      }
+    ignore_failure: true
+- rename:
+    field: json.action
+    target_field: event.action
+    ignore_missing: true
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- set:
+    field: cloud.provider
+    value: aws
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.type
+    value: allowed
+    if: ctx.event.action == "ALLOW"
+- append:
+    field: event.type
+    value: denied
+    if: ctx.event.action == "BLOCK"
+- rename:
+    field: json.webaclId
+    target_field: aws.waf.arn
+    ignore_missing: true
+- dissect:
+    field: aws.waf.arn
+    pattern: "arn:%{}:%{cloud.service.name}:%{cloud.region}:%{cloud.account.id}:%{aws.waf.id}"
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.terminatingRuleId
+    target_field: rule.id
+    ignore_missing: true
+- rename:
+    field: json.terminatingRuleType
+    target_field: rule.ruleset
+    ignore_missing: true
+- rename:
+    field: json.httpSourceName
+    target_field: aws.waf.source.name
+    ignore_missing: true
+- rename:
+    field: json.httpSourceId
+    target_field: aws.waf.source.id
+    ignore_missing: true
+
+  #
+  # Remove temporary fields
+  #
+- remove:
+    field: json
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+        void handleMap(Map map) {
+            for (def x : map.values()) {
+                if (x instanceof Map) {
+                    handleMap(x);
+                } else if (x instanceof List) {
+                    handleList(x);
+                }
+            }
+            map.values().removeIf(v -> v == null || v == "" || v == "-" || ((v instanceof List || v instanceof Map) && v.isEmpty()));
+        }
+        void handleList(List list) {
+            for (def x : list) {
+                if (x instanceof Map) {
+                    handleMap(x);
+                } else if (x instanceof List) {
+                    handleList(x);
+                }
+            }
+        }
+        handleMap(ctx);
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
