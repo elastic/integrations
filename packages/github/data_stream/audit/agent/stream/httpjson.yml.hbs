@@ -1,0 +1,69 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{api_url}}/orgs/{{organization}}/audit-log
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+{{!-- https://github.community/t/new-feature-audit-log-rest-api-check-it-out/161512 --}}
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: "Bearer {{access_token}}"
+  - set:
+      target: header.Accept
+      value: "application/vnd.github.v3+json"
+  - set:
+      target: url.params.phrase
+      value: '[[sprintf "created:=>%s" (formatDate .cursor.last_timestamp "20060102T15:04:05-0700")]]'
+      default: '[[sprintf "created:=>%s" (formatDate (now (parseDuration "-{{initial_interval}}")) "20060102T15:04:05-0700")]]'
+  - set:
+      target: url.params.per_page
+      value: 100
+  - set:
+      target: url.params.include
+      value: all
+  - set:
+      target: url.params.order
+      value: asc
+
+request.rate_limit.limit: '[[ .last_response.header.Get "X-RateLimit-Limit" ]]'
+request.rate_limit.reset: '[[ .last_response.header.Get "X-RateLimit-Reset" ]]'
+request.rate_limit.remaining: '[[ .last_response.header.Get "X-RateLimit-Remaining" ]]'
+
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[ getRFC5988Link "next" .last_response.header.Link ]]'
+      fail_on_template_error: true
+
+cursor:
+  last_timestamp:
+    value: '[[ .last_event.created_at ]]'
+
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
