@@ -13,7 +13,6 @@ There are several requirements before using the integration since the logs will 
 `eventhub` :
   _string_
 Is the fully managed, real-time data ingestion service.
-Default value `insights-operational-logs`.
 
 `consumer_group` :
 _string_
