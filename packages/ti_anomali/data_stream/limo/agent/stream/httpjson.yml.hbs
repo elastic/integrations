@@ -1,0 +1,60 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+
+auth.basic.user: guest
+auth.basic.password: guest
+
+{{#if url}}
+request.url: {{url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+request.redirect.forward_headers: true
+
+request.transforms:
+  - set:
+      target: header.Content-Type
+      value: application/vnd.oasis.taxii+json
+  - set:
+      target: header.Accept
+      value: application/vnd.oasis.taxii+json
+  - set:
+      target: header.Range
+      value: items 0-10000
+  - set:
+      target: url.params.match[type]
+      value: indicator
+  - set:
+      target: url.params.added_after
+      value: '[[.cursor.timestamp]]'
+      default: '[[ formatDate (now (parseDuration "-{{first_interval}}")) "2006-01-02T15:04:05.000Z" ]]'
+
+response.split:
+  target: body.objects
+
+cursor:
+  timestamp:
+    value: '[[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]]'
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
