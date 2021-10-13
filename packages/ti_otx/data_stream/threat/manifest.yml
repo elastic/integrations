@@ -1,0 +1,98 @@
+type: logs
+title: Alienvault OTX logs
+streams:
+  - input: httpjson
+    vars:
+      - name: url
+        type: text
+        title: Alienvault OTX API endpoint
+        multi: false
+        required: true
+        show_user: false
+        default: https://otx.alienvault.com/api/v1/indicators/export
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: api_token
+        type: text
+        title: API Token
+        multi: false
+        required: true
+        show_user: true
+        description: The Alienvault OTX API token
+      - name: first_interval
+        type: text
+        title: First Interval
+        multi: false
+        required: true
+        show_user: false
+        description: Configures how far back in time the agent should retrieve data from the API in hours.
+        default: 400h
+      - name: lookback_range
+        type: text
+        title: Lookback Range
+        multi: false
+        required: true
+        show_user: false
+        description: How many hours to look back for each request, should not be smaller than the interval (default 5m).
+        default: 1h
+      - name: types
+        type: text
+        title: Filter on indicator types
+        multi: false
+        required: false
+        show_user: false
+        description: "A comma separated list of indicator types to retrieve, example: 'domain,IPv4,hostname,url,FileHash-SHA256'"
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - otx-threat
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: httpjson.yml.hbs
+    title: Alienvault OTX logs
+    description: Collect Alienvault OTX logs
