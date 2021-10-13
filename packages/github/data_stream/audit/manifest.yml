@@ -1,0 +1,91 @@
+type: logs
+title: GitHub Audit Logs
+release: experimental
+streams:
+  - input: httpjson
+    vars:
+      - name: access_token
+        type: text
+        title: Personal Access Token
+        description: the GitHub Personal Access Token.  Requires the 'admin:org' scope
+        multi: false
+        required: true
+        show_user: true
+      - name: organization
+        type: text
+        title: Organization Name
+        description: The GitHub organization name/ID
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 730h # 30 days
+        description: Initial interval to poll for events.  Default is 730 hours (30 days).
+      - name: api_url
+        type: text
+        title: API URL.
+        description: The API URL without the path.
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.github.com
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - github-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+    template_path: httpjson.yml.hbs
+    title: GitHub audit logs
+    description: Collect GitHub audit logs via the API
