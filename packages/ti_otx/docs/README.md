@@ -95,14 +95,14 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-06T07:36:31.953Z",
+    "@timestamp": "2021-10-13T12:10:00.438Z",
     "agent": {
-        "ephemeral_id": "aca3197d-e4f0-4c89-81f4-cadb7d11d9cb",
+        "ephemeral_id": "791762d9-d7b5-4256-aec5-d48daa164d20",
         "hostname": "docker-fleet-agent",
-        "id": "dd61737c-934b-4167-9b2c-60630a6fa1e8",
+        "id": "3936b46d-0117-42fb-91b9-6b771d10332d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "ti_otx.threat",
@@ -110,19 +110,19 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12"
     },
     "elastic_agent": {
-        "id": "dd61737c-934b-4167-9b2c-60630a6fa1e8",
+        "id": "3936b46d-0117-42fb-91b9-6b771d10332d",
         "snapshot": true,
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-06T07:36:31.953Z",
+        "created": "2021-10-13T12:10:00.438Z",
         "dataset": "ti_otx.threat",
-        "ingested": "2021-10-06T07:36:32Z",
+        "ingested": "2021-10-13T12:10:01Z",
         "kind": "enrichment",
         "original": "{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}",
         "type": "indicator"
