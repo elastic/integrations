@@ -75,11 +75,11 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-13T03:02:39.449Z",
+    "@timestamp": "2021-10-13T03:27:26.362Z",
     "agent": {
-        "ephemeral_id": "d9ddd637-acb3-44c7-b5db-1a68222072c3",
+        "ephemeral_id": "fb2d978e-e42d-49f5-8ca1-4fac9f7d9b52",
         "hostname": "docker-fleet-agent",
-        "id": "1c739257-9baa-409b-b2d5-cd028e26c356",
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -93,7 +93,7 @@ An example event for `audit` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "1c739257-9baa-409b-b2d5-cd028e26c356",
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
         "snapshot": true,
         "version": "7.15.0"
     },
@@ -104,10 +104,10 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "hashicorp_vault.audit",
-        "id": "b54b40e0-a529-1d7d-9f77-9b3c5d75548b",
-        "ingested": "2021-10-13T03:03:09Z",
+        "id": "ce68275e-dce8-42b4-4a79-6b366a3b702e",
+        "ingested": "2021-10-13T03:27:54Z",
         "kind": "event",
-        "original": "{\"time\":\"2021-10-13T03:02:39.449873029Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"b54b40e0-a529-1d7d-9f77-9b3c5d75548b\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
+        "original": "{\"time\":\"2021-10-13T03:27:26.362354182Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"ce68275e-dce8-42b4-4a79-6b366a3b702e\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
         "outcome": "success",
         "type": [
             "change"
@@ -119,7 +119,7 @@ An example event for `audit` looks as following:
                 "token_type": "default"
             },
             "request": {
-                "id": "b54b40e0-a529-1d7d-9f77-9b3c5d75548b",
+                "id": "ce68275e-dce8-42b4-4a79-6b366a3b702e",
                 "namespace": {
                     "id": "root"
                 },
@@ -135,10 +135,10 @@ An example event for `audit` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.96.7"
+            "192.168.176.4"
         ],
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02:42:c0:a8:b0:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -288,11 +288,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-13T03:03:48.711Z",
+    "@timestamp": "2021-10-13T03:28:31.135Z",
     "agent": {
-        "ephemeral_id": "79f9e34b-9faf-45ab-a458-4d302ae6c0db",
+        "ephemeral_id": "cb3b166e-309d-4fea-8cd3-c65ca734fb4b",
         "hostname": "docker-fleet-agent",
-        "id": "1c739257-9baa-409b-b2d5-cd028e26c356",
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.15.0"
@@ -306,16 +306,16 @@ An example event for `log` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "1c739257-9baa-409b-b2d5-cd028e26c356",
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
         "snapshot": true,
         "version": "7.15.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hashicorp_vault.log",
-        "ingested": "2021-10-13T03:04:15Z",
+        "ingested": "2021-10-13T03:29:02Z",
         "kind": "event",
-        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2021-10-13T03:03:48.711534Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
+        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2021-10-13T03:28:31.135796Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
     },
     "hashicorp_vault": {
         "log": {
@@ -330,10 +330,10 @@ An example event for `log` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "192.168.96.7"
+            "192.168.176.4"
         ],
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02:42:c0:a8:b0:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
