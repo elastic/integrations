@@ -133,112 +133,139 @@ An example event for `siem` looks as following:
 
 ```json
 {
+    "@timestamp": "2016-08-11T13:45:33.026Z",
+    "agent": {
+        "ephemeral_id": "39e2d624-c2bc-4df8-b5dd-7d395d205293",
+        "hostname": "docker-fleet-agent",
+        "id": "3cef3845-4376-4318-8f12-6c07ef2ed559",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
     "akamai": {
         "siem": {
-            "client_data": {
-                "sdk_version": "4.7.1",
-                "app_version": "1.23",
-                "telemetry_type": 2,
-                "app_bundle_id": "com.mydomain.myapp"
+            "bot": {
+                "response_segment": 3,
+                "score": 100
             },
+            "client_data": {
+                "app_bundle_id": "com.mydomain.myapp",
+                "app_version": "1.23",
+                "sdk_version": "4.7.1",
+                "telemetry_type": 2
+            },
+            "config_id": "6724",
+            "policy_id": "scoe_5426",
             "request": {
                 "headers": {
                     "Accept": "text/html,application/xhtml xml",
                     "User-Agent": "BOT/0.1 (BOT for JCE)"
                 }
             },
-            "policy_id": "qik1_26545",
-            "config_id": "14227",
             "response": {
                 "headers": {
-                    "Server": "AkamaiGHost",
+                    "Content-Type": "text/html",
                     "Mime-Version": "1.0",
-                    "Content-Length": "150",
-                    "Content-Type": "text/html"
+                    "Server": "AkamaiGHost"
                 }
             },
-            "bot": {
-                "score": 100,
-                "response_segment": 3
-            },
+            "rules": [
+                {
+                    "ruleActions": "ALERT",
+                    "ruleData": "alert(",
+                    "ruleMessages": "Cross-site Scripting (XSS) Attack",
+                    "ruleSelectors": "ARGS:a",
+                    "ruleTags": "WEB_ATTACK/XSS",
+                    "rules": "950004"
+                },
+                {
+                    "ruleActions": "DENY",
+                    "ruleData": "curl",
+                    "ruleMessages": "Request Indicates an automated program explored the site",
+                    "ruleSelectors": "REQUEST_HEADERS:User-Agent",
+                    "ruleTags": "AUTOMATION/MISC",
+                    "rules": "990011"
+                }
+            ],
             "user_risk": {
                 "allow": 0,
-                "trust": {
-                    "ugp": "US"
-                },
-                "score": 75,
                 "general": {
                     "duc_1d": "30",
                     "duc_1h": "10"
                 },
                 "risk": {
-                    "unp": "74256/H",
-                    "udfp": "1325gdg4g4343g/M"
+                    "udfp": "1325gdg4g4343g/M",
+                    "unp": "74256/H"
                 },
-                "uuid": "964d54b7-0821-413a-a4d6-8131770ec8d5",
-                "status": 0
-            },
-            "rules": [
-                {
-                    "ruleSelectors": "ARGS:option",
-                    "ruleVersions": "4",
-                    "ruleMessages": "System Command Access",
-                    "ruleTags": "OWASP_CRS/WEB_ATTACK/FILE_INJECTION",
-                    "ruleActions": "alert",
-                    "rules": "950002",
-                    "ruleData": "telnet.exe"
+                "score": 75,
+                "status": 0,
+                "trust": {
+                    "ugp": "US"
                 },
-                {
-                    "ruleSelectors": "ARGS:option",
-                    "ruleVersions": "4",
-                    "ruleMessages": "System Command Injection",
-                    "ruleTags": "OWASP_CRS/WEB_ATTACK/COMMAND_INJECT",
-                    "ruleActions": "alert",
-                    "rules": "950006",
-                    "ruleData": "telnet.exe"
-                },
-                {
-                    "ruleVersions": "1",
-                    "rules": "CMD-INJECTION-ANOMALY",
-                    "ruleMessages": "Anomaly Score Exceeded fo",
-                    "ruleData": "Vector Score: 10, DENY threshold: 9, Ale",
-                    "ruleActions": "deny"
-                }
-            ]
+                "uuid": "964d54b7-0821-413a-a4d6-8131770ec8d5"
+            }
         }
     },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-VA",
-            "city_name": "Ashburn",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Virginia",
-            "location": {
-                "lon": -77.4728,
-                "lat": 39.0481
-            }
-        },
+    "client": {
+        "address": "52.91.36.10",
         "as": {
             "number": 14618,
             "organization": {
                 "name": "Amazon.com, Inc."
             }
         },
-        "address": "52.91.36.10",
+        "geo": {
+            "city_name": "Ashburn",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 39.0481,
+                "lon": -77.4728
+            },
+            "region_iso_code": "US-VA",
+            "region_name": "Virginia"
+        },
         "ip": "52.91.36.10"
     },
-    "url": {
-        "path": "/",
-        "port": 80,
-        "domain": "www.hmapi.com",
-        "query": "option=com_jce telnet.exe",
-        "full": "www.hmapi.com/?option=com_jce%20telnet.exe"
+    "data_stream": {
+        "dataset": "akamai.siem",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "3cef3845-4376-4318-8f12-6c07ef2ed559",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2021-10-13T10:47:10.769Z",
+        "dataset": "akamai.siem",
+        "id": "2ab418ac8515f33",
+        "ingested": "2021-10-13T10:47:11Z",
+        "kind": "event",
+        "original": "{\"attackData\":{\"clientIP\":\"52.91.36.10\",\"configId\":\"6724\",\"policyId\":\"scoe_5426\",\"ruleActions\":\"QUxFUlQ;REVOWQ==\",\"ruleData\":\"YWxlcnQo;Y3VybA==\",\"ruleMessages\":\"Q3Jvc3Mtc2l0ZSBTY3 JpcHRpbmcgKFhTUykgQXR0YWNr; UmVxdWVzdCBJbmRpY2F0ZXMgYW4 gYXV0b21hdGVkIHByb2 dyYW0gZXhwbG9yZWQgdGhlIHNpdGU=\",\"ruleSelectors\":\"QVJHUzph;UkVRVUVTVF9IRU FERVJTOlVzZXItQWdlbnQ=\",\"ruleTags\":\"V0VCX0FUVEFDSy9YU1M=;QV VUT01BVElPTi9NSVND\",\"ruleVersions\":\";\",\"rules\":\"OTUwMDA0;OTkwMDEx\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"format\":\"json\",\"geo\":{\"asn\":\"12271\",\"city\":\"NEWYORK\",\"continent\":\"NA\",\"country\":\"US\",\"regionCode\":\"NY\"},\"httpMessage\":{\"bytes\":\"34523\",\"host\":\"www.example.com\",\"method\":\"POST\",\"path\":\"/examples/1/\",\"port\":\"80\",\"protocol\":\"http/2\",\"query\":\"a%3D..%2F..%2F..%2Fetc%2Fpasswd\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"2ab418ac8515f33\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml\",\"start\":\"1470923133.026\",\"status\":\"301\",\"tls\":\"TLSv1.2\"},\"type\":\"akamai_siem\",\"userRiskData\":{\"allow\":\"0\",\"general\":\"duc_1h:10|duc_1d:30\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"score\":\"75\",\"status\":\"0\",\"trust\":\"ugp:US\",\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\"},\"version\":\"1.0\"}",
+        "start": "2016-08-11T13:45:33.026Z"
+    },
+    "http": {
+        "request": {
+            "id": "2ab418ac8515f33",
+            "method": "POST"
+        },
+        "response": {
+            "bytes": 34523,
+            "status_code": 301
+        },
+        "version": "2"
+    },
+    "input": {
+        "type": "httpjson"
+    },
     "network": {
         "protocol": "http",
         "transport": "tcp"
@@ -247,51 +274,47 @@ An example event for `siem` looks as following:
         "type": "proxy",
         "vendor": "akamai"
     },
-    "@timestamp": "2017-04-04T10:57:02.000Z",
     "related": {
         "ip": [
             "52.91.36.10"
         ]
     },
-    "http": {
-        "request": {
-            "method": "GET",
-            "id": "1158db1758e37bfe67b7c09"
-        },
-        "version": "1.1",
-        "response": {
-            "bytes": 266,
-            "status_code": 200
-        }
-    },
-    "client": {
-        "geo": {
-            "continent_name": "North America",
-            "region_iso_code": "US-VA",
-            "city_name": "Ashburn",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "region_name": "Virginia",
-            "location": {
-                "lon": -77.4728,
-                "lat": 39.0481
-            }
-        },
+    "source": {
+        "address": "52.91.36.10",
         "as": {
             "number": 14618,
             "organization": {
                 "name": "Amazon.com, Inc."
             }
         },
-        "address": "52.91.36.10",
+        "geo": {
+            "city_name": "Ashburn",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 39.0481,
+                "lon": -77.4728
+            },
+            "region_iso_code": "US-VA",
+            "region_name": "Virginia"
+        },
         "ip": "52.91.36.10"
     },
-    "event": {
-        "start": "2017-04-04T10:57:02.000Z",
-        "ingested": "2021-09-12T14:04:53.349612247Z",
-        "original": "{\"format\":\"json\",\"type\":\"akamai_siem\",\"version\":\"1.0\",\"attackData\":{\"clientIP\":\"52.91.36.10\",\"configId\":\"14227\",\"policyId\":\"qik1_26545\",\"ruleActions\":\"YWxlcnQ%3d%3bYWxlcnQ%3d%3bZGVueQ%3d%3d\",\"ruleData\":\"dGVsbmV0LmV4ZQ%3d%3d%3bdGVsbmV0LmV4ZQ%3d%3d%3bVmVjdG9yIFNjb3JlOiAxMCwgREVOWSB0aHJlc2hvbGQ6IDksIEFsZX \",\"ruleMessages\":\"U3lzdGVtIENvbW1hbmQgQWNjZXNz%3bU3lzdGVtIENvbW1hbmQgSW5qZWN0aW9u%3bQW5vbWFseSBTY29yZSBFeGNlZWRlZCBmb3 \",\"ruleSelectors\":\"QVJHUzpvcHRpb24%3d%3bQVJHUzpvcHRpb24%3d%3b\",\"ruleTags\":\"T1dBU1BfQ1JTL1dFQl9BVFRBQ0svRklMRV9JTkpFQ1RJT04%3d%3bT1dBU1BfQ1JTL1dFQl9BVFRBQ0svQ09NTUFORF9JTkpFQ1R \",\"ruleVersions\":\"NA%3d%3d%3bNA%3d%3d%3bMQ%3d%3d\",\"rules\":\"OTUwMDAy%3bOTUwMDA2%3bQ01ELUlOSkVDVElPTi1BTk9NQUxZ\"},\"geo\":{\"asn\":\"14618\",\"city\":\"ASHBURN\",\"continent\":\"288\",\"country\":\"US\",\"regionCode\":\"VA\"},\"httpMessage\":{\"bytes\":\"266\",\"host\":\"www.hmapi.com\",\"method\":\"GET\",\"path\":\"/\",\"port\":\"80\",\"protocol\":\"HTTP/1.1\",\"query\":\"option=com_jce%20telnet.exe\",\"requestHeaders\":\"User-Agent%3a%20BOT%2f0.1%20(BOT%20for%20JCE)%0d%0aAccept%3a%20text%2fhtml,application%2fxhtml+xml\",\"requestId\":\"1158db1758e37bfe67b7c09\",\"responseHeaders\":\"Server%3a%20AkamaiGHost%0d%0aMime-Version%3a%201.0%0d%0aContent-Type%3a%20text%2fhtml%0d%0aContent-Length%3a%20150\",\"start\":\"1491303422\",\"status\":\"200\"},\"userRiskData\":{\"uuid\":\"964d54b7-0821-413a-a4d6-8131770ec8d5\",\"status\":\"0\",\"score\":\"75\",\"risk\":\"udfp:1325gdg4g4343g/M|unp:74256/H\",\"trust\":\"ugp:US\",\"general\":\"duc_1h:10|duc_1d:30\",\"allow\":\"0\"},\"clientData\":{\"appBundleId\":\"com.mydomain.myapp\",\"appVersion\":\"1.23\",\"sdkVersion\":\"4.7.1\",\"telemetryType\":\"2\"},\"botData\":{\"botScore\":\"100\",\"responseSegment\":\"3\"}}",
-        "category": "network",
-        "kind": "event"
+    "tags": [
+        "forwarded",
+        "preserve_original_event"
+    ],
+    "tls": {
+        "version": "1.2",
+        "version_protocol": "tls"
+    },
+    "url": {
+        "domain": "www.example.com",
+        "full": "www.example.com/examples/1/?a%3D..%2F..%2F..%2Fetc%2Fpasswd",
+        "path": "/examples/1/",
+        "port": 80,
+        "query": "a=../../../etc/passwd"
     }
 }
 ```
