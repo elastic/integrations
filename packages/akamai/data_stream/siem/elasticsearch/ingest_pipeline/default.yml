@@ -50,6 +50,15 @@ processors:
     field: json.httpMessage.requestId
     target_field: http.request.id
     ignore_missing: true
+- set:
+    field: event.id
+    copy_from: http.request.id
+    ignore_empty_value: true
+- fingerprint:
+    fields: 
+        - http.request.id
+    target_field: "_id"
+    ignore_missing: true
 - rename:
     field: json.httpMessage.method
     target_field: http.request.method
