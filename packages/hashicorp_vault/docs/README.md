@@ -75,19 +75,39 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-12-01T20:29:04.360Z",
+    "@timestamp": "2021-10-13T03:27:26.362Z",
+    "agent": {
+        "ephemeral_id": "fb2d978e-e42d-49f5-8ca1-4fac9f7d9b52",
+        "hostname": "docker-fleet-agent",
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.15.0"
+    },
+    "data_stream": {
+        "dataset": "hashicorp_vault.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "1.12.0"
     },
+    "elastic_agent": {
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
     "event": {
         "action": "update",
+        "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "id": "cd09708b-11cc-2985-648b-cfe262cf7e50",
-        "ingested": "2021-07-22T19:46:28.190476696Z",
+        "dataset": "hashicorp_vault.audit",
+        "id": "ce68275e-dce8-42b4-4a79-6b366a3b702e",
+        "ingested": "2021-10-13T03:27:54Z",
         "kind": "event",
-        "original": "{\"time\":\"2020-12-01T20:29:04.36089379Z\",\"type\":\"response\",\"auth\":{\"client_token\":\"hmac-sha256:9cc3baa3c2bd7a4b233ca1fdcf69df91c8f2a9f14ddda54a4039190f581dd327\",\"accessor\":\"hmac-sha256:eb605bd7f8a5ceb951b9ab42cae6d6c3f12f203cb2c2a78e33e899f77dceb931\",\"display_name\":\"oidc-12349999999999999999\",\"policies\":[\"default\",\"group-admin\"],\"token_policies\":[\"default\",\"group-admin\"],\"metadata\":{\"account_id\":\"12349999999999999999\",\"email\":\"example@gmail.com\",\"role\":\"gmail\"},\"entity_id\":\"e4f5c67a-6f7e-789d-ae56-a1fe3ae23046\",\"token_type\":\"service\",\"token_ttl\":3600,\"token_issue_time\":\"2020-12-01T20:28:40Z\"},\"request\":{\"id\":\"cd09708b-11cc-2985-648b-cfe262cf7e50\",\"operation\":\"update\",\"mount_type\":\"system\",\"client_token\":\"hmac-sha256:9cc3baa3c2bd7a4b233ca1fdcf69df91c8f2a9f14ddda54a4039190f581dd327\",\"client_token_accessor\":\"hmac-sha256:eb605bd7f8a5ceb951b9ab42cae6d6c3f12f203cb2c2a78e33e899f77dceb931\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/capabilities-self\",\"data\":{\"paths\":[\"hmac-sha256:fd04b28916cb60f622b1ebce308b339b468f5da93fa735f985f4435049627a27\"]},\"remote_address\":\"156.33.241.5\"},\"response\":{\"mount_type\":\"system\",\"data\":{\"capabilities\":[\"hmac-sha256:b77b79078c7bad1402a1ec74613454fd85efa203f1aa557fd2a9718cfd4ef367\",\"hmac-sha256:8d0bb80a69f442489908170e1831503c65b2f9d45a3250eac21fc16840416e5a\",\"hmac-sha256:c5086738f6225235066f69681e94111d94a45a268e9f0c64c6105073e32e8176\",\"hmac-sha256:3d439b7d92cbd8123fda8462716af05ae15710c8e2905eaba8d5452fccbad2f2\",\"hmac-sha256:5622a2d8fedf53e4671d6f371c59e40f3379030815fd4bb4126fdedce5fc87bb\"],\"secret/metadata/apps/github-runner/ca-cert\":[\"hmac-sha256:b77b79078c7bad1402a1ec74613454fd85efa203f1aa557fd2a9718cfd4ef367\",\"hmac-sha256:8d0bb80a69f442489908170e1831503c65b2f9d45a3250eac21fc16840416e5a\",\"hmac-sha256:c5086738f6225235066f69681e94111d94a45a268e9f0c64c6105073e32e8176\",\"hmac-sha256:3d439b7d92cbd8123fda8462716af05ae15710c8e2905eaba8d5452fccbad2f2\",\"hmac-sha256:5622a2d8fedf53e4671d6f371c59e40f3379030815fd4bb4126fdedce5fc87bb\"]}}}",
+        "original": "{\"time\":\"2021-10-13T03:27:26.362354182Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"ce68275e-dce8-42b4-4a79-6b366a3b702e\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
         "outcome": "success",
         "type": [
             "change"
@@ -96,99 +116,54 @@ An example event for `audit` looks as following:
     "hashicorp_vault": {
         "audit": {
             "auth": {
-                "accessor": "hmac-sha256:eb605bd7f8a5ceb951b9ab42cae6d6c3f12f203cb2c2a78e33e899f77dceb931",
-                "client_token": "hmac-sha256:9cc3baa3c2bd7a4b233ca1fdcf69df91c8f2a9f14ddda54a4039190f581dd327",
-                "display_name": "oidc-12349999999999999999",
-                "entity_id": "e4f5c67a-6f7e-789d-ae56-a1fe3ae23046",
-                "metadata": {
-                    "account_id": "12349999999999999999",
-                    "email": "example@gmail.com",
-                    "role": "gmail"
-                },
-                "policies": [
-                    "default",
-                    "group-admin"
-                ],
-                "token_issue_time": "2020-12-01T20:28:40Z",
-                "token_policies": [
-                    "default",
-                    "group-admin"
-                ],
-                "token_ttl": 3600,
-                "token_type": "service"
+                "token_type": "default"
             },
             "request": {
-                "client_token": "hmac-sha256:9cc3baa3c2bd7a4b233ca1fdcf69df91c8f2a9f14ddda54a4039190f581dd327",
-                "client_token_accessor": "hmac-sha256:eb605bd7f8a5ceb951b9ab42cae6d6c3f12f203cb2c2a78e33e899f77dceb931",
-                "data": {
-                    "paths": [
-                        "hmac-sha256:fd04b28916cb60f622b1ebce308b339b468f5da93fa735f985f4435049627a27"
-                    ]
-                },
-                "id": "cd09708b-11cc-2985-648b-cfe262cf7e50",
-                "mount_type": "system",
+                "id": "ce68275e-dce8-42b4-4a79-6b366a3b702e",
                 "namespace": {
                     "id": "root"
                 },
                 "operation": "update",
-                "path": "sys/capabilities-self",
-                "remote_address": "156.33.241.5"
+                "path": "sys/audit/test"
             },
-            "response": {
-                "data": {
-                    "capabilities": [
-                        "hmac-sha256:b77b79078c7bad1402a1ec74613454fd85efa203f1aa557fd2a9718cfd4ef367",
-                        "hmac-sha256:8d0bb80a69f442489908170e1831503c65b2f9d45a3250eac21fc16840416e5a",
-                        "hmac-sha256:c5086738f6225235066f69681e94111d94a45a268e9f0c64c6105073e32e8176",
-                        "hmac-sha256:3d439b7d92cbd8123fda8462716af05ae15710c8e2905eaba8d5452fccbad2f2",
-                        "hmac-sha256:5622a2d8fedf53e4671d6f371c59e40f3379030815fd4bb4126fdedce5fc87bb"
-                    ],
-                    "secret/metadata/apps/github-runner/ca-cert": [
-                        "hmac-sha256:b77b79078c7bad1402a1ec74613454fd85efa203f1aa557fd2a9718cfd4ef367",
-                        "hmac-sha256:8d0bb80a69f442489908170e1831503c65b2f9d45a3250eac21fc16840416e5a",
-                        "hmac-sha256:c5086738f6225235066f69681e94111d94a45a268e9f0c64c6105073e32e8176",
-                        "hmac-sha256:3d439b7d92cbd8123fda8462716af05ae15710c8e2905eaba8d5452fccbad2f2",
-                        "hmac-sha256:5622a2d8fedf53e4671d6f371c59e40f3379030815fd4bb4126fdedce5fc87bb"
-                    ]
-                },
-                "mount_type": "system"
-            },
-            "type": "response"
+            "type": "request"
         }
     },
-    "related": {
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
         "ip": [
-            "156.33.241.5"
-        ]
+            "192.168.176.4"
+        ],
+        "mac": [
+            "02:42:c0:a8:b0:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-37-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
     },
-    "source": {
-        "as": {
-            "number": 3495,
-            "organization": {
-                "name": "US Senate"
-            }
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/vault/audit.json"
         },
-        "geo": {
-            "city_name": "Washington",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 38.9034,
-                "lon": -76.9882
-            },
-            "region_iso_code": "US-DC",
-            "region_name": "District of Columbia"
-        },
-        "ip": "156.33.241.5"
+        "offset": 0
     },
     "tags": [
-        "preserve_original_event"
-    ],
-    "user": {
-        "email": "example@gmail.com",
-        "id": "12349999999999999999"
-    }
+        "preserve_original_event",
+        "hashicorp-vault-audit"
+    ]
 }
 ```
 
@@ -313,31 +288,78 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-07-09T17:20:27.182Z",
+    "@timestamp": "2021-10-13T03:28:31.135Z",
+    "agent": {
+        "ephemeral_id": "cb3b166e-309d-4fea-8cd3-c65ca734fb4b",
+        "hostname": "docker-fleet-agent",
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.15.0"
+    },
+    "data_stream": {
+        "dataset": "hashicorp_vault.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "1.12.0"
     },
+    "elastic_agent": {
+        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
     "event": {
-        "ingested": "2021-07-22T19:26:33.689669663Z",
+        "agent_id_status": "verified",
+        "dataset": "hashicorp_vault.log",
+        "ingested": "2021-10-13T03:29:02Z",
         "kind": "event",
-        "original": "{\"@level\":\"info\",\"@message\":\"starting listener\",\"@module\":\"core.cluster-listener.tcp\",\"@timestamp\":\"2021-07-09T17:20:27.182327Z\",\"listener_address\":{\"IP\":\"0.0.0.0\",\"Port\":8201,\"Zone\":\"\"}}"
+        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2021-10-13T03:28:31.135796Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
     },
     "hashicorp_vault": {
         "log": {
-            "listener_address": {
-                "IP": "0.0.0.0",
-                "Port": 8201,
-                "Zone": ""
-            }
+            "http_proxy": "",
+            "https_proxy": "",
+            "no_proxy": ""
         }
     },
-    "log": {
-        "level": "info",
-        "logger": "core.cluster-listener.tcp"
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "ip": [
+            "192.168.176.4"
+        ],
+        "mac": [
+            "02:42:c0:a8:b0:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-37-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
     },
-    "message": "starting listener",
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/log.json"
+        },
+        "level": "info",
+        "offset": 679
+    },
+    "message": "proxy environment",
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "hashicorp-vault-log"
     ]
 }
 ```
@@ -394,248 +416,271 @@ telemetry {
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| hashicorp_vault.metrics.go_gc_duration_seconds.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_gc_duration_seconds_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.go_gc_duration_seconds_count.rate |  | float |
-| hashicorp_vault.metrics.go_gc_duration_seconds_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.go_gc_duration_seconds_sum.rate |  | float |
-| hashicorp_vault.metrics.go_goroutines.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_info.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_alloc_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_alloc_bytes_total.counter |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_alloc_bytes_total.rate |  | float |
-| hashicorp_vault.metrics.go_memstats_buck_hash_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_frees_total.counter |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_frees_total.rate |  | float |
-| hashicorp_vault.metrics.go_memstats_gc_cpu_fraction.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_gc_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_heap_alloc_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_heap_idle_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_heap_inuse_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_heap_objects.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_heap_released_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_heap_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_last_gc_time_seconds.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_lookups_total.counter |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_lookups_total.rate |  | float |
-| hashicorp_vault.metrics.go_memstats_mallocs_total.counter |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_mallocs_total.rate |  | float |
-| hashicorp_vault.metrics.go_memstats_mcache_inuse_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_mcache_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_mspan_inuse_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_mspan_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_next_gc_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_other_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_stack_inuse_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_stack_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_memstats_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.go_threads.value |  | unsigned_long |
-| hashicorp_vault.metrics.process_cpu_seconds_total.counter |  | unsigned_long |
-| hashicorp_vault.metrics.process_cpu_seconds_total.rate |  | float |
-| hashicorp_vault.metrics.process_max_fds.value |  | unsigned_long |
-| hashicorp_vault.metrics.process_open_fds.value |  | unsigned_long |
-| hashicorp_vault.metrics.process_resident_memory_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.process_start_time_seconds.value |  | unsigned_long |
-| hashicorp_vault.metrics.process_virtual_memory_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.process_virtual_memory_max_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.up.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_request_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_request_count.rate |  | float |
-| hashicorp_vault.metrics.vault_audit_log_request_failure.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_request_failure.rate |  | float |
-| hashicorp_vault.metrics.vault_audit_log_request_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_request_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_audit_log_response_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_response_count.rate |  | float |
-| hashicorp_vault.metrics.vault_audit_log_response_failure.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_response_failure.rate |  | float |
-| hashicorp_vault.metrics.vault_audit_log_response_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_audit_log_response_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_delete_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_delete_count.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_delete_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_delete_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_estimated_encryptions.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_estimated_encryptions.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_get.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_get_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_get_count.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_get_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_get_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_list_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_list_count.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_list_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_list_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_put.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_put_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_put_count.rate |  | float |
-| hashicorp_vault.metrics.vault_barrier_put_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_barrier_put_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_cache_hit.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_cache_hit.rate |  | float |
-| hashicorp_vault.metrics.vault_cache_miss.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_cache_miss.rate |  | float |
-| hashicorp_vault.metrics.vault_cache_write.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_cache_write.rate |  | float |
-| hashicorp_vault.metrics.vault_core_active.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_check_token_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_check_token_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_check_token_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_check_token_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_handle_login_request_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_handle_login_request_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_handle_login_request_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_handle_login_request_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_handle_request_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_handle_request_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_handle_request_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_handle_request_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_mount_table_num_entries.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_mount_table_size.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_performance_standby.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_post_unseal_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_post_unseal_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_post_unseal_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_post_unseal_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_pre_seal_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_pre_seal_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_pre_seal_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_pre_seal_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_replication_dr_primary.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_replication_dr_secondary.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_replication_performance_primary.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_replication_performance_secondary.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_unseal_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_unseal_count.rate |  | float |
-| hashicorp_vault.metrics.vault_core_unseal_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_core_unseal_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_core_unsealed.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_count.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_count.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_num_leases.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_register_auth_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_register_auth_count.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_register_auth_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_register_auth_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_count.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_revoke_common_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_revoke_common_count.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_revoke_common_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_revoke_common_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_revoke_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_revoke_count.rate |  | float |
-| hashicorp_vault.metrics.vault_expire_revoke_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_expire_revoke_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_policy_get_policy_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_policy_get_policy_count.rate |  | float |
-| hashicorp_vault.metrics.vault_policy_get_policy_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_policy_get_policy_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_create_secret__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_create_secret__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_create_secret__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_create_secret__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_delete_secret__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_delete_secret__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_delete_secret__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_delete_secret__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_read_auth_token__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_read_auth_token__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_read_auth_token__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_read_auth_token__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_read_secret__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_read_secret__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_read_secret__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_read_secret__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_read_sys__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_read_sys__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_read_sys__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_read_sys__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_update_auth_token__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_update_auth_token__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_update_auth_token__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_update_auth_token__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_update_secret__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_update_secret__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_update_secret__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_update_secret__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_route_update_sys__count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_update_sys__count.rate |  | float |
-| hashicorp_vault.metrics.vault_route_update_sys__sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_route_update_sys__sum.rate |  | float |
-| hashicorp_vault.metrics.vault_runtime_alloc_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_free_count.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_count.rate |  | float |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_runtime_heap_objects.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_malloc_count.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_num_goroutines.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_sys_bytes.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_total_gc_pause_ns.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_runtime_total_gc_runs.value |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_decrypt.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_decrypt.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_count.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_encrypt.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_encrypt.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_count.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_count.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_count.rate |  | float |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_token_createAccessor_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_createAccessor_count.rate |  | float |
-| hashicorp_vault.metrics.vault_token_createAccessor_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_createAccessor_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_token_create_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_create_count.rate |  | float |
-| hashicorp_vault.metrics.vault_token_create_root.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_create_root.rate |  | float |
-| hashicorp_vault.metrics.vault_token_create_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_create_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_token_creation.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_creation.rate |  | float |
-| hashicorp_vault.metrics.vault_token_lookup_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_lookup_count.rate |  | float |
-| hashicorp_vault.metrics.vault_token_lookup_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_lookup_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_token_revoke_tree_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_revoke_tree_count.rate |  | float |
-| hashicorp_vault.metrics.vault_token_revoke_tree_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_revoke_tree_sum.rate |  | float |
-| hashicorp_vault.metrics.vault_token_store_count.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_store_count.rate |  | float |
-| hashicorp_vault.metrics.vault_token_store_sum.counter |  | unsigned_long |
-| hashicorp_vault.metrics.vault_token_store_sum.rate |  | float |
+| hashicorp_vault.metrics.go_gc_duration_seconds.value |  | double |
+| hashicorp_vault.metrics.go_gc_duration_seconds_count.counter |  | double |
+| hashicorp_vault.metrics.go_gc_duration_seconds_count.rate |  | double |
+| hashicorp_vault.metrics.go_gc_duration_seconds_sum.counter |  | double |
+| hashicorp_vault.metrics.go_gc_duration_seconds_sum.rate |  | double |
+| hashicorp_vault.metrics.go_goroutines.value |  | double |
+| hashicorp_vault.metrics.go_info.value |  | double |
+| hashicorp_vault.metrics.go_memstats_alloc_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_alloc_bytes_total.counter |  | double |
+| hashicorp_vault.metrics.go_memstats_alloc_bytes_total.rate |  | double |
+| hashicorp_vault.metrics.go_memstats_buck_hash_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_frees_total.counter |  | double |
+| hashicorp_vault.metrics.go_memstats_frees_total.rate |  | double |
+| hashicorp_vault.metrics.go_memstats_gc_cpu_fraction.value |  | double |
+| hashicorp_vault.metrics.go_memstats_gc_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_heap_alloc_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_heap_idle_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_heap_inuse_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_heap_objects.value |  | double |
+| hashicorp_vault.metrics.go_memstats_heap_released_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_heap_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_last_gc_time_seconds.value |  | double |
+| hashicorp_vault.metrics.go_memstats_lookups_total.counter |  | double |
+| hashicorp_vault.metrics.go_memstats_lookups_total.rate |  | double |
+| hashicorp_vault.metrics.go_memstats_mallocs_total.counter |  | double |
+| hashicorp_vault.metrics.go_memstats_mallocs_total.rate |  | double |
+| hashicorp_vault.metrics.go_memstats_mcache_inuse_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_mcache_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_mspan_inuse_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_mspan_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_next_gc_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_other_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_stack_inuse_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_stack_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_memstats_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.go_threads.value |  | double |
+| hashicorp_vault.metrics.process_cpu_seconds_total.counter |  | double |
+| hashicorp_vault.metrics.process_cpu_seconds_total.rate |  | double |
+| hashicorp_vault.metrics.process_max_fds.value |  | double |
+| hashicorp_vault.metrics.process_open_fds.value |  | double |
+| hashicorp_vault.metrics.process_resident_memory_bytes.value |  | double |
+| hashicorp_vault.metrics.process_start_time_seconds.value |  | double |
+| hashicorp_vault.metrics.process_virtual_memory_bytes.value |  | double |
+| hashicorp_vault.metrics.process_virtual_memory_max_bytes.value |  | double |
+| hashicorp_vault.metrics.up.value |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_request_count.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_request_count.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_request_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_request_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_response_count.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_response_count.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_response_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_file__log_response_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_log_request_count.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_log_request_count.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_log_request_failure.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_log_request_failure.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_log_request_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_log_request_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_log_response_count.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_log_response_count.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_log_response_failure.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_log_response_failure.rate |  | double |
+| hashicorp_vault.metrics.vault_audit_log_response_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_audit_log_response_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_delete_count.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_delete_count.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_delete_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_delete_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_estimated_encryptions.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_estimated_encryptions.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_get.value |  | double |
+| hashicorp_vault.metrics.vault_barrier_get_count.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_get_count.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_get_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_get_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_list_count.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_list_count.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_list_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_list_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_put.value |  | double |
+| hashicorp_vault.metrics.vault_barrier_put_count.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_put_count.rate |  | double |
+| hashicorp_vault.metrics.vault_barrier_put_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_barrier_put_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_cache_hit.counter |  | double |
+| hashicorp_vault.metrics.vault_cache_hit.rate |  | double |
+| hashicorp_vault.metrics.vault_cache_miss.counter |  | double |
+| hashicorp_vault.metrics.vault_cache_miss.rate |  | double |
+| hashicorp_vault.metrics.vault_cache_write.counter |  | double |
+| hashicorp_vault.metrics.vault_cache_write.rate |  | double |
+| hashicorp_vault.metrics.vault_core_active.value |  | double |
+| hashicorp_vault.metrics.vault_core_check_token_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_check_token_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_check_token_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_check_token_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_handle_login_request_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_handle_login_request_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_handle_login_request_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_handle_login_request_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_handle_request_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_handle_request_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_handle_request_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_handle_request_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_mount_table_num_entries.value |  | double |
+| hashicorp_vault.metrics.vault_core_mount_table_size.value |  | double |
+| hashicorp_vault.metrics.vault_core_performance_standby.value |  | double |
+| hashicorp_vault.metrics.vault_core_post_unseal_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_post_unseal_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_post_unseal_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_post_unseal_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_pre_seal_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_pre_seal_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_pre_seal_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_pre_seal_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_replication_dr_primary.value |  | double |
+| hashicorp_vault.metrics.vault_core_replication_dr_secondary.value |  | double |
+| hashicorp_vault.metrics.vault_core_replication_performance_primary.value |  | double |
+| hashicorp_vault.metrics.vault_core_replication_performance_secondary.value |  | double |
+| hashicorp_vault.metrics.vault_core_unseal_count.counter |  | double |
+| hashicorp_vault.metrics.vault_core_unseal_count.rate |  | double |
+| hashicorp_vault.metrics.vault_core_unseal_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_core_unseal_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_core_unsealed.value |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_fetch_lease_times_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_lease_expiration.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_lease_expiration.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_num_irrevocable_leases.value |  | double |
+| hashicorp_vault.metrics.vault_expire_num_leases.value |  | double |
+| hashicorp_vault.metrics.vault_expire_register_auth_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_register_auth_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_register_auth_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_register_auth_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_by_token_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_by_token_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_by_token_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_by_token_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_common_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_common_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_common_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_common_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_count.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_count.rate |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_expire_revoke_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_policy_get_policy_count.counter |  | double |
+| hashicorp_vault.metrics.vault_policy_get_policy_count.rate |  | double |
+| hashicorp_vault.metrics.vault_policy_get_policy_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_policy_get_policy_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_create_secret__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_create_secret__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_create_secret__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_create_secret__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_delete_secret__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_delete_secret__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_delete_secret__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_delete_secret__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_read_auth_token__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_read_auth_token__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_read_auth_token__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_read_auth_token__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_read_secret__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_read_secret__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_read_secret__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_read_secret__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_read_sys__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_read_sys__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_read_sys__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_read_sys__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_update_auth_token__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_update_auth_token__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_update_auth_token__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_update_auth_token__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_update_secret__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_update_secret__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_update_secret__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_update_secret__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_route_update_sys__count.counter |  | double |
+| hashicorp_vault.metrics.vault_route_update_sys__count.rate |  | double |
+| hashicorp_vault.metrics.vault_route_update_sys__sum.counter |  | double |
+| hashicorp_vault.metrics.vault_route_update_sys__sum.rate |  | double |
+| hashicorp_vault.metrics.vault_runtime_alloc_bytes.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_free_count.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_gc_pause_ns.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_count.counter |  | double |
+| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_count.rate |  | double |
+| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_runtime_heap_objects.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_malloc_count.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_num_goroutines.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_sys_bytes.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_total_gc_pause_ns.value |  | double |
+| hashicorp_vault.metrics.vault_runtime_total_gc_runs.value |  | double |
+| hashicorp_vault.metrics.vault_seal_decrypt.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_decrypt.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_decrypt_time_count.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_decrypt_time_count.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_decrypt_time_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_decrypt_time_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_encrypt.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_encrypt.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_encrypt_time_count.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_encrypt_time_count.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_encrypt_time_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_encrypt_time_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_decrypt.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_decrypt.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_count.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_count.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_encrypt.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_encrypt.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_count.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_count.rate |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_token_createAccessor_count.counter |  | double |
+| hashicorp_vault.metrics.vault_token_createAccessor_count.rate |  | double |
+| hashicorp_vault.metrics.vault_token_createAccessor_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_token_createAccessor_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_token_create_count.counter |  | double |
+| hashicorp_vault.metrics.vault_token_create_count.rate |  | double |
+| hashicorp_vault.metrics.vault_token_create_root.counter |  | double |
+| hashicorp_vault.metrics.vault_token_create_root.rate |  | double |
+| hashicorp_vault.metrics.vault_token_create_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_token_create_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_token_creation.counter |  | double |
+| hashicorp_vault.metrics.vault_token_creation.rate |  | double |
+| hashicorp_vault.metrics.vault_token_lookup_count.counter |  | double |
+| hashicorp_vault.metrics.vault_token_lookup_count.rate |  | double |
+| hashicorp_vault.metrics.vault_token_lookup_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_token_lookup_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_token_revoke_tree_count.counter |  | double |
+| hashicorp_vault.metrics.vault_token_revoke_tree_count.rate |  | double |
+| hashicorp_vault.metrics.vault_token_revoke_tree_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_token_revoke_tree_sum.rate |  | double |
+| hashicorp_vault.metrics.vault_token_store_count.counter |  | double |
+| hashicorp_vault.metrics.vault_token_store_count.rate |  | double |
+| hashicorp_vault.metrics.vault_token_store_sum.counter |  | double |
+| hashicorp_vault.metrics.vault_token_store_sum.rate |  | double |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | labels.auth_method |  | keyword |
 | labels.cluster |  | keyword |
@@ -647,6 +692,7 @@ telemetry {
 | labels.mount_point |  | keyword |
 | labels.namespace |  | keyword |
 | labels.quantile |  | keyword |
+| labels.queue_id |  | keyword |
 | labels.term |  | keyword |
 | labels.token_type |  | keyword |
 | labels.type |  | keyword |
