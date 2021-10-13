@@ -108,7 +108,6 @@ An example event for `waf` looks as following:
         },
         "ip": "1.1.1.1"
     },
-    "url": {},
     "tags": [
         "preserve_original_event"
     ],
@@ -143,7 +142,7 @@ An example event for `waf` looks as following:
     },
     "event": {
         "action": "BLOCK",
-        "ingested": "2021-10-09T21:06:54.787835770Z",
+        "ingested": "2021-10-11T15:00:35.544818361Z",
         "original": "{\"timestamp\":1576280412771,\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111\",\"terminatingRuleId\":\"STMTest_SQLi_XSS\",\"terminatingRuleType\":\"REGULAR\",\"action\":\"BLOCK\",\"terminatingRuleMatchDetails\":[{\"conditionType\":\"SQL_INJECTION\",\"location\":\"UNKNOWN\",\"matchedData\":[\"10\",\"AND\",\"1\"]}],\"httpSourceName\":\"ALB\",\"httpSourceId\":\"alb\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"requestHeadersInserted\":null,\"responseCodeSent\":null,\"httpRequest\":{\"clientIp\":\"1.1.1.1\",\"country\":\"AU\",\"headers\":[],\"uri\":\"\",\"args\":\"\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"POST\",\"requestId\":\"null\"},\"labels\":[{\"name\":\"value\"}]}",
         "category": "web",
         "type": [
@@ -154,9 +153,6 @@ An example event for `waf` looks as following:
     },
     "aws": {
         "waf": {
-            "request": {
-                "headers": {}
-            },
             "terminating_rule_match_details": [
                 {
                     "conditionType": "SQL_INJECTION",
@@ -168,15 +164,12 @@ An example event for `waf` looks as following:
                     ]
                 }
             ],
-            "rule_group_list": [],
-            "rate_based_rule_list": [],
             "id": "regional/webacl/test/111",
             "source": {
                 "name": "ALB",
                 "id": "alb"
             },
-            "arn": "arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111",
-            "non_terminating_matching_rules": []
+            "arn": "arn:aws:wafv2:ap-southeast-2:12345:regional/webacl/test/111"
         }
     }
 }
