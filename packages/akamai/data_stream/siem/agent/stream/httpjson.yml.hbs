@@ -14,21 +14,17 @@ request.proxy_url: {{proxy_url}}
 request.transforms:
   - set:
       target: url.params.from
-      value: "[[.cursor.last_execution_datetime]]"
-      default: '[[ (now (parseDuration "-24h")).Unix ]]'
-  - set:
-      target: url.params.to
-      value: '[[ ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}")).Unix ]]'
-      default: '[[ (now (parseDuration "-1m")).Unix ]]'
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
   - set:
       target: header.XTimestamp
       value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
   - set:
       target: header.XSignatureBase
-      value: '[[ sprintf "EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;" "a" "b" (.header.Get "XTimestamp") uuid ]]'
+      value: '[[ sprintf "EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;" "{{client_token}}" "{{access_token}}" (.header.Get "XTimestamp") uuid ]]'
   - set:
       target: header.XSignatureKey
-      value: '[[ hmacBase64 "sha256" "c" (.header.Get "XTimestamp") ]]'
+      value: '[[ hmacBase64 "sha256" "{{client_secret}}" (.header.Get "XTimestamp") ]]'
   - set:
       target: header.XSignature
       value: '[[ hmacBase64 "sha256" (.header.Get "XSignatureKey") "GET\t" .url.Scheme "\t" .url.Host "\t" .url.Path "?" .url.RawQuery "\t\t\t" (.header.Get "XSignatureBase") ]]'
@@ -51,10 +47,13 @@ response.pagination:
       target: url.params.offset
       value: '[[ .last_event.offset ]]'
       fail_on_template_error: true
+  - delete:
+      target: url.params.from
 
 cursor:
-  last_execution_datetime:
-    value: '[[ (now (parseDuration "-1m")).Unix ]]'
+  last_timestamp:
+    value: '[[ (parseTimestamp .last_event.httpMessage.start).Unix ]]'
+    fail_on_template_error: true
 
 {{#if tags.length}}
 tags:
