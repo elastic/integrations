@@ -5,6 +5,8 @@ pipeline {
   environment {
     NOTIFY_TO = credentials('notify-to')
     PIPELINE_LOG_LEVEL = 'INFO'
+    SLACK_CHANNEL = "#beats-build"
+    INTEGRATION_JOB = 'Ingest-manager/integrations/master'
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -23,7 +25,7 @@ pipeline {
     stage('Daily integration builds') {
       steps {
         build(
-          job: 'Ingest-manager/integrations/master',
+          job: env.INTEGRATION_JOB,
           parameters: [stringParam(name: 'stackVersion', value: '7.x-SNAPSHOT')],
           quietPeriod: 0,
           wait: true,
@@ -34,7 +36,7 @@ pipeline {
   }
   post {
     cleanup {
-      notifyBuildResult(prComment: false)
+      notifyBuildResult(prComment: false, slackHeader: "Integration job failed ${env.JENKINS_URL}search/?q=${env.INTEGRATION_JOB.replaceAll('/','+')}")
     }
   }
 }
