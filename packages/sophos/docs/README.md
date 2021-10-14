@@ -59,7 +59,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -97,7 +97,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
@@ -816,8 +816,8 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -836,30 +836,56 @@ An example event for `xg` looks as following:
 
 ```json
 {
-    "server": {
-        "port": 0,
-        "bytes": 0
+    "@timestamp": "2016-12-02T18:50:20.000Z",
+    "agent": {
+        "ephemeral_id": "1ebbd6ba-fd45-414d-9236-71549d9ef6a6",
+        "hostname": "docker-fleet-agent",
+        "id": "eb25da7f-df21-4267-99e8-f335f4a11c6e",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.15.0"
+    },
+    "client": {
+        "ip": "10.108.108.49"
+    },
+    "data_stream": {
+        "dataset": "sophos.xg",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "eb25da7f-df21-4267-99e8-f335f4a11c6e",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
+    "event": {
+        "action": "alert",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "code": "058420116010",
+        "dataset": "sophos.xg",
+        "ingested": "2021-10-11T10:56:15Z",
+        "kind": "event",
+        "outcome": "success",
+        "severity": 1,
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "XG230"
+    },
+    "input": {
+        "type": "udp"
     },
     "log": {
-        "level": "informational"
-    },
-    "destination": {
-        "port": 0,
-        "user": {
-            "email": "Sysadmin@elasticuser.com"
-        },
-        "bytes": 0
-    },
-    "source": {
-        "port": 0,
-        "user": {
-            "email": "firewall@firewallgate.com"
-        },
-        "bytes": 0,
-        "domain": "elasticuser.com"
-    },
-    "network": {
-        "transport": "TCP"
+        "level": "alert",
+        "source": {
+            "address": "172.21.0.7:47587"
+        }
     },
     "observer": {
         "product": "XG",
@@ -867,48 +893,42 @@ An example event for `xg` looks as following:
         "type": "firewall",
         "vendor": "Sophos"
     },
-    "@timestamp": "2020-05-18T14:38:48.000Z",
+    "related": {
+        "hosts": [
+            "XG230"
+        ],
+        "ip": [
+            "10.108.108.49"
+        ]
+    },
     "sophos": {
         "xg": {
-            "fw_rule_id": "0",
-            "reason": "Email has been accepted by Device and queued for scanning.",
-            "av_policy_name": "None",
-            "log_component": "SMTP",
-            "log_subtype": "Allowed",
-            "spamaction": "QUEUED",
-            "mailsize": "19728",
-            "message_id": "18035",
-            "priority": "Information",
-            "quarantine_reason": "Other",
-            "device_name": "XG230",
-            "log_type": "Anti-Spam",
-            "mailid": "qkW2Y6-LxBk6U-vH-1590055245",
+            "action": "Deny",
+            "context_match": "Not",
+            "context_prefix": "blah blah hello ",
+            "context_suffix": " hello blah ",
             "device": "SFW",
-            "email_subject": "*ALERT* Sophos XG Firewall"
+            "device_name": "SF01V",
+            "dictionary_name": "complicated_Custom",
+            "direction": "in",
+            "file_name": "cgi_echo.pl",
+            "log_component": "Web Content Policy",
+            "log_subtype": "Alert",
+            "log_type": "Content Filtering",
+            "message_id": "16010",
+            "site_category": "Information Technology",
+            "transaction_id": "e4a127f7-a850-477c-920e-a471b38727c1",
+            "user": "gi123456",
+            "website": "ta-web-static-testing.qa. astaro.de"
         }
     },
-    "client": {
-        "port": 0,
-        "bytes": 0
+    "source": {
+        "ip": "10.108.108.49"
     },
-    "event": {
-        "severity": 6,
-        "ingested": "2021-02-18T10:55:42.980481300Z",
-        "original": "device=\"SFW\" date=2020-05-18 time=14:38:48 timezone=\"CEST\" device_name=\"XG230\" device_id=1234567890123456 log_id=041101618035 log_type=\"Anti-Spam\" log_component=\"SMTP\" log_subtype=\"Allowed\" status=\"\" priority=Information fw_rule_id=0 user_name=\"\" av_policy_name=\"None\" from_email_address=\"firewall@firewallgate.com\" to_email_address=\"Sysadmin@elasticuser.com\" email_subject=\"*ALERT* Sophos XG Firewall\" mailid=\"qkW2Y6-LxBk6U-vH-1590055245\" mailsize=19728 spamaction=\"QUEUED\" reason=\"Email has been accepted by Device and queued for scanning.\" src_domainname=\"elasticuser.com\" dst_domainname=\"\" src_ip=\"\" src_country_code=\"\" dst_ip=\"\" dst_country_code=\"\" protocol=\"TCP\" src_port=0 dst_port=0 sent_bytes=0 recv_bytes=0 quarantine_reason=\"Other\"",
-        "code": "041101618035",
-        "kind": "event",
-        "module": "sophos",
-        "action": "Allowed",
-        "category": [
-            "network"
-        ],
-        "type": [
-            "allowed",
-            "connection"
-        ],
-        "dataset": "sophos.xg",
-        "outcome": "success"
-    }
+    "tags": [
+        "sophos-xg",
+        "forwarded"
+    ]
 }
 ```
 
@@ -1013,7 +1033,7 @@ An example event for `xg` looks as following:
 | log.offset | Log offset | long |
 | log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address |  | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -1252,10 +1272,10 @@ An example event for `xg` looks as following:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
