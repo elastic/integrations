@@ -155,7 +155,7 @@ An example event for `state_container` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -301,7 +301,7 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -439,7 +439,7 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -578,7 +578,7 @@ An example event for `state_deployment` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -734,7 +734,7 @@ An example event for `state_job` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -893,7 +893,7 @@ An example event for `state_node` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |  | gauge |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |  | gauge |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
@@ -1036,7 +1036,7 @@ An example event for `state_persistentvolume` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolume.capacity.bytes | Volume capacity | long | byte | gauge |
@@ -1171,7 +1171,7 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |  |  |
@@ -1319,7 +1319,7 @@ An example event for `state_pod` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.host_ip | Kubernetes pod host IP | ip |
@@ -1463,7 +1463,7 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -1595,7 +1595,7 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -1733,7 +1733,7 @@ An example event for `state_service` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |
@@ -1874,7 +1874,7 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -2010,7 +2010,7 @@ An example event for `state_storageclass` looks as following:
 | kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |
 | kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |
 | kubernetes.namespace.name | Kubernetes namespace name | keyword |
-| kubernetes.namespace.uuid | Kubernetes namespace uuid | keyword |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |
