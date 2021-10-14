@@ -26,8 +26,8 @@ pipeline {
           job: 'Ingest-manager/integrations/master',
           parameters: [stringParam(name: 'stackVersion', value: '7.x-SNAPSHOT')],
           quietPeriod: 0,
-          wait: false,
-          propagate: false,
+          wait: true,
+          propagate: true,
         )
       }
     }
