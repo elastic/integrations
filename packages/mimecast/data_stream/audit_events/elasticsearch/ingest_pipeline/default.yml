@@ -1,0 +1,28 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    field: sample_field
+    value: "1"
+- rename:
+    field: category
+    target_field: category
+- rename:
+    field: eventTime
+    target_field: "@timestamp"
+- rename:
+    field: eventInfo
+    target_field: message
+- rename:
+    field: auditType
+    target_field: event.action
+- rename:
+    field: user
+    target_field: user.email
+- rename:
+    field: id
+    target_field: event.id
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
