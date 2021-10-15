@@ -6,7 +6,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -100,7 +99,6 @@ func retrieveIconPathFromTutorials(kibanaDir string) (map[string]string, error) 
 		// Extracting module name from tutorials path
 		// e.g. ./src/plugins/home/server/tutorials//php_fpm_metrics/index.ts -> php_fpm
 		moduleName := filepath.Base(filepath.Dir(tutorialFilePath))
-		fmt.Println(moduleName)
 		moduleName = moduleName[:strings.LastIndex(moduleName, "_")]
 
 		if filepath.IsAbs(val) {
