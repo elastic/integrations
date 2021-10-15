@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.21.1
+	github.com/elastic/elastic-package v0.23.0
 	github.com/elastic/go-sysinfo v1.7.1 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/package-registry v1.5.0
