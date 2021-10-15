@@ -98,12 +98,11 @@ func retrieveIconPathFromTutorials(kibanaDir string) (map[string]string, error) 
 
 		// Extracting module name from tutorials path
 		// e.g. ./src/plugins/home/server/tutorials//php_fpm_metrics/index.ts -> php_fpm
-		moduleName := tutorialFilePath[len(tutorialsPath)+1:]
-		moduleName = moduleName[:strings.Index(moduleName, "/")]
+		moduleName := filepath.Base(filepath.Dir(tutorialFilePath))
 		moduleName = moduleName[:strings.LastIndex(moduleName, "_")]
 
-		if val[0] == '/' {
-			iconFileName := val[strings.LastIndex(val, "/")+1:]
+		if filepath.IsAbs(val) {
+			iconFileName := filepath.Base(val)
 			val = path.Join(kibanaDir, kibanaLogosPath, iconFileName)
 			refs[moduleName] = val
 		}
