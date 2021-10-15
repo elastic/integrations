@@ -29,17 +29,29 @@ An example event for `billing` looks as following:
     },
     "aws": {
         "billing": {
-            "metrics": {
-                "EstimatedCharges": {
-                    "max": 1625.41
-                }
+            "Currency": "USD",
+            "EstimatedCharges": 39.26,
+            "ServiceName": "AmazonEKS",
+            "AmortizedCost": {
+                "amount": 51.6,
+                "unit": "USD"
+            },
+            "BlendedCost": {
+                "amount": 51.6,
+                "unit": "USD"
+            },
+            "NormalizedUsageAmount": {
+                "amount": 672,
+                "unit": "N/A"
+            },
+            "UnblendedCost": {
+                "amount": 51.6,
+                "unit": "USD"
+            },
+            "UsageQuantity": {
+                "amount": 168,
+                "unit": "N/A"
             }
-        },
-        "cloudwatch": {
-            "namespace": "AWS/Billing"
-        },
-        "dimensions": {
-            "Currency": "USD"
         }
     },
     "service": {
@@ -66,7 +78,7 @@ An example event for `billing` looks as following:
 | aws.billing.BlendedCost.amount | Blended cost amount. | double |
 | aws.billing.BlendedCost.unit | Blended cost unit. | keyword |
 | aws.billing.Currency | Currency name. | keyword |
-| aws.billing.EstimatedCharges.max | Maximum estimated charges for AWS acccount. | long |
+| aws.billing.EstimatedCharges | Maximum estimated charges for AWS acccount. | long |
 | aws.billing.NormalizedUsageAmount.amount | Normalized usage amount. | double |
 | aws.billing.NormalizedUsageAmount.unit | Normalized usage amount unit. | keyword |
 | aws.billing.ServiceName | AWS service name. | keyword |
@@ -85,6 +97,7 @@ An example event for `billing` looks as following:
 | aws.linked_account.name | Name or alias used to identify linked account. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -102,8 +115,9 @@ An example event for `billing` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| error.message | Error message. | text |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -122,5 +136,5 @@ An example event for `billing` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

@@ -1,0 +1,68 @@
+name: logstash
+title: Logstash
+version: 1.0.0
+release: ga
+description: Logstash Integration
+type: integration
+icons:
+  - src: /img/logo_logstash.svg
+    title: logo logstash
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories: ["elastic_stack"]
+conditions:
+  kibana.version: ^7.15.0
+screenshots:
+  - src: /img/kibana-logstash-log.png
+    title: kibana logstash log
+    size: 1266x1343
+    type: image/png
+  - src: /img/kibana-logstash-slowlog.png
+    title: kibana logstash slowlog
+    size: 1265x1341
+    type: image/png
+policy_templates:
+  - name: logstash
+    title: Logstash logs and metrics
+    description: Collect logs and metrics from Logstash instances
+    inputs:
+      - type: logfile
+        title: 'Collect Logstash application and slowlog logs'
+        description: 'Collecting application and slowlog logs from Logstash instances'
+      - type: logstash/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:9600
+          - name: username
+            type: text
+            title: Username
+            description: Use when connecting to logstash
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            description: Use when connecting to logstash
+            multi: false
+            required: false
+            show_user: false
+          - name: period
+            type: text
+            title: Period
+            multi: false
+            required: true
+            show_user: true
+            default: 10s
+        title: Collect Logstash node metrics and stats
+        description: Collecting node metrics and stats from Logstash instances
+owner:
+  github: elastic/integrations
