@@ -12,11 +12,11 @@ import (
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 type manifestWithVars struct {
-	Vars []util.Variable `yaml:"var"`
+	Vars []packages.Variable `yaml:"var"`
 }
 
 var ignoredConfigOptions = []string{
@@ -25,7 +25,7 @@ var ignoredConfigOptions = []string{
 	"enabled",
 }
 
-func createLogStreamVariables(manifestFile []byte) ([]util.Variable, error) {
+func createLogStreamVariables(manifestFile []byte) ([]packages.Variable, error) {
 	var mwv manifestWithVars
 	err := yaml.Unmarshal(manifestFile, &mwv)
 	if err != nil {
@@ -39,8 +39,8 @@ func createLogStreamVariables(manifestFile []byte) ([]util.Variable, error) {
 	return adjusted.Vars, nil
 }
 
-func createMetricStreamVariables(configFileContent []byte, moduleName, dataStreamName string) ([]util.Variable, error) {
-	var vars []util.Variable
+func createMetricStreamVariables(configFileContent []byte, moduleName, dataStreamName string) ([]packages.Variable, error) {
+	var vars []packages.Variable
 	if len(configFileContent) == 0 {
 		return vars, nil
 	}
@@ -55,7 +55,7 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, dataStrea
 
 	for _, moduleConfigEntry := range moduleConfig {
 		flatEntry := moduleConfigEntry.flatten()
-		related, err := isConfigEntryRelatedToMetricset(flatEntry, moduleName, dataStreamName)
+		related, err := isConfigEntryRelatedToMetricset(flatEntry, dataStreamName)
 		if err != nil {
 			return nil, errors.Wrapf(err, "checking if config entry is related failed")
 		}
@@ -81,7 +81,7 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, dataStrea
 				} else {
 					_, isArray = value.([]interface{})
 				}
-				aVar := util.Variable{
+				aVar := packages.Variable{
 					Name:     name,
 					Type:     variableType,
 					Title:    toVariableTitle(name),
@@ -149,23 +149,16 @@ func shouldConfigOptionBeIgnored(optionName string, value interface{}) bool {
 
 // isConfigEntryRelatedToMetricset method checks if the configuration entry may affect the dataStream settings,
 // in other words, checks if the "metricsets" field is present and contains the given dataStreamName.
-func isConfigEntryRelatedToMetricset(entry mapStr, moduleName, dataStreamName string) (bool, error) {
+func isConfigEntryRelatedToMetricset(entry mapStr, dataStreamName string) (bool, error) {
 	var metricsetRelated bool
 	if metricsets, ok := entry["metricsets"]; ok {
-		metricsetsMapped, ok := metricsets.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("mapping metricsets failed (moduleName: %s, dataStreamName: %s)",
-				moduleName, dataStreamName)
-		}
-		if len(metricsetsMapped) == 0 {
-			return false, fmt.Errorf("no metricsets defined (moduleName: %s, dataStreamName: %s)", moduleName,
-				dataStreamName)
-		}
-
-		for _, metricset := range metricsetsMapped {
-			if metricset.(string) == dataStreamName {
-				metricsetRelated = true
-				break
+		metricsetsMapped, ok := metricsets.([]interface{}) // nats: connection data stream doesn't define a config, but this is fine
+		if ok {
+			for _, metricset := range metricsetsMapped {
+				if metricset.(string) == dataStreamName {
+					metricsetRelated = true
+					break
+				}
 			}
 		}
 	}

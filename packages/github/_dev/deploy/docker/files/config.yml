@@ -1,0 +1,81 @@
+rules:
+  - path: /orgs/test/audit-log
+    methods: ["GET"]
+    request_headers:
+      authorization: Bearer xxxxxxxxxx
+    query_params:
+      per_page: "100"
+      order: asc
+      phrase: "{phrase:created:=>\\d{8}T(?:\\d{2})(?::\\d{2}){2}\\+0000}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          Link:
+            - '<http://{{ hostname }}:{{ env "PORT" }}/orgs/test/audit-log?after=abcd>; rel="next"'
+        body: |
+          [{
+            "@timestamp": 1606929874512,
+            "action": "team.add_member",
+            "actor": "octocat",
+            "created_at": 1606929874512,
+            "_document_id": "xJJFlFOhQ6b-5vaAFy9Rjw",
+            "org": "octo-corp",
+            "team": "octo-corp/example-team",
+            "user": "monalisa"
+          },{
+            "@timestamp": 1606507117008,
+            "action": "org.create",
+            "actor": "octocat",
+            "created_at": 1606507117008,
+            "_document_id": "Vqvg6kZ4MYqwWRKFDzlMoQ",
+            "org": "octocat-test-org"
+          },{
+            "@timestamp": 1605719148837,
+            "action": "repo.destroy",
+            "actor": "monalisa",
+            "created_at": 1605719148837,
+            "_document_id": "LwW2vpJZCDS-WUmo9Z-ifw",
+            "org": "mona-org",
+            "repo": "mona-org/mona-test-repo",
+            "visibility": "private"
+          }]
+  - path: /orgs/test/audit-log
+    methods: ["GET"]
+    request_headers:
+      authorization: Bearer xxxxxxxxxx
+    query_params:
+      after: "abcd"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          [{
+            "@timestamp": 1606929874512,
+            "action": "team.add_member",
+            "actor": "octocat",
+            "created_at": 1606929874512,
+            "_document_id": "xJJFlFOhQ6b-5vaAFy9Rjw",
+            "org": "octo-corp",
+            "team": "octo-corp/example-team",
+            "user": "monalisa"
+          },{
+            "@timestamp": 1606507117008,
+            "action": "org.create",
+            "actor": "octocat",
+            "created_at": 1606507117008,
+            "_document_id": "Vqvg6kZ4MYqwWRKFDzlMoQ",
+            "org": "octocat-test-org"
+          },{
+            "@timestamp": 1605719148837,
+            "action": "repo.destroy",
+            "actor": "monalisa",
+            "created_at": 1605719148837,
+            "_document_id": "LwW2vpJZCDS-WUmo9Z-ifw",
+            "org": "mona-org",
+            "repo": "mona-org/mona-test-repo",
+            "visibility": "private"
+          }]

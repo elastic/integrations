@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
 type policyTemplateContent struct {
@@ -23,10 +23,10 @@ type policyTemplateInput struct {
 	dataStreamNames []string
 	packageType     string
 	inputType       string
-	vars            []util.Variable
+	vars            []packages.Variable
 }
 
-func (ptc policyTemplateContent) toMetadataPolicyTemplates() []util.PolicyTemplate {
+func (ptc policyTemplateContent) toMetadataPolicyTemplates() []packages.PolicyTemplate {
 	var inputTypes []string
 	var packageTypes []string
 	for k, input := range ptc.inputs {
@@ -46,11 +46,11 @@ func (ptc policyTemplateContent) toMetadataPolicyTemplates() []util.PolicyTempla
 		description = toPolicyTemplateDescription(ptc.moduleTitle, packageTypes[0])
 	}
 
-	var inputs []util.Input
+	var inputs []packages.Input
 	for _, packageType := range packageTypes {
 		for inputType, input := range ptc.inputs {
 			if input.packageType == packageType {
-				inputs = append(inputs, util.Input{
+				inputs = append(inputs, packages.Input{
 					Type:        input.inputType,
 					Title:       toPolicyTemplateInputTitle(ptc.moduleTitle, packageType, ptc.inputs[inputType].dataStreamNames, inputType),
 					Description: toPolicyTemplateInputDescription(ptc.moduleTitle, packageType, ptc.inputs[inputType].dataStreamNames, inputType),
@@ -59,7 +59,7 @@ func (ptc policyTemplateContent) toMetadataPolicyTemplates() []util.PolicyTempla
 			}
 		}
 	}
-	return []util.PolicyTemplate{
+	return []packages.PolicyTemplate{
 		{
 			Name:        ptc.moduleName,
 			Title:       title,
@@ -75,7 +75,7 @@ type updatePolicyTemplateParameters struct {
 	packageType string
 
 	dataStreams dataStreamContentArray
-	inputVars   map[string][]util.Variable
+	inputVars   map[string][]packages.Variable
 }
 
 func updatePolicyTemplate(dsc policyTemplateContent, params updatePolicyTemplateParameters) (policyTemplateContent, error) {

@@ -48,7 +48,7 @@ The Windows `application` dataset provides events from the Windows
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -231,7 +231,7 @@ event log.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -539,7 +539,7 @@ An example event for `security` looks as following:
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
@@ -841,7 +841,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -873,7 +873,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -962,7 +962,7 @@ The `syslog` dataset provides system logs on linux and MacOS.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pid | Process id. | long |
 
@@ -1004,6 +1004,7 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1020,7 +1021,7 @@ This dataset is available on:
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | system.core.id | CPU Core number. | keyword |  |  |
 | system.core.idle.pct | The percentage of CPU time spent idle. | scaled_float | percent | gauge |
 | system.core.idle.ticks | The amount of CPU time spent idle. | long |  | counter |
@@ -1075,14 +1076,15 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float | percent | gauge |
+| host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1157,6 +1159,7 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float | byte | gauge |
@@ -1164,7 +1167,7 @@ This dataset is available on:
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
@@ -1299,13 +1302,14 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip address. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1357,12 +1361,13 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |
 | event.dataset | Event dataset. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip address. | ip |  |
+| host.ip | Host ip addresses. | ip |  |
 | host.mac | Host mac addresses. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
@@ -1418,6 +1423,7 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1503,8 +1509,10 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| group | The group fields are meant to represent groups that are relevant to the event. | group |  |  |
 | group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
 | group.name | Name of the group. | keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1515,7 +1523,7 @@ This dataset is available on:
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
-| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |  |  |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | scaled_float |  | counter |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1525,9 +1533,11 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |  |  |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |  |
 | process.name | Process name. Sometimes called program name or similar. | keyword |  |  |
 | process.pid | Process id. | long |  |  |
+| source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |  |  |
 | source.geo.city_name | City name. | keyword |  |  |
 | source.geo.continent_name | Name of the continent. | keyword |  |  |
 | source.geo.country_iso_code | Country ISO code. | keyword |  |  |
@@ -1545,6 +1555,7 @@ This dataset is available on:
 | system.network.out.dropped | The number of outgoing packets that were dropped. This value is always 0 on Darwin and BSD because it is not reported by the operating system. | long |  | counter |
 | system.network.out.errors | The number of errors while sending. | long |  | counter |
 | system.network.out.packets | The number of packets sent. | long |  | counter |
+| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |  |
 | user.id | Unique identifier of the user. | keyword |  |  |
 | user.name | Short name or login of the user. | keyword |  |  |
 
@@ -1584,13 +1595,14 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac address. | keyword |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
@@ -1601,6 +1613,7 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |  |
 | process.cpu.pct | The percentage of CPU time spent by the process since the last event. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |  |  |
 | process.cpu.start_time | The time when the process was started. | date |  |  |
 | process.memory.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float |  |  |
@@ -1742,6 +1755,7 @@ This dataset is available on:
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
 | system.process.memory.size | The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process. | long | byte | gauge |
 | system.process.state | The process state. For example: "running". | keyword |  |  |
+| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |  |
 | user.name | Short name or login of the user. | keyword |  |  |
 
 
@@ -1761,7 +1775,7 @@ This dataset is available on:
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| @timestamp | Event timestamp. | date |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -1780,8 +1794,10 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |
 | event.dataset | Event dataset. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| group | The group fields are meant to represent groups that are relevant to the event. | group |  |
 | group.id | Unique identifier for the group on the system/platform. | keyword |  |
 | group.name | Name of the group. | keyword |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -1798,9 +1814,11 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |  |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |
 | process.name | Process name. Sometimes called program name or similar. | keyword |  |
 | process.pid | Process id. | long |  |
+| source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |  |
 | source.geo.city_name | City name. | keyword |  |
 | source.geo.continent_name | Name of the continent. | keyword |  |
 | source.geo.country_iso_code | Country ISO code. | keyword |  |
@@ -1817,6 +1835,7 @@ This dataset is available on:
 | system.process.summary.total | Total number of processes on this host. | long | gauge |
 | system.process.summary.unknown | Number of processes for which the state couldn't be retrieved or is unknown. | long | gauge |
 | system.process.summary.zombie | Number of zombie processes on this host. | long | gauge |
+| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |
 | user.id | Unique identifier of the user. | keyword |  |
 | user.name | Short name or login of the user. | keyword |  |
 
@@ -1859,8 +1878,10 @@ This dataset is available on:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
+| group | The group fields are meant to represent groups that are relevant to the event. | group |  |  |
 | group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
 | group.name | Name of the group. | keyword |  |  |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1877,9 +1898,11 @@ This dataset is available on:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |  |  |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |  |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |  |
 | process.name | Process name. Sometimes called program name or similar. | keyword |  |  |
 | process.pid | Process id. | long |  |  |
+| source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |  |  |
 | source.geo.city_name | City name. | keyword |  |  |
 | source.geo.continent_name | Name of the continent. | keyword |  |  |
 | source.geo.country_iso_code | Country ISO code. | keyword |  |  |
@@ -1905,6 +1928,7 @@ This dataset is available on:
 | system.socket.summary.tcp.memory | Memory used by TCP sockets in bytes, based on number of allocated pages and system page size. Corresponds to limits set in /proc/sys/net/ipv4/tcp_mem. Only available on Linux. | integer | byte | gauge |
 | system.socket.summary.udp.all.count | All open UDP connections | integer |  | gauge |
 | system.socket.summary.udp.memory | Memory used by UDP sockets in bytes, based on number of allocated pages and system page size. Corresponds to limits set in /proc/sys/net/ipv4/udp_mem. Only available on Linux. | integer | byte | gauge |
+| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |  |
 | user.id | Unique identifier of the user. | keyword |  |  |
 | user.name | Short name or login of the user. | keyword |  |  |
 

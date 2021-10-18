@@ -1,0 +1,43 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{hostname}}/admin/v2/logs/authentication
+request.transforms:
+  - set: 
+      target: url.params.limit
+      value: 1000
+  - set: 
+      target: url.params.sort
+      value: ts:asc
+  - set: 
+      target: url.params.mintime
+      value: '[[.cursor.last_published]]'
+      default: '[[div (((now (parseDuration "-2m")).Add (parseDuration "-{{interval}}")).UnixNano) 1e6]]'
+  - set: 
+      target: url.params.maxtime
+      value: '[[div ((now (parseDuration "-2m")).UnixNano) 1e6]]'
+  - set:
+      target: header.Date
+      value: '[[formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700"]]'
+  - set: 
+      target: header.Authorization
+      value: '[[sprintf "Basic %s" (base64Encode (sprintf "%s:%s" "{{integration_key}}" (hmac "sha1" "{{secret_key}}" (formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700") "\n" "GET" "\n" .url.Host "\n" "/admin/v2/logs/authentication" "\n" .url.RawQuery)))]]'
+response.split:
+  target: body.response.authlogs
+cursor:
+  last_published:
+    value: '[[mul (toInt .last_event.timestamp) 1000]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
