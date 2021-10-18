@@ -15,6 +15,20 @@ AWS credentials are required for running AWS integration.
 * *endpoint*: URL of the entry point for an AWS web service.
 * *role_arn*: AWS IAM Role to assume.
 
+#### Data stream specific configuration parameters
+* *latency*: Some AWS services send monitoring metrics to CloudWatch with a
+latency to process larger than Metricbeat collection period. This will cause
+data points missing or none get collected by Metricbeat. In this case, please
+specify a latency parameter so collection start time and end time will be
+shifted by the given latency amount.
+* *period*: How often the data stream is executed.
+* *regions*: Specify which AWS regions to query metrics from. If the `regions`
+is not set in the config, then by default, the integration will query metrics
+from all available AWS regions. If `endpoint` is specified, `regions` becomes a 
+required config parameter.
+* *tags_filter*: Tag key value pairs from aws resources. A tag is a label that 
+user assigns to an AWS resource.
+
 ### Credential Types
 There are three types of AWS credentials can be used: access keys, temporary
 security credentials and IAM role ARN.
