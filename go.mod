@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.23.0
+	github.com/elastic/elastic-package v0.24.0
 	github.com/elastic/package-registry v1.5.0
 	github.com/magefile/mage v1.11.0
 	github.com/pkg/errors v0.9.1
@@ -31,7 +31,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/creasty/defaults v1.5.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.15.0 // indirect
+	github.com/elastic/go-elasticsearch/v7 v7.15.1 // indirect
 	github.com/elastic/go-licenser v0.3.1 // indirect
 	github.com/elastic/go-sysinfo v1.7.1 // indirect
 	github.com/elastic/go-ucfg v0.8.4-0.20200415140258-1232bd4774a6 // indirect
