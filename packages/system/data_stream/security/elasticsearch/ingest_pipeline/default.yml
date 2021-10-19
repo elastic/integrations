@@ -2286,22 +2286,28 @@ processors:
           return;
         }
 
+        def targetUserId = ctx?.winlog?.event_data?.TargetUserSid;
+        if (targetUserId == null) {
+          targetUserId = ctx?.winlog?.event_data?.TargetSid;
+        }
+
         //TargetUserSid to user.id or user.target.id
-        if (ctx?.winlog?.event_data?.TargetUserSid != null) {
+        if (targetUserId != null) {
           if (ctx?.user == null) {
             HashMap hm = new HashMap();
             ctx.put("user", hm);
           }
           if (ctx?.user?.id == null) {
-            ctx.user.put("id", ctx.winlog.event_data.TargetUserSid);
+            ctx.user.put("id", targetUserId);
           } else {
             if (ctx?.user?.target == null) {
               HashMap hm = new HashMap();
               ctx.user.put("target", hm);
             }
-            ctx.user.target.put("id", ctx.winlog.event_data.TargetUserSid);
+            ctx.user.target.put("id", targetUserId);
           }
         }
+
         //TargetUserName to related.user and user.name or user.target.name
         if (ctx?.winlog?.event_data?.TargetUserName != null) {
           def tun = ctx.winlog.event_data.TargetUserName.splitOnToken("@");
@@ -2382,6 +2388,10 @@ processors:
           if (!ctx.related.user.contains(memberName)) {
             ctx.related.user.add(memberName);
           }
+          if (memberNameParts.length >= 4) {
+            def domain = memberNameParts[3].replace("DC=", "").replace("dc=", "");
+            ctx.user.target.put("domain", domain);
+          }
         }
         if (ctx?.winlog?.event_data?.TargetUserSid != null) {
           if (ctx?.group == null) {
@@ -2409,7 +2419,8 @@ processors:
             HashMap hm = new HashMap();
             ctx.put("group", hm);
           }
-          ctx.group.put("domain", ctx.winlog.event_data.TargetDomainName);
+          def domain = ctx.winlog.event_data.TargetDomainName.replace("DC=", "").replace("dc=", "");
+          ctx.group.put("domain", domain);
         }
         if (ctx?.user?.target != null) {
           if (ctx?.user?.target?.group == null) {
@@ -2480,7 +2491,8 @@ processors:
               "4742", "4743", "4744", "4745", "4746", "4747", "4748", "4749",
               "4750", "4751", "4752", "4753", "4754", "4755", "4756", "4757",
               "4758", "4759", "4760", "4761", "4762", "4763", "4764", "4767",
-              "4781", "4798", "4799", "4817", "4904", "4905", "4907", "4912"].contains(ctx.event.code)) {
+              "4781", "4798", "4799", "4817", "4904", "4905", "4907", "4912",
+              "4648"].contains(ctx.event.code)) {
           return;
         }
         if (ctx?.winlog?.event_data?.SubjectUserSid != null) {
@@ -2515,6 +2527,86 @@ processors:
           }
           ctx.user.put("domain", ctx.winlog.event_data.SubjectDomainName);
         }
+
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: Copy Target User to Target
+      description: Copy Target User to Target
+      source: |-
+        if (ctx?.event?.code == null ||
+            !["4670", "4720", "4722", "4723", "4724", "4725",
+              "4726", "4738", "4740", "4767", "4798", "4817",
+              "4907"].contains(ctx.event.code)) {
+          return;
+        }
+        if (ctx?.user == null) {
+            HashMap hm = new HashMap();
+            ctx.put("user", hm);
+        }
+        if (ctx?.user?.target == null) {
+            HashMap hm = new HashMap();
+            ctx.user.put("target", hm);
+        }
+        def userId = ctx?.winlog?.event_data?.TargetSid;
+        if (userId != null && userId != "" && userId != "-") ctx.user.target.id = userId;
+        def userName = ctx?.winlog?.event_data?.TargetUserName;
+        if (userName != null && userName != "" && userName != "-") {
+          ctx.user.target.name = userName;
+          def parts = userName.splitOnToken("@");
+          if (parts.length > 1) {
+            ctx.user.target.name = parts[0];
+          }
+          if (ctx?.related?.user == null) {
+            ArrayList al = new ArrayList();
+            ctx.related.put("user", al);
+          }
+          if (!ctx.related.user.contains(ctx.user.target.name)) {
+            ctx.related.user.add(ctx.user.target.name);
+          }
+        }
+        def userDomain = ctx?.winlog?.event_data?.TargetDomainName;
+        if (userDomain != null && userDomain != "" && userDomain != "-") ctx.user.target.domain = userDomain;
+        if (ctx.user.target.size() == 0) ctx.user.remove("target");
+
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: Copy Target User to Effective
+      description: Copy Target User to Effective
+      source: |-
+        if (ctx?.event?.code == null ||
+            !["4648", "4688"].contains(ctx.event.code)) {
+          return;
+        }
+        if (ctx?.user == null) {
+            HashMap hm = new HashMap();
+            ctx.put("user", hm);
+        }
+        if (ctx?.user?.effective == null) {
+            HashMap hm = new HashMap();
+            ctx.user.put("effective", hm);
+        }
+        def userId = ctx?.winlog?.event_data?.TargetUserSid;
+        if (userId != null && userId != "" && userId != "-") ctx.user.effective.id = userId;
+        def userName = ctx?.winlog?.event_data?.TargetUserName;
+        if (userName != null && userName != "" && userName != "-") {
+          ctx.user.effective.name = userName;
+          def parts = userName.splitOnToken("@");
+          if (parts.length > 1) {
+            ctx.user.effective.name = parts[0];
+          }
+          if (ctx?.related?.user == null) {
+            ArrayList al = new ArrayList();
+            ctx.related.put("user", al);
+          }
+          if (!ctx.related.user.contains(ctx.user.effective.name)) {
+            ctx.related.user.add(ctx.user.effective.name);
+          }
+        }
+        def userDomain = ctx?.winlog?.event_data?.TargetDomainName;
+        if (userDomain != null && userDomain != "" && userDomain != "-") ctx.user.effective.domain = userDomain;
+        if (ctx.user.effective.size() == 0) ctx.user.remove("effective");
 
   - script:
       lang: painless
@@ -2773,6 +2865,16 @@ processors:
         ctx?.event?.code != null &&
         ["4672", "4673", "4674", "4741", "4742", "4743"].contains(ctx.event.code) &&
         ctx?.winlog?.event_data?.PrivilegeList != null
+
+  - set:
+      field: user.target.name
+      copy_from: winlog.event_data.OldTargetUserName
+      ignore_empty_value: true
+
+  - set:
+      field: user.changes.name
+      copy_from: winlog.event_data.NewTargetUserName
+      ignore_empty_value: true
 
   - append:
       field: related.user
