@@ -1,6 +1,6 @@
-version: '2.3'
+version: "2.3"
 services:
-  limo-http:
+  misp:
     image: docker.elastic.co/observability/stream:v0.6.1
     ports:
       - 8080
@@ -12,20 +12,3 @@ services:
       - http-server
       - --addr=:8080
       - --config=/files/config.yml
-  threatstream-webhook-http:
-    image: akroh/stream:v0.2.0
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-    environment:
-      - STREAM_PROTOCOL=webhook
-      - STREAM_ADDR=http://elastic-agent:9080/threatstream
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
-  threatstream-webhook-https:
-    image: akroh/stream:v0.2.0
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-    environment:
-      - STREAM_PROTOCOL=webhook
-      - STREAM_INSECURE=true
-      - STREAM_ADDR=https://elastic-agent:7443/threatstream
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
