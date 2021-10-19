@@ -1,0 +1,57 @@
+config_version: 2
+interval: {{interval}}
+request.url: {{url}}/api/v1/signinattempts
+request.method: POST
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: "header.Content-Type"
+      value: "application/json"
+  - set:
+      target: "header.User-Agent"
+      value: "1Password-Elastic-Filebeat/0.1.0"
+  - set:
+      target: "header.Authorization"
+      value: 'Bearer {{token}}'
+  - set:
+      target: body.cursor
+      value: '[[if not (eq (len .cursor) 0)]][[.cursor.last_cursor]][[end]]'
+  - set:
+      target: body.limit
+      value_type: int
+      value: '[[if eq (len .cursor) 0]]{{limit}}[[end]]'
+cursor:
+  last_cursor:
+    value: '[[.last_response.body.cursor]]'
+response.decode_as: application/json
+response.split:
+  target: body.items
+response.pagination:
+  - set:
+      target: body.cursor
+      value: '[[.last_response.body.cursor]]'
+      fail_on_template_error: true
+  - delete:
+      target: body.limit
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
