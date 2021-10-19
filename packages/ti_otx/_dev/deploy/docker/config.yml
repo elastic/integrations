@@ -1,0 +1,58 @@
+rules:
+  - path: /api/v1/indicators/export
+    methods: [GET]
+    query_params:
+      modified_since: "2020-11-29T01:10:00+00:00"
+      types: "domain,IPv4,hostname,url,FileHash-SHA256"
+      page: "2"
+    request_headers:
+      Content-Type: "application/json"
+      X-Otx-Api-Key: "testing"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "results": [],
+            "count": 1816,
+            "previous": null,
+            "next": null
+          }
+  - path: /api/v1/indicators/export
+    methods: [GET]
+    query_params:
+      modified_since: "{modified_since:.*}"
+      types: "domain,IPv4,hostname,url,FileHash-SHA256"
+    request_headers:
+      Content-Type: "application/json"
+      X-Otx-Api-Key: "testing"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "results": [{
+                "id": 1251,
+                "indicator": "info.3000uc.com",
+                "type": "hostname",
+                "title": null,
+                "description": null,
+                "content": ""
+              },
+              {
+                "id": 2970,
+                "indicator": "ndns.hcxiaoao.com",
+                "type": "hostname",
+                "title": null,
+                "description": null,
+                "content": ""
+              }
+            ],
+            "count": 40359,
+            "previous": null,
+            "next": "https://otx.alienvault.com/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256&modified_since=2020-11-29T01%3A10%3A00+00%3A00&page=2"
+          }
