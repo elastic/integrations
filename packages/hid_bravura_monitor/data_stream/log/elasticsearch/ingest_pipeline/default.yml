@@ -2,6 +2,10 @@
 description: Pipeline for parsing hid_bravura_monitor logs
 version: '1'
 processors:
+  - set:
+      field: ecs.version
+      value: 1.12.0
+      description: Set ecs.version to 1.12.0
   - grok:
       field: message
       patterns:
@@ -16,7 +20,7 @@ processors:
           )*
       description: Initial parse
   - drop:
-      if: ctx?.msg ==~ /last message repeated \d+ times/
+      if: ctx?.msg.contains('last message repeated')
       description: Drop repeated log message
   - grok:
       field: message
@@ -26,15 +30,15 @@ processors:
           \[%{NONNEGINT},%{NONNEGINT}\] %{DATA}:
           %{NOTSPACE:hid_bravura_monitor.perf.kind}. %{GREEDYDATA:kvpairs}
       ignore_missing: true
-      if: ctx?.log?.level ==~ /Perf.*/
+      if: ctx?.log?.level.contains('Perf')
       description: Parse Perf messages
   - set:
       field: log.level
       value: Perf
-      if: ctx?.log?.level ==~ /Perf.*/
+      if: ctx?.log?.level.contains('Perf')
       description: Set log.level to Perf
   - kv:
-      if: ctx?.log?.level ==~ /Perf.*/
+      if: ctx?.log?.level.contains('Perf')
       trim_key: ' \r\n'
       trim_value: ' {}\r\n'
       value_split: ': '
@@ -43,19 +47,14 @@ processors:
       description: Separate perf info
       field: kvpairs
       field_split: ' \| '
-  - set:
+  - rename:
       if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfAjax'
-      field: user.id
-      value: '{{hid_bravura_monitor.perf.User}}'
-      ignore_empty_value: true
-      description: Copy hid_bravura_monitor.perf.User to user.id
-  - remove:
-      if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfAjax'
+      target_field: user.id
       field: hid_bravura_monitor.perf.User
       ignore_missing: true
-      description: Remove hid_bravura_monitor.perf.User
+      description: Rename hid_bravura_monitor.perf.User to user.id
   - script:
-      if: ctx?.log?.level ==~ /Perf.*/
+      if: ctx?.log?.level.contains('Perf')
       source: >-
         Map m = new HashMap(); ctx['hid_bravura_monitor']['perf'].forEach((k,v)
         -> m.put(k.toLowerCase(), v));
@@ -66,25 +65,25 @@ processors:
   - set:
       if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfExe'
       field: hid_bravura_monitor.perf.exe
-      value: '{{log.logger}}'
+      copy_from: log.logger
       ignore_empty_value: true
       description: Copy log.logger to hid_bravura_monitor.perf.exe
   - remove:
       field: kvpairs
       ignore_missing: true
       description: Remove kvpairs
-  - set:
-      field: hid_bravura_monitor.request.id
-      value: '{{pslogid}}'
-      ignore_empty_value: true
+  - rename:
+      target_field: hid_bravura_monitor.request.id
+      field: pslogid
+      ignore_missing: true
       if: >-
         ctx?.pslogid ==~ /[A-F0-9]{32}/ || ctx?.pslogid ==~
         /[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}/
       description: Set requestid if batchid
-  - set:
-      field: user.id
-      value: '{{pslogid}}'
-      ignore_empty_value: true
+  - rename:
+      target_field: user.id
+      field: pslogid
+      ignore_missing: true
       if: >-
         ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax' && ctx?.pslogid !=
         null && !(ctx?.pslogid ==~ /[A-F0-9]{32}/ || ctx?.pslogid ==~
@@ -100,20 +99,17 @@ processors:
         - 'yyyy-MM-dd HH:mm:ss.SSS'
       timezone: '{{event.timezone}}'
       description: Convert logdate to @timestamp
-  - set:
-      field: message
-      value: '{{msg}}'
-      description: Override message
-  - remove:
+  - rename:
+      target_field: message
       field: msg
-      description: Remove msg
+      description: Override message
   - remove:
       field: logdate
       description: Remove logdate
   - set:
       if: ctx?.hid_bravura_monitor?.node == '0.0.0.0'
       field: hid_bravura_monitor.node
-      value: '{{host.name}}'
+      copy_from: host.name
       ignore_empty_value: true
       description: Copy host.name to hid_bravura_monitor.node if left as default
   - convert:
