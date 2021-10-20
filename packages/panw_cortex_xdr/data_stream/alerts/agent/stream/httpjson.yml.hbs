@@ -1,0 +1,79 @@
+config_version: "2"
+interval: {{interval}}
+request.method: POST
+
+{{#if url}}
+request.url: {{url}}/public_api/v1/alerts/get_alerts_multi_events
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if request_timeout}}
+request.timeout: {{request_timeout}}
+{{/if}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+request.transforms:
+- set:
+    target: header.Authorization
+    value: {{api_token}}
+- set:
+    target: header.x-xdr-auth-id
+    value: {{token_id}}
+- set:
+    target: body.request_data.sort.field
+    value: creation_time
+- set:
+    target: body.request_data.sort.keyword
+    value: asc
+- append:
+    target: body.request_data.filters
+    value: |-
+      {
+        "field": "creation_time",
+        "operator": "gte",
+        "value": [[ .cursor.next_ts ]]
+      }
+    default: |-
+      {
+        "field": "creation_time",
+        "operator": "gte",
+        "value": [[ mul (add (now (parseDuration "-{{initial_interval}}")).Unix) 1000 ]]
+      }
+    value_type: json
+response.split:
+  target: body.reply.alerts
+  split:
+    target: body.events
+    keep_parent: true
+response.pagination:
+  - set:
+      target: body.request_data.search_from
+      value: "[[mul .last_response.page 100]]"
+      value_type: int
+      fail_on_template_error: true
+  - set:
+      target: body.request_data.search_to
+      value: "[[add (mul .last_response.page 100) 100]]"
+      value_type: int
+      fail_on_template_error: true
+cursor:
+  next_ts:
+    value: "[[.last_event.detection_timestamp]]"
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

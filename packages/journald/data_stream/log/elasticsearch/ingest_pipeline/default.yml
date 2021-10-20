@@ -1,0 +1,43 @@
+---
+description: Pipeline for processing journald logs.
+processors:
+  - remove:
+      field:
+        - container.id_truncated # CONTAINER_ID from journald driver.
+        - syslog.facility # Duplicated as log.syslog.facility.code.
+        - syslog.priority # Duplicated as log.syslog.priority.
+      ignore_missing: true
+
+  # Journald CODE_FILE, CODE_LINE, CODE_FUNC.
+  - rename:
+      field: journald.code.file
+      target_field: log.origin.file.name
+      ignore_missing: true
+  - rename:
+      field: journald.code.line
+      target_field: log.origin.file.line
+      ignore_missing: true
+  - rename:
+      field: journald.code.func
+      target_field: log.origin.function
+      ignore_missing: true
+
+  # Journald SYSLOG_IDENTIFIER, SYSLOG_PID.
+  - rename:
+      field: syslog.pid
+      target_field: log.syslog.pid
+      ignore_missing: true
+  - rename:
+      field: syslog.identifier
+      target_field: log.syslog.identifier
+      ignore_missing: true
+
+  # Cleanup an empty syslog object.
+  - remove:
+      if: ctx?.syslog != null && ctx.syslog instanceof Map && ctx.syslog.isEmpty()
+      field: syslog
+
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

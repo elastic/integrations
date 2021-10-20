@@ -183,7 +183,7 @@ An example event for `container` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -240,8 +240,8 @@ An example event for `container` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### node
@@ -423,7 +423,7 @@ An example event for `node` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -478,8 +478,8 @@ An example event for `node` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### pod
@@ -638,7 +638,7 @@ An example event for `pod` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -688,8 +688,8 @@ An example event for `pod` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### system
@@ -824,7 +824,7 @@ An example event for `system` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -866,8 +866,8 @@ An example event for `system` looks as following:
 | kubernetes.system.start_time | Start time | date |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### volume
@@ -1000,7 +1000,7 @@ An example event for `volume` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1041,5 +1041,5 @@ An example event for `volume` looks as following:
 | kubernetes.volume.name | Volume name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |

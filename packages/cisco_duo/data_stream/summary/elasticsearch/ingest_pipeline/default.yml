@@ -1,0 +1,43 @@
+---
+description: Pipeline for parsing cisco_duo summary logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+  - set:
+      field: ecs.version
+      value: '1.11.0'
+  - set: 
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true      
+  - rename:
+      field: json.response.admin_count
+      target_field: cisco_duo.summary.admin_count
+  - rename:
+      field: json.response.integration_count
+      target_field: cisco_duo.summary.integration_count
+  - rename:
+      field: json.response.telephony_credits_remaining
+      target_field: cisco_duo.summary.telephony_credits_remaining
+  - rename:
+      field: json.response.user_count
+      target_field: cisco_duo.summary.user_count
+  - remove:
+      field: json
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"

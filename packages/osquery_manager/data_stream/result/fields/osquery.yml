@@ -106,6 +106,14 @@
           type: text
           norms: false
           default_field: false
+    - name: activated
+      description: tpm_info.activated - TPM is activated
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: active
       description: |-
         firefox_addons.active - 1 If the addon is active else 0
@@ -3348,6 +3356,7 @@
         scheduled_tasks.enabled - Whether or not the scheduled task is enabled
         screenlock.enabled - 1 If a password is required after sleep or the screensaver begins; else 0
         sip_config.enabled - 1 if this configuration is enabled, otherwise 0
+        tpm_info.enabled - TPM is enabled
         yum_sources.enabled - Whether the repository is used
       type: keyword
       ignore_above: 1024
@@ -5570,6 +5579,15 @@
           type: text
           norms: false
           default_field: false
+    - name: key_type
+      description: user_ssh_keys.key_type - The type of the private key. One of [rsa, dsa, dh, ec, hmac, cmac], or the empty string.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: key_usage
       description: |-
         certificates.key_usage - Certificate key usage and extended key usage
@@ -6202,6 +6220,32 @@
         interface_details.manufacturer - Name of the network adapter's manufacturer.
         memory_devices.manufacturer - Manufacturer ID string
         video_info.manufacturer - The manufacturer of the gpu.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: manufacturer_id
+      description: tpm_info.manufacturer_id - TPM manufacturers ID
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: manufacturer_name
+      description: tpm_info.manufacturer_name - TPM manufacturers name
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: manufacturer_version
+      description: tpm_info.manufacturer_version - TPM version
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7557,6 +7601,14 @@
           type: text
           norms: false
           default_field: false
+    - name: owned
+      description: tpm_info.owned - TPM is ownned
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: owner_gid
       description: process_events.owner_gid - File owner group ID
       type: keyword
@@ -8115,6 +8167,15 @@
         - name: number
           type: long
           default_field: false
+    - name: physical_presence_version
+      description: tpm_info.physical_presence_version - Version of the Physical Presence Interface
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: pid
       description: |-
         apparmor_events.pid - Process ID
@@ -8167,12 +8228,23 @@
           default_field: false
     - name: pid_with_namespace
       description: |-
+        apt_sources.pid_with_namespace - Pids that contain a namespace
+        authorized_keys.pid_with_namespace - Pids that contain a namespace
+        crontab.pid_with_namespace - Pids that contain a namespace
         deb_packages.pid_with_namespace - Pids that contain a namespace
+        dns_resolvers.pid_with_namespace - Pids that contain a namespace
+        etc_hosts.pid_with_namespace - Pids that contain a namespace
         file.pid_with_namespace - Pids that contain a namespace
+        groups.pid_with_namespace - Pids that contain a namespace
         hash.pid_with_namespace - Pids that contain a namespace
         npm_packages.pid_with_namespace - Pids that contain a namespace
         os_version.pid_with_namespace - Pids that contain a namespace
+        python_packages.pid_with_namespace - Pids that contain a namespace
         rpm_packages.pid_with_namespace - Pids that contain a namespace
+        suid_bin.pid_with_namespace - Pids that contain a namespace
+        user_ssh_keys.pid_with_namespace - Pids that contain a namespace
+        users.pid_with_namespace - Pids that contain a namespace
+        yum_sources.pid_with_namespace - Pids that contain a namespace
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8822,6 +8894,15 @@
           default_field: false
     - name: processor_type
       description: cpu_info.processor_type - The processor type, such as Central, Math, or Video.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: product_name
+      description: tpm_info.product_name - Product name of the TPM
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9851,6 +9932,14 @@
           type: text
           norms: false
           default_field: false
+    - name: secure_boot
+      description: secureboot.secure_boot - Whether secure boot is enabled
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: secure_process
       description: processes.secure_process - Process is secure (IUM) yes=1, no=0
       type: keyword
@@ -10081,6 +10170,14 @@
           default_field: false
     - name: set
       description: memory_devices.set - Identifies if memory device is one of a set of devices.  A value of 0 indicates no set affiliation.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: setup_mode
+      description: secureboot.setup_mode - Whether setup mode is enabled
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10506,6 +10603,15 @@
         - name: number
           type: long
           default_field: false
+    - name: spec_version
+      description: tpm_info.spec_version - Trusted Computing Group specification that the TPM supports
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: speculative
       description: virtual_memory_info.speculative - Total number of speculative pages.
       type: keyword
@@ -10728,6 +10834,7 @@
         services.status - Service Current status: STOPPED, START_PENDING, STOP_PENDING, RUNNING, CONTINUE_PENDING, PAUSE_PENDING, PAUSED
         shared_memory.status - Destination/attach status
         shared_resources.status - String that indicates the current status of the object.
+        socket_events.status - Either 'succeeded', 'failed', 'in_progress' (connect() on non-blocking socket) or 'no_client' (null accept() on non-blocking socket)
         startup_items.status - Startup status; either enabled or disabled
       type: keyword
       ignore_above: 1024
@@ -10980,7 +11087,7 @@
           norms: false
           default_field: false
     - name: success
-      description: socket_events.success - The socket open attempt status
+      description: socket_events.success - Deprecated. Use the 'status' column instead
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11504,6 +11611,15 @@
           default_field: false
     - name: type
       description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nelf_info.type - Offset of section in file\nelf_sections.type - Section type\nelf_symbols.type - Symbol type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: extension or module\nosquery_flags.type - Flag type\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: type_name
+      description: last.type_name - Entry type name, according to ut_type types (utmp.h)
       type: keyword
       ignore_above: 1024
       multi_fields:

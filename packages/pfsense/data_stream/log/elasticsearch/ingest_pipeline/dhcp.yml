@@ -1,0 +1,92 @@
+---
+description: Pipeline for PFsense DHCP logs
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '%{WORD:event.action} %{MIDDLE} via %{INTERFACE:observer.ingress.interface.name}' 
+        - '%{GREEDYDATA}'
+      pattern_definitions:
+        INTERFACE: '[a-z0-9\.]+'
+        MAC_ADDRESS: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+        FROM: 'from %{MAC_ADDRESS:client.mac}'
+        ON: 'on %{IP:client.address} to %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
+        FOR: 'for %{IP:client.address} \(%{IP:server.address}\)? from %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
+        MIDDLE: '(?:%{FROM}|%{ON}|%{FOR})'
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: protocol
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: network.protocol
+      value: dhcp
+  - set:
+      field: network.transport
+      value: udp
+  - set:
+      field: client.port
+      value: 68
+      if: ctx?.client?.port == null
+  - set:
+      field: server.port
+      value: 67
+      if: ctx?.server?.port == null
+  - set:
+      field: client.ip
+      value: "{{client.address}}"
+      ignore_empty_value: true
+  - set:
+      field: server.ip
+      value: "{{server.address}}"
+      ignore_empty_value: true
+  - set:
+      field: source
+      copy_from: client
+      ignore_empty_value: true
+  - set:
+      field: destination
+      copy_from: server
+      ignore_empty_value: true
+  - community_id:
+      target_field: network.community_id
+      ignore_failure: true
+  - grok:
+      field: observer.ingress.interface.name
+      patterns:
+      - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: "ctx?.source?.ip != null"
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: "ctx?.destination?.ip != null"
+  - append:
+      field: related.hosts
+      value: "{{pfsense.dhcp.hostname}}"
+      allow_duplicates: false
+      if: "ctx?.pfsense?.log?.dhcp?.hostname != null"
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

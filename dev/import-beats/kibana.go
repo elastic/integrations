@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -170,6 +171,10 @@ func createKibanaContent(kibanaMigrator *kibanaMigrator, modulePath string, modu
 	kibanaPath := filepath.Join(modulePath, "_meta", "kibana", "7")
 	dashboardIDMap := make(map[string]string, 0)
 	err := filepath.Walk(kibanaPath, func(path string, info fs.FileInfo, err error) error {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil // elasticsearch module: _meta/kibana/7 doesn't exist
+		}
+
 		if info.IsDir() {
 			return nil
 		}

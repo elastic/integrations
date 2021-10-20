@@ -10,16 +10,16 @@ import (
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/elastic/package-registry/util"
+	"github.com/elastic/package-registry/packages"
 )
 
-func compactDataStreamVariables(dataStreams dataStreamContentArray) (dataStreamContentArray, map[string][]util.Variable, error) { // map[inputType][]util.Variable
-	varsPerInputType := map[string][]util.Variable{}
+func compactDataStreamVariables(dataStreams dataStreamContentArray) (dataStreamContentArray, map[string][]packages.Variable, error) { // map[inputType][]util.Variable
+	varsPerInputType := map[string][]packages.Variable{}
 	var compacted dataStreamContentArray
 
 	for _, dataStream := range dataStreams {
 		for i, stream := range dataStream.manifest.Streams {
-			var notCompactedVars []util.Variable
+			var notCompactedVars []packages.Variable
 			for _, aVar := range stream.Vars {
 				isAlreadyCompacted := isVariableAlreadyCompacted(varsPerInputType, aVar, stream.Input)
 				if !isAlreadyCompacted {
@@ -42,7 +42,7 @@ func compactDataStreamVariables(dataStreams dataStreamContentArray) (dataStreamC
 	return compacted, varsPerInputType, nil
 }
 
-func isVariableAlreadyCompacted(varsPerInputType map[string][]util.Variable, aVar util.Variable, inputType string) bool {
+func isVariableAlreadyCompacted(varsPerInputType map[string][]packages.Variable, aVar packages.Variable, inputType string) bool {
 	if vars, ok := varsPerInputType[inputType]; ok {
 		for _, v := range vars {
 			if v.Name == aVar.Name {
@@ -53,7 +53,7 @@ func isVariableAlreadyCompacted(varsPerInputType map[string][]util.Variable, aVa
 	return false
 }
 
-func canVariableBeCompacted(dataStreams dataStreamContentArray, aVar util.Variable, inputType string) (bool, error) {
+func canVariableBeCompacted(dataStreams dataStreamContentArray, aVar packages.Variable, inputType string) (bool, error) {
 	for _, dataStream := range dataStreams {
 		var varUsed bool
 
@@ -85,7 +85,7 @@ func canVariableBeCompacted(dataStreams dataStreamContentArray, aVar util.Variab
 	return true, nil
 }
 
-func areVariablesEqual(first util.Variable, second util.Variable) (bool, error) {
+func areVariablesEqual(first packages.Variable, second packages.Variable) (bool, error) {
 	if first.Name != second.Name || first.Type != second.Type {
 		return false, nil
 	}
@@ -104,6 +104,6 @@ func areVariablesEqual(first util.Variable, second util.Variable) (bool, error) 
 	return firstValueStr == secondValueStr, nil
 }
 
-func isNonCompactableVariable(aVar util.Variable) bool {
+func isNonCompactableVariable(aVar packages.Variable) bool {
 	return aVar.Name == "period" || aVar.Name == "paths"
 }
