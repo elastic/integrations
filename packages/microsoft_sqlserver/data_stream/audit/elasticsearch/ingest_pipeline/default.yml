@@ -1,9 +1,16 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing SQL Server audit logs
 processors:
 - set:
     field: sample_field
     value: "1"
+- split:
+    description: Split raw audit event data
+    field: winlog.event_data.param1
+    separator: "\n"
+    ignore_missing: true
+    ignore_failure: false
+    if: ctx.event.code == "33205" && ctx?.winlog?.event_data?.param1 != ""
 on_failure:
 - set:
     field: error.message
