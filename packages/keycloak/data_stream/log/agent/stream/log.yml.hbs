@@ -14,7 +14,15 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 exclude_files: [".gz$"]
 exclude_lines: ["^#"]
-{{#if processors}}
 processors:
+{{#if processors}}
 {{processors}}
 {{/if}}
+- add_locale: ~
+{{#if internal_networks.length}}
+- add_fields:
+    target: _tmp
+    fields:
+      tz_offset: {{tz_offset}}
+      only_user_events: {{only_user_events}}
+{{/if}} 

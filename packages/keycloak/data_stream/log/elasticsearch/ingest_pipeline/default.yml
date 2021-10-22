@@ -10,37 +10,33 @@ processors:
 - grok:
     field: event.original
     patterns:
-      - "%{TIME:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) %{GREEDYDATA:message}"
+      - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) %{GREEDYDATA:message}"
 - set:
     field: event.timezone
     value: "{{_tmp.tz_offset}}"
     if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
-# - date:
-#     field: _tmp.timestamp
-#     target_field: '@timestamp'
-#     timezone: "{{ event.timezone }}"
-#     formats:
-#     - MM/dd-HH:mm:ss.SSSSSS
-#     - MM/dd/YY-HH:mm:ss.SSSSSS
-#     - MMM  d HH:mm:ss
-#     - MMM dd HH:mm:ss
-#     if: ctx.event?.timezone != null   
-# - date:
-#     field: _tmp.timestamp
-#     target_field: '@timestamp'
-#     formats:
-#     - MM/dd-HH:mm:ss.SSSSSS
-#     - MM/dd/YY-HH:mm:ss.SSSSSS
-#     - MMM  d HH:mm:ss
-#     - MMM dd HH:mm:ss
-#     if: ctx.event?.timezone == null   
+- date:
+    field: _tmp.timestamp
+    target_field: '@timestamp'
+    timezone: "{{ event.timezone }}"
+    formats:
+      - yyyy-MM-dd HH:mm:ss,SSS
+    if: ctx.event?.timezone != null   
+- date:
+    field: _tmp.timestamp
+    target_field: '@timestamp'
+    formats:
+      - yyyy-MM-dd HH:mm:ss,SSS
+    if: ctx.event?.timezone == null   
 - pipeline:
     name: '{{ IngestPipeline "events" }}'
     if: "ctx.log?.logger == 'org.keycloak.events'"
-# - remove:
-#     field:
-#       - _tmp
-#     ignore_missing: true  
+- drop:
+    if: "ctx._tmp.only_user_events && ctx.log?.logger != 'org.keycloak.events'"
+- remove:
+    field:
+      - _tmp
+    ignore_missing: true  
 - remove:
     field: event.original
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
