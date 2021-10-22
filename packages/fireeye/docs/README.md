@@ -70,7 +70,7 @@ The `NX` log collects the fireeye nx (network security) logs.
 | fireeye.nx.flow.reason | Flow reason. | keyword |
 | fireeye.nx.flow.starttime | Flow start time. | date |
 | fireeye.nx.flow.state | Flow state. | keyword |
-| fireeye.nx.flow_id | Flow ID of the event. | keyword |
+| fireeye.nx.flow_id | Flow ID of the event. | long |
 | fireeye.nx.tcp.ack | TCP acknowledgement. | boolean |
 | fireeye.nx.tcp.psh | TCP PSH. | boolean |
 | fireeye.nx.tcp.state | TCP connectin state. | keyword |
