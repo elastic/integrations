@@ -68,7 +68,7 @@ The SQL Server `audit` dataset provides events from the Windows event log. The f
 | sqlserver.audit.database_name | The database context in which the action occurred. | text |
 | sqlserver.audit.database_principal_id | ID of the database user context that the action is performed in. | integer |
 | sqlserver.audit.database_principal_name | Current user. | text |
-| sqlserver.audit.event_time | Date/time when the auditable action is fired. | date |
+| sqlserver.audit.event_time | Date/time when the auditable action is fired. | text |
 | sqlserver.audit.is_column_permission | Flag indicating a column level permission | boolean |
 | sqlserver.audit.object_id | "The primary ID of the entity on which the audit occurred. This ID can be one of server objects, databases, database objects or schema objects." | integer |
 | sqlserver.audit.object_name | "The name of the entity on which the audit occurred. This can be server objects, databases, database objects, schema objects or TSQL statement (if any)." | text |

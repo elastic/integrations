@@ -1,17 +1,16 @@
 ---
 description: Pipeline for processing SQL Server audit logs
 processors:
-- set:
-    field: sample_field
-    value: "1"
-- split:
-    description: Split raw audit event data
+- kv:
     field: winlog.event_data.param1
-    separator: "\n"
-    ignore_missing: true
-    ignore_failure: false
-    if: ctx.event.code == "33205" && ctx?.winlog?.event_data?.param1 != ""
+    field_split: "\\n"
+    value_split: ":"
+    target_field: sqlserver.audit
+    trim_key: "\\n"
+    trim_value: "\\n"
+    if: ctx?.winlog?.event_id == "33205"
+    ignore_failure: true
 on_failure:
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: "{{ _ingest.on_failure_message }}"
