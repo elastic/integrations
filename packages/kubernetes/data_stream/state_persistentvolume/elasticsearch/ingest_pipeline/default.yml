@@ -1,0 +1,23 @@
+---
+description: Pipeline for parsing kubernetes state_persistentvolume metrics.
+processors:
+  - rename:
+      field: kubernetes.namespace
+      target_field: kubernetes.namespace.name
+      ignore_missing: true
+  - rename:
+      field: kubernetes.namespace_labels
+      target_field: kubernetes.namespace.labels
+      ignore_missing: true
+  - rename:
+      field: kubernetes.namespace_annotations
+      target_field: kubernetes.namespace.annotations
+      ignore_missing: true
+  - rename:
+      field: kubernetes.namespace_uid
+      target_field: kubernetes.namespace.uid
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
