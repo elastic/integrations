@@ -1,10 +1,14 @@
 # Cybersixgill Webhook Integration
 
-This integration creates an HTTP listener that accepts incoming HTTP requests from Cybersixgill integration script (provided by Cybersixgill).
+This integration creates an HTTP listener that accepts incoming HTTP requests from Cybersixgill integration script.
 
-The python script provided by Cybersixgill will usually run on the same host or network as the agent installation, polling the Cybersixgill API and forward the data to filebeat over HTTP(s).
+## Logs
 
-INCLUDE LINK TO Python script and documentation
+### Threat
+
+The Cybersixgill integration works together with a python script provided by Cybersixgill will usually run on the same host or network as the agent installation, polling the Cybersixgill API and forward the data to filebeat over HTTP(s).
+
+The related python script can be retrieved from Github [Here](https://github.com/elastic/filebeat-cybersixgill-integration).
 
 **Exported fields**
 
@@ -24,13 +28,13 @@ INCLUDE LINK TO Python script and documentation
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| cybersixgill.threat.actor | The related actor for the indicator. | keyword |
-| cybersixgill.threat.feedname | Name of the Threat Intel feed. | keyword |
-| cybersixgill.threat.mitre.description | The mitre description of the indicator | keyword |
-| cybersixgill.threat.title | The title of the indicator. | keyword |
-| cybersixgill.threat.valid_from | At what date the indicator is valid from. | date |
-| cybersixgill.threat.virustotal.pr | The Virustotal positive rate. | keyword |
-| cybersixgill.threat.virustotal.url | The related Virustotal URL. | date |
+| cybersixgill.actor | The related actor for the indicator. | keyword |
+| cybersixgill.feedname | Name of the Threat Intel feed. | keyword |
+| cybersixgill.mitre.description | The mitre description of the indicator | keyword |
+| cybersixgill.title | The title of the indicator. | keyword |
+| cybersixgill.valid_from | At what date the indicator is valid from. | date |
+| cybersixgill.virustotal.pr | The Virustotal positive rate. | keyword |
+| cybersixgill.virustotal.url | The related Virustotal URL. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
