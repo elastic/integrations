@@ -141,7 +141,7 @@ An example event for `event` looks as following:
 | kubernetes.event.involved_object.kind | API kind of the object | keyword |  |
 | kubernetes.event.involved_object.name | name of the object | keyword |  |
 | kubernetes.event.involved_object.resource_version | resource version of the object | keyword |  |
-| kubernetes.event.involved_object.uid | UUID version of the object | keyword |  |
+| kubernetes.event.involved_object.uid | uid version of the object | keyword |  |
 | kubernetes.event.message | Message recorded for the given event | text |  |
 | kubernetes.event.metadata.generate_name | Generate name of the event | keyword |  |
 | kubernetes.event.metadata.name | Name of the event | keyword |  |
@@ -157,7 +157,10 @@ An example event for `event` looks as following:
 | kubernetes.event.timestamp.last_occurrence | Timestamp of last occurrence of event | date |  |
 | kubernetes.event.type | Type of the given event | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
