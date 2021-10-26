@@ -71,7 +71,7 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | source.user.name | Short name or login of the user. | keyword |
 | sqlserver.audit.action_id | ID of the action | text |
 | sqlserver.audit.additional_information | Any additional information about the event stored as XML. | text |
-| sqlserver.audit.affected_rows | Number of rows affected by the operation. | integer |
+| sqlserver.audit.affected_rows | Number of rows affected by the operation. | long |
 | sqlserver.audit.application_name | Name of the application that caused the audit event. | text |
 | sqlserver.audit.audit_schema_version | Audit event schema version. | text |
 | sqlserver.audit.class_type | Type of auditable entity that the audit occurs on. | text |
@@ -79,33 +79,33 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | sqlserver.audit.connection_id | Connection ID (unique UUID for the connection) | text |
 | sqlserver.audit.data_sensitivity_information | Sensitivity information about the operation. | text |
 | sqlserver.audit.database_name | The database context in which the action occurred. | text |
-| sqlserver.audit.database_principal_id | ID of the database user context that the action is performed in. | integer |
+| sqlserver.audit.database_principal_id | ID of the database user context that the action is performed in. | keyword |
 | sqlserver.audit.database_principal_name | Current user. | text |
 | sqlserver.audit.duration_milliseconds | Duration of the operation in milliseconds. | long |
 | sqlserver.audit.event_time | Date/time when the auditable action is fired. | text |
 | sqlserver.audit.host_name | SQL Server host name. | text |
 | sqlserver.audit.is_column_permission | Flag indicating a column level permission | boolean |
-| sqlserver.audit.object_id | "The primary ID of the entity on which the audit occurred. This ID can be one of server objects, databases, database objects or schema objects." | integer |
+| sqlserver.audit.object_id | "The primary ID of the entity on which the audit occurred. This ID can be one of server objects, databases, database objects or schema objects." | keyword |
 | sqlserver.audit.object_name | "The name of the entity on which the audit occurred. This can be server objects, databases, database objects, schema objects or TSQL statement (if any)." | text |
 | sqlserver.audit.permission_bitmask | When applicable shows the permissions that were granted, denied or revoked. | text |
-| sqlserver.audit.response_rows | Number of rows returned. | integer |
+| sqlserver.audit.response_rows | Number of rows returned. | long |
 | sqlserver.audit.schema_name | The schema context in which the action occurred. | text |
 | sqlserver.audit.sequence_group_id | Sequence group ID (unique UUID). | text |
 | sqlserver.audit.sequence_number | Tracks the sequence of records within a single audit record  that was too large to fit in the write buffer for audits. | integer |
 | sqlserver.audit.server_instance_name | "Name of the server instance where the audit occurred. Uses the standard machine\\instance format." | text |
-| sqlserver.audit.server_principal_id | ID of the login context that the action is performed in. | integer |
+| sqlserver.audit.server_principal_id | ID of the login context that the action is performed in. | keyword |
 | sqlserver.audit.server_principal_name | Current login. | text |
 | sqlserver.audit.server_principal_sid | Current login SID. | text |
 | sqlserver.audit.session_id | ID of the session on which the event occurred. | integer |
 | sqlserver.audit.session_server_principal_name | Server principal for the session. | text |
 | sqlserver.audit.statement | TSQL statement (if any) | text |
 | sqlserver.audit.succeeded | Indicates whether or not the permission check of the action triggering the audit event succeeded or failed. | boolean |
-| sqlserver.audit.target_database_principal_id | Database principal that the auditable action applies to. | integer |
+| sqlserver.audit.target_database_principal_id | Database principal that the auditable action applies to. | keyword |
 | sqlserver.audit.target_database_principal_name | Target user of the action. | text |
-| sqlserver.audit.target_server_principal_id | Server principal that the auditable action applies to. | integer |
+| sqlserver.audit.target_server_principal_id | Server principal that the auditable action applies to. | keyword |
 | sqlserver.audit.target_server_principal_name | Target login of the action. | text |
 | sqlserver.audit.target_server_principal_sid | SID of the target login. | text |
-| sqlserver.audit.transaction_id | Transaction ID | long |
+| sqlserver.audit.transaction_id | Transaction ID | keyword |
 | sqlserver.audit.user_defined_event_id | User defined event ID. | integer |
 | sqlserver.audit.user_defined_information | User defined information | text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |

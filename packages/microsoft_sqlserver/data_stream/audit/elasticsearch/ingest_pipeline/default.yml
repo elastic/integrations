@@ -8,7 +8,7 @@ processors:
     field: winlog.event_data.param1
     field_split: "\\n"
     value_split: ":"
-    target_field: "_temp.audit"
+    target_field: "sqlserver.audit"
     trim_key: "\\n"
     trim_value: "\\n"
     ignore_failure: true
@@ -20,182 +20,51 @@ processors:
     ignore_failure: true
     if: ctx?.winlog?.log?.level != ""
 - date:
-    field: _temp.audit.event_time
+    field: sqlserver.audit.event_time
     formats:
       - "yyyy-MM-dd HH:mm:ss.SSSSSSS"
 - set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
+
+##
+# Event kind, code and action
+##
 - set:
     field: event.kind
     value: event
 - set:
     field: event.code
     value: '{{winlog.event_id}}'
-- set:
-    field: sqlserver.audit.audit_schema_version
-    copy_from: _temp.audit.audit_schema_version
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.event_time
-    copy_from: _temp.audit.event_time
-    ignore_failure: true
-- convert:
-    field: _temp.audit.sequence_number
-    target_field: sqlserver.audit.sequence_number
-    type: integer
-    ignore_failure: true
-- set:
+
+- trim:
     field: sqlserver.audit.action_id
-    copy_from: _temp.audit.action_id
-    ignore_failure: true
+- trim:
+    field: sqlserver.audit.class_type
+    ignore_missing: true
+##
+# TODO
+# Script to set event.action to value 
+# based on code/abbreviation in sqlserver.audit.action_id
+##
 - convert:
-    field: _temp.audit.succeeded
-    target_field: sqlserver.audit.succeeded
+    field: sqlserver.audit.sequence_number
+    type: integer
+- convert:
+    field: sqlserver.audit.succeeded
     type: boolean
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.permission_bitmask
-    copy_from: _temp.audit.permission_bitmask
-    ignore_failure: true
 - convert:
-    field: _temp.audit.is_column_permission
-    target_field: sqlserver.audit.is_column_permission
-    type: boolean
-    ignore_failure: true
-- convert:
-    field: _temp.audit.session_id
-    target_field: sqlserver.audit.session_id
-    type: integer
-    ignore_failure: true
-- convert:
-    field: _temp.audit.server_principal_id
-    target_field: sqlserver.audit.server_principal_id
-    type: integer
-    ignore_failure: true
-- convert:
-    field: _temp.audit.database_principal_id
-    target_field: sqlserver.audit.database_principal_id
-    type: integer
-    ignore_failure: true
-- convert:
-    field: _temp.audit.object_id
-    target_field: sqlserver.audit.object_id
-    type: integer
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.target_server_principal_id
-    copy_from: _temp.audit.target_server_principal_id
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.target_database_principal_id
-    copy_from: _temp.audit.target_database_principal_id
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.session_server_principal_name
-    copy_from: _temp.audit.session_server_principal_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.server_principal_name
-    copy_from: _temp.audit.server_principal_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.server_principal_sid
-    copy_from: _temp.audit.server_principal_sid
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.database_principal_name
-    copy_from: _temp.audit.database_principal_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.target_server_principal_name
-    copy_from: _temp.audit.target_server_principal_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.target_server_principal_sid
-    copy_from: _temp.audit.target_server_principal_sid
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.target_database_principal_name
-    copy_from: _temp.audit.target_database_principal_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.server_instance_name
-    copy_from: _temp.audit.server_instance_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.database_name
-    copy_from: _temp.audit.database_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.schema_name
-    copy_from: _temp.audit.schema_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.object_name
-    copy_from: _temp.audit.object_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.statement
-    copy_from: _temp.audit.statement
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.additional_information
-    copy_from: _temp.audit.additional_information
-    ignore_failure: true
-- set:
     field: sqlserver.audit.affected_rows
-    copy_from: _temp.audit.affected_rows
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.application_name
-    copy_from: _temp.audit.application_name
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.client_ip
-    copy_from: _temp.audit.client_ip
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.connection_id
-    copy_from: _temp.audit.connection_id
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.data_sensitivity_information
-    copy_from: _temp.audit.data_sensitivity_information
-    ignore_failure: true
-- convert:
-    field: _temp.audit.duration_milliseconds
-    target_field: sqlserver.audit.duration_milliseconds
     type: long
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.host_name
-    copy_from: _temp.audit.host_name
-    ignore_failure: true
-- set:
+- convert:
     field: sqlserver.audit.response_rows
-    copy_from: _temp.audit.response_rows
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.sequence_group_id
-    copy_from: _temp.audit.sequence_group_id
-    ignore_failure: true
-- convert:
-    field: _temp.audit.transaction_id
-    target_field: sqlserver.audit.transaction_id
     type: long
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.user_defined_event_id
-    copy_from: _temp.audit.user_defined_event_id
-    ignore_failure: true
-- set:
-    field: sqlserver.audit.user_defined_information
-    copy_from: _temp.audit.user_defined_information
-    ignore_failure: true
-- remove:
-    field:
-      - _temp
+- convert:
+    field: sqlserver.audit.is_column_permission
+    type: boolean
+- convert:
+    field: sqlserver.audit.duration_milliseconds
+    type: long
 on_failure:
 - set:
     field: error.message
