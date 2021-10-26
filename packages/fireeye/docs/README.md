@@ -1,16 +1,16 @@
-# Fireeye Integration
+# FireEye Integration
 
-This integration periodically fetches metrics from [Fireeye Network Security](https://www.fireeye.com/products/network-security.html) servers. It can parse nx logs created by the HTTP server. 
+This integration periodically fetches logs from [FireEye Network Security](https://www.fireeye.com/products/network-security.html) devices. 
 
 ## Compatibility
 
-The fireeye nx log has been developed against Fireeye Network Security 9.0.0.916432 but is expected to work with other versions.
+The FireEye `nx` integration has been developed against FireEye Network Security 9.0.0.916432 but is expected to work with other versions.
 
 ## Logs
 
-# NX Logs
+### NX
 
-The `NX` log collects the fireeye nx (network security) logs.
+The `nx` integration ingests network security logs from FireEye NX through TCP/UDP and file.
 
 **Exported fields**
 
@@ -157,3 +157,106 @@ The `NX` log collects the fireeye nx (network security) logs.
 | user_agent.os.name | Operating system name, without the version. | keyword |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
+
+
+An example event for `nx` looks as following:
+
+```json
+{
+    "@timestamp": "2020-09-22T08:34:44.991Z",
+    "agent": {
+        "ephemeral_id": "07ac390f-e6ab-4892-b2db-539ade38eb4b",
+        "hostname": "docker-fleet-agent",
+        "id": "867d51a3-868c-4915-80e1-ea1100cd8081",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "fireeye.nx",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "ff02:0000:0000:0000:0000:0000:0000:0001",
+        "bytes": 0,
+        "packets": 0,
+        "port": 10001
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "867d51a3-868c-4915-80e1-ea1100cd8081",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "fireeye.nx",
+        "ingested": "2021-10-26T09:17:09Z",
+        "original": "{\"rawmsg\":\"{\\\"timestamp\\\":\\\"2020-09-22T08:34:44.991339+0000\\\",\\\"flow_id\\\":721570461162990,\\\"event_type\\\":\\\"flow\\\",\\\"src_ip\\\":\\\"fe80:0000:0000:0000:feec:daff:fe31:b706\\\",\\\"src_port\\\":45944,\\\"dest_ip\\\":\\\"ff02:0000:0000:0000:0000:0000:0000:0001\\\",\\\"dest_port\\\":10001,\\\"proto\\\":\\\"UDP\\\",\\\"proto_number\\\":17,\\\"ip_tc\\\":0,\\\"app_proto\\\":\\\"failed\\\",\\\"flow\\\":{\\\"pkts_toserver\\\":8,\\\"pkts_toclient\\\":0,\\\"bytes_toserver\\\":1680,\\\"bytes_toclient\\\":0,\\\"start\\\":\\\"2020-09-22T08:34:12.761326+0000\\\",\\\"end\\\":\\\"2020-09-22T08:34:12.761348+0000\\\",\\\"age\\\":0,\\\"state\\\":\\\"new\\\",\\\"reason\\\":\\\"timeout\\\",\\\"alerted\\\":false}}\\n\",\"meta_sip4\":\"192.168.1.99\",\"meta_oml\":520,\"deviceid\":\"860665216674\",\"meta_cbname\":\"fireeye-7e0de1\"}",
+        "timezone": "+00:00",
+        "type": "flow"
+    },
+    "fireeye": {
+        "nx": {
+            "flow": {
+                "age": 0,
+                "alerted": false,
+                "endtime": "2020-09-22T08:34:12.761348+0000",
+                "reason": "timeout",
+                "starttime": "2020-09-22T08:34:12.761326+0000",
+                "state": "new"
+            },
+            "flow_id": 721570461162990
+        }
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "b7d928c66a441dff2fa2fb14971411df",
+        "ip": [
+            "192.168.48.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:30:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/fireeye-nx.log"
+        },
+        "offset": 0
+    },
+    "network": {
+        "iana_number": 17,
+        "protocol": "failed",
+        "transport": "udp"
+    },
+    "observer": {
+        "product": "NX",
+        "vendor": "Fireeye"
+    },
+    "source": {
+        "address": "fe80:0000:0000:0000:feec:daff:fe31:b706",
+        "bytes": 1680,
+        "packets": 8,
+        "port": 45944
+    }
+}
+```
