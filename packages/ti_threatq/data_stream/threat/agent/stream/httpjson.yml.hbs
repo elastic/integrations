@@ -1,0 +1,56 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+
+request.url: {{host}}/api/indicators/query/hash/{{data_collection_id}}
+
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+request.transforms:
+- set:
+    target: url.params.sort
+    value: updated_at
+- set:
+    target: url.params.limit
+    value: 100
+- set:
+    target: url.params.cursorMark
+    value: '[[.cursor.cursor_mark]]'
+    default: "*"
+cursor:
+  cursor_mark:
+    ignore_empty_value: true
+    value: '[[.last_response.body.nextCursorMark]]'
+response.request_body_on_pagination: true
+
+response.split:
+  target: body.data
+  fail_on_template_error: true
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

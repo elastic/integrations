@@ -1,0 +1,100 @@
+type: logs
+title: ThreatQ
+streams:
+  - input: httpjson
+    vars:
+      - name: host
+        type: text
+        title: ThreatQ hostname
+        multi: false
+        required: true
+        show_user: true
+        default: https://threatqexample.com
+        description: The hostname of the ThreatQ instance.
+      - name: client_id
+        type: text
+        title: ThreatQ Oauth2 Client ID
+        multi: false
+        required: true
+        show_user: true
+        description: The Client ID used to access the ThreatQ instance.
+      - name: client_secret
+        type: password
+        title: ThreatQ Oauth2 Client Secret
+        multi: false
+        required: true
+        show_user: true
+        description: The Client ID used to access the ThreatQ instance.
+      - name: token_url
+        type: text
+        title: ThreatQ Oauth2 Token URL
+        multi: false
+        required: true
+        show_user: true
+        description: The Token URL used for Oauth2 Authentication.
+        default: https://threatqexample.com/api/token
+      - name: data_collection_id
+        type: text
+        title: ThreatQ Collection ID
+        multi: false
+        required: true
+        show_user: true
+        description: The ID of the collection to retrieve data from.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 10m
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #verification_mode: none
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - threatq-threat
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: httpjson.yml.hbs
+    title: ThreatQuotient
+    description: Collect indicators from the ThreatQuotient API
