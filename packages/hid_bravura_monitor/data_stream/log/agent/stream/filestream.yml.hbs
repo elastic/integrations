@@ -2,7 +2,7 @@ paths:
 {{#each paths as |path i|}}
  - {{path}}
 {{/each}}
-exclude_files: [".gz$"]
+prospector.scanner.exclude_files: [".gz$"]
 line_terminator: carriage_return_line_feed
 processors:
   - add_fields:
@@ -13,8 +13,9 @@ processors:
         hid_bravura_monitor.environment: {{environment}}
         hid_bravura_monitor.instancetype: {{instancetype}}
         event.timezone: {{timezone}}
-multiline:
-  type: pattern
-  pattern: ^[[:cntrl:]]
-  negate: true
-  match: after
+parsers:
+  - multiline:
+      type: pattern
+      pattern: ^[[:cntrl:]]
+      negate: true
+      match: after
