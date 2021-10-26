@@ -1,15 +1,14 @@
-# MISP Integration
+# ThreatQuotient Integration
 
-The MISP integration uses the REST API from the running MISP instance to retrieve indicators and Threat Intelligence.
+The ThreatQuotient integration uses the available REST API to retrieve indicators and Threat Intelligence.
 
 ## Logs
 
 ### Threat
 
-The MISP integration configuration allows to set the polling interval, how far back it
-should look initially, and optionally any filters used to filter the results.
-
-The filters themselves are based on the [MISP API documentation](https://www.circl.lu/doc/misp/automation/#search) and should support all documented fields.
+The ThreatQ integration requires you to set a valid URL, combination of Oauth2 credentials and the ID of the collection to retrieve
+indicators from.
+By default the indicators will be collected every 1 minute, and deduplication is handled by the API itself.
 
 **Exported fields**
 
@@ -62,82 +61,20 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| misp.attribute.category | The category of the attribute related to the event object. For example "Network Activity". | keyword |
-| misp.attribute.comment | Comments made to the attribute itself. | keyword |
-| misp.attribute.deleted | If the attribute has been removed from the event object. | boolean |
-| misp.attribute.disable_correlation | If correlation has been enabled on the attribute related to the event object. | boolean |
-| misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
-| misp.attribute.event_id | The local event ID of the attribute related to the event. | keyword |
-| misp.attribute.id | The ID of the attribute related to the event object. | keyword |
-| misp.attribute.object_id | The ID of the Object in which the attribute is attached. | keyword |
-| misp.attribute.object_relation | The type of relation the attribute has with the event object itself. | keyword |
-| misp.attribute.sharing_group_id | The group ID of the sharing group related to the specific attribute. | keyword |
-| misp.attribute.timestamp | The timestamp in which the attribute was attached to the event object. | date |
-| misp.attribute.to_ids | If the attribute should be automatically synced with an IDS. | boolean |
-| misp.attribute.type | The type of the attribute related to the event object. For example email, ipv4, sha1 and such. | keyword |
-| misp.attribute.uuid | The UUID of the attribute related to the event. | keyword |
-| misp.attribute.value | The value of the attribute, depending on the type like "url, sha1, email-src". | keyword |
-| misp.attribute_count | How many attributes are included in a single event object. | long |
-| misp.context.attribute.category | The category of the secondary attribute related to the event object. For example "Network Activity". | keyword |
-| misp.context.attribute.comment | Comments made to the secondary attribute itself. | keyword |
-| misp.context.attribute.deleted | If the secondary attribute has been removed from the event object. | boolean |
-| misp.context.attribute.disable_correlation | If correlation has been enabled on the secondary attribute related to the event object. | boolean |
-| misp.context.attribute.distribution | How the secondary attribute has been distributed, represented by integer numbers. | long |
-| misp.context.attribute.event_id | The local event ID of the secondary attribute related to the event. | keyword |
-| misp.context.attribute.first_seen | The first time the indicator was seen. | keyword |
-| misp.context.attribute.id | The ID of the secondary attribute related to the event object. | keyword |
-| misp.context.attribute.last_seen | The last time the indicator was seen. | keyword |
-| misp.context.attribute.object_id | The ID of the Object in which the secondary attribute is attached. | keyword |
-| misp.context.attribute.object_relation | The type of relation the secondary attribute has with the event object itself. | keyword |
-| misp.context.attribute.sharing_group_id | The group ID of the sharing group related to the specific secondary attribute. | keyword |
-| misp.context.attribute.timestamp | The timestamp in which the secondary attribute was attached to the event object. | date |
-| misp.context.attribute.to_ids | If the secondary attribute should be automatically synced with an IDS. | boolean |
-| misp.context.attribute.type | The type of the secondary attribute related to the event object. For example email, ipv4, sha1 and such. | keyword |
-| misp.context.attribute.uuid | The UUID of the secondary attribute related to the event. | keyword |
-| misp.context.attribute.value | The value of the attribute, depending on the type like "url, sha1, email-src". | keyword |
-| misp.date | The date of when the event object was created. | date |
-| misp.disable_correlation | If correlation is disabled on the MISP event object. | boolean |
-| misp.distribution | Distribution type related to MISP. | keyword |
-| misp.extends_uuid | The UUID of the event object it might extend. | keyword |
-| misp.id | Attribute ID. | keyword |
-| misp.info | Additional text or information related to the event. | keyword |
-| misp.locked | If the current MISP event object is locked or not. | boolean |
-| misp.org.id | The organization ID related to the event object. | keyword |
-| misp.org.local | If the event object is local or from a remote source. | boolean |
-| misp.org.name | The organization name related to the event object. | keyword |
-| misp.org.uuid | The UUID of the organization related to the event object. | keyword |
-| misp.org_id | Organization ID of the event. | keyword |
-| misp.orgc.id | The Organization Community ID in which the event object was reported from. | keyword |
-| misp.orgc.local | If the Organization Community was local or synced from a remote source. | boolean |
-| misp.orgc.name | The Organization Community name in which the event object was reported from. | keyword |
-| misp.orgc.uuid | The Organization Community UUID in which the event object was reported from. | keyword |
-| misp.orgc_id | Organization Community ID of the event. | keyword |
-| misp.proposal_email_lock | Settings configured on MISP for email lock on this event object. | boolean |
-| misp.publish_timestamp | At what time the event object was published | date |
-| misp.published | When the event was published. | boolean |
-| misp.sharing_group_id | The ID of the grouped events or sources of the event. | keyword |
-| misp.threat_level_id | Threat level from 5 to 1, where 1 is the most critical. | long |
-| misp.timestamp | The timestamp of when the event object was created. | date |
-| misp.uuid | The UUID of the event object. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.name |  | keyword |
-| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
+| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
 | threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
-| threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| threat.indicator.file.type | File type (file, dir, or symlink). | keyword |
+| threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. Recommended values are:   \* WHITE   \* GREEN   \* AMBER   \* RED | keyword |
-| threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.registry.key | Hive-relative path of keys. | keyword |
-| threat.indicator.registry.value | Name of the value written. | keyword |
-| threat.indicator.scanner_stats | Count of AV/EDR vendors that successfully detected malicious file or URL. | long |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -147,25 +84,32 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | threat.indicator.url.port | Port of the request, such as 443. | long |
 | threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| user.email | User email address. | keyword |
-| user.roles | Array of user roles at the time of the event. | keyword |
+| threatq.adversaries | Adversaries that are linked to the object | keyword |
+| threatq.attributes | These provide additional context about an object | flattened |
+| threatq.created_at | Object creation time | date |
+| threatq.expires_at | Expiration time | date |
+| threatq.expires_calculated_at | Expiration calculation time | date |
+| threatq.indicator_value | Original indicator value | keyword |
+| threatq.published_at | Object publication time | date |
+| threatq.status | Object status within the Threat Library | keyword |
+| threatq.updated_at | Last modification time | date |
 
 
 An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2014-10-06T07:12:57.000Z",
+    "@timestamp": "2021-10-01T18:36:03.000Z",
     "agent": {
-        "ephemeral_id": "1a21a200-bfd3-4320-8c4e-3174f215f902",
+        "ephemeral_id": "e9f080c4-d427-41e0-8604-5e7092e5b247",
         "hostname": "docker-fleet-agent",
-        "id": "798c7d2d-cc42-42e0-9397-f8613ee0bd2f",
+        "id": "32b4b77a-aad6-45af-b440-5b22dbed7c9c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
     },
     "data_stream": {
-        "dataset": "ti_misp.threat",
+        "dataset": "ti_threatq.threat",
         "namespace": "ep",
         "type": "logs"
     },
@@ -173,83 +117,52 @@ An example event for `threat` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "798c7d2d-cc42-42e0-9397-f8613ee0bd2f",
+        "id": "32b4b77a-aad6-45af-b440-5b22dbed7c9c",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-19T15:40:09.765Z",
-        "dataset": "ti_misp.threat",
-        "ingested": "2021-10-19T15:40:10Z",
+        "created": "2021-10-26T07:52:48.767Z",
+        "dataset": "ti_threatq.threat",
+        "ingested": "2021-10-26T07:52:49Z",
         "kind": "enrichment",
-        "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Network activity\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"22\",\"first_seen\":null,\"id\":\"12394\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1462454963\",\"to_ids\":false,\"type\":\"domain\",\"uuid\":\"572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16\",\"value\":\"whatsapp.com\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":[],\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"5877549f-ea76-4b91-91fb-c72ad682b4a5\"},\"Orgc\":{\"id\":\"2\",\"local\":false,\"name\":\"CthulhuSPRL.be\",\"uuid\":\"55f6ea5f-fd34-43b8-ac1d-40cb950d210f\"},\"RelatedEvent\":[],\"ShadowAttribute\":[],\"Tag\":[{\"colour\":\"#004646\",\"exportable\":true,\"hide_tag\":false,\"id\":\"1\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"type:OSINT\",\"numerical_value\":null,\"user_id\":\"0\"},{\"colour\":\"#339900\",\"exportable\":true,\"hide_tag\":false,\"id\":\"2\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"tlp:green\",\"numerical_value\":null,\"user_id\":\"0\"}],\"analysis\":\"2\",\"attribute_count\":\"29\",\"date\":\"2014-10-03\",\"disable_correlation\":false,\"distribution\":\"3\",\"extends_uuid\":\"\",\"id\":\"2\",\"info\":\"OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"2\",\"proposal_email_lock\":false,\"publish_timestamp\":\"1610622316\",\"published\":true,\"sharing_group_id\":\"0\",\"threat_level_id\":\"2\",\"timestamp\":\"1412579577\",\"uuid\":\"54323f2c-e50c-4268-896c-4867950d210b\"}}",
+        "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":5,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893068,\"indicator_id\":106767,\"name\":\"Contact\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca\"},{\"attribute_id\":9,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893069,\"indicator_id\":106767,\"name\":\"Router Port\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"9000\"},{\"attribute_id\":6,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893070,\"indicator_id\":106767,\"name\":\"Flags\",\"touched_at\":\"2021-10-02 18:36:08\",\"updated_at\":\"2021-10-02 18:36:08\",\"value\":\"ERDV\"}],\"class\":\"network\",\"created_at\":\"2021-10-01 18:36:03\",\"expires_calculated_at\":\"2021-10-23 18:40:17\",\"hash\":\"69beef49fdbd1f54eef3cab324c7b6cf\",\"id\":106767,\"published_at\":\"2021-10-01 18:36:03\",\"score\":0,\"sources\":[{\"created_at\":\"2021-10-01 18:36:06\",\"creator_source_id\":12,\"id\":3699669,\"indicator_id\":106767,\"indicator_status_id\":1,\"indicator_type_id\":15,\"name\":\"www.dan.me.uk Tor Node List\",\"published_at\":\"2021-10-01 18:36:06\",\"reference_id\":37,\"source_id\":12,\"source_type\":\"connectors\",\"updated_at\":\"2021-10-24 18:36:10\"}],\"status\":{\"description\":\"Poses a threat and is being exported to detection tools.\",\"id\":1,\"name\":\"Active\"},\"status_id\":1,\"touched_at\":\"2021-10-24 18:36:10\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2021-10-01 18:36:03\",\"value\":\"107.189.1.90\"}",
         "type": "indicator"
     },
     "input": {
         "type": "httpjson"
     },
-    "misp": {
-        "attribute": {
-            "category": "Network activity",
-            "comment": "",
-            "deleted": false,
-            "disable_correlation": false,
-            "distribution": 5,
-            "event_id": "22",
-            "id": "12394",
-            "object_id": "0",
-            "sharing_group_id": "0",
-            "timestamp": "1462454963",
-            "to_ids": false,
-            "type": "domain",
-            "uuid": "572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16"
-        },
-        "attribute_count": 29,
-        "date": "2014-10-03",
-        "disable_correlation": false,
-        "distribution": "3",
-        "extends_uuid": "",
-        "id": "2",
-        "info": "OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks",
-        "locked": false,
-        "org_id": "1",
-        "orgc": {
-            "id": "2",
-            "local": false,
-            "name": "CthulhuSPRL.be",
-            "uuid": "55f6ea5f-fd34-43b8-ac1d-40cb950d210f"
-        },
-        "orgc_id": "2",
-        "proposal_email_lock": false,
-        "publish_timestamp": "1610622316",
-        "published": true,
-        "sharing_group_id": "0",
-        "threat_level_id": 2,
-        "uuid": "54323f2c-e50c-4268-896c-4867950d210b"
-    },
     "tags": [
-        "type:OSINT",
-        "tlp:green"
+        "preserve_original_event",
+        "forwarded",
+        "threatq-threat"
     ],
     "threat": {
-        "feed": {
-            "name": "MISP"
-        },
         "indicator": {
-            "marking": {
-                "tlp": [
-                    "green"
-                ]
-            },
-            "provider": "misp",
-            "scanner_stats": 2,
-            "type": "domain-name",
-            "url": {
-                "domain": "whatsapp.com"
-            }
+            "confidence": "None",
+            "ip": "107.189.1.90",
+            "type": "ipv4-addr"
         }
+    },
+    "threatq": {
+        "attributes": {
+            "contact": [
+                "email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca"
+            ],
+            "flags": [
+                "ERDV"
+            ],
+            "router_port": [
+                "9000"
+            ]
+        },
+        "created_at": "2021-10-01T18:36:03.000Z",
+        "expires_calculated_at": "2021-10-23T18:40:17.000Z",
+        "indicator_value": "107.189.1.90",
+        "published_at": "2021-10-01T18:36:03.000Z",
+        "status": "Active"
     }
 }
 ```

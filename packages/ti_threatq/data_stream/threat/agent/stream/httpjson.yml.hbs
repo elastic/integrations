@@ -1,9 +1,22 @@
 config_version: "2"
 interval: {{interval}}
-request.method: "POST"
+request.method: "GET"
 
-{{#if url}}
-request.url: {{url}}/events/restSearch
+{{#if client_id}}
+{{#if client_secret}}
+{{#if token_url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+{{/if}}
+{{/if}}
+{{/if}}
+
+{{#if host}}
+{{#if data_collection_id}}
+request.url: {{host}}/api/indicators/query/hash/{{data_collection_id}}
+{{/if}}
 {{/if}}
 {{#if ssl}}
 request.ssl: {{ssl}}
@@ -14,51 +27,28 @@ request.timeout: {{http_client_timeout}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}
 {{/if}}
-request.body:
-{{#if filters}}
-  {{filters}}
-{{/if}}
+
 request.transforms:
-{{#if api_token}}
 - set:
-    target: header.Authorization
-    value: {{api_token}}
-{{/if}}
+    target: url.params.sort
+    value: updated_at
 - set:
-    target: body.page
-    value: 1
+    target: url.params.limit
+    value: 100
 - set:
-    target: body.limit
-    value: 10
-- set:
-    target: body.returnFormat
-    value: json
-- set:
-    target: body.timestamp
-    value: '[[.cursor.timestamp]]'
-    default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "UnixDate" ]]'
+    target: url.params.cursorMark
+    value: '[[.cursor.cursor_mark]]'
+    default: "*"
+cursor:
+  cursor_mark:
+    ignore_empty_value: true
+    value: '[[.last_response.body.nextCursorMark]]'
+response.request_body_on_pagination: true
 
 response.split:
-  target: body.response
-  split:
-    target: body.Event.Attribute
-    ignore_empty_value: true
-    keep_parent: true
-    split:
-      target: body.Event.Object
-      keep_parent: true
-      split:
-        target: body.Event.Object.Attribute
-        keep_parent: true
-response.request_body_on_pagination: true
-response.pagination:
-- set:
-    target: body.page
-    value: '[[add .last_response.page 1]]'
-    fail_on_template_error: true
-cursor:
-  timestamp:
-    value: '[[.last_event.Event.timestamp]]'
+  target: body.data
+  fail_on_template_error: true
+
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

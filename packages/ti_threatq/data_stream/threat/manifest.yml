@@ -1,31 +1,45 @@
 type: logs
-title: MISP
+title: ThreatQ
 streams:
   - input: httpjson
     vars:
-      - name: url
+      - name: host
         type: text
-        title: MISP URL
+        title: ThreatQ hostname
         multi: false
         required: true
         show_user: true
-        default: https://mispserver.com
-        description: The URL or hostname of the MISP instance.
-      - name: api_token
+        default: https://threatqexample.com
+        description: The hostname of the ThreatQ instance.
+      - name: client_id
+        type: text
+        title: ThreatQ Oauth2 Client ID
+        multi: false
+        required: true
+        show_user: true
+        description: The Client ID used to access the ThreatQ instance.
+      - name: client_secret
         type: password
-        title: MISP API Token
+        title: ThreatQ Oauth2 Client Secret
         multi: false
         required: true
         show_user: true
-        description: The API token used to access the MISP instance.
-      - name: initial_interval
+        description: The Client ID used to access the ThreatQ instance.
+      - name: token_url
         type: text
-        title: Interval
+        title: ThreatQ Oauth2 Token URL
         multi: false
         required: true
         show_user: true
-        default: 120h
-        description: How far back to look for indicators the first time the agent is started.
+        description: The Token URL used for Oauth2 Authentication.
+        default: https://threatqexample.com/api/token
+      - name: data_collection_id
+        type: text
+        title: ThreatQ Collection ID
+        multi: false
+        required: true
+        show_user: true
+        description: The ID of the collection to retrieve data from.
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -33,21 +47,6 @@ streams:
         required: false
         show_user: false
         default: 30s
-      - name: filters
-        type: yaml
-        title: MISP API Filters
-        multi: false
-        required: false
-        show_user: false
-        default: |
-          #type:
-          #  OR:
-          #  - ip-src
-          #  - ip-dst
-          #tags:
-          #  NOT:
-          #  - tlp-red
-        description: Filters documented at [MISP API Documentation](https://www.circl.lu/doc/misp/automation/#search) is supported.
       - name: proxy_url
         type: text
         title: Proxy URL
@@ -78,7 +77,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - misp-threat
+          - threatq-threat
       - name: preserve_original_event
         required: true
         show_user: true
@@ -97,5 +96,5 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: httpjson.yml.hbs
-    title: MISP
-    description: Collect indicators from the MISP API
+    title: ThreatQuotient
+    description: Collect indicators from the ThreatQuotient API
