@@ -95,6 +95,9 @@ processors:
     field: json.redirect_uri
     target_field: keycloak.login.redirect_uri
     ignore_missing: true
+- uri_parts:
+    field: keycloak.login.redirect_uri
+    ignore_failure: true
 - rename:
     field: json.auth_method
     target_field: keycloak.login.auth_method
@@ -201,6 +204,10 @@ processors:
     field: related.user
     value: "{{user.target.id}}"
     if: ctx.user?.target?.id != null
+- append:
+    field: related.hosts
+    value: "{{url.domain}}"
+    if: ctx.url?.domain != null
 - remove:
     field:
       - message

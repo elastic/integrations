@@ -80,6 +80,7 @@ to your configuration XML file (ie standalone.xml) under the path below
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | process.thread.name | Thread name. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -98,6 +99,13 @@ to your configuration XML file (ie standalone.xml) under the path below
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.scheme |  |  |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
@@ -130,15 +138,6 @@ An example event for `log` looks as following:
             "code_id": "bae6e56e-368f-4809-89f3-48cfb6279f5e"
         }
     },
-    "@timestamp": "2021-10-22T22:11:31.257-05:00",
-    "related": {
-        "user": [
-            "ce637d23-b89c-4fca-9088-1aea1d053e19"
-        ],
-        "ip": [
-            "10.2.2.156"
-        ]
-    },
     "log": {
         "level": "DEBUG",
         "logger": "org.keycloak.events"
@@ -147,8 +146,30 @@ An example event for `log` looks as following:
         "address": "10.2.2.156",
         "ip": "10.2.2.156"
     },
+    "url": {
+        "path": "/auth/admin/test/console/",
+        "fragment": "/realms/test/events",
+        "original": "https://www.example.com/auth/admin/test/console/#/realms/test/events",
+        "scheme": "https",
+        "domain": "www.example.com"
+    },
+    "tags": [
+        "preserve_original_event"
+    ],
+    "@timestamp": "2021-10-22T22:11:31.257-05:00",
+    "related": {
+        "user": [
+            "ce637d23-b89c-4fca-9088-1aea1d053e19"
+        ],
+        "hosts": [
+            "www.example.com"
+        ],
+        "ip": [
+            "10.2.2.156"
+        ]
+    },
     "event": {
-        "ingested": "2021-10-22T23:21:51.824030484Z",
+        "ingested": "2021-10-27T01:40:29.824706616Z",
         "original": "2021-10-22 22:11:31,257 DEBUG [org.keycloak.events] (default task-2) type=LOGIN, realmId=test, clientId=security-admin-console, userId=ce637d23-b89c-4fca-9088-1aea1d053e19, ipAddress=10.2.2.156, auth_method=openid-connect, auth_type=code, redirect_uri=https://www.example.com/auth/admin/test/console/#/realms/test/events, consent=no_consent_required, code_id=bae6e56e-368f-4809-89f3-48cfb6279f5e, username=admin, authSessionParentId=bae6e56e-368f-4809-89f3-48cfb6279f5e, authSessionTabId=Kz_ye2UvP6M",
         "timezone": "America/Chicago",
         "kind": "event",
@@ -165,9 +186,6 @@ An example event for `log` looks as following:
     "user": {
         "name": "admin",
         "id": "ce637d23-b89c-4fca-9088-1aea1d053e19"
-    },
-    "tags": [
-        "preserve_original_event"
-    ]
+    }
 }
 ```
