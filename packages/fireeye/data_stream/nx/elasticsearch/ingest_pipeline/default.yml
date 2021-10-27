@@ -77,25 +77,21 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
-  - remove:
-      field: rawmsg    
-  - remove:
-      field: json        
   #
   # Normalize protocol names
   #
   - lowercase:
       field: "network.transport"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "network.protocol"
-      ignore_failure: true      
+      ignore_missing: true
   - lowercase:
       field: "network.direction"
-      ignore_failure: true
+      ignore_missing: true
   - lowercase:
       field: "network.type"
-      ignore_failure: true
+      ignore_missing: true
   #
   # Populate network.iana_number from network.transport. Also does reverse
   # mapping in case network.transport contains the iana_number.
@@ -143,6 +139,13 @@ processors:
           net['iana_number'] = net.transport;
           net['transport'] = trans;
         }
+  - community_id:
+      target_field: network.community_id
+  - remove:
+      field: 
+        - rawmsg
+        - json
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
