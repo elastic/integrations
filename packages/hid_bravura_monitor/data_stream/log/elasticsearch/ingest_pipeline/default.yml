@@ -99,6 +99,9 @@ processors:
         - 'yyyy-MM-dd HH:mm:ss.SSS'
       timezone: '{{event.timezone}}'
       description: Convert logdate to @timestamp
+  - remove:
+      field: message
+      description: Remove message
   - rename:
       target_field: message
       field: msg
@@ -112,6 +115,16 @@ processors:
       copy_from: host.name
       ignore_empty_value: true
       description: Copy host.name to hid_bravura_monitor.node if left as default
+  - convert:
+      field: process.pid
+      type: long
+      ignore_missing: true
+      description: process.pid to Long
+  - convert:
+      field: process.thread.id
+      type: long
+      ignore_missing: true
+      description: process.thread.id to Long
   - convert:
       field: hid_bravura_monitor.perf.duration
       type: long
