@@ -141,6 +141,16 @@ processors:
         }
   - community_id:
       target_field: network.community_id
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
   - remove:
       field:
         - rawmsg
