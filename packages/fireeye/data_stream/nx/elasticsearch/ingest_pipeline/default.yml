@@ -1,0 +1,162 @@
+---
+description: Pipeline for processing FireEye NX logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: "1.12.0"
+  - set:
+      field: observer.vendor
+      value: "Fireeye"
+  - set:
+      field: observer.product
+      value: "NX"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - json:
+      field: json.rawmsg
+      target_field: rawmsg
+      ignore_failure: true
+  # rename raw fields
+  - pipeline:
+      name: '{{ IngestPipeline "renaming-raws" }}'
+  - date:
+      field: temp_ts
+      formats:
+        - strict_date_optional_time_nanos
+  - remove:
+      field: temp_ts
+  - geoip:
+      field: destination.address
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      field: source.address
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.address
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.address
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+  #
+  # Normalize protocol names
+  #
+  - lowercase:
+      field: "network.transport"
+      ignore_missing: true
+  - lowercase:
+      field: "network.protocol"
+      ignore_missing: true
+  - lowercase:
+      field: "network.direction"
+      ignore_missing: true
+  - lowercase:
+      field: "network.type"
+      ignore_missing: true
+  #
+  # Populate network.iana_number from network.transport. Also does reverse
+  # mapping in case network.transport contains the iana_number.
+  #
+  - script:
+      if: "ctx?.network?.transport != null"
+      lang: painless
+      params:
+        icmp: 1
+        igmp: 2
+        ipv4: 4
+        tcp: 6
+        egp: 8
+        igp: 9
+        pup: 12
+        udp: 17
+        rdp: 27
+        irtp: 28
+        dccp: 33
+        idpr: 35
+        ipv6: 41
+        ipv6-route: 43
+        ipv6-frag: 44
+        rsvp: 46
+        gre: 47
+        esp: 50
+        ipv6-icmp: 58
+        ipv6-nonxt: 59
+        ipv6-opts: 60
+      source: >
+        def net = ctx.network;
+        def iana = params[net.transport];
+        if (iana != null) {
+          net['iana_number'] = iana;
+          return;
+        }
+        def reverse = new HashMap();
+        def[] arr = new def[] { null };
+        for (entry in params.entrySet()) {
+          arr[0] = entry.getValue();
+          reverse.put(String.format("%d", arr), entry.getKey());
+        }
+        def trans = reverse[net.transport];
+        if (trans != null) {
+          net['iana_number'] = net.transport;
+          net['transport'] = trans;
+        }
+  - community_id:
+      target_field: network.community_id
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - remove:
+      field:
+        - rawmsg
+        - json
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
