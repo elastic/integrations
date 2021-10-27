@@ -4,9 +4,6 @@ processors:
 - set:
     field: ecs.version
     value: '1.12.0'
-- append:
-    field: event.category
-    value: database
 - kv:
     field: winlog.event_data.param1
     field_split: "\\n"
@@ -52,7 +49,7 @@ processors:
 
 - script:
     lang: painless
-    description: The script processor sets event.action based on action_id and class_type fields.
+    description: The script processor sets event type, action and category based on action_id and class_type fields.
     source: |-
          HashMap classTypes = [
                 "DB":["DATABASE","DATABASE"],
@@ -341,9 +338,11 @@ processors:
          }
          if (classType == null) {
              ctx.event.action = ctx.event.action + " on Unknown class type " + ctx.sqlserver.audit.class_type;
+             ctx.event.category = ctx.sqlserver.audit.class_type;
              return;
          } else {
              ctx.event.action = ctx.event.action + " on " + classType[0];
+             ctx.event.category = classType[0];
              return;
          }
 
