@@ -1,0 +1,463 @@
+---
+description: Pipeline for renaming raw fields from incoming event original.
+processors:
+  - rename:
+      field: rawmsg.timestamp
+      target_field: temp_ts
+      ignore_missing: true
+  - rename:
+      field: rawmsg.proto
+      target_field: network.transport
+      ignore_missing: true
+  - rename:
+      field: rawmsg.app_proto
+      target_field: network.protocol
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow_id
+      target_field: fireeye.nx.flow_id
+      ignore_missing: true
+  - rename:
+      field: rawmsg.event_type
+      target_field: event.type
+      ignore_missing: true
+  - rename:
+      field: rawmsg.src_ip
+      target_field: source.address
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: source.address
+      ignore_empty_value: true
+  - rename:
+      field: rawmsg.src_port
+      target_field: source.port
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dest_ip
+      target_field: destination.address
+      ignore_missing: true
+  - set:
+      field: destination.ip
+      copy_from: destination.address
+      ignore_empty_value: true
+  - rename:
+      field: rawmsg.dest_port
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      field: meta_sip4
+      target_field: fireeye.nx.device_ip
+      ignore_missing: true
+  - rename:
+      field: meta_oml
+      target_field: fireeye.nx.device_oml
+      ignore_missing: true
+  - rename:
+      field: deviceid
+      target_field: fireeye.nx.deviceid
+      ignore_missing: true
+  - rename:
+      field: meta_cbname
+      target_field: fireeye.nx.hostname
+      ignore_missing: true
+  # flow event type fields
+  - rename:
+      field: rawmsg.proto_number
+      target_field: network.iana_number
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.pkts_toserver
+      target_field: source.packets
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.pkts_toclient
+      target_field: destination.packets
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.bytes_toserver
+      target_field: source.bytes
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.bytes_toclient
+      target_field: destination.bytes
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.start
+      target_field: fireeye.nx.flow.starttime
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.end
+      target_field: fireeye.nx.flow.endtime
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.age
+      target_field: fireeye.nx.flow.age
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.state
+      target_field: fireeye.nx.flow.state
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.reason
+      target_field: fireeye.nx.flow.reason
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.flow.alerted
+      target_field: fireeye.nx.flow.alerted
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tcp
+      target_field: fireeye.nx.tcp
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.icmp_code
+      target_field: fireeye.nx.flow.icmp_code
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.icmp_type
+      target_field: fireeye.nx.flow.icmp_type
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.response_icmp_code
+      target_field: fireeye.nx.flow.response_icmp_code
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.response_icmp_type
+      target_field: fireeye.nx.flow.response_icmp_type
+      if: ctx?.event?.type == 'flow'
+      ignore_missing: true
+  # fileinfo event type fields
+  - rename:
+      field: rawmsg.fileinfo.filename
+      target_field: fireeye.nx.fileinfo.filename
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.fileinfo.magic
+      target_field: fireeye.nx.fileinfo.magic
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.fileinfo.md5
+      target_field: fireeye.nx.fileinfo.md5
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.fileinfo.size
+      target_field: fireeye.nx.fileinfo.size
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.fileinfo.state
+      target_field: fireeye.nx.fileinfo.state
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.fileinfo.stored
+      target_field: fireeye.nx.fileinfo.stored
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.hostname
+      target_field: url.domain
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_content_type
+      target_field: http.request.mime_type
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_method
+      target_field: http.request.method
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_refer
+      target_field: http.request.referrer
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_user_agent
+      target_field: user_agent.original
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.length
+      target_field: http.response.bytes
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.protocol
+      target_field: http.version
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.status
+      target_field: http.response.status_code
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.url
+      target_field: url.path
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.iface
+      target_field: interface.name
+      if: ctx?.event?.type == 'fileinfo'
+      ignore_missing: true
+  # http event type fields
+  - rename:
+      field: rawmsg.http.hostname
+      target_field: url.domain
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_content_type
+      target_field: http.request.mime_type
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_method
+      target_field: http.request.method
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_refer
+      target_field: http.request.referrer
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_user_agent
+      target_field: user_agent.original
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.length
+      target_field: http.response.bytes
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.protocol
+      target_field: http.version
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.status
+      target_field: http.response.status_code
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.url
+      target_field: url.path
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.iface
+      target_field: interface.name
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  # http event type fields
+  - rename:
+      field: rawmsg.http.hostname
+      target_field: url.domain
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_content_type
+      target_field: http.request.mime_type
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_method
+      target_field: http.request.method
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_refer
+      target_field: http.request.referrer
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.http_user_agent
+      target_field: user_agent.original
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.length
+      target_field: http.response.bytes
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.protocol
+      target_field: http.version
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.status
+      target_field: http.response.status_code
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.http.url
+      target_field: url.path
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.iface
+      target_field: interface.name
+      if: ctx?.event?.type == 'http'
+      ignore_missing: true
+  # dns event type fields
+  - rename:
+      field: rawmsg.dns.id
+      target_field: dns.id
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dns.rcode
+      target_field: dns.response_code
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dns.rdata
+      target_field: dns.resolved_data
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dns.rrname
+      target_field: dns.question.name
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dns.rrtype
+      target_field: dns.question.type
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dns.ttl
+      target_field: dns.answers.ttl
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.dns.type
+      target_field: dns.type
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.iface
+      target_field: interface.name
+      if: ctx?.event?.type == 'dns'
+      ignore_missing: true
+  # tls event type fields
+  - rename:
+      field: rawmsg.tls.client_ciphersuites
+      target_field: tls.client.ciphersuites
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.client_tls_exts
+      target_field: tls.client.tls_exts
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.fingerprint
+      target_field: tls.client.fingerprint
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.issuerdn
+      target_field: tls.client.issuer
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.ja3.hash
+      target_field: tls.client.ja3
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.ja3.string
+      target_field: tls.client.ja3_string
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.ja3s.hash
+      target_field: tls.server.ja3s
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.ja3s.string
+      target_field: tls.server.ja3s_string
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.notbefore
+      target_field: tls.client.not_before
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.notafter
+      target_field: tls.client.not_after
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.pubkeylength
+      target_field: tls.public_keylength
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.server_ciphersuite
+      target_field: tls.server.ciphersuite
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.server_tls_exts
+      target_field: tls.server.tls_exts
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.sni
+      target_field: tls.client.server_name
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.subject
+      target_field: tls.client.subject
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.version
+      target_field: tls.version
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.tls.fatal_alert
+      target_field: fireeye.nx.tls.fetal_alert
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+  - rename:
+      field: rawmsg.iface
+      target_field: interface.name
+      if: ctx?.event?.type == 'tls'
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
