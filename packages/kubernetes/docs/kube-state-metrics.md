@@ -1741,7 +1741,7 @@ An example event for `state_service` looks as following:
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |
-| kubernetes.service.cluster_ip | Internal IP for the service. | ip |
+| kubernetes.service.cluster_ip | Internal IP for the service. | keyword |
 | kubernetes.service.created | Service creation date | date |
 | kubernetes.service.external_ip | Service external IP | keyword |
 | kubernetes.service.external_name | Service external DNS name | keyword |
