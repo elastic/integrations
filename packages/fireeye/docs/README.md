@@ -166,9 +166,9 @@ An example event for `nx` looks as following:
 {
     "@timestamp": "2020-09-22T08:34:44.991Z",
     "agent": {
-        "ephemeral_id": "07ac390f-e6ab-4892-b2db-539ade38eb4b",
+        "ephemeral_id": "2b47c3d3-4bd2-42bd-8417-b0321abf9f4e",
         "hostname": "docker-fleet-agent",
-        "id": "867d51a3-868c-4915-80e1-ea1100cd8081",
+        "id": "e996b452-b5d9-45c4-ba1d-f67a6f379774",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -181,6 +181,7 @@ An example event for `nx` looks as following:
     "destination": {
         "address": "ff02:0000:0000:0000:0000:0000:0000:0001",
         "bytes": 0,
+        "ip": "ff02:0000:0000:0000:0000:0000:0000:0001",
         "packets": 0,
         "port": 10001
     },
@@ -188,14 +189,14 @@ An example event for `nx` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "867d51a3-868c-4915-80e1-ea1100cd8081",
+        "id": "e996b452-b5d9-45c4-ba1d-f67a6f379774",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "fireeye.nx",
-        "ingested": "2021-10-26T09:17:09Z",
+        "ingested": "2021-10-27T09:36:43Z",
         "original": "{\"rawmsg\":\"{\\\"timestamp\\\":\\\"2020-09-22T08:34:44.991339+0000\\\",\\\"flow_id\\\":721570461162990,\\\"event_type\\\":\\\"flow\\\",\\\"src_ip\\\":\\\"fe80:0000:0000:0000:feec:daff:fe31:b706\\\",\\\"src_port\\\":45944,\\\"dest_ip\\\":\\\"ff02:0000:0000:0000:0000:0000:0000:0001\\\",\\\"dest_port\\\":10001,\\\"proto\\\":\\\"UDP\\\",\\\"proto_number\\\":17,\\\"ip_tc\\\":0,\\\"app_proto\\\":\\\"failed\\\",\\\"flow\\\":{\\\"pkts_toserver\\\":8,\\\"pkts_toclient\\\":0,\\\"bytes_toserver\\\":1680,\\\"bytes_toclient\\\":0,\\\"start\\\":\\\"2020-09-22T08:34:12.761326+0000\\\",\\\"end\\\":\\\"2020-09-22T08:34:12.761348+0000\\\",\\\"age\\\":0,\\\"state\\\":\\\"new\\\",\\\"reason\\\":\\\"timeout\\\",\\\"alerted\\\":false}}\\n\",\"meta_sip4\":\"192.168.1.99\",\"meta_oml\":520,\"deviceid\":\"860665216674\",\"meta_cbname\":\"fireeye-7e0de1\"}",
         "timezone": "+00:00",
         "type": "flow"
@@ -219,10 +220,10 @@ An example event for `nx` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "b7d928c66a441dff2fa2fb14971411df",
         "ip": [
-            "192.168.48.7"
+            "192.168.48.4"
         ],
         "mac": [
-            "02:42:c0:a8:30:07"
+            "02:42:c0:a8:30:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -245,6 +246,7 @@ An example event for `nx` looks as following:
         "offset": 0
     },
     "network": {
+        "community_id": "1:McNAQcsUcKZYOHHZYm0sD8JiBLc=",
         "iana_number": 17,
         "protocol": "failed",
         "transport": "udp"
@@ -256,8 +258,12 @@ An example event for `nx` looks as following:
     "source": {
         "address": "fe80:0000:0000:0000:feec:daff:fe31:b706",
         "bytes": 1680,
+        "ip": "fe80:0000:0000:0000:feec:daff:fe31:b706",
         "packets": 8,
         "port": 45944
-    }
+    },
+    "tags": [
+        "fireeye-nx"
+    ]
 }
 ```
