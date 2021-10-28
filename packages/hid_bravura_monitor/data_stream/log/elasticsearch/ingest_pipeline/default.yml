@@ -72,23 +72,23 @@ processors:
       field: kvpairs
       ignore_missing: true
       description: Remove kvpairs
-  - rename:
-      target_field: hid_bravura_monitor.request.id
+  - grok:
       field: pslogid
+      patterns:
+        - >-
+          %{UUID:hid_bravura_monitor.request.id}
+        - >-
+          %{[A-Fa-f0-9]{32}:hid_bravura_monitor.request.id}
       ignore_missing: true
-      if: >-
-        ctx?.pslogid ==~ /[A-F0-9]{32}/ || ctx?.pslogid ==~
-        /[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}/
       description: Set requestid if batchid
-  - rename:
-      target_field: user.id
-      field: pslogid
-      ignore_missing: true
-      if: >-
-        ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax' && ctx?.pslogid !=
-        null && !(ctx?.pslogid ==~ /[A-F0-9]{32}/ || ctx?.pslogid ==~
-        /[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}/)
-      description: Set userid if not a guid
+      on_failure:
+        - rename:
+            target_field: user.id
+            field: pslogid
+            ignore_missing: true
+            if: >-
+              ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax'
+            description: Set userid if not a guid
   - remove:
       field: pslogid
       ignore_missing: true
