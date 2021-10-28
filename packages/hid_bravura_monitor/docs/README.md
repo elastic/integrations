@@ -116,79 +116,82 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "hid_bravura_monitor": {
-        "node": "Node1",
-        "environment": "DEVELOPMENT",
-        "instancename": "default",
-        "instancetype": "Privilege"
-    },
+    "@timestamp": "2021-01-16T00:35:25.258Z",
     "agent": {
-        "hostname": "hostname",
-        "name": "hostname",
-        "id": "e2bee520-b4cd-44bf-95ea-55c7d8f8ecce",
-        "ephemeral_id": "62ca6ad8-3e0a-4508-b353-496d9cf3eab5",
+        "ephemeral_id": "a9426446-1513-4b85-8652-1c953dbe09b4",
+        "hostname": "docker-fleet-agent",
+        "id": "f42ccc95-84f2-4379-8c1c-c862296c2db2",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
-    "process": {
-        "pid": "28924",
-        "thread": {
-            "id": "23600"
-        }
+    "data_stream": {
+        "dataset": "hid_bravura_monitor.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "log": {
-        "file": {
-            "path": "C:\\Logs\\Node1\\default.2021-10-22-182438\\idmsuite.log"
-        },
-        "offset": 6632166,
-        "level": "Info",
-        "logger": "pamlws.exe"
-    },
-    "fileset": {
-        "name": "log"
-    },
-    "message": "Source address [0.0.0.0] updated for wstn [00000000-0000-0000-0000-000000000000]",
-    "input": {
-        "type": "filestream"
-    },
-    "@timestamp": "2021-10-22T18:48:08.093-04:00",
     "ecs": {
         "version": "1.12.0"
     },
-    "service": {
-        "type": "hid_bravura_monitor"
-    },
-    "host": {
-        "hostname": "hostname",
-        "os": {
-            "build": "14393.3085",
-            "kernel": "10.0.14393.3085 (rs1_release.190703-1816)",
-            "name": "Windows Server 2016 Standard",
-            "type": "windows",
-            "family": "windows",
-            "version": "10.0",
-            "platform": "windows"
-        },
-        "ip": [
-            "fe80::c173:0000:4ee2:e0b1",
-            "0.0.0.0",
-            "fe80::5efe:a00:8ccb",
-            "2001:0:0000:8072:10b8:724:f5ff:7334",
-            "fe80::10b8:724:0000:7334"
-        ],
-        "name": "hostname",
-        "id": "f17250ff-f437-4977-9ca6-c41032aca99a",
-        "mac": [
-            "00:00:00:00:00:00",
-            "00:00:00:00:00:00:00:e0",
-            "00:00:00:00:00:00:00:e0"
-        ],
-        "architecture": "x86_64"
+    "elastic_agent": {
+        "id": "f42ccc95-84f2-4379-8c1c-c862296c2db2",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
-        "timezone": "America/New_York",
-        "module": "hid_bravura_monitor",
-        "dataset": "hid_bravura_monitor.log"
+        "agent_id_status": "verified",
+        "dataset": "hid_bravura_monitor.log",
+        "ingested": "2021-10-28T22:44:01Z",
+        "timezone": "UTC"
+    },
+    "hid_bravura_monitor": {
+        "environment": "PRODUCTION",
+        "instancename": "default",
+        "instancetype": "Privilege-Identity-Password",
+        "node": "docker-fleet-agent"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "3bfbf225479aac5f850ea38f5d9d8a02",
+        "ip": [
+            "172.27.0.4"
+        ],
+        "mac": [
+            "02:42:ac:1b:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/hid_bravura_monitor.log"
+        },
+        "level": "Error",
+        "logger": "pamlws.exe",
+        "offset": 218
+    },
+    "message": "LWS [HID-TEST] foundcomputer record not found",
+    "process": {
+        "pid": 44408,
+        "thread": {
+            "id": 52004
+        }
+    },
+    "user": {
+        "id": ""
     }
 }
 ```
@@ -302,6 +305,7 @@ An example event for `log` looks as following:
 | input.type | Input type. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
