@@ -4,6 +4,53 @@ processors:
 - set:
     field: ecs.version
     value: '1.12.0'
+- set:
+    field: sqlserver.audit.statement
+    value: ""
+- script:
+    lang: painless
+    description: The script processor removes the statement from param1.
+    if: ctx?.winlog?.event_id == "33205"
+    source: |-
+         int tagPos(String statement) {
+             ArrayList tags = new ArrayList();
+             tags.add("additional_information:");
+             tags.add("user_defined_information:");
+             tags.add("application_name:");
+             tags.add("connection_id:");
+             tags.add("data_sensitivity_information:");
+             tags.add("host_name:");
+             for (def i = 0; i < tags.length; i++) {
+                 def pos = statement.lastIndexOf(tags[i]);
+                 if (pos > 0) {
+                     return pos;
+                 }
+             }
+             return -1;
+         }
+
+         ArrayList al = new ArrayList();
+         Pattern p = /(statement:.*?[\S\s]*?)((additional_information:|user_defined_information:|application_name:|connection_id:|data_sensitivity_information:|host_name:).*?)/;
+         def param1 = ctx?.winlog?.event_data?.param1;
+         Matcher m = p.matcher(param1);
+         while (m.find()) {
+             al.add(m.group(0));
+         }
+         if (al.length == 0) {
+             return;
+         }
+
+         def stmtTagLen = "statement:".length();
+         def tpos = tagPos(al[0]);
+         if (tpos == -1) {
+             return;
+         }
+         String stmt = al[0].substring(stmtTagLen, tpos);
+         String part1 = param1.substring(0, param1.indexOf("statement:"));
+         String part2 = param1.substring(part1.length() + stmtTagLen + stmt.length());
+         ctx.winlog.event_data.param1 = part1 + part2;
+         ctx.sqlserver.audit.statement = stmt.trim();
+
 - kv:
     field: winlog.event_data.param1
     field_split: "\\n"
@@ -12,6 +59,7 @@ processors:
     trim_key: "\\n"
     trim_value: "\\n"
     if: ctx?.winlog?.event_id == "33205"
+
 - set:
     field: log.level
     copy_from: winlog.log.level
@@ -294,11 +342,11 @@ processors:
                 "TRCC":"TRANSACTION COMMIT COMPLETED",
                 "TRCG":"TRACE_CHANGE_GROUP",
                 "TRCS":"TRANSACTION COMMIT STARTING",
+                "TRPS":"TRANSACTION PROMOTE STARTING",
                 "TRGC":"TRANSACTION PROPAGATE COMPLETED",
                 "TRGS":"TRANSACTION PROPAGATE STARTING",
                 "TRO":"TRANSFER",
                 "TRPC":"TRANSACTION PROMOTE COMPLETED",
-                "TRPS":"TRANSACTION PROMOTE STARTING",
                 "TRRC":"TRANSACTION ROLLBACK COMPLETED",
                 "TRRS":"TRANSACTION ROLLBACK STARTING",
                 "TRSC":"TRANSACTION SAVEPOINT COMPLETED",
