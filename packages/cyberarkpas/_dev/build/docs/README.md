@@ -1,6 +1,6 @@
-# Cyberark Privileged Access Security
+# CyberArk Privileged Access Security
 
-The Cyberark Privileged Access Security integration collects audit logs from Cyberark's Vault server.
+The CyberArk Privileged Access Security integration collects audit logs from CyberArk's Vault server.
 
 ## Audit
 

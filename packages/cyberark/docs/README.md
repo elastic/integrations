@@ -1,12 +1,12 @@
-# Cyberark integration
+# CyberArk integration
 
-This integration is for Cyberark device's logs. It includes the following
+This integration is for CyberArk device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
-- `corepas` dataset: supports Cyber-Ark logs.
+- `corepas` dataset: supports CyberArk logs.
 
 ### Corepas
 
-The `corepas` dataset collects Cyber-Ark logs.
+The `corepas` dataset collects CyberArk logs.
 
 **Exported fields**
 
