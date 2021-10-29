@@ -1,6 +1,6 @@
 name: gcp
 title: Google Cloud Platform
-version: 1.1.2
+version: 1.2.0
 release: ga
 description: Collect logs from Google Cloud Platform with Elastic Agent.
 type: integration
@@ -44,9 +44,13 @@ vars:
     required: false
     show_user: true
 policy_templates:
-  - name: gcp
+  - name: logs
     title: Google Cloud Platform (GCP) logs
     description: Collect logs from Google Cloud Platform (GCP) instances
+    data_streams:
+      - audit
+      - firewall
+      - vpcflow
     inputs:
       - type: gcp-pubsub
         vars:
@@ -58,15 +62,40 @@ policy_templates:
             show_user: false
         title: "Collect Google Cloud Platform (GCP) audit, firewall and vpcflow logs (input: gcp-pubsub)"
         description: "Collecting audit, firewall and vpcflow logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
-  - name: billing
+        input_group: logs
+  - name: metrics
     title: GCP Billing Metrics
     description: Collect billing metrics from Google Cloud Platform (GCP) with Elastic Agent
     data_streams:
       - billing
+      - compute
     inputs:
       - type: gcp/metrics
-        title: Collect billing metrics
-        description: Collect billing metrics
+        vars:
+          - name: region
+            type: text
+            title: GCP Region
+            multi: false
+            required: false
+            show_user: true
+            deafult: "us-"
+          - name: zone
+            type: text
+            title: GCP Availability Zone
+            multi: false
+            required: false
+            show_user: true
+            deafult: ""
+          - name: exclude_labels
+            type: bool
+            title: Exclude Labels
+            multi: false
+            required: true
+            show_user: true
+            description: "Exclude additional labels"
+            default: false
+        title: Collect GCP Metrics
+        description: Collect GCP Metrics
         input_group: metrics
 owner:
   github: elastic/security-external-integrations
