@@ -118,9 +118,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-01-16T00:35:25.258Z",
     "agent": {
-        "ephemeral_id": "a9426446-1513-4b85-8652-1c953dbe09b4",
+        "ephemeral_id": "00124c53-af5e-4d5f-818c-ff189690109e",
         "hostname": "docker-fleet-agent",
-        "id": "f42ccc95-84f2-4379-8c1c-c862296c2db2",
+        "id": "9bcd741c-af93-434c-ad55-1ec23d08ab89",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -134,14 +134,15 @@ An example event for `log` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "f42ccc95-84f2-4379-8c1c-c862296c2db2",
+        "id": "9bcd741c-af93-434c-ad55-1ec23d08ab89",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hid_bravura_monitor.log",
-        "ingested": "2021-10-28T22:44:01Z",
+        "ingested": "2021-10-29T18:19:35Z",
+        "original": "\u00182021-01-16 00:35:25.258.7085 - [] pamlws.exe [44408,52004] Error: LWS [HID-TEST] foundcomputer record not found",
         "timezone": "UTC"
     },
     "hid_bravura_monitor": {
@@ -156,10 +157,10 @@ An example event for `log` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "3bfbf225479aac5f850ea38f5d9d8a02",
         "ip": [
-            "172.27.0.4"
+            "192.168.192.7"
         ],
         "mac": [
-            "02:42:ac:1b:00:04"
+            "02:42:c0:a8:c0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -190,6 +191,9 @@ An example event for `log` looks as following:
             "id": 52004
         }
     },
+    "tags": [
+        "preserve_original_event"
+    ],
     "user": {
         "id": ""
     }
@@ -376,3 +380,218 @@ An example event for `log` looks as following:
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+
+
+### winlog
+
+The `winglog` dataset collects the Hitachi ID IDM Suite event logs.
+
+An example event for `winlog` looks as following:
+
+```json
+{
+    "@timestamp": "2021-10-29T14:05:50.739Z",
+    "cloud": {
+        "provider": "aws",
+        "instance": {
+            "id": "i-043997b05c5fa45ee"
+        },
+        "machine": {
+            "type": "t3a.xlarge"
+        },
+        "region": "us-east-1",
+        "availability_zone": "us-east-1a",
+        "account": {
+            "id": "753231555564"
+        },
+        "image": {
+            "id": "ami-0e6ddc753bf04d004"
+        }
+    },
+    "log": {
+        "level": "information"
+    },
+    "message": "User successfully logged in.|Profile=JOHND|Language=|Skin=",
+    "winlog": {
+        "record_id": 1548167,
+        "api": "wineventlog",
+        "opcode": "Info",
+        "provider_guid": "{5a744344-18a9-480d-8a3a-0560ac58b841}",
+        "channel": "Hitachi-Hitachi ID Systems-Hitachi ID Suite/Operational",
+        "activity_id": "{4ffdfadd-63f2-41b2-9a4f-13534a729c54}",
+        "user": {
+            "identifier": "S-1-5-21-1512184445-966971527-3399726218-1035",
+            "name": "psadmin",
+            "domain": "DOMAIN1",
+            "type": "User"
+        },
+        "event_data": {
+            "Module": "psf.exe",
+            "Profile": "JOHND",
+            "Instance": "pmim"
+        },
+        "event_id": 92,
+        "computer_name": "hitachi1.corp",
+        "provider_name": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
+        "task": "",
+        "process": {
+            "pid": 6368,
+            "thread": {
+                "id": 9064
+            }
+        }
+    },
+    "event": {
+        "kind": "event",
+        "code": 92,
+        "provider": "Hitachi-Hitachi ID Systems-Hitachi ID Suite",
+        "created": "2021-10-29T14:05:52.111Z"
+    },
+    "host": {
+        "name": "hitachi1.corp",
+        "architecture": "x86_64",
+        "os": {
+            "family": "windows",
+            "name": "Windows Server 2019 Datacenter",
+            "kernel": "10.0.17763.1999 (WinBuild.160101.0800)",
+            "build": "17763.1999",
+            "platform": "windows",
+            "version": "10.0"
+        },
+        "id": "a9d2b7f5-6d62-46b3-8fbe-35a7e83d1dc8",
+        "ip": [
+            "0.0.0.0"
+        ],
+        "mac": [
+            "0a:a5:af:ad:d3:ab"
+        ],
+        "hostname": "node1"
+    },
+    "agent": {
+        "version": "8.0.0",
+        "hostname": "node1",
+        "ephemeral_id": "d061bfcf-e51b-4586-9ace-3d5b15f86e37",
+        "id": "aa12ad42-61bc-466c-8887-1a15d4646fc7",
+        "name": "node1",
+        "type": "filebeat"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.pid | Process id. | long |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source.domain | Source domain. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
+| winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
+| winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
+| winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
+| winlog.computerObject.domain |  | keyword |
+| winlog.computerObject.id |  | keyword |
+| winlog.computerObject.name |  | keyword |
+| winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
+| winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
+| winlog.event_data.AccessGranted |  | keyword |
+| winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
+| winlog.keywords | The keywords are used to classify an event. | keyword |
+| winlog.level | The event severity.  Levels are Critical, Error, Warning and Information, Verbose | keyword |
+| winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
+| winlog.outcome | Success or Failure of the event. | keyword |
+| winlog.process.pid | The process_id of the Client Server Runtime Process. | long |
+| winlog.process.thread.id |  | long |
+| winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
+| winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
+| winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
+| winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
+| winlog.symbolic_id | Symbolic event id | keyword |
+| winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
+| winlog.time_created | Time event was created | keyword |
+| winlog.trustAttribute |  | keyword |
+| winlog.trustDirection |  | keyword |
+| winlog.trustType |  | keyword |
+| winlog.user.domain | The domain that the account associated with this event is a member of. | keyword |
+| winlog.user.name | Name of the user associated with this event. | keyword |
+| winlog.user.type | The type of account associated with this event. | keyword |
+| winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
+| winlog.version | The version number of the event's definition. | long |
