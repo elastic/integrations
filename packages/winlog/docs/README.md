@@ -8,10 +8,18 @@ pipelines may be added by setting one up in
 
 ## Configuration
 
-### Splunk Enterprise
+### Ingesting Windows Events via Splunk
 
-To configure Splunk Enterprise to be able to pull events from it, please visit
-[Splunk docs](https://docs.splunk.com/Documentation/SplunkCloud/latest/Data/MonitorWindowseventlogdata) for details. **The integration requires events in XML format, for this `renderXml` option needs to be set to `1` in your `inputs.conf`.**
+This integration offers the ability to seamlessly ingest data from a Splunk Enterprise instance.
+These integrations work by using the [httpjson input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
+The raw event is then processed via the Elastic Agent.
+The Splunk search is customizable and the interval between searches is customizable.
+For more information on the Splunk API integration please see [here](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html).
+
+This integration requires Windows Events from Splunk to be in XML format.
+To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
+
+## Logs
 
 **Exported fields**
 
