@@ -1,13 +1,19 @@
 ---
 description: Pipeline for parsing hid_bravura_monitor logs
-version: '1'
 processors:
   - set:
       field: ecs.version
       value: 1.12.0
       description: Set ecs.version to 1.12.0
-  - grok:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
       patterns:
         - >-
           (^[[:cntrl:]])?%{TIMESTAMP_ISO8601:logdate}.%{NONNEGINT} -
@@ -23,7 +29,7 @@ processors:
       if: ctx?.msg.contains('last message repeated')
       description: Drop repeated log message
   - grok:
-      field: message
+      field: event.original
       patterns:
         - >-
           (^[[:cntrl:]])?%{TIMESTAMP_ISO8601}.%{NONNEGINT} - \[%{DATA}\] %{DATA}
@@ -80,15 +86,14 @@ processors:
         - >-
           %{[A-Fa-f0-9]{32}:hid_bravura_monitor.request.id}
       ignore_missing: true
+      ignore_failure: true
       description: Set requestid if batchid
-      on_failure:
-        - rename:
-            target_field: user.id
-            field: pslogid
-            ignore_missing: true
-            if: >-
-              ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax'
-            description: Set userid if not a guid
+  - rename:
+      target_field: user.id
+      field: pslogid
+      ignore_missing: true
+      if: ctx.hid_bravura_monitor?.request?.id == null && ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax'
+      description: Set userid if not a guid
   - remove:
       field: pslogid
       ignore_missing: true
@@ -99,9 +104,6 @@ processors:
         - 'yyyy-MM-dd HH:mm:ss.SSS'
       timezone: '{{event.timezone}}'
       description: Convert logdate to @timestamp
-  - remove:
-      field: message
-      description: Remove message
   - rename:
       target_field: message
       field: msg
@@ -159,6 +161,35 @@ processors:
       type: long
       ignore_missing: true
       description: hid_bravura_monitor.perf.result to Long
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
