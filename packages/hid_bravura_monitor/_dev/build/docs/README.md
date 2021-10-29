@@ -115,3 +115,11 @@ The `log` dataset collects the Hitachi ID IDM Suite application logs.
 {{event "log"}}
 
 {{fields "log"}}
+
+### winlog
+
+The `winglog` dataset collects the Hitachi ID IDM Suite event logs.
+
+{{event "winlog"}}
+
+{{fields "winlog"}}
