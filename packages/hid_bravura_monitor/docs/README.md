@@ -256,36 +256,36 @@ An example event for `log` looks as following:
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| hid_bravura_monitor.environment | Instance environment | text |
-| hid_bravura_monitor.instancename | Instance name | text |
-| hid_bravura_monitor.instancetype | Instance type | text |
-| hid_bravura_monitor.node | Node | text |
-| hid_bravura_monitor.perf.address | Server address | text |
-| hid_bravura_monitor.perf.adminid | Administrator ID | text |
-| hid_bravura_monitor.perf.caller | Application caller | text |
-| hid_bravura_monitor.perf.dbcommand | Database command | text |
-| hid_bravura_monitor.perf.destination | Destination URL | text |
+| hid_bravura_monitor.environment | Instance environment | keyword |
+| hid_bravura_monitor.instancename | Instance name | keyword |
+| hid_bravura_monitor.instancetype | Instance type | keyword |
+| hid_bravura_monitor.node | Node | keyword |
+| hid_bravura_monitor.perf.address | Server address | wildcard |
+| hid_bravura_monitor.perf.adminid | Administrator ID | keyword |
+| hid_bravura_monitor.perf.caller | Application caller | keyword |
+| hid_bravura_monitor.perf.dbcommand | Database command | keyword |
+| hid_bravura_monitor.perf.destination | Destination URL | wildcard |
 | hid_bravura_monitor.perf.duration | Performance duration | long |
-| hid_bravura_monitor.perf.event | Event | text |
-| hid_bravura_monitor.perf.exe | Executable | text |
-| hid_bravura_monitor.perf.file | Source file | text |
-| hid_bravura_monitor.perf.function | Performance function | text |
+| hid_bravura_monitor.perf.event | Event | keyword |
+| hid_bravura_monitor.perf.exe | Executable | keyword |
+| hid_bravura_monitor.perf.file | Source file | keyword |
+| hid_bravura_monitor.perf.function | Performance function | keyword |
 | hid_bravura_monitor.perf.kernel | Kernel Time | long |
-| hid_bravura_monitor.perf.kind | Performance type (ie. PerfExe, PerfAjax, PerfFileRep, etc.) | text |
+| hid_bravura_monitor.perf.kind | Performance type (ie. PerfExe, PerfAjax, PerfFileRep, etc.) | keyword |
 | hid_bravura_monitor.perf.line | Line number | long |
-| hid_bravura_monitor.perf.message | Performance message | text |
-| hid_bravura_monitor.perf.operation | Operation | text |
-| hid_bravura_monitor.perf.receivequeue | Receive queue | text |
+| hid_bravura_monitor.perf.message | Performance message | wildcard |
+| hid_bravura_monitor.perf.operation | Operation | keyword |
+| hid_bravura_monitor.perf.receivequeue | Receive queue | keyword |
 | hid_bravura_monitor.perf.records | Database records | long |
 | hid_bravura_monitor.perf.result | Result | long |
-| hid_bravura_monitor.perf.sessionid | Session ID | text |
-| hid_bravura_monitor.perf.sysid | System ID | text |
-| hid_bravura_monitor.perf.table | Database table | text |
-| hid_bravura_monitor.perf.targetid | Target ID | text |
-| hid_bravura_monitor.perf.transid | Transaction ID | text |
-| hid_bravura_monitor.perf.type | IDWFM type | text |
+| hid_bravura_monitor.perf.sessionid | Session ID | keyword |
+| hid_bravura_monitor.perf.sysid | System ID | keyword |
+| hid_bravura_monitor.perf.table | Database table | keyword |
+| hid_bravura_monitor.perf.targetid | Target ID | keyword |
+| hid_bravura_monitor.perf.transid | Transaction ID | keyword |
+| hid_bravura_monitor.perf.type | IDWFM type | keyword |
 | hid_bravura_monitor.perf.user | User time | long |
-| hid_bravura_monitor.request.id | Request ID | text |
+| hid_bravura_monitor.request.id | Request ID | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
