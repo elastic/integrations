@@ -23,6 +23,26 @@ screenshots:
     title: filebeat gcp audit
     size: 1702x996
     type: image/png
+vars:
+  - name: project_id
+    type: text
+    title: Project Id
+    multi: false
+    required: true
+    show_user: true
+    default: SET_PROJECT_NAME
+  - name: credentials_file
+    type: text
+    title: Credentials File
+    multi: false
+    required: false
+    show_user: true
+  - name: credentials_json
+    type: text
+    title: Credentials Json
+    multi: false
+    required: false
+    show_user: true
 policy_templates:
   - name: gcp
     title: Google Cloud Platform (GCP) logs
@@ -36,26 +56,17 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-          - name: project_id
-            type: text
-            title: Project Id
-            multi: false
-            required: true
-            show_user: true
-            default: SET_PROJECT_NAME
-          - name: credentials_file
-            type: text
-            title: Credentials File
-            multi: false
-            required: false
-            show_user: true
-          - name: credentials_json
-            type: text
-            title: Credentials Json
-            multi: false
-            required: false
-            show_user: true
         title: "Collect Google Cloud Platform (GCP) audit, firewall and vpcflow logs (input: gcp-pubsub)"
         description: "Collecting audit, firewall and vpcflow logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+  - name: billing
+    title: GCP Billing Metrics
+    description: Collect billing metrics from Google Cloud Platform (GCP) with Elastic Agent
+    data_streams:
+      - billing
+    inputs:
+      - type: gcp/metrics
+        title: Collect billing metrics
+        description: Collect billing metrics
+        input_group: metrics
 owner:
   github: elastic/security-external-integrations
