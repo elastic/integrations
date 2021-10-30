@@ -10,7 +10,6 @@ GCP credentials are required for running GCP integration.
 * *project_id*: ID of the GCP project.
 * *credentials_file*: Path to JSON file with GCP credentials. Required when not using `credentials_json`.
 * *credentials_json*: Raw JSON text of GCP Credentials. Required when not using `credentials_file`.
-* *role_arn*: AWS IAM Role to assume.
 
 #### Data stream specific configuration parameters
 * *period*: How often the data stream is executed.

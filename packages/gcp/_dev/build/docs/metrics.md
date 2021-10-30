@@ -20,6 +20,36 @@ This is the `compute` dataset.
 
 {{fields "compute"}}
 
+### GKE
+
+This is the `gke` dataset.
+
+{{fields "compute"}}
+
+### Load Balancing
+
+This is the `loadbalancing` dataset.
+
+{{event "loadbalancing"}}
+
+{{fields "loadbalancing"}}
+
+### PubSub
+
+This is the `pubsub` dataset.
+
+{{event "pubsub"}}
+
+{{fields "pubsub"}}
+
+### Metrics
+
+This is the `metrics` dataset.
+
+{{event "metrics"}}
+
+{{fields "metrics"}}
+
 ### Storage
 
 This is the `storage` dataset.
