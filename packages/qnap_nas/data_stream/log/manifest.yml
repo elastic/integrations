@@ -64,7 +64,7 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
   - input: udp
-    enabled: true
+    enabled: false
     template_path: udp.yml.hbs
     title: QNAP NAS logs (UDP)
     description: Collect QNAP NAS logs using UDP input
@@ -83,6 +83,15 @@ streams:
         required: true
         show_user: true
         default: 9301
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: true
+        show_user: true
+        default: local
+        description: >-
+          By default, datetimes in the logs will be interpreted as relative to the timezone configured in the host where the agent is running. If ingesting logs from a host on a different timezone, use this field to set the timezone offset so that datetimes are correctly parsed. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00") from UCT.
       - name: tags
         type: text
         title: Tags

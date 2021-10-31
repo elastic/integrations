@@ -22,7 +22,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NAS} %{SYSLOGPROG}: %{LOG_TYPE:event.provider}: %{GREEDYDATA:message}'
+        - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NAS} %{SYSLOGPROG}: %{LOG_TYPE:event.provider}: %{GREEDYDATA:_tmp.message}'
       pattern_definitions:
         NAS: '(?:%{IP:host.ip}|%{HOSTNAME:host.name})'
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
@@ -51,7 +51,7 @@ processors:
       field: event.created
       copy_from: '@timestamp'
   - grok:
-      field: event.original
+      field: _tmp.message
       patterns:
         - '%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{GREEDYDATA:message}\.' 
         - '%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{DATA:qnap.nas.file.path}, Action: %{DATA:event.action}'     
