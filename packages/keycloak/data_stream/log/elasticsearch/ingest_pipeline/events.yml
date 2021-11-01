@@ -1,0 +1,221 @@
+---
+description: Pipeline for parsing keycloak http logs
+processors:
+- kv:
+    field: message
+    target_field: json
+    field_split: ", "
+    value_split: "="
+    ignore_missing: true
+- rename:
+    field: json.type
+    target_field: keycloak.login.type
+    ignore_missing: true
+- rename:
+    field: json.operationType
+    target_field: keycloak.admin.operation
+    ignore_missing: true
+- rename:
+    field: json.resourceType
+    target_field: keycloak.admin.resource.type
+    ignore_missing: true
+- rename:
+    field: json.resourcePath
+    target_field: keycloak.admin.resource.path
+    ignore_missing: true
+- set:
+    field: keycloak.event_type
+    value: login
+    if: ctx.keycloak?.login != null
+- set:
+    field: keycloak.event_type
+    value: admin
+    if: ctx.keycloak?.admin != null
+- set:
+    field: event.code
+    value: "{{{keycloak.admin.operation}}}-{{{keycloak.admin.resource.type}}}"
+    if: ctx.keycloak?.admin != null
+- set:
+    field: event.action
+    copy_from: event.code
+    ignore_empty_value: true
+    if: ctx.keycloak?.admin != null
+- rename:
+    field: json.error
+    target_field: event.code
+    ignore_missing: true
+    if: ctx.keycloak?.login != null && ctx.event?.code == null
+- set:
+    field: event.action
+    copy_from: keycloak.login.type
+    ignore_empty_value: true
+- rename:
+    field: json.realmId
+    target_field: keycloak.realm.id
+    ignore_missing: true
+- rename:
+    field: json.clientId
+    target_field: keycloak.client.id
+    ignore_missing: true
+    if: ctx.json?.clientId != "null"
+- rename:
+    field: json.userId
+    target_field: user.id
+    ignore_missing: true
+    if: ctx.json?.userId != "null"
+- rename:
+    field: json.ipAddress
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_failure: true
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.redirect_uri
+    target_field: keycloak.login.redirect_uri
+    ignore_missing: true
+- uri_parts:
+    field: keycloak.login.redirect_uri
+    ignore_failure: true
+- rename:
+    field: json.auth_method
+    target_field: keycloak.login.auth_method
+    ignore_missing: true
+- rename:
+    field: json.auth_type
+    target_field: keycloak.login.auth_type
+    ignore_missing: true
+- rename:
+    field: json.code_id
+    target_field: keycloak.login.code_id
+    ignore_missing: true
+- rename:
+    field: json.username
+    target_field: user.name
+    ignore_missing: true
+- rename:
+    field: json.authSessionParentId
+    target_field: keycloak.login.auth_session_parent_id
+    ignore_missing: true
+- rename:
+    field: json.authSessionTabId
+    target_field: keycloak.login.auth_session_tab_id
+    ignore_missing: true
+- grok:
+    field: keycloak.admin.resource.path
+    patterns: 
+      - 'users/%{UUID:user.target.id}'
+      - 'groups/%{UUID:group.id}'
+    ignore_failure: true
+    ignore_missing: true
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value:
+      - authentication
+    if: ctx.keycloak?.login != null 
+- append:
+    field: event.type
+    value:
+      - info
+- append:
+    field: event.type
+    value:
+      - denied
+    if: ctx.keycloak?.login?.type == 'LOGIN_ERROR' 
+- append:
+    field: event.type
+    value:
+      - start
+      - allowed
+    if: ctx.keycloak?.login?.type == 'LOGIN' 
+- append:
+    field: event.type
+    value:
+      - end
+    if: ctx.keycloak?.login?.type == 'LOGOUT' 
+- append:
+    field: event.category
+    value:
+      - iam
+    if: ctx.keycloak?.admin != null 
+- append:
+    field: event.type
+    value:
+      - admin
+    if: ctx.keycloak?.admin != null 
+- append:
+    field: event.type
+    value:
+      - creation
+    if: ctx.keycloak?.admin?.operation == "CREATE"
+- append:
+    field: event.type
+    value:
+      - change
+    if: ctx.keycloak?.admin?.operation == "UPDATE"
+- append:
+    field: event.type
+    value:
+      - deletion
+    if: ctx.keycloak?.admin?.operation == "DELETE"
+- append:
+    field: event.type
+    value:
+      - group
+    if: ctx.keycloak?.admin?.resource == "GROUP"
+- append:
+    field: event.type
+    value:
+      - user
+    if: ctx.keycloak?.admin?.resource == "USER"
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    if: ctx.source?.ip != null
+- append:
+    field: related.user
+    value: "{{user.id}}"
+    if: ctx.user?.id != null
+- append:
+    field: related.user
+    value: "{{user.target.id}}"
+    if: ctx.user?.target?.id != null
+- append:
+    field: related.hosts
+    value: "{{url.domain}}"
+    if: ctx.url?.domain != null
+- remove:
+    field:
+      - message
+      - json
+    ignore_missing: true  
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

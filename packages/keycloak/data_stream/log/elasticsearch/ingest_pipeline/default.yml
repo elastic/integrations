@@ -1,0 +1,76 @@
+---
+description: Pipeline for parsing keycloak logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- rename:
+    field: message
+    target_field: event.original
+- grok:
+    field: event.original
+    patterns:
+      - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) %{GREEDYDATA:message}"
+- set:
+    field: event.timezone
+    value: "{{_tmp.tz_offset}}"
+    if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+- date:
+    field: _tmp.timestamp
+    target_field: '@timestamp'
+    timezone: "{{ event.timezone }}"
+    formats:
+      - yyyy-MM-dd HH:mm:ss,SSS
+    if: ctx.event?.timezone != null   
+- date:
+    field: _tmp.timestamp
+    target_field: '@timestamp'
+    formats:
+      - yyyy-MM-dd HH:mm:ss,SSS
+    if: ctx.event?.timezone == null   
+- pipeline:
+    name: '{{ IngestPipeline "events" }}'
+    if: "ctx.log?.logger == 'org.keycloak.events'"
+- drop:
+    if: "ctx._tmp?.only_user_events && ctx.log?.logger != 'org.keycloak.events'"
+- remove:
+    field:
+      - _tmp
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
