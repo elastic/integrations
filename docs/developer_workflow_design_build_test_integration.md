@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* `elastic-package` (builder tool) installed - follow the [Getting Started Guide](https://github.com/elastic/elastic-package#getting-started) guide to install the tool. 
+* `elastic-package` (builder tool) installed - follow the [Getting Started Guide](https://github.com/elastic/elastic-package#getting-started) guide to install the tool.
 * If you don't understand the `elastic-package` command or would like to learn more about it, try the `help` switch, e.g. `elastic-package stack up --help`.
 
 ## Steps
@@ -19,18 +19,53 @@ elastic-package stack up -v -d
 ```
 
 Navigate to the [Integrations](http://localhost:5601/app/fleet#/integration) page, try to add an integration to the default
-policy, review forms. The good candidate to start your journey are "Nginx", "Apache", "Nats".
+policy and review the forms. Good example integrations to look at are "Nginx", "Apache", and "Nats". After you have
+familiarized yourself with some existing integrations you are ready to create your own.
 
-Once you selected the donor for your integration, copy the package source, e.g.:
+### Bootstrap New Integration Package
+
+The `elastic-package create` command is used to bootstrap new integrations and
+new data streams. Let's create a new integration package:
 
 ```bash
 cd packages
-cp -r nginx new_package
+elastic-package create package
+Create a new package
+? Package name: demo_example
+? Version: 0.0.1
+? Package title: Demo
+? Description: This is a demo!
+? Categories: security
+? Release: experimental
+? Kibana version constraint: ^7.15.1
+? Github owner: elastic/integrations
+New package has been created: demo_example
+Done
 ```
 
-where `new_package` is the name of your integration.
+Respond to the prompts, and then it creates your package in `package/<package
+name>`. You can change any of the answers later by modifying the generated
+`manifest.yml`.
 
-Review all resources, remove unnecessary ones, adjusts manifests, create new data streams.
+The generated integration package does not have any data streams yet so it
+cannot collect any logs/metrics. Let's add a data stream to the package for
+collecting logs.
+
+```bash
+cd demo_example
+elastic-package create data-stream
+Create a new data stream
+? Data stream name: log
+? Data stream title: Example Logs
+? Type: logs
+New data stream has been created: log
+Done
+```
+
+Respond to the prompts and your new data stream will be created in
+`packages/<package name>/<data stream name>`. Now you can customize the data
+stream with the appropriate Elastic Agent config, Elasticsearch Ingest Node
+pipelines, and field definitions for the Elasticsearch index templates.
 
 ### Build
 
