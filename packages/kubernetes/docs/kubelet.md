@@ -229,7 +229,10 @@ An example event for `container` looks as following:
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -445,7 +448,10 @@ An example event for `node` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.cpu.usage.core.ns | Node CPU Core usage nanoseconds | long |  | gauge |
 | kubernetes.node.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
 | kubernetes.node.fs.available.bytes | Filesystem total available in bytes | long | byte | gauge |
@@ -661,7 +667,10 @@ An example event for `pod` looks as following:
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float | percent | gauge |
@@ -846,7 +855,10 @@ An example event for `system` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -1022,7 +1034,10 @@ An example event for `volume` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
