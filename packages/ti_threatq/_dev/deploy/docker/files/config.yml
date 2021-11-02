@@ -1,0 +1,120 @@
+rules:
+  - path: /api/token
+    methods: [POST]
+    query_params:
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - application/x-www-form-urlencoded
+      Authorization:
+        - "Basic dGVzdDp0ZXN0"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "testaccess","token_type": "Bearer","expires_in": 172799,"refresh_token": "testrefresh"}
+  - path: /api/indicators/query/hash/someid
+    methods: ["GET"]
+    request_headers:
+      Authorization: "Bearer testaccess"
+      Accept: application/json
+    query_params:
+      sort: "updated_at"
+      cursorMark: "*"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "total": 4090,
+            "data": [{
+              "class": "network",
+              "score": 0,
+              "value": "107.189.1.90",
+              "expires_calculated_at": "2021-10-23 18:40:17",
+              "touched_at": "2021-10-24 18:36:10",
+              "id": 106767,
+              "updated_at": "2021-10-01 18:36:03",
+              "published_at": "2021-10-01 18:36:03",
+              "created_at": "2021-10-01 18:36:03",
+              "status_id": 1,
+              "hash": "69beef49fdbd1f54eef3cab324c7b6cf",
+              "type_id": 15,
+              "adversaries": [],
+              "type": {
+                "name": "IP Address",
+                "id": 15,
+                "class": "network"
+              },
+              "status": {
+                "name": "Active",
+                "id": 1,
+                "description": "Poses a threat and is being exported to detection tools."
+              },
+              "attributes": [{
+                  "value": "email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca",
+                  "created_at": "2021-10-01 18:36:06",
+                  "indicator_id": 106767,
+                  "updated_at": "2021-10-24 18:36:10",
+                  "attribute_id": 5,
+                  "id": 4893068,
+                  "touched_at": "2021-10-24 18:36:10",
+                  "name": "Contact"
+                },
+                {
+                  "value": "9000",
+                  "created_at": "2021-10-01 18:36:06",
+                  "indicator_id": 106767,
+                  "updated_at": "2021-10-24 18:36:10",
+                  "attribute_id": 9,
+                  "id": 4893069,
+                  "touched_at": "2021-10-24 18:36:10",
+                  "name": "Router Port"
+                },
+                {
+                  "value": "ERDV",
+                  "created_at": "2021-10-01 18:36:06",
+                  "indicator_id": 106767,
+                  "updated_at": "2021-10-02 18:36:08",
+                  "attribute_id": 6,
+                  "id": 4893070,
+                  "touched_at": "2021-10-02 18:36:08",
+                  "name": "Flags"
+                }
+              ],
+              "sources": [{
+                "indicator_id": 106767,
+                "indicator_status_id": 1,
+                "published_at": "2021-10-01 18:36:06",
+                "source_id": 12,
+                "id": 3699669,
+                "created_at": "2021-10-01 18:36:06",
+                "source_type": "connectors",
+                "creator_source_id": 12,
+                "indicator_type_id": 15,
+                "reference_id": 37,
+                "updated_at": "2021-10-24 18:36:10",
+                "name": "www.dan.me.uk Tor Node List"
+              }]
+            }],
+            "nextCursorMark": "AoJ9z5LKnvwCJjEwNjk2Nw==",
+            "limit": 100
+          }
+  - path: /api/indicators/query/hash/someid
+    methods: ["GET"]
+    request_headers:
+      Authorization: "Bearer testaccess"
+      Accept: application/json
+    query_params:
+      sort: "updated_at"
+      cursorMark: "AoJ9z5LKnvwCJjEwNjk2Nw=="
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "total": 4090,
+            "data": {},
+            "nextCursorMark": "BoJ9z5LKnvwCJjEwNjk2Nw==",
+            "limit": 100
+          }
