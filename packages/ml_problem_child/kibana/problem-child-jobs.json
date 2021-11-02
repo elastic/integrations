@@ -1,0 +1,383 @@
+{
+  "attributes": {
+        "id": "problem_child",
+        "title": "Problem child anomaly detection jobs",
+        "description": "Identify malicious processes.",
+        "type": "ML model jobs",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        },
+    "jobs": [
+      {
+        "id": "problem_child_rare_process_by_host",
+          "config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "by_field_name": "process.name",
+                "detector_description": "rare process given a host",
+                "detector_index": 0,
+                "function": "rare",
+                "partition_field_name": "host.hostname"
+              }
+            ],
+            "influencers": [
+              "process.name",
+              "host.hostname",
+              "process.command_line"
+            ]
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "description": "A machine learning job to detect potential living off the land activity. Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity. This is an experimental job and is therefore unsupported."
+      },
+      {
+        "id": "problem_child_high_sum_by_host",
+          "config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "by_field_name": "host.hostname",
+                "detector_description": "high sum by host",
+                "detector_index": 0,
+                "field_name": "problemchild.prediction_probability",
+                "function": "high_sum"
+              },
+              {
+                "by_field_name": "host.hostname",
+                "detector_description": "high sum by host",
+                "detector_index": 0,
+                "field_name": "blocklist_label",
+                "function": "high_sum"
+              }
+            ],
+            "influencers": [
+              "process.name",
+              "host.hostname",
+              "process.command_line"
+            ]
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "description": "A machine learning job to detect potential living off the land activity. Looks for a set of one or more malicious child processes on a single host. This is an experimental job and is therefore unsupported."
+      },
+      {
+        "id": "problem_child_rare_process_by_user",
+          "config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "by_field_name": "process.name",
+                "detector_description": "rare process given a user",
+                "detector_index": 0,
+                "function": "rare",
+                "partition_field_name": "user.name"
+              }
+            ],
+            "influencers": [
+              "process.name",
+              "user.name",
+              "process.command_line"
+            ]
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "description": "A machine learning job to detect potential living off the land activity. Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity. This is an experimental job and is therefore unsupported."
+      },
+      {
+        "id": "problem_child_rare_process_by_parent",
+          "config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "by_field_name": "process.name",
+                "detector_description": "rare process given a parent process",
+                "detector_index": 0,
+                "function": "rare",
+                "partition_field_name": "process.parent.name"
+              }
+            ],
+            "influencers": [
+              "process.name",
+              "process.parent.name",
+              "process.command_line"
+            ]
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "description": "A machine learning job to detect potential living off the land activity. Looks for rare malicious child processes spawned by a parent process. This is an experimental job and is therefore unsupported."
+      },
+      {
+        "id": "problem_child_high_sum_by_user",
+          "config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "by_field_name": "user.name",
+                "detector_description": "high sum by user",
+                "detector_index": 0,
+                "field_name": "problemchild.prediction_probability",
+                "function": "high_sum"
+              },
+              {
+                "by_field_name": "user.name",
+                "detector_description": "high sum by host",
+                "detector_index": 0,
+                "field_name": "blocklist_label",
+                "function": "high_sum"
+              }
+            ],
+            "influencers": [
+              "process.name",
+              "user.name",
+              "process.command_line"
+            ]
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "description": "A machine learning job to detect potential living off the land activity. Looks for a set of one or more malicious processes, started by the same user. This is an experimental job and is therefore unsupported."
+      },
+      {
+        "id": "problem_child_high_sum_by_parent",
+          "config": {
+            "bucket_span": "15m",
+            "detectors": [
+              {
+                "by_field_name": "process.parent.name",
+                "detector_description": "high sum by parent process",
+                "detector_index": 0,
+                "field_name": "problemchild.prediction_probability",
+                "function": "high_sum"
+              },
+              {
+                "by_field_name": "process.parent.name",
+                "detector_description": "high sum by host",
+                "detector_index": 0,
+                "field_name": "blocklist_label",
+                "function": "high_sum"
+              }
+            ],
+            "influencers": [
+              "process.name",
+              "process.parent.name",
+              "process.command_line"
+            ]
+          },
+          "data_description": {
+            "time_field": "@timestamp",
+            "time_format": "epoch_ms"
+          },
+          "description": "A machine learning job to detect potential living off the land activity. Looks for a set of one or more malicious child processes spawned by the same parent process. This is an experimental job and is therefore unsupported."
+      }
+    ]
+  },
+  "datafeeds": [
+    {
+      "id": "problem_child_rare_process_by_host",
+      "job_id": "problem_child_rare_process_by_host",
+      "config": {
+        "indices": [
+          "endgame-*",
+          "logs-endpoint.events.process.*",
+          "winlogbeat-*"
+        ],
+        "job_id": "problem_child_rare_process_by_host",
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "problem_child_high_sum_by_host",
+      "job_id": "problem_child_high_sum_by_host",
+      "config": {
+        "indices": [
+          "endgame-*",
+          "logs-endpoint.events.process.*",
+          "winlogbeat-*"
+        ],
+        "job_id": "problem_child_high_sum_by_host",
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "problem_child_rare_process_by_user",
+      "job_id": "problem_child_rare_process_by_user",
+      "config": {
+        "indices": [
+          "endgame-*",
+          "logs-endpoint.events.process.*",
+          "winlogbeat-*"
+        ],
+        "job_id": "problem_child_rare_process_by_user",
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "problem_child_rare_process_by_parent",
+      "job_id": "problem_child_rare_process_by_parent",
+      "config": {
+        "indices": [
+          "endgame-*",
+          "logs-endpoint.events.process.*",
+          "winlogbeat-*"
+        ],
+        "job_id": "problem_child_rare_process_by_parent",
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "problem_child_high_sum_by_user",
+      "job_id": "problem_child_high_sum_by_user",
+      "config": {
+        "indices": [
+          "endgame-*",
+          "logs-endpoint.events.process.*",
+          "winlogbeat-*"
+        ],
+        "job_id": "problem_child_high_sum_by_user",
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "problem_child_high_sum_by_parent",
+      "job_id": "problem_child_high_sum_by_parent",
+      "config": {
+        "indices": [
+          "endgame-*",
+          "logs-endpoint.events.process.*",
+          "winlogbeat-*"
+        ],
+        "job_id": "problem_child_high_sum_by_parent",
+        "query": {
+          "bool": {
+            "minimum_should_match": 1,
+            "should": [
+              {
+                "match": {
+                  "problemchild.prediction": 1
+                }
+              },
+              {
+                "match": {
+                  "blocklist_label": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "id": "problem-child-jobs",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}
