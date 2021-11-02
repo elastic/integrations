@@ -572,7 +572,11 @@ An example event for `winlog` looks as following:
 | winlog.computerObject.name |  | keyword |
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
-| winlog.event_data.AccessGranted |  | keyword |
+| winlog.event_data.DelayThreshold |  | keyword |
+| winlog.event_data.Description |  | keyword |
+| winlog.event_data.Message |  | keyword |
+| winlog.event_data.Node |  | keyword |
+| winlog.event_data.QueueDelay |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
 | winlog.level | The event severity.  Levels are Critical, Error, Warning and Information, Verbose | keyword |
