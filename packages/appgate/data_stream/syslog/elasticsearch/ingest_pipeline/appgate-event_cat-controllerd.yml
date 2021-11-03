@@ -1,0 +1,200 @@
+---
+description: Set ECS Event Categorization fields (https://www.elastic.co/guide/en/ecs/current/ecs-category-field-values-reference.html) based on the Appgate 'daemon' value of of 'cz-controllerd' and the relevant 'event.action' values
+processors:
+  - set:
+      description: Set 'event.kind' to 'event' for all 'controllerd' events
+      field: event.kind
+      value: event
+  - set:
+      description: Set 'event.category' initially to 'configuration' for all 'controllerd' events, overridden later for specific event actions
+      field: event.category
+      value: configuration
+  - set:
+      description: Set 'event.type' initially to 'info' for all 'controllerd' events, to be overridden later for specific event actions
+      field: event.type
+      value: info
+  - set:
+      description: Set 'event.category' to 'authentication' for 'admin_authorization_succeeded' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'admin_authorization_succeeded'
+  - set:
+      description: Set 'event.type' to 'access' for 'allocated_ips_listed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'allocated_ips_listed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'allocated_ips_listed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'allocated_ips_listed'
+  - set:
+      description: Set 'event.category' to 'authentication' for 'authentication_failed' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'authentication_failed'
+  - set:
+      description: Set 'event.type' to 'end' for 'authentication_failed' event actions
+      field: event.type
+      value: end
+      if: ctx.event?.action == 'authentication_failed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'authentication_failed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'authentication_failed'
+  - set:
+      description: Set 'event.category' to 'authentication' for 'authentication_succeeded' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'authentication_succeeded'
+  - set:
+      description: Set 'event.type' to 'start' for 'authentication_succeeded' event actions
+      field: event.type
+      value: start
+      if: ctx.event?.action == 'authentication_succeeded'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'authentication_succeeded' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'authentication_succeeded'
+  - set:
+      description: Set 'event.category' to 'authentication' for 'authorization_succeeded' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'authorization_succeeded'
+  - set:
+      description: Set 'event.type' to 'access' for 'blacklist_viewed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'blacklist_viewed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'blacklist_viewed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'blacklist_viewed'
+  - set:
+      description: Set 'event.type' to 'access' for 'client_connections_viewed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'client_connections_viewed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'client_connections_viewed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'client_connections_viewed'
+  - set:
+      description: Set 'event.type' to 'access' for 'entities_listed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'entities_listed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'entities_listed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'entities_listed'
+  - set:
+      description: Set 'event.type' to 'access' for 'entity_created' event actions
+      field: event.type
+      value: change
+      if: ctx.event?.action == 'entity_created'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'entity_created' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'entity_created'
+  - set:
+      description: Set 'event.type' to 'access' for 'entity_updated' event actions
+      field: event.type
+      value: change
+      if: ctx.event?.action == 'entity_updated'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'entity_updated' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'entity_updated'
+  - set:
+      description: Set 'event.type' to 'access' for 'entity_viewed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'entity_viewed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'entity_viewed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'entity_viewed'
+  - set:
+      description: Set 'event.type' to 'access' for 'global_settings_viewed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'global_settings_viewed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'global_settings_viewed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'global_settings_viewed'
+  - set:
+      description: Set 'event.category' to 'authentication' for 'otp_authentication_failed' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'otp_authentication_failed'
+  - set:
+      description: Set 'event.type' to 'end' for 'otp_authentication_failed' event actions
+      field: event.type
+      value: end
+      if: ctx.event?.action == 'otp_authentication_failed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'otp_authentication_failed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'otp_authentication_failed'
+  - set:
+      description: Set 'event.category' to 'authentication' for 'otp_authentication_succeeded' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'otp_authentication_succeeded'
+  - set:
+      description: Set 'event.type' to 'start' for 'otp_authentication_succeeded' event actions
+      field: event.type
+      value: start
+      if: ctx.event?.action == 'otp_authentication_succeeded'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'otp_authentication_succeeded' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'otp_authentication_succeeded'
+  - set:
+      description: Set 'event.category' to 'authentication' for 'password_authentication_succeeded' event actions
+      field: event.category
+      value: authentication
+      if: ctx.event?.action == 'password_authentication_succeeded'
+  - set:
+      description: Set 'event.type' to 'start' for 'password_authentication_succeeded' event actions
+      field: event.type
+      value: start
+      if: ctx.event?.action == 'password_authentication_succeeded'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'password_authentication_succeeded' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'password_authentication_succeeded'
+  - set:
+      description: Set 'event.type' to 'change' for 'token_revoked' event actions
+      field: event.type
+      value: change
+      if: ctx.event?.action == 'token_revoked'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'token_revoked' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'token_revoked'
+  - set:
+      description: Set 'event.type' to 'access' for 'tokens_listed' event actions
+      field: event.type
+      value: access
+      if: ctx.event?.action == 'tokens_listed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'tokens_listed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'tokens_listed'

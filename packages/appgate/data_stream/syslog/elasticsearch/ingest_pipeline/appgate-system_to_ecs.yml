@@ -1,0 +1,112 @@
+---
+description: Parse Appgate System logs to ECS format
+processors:
+  - set:
+      description: Legacy (non data_Stream) setting of the index name
+      field: _index
+      value: logs-appgate.system-prod
+  - set:
+      description: Set 'data_stream.type' to 'logs'
+      field: data_stream.type
+      value: logs
+  - set:
+      description: Set 'data_stream.dataset' to 'appgate.system'
+      field: data_stream.dataset
+      value: appgate.system
+  - set:
+      description: Set 'data_stream.namespace' to 'prod'
+      field: data_stream.namespace
+      value: prod
+  - set:
+      description: Set ECS version
+      field: ecs.version
+      value: 1.11.0
+  - set:
+      description: Set 'event.dataset' to 'appgate.system'
+      field: event.dataset
+      value: appgate.system
+  - set:
+      description: Set 'event.module' to 'appgate'
+      field: event.module
+      value: appgate
+  - set:
+      description: Set log.original
+      field: log.original
+      value: '{{{message}}}'
+  - set:
+      description: Combine date element fields
+      field: timestamp
+      value: '{{{month}}} {{{day}}} {{{time}}}'
+  - date:
+      description: Set @timestamp value
+      field: timestamp
+      formats:
+        - MMM dd HH:mm:ss
+  - set:
+      description: Set event.ingested
+      field: event.ingested
+      value: '{{{_ingest.timestamp}}}'
+  - set:
+      description: Set host.hostname
+      field: host.hostname
+      value: '{{{observer.hostname}}}'
+  - set:
+      description: Set host.name
+      field: host.name
+      value: '{{{observer.hostname}}}'
+  - set:
+      description: Set log.file.path
+      field: log.file.path
+      value: /var/log/syslog
+  - grok:
+      description: Split operation field into process.name and process.pid
+      if: ctx.operation?.contains('[')
+      field: operation
+      patterns:
+        - '%{DATA:process.name}\[%{NUMBER:process.pid}\]'
+  - set:
+      description: Set process.name when no process ID included
+      if: '!(ctx.operation?.contains(''[''))'
+      field: process.name
+      value: '{{{operation}}}'
+  - grok:
+      description: Split payload field if it contains a user name and CMD string
+      if: ctx.payload?.contains(' CMD ')
+      field: payload
+      patterns:
+        - \(%{DATA:user.name}\) CMD \(%{DATA:process.command_line}\)
+  - trim:
+      description: Trim extraneous spaces from CMD payload
+      if: ctx.payload?.contains(' CMD ')
+      field: process.command_line
+  - split:
+      description: Split CMD arguments into an array
+      if: ctx.payload?.contains(' CMD ')
+      field: process.command_line
+      separator: \s+
+      target_field: process.args
+  - grok:
+      description: 'If ''operation'' is ''kernel'' extract the memory address '
+      if: ctx.operation?.contains('kernel')
+      field: payload
+      patterns:
+        - \[%{DATA:memory.address}\] %{GREEDYDATA}
+        - '%{GREEDYDATA}'
+  - trim:
+      description: Trim extraneous spaces from memory.address
+      if: ctx.containsKey('memory') && ctx.memory?.containsKey('address')
+      field: memory.address
+  - set:
+      description: Overwrite the 'message' field with the remaining 'payload' value
+      override: true
+      field: message
+      value: '{{{payload}}}'
+on_failure:
+  - set:
+      description: Index document to 'failed-appgate-system'
+      field: _index
+      value: failed-appgate-system
+  - set:
+      description: Record error information
+      field: PIPELINE_ERROR
+      value: 'Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''

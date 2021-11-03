@@ -1,0 +1,40 @@
+---
+description: Set ECS Event Categorization fields (https://www.elastic.co/guide/en/ecs/current/ecs-category-field-values-reference.html) based on the Appgate 'daemon' value of of 'cz-configd' and the relevant 'event.action' values
+processors:
+  - set:
+      description: Set 'event.kind' to 'event' for 'appliance_started' event actions
+      field: event.kind
+      value: event
+      if: ctx.event?.action == 'appliance_started'
+  - set:
+      description: Set 'event.category' to 'process' for 'appliance_started' event actions
+      field: event.category
+      value: process
+      if: ctx.event?.action == 'appliance_started'
+  - set:
+      description: Set 'event.type' to 'start' for 'appliance_started' event actions
+      field: event.type
+      value: start
+      if: ctx.event?.action == 'appliance_started'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'appliance_astarted' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'appliance_started'
+  - set:
+      description: Set 'event.kind' to 'metric, state' for 'appliance_status_changed' event actions
+      field: event.kind
+      value:
+        - metric
+        - state
+      if: ctx.event?.action == 'appliance_status_changed'
+  - set:
+      description: Set 'event.category' to 'host' for 'appliance_astarted' event actions
+      field: event.category
+      value: host
+      if: ctx.event?.action == 'appliance_started'
+  - set:
+      description: Set 'event.type' to 'info' for 'appliance_astarted' event actions
+      field: event.type
+      value: info
+      if: ctx.event?.action == 'appliance_started'

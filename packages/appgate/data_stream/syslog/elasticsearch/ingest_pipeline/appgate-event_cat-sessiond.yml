@@ -1,0 +1,35 @@
+---
+description: Set ECS Event Categorization fields (https://www.elastic.co/guide/en/ecs/current/ecs-category-field-values-reference.html) based on the Appgate 'daemon' value of of 'cz-sessiond' and the relevant 'event.action' values
+processors:
+  - set:
+      description: Set 'event.kind' to 'event' for all 'cz-sessiond' events
+      field: event.kind
+      value: event
+  - set:
+      description: Set 'event.category' to 'session' for all 'sessiond' events
+      field: event.category
+      value: session
+  - set:
+      description: Set 'event.type' initially to 'info' for all 'sessiond' events, overridden later for specific event.actions
+      field: event.type
+      value: info
+  - set:
+      description: Set 'event.type' to 'start' for 'session_created' event actions
+      field: event.type
+      value: start
+      if: ctx.event?.action == 'session_created'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'session_created' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'session_created'
+  - set:
+      description: Set 'event.type' to 'start' for 'session_removed' event actions
+      field: event.type
+      value: end
+      if: ctx.event?.action == 'session_removed'
+  - set:
+      description: Set 'event.outcome' to 'success' for 'session_removed' event actions
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'session_removed'

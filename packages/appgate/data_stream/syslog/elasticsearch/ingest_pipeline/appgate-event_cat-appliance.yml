@@ -1,0 +1,35 @@
+---
+description: Set ECS Event Categorization fields (https://www.elastic.co/guide/en/ecs/current/ecs-category-field-values-reference.html) based on the Appgate 'daemon' value of of 'cz-appliance' and the relevant 'event.action' values
+processors:
+  - set:
+      description: Set 'event.kind' to 'event' for all 'cz-appliance' events
+      field: event.kind
+      value: event
+  - set:
+      description: Set 'event.category' initially to 'network' for all 'appliance' events, to be overridden later by specific evant actions
+      field: event.category
+      value: network
+  - set:
+      description: Set 'event.outcome' to 'success' for all 'cz-appliance' events
+      field: event.outcome
+      value: success
+  - set:
+      description: Set 'event.category' to 'process' for 'appliance_shutdown' events
+      field: event.category
+      value: process
+      if: ctx.event?.action == 'appliance_shutdown'
+  - set:
+      description: Set 'event.type' to 'end' for 'appliance_shutdown' events
+      field: event.type
+      value: end
+      if: ctx.event?.action == 'appliance_shutdown'
+  - set:
+      description: Set 'event.type' to 'denied' for 'ssh_access_failed' events
+      field: event.type
+      value: denied
+      if: ctx.event?.action == 'ssh_access_failed'
+  - set:
+      description: Set 'event.type' to 'allowed' for 'ssh_access_succeeded' events
+      field: event.type
+      value: allowed
+      if: ctx.event?.action == 'ssh_access_succeeded'

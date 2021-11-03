@@ -1,0 +1,64 @@
+---
+description: Route Appgate logs to either System or Audit pipelines
+processors:
+  - grok:
+      description: Parse out SYSLOG message into analyzable bits
+      field: message
+      patterns:
+        - '%{MONTH:month} %{NUMBER:day} %{TIME:time} %{URIPROTO:observer.hostname} %{DATA:operation}: %{GREEDYDATA:payload}'
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Unable to parse Appgate log entry:  {{{message}}}'
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-default'
+            field: _index
+            value: failed-appgate-default
+  - pipeline:
+      description: Send to 'system' pipeline for processing
+      name: appgate-system_to_ecs
+      if: '!(ctx.payload?.contains(''[AUDIT]''))'
+      ignore_failure: true
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Unable to parse Appgate log entry - No PAYLOAD:  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-default'
+            field: _index
+            value: failed-appgate-default
+  - pipeline:
+      description: Send to 'audit' pipeline for processing
+      name: appgate-audit_to_ecs
+      if: ctx.payload?.contains('[AUDIT]')
+      ignore_failure: true
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Unable to parse Appgate log entry - No PAYLOAD:  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-default'
+            field: _index
+            value: failed-appgate-default
+  - remove:
+      description: Remove 'message' field from 'audit' events
+      field: message
+      if: ctx.event?.dataset == 'appgate.audit'
+  - remove:
+      description: Extra field cleanup
+      field:
+        - operation
+        - payload
+        - jsondata
+        - month
+        - day
+        - time
+        - timestamp
+        - keep_original
+      ignore_missing: true

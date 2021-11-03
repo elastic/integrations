@@ -1,0 +1,162 @@
+---
+description: Convert Appgate Audit log to ECS format - keeping original fields alongside ECS versions
+processors:
+  - set:
+      if: ctx.containsKey('distinguished_name_device_id')
+      field: host.id
+      value: '{{{distinguished_name_device_id}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('client_port')
+      field: client.port
+      value: '{{{client_port}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('client_ip')
+      field: host.ip
+      value: '{{{client_ip}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('host_ip')
+      field: host.ip
+      value: '{{{host_ip}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('packet_size')
+      field: network.packets
+      value: '{{{packet_size}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('protocol')
+      field: network.protocol
+      value: '{{{protocol}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('rule_name')
+      field: rule.name
+      value: '{{{rule_name}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('source_ip')
+      field: source.ip
+      value: '{{{source_ip}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('source_port')
+      field: source.port
+      value: '{{{source_port}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('distinguished_name_ou')
+      field: organization.name
+      value: '{{{distinguished_name_ou}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('distinguished_name_user')
+      field: user.name
+      value: '{{{distinguished_name_user}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('username')
+      field: user.name
+      value: '{{{username}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('client_ip')
+      field: client.ip
+      value: '{{{client_ip}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.containsKey('clientIPs')
+      field: related.ip
+      value: '{{{device_claims.clientIPs}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('geoip')
+      field: client.geo
+      copy_from: geoip
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('destination_ip')
+      field: destination.ip
+      value: '{{{destination_ip}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('destination_port')
+      field: destination.port
+      value: '{{{destination_port}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('event_type')
+      field: event.action
+      value: '{{{event_type}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('entity_type')
+      field: rule.category
+      value: '{{{entity_type}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.containsKey('action')
+      field: rule.action
+      value: '{{{action}}}'
+      ignore_failure: true
+  - set:
+      description: Combine date element fields
+      field: event.created
+      value: '{{{month}}} {{{day}}} {{{time}}}'
+  - date:
+      field: event.created
+      formats:
+        - MMM dd HH:mm:ss
+      target_field: event.created
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.containsKey('running_processes')
+      field: event.process.name
+      value: '{{{device_claims.running_processes}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('hostname')
+      field: host.hostname
+      value: '{{{device_claims.os.hostname}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.containsKey('macAddresses')
+      field: host.mac
+      copy_from: device_claims.macAddresses
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('name')
+      field: host.os.name
+      value: '{{{device_claims.os.name}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('type')
+      field: host.os.type
+      value: '{{{device_claims.os.type}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('version')
+      field: host.os.version
+      value: '{{{device_claims.os.version}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('platform')
+      field: host.architecture
+      value: '{{{device_claims.os.platform}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('hostname')
+      field: host.name
+      value: '{{{device_claims.os.hostname}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.device_claims != null && ctx.device_claims.os != null && ctx.device_claims.os.containsKey('family')
+      field: host.os.family
+      value: '{{{device_claims.os.family}}}'
+      ignore_failure: true
+  - set:
+      if: ctx.system_claims != null && ctx.system_claims.containsKey('clientSrcIP')
+      field: source.ip
+      value: '{{{system_claims.clientSrcIP}}}'
+      ignore_failure: true

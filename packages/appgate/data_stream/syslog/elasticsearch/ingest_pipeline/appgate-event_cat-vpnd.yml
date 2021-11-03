@@ -1,0 +1,45 @@
+---
+description: Set ECS Event Categorization fields (https://www.elastic.co/guide/en/ecs/current/ecs-category-field-values-reference.html) based on the Appgate 'daemon' value of of 'cz-vpnd' and the relevant 'event.action' values
+processors:
+  - set:
+      description: Set 'event.kind' to 'event' for all 'vpnd' events
+      field: event.kind
+      value: event
+  - set:
+      description: Set 'event.category' initially to 'network' for all 'vpnd' events, overridden later for specific event actions
+      field: event.category
+      value: network
+  - set:
+      description: Set 'event.outcome' to 'success' for all 'vpnd' events
+      field: event.outcome
+      value: success
+  - set:
+      description: Set 'event.category' to 'configuration' for 'fips' event actions
+      field: event.category
+      value: configuration
+      if: ctx.event?.action == 'fips'
+  - set:
+      description: Set 'event.type' to 'change' for 'fips' event actions
+      field: event.type
+      value: change
+      if: ctx.event?.action == 'fips'
+  - set:
+      description: Set 'event.type' to 'connection' for 'ip_access' event actions
+      field: event.type
+      value: connection
+      if: ctx.event?.action == 'ip_access'
+  - set:
+      description: Set 'event.type' to 'end' for 'tunnel_closed' event actions
+      field: event.type
+      value: end
+      if: ctx.event?.action == 'tunnel_closed'
+  - set:
+      description: Set 'event.type' to 'start' for 'tunnel_connected' event actions
+      field: event.type
+      value: start
+      if: ctx.event?.action == 'tunnel_connected'
+  - set:
+      description: Set 'event.type' to 'allowed' for 'tunnel_established' event actions
+      field: event.type
+      value: allowed
+      if: ctx.event?.action == 'tunnel_established'

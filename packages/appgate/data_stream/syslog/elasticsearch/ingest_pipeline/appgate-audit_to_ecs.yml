@@ -1,0 +1,165 @@
+---
+description: Convert Appgate Audit log to ECS format
+processors:
+  - set:
+      description: Legacy (non data_Stream) setting of the index name
+      field: _index
+      value: logs-appgate.audit-prod
+  - set:
+      description: Set 'data_stream.type' to 'logs'
+      field: data_stream.type
+      value: logs
+  - set:
+      description: Set 'data_stream.dataset' to 'appgate.audit'
+      field: data_stream.dataset
+      value: appgate.audit
+  - set:
+      description: Set 'data_stream.namespace' to 'prod'
+      field: data_stream.namespace
+      value: prod
+  - set:
+      description: Set ECS version
+      field: ecs.version
+      value: 1.11.0
+  - set:
+      description: Set 'event.dataset' to 'appgate.audit'
+      field: event.dataset
+      value: appgate.audit
+  - set:
+      description: Set 'event.module' to 'appgate'
+      field: event.module
+      value: appgate
+  - set:
+      description: Set event.original
+      field: event.original
+      value: '{{{message}}}'
+  - grok:
+      field: payload
+      patterns:
+        - \[AUDIT\] %{GREEDYDATA:jsondata}
+  - json:
+      field: jsondata
+      add_to_root: true
+  - date:
+      field: timestamp
+      formats:
+        - ISO8601
+  - set:
+      description: Set event.ingested
+      field: event.ingested
+      value: '{{{_ingest.timestamp}}}'
+  - date:
+      field: event.ingested
+      formats:
+        - ISO8601
+      target_field: event.ingested
+  - rename:
+      field: operation
+      target_field: daemon
+  - set:
+      description: Choose here whether to keep the original fields alongside the ECS versions (use 'set' processors), or only keep the ECS (use 'rename' processors)
+      field: keep_original
+      value: false
+  - pipeline:
+      description: Pipeline for copying original Appgate Audit fields to ECS versions
+      name: appgate-audit_to_ecs-keep_original
+      if: ctx.keep_original == true
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route Appgate Audit pipeline to KEEP:  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Pipeline for replacing original Appgate Audit fields with ECS versions
+      name: appgate-audit_to_ecs-rename_original
+      if: ctx.keep_original == false
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route Appgate Audit pipeline to RENAME:  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Pipeline for applying ECS Event Categorization fields to 'cz-appliance' data
+      name: appgate-event_cat-appliance
+      if: ctx.daemon == 'cz-appliance'
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route ECS Event Cat pipeline to ''cz-appliance'''':  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Pipeline for applying ECS Event Categorization fields to 'cz-configd' data
+      name: appgate-event_cat-configd
+      if: ctx.daemon == 'cz-configd'
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route ECS Event Cat pipeline to ''cz-configd'''':  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Pipeline for applying ECS Event Categorization fields to 'cz-sessiond' data
+      name: appgate-event_cat-sessiond
+      if: ctx.daemon == 'cz-sessiond'
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route ECS Event Cat pipeline to ''cz-sessiond'''':  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Pipeline for applying ECS Event Categorization fields to 'cz-vpnd' data
+      name: appgate-event_cat-vpnd
+      if: ctx.daemon == 'cz-vpnd'
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route ECS Event Cat pipeline to ''cz-vpnd'''':  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Pipeline for applying ECS Event Categorization fields to 'cz-controllerd' data
+      name: appgate-event_cat-controllerd
+      if: ctx.daemon == 'cz-controllerd'
+      on_failure:
+        - set:
+            description: Set 'error.message'
+            field: error.message
+            value: 'Failure attempting to route ECS Event Cat pipeline to ''cz-controllerd'''':  Processor {{ _ingest.on_failure_processor_type }} with tag: ''{{ _ingest.on_failure_processor_tag }}'' in pipeline ''{{ _ingest.on_failure_pipeline }}'' failed with message: ''{{ _ingest.on_failure_message }}'''
+            override: false
+        - set:
+            description: Index document to 'failed-appgate-router'
+            field: _index
+            value: failed-appgate-router
+  - pipeline:
+      description: Add 'geo' fields to 'source' and 'destination' elements
+      name: geoip
+  - remove:
+      field: operation
