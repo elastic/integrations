@@ -29,6 +29,18 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  - split:
+      field: winlog.event_data.ClientIPs
+      separator: ","
+      preserve_trailing: true
+      ignore_missing: true
+
+  - split:
+      field: winlog.event_data.FailedTargets
+      separator: ","
+      preserve_trailing: true
+      ignore_missing: true
+
   - script:
       lang: painless
       ignore_failure: false
@@ -315,6 +327,26 @@ processors:
   - convert:
       field: winlog.event_id
       type: string
+      ignore_missing: true
+
+  - convert:
+      field: winlog.event_data.DelayThreshold
+      type: long
+      ignore_missing: true
+
+  - convert:
+      field: winlog.event_data.QueueDelay
+      type: long
+      ignore_missing: true
+
+  - convert:
+      field: winlog.event_data.QueueSize
+      type: long
+      ignore_missing: true
+
+  - convert:
+      field: winlog.event_data.Runtime
+      type: long
       ignore_missing: true
 
   - set:
