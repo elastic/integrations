@@ -1,6 +1,6 @@
-# Google Cloud Project Metrics Integration
+# Google Cloud Platform Metrics Integration
 
-The Google Cloud Project Metrics integration collects and parses Google Cloud billing, compute, storage metrics.
+The Google Cloud Platform Metrics integration collects and parses Google Cloud billing, compute, storage metrics.
 
 ## Metrics
 
