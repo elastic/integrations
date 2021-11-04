@@ -1,27 +1,43 @@
 {
   "attributes": {
         "id": "problem_child",
-        "title": "Problem child anomaly detection jobs",
+        "title": "Problem child anomaly detection",
         "description": "Identify malicious processes.",
-        "type": "ML model jobs",
+        "type": "ML model",
         "logo": {
             "icon": "machineLearningApp"
         },
         "query": {
           "bool": {
-            "minimum_should_match": 1,
             "should": [
-              {
-                "match": {
-                  "problemchild.prediction": 1
-                }
-              },
-              {
-                "match": {
-                  "blocklist_label": 1
-                }
-              }
-            ]
+                        {
+                          "bool": {
+                            "filter": [
+                              {
+                            "exists": {
+                                "field": "process.name"
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "host.hostname"
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "process.command_line"
+                            }
+                        }
+                            ]
+                          }
+                        },
+                        {
+                          "exists": {
+                              "field": "problemchild.prediction_probability"
+                          }
+                      }
+                    ],
+                  "minimum_should_match" : 1
           }
         },
     "jobs": [
