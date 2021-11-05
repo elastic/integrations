@@ -30,34 +30,35 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| auth0.logs.audience | API audience the event applies to. | text |
-| auth0.logs.client_id | ID of the client (application). | text |
-| auth0.logs.client_name | Name of the client (application). | text |
-| auth0.logs.connection | Name of the connection the event relates to. | text |
-| auth0.logs.connection_id | ID of the connection the event relates to. | text |
-| auth0.logs.date | Date when the event occurred in ISO 8601 format. | date |
-| auth0.logs.description | Description of this event. | text |
-| auth0.logs.details.request.method | HTTP method. | text |
-| auth0.logs.details.response.status_code | HTTP response status code | integer |
-| auth0.logs.hostname | Hostname the event applies to. | text |
-| auth0.logs.ip | IP address of the log event source. | ip |
-| auth0.logs.is_mobile | Whether the client was a mobile device (true) or desktop/laptop/server (false). | boolean |
-| auth0.logs.location_info.city_name | Full city name in English. | text |
-| auth0.logs.location_info.continent_code | Continent the country is located within. Can be AF (Africa), AN (Antarctica), AS (Asia), EU (Europe), NA (North America), OC (Oceania) or SA (South America). | text |
-| auth0.logs.location_info.country_code | Two-letter [Alpha-2 ISO 3166-1](https://www.iso.org/iso-3166-country-codes.html) country code | text |
-| auth0.logs.location_info.country_code3 | Three-letter [Alpha-3 ISO 3166-1](https://www.iso.org/iso-3166-country-codes.html) country code | text |
-| auth0.logs.location_info.country_name | Full country name in English. | text |
-| auth0.logs.location_info.latitude | Global latitude (horizontal) position. | text |
-| auth0.logs.location_info.longitude | Global longitude (vertical) position. | text |
-| auth0.logs.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | text |
-| auth0.logs.log_id | Unique ID of the event. | text |
-| auth0.logs.scope | Scope permissions applied to the event. | text |
-| auth0.logs.strategy | Name of the strategy involved in the event. | text |
-| auth0.logs.strategy_type | Type of strategy involved in the event. | text |
-| auth0.logs.type | Type of event. | text |
-| auth0.logs.user_agent | User agent string from the client device that caused the event. | text |
-| auth0.logs.user_id | ID of the user involved in the event. | text |
-| auth0.logs.user_name | Name of the user involved in the event. | text |
+| auth0.logs.data.audience | API audience the event applies to. | text |
+| auth0.logs.data.client_id | ID of the client (application). | text |
+| auth0.logs.data.client_name | Name of the client (application). | text |
+| auth0.logs.data.connection | Name of the connection the event relates to. | text |
+| auth0.logs.data.connection_id | ID of the connection the event relates to. | text |
+| auth0.logs.data.date | Date when the event occurred in ISO 8601 format. | date |
+| auth0.logs.data.description | Description of this event. | text |
+| auth0.logs.data.details.request.method | HTTP method. | text |
+| auth0.logs.data.details.response.status_code | HTTP response status code | integer |
+| auth0.logs.data.hostname | Hostname the event applies to. | text |
+| auth0.logs.data.ip | IP address of the log event source. | ip |
+| auth0.logs.data.is_mobile | Whether the client was a mobile device (true) or desktop/laptop/server (false). | boolean |
+| auth0.logs.data.location_info.city_name | Full city name in English. | text |
+| auth0.logs.data.location_info.continent_code | Continent the country is located within. Can be AF (Africa), AN (Antarctica), AS (Asia), EU (Europe), NA (North America), OC (Oceania) or SA (South America). | text |
+| auth0.logs.data.location_info.country_code | Two-letter [Alpha-2 ISO 3166-1](https://www.iso.org/iso-3166-country-codes.html) country code | text |
+| auth0.logs.data.location_info.country_code3 | Three-letter [Alpha-3 ISO 3166-1](https://www.iso.org/iso-3166-country-codes.html) country code | text |
+| auth0.logs.data.location_info.country_name | Full country name in English. | text |
+| auth0.logs.data.location_info.latitude | Global latitude (horizontal) position. | text |
+| auth0.logs.data.location_info.longitude | Global longitude (vertical) position. | text |
+| auth0.logs.data.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | text |
+| auth0.logs.data.log_id | Unique log event identifier | text |
+| auth0.logs.data.scope | Scope permissions applied to the event. | text |
+| auth0.logs.data.strategy | Name of the strategy involved in the event. | text |
+| auth0.logs.data.strategy_type | Type of strategy involved in the event. | text |
+| auth0.logs.data.type | Type of event. | text |
+| auth0.logs.data.user_agent | User agent string from the client device that caused the event. | text |
+| auth0.logs.data.user_id | ID of the user involved in the event. | text |
+| auth0.logs.data.user_name | Name of the user involved in the event. | text |
+| auth0.logs.log_id | Unique log event identifier | text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

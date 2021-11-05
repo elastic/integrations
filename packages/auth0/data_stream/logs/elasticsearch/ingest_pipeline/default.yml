@@ -1,9 +1,18 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Auth0 log stream events
 processors:
 - set:
-    field: sample_field
-    value: "1"
+    field: ecs.version
+    value: '1.12.0'
+- set:
+    field: auth0.logs
+    copy_from: json
+- date:
+    field: auth0.logs.data.date
+    formats:
+      - ISO8601
+- remove:
+    field: json
 on_failure:
 - set:
     field: error.message
