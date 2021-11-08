@@ -11,6 +11,120 @@ processors:
     field: auth0.logs.data.date
     formats:
       - ISO8601
+- script:
+    lang: painless
+    description: Sets event type, category and action based on type
+    if: ctx?.auth0?.logs?.data?.type != null
+    source: |-
+         // Map of event type to category and description
+         HashMap authTypeToDescription = [
+                "f":    ["Login - Failure","Failed login"],
+                "fc":   ["Login - Failure","Failed connector login"],
+                "fco":  ["Login - Failure","Origin is not in the application's Allowed Origins list"],
+                "fcoa": ["Login - Failure","Failed cross-origin authentication"],
+                "fens": ["Login - Failure","Failed native social login"],
+                "fp":   ["Login - Failure","Incorrect password"],
+                "fu":   ["Login - Failure","Invalid email or username"],
+
+                "w":    ["Login - Notification","Warnings during login"],
+
+                "s":    ["Login - Success","Successful login"],
+                "scoa": ["Login - Success","Successful cross-origin authentication"],
+                "sens": ["Login - Success","Successful native social login"],
+
+                "flo": ["Logout - Failure","User logout failed"],
+                "slo": ["Logout - Success","User successfully logged out"],
+
+                "fs":  ["Signup - Failure","User signup failed"],
+                "fsa": ["Signup - Success","Failed silent authentication"],
+
+                "ssa": ["Silent Authentication - Success","Successful silent authentication"],
+
+                "feacft":   ["Token Exchange - Failure","Failed exchange of Authorization Code for Access Token"],
+                "feccft":   ["Token Exchange - Failure","Failed exchange of Access Token for a Client Credentials Grant"],
+                "fede":     ["Token Exchange - Failure","Failed exchange of Device Code for Access Token"],
+                "feoobft":  ["Token Exchange - Failure","Failed exchange of Password and OOB Challenge for Access Token"],
+                "feotpft":  ["Token Exchange - Failure","Failed exchange of Password and OTP Challenge for Access Token"],
+                "fepft":    ["Token Exchange - Failure","Failed exchange of Password for Access Token"],
+                "fepotpft": ["Token Exchange - Failure","Failed exchange of Passwordless OTP for Access Token"],
+                "fercft":   ["Token Exchange - Failure","Failed exchange of Password and MFA Recovery code for Access Token"],
+                "ferrt":    ["Token Exchange - Failure","Failed exchange of Rotating Refresh Token"],
+                "fertft":   ["Token Exchange - Failure","Failed exchange of Refresh Token for Access Token"],
+
+                "seacft":  ["Token Exchange - Success","Successful exchange of Authorization Code for Access Token"],
+                "seccft":  ["Token Exchange - Success","Successful exchange of Access Token for a Client Credentials Grant"],
+                "sede":    ["Token Exchange - Success","Successful exchange of Device Code for Access Token"],
+                "seoobft": ["Token Exchange - Success","Successful exchange of Password and OOB Challenge for Access Token"],
+                "seotpft": ["Token Exchange - Success","Successful exchange of Password and OTP Challenge for Access Token"],
+                "sepft":   ["Token Exchange - Success","Successful exchange of Password for Access Token"],
+                "sercft":  ["Token Exchange - Success","Successful exchange of Password and MFA Recovery code for Access Token"],
+                "sertft":  ["Token Exchange - Success","Successful exchange of Refresh Token for Access Token"],
+
+                "fapi": ["Management API - Failure","Failed Management API operation"],
+
+                "sapi":          ["Management API - Success","Successful Management API operation"],
+                "mgmt_api_read": ["Management API - Success","API GET operation returning secrets completed successfully"],
+
+                "admin_update_launch": ["System - Notification","Auth0 Update Launched"],
+                "api_limit":           ["System - Notification","The maximum number of requests to the Authentication or Management APIs in given time has reached"],
+                "coff":                ["System - Notification","AD/LDAP Connector is offline"],
+                "con":                 ["System - Notification","AD/LDAP Connector is online and working"],
+                "depnote":             ["System - Notification","Deprecation Notice"],
+                "fcpro":               ["System - Notification","Failed to provision a AD/LDAP connector"],
+                "fui":                 ["System - Notification","Failed to import users"],
+                "limit_delegation":    ["System - Notification","Rate limit exceeded to /delegation endpoint"],
+                "limit_mu":            ["System - Notification","An IP address is blocked with 100 failed login attempts using different usernames"],
+                "limit_wc":            ["System - Notification","An IP address is blocked with 10 failed login attempts into a single account from the same IP address"],
+                "sys_os_update_start": ["System - Notification","Auth0 OS Update Started"],
+                "sys_os_update_end":   ["System - Notification","Auth0 OS Update Ended"],
+                "sys_update_start":    ["System - Notification","Auth0 Update Started"],
+                "sys_update_end":      ["System - Notification","Auth0 Update Ended"],
+
+                "fce":   ["User/Behavioral - Failure","Failed to change user email"],
+                "fcp":   ["User/Behavioral - Failure","Failed to change password"],
+                "fcpn":  ["User/Behavioral - Failure","Failed to change phone number"],
+                "fcpr":  ["User/Behavioral - Failure","Failed change password request"],
+                "fcu":   ["User/Behavioral - Failure","Failed to change username"],
+                "fd":    ["User/Behavioral - Failure","Failed to generate delegation token"],
+                "fdeaz": ["User/Behavioral - Failure","Device authorization request failed"],
+                "fdecc": ["User/Behavioral - Failure","User did not confirm device"],
+                "fdu":   ["User/Behavioral - Failure","Failed user deletion"],
+                "fn":    ["User/Behavioral - Failure","Failed to send email notification"],
+                "fv":    ["User/Behavioral - Failure","Failed to send verification email"],
+                "fvr":   ["User/Behavioral - Failure","Failed to process verification email request"],
+
+                "cs":                       ["User/Behavioral - Notification","Passwordless login code has been sent"],
+                "du":                       ["User/Behavioral - Notification","User has been deleted"],
+                "gd_enrollment_complete":   ["User/Behavioral - Notification","A first time MFA user has successfully enrolled using one of the factors"],
+                "gd_start_enroll":          ["User/Behavioral - Notification","Multi-factor authentication enroll has started"],
+                "gd_unenroll":              ["User/Behavioral - Notification","Device used for second factor authentication has been unenrolled"],
+                "gd_update_device_account": ["User/Behavioral - Notification","Device used for second factor authentication has been updated"],
+                "ublkdu":                   ["User/Behavioral - Notification","User block setup by anomaly detection has been released"],
+
+                "sce":  ["User/Behavioral - Success","Successfully changed user email"],
+                "scp":  ["User/Behavioral - Success","Successfully changed password"],
+                "scpn": ["User/Behavioral - Success","Successfully changed phone number"],
+                "scpr": ["User/Behavioral - Success","Successful change password request"],
+                "scu":  ["User/Behavioral - Success","Successfully changed username"],
+                "sdu":  ["User/Behavioral - Success","User successfully deleted"],
+                "srrt": ["User/Behavioral - Success","Successfully revoked a Refresh Token"],
+                "sui":  ["User/Behavioral - Success","Successfully imported users"],
+                "sv":   ["User/Behavioral - Success","Sent verification email"],
+                "svr":  ["User/Behavioral - Success","Successfully processed verification email request"]
+         ];
+
+         def v = authTypeToDescription.get(ctx.auth0.logs.data.type);
+         ctx.event.type = ctx.auth0.logs.data.type;
+         if (v == null) {
+             ctx.event.category = "Unknown category";
+             ctx.event.action = "Unknown";
+             return;
+         }
+         def category = v[0];
+         def descr = v[1];
+         ctx.event.category = category;
+         ctx.event.action = descr;
+ 
 - remove:
     field: json
 on_failure:
