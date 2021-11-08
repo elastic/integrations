@@ -9,7 +9,7 @@ defaults)
 
 * Makes sure each multiline log event gets sent as a single event
 
-* Uses ingest node to parse and process the log lines, shaping the data into a structure suitable
+* Uses ingest pipelines to parse and process the log lines, shaping the data into a structure suitable
 for visualizing in Kibana
 
 * Deploys dashboards for visualizing the log data
@@ -26,77 +26,112 @@ The integration is by default configured to read logs files stored in the `defau
 However it can be configured for any file path. See the following example.
 
 ```yaml
-- module: hid_bravura_monitor
-  log:
-    enabled: true
-    var.paths: ["C:/Program Files/Hitachi ID/IDM Suite/Logs/default*/idmsuite*.log"]
-    var.instancename: default
-    var.timezone: UTC
-    var.environment: PRODUCTION
-    var.instancetype: Privilege-Identity-Password
+- id: b5e895ed-0726-4fa3-870c-464379d1c27b
+    name: hid_bravura_monitor-1
+    revision: 1
+    type: filestream
+    use_output: default
+    meta:
+      package:
+        name: hid_bravura_monitor
+        version: 1.0.0
+    data_stream:
+      namespace: default
+    streams:
+      - id: >-
+          filestream-hid_bravura_monitor.log-b5e895ed-0726-4fa3-870c-464379d1c27b
+        data_stream:
+          dataset: hid_bravura_monitor.log
+          type: logs
+        paths:
+          - 'C:/Program Files/Hitachi ID/IDM Suite/Logs/default*/idmsuite*.log'
+        prospector.scanner.exclude_files:
+          - .gz$
+        line_terminator: carriage_return_line_feed
+        tags: null
+        processors:
+          - add_fields:
+              target: ''
+              fields:
+                hid_bravura_monitor.instancename: default
+                hid_bravura_monitor.node: 0.0.0.0
+                hid_bravura_monitor.environment: PRODUCTION
+                hid_bravura_monitor.instancetype: Privilege-Identity-Password
+                event.timezone: UTC
+        parsers:
+          - multiline:
+              type: pattern
+              pattern: '^[[:cntrl:]]'
+              negate: true
+              match: after
 ```
 
-*`var.instancename`*::
+*`hid_bravura_monitor.instancename`*
 
 The name of the IDM Suite instance. The default is `default`. For example:
 
 ```yaml
-- module: hid_bravura_monitor
-  log:
-    enabled: true
-    var.instancename: inst1
-    ...
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        hid_bravura_monitor.instancename: default
+        ...
 ```
 
-*`var.node`*::
+*`hid_bravura_monitor.node`*
 
-The address of the instance node. The default is filled with `host.name`. For example:
+The address of the instance node. If the default `0.0.0.0` is left, the value is filled with `host.name`. For example:
 
 ```yaml
-- module: hid_bravura_monitor
-  log:
-    enabled: true
-    var.node: 127.0.0.1
-    ...
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        hid_bravura_monitor.node: 127.0.0.1
+        ...
 ```
 
-*`var.timezone`*::
+*`event.timezone`*
 
 The timezone for the given instance server. The default is `UTC`. For example:
 
 ```yaml
-- module: hid_bravura_monitor
-  log:
-    enabled: true
-    var.timezone: Canada/Mountain
-    ...
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        event.timezone: Canada/Mountain
+        ...
 ```
 
-*`var.environment`*::
+*`hid_bravura_monitor.environment`*
 
 The environment of the IDM Suite instance; choices are DEVELOPMENT, TESTING, PRODUCTION. The default is `PRODUCTION`. For example:
 
 ```yaml
-- module: hid_bravura_monitor
-  log:
-    enabled: true
-    var.environment: DEVELOPMENT
-    ...
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        hid_bravura_monitor.environment: DEVELOPMENT
+        ...
 ```
 
-*`var.instancetype`*::
+*`hid_bravura_monitor.instancetype`*
 
 The type of IDM Suite instance installed; choices are any combinations of Privilege, Identity or Password. The default is `Privilege-Identity-Password`. For example:
 
 ```yaml
-- module: hid_bravura_monitor
-  log:
-    enabled: true
-    var.instancetype: Identity-Password
-    ...
+processors:
+  - add_fields:
+      target: ''
+      fields:
+        hid_bravura_monitor.instancetype: Identity
+        ...
 ```
 
-*`var.paths`*::
+*`paths`*
 
 An array of glob-based paths that specify where to look for the log files. All
 patterns supported by https://golang.org/pkg/path/filepath/#Glob[Go Glob]
