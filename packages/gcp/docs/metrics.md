@@ -56,7 +56,7 @@ An example event for `billing` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
@@ -76,9 +76,11 @@ An example event for `billing` looks as following:
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcp.billing.billing_account_id | Project Billing Account ID. | keyword |
 | gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
 | gcp.billing.invoice_month | Billing report month. | keyword |
 | gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
+| gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
 | gcp.billing.total | Total billing amount. | float |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
