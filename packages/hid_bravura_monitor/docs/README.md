@@ -66,7 +66,7 @@ However it can be configured for any file path. See the following example.
               match: after
 ```
 
-*`hid_bravura_monitor.instancename`*::
+*`hid_bravura_monitor.instancename`*
 
 The name of the IDM Suite instance. The default is `default`. For example:
 
@@ -79,7 +79,7 @@ processors:
         ...
 ```
 
-*`hid_bravura_monitor.node`*::
+*`hid_bravura_monitor.node`*
 
 The address of the instance node. If the default `0.0.0.0` is left, the value is filled with `host.name`. For example:
 
@@ -92,7 +92,7 @@ processors:
         ...
 ```
 
-*`event.timezone`*::
+*`event.timezone`*
 
 The timezone for the given instance server. The default is `UTC`. For example:
 
@@ -105,7 +105,7 @@ processors:
         ...
 ```
 
-*`hid_bravura_monitor.environment`*::
+*`hid_bravura_monitor.environment`*
 
 The environment of the IDM Suite instance; choices are DEVELOPMENT, TESTING, PRODUCTION. The default is `PRODUCTION`. For example:
 
@@ -118,7 +118,7 @@ processors:
         ...
 ```
 
-*`hid_bravura_monitor.instancetype`*::
+*`hid_bravura_monitor.instancetype`*
 
 The type of IDM Suite instance installed; choices are any combinations of Privilege, Identity or Password. The default is `Privilege-Identity-Password`. For example:
 
@@ -131,7 +131,7 @@ processors:
         ...
 ```
 
-*`paths`*::
+*`paths`*
 
 An array of glob-based paths that specify where to look for the log files. All
 patterns supported by https://golang.org/pkg/path/filepath/#Glob[Go Glob]
