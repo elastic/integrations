@@ -37,8 +37,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.connection_id | ID of the connection the event relates to. | text |
 | auth0.logs.data.date | Date when the event occurred in ISO 8601 format. | date |
 | auth0.logs.data.description | Description of this event. | text |
-| auth0.logs.data.details.request.method | HTTP method. | text |
-| auth0.logs.data.details.response.status_code | HTTP response status code | integer |
+| auth0.logs.data.details | Additional useful details about this event (values here depend upon event type). | flattened |
 | auth0.logs.data.hostname | Hostname the event applies to. | text |
 | auth0.logs.data.ip | IP address of the log event source. | ip |
 | auth0.logs.data.is_mobile | Whether the client was a mobile device (true) or desktop/laptop/server (false). | boolean |
@@ -54,7 +53,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.scope | Scope permissions applied to the event. | text |
 | auth0.logs.data.strategy | Name of the strategy involved in the event. | text |
 | auth0.logs.data.strategy_type | Type of strategy involved in the event. | text |
-| auth0.logs.data.type | Type of event. | text |
+| auth0.logs.data.type | Type of event. | keyword |
 | auth0.logs.data.user_agent | User agent string from the client device that caused the event. | text |
 | auth0.logs.data.user_id | ID of the user involved in the event. | text |
 | auth0.logs.data.user_name | Name of the user involved in the event. | text |

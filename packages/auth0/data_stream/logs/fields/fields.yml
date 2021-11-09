@@ -20,7 +20,7 @@
               type: date
               description: Date when the event occurred in ISO 8601 format.
             - name: type
-              type: text
+              type: keyword
               description: Type of event.
             - name: description
               type: text
@@ -68,109 +68,8 @@
               type: boolean
               description: Whether the client was a mobile device (true) or desktop/laptop/server (false).
             - name: details
-              type: group
+              type: flattened
               description: Additional useful details about this event (values here depend upon event type).
-              fields:
-                - name: session_id
-                  type: text
-                - name: stats
-                  type: group
-                  fields:
-                    - name: loginsCount
-                      type: long
-                - name: completedAt
-                  type: long
-                - name: elapsedTime
-                  type: long
-                - name: initiatedAt
-                  type: long
-                - name: prompts
-                  type: array
-                - name: request
-                  type: group
-                  description: Request details
-                  fields:
-                    - name: auth
-                      type: group
-                      description: Authentication information
-                      fields:
-                        - name: credentials
-                          type: group
-                          description: Credentials
-                          fields:
-                            - name: jti
-                              type: keyword
-                              description: "(JWT ID): Unique identifier; can be used to prevent the JWT from being replayed (allows a token to be used only once)"
-                        - name: strategy
-                          type: keyword
-                          description: Auth strategy
-                        - name: user
-                          type: group
-                          description: User information
-                          fields:
-                            - name: email
-                              type: keyword
-                              description: User email
-                            - name: name
-                              type: keyword
-                              description: User name
-                            - name: user_id
-                              type: keyword
-                              description: Unique user id
-                    - name: method
-                      type: text
-                      description: HTTP method.
-                    - name: body
-                      type: group
-                      fields:
-                        - name: name
-                          type: keyword
-                        - name: sink
-                          type: group
-                          fields:
-                            - name: httpContentFormat
-                              type: keyword
-                            - name: httpContentType
-                              type: keyword
-                        - name: type
-                          type: keyword
-                          description: Protocol type
-                    - name: channel
-                      type: keyword
-                    - name: ip
-                      type: ip
-                    - name: method
-                      type: keyword
-                    - name: path
-                      type: keyword
-                    - name: query
-                      type: text
-                    - name: userAgent
-                      type: text
-                - name: response
-                  type: group
-                  description: Response details
-                  fields:
-                    - name: statusCode
-                      type: integer
-                      description: HTTP response status code
-                    - name: body
-                      type: group
-                      fields:
-                        - name: id
-                          type: keyword
-                        - name: name
-                          type: keyword
-                        - name: sink
-                          type: group
-                          fields:
-                            - name: httpContentFormat
-                              type: keyword
-                            - name: httpContentType
-                              type: keyword
-                        - name: type
-                          type: keyword
-                          description: Protocol type
             - name: user_agent
               type: text
               description: User agent string from the client device that caused the event.
