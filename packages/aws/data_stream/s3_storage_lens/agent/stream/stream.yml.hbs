@@ -1,0 +1,101 @@
+metricsets: ["cloudwatch"]
+period: {{period}}
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
+{{#if credential_profile_name}}
+credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if shared_credential_file}}
+shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if role_arn}}
+role_arn: {{role_arn}}
+{{/if}}
+{{#if regions}}
+regions:
+{{#each regions as |region i|}}
+- {{region}}
+{{/each}}
+{{/if}}
+{{#if latency}}
+latency: {{latency}}
+{{/if}}
+{{#if proxy_url }}
+proxy_url: {{proxy_url}}
+{{/if}}
+metrics:
+- namespace: "AWS/S3/Storage-Lens"
+  statistic: ["Average"]
+processors:
+  - rename:
+      ignore_missing: true
+      fields:
+        - from: "aws.storage-lens.metrics.4xxErrors.avg"
+          to: "aws.s3_storage_lens.metrics.4xxErrors.avg"
+        - from: "aws.storage-lens.metrics.5xxErrors.avg"
+          to: "aws.s3_storage_lens.metrics.5xxErrors.avg"
+        - from: "aws.storage-lens.metrics.AllRequests.avg"
+          to: "aws.s3_storage_lens.metrics.AllRequests.avg"
+        - from: "aws.storage-lens.metrics.BytesDownloaded.avg"
+          to: "aws.s3_storage_lens.metrics.BytesDownloaded.avg"
+        - from: "aws.storage-lens.metrics.BytesUploaded.avg"
+          to: "aws.s3_storage_lens.metrics.BytesUploaded.avg"
+        - from: "aws.storage-lens.metrics.CurrentVersionObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.CurrentVersionObjectCount.avg"
+        - from: "aws.storage-lens.metrics.CurrentVersionStorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.CurrentVersionStorageBytes.avg"
+        - from: "aws.storage-lens.metrics.DeleteMarkerObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.DeleteMarkerObjectCount.avg"
+        - from: "aws.storage-lens.metrics.DeleteRequests.avg"
+          to: "aws.s3_storage_lens.metrics.DeleteRequests.avg"
+        - from: "aws.storage-lens.metrics.EncryptedObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.EncryptedObjectCount.avg"
+        - from: "aws.storage-lens.metrics.EncryptedStorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.EncryptedStorageBytes.avg"
+        - from: "aws.storage-lens.metrics.GetRequests.avg"
+          to: "aws.s3_storage_lens.metrics.GetRequests.avg"
+        - from: "aws.storage-lens.metrics.HeadRequests.avg"
+          to: "aws.s3_storage_lens.metrics.HeadRequests.avg"
+        - from: "aws.storage-lens.metrics.IncompleteMultipartUploadObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.IncompleteMultipartUploadObjectCount.avg"
+        - from: "aws.storage-lens.metrics.IncompleteMultipartUploadStorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.IncompleteMultipartUploadStorageBytes.avg"
+        - from: "aws.storage-lens.metrics.ListRequests.avg"
+          to: "aws.s3_storage_lens.metrics.ListRequests.avg"
+        - from: "aws.storage-lens.metrics.NonCurrentVersionObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.NonCurrentVersionObjectCount.avg"
+        - from: "aws.storage-lens.metrics.NonCurrentVersionStorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.NonCurrentVersionStorageBytes.avg"
+        - from: "aws.storage-lens.metrics.ObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.ObjectCount.avg"
+        - from: "aws.storage-lens.metrics.ObjectLockEnabledObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.ObjectLockEnabledObjectCount.avg"
+        - from: "aws.storage-lens.metrics.ObjectLockEnabledStorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.ObjectLockEnabledStorageBytes.avg"
+        - from: "aws.storage-lens.metrics.PostRequests.avg"
+          to: "aws.s3_storage_lens.metrics.PostRequests.avg"
+        - from: "aws.storage-lens.metrics.PutRequests.avg"
+          to: "aws.s3_storage_lens.metrics.PutRequests.avg"
+        - from: "aws.storage-lens.metrics.ReplicatedObjectCount.avg"
+          to: "aws.s3_storage_lens.metrics.ReplicatedObjectCount.avg"
+        - from: "aws.storage-lens.metrics.ReplicatedStorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.ReplicatedStorageBytes.avg"
+        - from: "aws.storage-lens.metrics.SelectRequests.avg"
+          to: "aws.s3_storage_lens.metrics.SelectRequests.avg"
+        - from: "aws.storage-lens.metrics.SelectReturnedBytes.avg"
+          to: "aws.s3_storage_lens.metrics.SelectReturnedBytes.avg"
+        - from: "aws.storage-lens.metrics.SelectScannedBytes.avg"
+          to: "aws.s3_storage_lens.metrics.SelectScannedBytes.avg"
+        - from: "aws.storage-lens.metrics.StorageBytes.avg"
+          to: "aws.s3_storage_lens.metrics.StorageBytes.avg"
+  - drop_fields:
+      ignore_missing: true
+      fields:
+        - "aws.storage-lens"
