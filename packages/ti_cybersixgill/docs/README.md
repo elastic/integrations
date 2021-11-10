@@ -1,14 +1,14 @@
 # Cybersixgill Webhook Integration
 
-This integration creates an HTTP listener that accepts incoming HTTP requests from Cybersixgill integration script.
+This integration creates an HTTP listener that accepts incoming HTTP requests from Cybersixgill integration script which retrieves indicators from [Cybersixgill Darkfeed](https://www.cybersixgill.com/products/darkfeed/).
 
 ## Logs
 
 ### Threat
 
-The Cybersixgill integration works together with a python script provided by Cybersixgill which usually runs on the same host or network as the elastic agent installation, polling the Cybersixgill API and forward the data to elastic agent over HTTP(s).
+The Cybersixgill integration works together with a python script provided by Cybersixgill which usually runs on the same host as the Elastic Agent, polling the Cybersixgill API using a scheduler like systemd, cron or Windows Task Scheduler, then forwards the results to Elastic Agent over HTTP(s) on the same host.
 
-The related python script can be retrieved from Github [Here](https://github.com/elastic/filebeat-cybersixgill-integration).
+All relevant documentation on how to install and configure the Python script is provided in the README section [Here](https://github.com/elastic/filebeat-cybersixgill-integration).
 
 **Exported fields**
 
@@ -95,14 +95,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-20T10:22:49.736Z",
+    "@timestamp": "2021-11-10T16:23:37.697Z",
     "agent": {
-        "ephemeral_id": "e48fb892-4644-4f05-9c9d-672e8eb0e2e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d82b04ab-bae2-4125-801e-51673b2dcd5c",
+        "ephemeral_id": "91f9698d-4b04-4bf5-b627-4828961d79f5",
+        "id": "a5953362-7087-485a-ae94-1a12e5b5a105",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "cybersixgill": {
         "actor": "IfOnlyYouKnew",
@@ -126,19 +125,18 @@ An example event for `threat` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "d82b04ab-bae2-4125-801e-51673b2dcd5c",
+        "id": "a5953362-7087-485a-ae94-1a12e5b5a105",
         "snapshot": true,
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_cybersixgill.threat",
-        "ingested": "2021-10-20T10:22:50Z",
+        "ingested": "2021-11-10T16:23:38Z",
         "kind": "enrichment",
         "original": "{\"cybersixgill\":{\"actor\":\"IfOnlyYouKnew\",\"feedname\":\"darkweb_vt_links\",\"mitre\":{\"description\":\"Mitre attack tactics and technique reference\"},\"title\":\"OpenCore [1.0.0] C# Source\",\"valid_from\":\"2021-06-06T06:39:31Z\",\"virustotal\":{\"pr\":\"none\",\"url\":\"https://virustotal.com/#/file/1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd\"}},\"event\":{\"severity\":70},\"tags\":[\"malicious-activity\",\"malware\",\"malicious\",\"Test capabilities\",\"Test signature detection for file upload/email filters\"],\"threat\":{\"indicator\":{\"confidence\":80,\"description\":\"Virustotal link that appeared on a dark web site, generally to show malware that is undetected\",\"file\":{\"hash\":{\"md5\":\"6279649f4e3a8e9f907080c154c34605\",\"sha1\":\"bd4e4bd96222c1570a99b8016eb0b59ca5c33100\",\"sha256\":\"1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd\"}},\"first_seen\":\"2021-06-07T00:40:52.134Z\",\"last_seen\":\"2021-06-07T00:40:52.134Z\",\"provider\":\"forum_mpgh\",\"reference\":\"https://portal.cybersixgill.com/#/search?q=_id:58f8623e1f18f5c5accf617ad282837dd469bd29\",\"type\":\"file\",\"url\":{\"full\":\"https://rapidgator.net/file/71827fac0618ea3b1192bb51d5cbff45/101.Woodworking.Tips.Complete.Book.A.Collection.Of.Easy.To.Follow.Projects.And.Plans.2021.pdf\"}},\"tactic\":{\"id\":\"TA0025\",\"name\":\"Test capabilities\",\"reference\":\"https://attack.mitre.org/tactics/TA0025/\"}}}",
         "severity": 70,
-        "timezone": "+00:00",
         "type": "indicator"
     },
     "input": {
