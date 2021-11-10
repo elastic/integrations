@@ -132,6 +132,24 @@ processors:
     target_field: auth0.logs.data.login.initiatedAt
     formats:
       - UNIX_MS
+- date:
+    if: "ctx.auth0.logs.data.type == 's' && ctx.auth0.logs.data.details.completedAt != null"
+    field: auth0.logs.data.details.completedAt
+    target_field: auth0.logs.data.login.completedAt
+    formats:
+      - UNIX_MS
+- convert:
+    if: "ctx.auth0.logs.data.type == 's'"
+    field: auth0.logs.data.details.elapsedTime
+    target_field: auth0.logs.data.login.elapsedTime
+    type: long
+    ignore_missing: true
+- convert:
+    if: "ctx.auth0.logs.data.type == 's'"
+    field: auth0.logs.data.details.stats.loginsCount
+    target_field: auth0.logs.data.login.stats.loginsCount
+    type: long
+    ignore_missing: true
 - remove:
     field: json
 on_failure:
