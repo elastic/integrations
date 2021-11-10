@@ -1,0 +1,87 @@
+---
+description: Initial pipeline for parsing Cybersixgill webhooks
+processors:
+  - drop:
+      if: ctx.json?.cybersixgill == null
+  - set:
+      field: ecs.version
+      value: "1.12.0"
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: threat
+  - set:
+      field: event.type
+      value: indicator
+  - rename:
+      field: json.cybersixgill
+      target_field: cybersixgill
+      ignore_missing: true
+  - rename:
+      field: json.threat
+      target_field: threat
+      ignore_missing: true
+  - rename:
+      field: json.tags
+      target_field: _temp_.tags
+      ignore_missing: true
+  - rename:
+      field: json.event.severity
+      target_field: event.severity
+      ignore_missing: true
+  - foreach:
+      field: _temp_.tags
+      processor:
+        append:
+          field: tags
+          value: "{{_ingest._value}}"
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp_?.tags != null
+  - uri_parts:
+      field: threat.indicator.url.full
+      target_field: threat.indicator.url
+      keep_original: true
+      ignore_failure: true
+      if: ctx.threat?.indicator?.url?.full != null
+  - script:
+      lang: painless
+      if: ctx.threat?.indicator?.confidence != null
+      description: >
+        Normalize confidence level.
+      source: >
+        def value = ctx.threat.indicator.confidence;
+        if (value <= 0.0 || value > 100.0) {
+          ctx.threat.indicator.confidence = "None";
+          return;
+        }
+        if (value >= 1.0 && value <= 29.0) {
+          ctx.threat.indicator.confidence = "Low";
+          return;
+        }
+        if (value >= 30.0 && value <= 69.0) {
+          ctx.threat.indicator.confidence = "Med";
+          return;
+        }
+        if (value >= 70 && value <= 100) {
+          ctx.threat.indicator.confidence = "High";
+          return;
+        }
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _temp_
+        - json
+        - message
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
