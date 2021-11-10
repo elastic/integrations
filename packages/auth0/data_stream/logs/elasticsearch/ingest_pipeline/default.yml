@@ -126,7 +126,12 @@ processors:
          def descr = v[1];
          ctx.event.category = category;
          ctx.event.action = descr;
- 
+- date:
+    if: "ctx.auth0.logs.data.type == 's' && ctx.auth0.logs.data.details.initiatedAt != null"
+    field: auth0.logs.data.details.initiatedAt
+    target_field: auth0.logs.data.login.initiatedAt
+    formats:
+      - UNIX_MS
 - remove:
     field: json
 on_failure:
