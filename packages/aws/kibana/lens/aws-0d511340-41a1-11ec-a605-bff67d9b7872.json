@@ -7,7 +7,8 @@
                     "layers": {
                         "eab1960c-2b9a-4e4a-9380-c29e91cbb47f": {
                             "columnOrder": [
-                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236f"
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236f",
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236fX0"
                             ],
                             "columns": {
                                 "b7788a69-bb42-4dc4-b7a0-dfc01d99236f": {
@@ -15,6 +16,25 @@
                                     "dataType": "number",
                                     "isBucketed": false,
                                     "label": "Buckets",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "formula": "unique_count(aws.dimensions.bucket_name, kql='not aws.dimensions.storage_class : \"-\" ')",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "b7788a69-bb42-4dc4-b7a0-dfc01d99236fX0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236fX0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "not aws.dimensions.storage_class : \"-\" "
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of unique_count(aws.dimensions.bucket_name, kql='not aws.dimensions.storage_class : \"-\" ')",
                                     "operationType": "unique_count",
                                     "scale": "ratio",
                                     "sourceField": "aws.dimensions.bucket_name"

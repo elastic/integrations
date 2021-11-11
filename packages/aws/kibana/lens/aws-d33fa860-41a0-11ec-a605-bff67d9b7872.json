@@ -8,9 +8,7 @@
                         "eab1960c-2b9a-4e4a-9380-c29e91cbb47f": {
                             "columnOrder": [
                                 "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0",
-                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X0",
-                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X1",
-                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X2"
+                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X0"
                             ],
                             "columns": {
                                 "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0": {
@@ -20,59 +18,26 @@
                                     "label": "Object Count",
                                     "operationType": "formula",
                                     "params": {
-                                        "formula": "sum(aws.s3_storage_lens.metrics.ObjectCount.avg)\n-\nsum(aws.s3_storage_lens.metrics.ObjectCount.avg, shift='1d')",
+                                        "formula": "sum(aws.s3_storage_lens.metrics.ObjectCount.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" ')",
                                         "isFormulaBroken": false
                                     },
                                     "references": [
-                                        "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X2"
+                                        "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X0"
                                     ],
                                     "scale": "ratio"
                                 },
                                 "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X0": {
                                     "customLabel": true,
                                     "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" "
+                                    },
                                     "isBucketed": false,
                                     "label": "Part of Object Count",
                                     "operationType": "sum",
                                     "scale": "ratio",
                                     "sourceField": "aws.s3_storage_lens.metrics.ObjectCount.avg"
-                                },
-                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X1": {
-                                    "customLabel": true,
-                                    "dataType": "number",
-                                    "isBucketed": false,
-                                    "label": "Part of Object Count",
-                                    "operationType": "sum",
-                                    "scale": "ratio",
-                                    "sourceField": "aws.s3_storage_lens.metrics.ObjectCount.avg",
-                                    "timeShift": "1d"
-                                },
-                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X2": {
-                                    "customLabel": true,
-                                    "dataType": "number",
-                                    "isBucketed": false,
-                                    "label": "Part of Object Count",
-                                    "operationType": "math",
-                                    "params": {
-                                        "tinymathAst": {
-                                            "args": [
-                                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X0",
-                                                "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X1"
-                                            ],
-                                            "location": {
-                                                "max": 111,
-                                                "min": 0
-                                            },
-                                            "name": "subtract",
-                                            "text": "sum(aws.s3_storage_lens.metrics.ObjectCount.avg)\n-\nsum(aws.s3_storage_lens.metrics.ObjectCount.avg, shift='1d')",
-                                            "type": "function"
-                                        }
-                                    },
-                                    "references": [
-                                        "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X0",
-                                        "e7f0d2ee-3ff1-463f-9b94-c9f93296d0e0X1"
-                                    ],
-                                    "scale": "ratio"
                                 }
                             },
                             "incompleteColumns": {}

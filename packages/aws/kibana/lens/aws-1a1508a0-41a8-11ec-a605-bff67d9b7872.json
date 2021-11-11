@@ -9,7 +9,9 @@
                             "columnOrder": [
                                 "e9704a86-fb68-4316-b885-42328390c6c0",
                                 "a80c40e7-af1b-4ac9-ba2e-baa7c13a729a",
-                                "d3578c4c-8e60-4bb8-9295-72b90c88d168"
+                                "d3578c4c-8e60-4bb8-9295-72b90c88d168",
+                                "a80c40e7-af1b-4ac9-ba2e-baa7c13a729aX0",
+                                "d3578c4c-8e60-4bb8-9295-72b90c88d168X0"
                             ],
                             "columns": {
                                 "a80c40e7-af1b-4ac9-ba2e-baa7c13a729a": {
@@ -17,15 +19,32 @@
                                     "dataType": "number",
                                     "isBucketed": false,
                                     "label": "Total Storage",
-                                    "operationType": "sum",
+                                    "operationType": "formula",
                                     "params": {
                                         "format": {
                                             "id": "bytes",
                                             "params": {
                                                 "decimals": 2
                                             }
-                                        }
+                                        },
+                                        "formula": "sum(aws.s3_storage_lens.metrics.StorageBytes.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" ')",
+                                        "isFormulaBroken": false
                                     },
+                                    "references": [
+                                        "a80c40e7-af1b-4ac9-ba2e-baa7c13a729aX0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "a80c40e7-af1b-4ac9-ba2e-baa7c13a729aX0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" "
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of Total Storage",
+                                    "operationType": "sum",
                                     "scale": "ratio",
                                     "sourceField": "aws.s3_storage_lens.metrics.StorageBytes.avg"
                                 },
@@ -33,7 +52,26 @@
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
-                                    "label": "Object Count",
+                                    "label": "Storage Count",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "formula": "sum(aws.s3_storage_lens.metrics.ObjectCount.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" ')",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "d3578c4c-8e60-4bb8-9295-72b90c88d168X0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "d3578c4c-8e60-4bb8-9295-72b90c88d168X0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" "
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of Storage Count",
                                     "operationType": "sum",
                                     "scale": "ratio",
                                     "sourceField": "aws.s3_storage_lens.metrics.ObjectCount.avg"
@@ -112,11 +150,11 @@
                         "xAccessor": "e9704a86-fb68-4316-b885-42328390c6c0",
                         "yConfig": [
                             {
-                                "axisMode": "right",
+                                "axisMode": "auto",
                                 "forAccessor": "d3578c4c-8e60-4bb8-9295-72b90c88d168"
                             },
                             {
-                                "axisMode": "left",
+                                "axisMode": "auto",
                                 "color": "#e7664c",
                                 "forAccessor": "a80c40e7-af1b-4ac9-ba2e-baa7c13a729a"
                             }
@@ -135,10 +173,10 @@
                 },
                 "valueLabels": "hide",
                 "yLeftExtent": {
-                    "mode": "full"
+                    "mode": "dataBounds"
                 },
                 "yRightExtent": {
-                    "mode": "full"
+                    "mode": "dataBounds"
                 }
             }
         },
