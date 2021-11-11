@@ -1,0 +1,208 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "af6bd20f-099d-4817-a951-99bcba7e1752": {
+                            "columnOrder": [
+                                "6af18f84-7f98-4aec-88d2-51eb0e177fa7",
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0",
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0X0",
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0X1",
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0X2"
+                            ],
+                            "columns": {
+                                "6af18f84-7f98-4aec-88d2-51eb0e177fa7": {
+                                    "dataType": "date",
+                                    "isBucketed": true,
+                                    "label": "@timestamp",
+                                    "operationType": "date_histogram",
+                                    "params": {
+                                        "interval": "1d"
+                                    },
+                                    "scale": "interval",
+                                    "sourceField": "@timestamp"
+                                },
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "% Current Version Bytes",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "format": {
+                                            "id": "percent",
+                                            "params": {
+                                                "decimals": 2
+                                            }
+                                        },
+                                        "formula": "divide(sum(aws.s3_storage_lens.metrics.CurrentVersionStorageBytes.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" '), sum(aws.s3_storage_lens.metrics.StorageBytes.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" '))",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "f13847d9-f404-41a8-8e17-12b47d683bd0X2"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0X0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" "
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of % Current Version Bytes",
+                                    "operationType": "sum",
+                                    "scale": "ratio",
+                                    "sourceField": "aws.s3_storage_lens.metrics.CurrentVersionStorageBytes.avg"
+                                },
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0X1": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" "
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of % Current Version Bytes",
+                                    "operationType": "sum",
+                                    "scale": "ratio",
+                                    "sourceField": "aws.s3_storage_lens.metrics.StorageBytes.avg"
+                                },
+                                "f13847d9-f404-41a8-8e17-12b47d683bd0X2": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of % Current Version Bytes",
+                                    "operationType": "math",
+                                    "params": {
+                                        "tinymathAst": {
+                                            "args": [
+                                                "f13847d9-f404-41a8-8e17-12b47d683bd0X0",
+                                                "f13847d9-f404-41a8-8e17-12b47d683bd0X1"
+                                            ],
+                                            "location": {
+                                                "max": 302,
+                                                "min": 0
+                                            },
+                                            "name": "divide",
+                                            "text": "divide(sum(aws.s3_storage_lens.metrics.CurrentVersionStorageBytes.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" '), sum(aws.s3_storage_lens.metrics.StorageBytes.avg, kql='aws.dimensions.record_type : \"ACCOUNT\" and not aws.dimensions.storage_class : \"-\" '))",
+                                            "type": "function"
+                                        }
+                                    },
+                                    "references": [
+                                        "f13847d9-f404-41a8-8e17-12b47d683bd0X0",
+                                        "f13847d9-f404-41a8-8e17-12b47d683bd0X1"
+                                    ],
+                                    "scale": "ratio"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": {
+                            "query": "aws.s3_storage_lens"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "data_stream.dataset": "aws.s3_storage_lens"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": ""
+            },
+            "visualization": {
+                "axisTitlesVisibilitySettings": {
+                    "x": true,
+                    "yLeft": true,
+                    "yRight": true
+                },
+                "fittingFunction": "None",
+                "gridlinesVisibilitySettings": {
+                    "x": true,
+                    "yLeft": true,
+                    "yRight": true
+                },
+                "labelsOrientation": {
+                    "x": 0,
+                    "yLeft": 0,
+                    "yRight": 0
+                },
+                "layers": [
+                    {
+                        "accessors": [
+                            "f13847d9-f404-41a8-8e17-12b47d683bd0"
+                        ],
+                        "layerId": "af6bd20f-099d-4817-a951-99bcba7e1752",
+                        "layerType": "data",
+                        "seriesType": "line",
+                        "xAccessor": "6af18f84-7f98-4aec-88d2-51eb0e177fa7"
+                    }
+                ],
+                "legend": {
+                    "isVisible": true,
+                    "position": "right"
+                },
+                "preferredSeriesType": "line",
+                "tickLabelsVisibilitySettings": {
+                    "x": true,
+                    "yLeft": true,
+                    "yRight": true
+                },
+                "valueLabels": "hide",
+                "yLeftExtent": {
+                    "mode": "full"
+                },
+                "yRightExtent": {
+                    "mode": "full"
+                }
+            }
+        },
+        "title": "S3 Storage Lens Percentage Current Version Bytes [AWS Metrics]",
+        "visualizationType": "lnsXY"
+    },
+    "coreMigrationVersion": "7.15.0",
+    "id": "aws-9fb44b60-41b2-11ec-a605-bff67d9b7872",
+    "migrationVersion": {
+        "lens": "7.15.0"
+    },
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "indexpattern-datasource-layer-af6bd20f-099d-4817-a951-99bcba7e1752",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}
