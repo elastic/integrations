@@ -1,8 +1,8 @@
 name: azure
 title: Azure Logs
-version: 0.10.1
+version: 0.11.0
 release: beta
-description: Collect and parse logs from Azure cloud with Elastic Agent.
+description: This Elastic integration collects logs from Azure
 type: integration
 icons:
   - src: /img/azure_logs_logo.png
@@ -17,7 +17,7 @@ categories:
   - network
   - security
 conditions:
-  kibana.version: ^7.14.0
+  kibana.version: ^7.16.0
 screenshots:
   - src: /img/filebeat-azure-overview.png
     title: filebeat azure overview
@@ -30,7 +30,6 @@ vars:
     multi: false
     required: true
     show_user: true
-    default: insights-operational-logs
   - name: consumer_group
     type: text
     title: Consumer Group
@@ -63,9 +62,29 @@ vars:
     required: false
     show_user: true
 policy_templates:
+  - name: eventhub
+    title: Azure Event Hub Input
+    description: Azure Event Hub input integration
+    data_streams:
+      - eventhub
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect events Event Hub"
+        description: "Collecting events from Azure eventhub inputs (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/eventhub.png
+        title: logo azure
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/filebeat-azure-overview.png
+        title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
   - name: adlogs
-    title: Azure Active Directory Logs
-    description: Collect and parse sign-in and audit logs from Azure Active Directory with Elastic Agent.
+    title: Azure Active Directory logs
+    description: Azure Directory logs integration
     data_streams:
       - auditlogs
       - signinlogs
@@ -85,8 +104,8 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: platformlogs
-    title: Azure Platform Logs
-    description: Collect and parse platform logs from Azure cloud with Elastic Agent.
+    title: Azure platform logs
+    description: Azure platform logs integration
     data_streams:
       - platformlogs
     inputs:
@@ -105,8 +124,8 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: activitylogs
-    title: Azure Activity Logs
-    description: Collect and parse activity logs from Azure cloud with Elastic Agent.
+    title: Azure activity logs
+    description: Azure activity logs integration
     data_streams:
       - activitylogs
     inputs:
@@ -125,8 +144,8 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: springcloudlogs
-    title: Azure Spring Cloud Logs
-    description: Collect and parse logs from Azure Spring Cloud with Elastic Agent.
+    title: Azure Spring Cloud logs
+    description: Azure Spring Cloud logs integration
     data_streams:
       - springcloudlogs
     inputs:

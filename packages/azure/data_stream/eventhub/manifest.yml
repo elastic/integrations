@@ -1,0 +1,50 @@
+type: logs
+title: Azure Event Hub Input
+release: beta
+streams:
+  - input: "azure-eventhub"
+    template_path: "stream.yml.hbs"
+    title: "Azure Eventhub Input"
+    description: "Collect Azure events using azure-eventhub input"
+    vars:
+      - name: parse_message
+        type: bool
+        title: Parse azure message
+        description: Apply minimal json parsing of the message, extracting resource details for fields as `resourceId`, `time` if found.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: data_stream.dataset
+        required: true
+        default: azure.eventhub
+        title: Dataset name
+        description: >
+          Set the name for your dataset. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+
+        type: text
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - azure-eventhub
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false

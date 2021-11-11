@@ -1,0 +1,39 @@
+{{#if connection_string}}
+connection_string: {{connection_string}}
+{{/if}}
+{{#if eventhub}}
+eventhub: {{eventhub}}
+storage_account_container: azure-eventhub-input-{{eventhub}}
+{{/if}}
+{{#if consumer_group}}
+consumer_group: {{consumer_group}}
+{{/if}}
+{{#if storage_account}}
+storage_account: {{storage_account}}
+{{/if}}
+{{#if storage_account_key}}
+storage_account_key: {{storage_account_key}}
+{{/if}}
+{{#if resource_manager_endpoint}}
+resource_manager_endpoint: {{resource_manager_endpoint}}
+{{/if}}
+data_stream:
+    dataset: {{data_stream.dataset}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if parse_message}}
+  - parse_message
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
