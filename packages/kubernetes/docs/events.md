@@ -115,7 +115,7 @@ An example event for `event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -141,7 +141,7 @@ An example event for `event` looks as following:
 | kubernetes.event.involved_object.kind | API kind of the object | keyword |  |
 | kubernetes.event.involved_object.name | name of the object | keyword |  |
 | kubernetes.event.involved_object.resource_version | resource version of the object | keyword |  |
-| kubernetes.event.involved_object.uid | UUID version of the object | keyword |  |
+| kubernetes.event.involved_object.uid | uid version of the object | keyword |  |
 | kubernetes.event.message | Message recorded for the given event | text |  |
 | kubernetes.event.metadata.generate_name | Generate name of the event | keyword |  |
 | kubernetes.event.metadata.name | Name of the event | keyword |  |
@@ -157,7 +157,10 @@ An example event for `event` looks as following:
 | kubernetes.event.timestamp.last_occurrence | Timestamp of last occurrence of event | date |  |
 | kubernetes.event.type | Type of the given event | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -168,4 +171,4 @@ An example event for `event` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
-| service.type | Service type | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |

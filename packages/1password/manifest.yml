@@ -1,0 +1,72 @@
+format_version: 1.0.0
+name: 1password
+title: "1Password Events Reporting"
+version: 0.1.1
+license: basic
+description: Collect events from 1Password Events API with Elastic Agent.
+type: integration
+categories:
+  - security
+release: beta
+conditions:
+  kibana.version: "^7.16.0"
+screenshots:
+  - src: /img/1password-signinattempts-screenshot.png
+    title: Sign-in attempts
+    size: 1918x963
+    type: image/png
+  - src: /img/1password-itemusages-screenshot.png
+    title: Item usages
+    size: 1916x965
+    type: image/png
+icons:
+  - src: /img/1password-logo-light-bg.svg
+    title: 1Password
+    size: 116x116
+    type: image/svg+xml
+policy_templates:
+  - name: 1password
+    title: 1Password Events
+    description: Collect events from 1Password Events Reporting
+    inputs:
+      - type: httpjson
+        title: Collect events from 1Password Events API
+        description: Collect sign-in attempt and item usages from 1Password via the 1Password Events API
+        vars:
+          - name: url
+            type: text
+            title: URL of 1Password Events API Server
+            description: |
+              options: https://events.1password.com, https://events.1password.ca, https://events.1password.eu, https://events.ent.1password.com. path is automatic
+            show_user: true
+            required: true
+            default: https://events.1password.com
+          - name: token
+            type: password
+            title: 1Password Authorization Token
+            description: |
+              Bearer Token, e.g. "eyJhbGciO..."
+            show_user: true
+            required: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-external-integrations

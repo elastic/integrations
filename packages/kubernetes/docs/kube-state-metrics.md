@@ -114,11 +114,11 @@ An example event for `state_container` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
 | container.name | Container name. | keyword |  |  |
-| container.runtime | Runtime managing this container | keyword |  |  |
+| container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -152,7 +152,10 @@ An example event for `state_container` looks as following:
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -163,8 +166,8 @@ An example event for `state_container` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_cronjob
@@ -264,7 +267,7 @@ An example event for `state_cronjob` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -295,7 +298,10 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.cronjob.schedule | Cronjob schedule | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -306,8 +312,8 @@ An example event for `state_cronjob` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_daemonset
@@ -403,7 +409,7 @@ An example event for `state_daemonset` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -430,7 +436,10 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.daemonset.replicas.unavailable | The number of unavailable replicas per DaemonSet | long | gauge |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -441,8 +450,8 @@ An example event for `state_daemonset` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### state_deployment
@@ -539,7 +548,7 @@ An example event for `state_deployment` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -566,7 +575,10 @@ An example event for `state_deployment` looks as following:
 | kubernetes.deployment.replicas.unavailable | Deployment unavailable replicas | integer | gauge |
 | kubernetes.deployment.replicas.updated | Deployment updated replicas | integer | gauge |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -577,8 +589,8 @@ An example event for `state_deployment` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### state_job
@@ -684,7 +696,7 @@ An example event for `state_job` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -719,7 +731,10 @@ An example event for `state_job` looks as following:
 | kubernetes.job.time.completed | The time at which the job completed | date |  |
 | kubernetes.job.time.created | The time at which the job was created | date |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -730,8 +745,8 @@ An example event for `state_job` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### state_node
@@ -853,7 +868,7 @@ An example event for `state_node` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -875,7 +890,10 @@ An example event for `state_node` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.cpu.allocatable.cores | Node CPU allocatable cores | float |  | gauge |
 | kubernetes.node.cpu.capacity.cores | Node CPU capacity cores | long |  | gauge |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
@@ -898,8 +916,8 @@ An example event for `state_node` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_persistentvolume
@@ -993,7 +1011,7 @@ An example event for `state_persistentvolume` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1015,7 +1033,10 @@ An example event for `state_persistentvolume` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolume.capacity.bytes | Volume capacity | long | byte | gauge |
@@ -1030,8 +1051,8 @@ An example event for `state_persistentvolume` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_persistentvolumeclaim
@@ -1125,7 +1146,7 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1147,7 +1168,10 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.persistentvolumeclaim.access_mode | Access mode. | keyword |  |  |
@@ -1164,8 +1188,8 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_pod
@@ -1265,11 +1289,11 @@ An example event for `state_pod` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container | keyword |
+| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1292,7 +1316,10 @@ An example event for `state_pod` looks as following:
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.host_ip | Kubernetes pod host IP | ip |
@@ -1307,8 +1334,8 @@ An example event for `state_pod` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### state_replicaset
@@ -1411,7 +1438,7 @@ An example event for `state_replicaset` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -1433,7 +1460,10 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -1449,8 +1479,8 @@ An example event for `state_replicaset` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### state_resourcequota
@@ -1540,7 +1570,7 @@ An example event for `state_resourcequota` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -1562,7 +1592,10 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
@@ -1578,8 +1611,8 @@ An example event for `state_resourcequota` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### state_service
@@ -1675,7 +1708,7 @@ An example event for `state_service` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1697,7 +1730,10 @@ An example event for `state_service` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |
@@ -1705,7 +1741,7 @@ An example event for `state_service` looks as following:
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | kubernetes.selectors.\* | Kubernetes Service selectors map | object |
-| kubernetes.service.cluster_ip | Internal IP for the service. | ip |
+| kubernetes.service.cluster_ip | Internal IP for the service. | keyword |
 | kubernetes.service.created | Service creation date | date |
 | kubernetes.service.external_ip | Service external IP | keyword |
 | kubernetes.service.external_name | Service external DNS name | keyword |
@@ -1717,8 +1753,8 @@ An example event for `state_service` looks as following:
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### state_statefulset
@@ -1813,7 +1849,7 @@ An example event for `state_statefulset` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version | keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -1835,7 +1871,10 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
@@ -1852,8 +1891,8 @@ An example event for `state_statefulset` looks as following:
 | kubernetes.statefulset.replicas.ready | The number of ready replicas per StatefulSet | long | gauge |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
-| service.address | Service address | keyword |  |
-| service.type | Service type | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### state_storageclass
@@ -1946,7 +1985,7 @@ An example event for `state_storageclass` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -1968,7 +2007,10 @@ An example event for `state_storageclass` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
-| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |
+| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |
+| kubernetes.namespace.name | Kubernetes namespace name | keyword |
+| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |
 | kubernetes.node.name | Kubernetes node name | keyword |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |
@@ -1984,5 +2026,5 @@ An example event for `state_storageclass` looks as following:
 | kubernetes.storageclass.volume_binding_mode | Mode for default provisioning and binding | keyword |
 | orchestrator.cluster.name | Name of the cluster. | keyword |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
