@@ -95,7 +95,7 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | sqlserver.audit.sequence_number | Tracks the sequence of records within a single audit record  that was too large to fit in the write buffer for audits. | integer |
 | sqlserver.audit.server_instance_name | "Name of the server instance where the audit occurred. Uses the standard machine\\instance format." | text |
 | sqlserver.audit.server_principal_id | ID of the login context that the action is performed in. | keyword |
-| sqlserver.audit.server_principal_name | Current login. | text |
+| sqlserver.audit.server_principal_name | Current login. | keyword |
 | sqlserver.audit.server_principal_sid | Current login SID. | text |
 | sqlserver.audit.session_id | ID of the session on which the event occurred. | integer |
 | sqlserver.audit.session_server_principal_name | Server principal for the session. | text |
