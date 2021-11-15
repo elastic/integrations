@@ -59,9 +59,10 @@ processors:
     target_field: vulnerability.id
     ignore_missing: true
     if: ctx?.vulnerability?.id == null && ctx?.snyk?.vulnerabilities?.identifiers?.ALTERNATIVE != null
-- rename:
+- convert:
     field: snyk.vulnerabilities.cvssScore
     target_field: vulnerability.score.base
+    type: float
     ignore_missing: true
 - rename:
     field: snyk.vulnerabilities.severity
@@ -194,6 +195,7 @@ processors:
 - remove:
     field:
     - message
+    - snyk.vulnerabilities.cvssScore
     ignore_missing: true
 on_failure:
 - set:

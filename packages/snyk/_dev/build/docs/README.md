@@ -13,3 +13,10 @@ To configure access to the Snyk Audit Log API you will have to generate an API a
 {{event "audit"}}
 
 {{fields "audit"}}
+
+## Vulnerabilities
+
+{{event "vulnerabilities"}}
+
+{{fields "vulnerabilities"}}
+
