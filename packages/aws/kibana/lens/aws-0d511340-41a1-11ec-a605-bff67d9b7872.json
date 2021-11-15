@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "eab1960c-2b9a-4e4a-9380-c29e91cbb47f": {
+                            "columnOrder": [
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236f",
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236fX0"
+                            ],
+                            "columns": {
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236f": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Buckets",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "formula": "unique_count(aws.dimensions.bucket_name, kql='not aws.dimensions.storage_class : \"-\" ')",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "b7788a69-bb42-4dc4-b7a0-dfc01d99236fX0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "b7788a69-bb42-4dc4-b7a0-dfc01d99236fX0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "not aws.dimensions.storage_class : \"-\" "
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of unique_count(aws.dimensions.bucket_name, kql='not aws.dimensions.storage_class : \"-\" ')",
+                                    "operationType": "unique_count",
+                                    "scale": "ratio",
+                                    "sourceField": "aws.dimensions.bucket_name"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": {
+                            "query": "aws.s3_storage_lens"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "data_stream.dataset": "aws.s3_storage_lens"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": ""
+            },
+            "visualization": {
+                "accessor": "b7788a69-bb42-4dc4-b7a0-dfc01d99236f",
+                "layerId": "eab1960c-2b9a-4e4a-9380-c29e91cbb47f",
+                "layerType": "data"
+            }
+        },
+        "title": "S3 Storage Lens Buckets [Metrics AWS]",
+        "visualizationType": "lnsMetric"
+    },
+    "coreMigrationVersion": "7.15.0",
+    "id": "aws-0d511340-41a1-11ec-a605-bff67d9b7872",
+    "migrationVersion": {
+        "lens": "7.15.0"
+    },
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "indexpattern-datasource-layer-eab1960c-2b9a-4e4a-9380-c29e91cbb47f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}
