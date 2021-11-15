@@ -51,6 +51,12 @@ The integration contains the following data streams:
 
 `period`:: (_string_) The time interval to use when retrieving metric values.
 
+`billing_scope_department`:: (_string_) Retrieve usage details based on the department scope.
+
+`billing_scope_account_id`:: (_string_) Retrieve usage details based on the billing account ID scope.
+
+If none of the 2 options are entered then the subscription ID will be used as scope.
+
 
 ## Additional notes about metrics and costs
 
