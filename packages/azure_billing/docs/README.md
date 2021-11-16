@@ -49,11 +49,11 @@ The integration contains the following data streams:
 
 #### Configuration options
 
-`period`:: (_string_) The time interval to use when retrieving metric values.
+`Period`:: (_string_) The time interval to use when retrieving metric values.
 
-`billing_scope_department`:: (_string_) Retrieve usage details based on the department scope.
+`Billing Scope Department`:: (_string_) Retrieve usage details based on the department scope.
 
-`billing_scope_account_id`:: (_string_) Retrieve usage details based on the billing account ID scope.
+`Billing Scope Account Id`:: (_string_) Retrieve usage details based on the billing account ID scope.
 
 If none of the 2 options are entered then the subscription ID will be used as scope.
 
@@ -70,22 +70,27 @@ An example event for `billing` looks as following:
     "agent": {
         "hostname": "docker-fleet-agent",
         "name": "docker-fleet-agent",
-        "id": "d979a8cf-ddeb-458f-9019-389414e0ab47",
-        "ephemeral_id": "4162d5df-ab00-4c1b-b4f3-7db2e3b599d4",
+        "id": "ac0aba17-80ba-472c-a850-25b8eee31b4a",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "ephemeral_id": "00acbc2a-2f96-4c8a-99fe-790f724e9b9e",
+        "version": "7.15.3"
     },
     "elastic_agent": {
-        "id": "d979a8cf-ddeb-458f-9019-389414e0ab47",
-        "version": "7.15.0",
+        "id": "ac0aba17-80ba-472c-a850-25b8eee31b4a",
+        "version": "7.15.3",
         "snapshot": true
     },
     "cloud": {
-        "provider": "azure"
+        "instance": {
+            "name": "alextest223",
+            "id": "/subscriptions/7657426d-c4c3-44ac-88a2-3b2cd59e6dba/resourceGroups/alex-test-resources/providers/Microsoft.Storage/storageAccounts/testthis"
+        },
+        "provider": "azure",
+        "region": "CentralUS"
     },
-    "@timestamp": "2021-08-23T14:37:42.268Z",
+    "@timestamp": "2021-11-16T14:53:50.309Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "1.11.0"
     },
     "service": {
         "type": "azure"
@@ -93,7 +98,7 @@ An example event for `billing` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "azure.app_insights"
+        "dataset": "azure.billing"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -101,47 +106,49 @@ An example event for `billing` looks as following:
             "kernel": "4.19.128-microsoft-standard",
             "codename": "Core",
             "name": "CentOS Linux",
-            "family": "redhat",
             "type": "linux",
+            "family": "redhat",
             "version": "7 (Core)",
             "platform": "centos"
         },
         "containerized": true,
         "ip": [
-            "192.168.96.7"
+            "192.168.16.7"
         ],
         "name": "docker-fleet-agent",
-        "id": "1642d255f9a32fc6926cddf21bb0d5d3",
+        "id": "0e45dc0f765dee79aa8992abcd05b189",
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02:42:c0:a8:10:07"
         ],
         "architecture": "x86_64"
     },
     "metricset": {
-        "period": 300000,
-        "name": "app_insights"
+        "period": 86400000,
+        "name": "billing"
     },
     "event": {
-        "duration": 503187300,
+        "duration": 37147626300,
         "agent_id_status": "verified",
-        "ingested": "2021-08-23T14:37:41Z",
+        "ingested": "2021-11-16T14:53:51Z",
         "module": "azure",
-        "dataset": "azure.app_insights"
+        "dataset": "azure.billing"
     },
     "azure": {
-        "app_insights": {
-            "end_date": "2021-08-23T14:37:42.268Z",
-            "start_date": "2021-08-23T14:32:42.268Z"
+        "subscription_id": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
+        "resource": {
+            "name": "testthis",
+            "type": "Microsoft.Storage",
+            "group": "alex-test-resources"
         },
-        "metrics": {
-            "requests_count": {
-                "sum": 4
-            }
-        },
-        "application_id": "42cb59a9-d5be-400b-a5c4-69b0a0026ac6",
-        "dimensions": {
-            "request_name": "GET Home/Index",
-            "request_url_host": "demoappobs.azurewebsites.net"
+        "billing": {
+            "product": "Bandwidth Inter-Region - Data Transfer Out - North America",
+            "pretax_cost": "0.000002327970961",
+            "usage_start": "2021-11-15T00:00:00.000Z",
+            "usage_end": "2021-11-15T23:59:59.000Z",
+            "department_name": "DEpartment",
+            "account_name": "R\u0026D",
+            "currency": "USD",
+            "billing_period_id": "/subscriptions/7657426d-c4c3-44ac-88a2-3b2cd59e6dba/providers/Microsoft.Billing/billingPeriods/20211101"
         }
     }
 }
