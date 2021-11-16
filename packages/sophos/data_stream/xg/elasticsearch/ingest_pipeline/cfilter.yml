@@ -125,14 +125,21 @@ processors:
 #####################
 - rename:
     field: sophos.xg.url
-    target_field: url.full
+    target_field: url.original
     ignore_missing: true
-    if: "ctx.sophos?.xg?.url != null"
+- uri_parts:
+    field: url.original
+    target_field: url
+    if: "ctx.url?.original != null"
+- set:
+    field: url.full
+    copy_from: url.original
+    ignore_empty_value: true
 - rename:
     field: sophos.xg.domain
     target_field: url.domain
     ignore_missing: true
-    if: "ctx.sophos?.xg?.domain != null"
+    if: ctx.url?.domain == null
 
 ############################
 ## ECS User Agent Mapping ##
@@ -148,11 +155,20 @@ processors:
     type: long
     ignore_missing: true
     if: "ctx.sophos?.xg?.status_code != null && ctx.sophos?.xg?.status_code != ''"
+- convert:
+    field: sophos.xg.http_status
+    target_field: http.response.status_code
+    type: long
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.http_status != null && ctx.sophos?.xg?.http_status != '' && ctx.sophos?.xg?.http_status != '0'"
 - rename:
     field: sophos.xg.user_agent
     target_field: user_agent.original
     ignore_missing: true
-    if: "ctx.sophos?.xg?.user_agent != null"
+- user_agent:
+    field: user_agent.original
+    target_field: user_agent
+    ignore_missing: true
 
 #############################
 ## ECS Network/Geo Mapping ##
@@ -268,8 +284,9 @@ processors:
     field:
     - sophos.xg.dst_port
     - sophos.xg.src_port
-    - sophos.xg.recv_bytes
-    - sophos.xg.sent_bytes
+    - sophos.xg.domain
+    - sophos.xg.http_status
+    - sophos.xg.http_user_agent
     ignore_missing: true
 on_failure:
 - set:

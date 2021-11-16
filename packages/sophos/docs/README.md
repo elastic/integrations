@@ -1039,6 +1039,7 @@ An example event for `xg` looks as following:
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -1071,7 +1072,13 @@ An example event for `xg` looks as following:
 | sophos.xg.action | Event Action | keyword |
 | sophos.xg.activityname | Web policy activity that matched and caused the policy result. | keyword |
 | sophos.xg.ap | ap | keyword |
+| sophos.xg.app_category | Name of the category under which application falls | keyword |
+| sophos.xg.app_filter_policy_id | Application filter policy ID applied on the traffic | keyword |
 | sophos.xg.app_is_cloud | Application is Cloud | keyword |
+| sophos.xg.app_name | Application name | keyword |
+| sophos.xg.app_resolved_by | Application is resolved by signature or synchronized application | keyword |
+| sophos.xg.app_risk | Risk level assigned to the application | keyword |
+| sophos.xg.app_technology | Technology of the application | keyword |
 | sophos.xg.appfilter_policy_id | Application Filter policy applied on the traffic | integer |
 | sophos.xg.application | Application name | keyword |
 | sophos.xg.application_category | Application is resolved by signature or synchronized application | keyword |
@@ -1092,12 +1099,14 @@ An example event for `xg` looks as following:
 | sophos.xg.client_physical_address | Client physical address | keyword |
 | sophos.xg.clients_conn_ssid | clients connection ssid | keyword |
 | sophos.xg.collisions | collisions | long |
+| sophos.xg.con_event | Event Start/Stop | keyword |
 | sophos.xg.con_id | Unique identifier of connection | integer |
 | sophos.xg.conn_id | Unique identifier of connection | integer |
 | sophos.xg.connectionname | Connectionname | keyword |
 | sophos.xg.connectiontype | Connectiontype | keyword |
 | sophos.xg.connevent | Event on which this log is generated | keyword |
 | sophos.xg.connid | Connection ID | keyword |
+| sophos.xg.content_type | Type of the content | keyword |
 | sophos.xg.contenttype | Type of the content | keyword |
 | sophos.xg.context_match | Context Match | keyword |
 | sophos.xg.context_prefix | Content Prefix | keyword |
@@ -1107,6 +1116,7 @@ An example event for `xg` looks as following:
 | sophos.xg.destinationip | Original destination IP address of traffic | ip |
 | sophos.xg.device | device | keyword |
 | sophos.xg.device_id | Serial number of the device | keyword |
+| sophos.xg.device_model | Model number of the device | keyword |
 | sophos.xg.device_name | Model number of the device | keyword |
 | sophos.xg.dictionary_name | Dictionary Name | keyword |
 | sophos.xg.dir_disp | TPacket direction. Possible values:“org”, “reply”, “” | keyword |
@@ -1141,8 +1151,12 @@ An example event for `xg` looks as following:
 | sophos.xg.from_email_address | Sender email address | keyword |
 | sophos.xg.ftpcommand | FTP command used when virus was found | keyword |
 | sophos.xg.fw_rule_id | Firewall Rule ID which is applied on the traffic | integer |
+| sophos.xg.fw_rule_type | Firewall rule type which is applied on the traffic | keyword |
 | sophos.xg.hb_health | Heartbeat status | keyword |
+| sophos.xg.hb_status | Heartbeat status | keyword |
 | sophos.xg.host | Host | keyword |
+| sophos.xg.http_category | HTTP Category | keyword |
+| sophos.xg.http_category_type | HTTP Category Type | keyword |
 | sophos.xg.httpresponsecode | code of HTTP response | long |
 | sophos.xg.iap | Internet Access policy ID applied on the traffic | keyword |
 | sophos.xg.icmp_code | ICMP code of ICMP traffic | keyword |
@@ -1154,17 +1168,20 @@ An example event for `xg` looks as following:
 | sophos.xg.interface | interface | keyword |
 | sophos.xg.ipaddress | Ipaddress | keyword |
 | sophos.xg.ips_policy_id | IPS policy ID applied on the traffic | integer |
+| sophos.xg.lease_time | Lease Time | keyword |
 | sophos.xg.localgateway | Localgateway | keyword |
 | sophos.xg.localnetwork | Localnetwork | keyword |
 | sophos.xg.log_component | Component responsible for logging e.g. Firewall rule | keyword |
 | sophos.xg.log_id | Unique 12 characters code (0101011) | keyword |
 | sophos.xg.log_subtype | Sub type of event | keyword |
 | sophos.xg.log_type | Type of event e.g. firewall event | keyword |
+| sophos.xg.log_version | Log Version | keyword |
 | sophos.xg.login_user | ATP login user | keyword |
 | sophos.xg.mailid | mailid | keyword |
 | sophos.xg.mailsize | mailsize | integer |
 | sophos.xg.message | Message | keyword |
 | sophos.xg.message_id | Message ID | keyword |
+| sophos.xg.nat_rule_id | NAT Rule ID | keyword |
 | sophos.xg.newversion | Newversion | keyword |
 | sophos.xg.oldversion | Oldversion | keyword |
 | sophos.xg.out_interface | Interface for outgoing traffic, e.g., Port B | keyword |
@@ -1175,6 +1192,7 @@ An example event for `xg` looks as following:
 | sophos.xg.policy_type | Policy type applied to the traffic | keyword |
 | sophos.xg.priority | Severity level of traffic | keyword |
 | sophos.xg.protocol | Protocol number of traffic | keyword |
+| sophos.xg.qualifier | Qualifier | keyword |
 | sophos.xg.quarantine | Path and filename of the file quarantined | keyword |
 | sophos.xg.quarantine_reason | Quarantine reason | keyword |
 | sophos.xg.querystring | querystring | keyword |
@@ -1189,6 +1207,8 @@ An example event for `xg` looks as following:
 | sophos.xg.referer | Referer | keyword |
 | sophos.xg.remote_ip | Remote IP | ip |
 | sophos.xg.remotenetwork | remotenetwork | keyword |
+| sophos.xg.reported_host | Reported Host | keyword |
+| sophos.xg.reported_ip | Reported IP | keyword |
 | sophos.xg.responsetime | Responsetime | long |
 | sophos.xg.rule_priority | Priority of IPS policy | keyword |
 | sophos.xg.sent_bytes | Total number of bytes sent | long |
@@ -1239,6 +1259,7 @@ An example event for `xg` looks as following:
 | sophos.xg.upload_file_type | Upload file type | keyword |
 | sophos.xg.url | URL from which virus was downloaded | keyword |
 | sophos.xg.used | used | integer |
+| sophos.xg.used_quota | Used Quota | keyword |
 | sophos.xg.user | User | keyword |
 | sophos.xg.user_cpu | system | float |
 | sophos.xg.user_gp | Group name to which the user belongs. | keyword |
@@ -1247,6 +1268,7 @@ An example event for `xg` looks as following:
 | sophos.xg.users | users | keyword |
 | sophos.xg.vconn_id | Connection ID of the master connection | integer |
 | sophos.xg.virus | virus name | keyword |
+| sophos.xg.web_policy_id | Web policy ID | keyword |
 | sophos.xg.website | Website | keyword |
 | sophos.xg.xss | related XSS caught by the WAF | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
