@@ -142,7 +142,7 @@ An example event for `billing` looks as following:
         },
         "billing": {
             "product": "Bandwidth Inter-Region - Data Transfer Out - North America",
-            "pretax_cost": "0.000002327970961",
+            "pretax_cost": 0.000002327970961,
             "usage_start": "2021-11-15T00:00:00.000Z",
             "usage_end": "2021-11-15T23:59:59.000Z",
             "department_name": "DEpartment",
