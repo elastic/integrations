@@ -1,0 +1,106 @@
+data_stream:
+  dataset: {{data_stream.dataset}}
+
+{{#if format}}
+format: {{format}}
+{{/if}}
+{{#contains "tcp" protocol}}
+protocol.tcp:
+{{#if host}}
+{{#if port}}
+  host: {{host}}:{{port}}
+{{/if}}
+{{/if}}
+{{#if max_message_size}}
+  max_message_size: {{max_message_size}}
+{{/if}}
+{{#if timeout}}
+  timeout: {{timeout}}
+{{/if}}
+{{#if ssl}}
+  ssl: 
+    {{ssl}}
+{{/if}}
+{{#if framing}}
+  framing: {{framing}}
+{{/if}}
+{{#if line_delimiter}}
+  line_delimiter: {{line_delimiter}}
+{{/if}}
+{{#if max_connections}}
+  max_connections: {{max_connections}}
+{{/if}}
+{{/contains}}
+
+{{#contains "udp" protocol}}
+protocol.udp:
+{{#if host}}
+{{#if port}}
+  host: {{host}}:{{port}}
+{{/if}}
+{{/if}}
+{{#if max_message_size}}
+  max_message_size: {{max_message_size}}
+{{/if}}
+{{#if read_buffer_size}}
+  read_buffer: {{read_buffer_size}}
+{{/if}}
+{{#if timeout}}
+  timeout: {{timeout}}
+{{/if}}
+{{/contains}}
+
+{{#contains "unix" protocol}}
+protocol.unix:
+{{#if max_message_size}}
+  max_message_size: {{max_message_size}}
+{{/if}}
+{{#if socket_type}}
+  socket_type: {{socket_type}}
+{{/if}}
+{{#if group}}
+  group: {{group}}
+{{/if}}
+{{#if mode}}
+  mode: {{mode}}
+{{/if}}
+{{#if framing}}
+  framing: {{framing}}
+{{/if}}
+{{#if line_delimiter}}
+  line_delimiter: {{line_delimiter}}
+{{/if}}
+{{#if max_connections}}
+  max_connections: {{max_connections}}
+{{/if}}
+{{#if timeout}}
+  timeout: {{timeout}}
+{{/if}}
+{{#if path}}
+  path:
+{{#each paths as |path i|}}
+    - {{path}}
+{{/each}}
+{{/if}}
+{{/contains}}
+  
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+{{#if keep_null}}
+keep_null: {{keep_null}}
+{{/if}}
+
+{{#if tags}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

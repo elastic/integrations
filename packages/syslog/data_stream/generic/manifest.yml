@@ -1,0 +1,132 @@
+title: Custom Syslog Input
+type: logs
+streams:
+  - input: syslog
+    description: Collect raw Syslog data from Syslog listener with Elastic Agent.
+    title: Custom Syslog Input
+    template_path: syslog.yml.hbs
+    vars:
+      - name: protocol
+        type: text
+        title: Host
+        description: |
+          The protocol used for the Syslog listener, valid values are "udp", "tcp" and "unix"
+        required: true
+        show_user: true
+        default: udp
+      - name: host
+        type: text
+        title: Host
+        description: |
+          The hostname used for binding the Syslog listener, used only together with the TCP and UDP protocol.
+        required: false
+        show_user: true
+        default: localhost
+      - name: port
+        type: text
+        title: Host
+        description: |
+          The port used for binding the Syslog listener, used together with the TCP and UDP protocol.
+        required: false
+        show_user: true
+        default: 8080
+      - name: format
+        type: text
+        title: Format
+        description: |
+          The syslog variant to use, rfc3164 or rfc5424. To automatically detect the format from the log entries, set this option to auto. The default is rfc3164.
+        required: false
+        show_user: true
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: syslog.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: paths
+        type: text
+        title: Paths
+        description: When using the Unix protocol this is the path to the Unix socket that will receive events.
+        multi: true
+        required: false
+        show_user: true
+      - name: socket_type
+        type: text
+        title: Mode
+        description: When using the Unix protocol this is the type to of the Unix socket that will receive events. Valid values are stream and datagram. The default is stream..
+        required: false
+        show_user: false
+      - name: group
+        type: text
+        title: Socket Group
+        description: When using the Unix protocol this is the group ownership of the Unix socket that will be created by Elastic Agent. The default is the primary group name for the user Elastic Agent is running as. This option is ignored on Windows.
+        required: false
+        show_user: false
+      - name: mode
+        type: text
+        title: Mode
+        description: When using the Unix protocol this is the file mode of the Unix socket that will be created by Elastic Agent. This is expected to be a file mode as an octal string. The default value is the system default (generally 0755).
+        required: false
+        show_user: false
+      - name: max_message_size
+        type: text
+        title: Max Message Size
+        description: The maximum size of the message received over Syslog.
+        required: false
+        show_user: false
+      - name: framing
+        type: text
+        title: Framing
+        description: Specify the framing used to split incoming events. Can be one of delimiter or rfc6587. The default is delimiter. Supported by the TCP and Unix protocol.
+        required: false
+        show_user: false
+      - name: line_delimiter
+        type: text
+        title: Line Delimiter
+        description: Specify the characters used to split the incoming events. The default is \n. Supported by the TCP and Unix protocol.
+        required: false
+        show_user: false
+      - name: read_buffer_size
+        type: text
+        title: Read Buffer Size
+        description: |
+          The size of the read buffer on the UDP socket in the format KiB/MiB, an example would be: 10KiB. Only used by the UDP protocol.
+        required: false
+        show_user: false
+      - name: timeout
+        type: text
+        title: Timeout
+        description: The read and write timeout for socket operations.
+        required: false
+        show_user: false
+      - name: keep_null
+        type: bool
+        title: Timeout
+        description: If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.
+        required: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        multi: true
+        show_user: true
