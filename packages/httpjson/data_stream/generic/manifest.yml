@@ -14,6 +14,13 @@ streams:
         default: httpjson.generic
         required: true
         show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
       - name: request_url
         type: text
         title: Request URL
@@ -62,13 +69,13 @@ streams:
       - name: oauth_token_url
         type: text
         title: Oauth2 Token URL
-        description: The URL endpoint that will be used to generate the tokens during the oauth2 flow. It is required if no provider is specified.
+        description: The URL endpoint that will be used to generate the tokens during the oauth2 flow. It is required if no oauth_custom variable is set or provider is not specified in oauth_custom variable.
         show_user: true
         required: false
       - name: request_body
         type: yaml
         title: Request Body
-        description: An optional HTTP body if the request method is POST
+        description: An optional HTTP body if the request method is POST. All available options can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_body)
         show_user: true
         multi: false
         required: false
@@ -192,14 +199,7 @@ streams:
         type: text
         title: Response decode settings
         description: |
-          ContentType used for decoding the response body. Supported values: application/json, application/x-ndjson. It is not set by default.
-        show_user: false
-        required: false
-      - name: response_decode_as
-        type: text
-        title: Response decode settings
-        description: |
-          Override the decoder to be used, defaults to what is returned in Content-Type header. Supported values: application/json, application/x-ndjson. It is not set by default.
+          ContentType used for decoding the response body. Supported values: application/json, application/x-ndjson. By default it will use what is in the response Content-Type header.
         show_user: false
         required: false
       - name: response_request_body_on_pagination

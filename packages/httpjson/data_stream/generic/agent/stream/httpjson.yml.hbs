@@ -10,7 +10,9 @@ auth.basic.user: {{username}}
 auth.basic.password: {{password}}
 {{/if}}
 {{/unless}}
-
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
 {{#if oauth_id}}
 auth.oauth2:
 {{#if oauth_id}}
@@ -69,6 +71,15 @@ cursor:
   {{cursor}}
 {{/if}}
 
+{{#if tags}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 {{#if processors}}
 processors:
   {{processors}}
