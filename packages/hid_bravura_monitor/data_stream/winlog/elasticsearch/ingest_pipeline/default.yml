@@ -10,6 +10,11 @@ processors:
       type: string
       ignore_missing: true
 
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+
   - grok:
       field: event.original
       patterns: 
@@ -371,6 +376,20 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
+      ignore_missing: true
+
+  - remove:
+      field: [
+        "winlog.event_data.Value1",
+        "winlog.event_data.Value2",
+        "winlog.event_data.Value3",
+        "winlog.event_data.Value4",
+        "winlog.event_data.Value5",
+        "winlog.event_data.Value6",
+        "winlog.event_data.Value7",
+        "winlog.event_data.Value8",
+        "winlog.event_data.Value9"
+      ]
       ignore_missing: true
 
 on_failure:
