@@ -1,0 +1,74 @@
+format_version: 1.0.0
+name: tenable_sc
+title: Tenable.sc
+version: 0.1.0
+license: basic
+description: |
+  This Elastic integration collects logs from Tenable.sc
+type: integration
+categories:
+  - security
+release: beta
+conditions:
+  kibana.version: ^7.16.0
+screenshots:
+  - src: /img/tenable_sc-screenshot.png
+    title: Tenable.sc vulnerability dashboard screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/tenable_sc-logo.svg
+    title: Tenable.sc logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: tenable_sc
+    title: Tenable.sc logs
+    description: Collect Tenable.sc logs
+    inputs:
+      - type: httpjson
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: Hostname for the Tenable.sc API (Add https:// before the hostname).
+            default: https://sc.tenalab.online
+            show_user: true
+            required: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: access_key
+            type: password
+            title: Access Key
+            description: Access key for the Tenable.sc API.
+            required: true
+          - name: secret_key
+            type: password
+            title: Secret Key
+            description: Secret key for the Tenable.sc API.
+            required: true
+          - name: interval
+            type: text
+            title: Interval
+            description: Duration between requests to the Tenable.sc API.
+            default: 1m
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: How far back to pull the initial log from the Tenable.sc API.
+            default: 24h
+            multi: false
+            required: true
+            show_user: true
+        title: Collect Tenable.sc logs via API
+        description: Collect Tenable.sc Vulnerability, Asset, and Plugin logs
+owner:
+  github: elastic/security-external-integrations
