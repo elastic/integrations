@@ -3,66 +3,35 @@ description: Pipeline for processing SQL Server audit logs
 processors:
 - set:
     field: ecs.version
-    value: '1.12.0'
-- set:
-    field: sqlserver.audit.statement
-    value: ""
-- script:
-    lang: painless
-    description: The script processor removes the statement from param1.
-    if: ctx?.winlog?.event_id == "33205"
-    source: |-
-         int tagPos(String statement) {
-             ArrayList tags = new ArrayList();
-             tags.add("additional_information:");
-             tags.add("user_defined_information:");
-             tags.add("application_name:");
-             tags.add("connection_id:");
-             tags.add("data_sensitivity_information:");
-             tags.add("host_name:");
-             for (def i = 0; i < tags.length; i++) {
-                 def pos = statement.lastIndexOf(tags[i]);
-                 if (pos > 0) {
-                     return pos;
-                 }
-             }
-             return -1;
-         }
-
-         ArrayList al = new ArrayList();
-         Pattern p = /(statement:.*?[\S\s]*?)((additional_information:|user_defined_information:|application_name:|connection_id:|data_sensitivity_information:|host_name:).*?)/;
-         def param1 = ctx?.winlog?.event_data?.param1;
-         Matcher m = p.matcher(param1);
-         while (m.find()) {
-             al.add(m.group(0));
-         }
-         if (al.length == 0) {
-             return;
-         }
-
-         def stmtTagLen = "statement:".length();
-         def tpos = tagPos(al[0]);
-         if (tpos == -1) {
-             return;
-         }
-         String stmt = al[0].substring(stmtTagLen, tpos);
-         String part1 = param1.substring(0, param1.indexOf("statement:"));
-         String part2 = param1.substring(part1.length() + stmtTagLen + stmt.length());
-         if (part2.endsWith(".")) {
-             part2 = part2.substring(0, part2.length()-1);
-         }
-         ctx.winlog.event_data.param1 = part1 + part2;
-         ctx.sqlserver.audit.statement = stmt.trim();
-
+    value: 1.12.0
+- grok:
+    field: winlog.event_data.param1
+    pattern_definitions:
+      STRIPLASTDOT: '(.*[\s]?)*[^\n.]'
+    patterns:
+      - '%{STRIPLASTDOT:winlog.event_data.param1}'
+- grok:
+    field: winlog.event_data.param1
+    patterns:
+      - '%{EXTRACT_STMT}'
+    pattern_definitions:
+      STMT: (.*\s)*
+      EXTRACT_STMT: '(statement:)%{STMT:_temp.stmt}(?=additional_information:)'
+- gsub:
+    field: winlog.event_data.param1
+    pattern: 'statement:(.*\s)*(?=additional_information:)'
+    replacement: ''
 - kv:
     field: winlog.event_data.param1
-    field_split: "\\n"
-    value_split: ":"
-    target_field: "sqlserver.audit"
-    trim_key: "\\n"
-    trim_value: "\\n"
+    field_split: \n
+    value_split: ':'
+    target_field: sqlserver.audit
+    trim_key: \n
+    trim_value: \n
     if: ctx?.winlog?.event_id == "33205"
-
+- set:
+    field: sqlserver.audit.statement
+    copy_from: _temp.stmt
 - set:
     field: log.level
     copy_from: winlog.log.level
@@ -76,10 +45,6 @@ processors:
 - set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
-- rename:
-    field: message
-    target_field: event.original
-    ignore_missing: true
 ##
 # Event kind, code and action
 ##
@@ -88,336 +53,51 @@ processors:
     value: event
 - set:
     field: event.code
-    value: '{{winlog.event_id}}'
+    copy_from: winlog.event_id
 - trim:
     field: sqlserver.audit.action_id
+    ignore_missing: true
 - trim:
     field: sqlserver.audit.class_type
+    ignore_missing: true
 - uppercase:
     field: sqlserver.audit.action_id
+    ignore_missing: true
 - uppercase:
     field: sqlserver.audit.class_type
-
-- script:
-    lang: painless
-    description: The script processor sets event type, action and category based on action_id and class_type fields.
-    source: |-
-         HashMap classTypes = [
-                "DB":["DATABASE","DATABASE"],
-                "OB":["OBJECT","OBJECT"],
-                "TY":["TYPE","TYPE"],
-                "SC":["SCHEMA","SCHEMA"],
-                "SX":["XML SCHEMA COLLECTION","XML SCHEMA COLLECTION"],
-                "AS":["ASSEMBLY","ASSEMBLY"],
-                "US":["USER","USER"],
-                "RL":["ROLE","ROLE"],
-                "AR":["APPLICATION ROLE","APPLICATION ROLE"],
-                "MT":["MESSAGE TYPE","MESSAGE TYPE"],
-                "CT":["CONTRACT","CONTRACT"],
-                "SV":["SERVICE","SERVICE"],
-                "BN":["REMOTE SERVICE BINDING","REMOTE SERVICE BINDING"],
-                "RT":["ROUTE","ROUTE"],
-                "FC":["FULLTEXT CATALOG","FULLTEXT CATALOG"],
-                "FL":["FULLTEXT STOPLIST","FULLTEXT STOPLIST"],
-                "FP":["SEARCH PROPERTY LIST","SEARCH PROPERTY LIST"],
-                "SK":["SYMMETRIC KEY","SYMMETRIC KEY"],
-                "CR":["CERTIFICATE","CERTIFICATE"],
-                "AK":["ASYMMETRIC KEY","ASYMMETRIC KEY"],
-                "DC":["DATABASE SCOPED CREDENTIAL","DATABASE SCOPED CREDENTIAL"],
-                "EL":["EXTERNAL LIBRARY","EXTERNAL LIBRARY"],
-                "LA":["EXTERNAL LANGUAGE","EXTERNAL LANGUAGE"],
-                "SR":["SERVER","SERVER"],
-                "EP":["ENDPOINT","ENDPOINT"],
-                "SG":["SERVER ROLE","SERVER ROLE"],
-                "AG":["AVAILABILITY GROUP","AVAILABILITY GROUP"],
-                "LX":["LOGIN","LOGIN"],
-                "CK":["COLUMN ENCRYPTION KEY","DATABASE"],
-                "CM":["COLUMN MASTER KEY","DATABASE"],
-                "DA":["DATABASE AUDIT SPECIFICATION","DATABASE"],
-                "DU":["AUDIT","DATABASE"],
-                "DS":["DATABASE SCOPED CONFIGURATION","DATABASE"],
-                "DR":["DATABASE SCOPED RESOURCE GOVERNOR","DATABASE"],
-                "DN":["EVENT NOTIFICATION DATABASE","DATABASE"],
-                "DT":["TRIGGER DATABASE","DATABASE"],
-                "MK":["MASTER KEY","DATABASE"],
-                "DK":["DATABASE ENCRYPTION KEY","DATABASE"],
-                "ON":["EVENT NOTIFICATION OBJECT","DATABASE"],
-                "PF":["PARTITION FUNCTION","DATABASE"],
-                "PR":["BROKER PRIORITY","DATABASE"],
-                "PS":["PARTITION SCHEME","DATABASE"],
-                "DE":["DATABASE EVENT SESSION","DATABASE"],
-                "AQ":["ADHOC QUERY","OBJECT"],
-                "AF":["AGGREGATE","OBJECT"],
-                "AP":["Undocumented","OBJECT"],
-                "C":["CHECK CONSTRAINT","OBJECT"],
-                "D":["DEFAULT","OBJECT"],
-                "EC":["EDGE CONSTRAINT","OBJECT"],
-                "EN":["EVENT NOTIFICATION","OBJECT"],
-                "F":["FOREIGN KEY CONSTRAINT","OBJECT"],
-                "FS":["FUNCTION SCALAR ASSEMBLY","OBJECT"],
-                "FT":["FUNCTION TABLE-VALUED ASSEMBLY","OBJECT"],
-                "FN":["FUNCTION SCALAR SQL","OBJECT"],
-                "IX":["INDEX","OBJECT"],
-                "IF":["FUNCTION TABLE-VALUED INLINE SQL","OBJECT"],
-                "IS":["FUNCTION SCALAR INLINE SQL","OBJECT"],
-                "IT":["INTERNAL TABLE","OBJECT"],
-                "PQ":["PREPARED ADHOC QUERY","OBJECT"],
-                "PK":["PRIMARY KEY","OBJECT"],
-                "P":["STORED PROCEDURE","OBJECT"],
-                "PC":["STORED PROCEDURE ASSEMBLY","OBJECT"],
-                "RF":["STORED PROCEDURE REPLICATION FILTER","OBJECT"],
-                "R":["RULE","OBJECT"],
-                "SP":["SECURITY POLICY","OBJECT"],
-                "SO":["SEQUENCE OBJECT","OBJECT"],
-                "ST":["STATISTICS","OBJECT"],
-                "SQ":["QUEUE","OBJECT"],
-                "SN":["SYNONYM","OBJECT"],
-                "S":["TABLE SYSTEM","OBJECT"],
-                "TF":["FUNCTION TABLE-VALUED SQL","OBJECT"],
-                "TA":["TRIGGER ASSEMBLY","OBJECT"],
-                "TR":["TRIGGER","OBJECT"],
-                "UQ":["UNIQUE CONSTRAINT","OBJECT"],
-                "U":["TABLE","OBJECT"],
-                "V":["VIEW","OBJECT"],
-                "X":["STORED PROCEDURE EXTENDED","OBJECT"],
-                "XR":["XREL TREE","OBJECT"],
-                "AU":["ASYMMETRIC KEY USER","USER"],
-                "CU":["CERTIFICATE USER","USER"],
-                "GU":["GROUP USER","USER"],
-                "SU":["SQL USER","USER"],
-                "WU":["WINDOWS USER","USER"],
-                "XU":["EXTERNAL USER","USER"],
-                "PU":["EXTERNAL GROUP USER","USER"],
-                "A":["SERVER AUDIT","SERVER"],
-                "CD":["CREDENTIAL","SERVER"],
-                "CP":["CRYPTOGRAPHIC PROVIDER","SERVER"],
-                "ED":["EXTERNAL DATA SOURCE","DATABASE"],
-                "EF":["EXTERNAL FILE FORMAT","DATABASE"],
-                "RG":["RESOURCE GOVERNOR","SERVER"],
-                "SA":["SERVER AUDIT SPECIFICATION","SERVER"],
-                "SD":["EVENT NOTIFICATION SERVER","SERVER"],
-                "T":["TRIGGER SERVER","SERVER"],
-                "SE":["EVENT SESSION","SERVER"],
-                "CO":["SERVER CONFIG","SERVER"],
-                "AL":["ASYMMETRIC KEY LOGIN","LOGIN"],
-                "CL":["CERTIFICATE LOGIN","LOGIN"],
-                "SL":["SQL LOGIN","LOGIN"],
-                "WG":["WINDOWS GROUP","LOGIN"],
-                "WL":["WINDOWS LOGIN","LOGIN"],
-                "ER":["EXTERNAL RESOURCE POOL","SERVER"],
-                "EX":["EXTERNAL SCRIPT QUERY","OBJECT"],
-                "PL":["EXTERNAL GROUP LOGIN","LOGIN"],
-                "XL":["EXTERNAL LOGIN","LOGIN"]
-         ];
-
-         HashMap actions = [
-                "ACDO":"DATABASE_OBJECT_ACCESS_GROUP",
-                "ACO":"SCHEMA_OBJECT_ACCESS_GROUP",
-                "ADBO":"BULK ADMIN",
-                "ADDP":"DATABASE_ROLE_MEMBER_CHANGE_GROUP",
-                "ADFR":"ADD FEATURE RESTRICTION",
-                "ADSC":"ADD SENSITIVITY CLASSIFICATION",
-                "ADSP":"SERVER_ROLE_MEMBER_CHANGE_GROUP",
-                "AL":"ALTER",
-                "ALCN":"ALTER CONNECTION",
-                "ALRS":"ALTER RESOURCES",
-                "ALSS":"ALTER SERVER STATE",
-                "ALST":"ALTER SETTINGS",
-                "ALTR":"ALTER TRACE",
-                "APRL":"ADD MEMBER",
-                "AS":"ACCESS",
-                "AUSC":"AUDIT SESSION CHANGED",
-                "AUSF":"AUDIT SHUTDOWN ON FAILURE",
-                "AUTH":"AUTHENTICATE",
-                "BA":"BACKUP",
-                "BAL":"BACKUP LOG",
-                "BCM":"BATCH COMPLETED",
-                "BCMG":"BATCH_COMPLETED_GROUP",
-                "BRDB":"BACKUP_RESTORE_GROUP",
-                "BST":"BATCH STARTED",
-                "BSTG":"BATCH_STARTED_GROUP",
-                "C2OF":"TRACE AUDIT C2OFF",
-                "C2ON":"TRACE AUDIT C2ON",
-                "CCLG":"CHANGE LOGIN CREDENTIAL",
-                "CMLG":"CREDENTIAL MAP TO LOGIN",
-                "CNAU":"AUDIT_CHANGE_GROUP",
-                "CO":"CONNECT",
-                "CP":"CHECKPOINT",
-                "CR":"CREATE",
-                "DABO":"DATABASE BULK ADMIN",
-                "DAGF":"FAILED_DATABASE_AUTHENTICATION_GROUP",
-                "DAGL":"DATABASE_LOGOUT_GROUP",
-                "DAGS":"SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
-                "DBAF":"DATABASE AUTHENTICATION FAILED",
-                "DBAS":"DATABASE AUTHENTICATION SUCCEEDED",
-                "DBCC":"DBCC",
-                "DBCG":"DBCC_GROUP",
-                "DBL":"DATABASE LOGOUT",
-                "D":"DENY",
-                "DL":"DELETE",
-                "DPRL":"DROP MEMBER",
-                "DR":"DROP",
-                "DRFR":"DROP FEATURE RESTRICTION",
-                "DRSC":"DROP SENSITIVITY CLASSIFICATION",
-                "DWC":"DENY WITH CASCADE",
-                "EX":"EXECUTE",
-                "FRCG":"FEATURE_RESTRICTION_CHANGE_GROUP",
-                "FT":"FULLTEXT",
-                "FTG":"FULLTEXT_GROUP",
-                "G":"GRANT",
-                "GRDB":"DATABASE_PERMISSION_CHANGE_GROUP",
-                "GRDO":"DATABASE_OBJECT_PERMISSION_CHANGE_GROUP",
-                "GRO":"SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP",
-                "GRSO":"SERVER_OBJECT_PERMISSION_CHANGE_GROUP",
-                "GRSV":"SERVER_PERMISSION_CHANGE_GROUP",
-                "GWG":"GRANT WITH GRANT",
-                "IMDP":"DATABASE_PRINCIPAL_IMPERSONATION_GROUP",
-                "IMP":"IMPERSONATE",
-                "IMSP":"SERVER_PRINCIPAL_IMPERSONATION_GROUP",
-                "IN":"INSERT",
-                "LGB":"BROKER LOGIN",
-                "LGBG":"BROKER_LOGIN_GROUP",
-                "LGDA":"DISABLE",
-                "LGDB":"CHANGE DEFAULT DATABASE",
-                "LGEA":"ENABLE",
-                "LGFL":"FAILED_LOGIN_GROUP",
-                "LGGG":"GLOBAL_TRANSACTIONS_LOGIN_GROUP",
-                "LGG":"GLOBAL TRANSACTIONS LOGIN",
-                "LGIF":"LOGIN FAILED",
-                "LGIS":"LOGIN SUCCEEDED",
-                "LGLG":"CHANGE DEFAULT LANGUAGE",
-                "LGM":"DATABASE MIRRORING LOGIN",
-                "LGMG":"DATABASE_MIRRORING_LOGIN_GROUP",
-                "LGNM":"NAME CHANGE",
-                "LGO":"LOGOUT",
-                "LGSD":"SUCCESSFUL_LOGIN_GROUP",
-                "LGSG":"STORAGE_LOGIN_GROUP",
-                "LGS":"STORAGE LOGIN",
-                "LO":"LOGOUT_GROUP",
-                "MNDB":"DATABASE_CHANGE_GROUP",
-                "MNDO":"DATABASE_OBJECT_CHANGE_GROUP",
-                "MNDP":"DATABASE_PRINCIPAL_CHANGE_GROUP",
-                "MNO":"SCHEMA_OBJECT_CHANGE_GROUP",
-                "MNSO":"SERVER_OBJECT_CHANGE_GROUP",
-                "MNSP":"SERVER_PRINCIPAL_CHANGE_GROUP",
-                "NMLG":"NO CREDENTIAL MAP TO LOGIN",
-                "OPDB":"DATABASE_OPERATION_GROUP",
-                "OP":"OPEN",
-                "OPSV":"SERVER_OPERATION_GROUP",
-                "PWAR":"APPLICATION_ROLE_CHANGE_PASSWORD_GROUP",
-                "PWC":"CHANGE PASSWORD",
-                "PWCG":"LOGIN_CHANGE_PASSWORD_GROUP",
-                "PWCS":"CHANGE OWN PASSWORD",
-                "PWEX":"PASSWORD EXPIRATION",
-                "PWMC":"MUST CHANGE PASSWORD",
-                "PWPL":"PASSWORD POLICY",
-                "PWR":"RESET PASSWORD",
-                "PWRS":"RESET OWN PASSWORD",
-                "PWU":"UNLOCK ACCOUNT",
-                "RCM":"RPC COMPLETED",
-                "RC":"RECEIVE",
-                "RF":"REFERENCES",
-                "R":"REVOKE",
-                "R":"REVOKE",
-                "RS":"RESTORE",
-                "RST":"RPC STARTED",
-                "RWC":"REVOKE WITH CASCADE",
-                "RWG":"REVOKE WITH GRANT",
-                "SCCG":"SENSITIVITY_CLASSIFICATION_CHANGE_GROUP",
-                "SL":"SELECT",
-                "SN":"SEND",
-                "SPLN":"SHOW PLAN",
-                "STSV":"SERVER_STATE_CHANGE_GROUP",
-                "SUQN":"SUBSCRIBE QUERY NOTIFICATION",
-                "SVCN":"SERVER CONTINUE",
-                "SVPD":"SERVER PAUSED",
-                "SVSD":"SERVER SHUTDOWN",
-                "SVSR":"SERVER STARTED",
-                "TASA":"TRACE AUDIT START",
-                "TASP":"TRACE AUDIT STOP",
-                "TODB":"DATABASE_OWNERSHIP_CHANGE_GROUP",
-                "TODO":"DATABASE_OBJECT_OWNERSHIP_CHANGE_GROUP",
-                "TOO":"SCHEMA_OBJECT_OWNERSHIP_CHANGE_GROUP",
-                "TOSO":"SERVER_OBJECT_OWNERSHIP_CHANGE_GROUP",
-                "TO":"TAKE OWNERSHIP",
-                "TRBC":"TRANSACTION BEGIN COMPLETED",
-                "TRBS":"TRANSACTION BEGIN STARTING",
-                "TRCC":"TRANSACTION COMMIT COMPLETED",
-                "TRCG":"TRACE_CHANGE_GROUP",
-                "TRCS":"TRANSACTION COMMIT STARTING",
-                "TRPS":"TRANSACTION PROMOTE STARTING",
-                "TRGC":"TRANSACTION PROPAGATE COMPLETED",
-                "TRGS":"TRANSACTION PROPAGATE STARTING",
-                "TRO":"TRANSFER",
-                "TRPC":"TRANSACTION PROMOTE COMPLETED",
-                "TRRC":"TRANSACTION ROLLBACK COMPLETED",
-                "TRRS":"TRANSACTION ROLLBACK STARTING",
-                "TRSC":"TRANSACTION SAVEPOINT COMPLETED",
-                "TRSS":"TRANSACTION SAVEPOINT STARTING",
-                "TXBG":"TRANSACTION BEGIN",
-                "TXCG":"TRANSACTION_COMMIT_GROUP",
-                "TXCM":"TRANSACTION COMMIT",
-                "TXGG":"TRANSACTION_BEGIN_GROUP",
-                "TXRB":"TRANSACTION ROLLBACK",
-                "TXRG":"TRANSACTION_ROLLBACK_GROUP",
-                "TX":"TRANSACTION_GROUP",
-                "UCGP":"USER_CHANGE_PASSWORD_GROUP",
-                "UDAG":"USER_DEFINED_AUDIT_GROUP",
-                "UDAU":"USER DEFINED AUDIT",
-                "UNDG":"STATEMENT_ROLLBACK_GROUP",
-                "UNDO":"STATEMENT ROLLBACK",
-                "UP":"UPDATE",
-                "USAF":"CHANGE USERS LOGIN AUTO",
-                "USLG":"CHANGE USERS LOGIN",
-                "USTC":"COPY PASSWORD",
-                "VDST":"VIEW DATABASE STATE",
-                "VSST":"VIEW SERVER STATE",
-                "VWCT":"VIEW CHANGETRACKING",
-                "VW":"VIEW",
-                "XA":"EXTERNAL ACCESS ASSEMBLY",
-                "XU":"UNSAFE ASSEMBLY"
-         ];
-
-         def action = actions.get(ctx.sqlserver.audit.action_id);
-         def classType = classTypes.get(ctx.sqlserver.audit.class_type);
-
-         ctx.event.action = action;
-         ctx.event.type = action;
-         if (action == null) {
-             ctx.event.action = "Unknown action with id " + ctx.sqlserver.audit.action_id;
-             ctx.event.type = ctx.sqlserver.audit.action_id;
-         }
-         if (classType == null) {
-             ctx.event.action = ctx.event.action + " on Unknown class type " + ctx.sqlserver.audit.class_type;
-             ctx.event.category = ctx.sqlserver.audit.class_type;
-             return;
-         } else {
-             ctx.event.action = ctx.event.action + " on " + classType[0];
-             ctx.event.category = classType[0];
-             return;
-         }
+    ignore_missing: true
 
 - convert:
     field: sqlserver.audit.sequence_number
     type: integer
+    ignore_missing: true
 - convert:
     field: sqlserver.audit.succeeded
     type: boolean
+    ignore_missing: true
 - convert:
     field: sqlserver.audit.affected_rows
     type: long
+    ignore_missing: true
 - convert:
     field: sqlserver.audit.response_rows
     type: long
+    ignore_missing: true
 - convert:
     field: sqlserver.audit.is_column_permission
     type: boolean
+    ignore_missing: true
 - convert:
     field: sqlserver.audit.duration_milliseconds
     type: long
+    ignore_missing: true
+
+
 ##
 # Clean up
 ##
+- remove:
+    field: _temp
 - remove:
     field: event.original
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
