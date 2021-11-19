@@ -512,7 +512,7 @@ An example event for `security` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
@@ -582,6 +582,10 @@ An example event for `security` looks as following:
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
 | winlog.event_data.AccessGranted |  | keyword |
+| winlog.event_data.AccessList |  | keyword |
+| winlog.event_data.AccessListDescription |  | keyword |
+| winlog.event_data.AccessMask |  | keyword |
+| winlog.event_data.AccessMaskDescription |  | keyword |
 | winlog.event_data.AccessRemoved |  | keyword |
 | winlog.event_data.AccountDomain |  | keyword |
 | winlog.event_data.AccountExpires |  | keyword |
@@ -717,6 +721,7 @@ An example event for `security` looks as following:
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
 | winlog.event_data.Reason |  | keyword |
+| winlog.event_data.ResourceAttributes |  | keyword |
 | winlog.event_data.SamAccountName |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
 | winlog.event_data.ScriptBlockText |  | keyword |
