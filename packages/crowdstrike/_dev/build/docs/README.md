@@ -22,7 +22,17 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 ### FDR
 
-The Falcon Data Replicator replicates log data from your CrowdStrike environment to a stand-alone target. This target can be a location on the file system, or an S3 bucket.
+The Falcon Data Replicator replicates log data from your CrowdStrike environment to a stand-alone target. 
+This target can be configured in different ways:
+
+- Use directly the AWS SQS queue provided by Crowdstrike. This is the default.
+- You can use the [FDR tool](https://github.com/CrowdStrike/FDR) (or any other similar) and read from a 
+location, or from a different SQS queue managed by you. 
+
+If the intention is to read from local files, is important to note that they can't be in `gzip` format
+and they will need to be extracted first. 
+When using an AWS SQS queue that is not the one managed by
+Crowdstrike, is important to disable the `Is FDR Queue` option in order to parse the notifications properly.
 
 
 #### Configuration for the S3 input
