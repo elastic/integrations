@@ -26,7 +26,6 @@ An example event for `log` looks as following:
         "domain": "user-laptop",
         "ip": "10.50.36.33"
     },
-    "message": "Users: admin.user, Source IP: 10.50.36.33, Computer name: user-laptop, Connection type: Samba, Accessed resources: /path/to/files/New folder, Action: Create Directory",
     "tags": [
         "preserve_original_event"
     ],
@@ -35,9 +34,10 @@ An example event for `log` looks as following:
         "product": "NAS",
         "vendor": "QNAP"
     },
-    "@timestamp": "2021-10-30T20:24:24.000-05:00",
+    "@timestamp": "2021-10-30T20:43:19.000-05:00",
     "file": {
-        "path": "/path/to/files/New folder"
+        "path": "/path/to/files/picture.jpg",
+        "extension": "jpg"
     },
     "ecs": {
         "version": "1.12.0"
@@ -60,17 +60,24 @@ An example event for `log` looks as following:
         "nas": {
             "connection_type": "Samba",
             "file": {
-                "path": "/path/to/files/New folder"
+                "path": "/path/to/files/picture.jpg"
             }
         }
     },
     "event": {
-        "action": "",
-        "ingested": "2021-10-31T03:35:22.269344025Z",
-        "original": "\u003c30\u003eOct 30 20:24:24 qnap-nas01 qulogd[14629]: conn log: Users: admin.user, Source IP: 10.50.36.33, Computer name: user-laptop, Connection type: Samba, Accessed resources: /path/to/files/New folder, Action: Create Directory",
+        "ingested": "2021-11-21T20:06:57.838092001Z",
+        "original": "\u003c30\u003eOct 30 20:43:19 qnap-nas01 qulogd[14629]: conn log: Users: admin.user, Source IP: 10.50.36.33, Computer name: user-laptop, Connection type: Samba, Accessed resources: /path/to/files/picture.jpg, Action: Read",
         "provider": "conn-log",
         "timezone": "-05:00",
-        "created": "2021-10-30T20:24:24.000-05:00"
+        "created": "2021-10-30T20:43:19.000-05:00",
+        "kind": "event",
+        "action": "read",
+        "category": [
+            "file"
+        ],
+        "type": [
+            "info"
+        ]
     },
     "user": {
         "name": "admin.user"

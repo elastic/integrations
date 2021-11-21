@@ -57,7 +57,8 @@ processors:
         - '^%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{RESOURCE}, Action: %{DATA:event.action}$'     
       pattern_definitions:
         SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
-        RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{DATA:qnap.nas.file.path})'
+        RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
+        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
   - convert:
       field: source.address
       target_field: source.ip
@@ -91,7 +92,7 @@ processors:
         - '%{FILE_PATH:file.path} -> %{FILE_PATH:qnap.nas.file.new_path}'
         - '%{FILE_PATH:file.path}'
       pattern_definitions:
-        FILE_PATH: '(\/([_%!$@:.,+~\-\s[:alnum:]])*)+'
+        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
       ignore_failure: true
       ignore_missing: true
   - grok:
