@@ -53,10 +53,11 @@ processors:
   - grok:
       field: _tmp.message
       patterns:
-        - '%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{GREEDYDATA:message}\.' 
-        - '%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{DATA:qnap.nas.file.path}, Action: %{DATA:event.action}'     
+        - '^%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{DATA:message}$' 
+        - '^%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{RESOURCE}, Action: %{DATA:event.action}$'     
       pattern_definitions:
         SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
+        RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{DATA:qnap.nas.file.path})'
   - convert:
       field: source.address
       target_field: source.ip
@@ -83,10 +84,6 @@ processors:
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
-      ignore_missing: true
-  - rename: 
-      field: qnap.nas.accessed_resources
-      target_field: qnap.nas.file.path
       ignore_missing: true
   - grok:
       field: qnap.nas.file.path
@@ -116,6 +113,59 @@ processors:
       pattern: \s
       replacement: '-'
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+# File Event fields
+  - append:
+      if: ctx.qnap?.nas?.file?.path != null
+      field: event.category
+      value: file
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action != null && ["read"].contains(ctx.event?.action)
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action != null && ["delete"].contains(ctx.event?.action)
+      field: event.type
+      value: deletion
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action != null && ["create-directory", "add"].contains(ctx.event?.action)
+      field: event.type
+      value: creation
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action != null && ["rename"].contains(ctx.event?.action)
+      field: event.type
+      value: change
+      allow_duplicates: false
+# Login/Auth Event fields
+  - append:
+      if: ctx.event?.action != null && ["login-success", "login-fail", "logout"].contains(ctx.event?.action)
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action != null && ["logout"].contains(ctx.event?.action)
+      field: event.type
+      value: end
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action != null && ["login-success"].contains(ctx.event?.action)
+      field: event.type
+      value: start
+      allow_duplicates: false
+  - set:
+      if: ctx.event?.action != null && ["login-success"].contains(ctx.event?.action)
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.event?.action != null && ["login-fail"].contains(ctx.event?.action)
+      field: event.outcome
+      value: failure
   - append:
       if: ctx.source?.ip != null
       field: related.ip
