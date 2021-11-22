@@ -429,6 +429,7 @@ for more details.
 | @timestamp | Event timestamp. | date |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
+| crowdstrike.AgentTimeOffset |  | float |
 | crowdstrike.AgentVersion |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.ApiReturnValue |  | keyword |
@@ -460,6 +461,7 @@ for more details.
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
+| crowdstrike.ConfigBuild |  | keyword |
 | crowdstrike.ConfigIDBase |  | keyword |
 | crowdstrike.ConfigIDBuild |  | keyword |
 | crowdstrike.ConfigIDPlatform |  | keyword |
@@ -501,6 +503,7 @@ for more details.
 | crowdstrike.FXFileSize |  | keyword |
 | crowdstrike.Facility |  | keyword |
 | crowdstrike.FailedConnectCount |  | long |
+| crowdstrike.FalconGroupingTags |  | keyword |
 | crowdstrike.FeatureExtractionVersion |  | keyword |
 | crowdstrike.FeatureVector |  | keyword |
 | crowdstrike.File |  | keyword |
@@ -510,9 +513,11 @@ for more details.
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirstSeen |  | date |
 | crowdstrike.Flags |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
+| crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.IOServiceClass |  | keyword |
 | crowdstrike.IOServiceName |  | keyword |
 | crowdstrike.IOServicePath |  | keyword |
@@ -579,6 +584,7 @@ for more details.
 | crowdstrike.NewFileIdentifier |  | keyword |
 | crowdstrike.OSVersionFileData |  | keyword |
 | crowdstrike.OSVersionFileName |  | keyword |
+| crowdstrike.OU |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
 | crowdstrike.OutErrors |  | keyword |
@@ -593,6 +599,7 @@ for more details.
 | crowdstrike.PciAttachmentState |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
+| crowdstrike.PointerSize |  | keyword |
 | crowdstrike.PreviousConnectTime |  | date |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
@@ -601,6 +608,7 @@ for more details.
 | crowdstrike.ProcessParameterFlags |  | keyword |
 | crowdstrike.ProcessSxsFlags |  | keyword |
 | crowdstrike.ProcessorPackageCount |  | long |
+| crowdstrike.ProductType |  | keyword |
 | crowdstrike.ProtectVirtualMemoryCount |  | long |
 | crowdstrike.ProvisionState |  | keyword |
 | crowdstrike.PupAdwareConfidence |  | keyword |
@@ -623,13 +631,16 @@ for more details.
 | crowdstrike.SVUID |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
+| crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceDisplayName |  | keyword |
 | crowdstrike.ServiceEventCount |  | long |
+| crowdstrike.ServicePackMajor |  | keyword |
 | crowdstrike.SessionId |  | keyword |
 | crowdstrike.SessionProcessId |  | keyword |
 | crowdstrike.SetThreadContextCount |  | long |
 | crowdstrike.ShareAccess |  | keyword |
+| crowdstrike.SiteName |  | keyword |
 | crowdstrike.Size |  | long |
 | crowdstrike.SnapshotFileOpenCount |  | long |
 | crowdstrike.SourceFileName |  | keyword |
@@ -652,6 +663,7 @@ for more details.
 | crowdstrike.Tags |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
+| crowdstrike.Time |  | date |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
 | crowdstrike.USN |  | keyword |
@@ -760,6 +772,7 @@ for more details.
 | observer.geo.region_name | Region name. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.serial_number | Observer serial number. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
 | os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
