@@ -8,8 +8,8 @@ This module has been tested against `Tenable.sc version 5.18`
 
 ## Requirements
 
-In order to ingest data from the Tenable.sc you must have the **Access key** and **Secret Key** 
-Enable API keys to allow users to perform API key authentication, as described [here](https://docs.tenable.com/tenablesc/Content/EnableAPIKeys.htm)
+In order to ingest data from the Tenable.sc you must have the **Access key** and **Secret Key**.
+Enable API keys to allow users to perform API key authentication as described [here](https://docs.tenable.com/tenablesc/Content/EnableAPIKeys.htm).
 
 Generate API keys:
 - Log in to **Tenable.sc Admin account** via the user interface.
