@@ -1,0 +1,136 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- date:
+    field: json.timestamp
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
+- date:
+    field: json.timestamp.epochSecond
+    formats:
+    - UNIX
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map
+- rename:
+    field: json.source
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.author.id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.author.name
+    target_field: user.full_name
+    ignore_missing: true
+- rename:
+    field: json.auditType
+    target_field: confluence.audit.type
+    ignore_missing: true
+- rename:
+    field: json.type
+    target_field: confluence.audit.type
+    ignore_missing: true
+- rename:
+    field: json.method
+    target_field: confluence.audit.method
+    ignore_missing: true
+- rename:
+    field: json.system
+    target_field: confluence.audit.system
+    ignore_missing: true
+- rename:
+    field: json.extraAttributes
+    target_field: confluence.audit.extra_attributes
+    ignore_missing: true
+- rename:
+    field: json.changedValues
+    target_field: confluence.audit.changed_values
+    ignore_missing: true
+- rename:
+    field: json.affectedObjects
+    target_field: confluence.audit.affected_objects
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: confluence.audit.type.actionI18nKey
+    ignore_empty_value: true
+- remove:
+    field:
+      - json
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}' 
