@@ -72,7 +72,7 @@
                                                 "70000b7b-124a-439e-8ef2-6a8dad15c166": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of event.type",
+                                                    "label": "Top values of event.action",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -85,7 +85,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.type"
+                                                    "sourceField": "event.action"
                                                 },
                                                 "a6937f39-2999-4be2-8371-619b5bf2fb67": {
                                                     "dataType": "number",
@@ -364,7 +364,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event.type: \"LOGIN FAILED\" "
+                                                        "query": "event.action: \"login-failed\" "
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Count of records",
@@ -563,11 +563,11 @@
                                         "alias": null,
                                         "disabled": false,
                                         "indexRefName": "filter-index-pattern-1",
-                                        "key": "event.category",
+                                        "key": "sqlserver.audit.class_type",
                                         "negate": false,
                                         "params": [
-                                            "SERVER ROLE",
-                                            "SQL LOGIN"
+                                            "\"SERVER ROLE\" ",
+                                            "\"SQL LOGIN\""
                                         ],
                                         "type": "phrases"
                                     },
@@ -577,12 +577,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.category": "SERVER ROLE"
+                                                        "sqlserver.audit.class_type": "\"SERVER ROLE\" "
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.category": "SQL LOGIN"
+                                                        "sqlserver.audit.class_type": "\"SQL LOGIN\""
                                                     }
                                                 }
                                             ]
@@ -752,7 +752,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "indexRefName": "filter-index-pattern-1",
-                                        "key": "event.type",
+                                        "key": "sqlserver.audit.action_id",
                                         "negate": false,
                                         "params": [
                                             "DATABASE_ROLE_MEMBER_CHANGE_GROUP",
@@ -766,12 +766,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.type": "DATABASE_ROLE_MEMBER_CHANGE_GROUP"
+                                                        "sqlserver.audit.action_id": "DATABASE_ROLE_MEMBER_CHANGE_GROUP"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.type": "SERVER_ROLE_MEMBER_CHANGE_GROUP"
+                                                        "sqlserver.audit.action_id": "SERVER_ROLE_MEMBER_CHANGE_GROUP"
                                                     }
                                                 }
                                             ]
@@ -963,7 +963,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "indexRefName": "filter-index-pattern-1",
-                                        "key": "event.category",
+                                        "key": "sqlserver.audit.class_type",
                                         "negate": false,
                                         "params": [
                                             "DATABASE AUDIT SPECIFICATION",
@@ -979,22 +979,22 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "event.category": "DATABASE AUDIT SPECIFICATION"
+                                                        "sqlserver.audit.class_type": "DATABASE AUDIT SPECIFICATION"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.category": "SERVER AUDIT"
+                                                        "sqlserver.audit.class_type": "SERVER AUDIT"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.category": "SERVER AUDIT SPECIFICATION"
+                                                        "sqlserver.audit.class_type": "SERVER AUDIT SPECIFICATION"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "event.category": "AUDIT"
+                                                        "sqlserver.audit.class_type": "AUDIT"
                                                     }
                                                 }
                                             ]
@@ -1136,16 +1136,16 @@
                                         "alias": null,
                                         "disabled": false,
                                         "indexRefName": "filter-index-pattern-0",
-                                        "key": "event.type",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "LOGIN FAILED"
+                                            "query": "microsoft_sqlserver.audit"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.type": "LOGIN FAILED"
+                                            "data_stream.dataset": "microsoft_sqlserver.audit"
                                         }
                                     }
                                 },
@@ -1157,16 +1157,16 @@
                                         "alias": null,
                                         "disabled": false,
                                         "indexRefName": "filter-index-pattern-1",
-                                        "key": "data_stream.dataset",
+                                        "key": "event.action",
                                         "negate": false,
                                         "params": {
-                                            "query": "microsoft_sqlserver.audit"
+                                            "query": "login-failed"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "microsoft_sqlserver.audit"
+                                            "event.action": "login-failed"
                                         }
                                     }
                                 }
@@ -1202,7 +1202,7 @@
             }
         ],
         "timeRestore": false,
-        "title": "Microsoft SQL Server",
+        "title": "[Logs Microsoft SQL Server Audit Events] Overview",
         "version": 1
     },
     "coreMigrationVersion": "7.15.1",
