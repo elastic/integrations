@@ -6,4 +6,6 @@ This is an integration for ingesting logs from Juniper NetScreen.
 
 The `log` dataset collects Netscreen logs.
 
+{{event "log"}}
+
 {{fields "log"}}
