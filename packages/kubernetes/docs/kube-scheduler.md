@@ -134,10 +134,7 @@ An example event for `scheduler` looks as following:
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |  |
-| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |  |
-| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |  |
-| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |

@@ -157,10 +157,7 @@ An example event for `event` looks as following:
 | kubernetes.event.timestamp.last_occurrence | Timestamp of last occurrence of event | date |  |
 | kubernetes.event.type | Type of the given event | keyword |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |
-| kubernetes.namespace.annotations.\* | Kubernetes namespace annotations map | object |  |
-| kubernetes.namespace.labels.\* | Kubernetes namespace labels map | object |  |
-| kubernetes.namespace.name | Kubernetes namespace name | keyword |  |
-| kubernetes.namespace.uid | Kubernetes namespace uid | keyword |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |
