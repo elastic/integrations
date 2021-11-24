@@ -92,6 +92,12 @@ An example event for `firewall` looks as following:
     "ecs": {
         "version": "1.12.0"
     },
+    "related": {
+        "ip": [
+            "81.2.69.143",
+            "216.160.83.57"
+        ]
+    },
     "data_stream": {
         "namespace": "default",
         "type": "logs",
@@ -105,10 +111,16 @@ An example event for `firewall` looks as following:
     },
     "event": {
         "severity": 3,
-        "action": "blocked",
         "ingested": "2021-11-18T17:14:15.243250800Z",
         "original": "{\"firewall_name\":\"AWSNetworkFirewall\",\"availability_zone\":\"us-east-2a\",\"event_timestamp\":\"1636381332\",\"event\":{\"timestamp\":\"2021-11-08T14:22:12.637611+0000\",\"flow_id\":706471429191862,\"event_type\":\"alert\",\"src_ip\":\"81.2.69.143\",\"src_port\":51254,\"dest_ip\":\"216.160.83.57\",\"dest_port\":80,\"proto\":\"TCP\",\"alert\":{\"action\":\"blocked\",\"signature_id\":1000003,\"rev\":1,\"signature\":\"Deny all other TCP traffic\",\"category\":\"\",\"severity\":3},\"http\":{\"hostname\":\"216.160.83.57\",\"url\":\"/\",\"http_user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"length\":0},\"app_proto\":\"http\"}}",
-        "type": "alert"
+        "category": [
+            "network"
+        ],
+        "type": [
+            "connection",
+            "denied"
+        ],
+        "kind": "alert"
     },
     "aws": {
         "firewall": {
@@ -118,7 +130,17 @@ An example event for `firewall` looks as following:
         }
     },
     "user_agent": {
-        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
+        "os": {
+            "name": "Mac OS X",
+            "version": "10.15.7",
+            "full": "Mac OS X 10.15.7"
+        },
+        "device": {
+            "name": "Mac"
+        },
+        "version": "95.0.4638.69"
     }
 }
 ```
@@ -207,6 +229,7 @@ An example event for `firewall` looks as following:
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -222,8 +245,10 @@ An example event for `firewall` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.path | Path of the request, such as "/search". | wildcard |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.changes.name | Short name or login of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
