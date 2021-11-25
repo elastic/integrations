@@ -1,0 +1,31 @@
+data_stream:
+  dataset: {{data_stream.dataset}}
+host: {{listen_address}}:{{listen_port}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+{{#if max_message_size}}
+max_message_size: {{max_message_size}}
+{{/if}}
+{{#if read_buffer_size}}
+read_buffer: {{read_buffer_size}}
+{{/if}}
+{{#if timeout}}
+timeout: {{timeout}}
+{{/if}}
+{{#if keep_null}}
+keep_null: {{keep_null}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
