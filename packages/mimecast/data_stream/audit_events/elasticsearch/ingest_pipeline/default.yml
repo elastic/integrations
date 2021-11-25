@@ -1,7 +1,7 @@
 ---
 description: Pipeline for processing sample logs
 processors:
-  # Generic event/ecs fields we always want to populated
+  #  # Generic event/ecs fields we always want to populate
   - set:
       field: event.ingested
       value: "{{ _ingest.timestamp }}"
@@ -142,15 +142,7 @@ processors:
       if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
   - set:
       field: event.created
-      value: "{{mimecast.date}}"
-      if: 'ctx?.mimecast?.date != null && ctx?.mimecast?.time != null'
-  - append: 
-      field: event.created
-      value: "{{mimecast.time}}"
-      if: 'ctx?.mimecast?.date != null && ctx?.mimecast?.time != null'
-  - join: 
-      field: event.created
-      separator: " "
+      value: "{{mimecast.date}} {{mimecast.time}}"
       if: 'ctx?.mimecast?.date != null && ctx?.mimecast?.time != null'
   - date:
       field: event.created
