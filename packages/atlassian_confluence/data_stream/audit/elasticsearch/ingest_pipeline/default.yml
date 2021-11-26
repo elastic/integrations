@@ -13,20 +13,20 @@ processors:
 - json:
     field: event.original
     target_field: json
-- date:
-    field: json.timestamp
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "@timestamp"
+- set:
+    field: _tmp.timestamp
+    copy_from: json.timestamp
     if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
+- set:
+    field: _tmp.timestamp
+    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
 - date:
-    field: json.timestamp.epochSecond
+    field: _tmp.timestamp
     formats:
     - UNIX
-    timezone: UTC
+    - ISO8601
     target_field: "@timestamp"
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map
 - rename:
     field: json.source
     target_field: source.address
@@ -96,10 +96,167 @@ processors:
     field: event.action
     copy_from: confluence.audit.type.actionI18nKey
     ignore_empty_value: true
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+      audit.logging.summary.global.permission.added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
+      audit.logging.summary.space.permission.added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
+      audit.logging.summary.user.created:
+        category:
+          - iam
+        type:
+          - user
+          - creation
+      audit.logging.summary.user.updated:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      audit.logging.summary.user.deleted:
+        category:
+          - iam
+        type:
+          - user
+          - deletion
+      audit.logging.summary.group.membership.added:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      audit.logging.summary.group.membership.removed:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      audit.logging.summary.group.created:
+        category:
+          - iam
+        type:
+          - group
+          - creation
+      audit.logging.summary.group.deleted:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
+      atlassian.audit.event.action.audit.config.updated:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
+      audit.logging.summary.global.settings.edited:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
+      personal.access.tokens.audit.log.summary.token.created:
+        category:
+          - iam
+        type:
+          - admin
+          - creation
+      personal.access.tokens.audit.log.summary.token.deleted:
+        category:
+          - iam
+        type:
+          - admin
+          - deletion
+      audit.logging.summary.login.success:
+        category:
+          - authentication
+        type:
+          - start
+        outcome: success
+      audit.logging.summary.user.logout:
+        category:
+          - authentication
+        type:
+          - end
+      audit.logging.summary.login.failed:
+        category:
+          - authentication
+        type:
+          - info
+        outcome: failure
+      audit.logging.summary.user.password.changed:
+        category:
+          - iam
+        type:
+          - user
+          - change
+        outcome: success
+      audit.logging.summary.sudo.auth.successful:
+        category:
+          - authentication
+        type:
+          - admin
+          - start
+      audit.logging.summary.sudo.logout:
+        category:
+          - authentication
+        type:
+          - admin
+          - end
+      audit.logging.summary.space.created:
+        category:
+          - configuration
+        type:
+          - creation
+      audit.logging.summary.page.created:
+        category:
+          - configuration
+        type:
+          - creation
+      audit.logging.summary.page.deleted:
+        category:
+          - configuration
+        type:
+          - deletion
+      audit.logging.summary.space.removed:
+        category:
+          - configuration
+        type:
+          - deletion
+      audit.logging.summary.space.config.updated:
+        category:
+          - configuration
+        type:
+          - change
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.type = 'info';
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
 - remove:
     field:
       - json
-    ignore_missing: true  
+      - _tmp
+    ignore_missing: true   
 - remove:
     field: event.original
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

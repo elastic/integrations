@@ -32,18 +32,15 @@ request.transforms:
 {{/unless}}
   - set:
       target: url.params.from
-      value: "[[.cursor.last_execution_datetime]]"
-      default: '[[formatDate (now (parseDuration "-{{interval}}"))]]'
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
   - set:
       target: url.params.to
-      value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
-      default: '[[formatDate (now (parseDuration "-1m"))]]'
+      value: '[[formatDate now]]'
   - set:
       target: url.params.limit
       value: {{ limit }}
 
-
-response.decode_as: application/json
 response.split:
   target: body.entities
 response.pagination:
@@ -53,8 +50,8 @@ response.pagination:
       fail_on_template_error: true
 
 cursor:
-  last_execution_datetime:
-    value: "[[.last_request.url.params.to]]"
+  last_timestamp:
+    value: "[[.first_event.timestamp]]"
 
 tags:
 {{#if preserve_original_event}}
@@ -69,4 +66,4 @@ publisher_pipeline.disable_host: true
 {{#if processors}}
 processors:
 {{processors}}
-{{/if}}
+{{/if}} 
