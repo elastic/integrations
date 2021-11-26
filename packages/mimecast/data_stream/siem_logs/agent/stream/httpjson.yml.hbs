@@ -1,0 +1,55 @@
+config_version: "2"
+interval: {{interval}}
+request.url: {{api_url}}
+request.method: "POST"
+request.transforms:
+   - set:
+      target: body.data
+      value: '[{"type":"MTA","fileFormat":"json", "compress":false, "token": "[[.cursor.next_token]]"}]'
+      default: '[{"type":"MTA","fileFormat":"json", "compress":false}]'
+      value_type: json
+   - set:
+      target: header.x-mc-app-id
+      value: {{app_id}}
+   - set:
+      target: header.x-mc-date
+      value: '[[formatDate (now) "RFC1123"]]'
+   - set:
+      target: header.x-mc-req-id
+      value: "[[uuid]]"
+   - set:
+      target: header.Authorization
+      value: 'MC {{access_key}}:[[hmacBase64 "sha1" (base64Decode "{{secret_key}}") (sprintf "%s:%s:/api/audit/get-siem-logs:{{app_key}}" (.header.Get "x-mc-date") (.header.Get "x-mc-req-id"))]]'
+      fail_on_template_error: true
+   - set:
+      target: header.Accept
+      value: '*/*'
+response.decode_as: application/json
+response.split:
+   transforms:
+   - set:
+      target: body.Content-Disposition
+      value: '[[.last_response.header.Get "Content-Disposition"]]'
+   target: body.data
+response.pagination:
+   - set:
+      target: body.data
+      value: '[{"type":"MTA","fileFormat":"json", "compress":false, "token": "[[.last_response.header.Get "mc-siem-token"]]"}]'
+      value_type: json
+cursor:
+   next_token:
+      value: '[[.last_response.header.Get "mc-siem-token"]]'
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
