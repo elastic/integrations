@@ -13,18 +13,20 @@ processors:
 - json:
     field: event.original
     target_field: json
-- date:
-    field: json.timestamp
-    formats:
-    - ISO8601
-    target_field: "@timestamp"
+- set:
+    field: _tmp.timestamp
+    copy_from: json.timestamp
     if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
+- set:
+    field: _tmp.timestamp
+    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
 - date:
-    field: json.timestamp.epochSecond
+    field: _tmp.timestamp
     formats:
     - UNIX
+    - ISO8601
     target_field: "@timestamp"
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map
 - rename:
     field: json.source
     target_field: source.address
@@ -60,7 +62,7 @@ processors:
     ignore_missing: true
 - rename:
     field: json.author.name
-    target_field: user.full_name
+    target_field: user.name
     ignore_missing: true
 - rename:
     field: json.auditType
@@ -94,9 +96,170 @@ processors:
     field: event.action
     copy_from: jira.audit.type.actionI18nKey
     ignore_empty_value: true
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+      jira.auditing.user.created:
+        category:
+          - iam
+        type:
+          - user
+          - creation
+      jira.auditing.user.updated:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      jira.auditing.user.deleted:
+        category:
+          - iam
+        type:
+          - user
+          - deletion
+      jira.auditing.user.added.to.group:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      jira.auditing.user.removed.from.group:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      jira.auditing.user.logged.in:
+        category:
+          - authentication
+        type:
+          - start
+        outcome: success
+      jira.auditing.user.logged.out:
+        category:
+          - authentication
+        type:
+          - end
+      jira.auditing.user.password.changed:
+        category:
+          - iam
+        type:
+          - user
+          - change
+        outcome: success
+      jira.auditing.user.login.failed:
+        category:
+          - authentication
+        type:
+          - info
+        outcome: failure
+      jira.auditing.websudo.session.started:
+        category:
+          - authentication
+        type:
+          - start
+      jira.auditing.websudo.session.invalidated:
+        category:
+          - authentication
+        type:
+          - end
+      jira.auditing.group.created:
+        category:
+          - iam
+        type:
+          - group
+          - creation
+      jira.auditing.group.deleted:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
+      jira.auditing.global.permission.added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
+      personal.access.tokens.audit.log.summary.token.created:
+        category:
+          - iam
+        type:
+          - admin
+          - creation
+      personal.access.tokens.audit.log.summary.token.deleted:
+        category:
+          - iam
+        type:
+          - admin
+          - deletion
+      jira.auditing.issue.type.created:
+        category:
+          - configuration
+        type:
+          - creation
+      atlassian.audit.event.action.audit.config.updated:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
+      jira.auditing.project.created:
+        category:
+          - configuration
+        type:
+          - creation
+      jira.auditing.project.lead.updated:
+        category:
+          - configuration
+        type:
+          - change
+      jira.auditing.project.default.assignee.updated:
+        category:
+          - configuration
+        type:
+          - change
+      jira.auditing.project.updated:
+        category:
+          - configuration
+        type:
+          - change
+      jira.auditing.permission.scheme.removed.from.project:
+        category:
+          - configuration
+          - iam
+        type:
+          - deletion
+      jira.auditing.issue.type.screen.scheme.removed:
+        category:
+          - configuration
+        type:
+          - deletion
+      jira.auditing.project.deleted:
+        category:
+          - configuration
+        type:
+          - deletion
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.type = 'info';
+
+      if (ctx?.event?.action == null) {
+          return;
+      }
+
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
 - remove:
     field:
       - json
+      - _tmp.timestamp
     ignore_missing: true  
 - remove:
     field: event.original
