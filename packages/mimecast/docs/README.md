@@ -14,9 +14,9 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2021-11-16T12:01:37.000Z",
     "agent": {
-        "ephemeral_id": "bfce41fd-1832-44d8-9a72-40180fc3fafc",
+        "ephemeral_id": "57841034-22ed-4fcd-bcfd-0a9518249e2d",
         "hostname": "docker-fleet-agent",
-        "id": "b036c157-0259-437f-b352-39989825617d",
+        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -48,7 +48,7 @@ An example event for `audit_events` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "b036c157-0259-437f-b352-39989825617d",
+        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -58,7 +58,7 @@ An example event for `audit_events` looks as following:
         "created": "2021-11-16T12:01:37.000Z",
         "dataset": "mimecast.audit_events",
         "id": "eNqrVipOTS4tSs1MUbJSskwzjDIMyDRKLinNSEl1c0pOqXLJyQlL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkrqOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAE_sLAI",
-        "ingested": "2021-11-24T11:09:51Z",
+        "ingested": "2021-11-24T15:39:11Z",
         "original": "{\"auditType\":\"Case Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Viewed Case - Case: GDPR/CCPA, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSskwzjDIMyDRKLinNSEl1c0pOqXLJyQlL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkrqOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAE_sLAI\",\"user\":\"johndoe@example.com\"}"
     },
     "input": {
@@ -178,9 +178,9 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
     "agent": {
-        "ephemeral_id": "d44f1ac6-c0b6-42c5-8427-c2b549baff52",
+        "ephemeral_id": "1aef981f-3448-4d12-bd5a-723ac1cdcc81",
         "hostname": "docker-fleet-agent",
-        "id": "b036c157-0259-437f-b352-39989825617d",
+        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -194,7 +194,7 @@ An example event for `dlp` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "b036c157-0259-437f-b352-39989825617d",
+        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -214,7 +214,7 @@ An example event for `dlp` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-18T21:41:18+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2021-11-24T11:10:27Z",
+        "ingested": "2021-11-24T15:39:49Z",
         "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
     },
     "input": {
@@ -299,63 +299,40 @@ An example event for `siem` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-12T12:15:46.000Z",
-    "agent": {
-        "ephemeral_id": "2401ea19-aed8-4811-a26b-e06d8f3ea3a8",
-        "hostname": "docker-fleet-agent",
-        "id": "b036c157-0259-437f-b352-39989825617d",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.16.0"
-    },
-    "cloud": {
-        "account": {
-            "id": "ABC123"
-        }
-    },
-    "data_stream": {
-        "dataset": "mimecast.siem_logs",
-        "namespace": "ep",
-        "type": "logs"
-    },
+    "@timestamp": "2021-10-18T08:02:43.000Z",
     "ecs": {
         "version": "1.12.0"
     },
-    "elastic_agent": {
-        "id": "b036c157-0259-437f-b352-39989825617d",
-        "snapshot": true,
-        "version": "7.16.0"
-    },
-    "email": {
-        "direction": "Internal",
-        "from": {
-            "address": "johndoe@example.com"
-        },
-        "local_id": "fjihpfEgM_iRwemxhe3t_w",
-        "to": {
-            "address": "o365_service_account@example.com"
-        }
-    },
     "event": {
-        "agent_id_status": "verified",
-        "created": "2021-11-12T12:15:46+0000",
-        "dataset": "mimecast.siem_logs",
-        "ingested": "2021-11-24T11:11:03Z",
-        "original": "{\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
+        "reason": "Spm",
+        "action": "Hld",
+        "ingested": "2021-11-25T11:34:11.459620200Z",
+        "original": "{\"Act\":\"Hld\",\"AttCnt\":0,\"AttNames\":null,\"AttSize\":0,\"Content-Disposition\":\"attachment; filename=\\\"process_20211018093329655.json\\\"\",\"Hld\":\"Spm\",\"MsgId\":\"\\u003cINX.164dae0719be95da77068c7d264.3e915.e7719.c78c.17c926a3231ace@newsletter.77onlineshop.eu\\u003e\",\"MsgSize\":157436,\"Sender\":\"bounce_9244+cdaahhimyaaaaagaad5ekqaaaaaaaaeribenpq@newsletter.77onlineshop.eu\",\"Subject\":\"Hi Sandra! Neue Styles eingetroffen! – Finde deinen Lieblings-Look!\",\"aCode\":\"HhuwRf_AOcuJZINE2ZgcKw\",\"acc\":\"ABC123\",\"datetime\":\"2021-10-18T09:02:43+0100\"}",
+        "created": "2021-10-18T09:02:43+0100",
         "outcome": "unknown"
     },
-    "input": {
-        "type": "httpjson"
-    },
-    "mimecast": {
-        "RcptActType": "Jnl",
-        "RcptHdrType": "Unknown"
+    "email": {
+        "message_id": "\u003cINX.164dae0719be95da77068c7d264.3e915.e7719.c78c.17c926a3231ace@newsletter.77onlineshop.eu\u003e",
+        "from": {
+            "address": "bounce_9244+cdaahhimyaaaaagaad5ekqaaaaaaaaeribenpq@newsletter.77onlineshop.eu"
+        },
+        "attachments": {
+            "file": {
+                "size": 0
+            }
+        },
+        "local_id": "HhuwRf_AOcuJZINE2ZgcKw",
+        "subject": "Hi Sandra! Neue Styles eingetroffen! – Finde deinen Lieblings-Look!",
+        "message_size": 157436
     },
     "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "mimecast-siem-logs"
-    ]
+        "preserve_original_event"
+    ],
+    "mimecast": {
+        "acc": "ABC123",
+        "log_type": "process",
+        "AttCnt": 0
+    }
 }
 ```
 
@@ -461,6 +438,7 @@ An example event for `siem` looks as following:
 | mimecast.ThreatDictionary | The content of the email was detected to contain words in the Mimecast threat dictionary. | keyword |
 | mimecast.UrlCategory | The category of the URL that was clicked. | keyword |
 | mimecast.Virus | The name of the virus found on the email, if applicable. | keyword |
+| mimecast.acc | The Mimecast account code for your account. | keyword |
 | mimecast.credentialTheft | The info about credential theft. | keyword |
 | mimecast.log_type | String to get type of SIEM log. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
@@ -755,16 +733,17 @@ An example event for `ttp_url` looks as following:
         "version": "1.12.0"
     },
     "related": {
-        "user": {
-            "name": "johndoe",
-            "email": "johndoe@example.com",
-            "domain": "example.com"
-        },
-        "ip": "8.8.8.8"
+        "user": [
+            "johndoe",
+            "johndoe@example.com"
+        ],
+        "ip": [
+            "8.8.8.8"
+        ]
     },
     "event": {
         "action": "Continue",
-        "ingested": "2021-11-19T14:43:58.419825Z",
+        "ingested": "2021-11-24T14:39:10.084705200Z",
         "original": "{\"userEmailAddress\": \"johndoe@example.com\", \"fromUserEmailAddress\": \"bestbuyinfo@emailinfo.bestbuy.com\", \"url\": \"https://click.emailinfo2.bestbuy.com/?qs=5c47c91aeb44fac857370c26ddf09c3f484431e1ccfa636fc64e26e40dd87efdb43d4deeeab8c2e727ebfa079e8cf1404c095c511152e4b09e7d00bf8377f32d\", \"ttpDefinition\": \"Inbound URL 'Aggressive'\", \"subject\": \"Today only: Save $100 on Tineco Pure One S12 smart cordless stick vacuum, plus more.\", \"action\": \"allow\", \"adminOverride\": \"N/A\", \"userOverride\": \"None\", \"scanResult\": \"clean\", \"category\": \"Business\", \"sendingIp\": \"8.8.8.8\", \"userAwarenessAction\": \"Continue\", \"date\": \"2021-10-16T14:45:34+0000\", \"actions\": \"Allow\", \"route\": \"inbound\", \"creationMethod\": \"User Click\", \"emailPartsDescription\": [ \"Body\" ], \"messageId\": \"\u003c31b43097-94f9-4f64-8e37-8ad23650c692@ind1s01mta1292.xt.local\u003e\" }",
         "created": "2021-10-16T14:45:34+0000"
     },
