@@ -14,8 +14,11 @@ request.proxy_url: {{proxy_url}}
 request.transforms:
   - set:
       target: url.params.from
-      value: "[[.cursor.last_timestamp]]"
+      value: "[[.cursor.last_execution_datetime]]"
       default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+  - set:
+      target: url.params.to
+      value: '[[ (now (parseDuration "-1m")).Unix ]]'
   - set:
       target: header.XTimestamp
       value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
@@ -49,11 +52,12 @@ response.pagination:
       fail_on_template_error: true
   - delete:
       target: url.params.from
+  - delete:
+      target: url.params.to
 
 cursor:
-  last_timestamp:
-    value: '[[ (parseTimestamp .last_event.httpMessage.start).Unix ]]'
-    fail_on_template_error: true
+  last_execution_datetime:
+    value: '[[ (now (parseDuration "-1m")).Unix ]]'
 
 {{#if tags.length}}
 tags:
