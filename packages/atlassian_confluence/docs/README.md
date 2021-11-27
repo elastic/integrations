@@ -23,10 +23,10 @@ The Confluence integration collects audit logs from the audit log files or the a
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
 | confluence.audit.affected_objects | Affected Objects | flattened |
-| confluence.audit.changed_values | Extra Attributes | flattened |
+| confluence.audit.changed_values | Changed Values | flattened |
 | confluence.audit.extra_attributes | Extra Attributes | flattened |
 | confluence.audit.method | Method | keyword |
-| confluence.audit.system | Jira Base URI | keyword |
+| confluence.audit.system | s Base URI | keyword |
 | confluence.audit.type.action | Action | keyword |
 | confluence.audit.type.actionI18nKey | actionI18nKey | keyword |
 | confluence.audit.type.area | Area | keyword |
