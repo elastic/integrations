@@ -51,7 +51,7 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | jira.audit.affected_objects | Affected Objects | flattened |
-| jira.audit.changed_values | Extra Attributes | flattened |
+| jira.audit.changed_values | Changed Values | flattened |
 | jira.audit.extra_attributes | Extra Attributes | flattened |
 | jira.audit.method | Method | keyword |
 | jira.audit.system | Jira Base URI | keyword |
