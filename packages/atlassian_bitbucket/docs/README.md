@@ -17,7 +17,7 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | bitbucket.audit.changed_values | Changed Values | flattened |
 | bitbucket.audit.extra_attributes | Extra Attributes | flattened |
 | bitbucket.audit.method | Method | keyword |
-| bitbucket.audit.system | Jira Base URI | keyword |
+| bitbucket.audit.system | Bitbucket Base URI | keyword |
 | bitbucket.audit.type.action | Action | keyword |
 | bitbucket.audit.type.actionI18nKey | actionI18nKey | keyword |
 | bitbucket.audit.type.area | Area | keyword |
@@ -98,7 +98,7 @@ An example event for `audit` looks as following:
     "event": {
         "action": "bitbucket.service.user.audit.action.groupmembershipdeleted",
         "ingested": "2021-11-27T18:22:23.712523129Z",
-        "original": "{\"timestamp\":\"2021-11-27T17:38:23.209Z\",\"author\":{\"name\":\"admin\",\"type\":\"NORMAL\",\"id\":\"2\",\"uri\":\"http://bitbucket.internal:7990/users/admin\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"bitbucket.service.audit.category.usersandgroups\",\"category\":\"Users and groups\",\"actionI18nKey\":\"bitbucket.service.user.audit.action.groupmembershipdeleted\",\"action\":\"User deleted from user group\"},\"affectedObjects\":[{\"name\":\"asdf\",\"type\":\"GROUP\",\"uri\":\"http://bitbucket.internal:7990/admin/groups/view?name=asdf\",\"id\":\"asdf\"},{\"name\":\"test\",\"type\":\"USER\",\"id\":\"3\"}],\"changedValues\":[],\"source\":\"10.50.73.5\",\"system\":\"http://jira.internal:7990\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"method\":\"Browser\",\"extraAttributes\":[{\"nameI18nKey\":\"bitbucket.service.user.audit.attribute.groupmembership.parentgroup\",\"name\":\"Parent group\",\"value\":\"asdf\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.details\",\"name\":\"details\",\"value\":\"{\\\"entities\\\":\\\"test\\\",\\\"membership\\\":\\\"GROUP_USER\\\"}\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"name\":\"target\",\"value\":\"asdf\"}]}",
+        "original": "{\"timestamp\":\"2021-11-27T17:38:23.209Z\",\"author\":{\"name\":\"admin\",\"type\":\"NORMAL\",\"id\":\"2\",\"uri\":\"http://bitbucket.internal:7990/users/admin\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"bitbucket.service.audit.category.usersandgroups\",\"category\":\"Users and groups\",\"actionI18nKey\":\"bitbucket.service.user.audit.action.groupmembershipdeleted\",\"action\":\"User deleted from user group\"},\"affectedObjects\":[{\"name\":\"asdf\",\"type\":\"GROUP\",\"uri\":\"http://bitbucket.internal:7990/admin/groups/view?name=asdf\",\"id\":\"asdf\"},{\"name\":\"test\",\"type\":\"USER\",\"id\":\"3\"}],\"changedValues\":[],\"source\":\"10.50.73.5\",\"system\":\"http://bitbucket.internal:7990\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"method\":\"Browser\",\"extraAttributes\":[{\"nameI18nKey\":\"bitbucket.service.user.audit.attribute.groupmembership.parentgroup\",\"name\":\"Parent group\",\"value\":\"asdf\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.details\",\"name\":\"details\",\"value\":\"{\\\"entities\\\":\\\"test\\\",\\\"membership\\\":\\\"GROUP_USER\\\"}\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"name\":\"target\",\"value\":\"asdf\"}]}",
         "type": [
             "group",
             "change"
@@ -110,7 +110,7 @@ An example event for `audit` looks as following:
     },
     "bitbucket": {
         "audit": {
-            "system": "http://jira.internal:7990",
+            "system": "http://bitbucket.internal:7990",
             "method": "Browser",
             "affected_objects": [
                 {
