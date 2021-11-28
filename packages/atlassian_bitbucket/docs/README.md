@@ -17,7 +17,6 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | bitbucket.audit.changed_values | Changed Values | flattened |
 | bitbucket.audit.extra_attributes | Extra Attributes | flattened |
 | bitbucket.audit.method | Method | keyword |
-| bitbucket.audit.system | Bitbucket Base URI | keyword |
 | bitbucket.audit.type.action | Action | keyword |
 | bitbucket.audit.type.actionI18nKey | actionI18nKey | keyword |
 | bitbucket.audit.type.area | Area | keyword |
@@ -44,6 +43,8 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -63,6 +64,10 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -78,9 +83,16 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.name | Short name or login of the user. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 An example event for `audit` looks as following:
@@ -91,26 +103,27 @@ An example event for `audit` looks as following:
     "ecs": {
         "version": "1.12.0"
     },
+    "related": {
+        "user": [
+            "admin",
+            "test"
+        ],
+        "hosts": [
+            "bitbucket.internal"
+        ],
+        "ip": [
+            "10.50.73.5"
+        ]
+    },
+    "service": {
+        "address": "http://bitbucket.internal:7990"
+    },
     "source": {
         "address": "10.50.73.5",
         "ip": "10.50.73.5"
     },
-    "event": {
-        "action": "bitbucket.service.user.audit.action.groupmembershipdeleted",
-        "ingested": "2021-11-27T18:22:23.712523129Z",
-        "original": "{\"timestamp\":\"2021-11-27T17:38:23.209Z\",\"author\":{\"name\":\"admin\",\"type\":\"NORMAL\",\"id\":\"2\",\"uri\":\"http://bitbucket.internal:7990/users/admin\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"bitbucket.service.audit.category.usersandgroups\",\"category\":\"Users and groups\",\"actionI18nKey\":\"bitbucket.service.user.audit.action.groupmembershipdeleted\",\"action\":\"User deleted from user group\"},\"affectedObjects\":[{\"name\":\"asdf\",\"type\":\"GROUP\",\"uri\":\"http://bitbucket.internal:7990/admin/groups/view?name=asdf\",\"id\":\"asdf\"},{\"name\":\"test\",\"type\":\"USER\",\"id\":\"3\"}],\"changedValues\":[],\"source\":\"10.50.73.5\",\"system\":\"http://bitbucket.internal:7990\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"method\":\"Browser\",\"extraAttributes\":[{\"nameI18nKey\":\"bitbucket.service.user.audit.attribute.groupmembership.parentgroup\",\"name\":\"Parent group\",\"value\":\"asdf\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.details\",\"name\":\"details\",\"value\":\"{\\\"entities\\\":\\\"test\\\",\\\"membership\\\":\\\"GROUP_USER\\\"}\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"name\":\"target\",\"value\":\"asdf\"}]}",
-        "type": [
-            "group",
-            "change"
-        ],
-        "category": [
-            "iam"
-        ],
-        "kind": "event"
-    },
     "bitbucket": {
         "audit": {
-            "system": "http://bitbucket.internal:7990",
             "method": "Browser",
             "affected_objects": [
                 {
@@ -150,9 +163,30 @@ An example event for `audit` looks as following:
             ]
         }
     },
+    "event": {
+        "action": "bitbucket.service.user.audit.action.groupmembershipdeleted",
+        "ingested": "2021-11-28T20:23:21.424513487Z",
+        "original": "{\"timestamp\":\"2021-11-27T17:38:23.209Z\",\"author\":{\"name\":\"admin\",\"type\":\"NORMAL\",\"id\":\"2\",\"uri\":\"http://bitbucket.internal:7990/users/admin\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"bitbucket.service.audit.category.usersandgroups\",\"category\":\"Users and groups\",\"actionI18nKey\":\"bitbucket.service.user.audit.action.groupmembershipdeleted\",\"action\":\"User deleted from user group\"},\"affectedObjects\":[{\"name\":\"asdf\",\"type\":\"GROUP\",\"uri\":\"http://bitbucket.internal:7990/admin/groups/view?name=asdf\",\"id\":\"asdf\"},{\"name\":\"test\",\"type\":\"USER\",\"id\":\"3\"}],\"changedValues\":[],\"source\":\"10.50.73.5\",\"system\":\"http://bitbucket.internal:7990\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"method\":\"Browser\",\"extraAttributes\":[{\"nameI18nKey\":\"bitbucket.service.user.audit.attribute.groupmembership.parentgroup\",\"name\":\"Parent group\",\"value\":\"asdf\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.details\",\"name\":\"details\",\"value\":\"{\\\"entities\\\":\\\"test\\\",\\\"membership\\\":\\\"GROUP_USER\\\"}\"},{\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"name\":\"target\",\"value\":\"asdf\"}]}",
+        "type": [
+            "group",
+            "change"
+        ],
+        "category": [
+            "iam"
+        ],
+        "kind": "event"
+    },
     "user": {
         "name": "admin",
-        "id": "2"
+        "id": "2",
+        "target": {
+            "name": "test",
+            "id": "3",
+            "group": {
+                "name": "asdf",
+                "id": "asdf"
+            }
+        }
     },
     "tags": [
         "preserve_original_event"
