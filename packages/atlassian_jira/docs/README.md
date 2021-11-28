@@ -99,21 +99,36 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-22T00:05:08.514Z",
+    "@timestamp": "2021-11-22T00:06:49.756Z",
     "ecs": {
         "version": "1.12.0"
+    },
+    "related": {
+        "user": [
+            "Anonymous",
+            "test.user"
+        ],
+        "hosts": [
+            "jira.internal"
+        ],
+        "ip": [
+            "10.50.33.72"
+        ]
+    },
+    "service": {
+        "address": "http://jira.internal:8088"
     },
     "source": {
         "address": "10.50.33.72",
         "ip": "10.50.33.72"
     },
     "event": {
-        "action": "jira.auditing.group.created",
-        "ingested": "2021-11-26T20:13:39.683686993Z",
-        "original": "{\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\"}],\"auditType\":{\"action\":\"Group created\",\"actionI18nKey\":\"jira.auditing.group.created\",\"area\":\"USER_MANAGEMENT\",\"category\":\"group management\",\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":{\"epochSecond\":1637539508,\"nano\":514000000},\"version\":\"1.0\"}",
+        "action": "jira.auditing.user.added.to.group",
+        "ingested": "2021-11-28T19:48:12.469569158Z",
+        "original": "{\"timestamp\":\"2021-11-22T00:06:49.756Z\",\"author\":{\"name\":\"Anonymous\",\"type\":\"user\",\"id\":\"-2\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"category\":\"group management\",\"actionI18nKey\":\"jira.auditing.user.added.to.group\",\"action\":\"User added to group\"},\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\",\"uri\":\"http://jira.internal:8088/secure/ViewGroup.jspa?name=jira-software-users\"},{\"name\":\"test.user\",\"type\":\"USER\",\"uri\":\"http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user\",\"id\":\"JIRAUSER10000\"}],\"changedValues\":[],\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"method\":\"Browser\",\"extraAttributes\":[]}",
         "type": [
             "group",
-            "creation"
+            "change"
         ],
         "category": [
             "iam"
@@ -122,28 +137,39 @@ An example event for `audit` looks as following:
     },
     "user": {
         "name": "Anonymous",
-        "id": "-2"
+        "id": "-2",
+        "target": {
+            "name": "test.user",
+            "id": "JIRAUSER10000",
+            "group": {
+                "name": "jira-software-users"
+            }
+        }
     },
     "tags": [
         "preserve_original_event"
     ],
     "jira": {
         "audit": {
-            "system": "http://jira.internal:8088",
             "method": "Browser",
             "affected_objects": [
                 {
                     "name": "jira-software-users",
-                    "type": "GROUP"
+                    "type": "GROUP",
+                    "uri": "http://jira.internal:8088/secure/ViewGroup.jspa?name=jira-software-users"
+                },
+                {
+                    "name": "test.user",
+                    "id": "JIRAUSER10000",
+                    "type": "USER",
+                    "uri": "http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user"
                 }
             ],
             "type": {
-                "area": "USER_MANAGEMENT",
-                "action": "Group created",
-                "actionI18nKey": "jira.auditing.group.created",
+                "actionI18nKey": "jira.auditing.user.added.to.group",
+                "action": "User added to group",
                 "categoryI18nKey": "jira.auditing.category.groupmanagement",
-                "category": "group management",
-                "level": "BASE"
+                "category": "group management"
             }
         }
     }
