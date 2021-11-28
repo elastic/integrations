@@ -64,6 +64,13 @@ processors:
     field: json.author.name
     target_field: user.full_name
     ignore_missing: true
+- grok:
+    field: json.author.uri
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx?.json?.author?.uri != ""
+    patterns:
+      - '\?username=%{USER:user.name}$'
 - rename:
     field: json.auditType
     target_field: confluence.audit.type
@@ -78,8 +85,13 @@ processors:
     ignore_missing: true
 - rename:
     field: json.system
-    target_field: confluence.audit.system
+    target_field: service.address
     ignore_missing: true
+- uri_parts:
+    field: service.address
+    target_field: _tmp.service
+    ignore_failure: true
+    if: ctx.service?.address != null
 - rename:
     field: json.extraAttributes
     target_field: confluence.audit.extra_attributes
@@ -98,7 +110,7 @@ processors:
     ignore_empty_value: true
 - script:
     lang: painless
-    tag: Add ECS categorization
+    description: Add ECS categorization
     params:
       audit.logging.summary.global.permission.added:
         category:
@@ -120,6 +132,12 @@ processors:
         type:
           - user
           - creation
+      audit.logging.summary.user.renamed:
+        category:
+          - iam
+        type:
+          - user
+          - change
       audit.logging.summary.user.updated:
         category:
           - iam
@@ -252,6 +270,129 @@ processors:
       }
       def hm = new HashMap(params.get(ctx.event.action));
       hm.forEach((k, v) -> ctx.event[k] = v);
+- script:
+    lang: painless
+    description: Add ECS User fields
+    if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey)"
+    source: >-
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (ctx.group == null) {
+        Map map = new HashMap();
+        ctx.put("group", map);
+      }
+      if (ctx.user == null) {
+        Map map = new HashMap();
+        ctx.put("user", map);
+      }
+      if (ctx.user?.target == null) {
+        Map map = new HashMap();
+        ctx.user.put("target", map);
+      }
+      if (ctx.user?.changes == null) {
+        Map map = new HashMap();
+        ctx.user.put("changes", map);
+      }
+      if (ctx.user?.target?.group == null) {
+        Map map = new HashMap();
+        ctx.user.target.put("group", map);
+      }
+      if(ctx.confluence?.audit?.affected_objects != null) {
+        for (def j = 0; j < ctx.confluence?.audit?.affected_objects.length; j++) {
+          if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
+            if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted'].contains(ctx.event.action)) {
+              ctx.group.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.group.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            }
+            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed'].contains(ctx.event.action)) {
+              ctx.user.target.group.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.target.group.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            }
+          }
+          if(ctx.confluence?.audit?.affected_objects[j]?.type == 'User') {
+            if(['audit.logging.summary.user.created', 'audit.logging.summary.user.deleted', 'audit.logging.summary.user.password.changed','audit.logging.summary.user.updated'].contains(ctx.event.action)) {
+              ctx.user.target.put("full_name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.target.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+              if(ctx.confluence?.audit?.affected_objects[j]?.uri != null) {
+                def m = /\?username=([a-zA-Z0-9._-]+)$/.matcher(ctx.confluence?.audit?.affected_objects[j]?.uri);
+                if (m.find()) {
+                  ctx.user.target.put("name", m.group(1));
+                }
+              }
+            }
+            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed'].contains(ctx.event.action)) {
+              ctx.user.target.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.target.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            }
+            if(['audit.logging.summary.login.success', 'audit.logging.summary.login.failed'].contains(ctx.event.action)) {
+              ctx.user.put("full_name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+              if(ctx.confluence?.audit?.affected_objects[j]?.uri != null) {
+                def m = /\?username=([a-zA-Z0-9._-]+)$/.matcher(ctx.confluence?.audit?.affected_objects[j]?.uri);
+                if (m.find()) {
+                  ctx.user.put("name", m.group(1));
+                }
+              }
+            }
+          }
+        }
+      }
+      if(ctx.confluence?.audit?.changed_values != null) {
+        for (def j = 0; j < ctx.confluence?.audit?.changed_values.length; j++) {
+          if(['audit.logging.summary.user.renamed'].contains(ctx.event.action)) {
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'audit.logging.changed.value.username') {
+              ctx.user.changes.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
+              ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.from);
+            }
+          }
+          if(['audit.logging.summary.user.created','audit.logging.summary.user.updated'].contains(ctx.event.action)) {
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Username') {
+              ctx.user.changes.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
+              if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Email') {
+              ctx.user.changes.put("email", ctx.confluence?.audit?.changed_values[j]?.to);
+              if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("email", ctx.confluence?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Display name') {
+              ctx.user.changes.put("full_name", ctx.confluence?.audit?.changed_values[j]?.to);
+              if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("full_name", ctx.confluence?.audit?.changed_values[j]?.from);
+              }
+            }
+          }
+        }
+      }
+- append:
+    field: related.user
+    value: '{{user.name}}'
+    allow_duplicates: false
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{user.target.name}}'
+    allow_duplicates: false
+    if: ctx.user?.target?.name != null
+- append:
+    field: related.user
+    value: '{{user.changes.name}}'
+    allow_duplicates: false
+    if: ctx.user?.changes?.name != null
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- append:
+    field: related.hosts
+    value: '{{_tmp.service.domain}}'
+    allow_duplicates: false
+    if: ctx._tmp?.service?.domain != null
 - remove:
     field:
       - json

@@ -26,7 +26,6 @@ The Confluence integration collects audit logs from the audit log files or the a
 | confluence.audit.changed_values | Changed Values | flattened |
 | confluence.audit.extra_attributes | Extra Attributes | flattened |
 | confluence.audit.method | Method | keyword |
-| confluence.audit.system | s Base URI | keyword |
 | confluence.audit.type.action | Action | keyword |
 | confluence.audit.type.actionI18nKey | actionI18nKey | keyword |
 | confluence.audit.type.area | Area | keyword |
@@ -44,6 +43,8 @@ The Confluence integration collects audit logs from the audit log files or the a
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -63,6 +64,10 @@ The Confluence integration collects audit logs from the audit log files or the a
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -78,67 +83,80 @@ The Confluence integration collects audit logs from the audit log files or the a
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.changes.email | User email address. | keyword |
+| user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.name | Short name or login of the user. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-22T23:43:22.172Z",
     "confluence": {
         "audit": {
-            "system": "http://confluence.internal:8090",
             "method": "Browser",
             "affected_objects": [
                 {
-                    "name": "confluence-administrators",
-                    "type": "Group",
-                    "id": "confluence-administrators"
-                },
-                {
-                    "name": "admin",
+                    "name": "asdf",
+                    "id": "2c9680837d4a3682017d67821e520003",
                     "type": "User",
-                    "id": "2c9580827d4a06e8017d4a07c3e10000"
+                    "uri": "http://confluence.internal:8090/admin/users/viewuser.action?username=asdf123"
                 }
             ],
             "type": {
-                "area": "USER_MANAGEMENT",
-                "action": "User added to group",
-                "actionI18nKey": "audit.logging.summary.group.membership.added",
+                "actionI18nKey": "audit.logging.summary.user.renamed",
+                "action": "User renamed",
                 "categoryI18nKey": "audit.logging.category.user.management",
-                "category": "Users and groups",
-                "level": "BASE"
-            }
+                "category": "Users and groups"
+            },
+            "changed_values": [
+                {
+                    "from": "asdf",
+                    "to": "asdf123",
+                    "i18nKey": "audit.logging.changed.value.username",
+                    "key": "Username"
+                }
+            ]
         }
     },
+    "@timestamp": "2021-11-28T17:05:37.142Z",
     "ecs": {
         "version": "1.12.0"
     },
+    "related": {
+        "user": [
+            "admin123",
+            "asdf",
+            "asdf123"
+        ],
+        "hosts": [
+            "confluence.internal"
+        ],
+        "ip": [
+            "10.100.100.2"
+        ]
+    },
+    "service": {
+        "address": "http://confluence.internal:8090"
+    },
     "source": {
-        "geo": {
-            "continent_name": "Europe",
-            "region_iso_code": "GB-ENG",
-            "city_name": "London",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "region_name": "England",
-            "location": {
-                "lon": -0.0931,
-                "lat": 51.5142
-            }
-        },
-        "address": "81.2.69.143",
-        "ip": "81.2.69.143"
+        "address": "10.100.100.2",
+        "ip": "10.100.100.2"
     },
     "event": {
-        "action": "audit.logging.summary.group.membership.added",
-        "ingested": "2021-11-26T21:00:04.020067003Z",
-        "original": "{\"affectedObjects\":[{\"id\":\"confluence-administrators\",\"name\":\"confluence-administrators\",\"type\":\"Group\"},{\"id\":\"2c9580827d4a06e8017d4a07c3e10000\",\"name\":\"admin\",\"type\":\"User\"}],\"auditType\":{\"action\":\"User added to group\",\"actionI18nKey\":\"audit.logging.summary.group.membership.added\",\"area\":\"USER_MANAGEMENT\",\"category\":\"Users and groups\",\"categoryI18nKey\":\"audit.logging.category.user.management\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"81.2.69.143\",\"system\":\"http://confluence.internal:8090\",\"timestamp\":{\"epochSecond\":1637624602,\"nano\":172000000},\"version\":\"1.0\"}",
+        "action": "audit.logging.summary.user.renamed",
+        "ingested": "2021-11-28T17:41:58.711683518Z",
+        "original": "{\"timestamp\":\"2021-11-28T17:05:37.142Z\",\"author\":{\"name\":\"Joe Bob\",\"type\":\"user\",\"id\":\"2c9680837d4a3682017d4a375a280000\",\"uri\":\"http://confluence.internal:8090/admin/users/viewuser.action?username=admin123\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"audit.logging.category.user.management\",\"category\":\"Users and groups\",\"actionI18nKey\":\"audit.logging.summary.user.renamed\",\"action\":\"User renamed\"},\"affectedObjects\":[{\"name\":\"asdf\",\"type\":\"User\",\"uri\":\"http://confluence.internal:8090/admin/users/viewuser.action?username=asdf123\",\"id\":\"2c9680837d4a3682017d67821e520003\"}],\"changedValues\":[{\"key\":\"Username\",\"i18nKey\":\"audit.logging.changed.value.username\",\"from\":\"asdf\",\"to\":\"asdf123\"}],\"source\":\"10.100.100.2\",\"system\":\"http://confluence.internal:8090\",\"method\":\"Browser\",\"extraAttributes\":[]}",
         "type": [
-            "group",
+            "user",
             "change"
         ],
         "category": [
@@ -147,8 +165,15 @@ An example event for `audit` looks as following:
         "kind": "event"
     },
     "user": {
-        "full_name": "Anonymous",
-        "id": "-2"
+        "name": "admin123",
+        "changes": {
+            "name": "asdf123"
+        },
+        "full_name": "Joe Bob",
+        "id": "2c9680837d4a3682017d4a375a280000",
+        "target": {
+            "name": "asdf"
+        }
     },
     "tags": [
         "preserve_original_event"
