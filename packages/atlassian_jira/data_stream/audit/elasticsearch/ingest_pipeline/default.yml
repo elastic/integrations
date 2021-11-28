@@ -78,8 +78,13 @@ processors:
     ignore_missing: true
 - rename:
     field: json.system
-    target_field: jira.audit.system
+    target_field: service.address
     ignore_missing: true
+- uri_parts:
+    field: service.address
+    target_field: _tmp.service
+    ignore_failure: true
+    if: ctx.service?.address != null
 - rename:
     field: json.extraAttributes
     target_field: jira.audit.extra_attributes
@@ -256,10 +261,112 @@ processors:
 
       def hm = new HashMap(params.get(ctx.event.action));
       hm.forEach((k, v) -> ctx.event[k] = v);
+- script:
+    lang: painless
+    description: Add ECS User fields
+    if: "['jira.auditing.category.usermanagement','jira.auditing.category.groupmanagement'].contains(ctx.jira?.audit?.type?.categoryI18nKey)"
+    source: >-
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (ctx.group == null) {
+        Map map = new HashMap();
+        ctx.put("group", map);
+      }
+      if (ctx.user == null) {
+        Map map = new HashMap();
+        ctx.put("user", map);
+      }
+      if (ctx.user?.target == null) {
+        Map map = new HashMap();
+        ctx.user.put("target", map);
+      }
+      if (ctx.user?.changes == null) {
+        Map map = new HashMap();
+        ctx.user.put("changes", map);
+      }
+      if (ctx.user?.target?.group == null) {
+        Map map = new HashMap();
+        ctx.user.target.put("group", map);
+      }
+      if(ctx.jira?.audit?.affected_objects != null) {
+        for (def j = 0; j < ctx.jira?.audit?.affected_objects.length; j++) {
+          if(ctx.jira?.audit?.affected_objects[j]?.type == 'GROUP') {
+            if(['jira.auditing.group.created', 'jira.auditing.group.deleted'].contains(ctx.event.action)) {
+              ctx.group.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
+            }
+            if(['jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group'].contains(ctx.event.action)) {
+              ctx.user.target.group.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
+              ctx.user.target.group.put("id", ctx.jira?.audit?.affected_objects[j]?.id);
+            }
+          }
+          if(ctx.jira?.audit?.affected_objects[j]?.type == 'USER') {
+            if(['jira.auditing.user.created', 'jira.auditing.user.deleted','jira.auditing.user.password.changed','jira.auditing.user.updated','jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group'].contains(ctx.event.action)) {
+              ctx.user.target.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
+              ctx.user.target.put("id", ctx.jira?.audit?.affected_objects[j]?.id);
+            }
+          }
+        }
+      }
+      if(ctx.jira?.audit?.changed_values != null) {
+        for (def j = 0; j < ctx.jira?.audit?.changed_values.length; j++) {
+          if(['jira.auditing.user.renamed'].contains(ctx.event.action)) {
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.username') {
+              ctx.user.changes.put("name", ctx.jira?.audit?.changed_values[j]?.to);
+              ctx.user.target.put("name", ctx.jira?.audit?.changed_values[j]?.from);
+            }
+          }
+          if(['jira.auditing.user.created','jira.auditing.user.updated'].contains(ctx.event.action)) {
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.username') {
+              ctx.user.changes.put("name", ctx.jira?.audit?.changed_values[j]?.to);
+              if(ctx.jira?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("name", ctx.jira?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.email') {
+              ctx.user.changes.put("email", ctx.jira?.audit?.changed_values[j]?.to);
+              if(ctx.jira?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("email", ctx.jira?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.fullname') {
+              ctx.user.changes.put("full_name", ctx.jira?.audit?.changed_values[j]?.to);
+              if(ctx.jira?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("full_name", ctx.jira?.audit?.changed_values[j]?.from);
+              }
+            }
+          }
+        }
+      }
+- append:
+    field: related.user
+    value: '{{user.name}}'
+    allow_duplicates: false
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{user.target.name}}'
+    allow_duplicates: false
+    if: ctx.user?.target?.name != null
+- append:
+    field: related.user
+    value: '{{user.changes.name}}'
+    allow_duplicates: false
+    if: ctx.user?.changes?.name != null
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- append:
+    field: related.hosts
+    value: '{{_tmp.service.domain}}'
+    allow_duplicates: false
+    if: ctx._tmp?.service?.domain != null
 - remove:
     field:
       - json
-      - _tmp.timestamp
+      - _tmp
     ignore_missing: true  
 - remove:
     field: event.original

@@ -33,6 +33,7 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -54,7 +55,6 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | jira.audit.changed_values | Changed Values | flattened |
 | jira.audit.extra_attributes | Extra Attributes | flattened |
 | jira.audit.method | Method | keyword |
-| jira.audit.system | Jira Base URI | keyword |
 | jira.audit.type.action | Action | keyword |
 | jira.audit.type.actionI18nKey | actionI18nKey | keyword |
 | jira.audit.type.area | Area | keyword |
@@ -63,6 +63,10 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | jira.audit.type.level | Audit Level | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -78,9 +82,17 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.changes.email | User email address. | keyword |
+| user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.name | Short name or login of the user. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 
 
 An example event for `audit` looks as following:
