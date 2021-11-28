@@ -59,6 +59,17 @@ processors:
         SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
         RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
         FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
+  - grok:
+      field: message
+      patterns:
+        - '^\[Shared Folders\] %{ACTION:event.action} "%{DATA:qnap.nas.file.path}"\.$'
+        - '^\[User Groups\] %{ACTION:event.action} "%{DATA:group.name}"\.$'
+        - '^\[Users\] %{USER_EVENTS} "%{DATA:user.target.name}"\.$'
+      pattern_definitions:
+        ACTION: (Created|Deleted) %{DATA}
+        USER_EVENTS: (%{ACTION:event.action}|%{DATA:event.action} of user)
+      ignore_failure: true
+      ignore_missing: true
   - convert:
       field: source.address
       target_field: source.ip
@@ -92,7 +103,7 @@ processors:
         - '%{FILE_PATH:file.path} -> %{FILE_PATH:qnap.nas.file.new_path}'
         - '%{FILE_PATH:file.path}'
       pattern_definitions:
-        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
+        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)*'
       ignore_failure: true
       ignore_missing: true
   - grok:
@@ -106,6 +117,11 @@ processors:
       ignore_missing: true
   - gsub:
       field: event.action
+      pattern: 'the '
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: event.action
       pattern: \s
       replacement: '-'
       ignore_missing: true
@@ -114,59 +130,119 @@ processors:
       pattern: \s
       replacement: '-'
       ignore_missing: true
-  - set:
-      field: event.kind
-      value: event
-# File Event fields
-  - append:
-      if: ctx.qnap?.nas?.file?.path != null
-      field: event.category
-      value: file
-      allow_duplicates: false
-  - append:
-      if: ctx.event?.action != null && ["read"].contains(ctx.event?.action)
-      field: event.type
-      value: info
-      allow_duplicates: false
-  - append:
-      if: ctx.event?.action != null && ["delete"].contains(ctx.event?.action)
-      field: event.type
-      value: deletion
-      allow_duplicates: false
-  - append:
-      if: ctx.event?.action != null && ["create-directory", "add"].contains(ctx.event?.action)
-      field: event.type
-      value: creation
-      allow_duplicates: false
-  - append:
-      if: ctx.event?.action != null && ["rename"].contains(ctx.event?.action)
-      field: event.type
-      value: change
-      allow_duplicates: false
-# Login/Auth Event fields
-  - append:
-      if: ctx.event?.action != null && ["login-success", "login-fail", "logout"].contains(ctx.event?.action)
-      field: event.category
-      value: authentication
-      allow_duplicates: false
-  - append:
-      if: ctx.event?.action != null && ["logout"].contains(ctx.event?.action)
-      field: event.type
-      value: end
-      allow_duplicates: false
-  - append:
-      if: ctx.event?.action != null && ["login-success"].contains(ctx.event?.action)
-      field: event.type
-      value: start
-      allow_duplicates: false
-  - set:
-      if: ctx.event?.action != null && ["login-success"].contains(ctx.event?.action)
-      field: event.outcome
-      value: success
-  - set:
-      if: ctx.event?.action != null && ["login-fail"].contains(ctx.event?.action)
-      field: event.outcome
-      value: failure
+
+  - script:
+      lang: painless
+      description: Add ECS categorization
+      params:
+        create-directory:
+          category:
+            - file
+          type:
+            - creation
+        read:
+          category:
+            - file
+          type:
+            - access
+        rename:
+          category:
+            - file
+          type:
+            - change
+        delete:
+          category:
+            - file
+          type:
+            - deletion
+        add:
+          category:
+            - file
+          type:
+            - creation
+        created-shared-folder:
+          category:
+            - file
+          type:
+            - creation
+        deleted-shared-folder:
+          category:
+            - file
+          type:
+            - deletion
+        created-user-group:
+          category:
+            - iam
+          type:
+            - group
+            - creation
+        deleted-user-group:
+          category:
+            - iam
+          type:
+            - group
+            - deletion
+        changed-password:
+          category:
+            - iam
+          type:
+            - user
+            - change
+          outcome: success
+        edited-account-profile:
+          category:
+            - iam
+          type:
+            - user
+            - change
+          outcome: success
+        created-user:
+          category:
+            - iam
+          type:
+            - user
+            - creation
+        deleted-user:
+          category:
+            - iam
+          type:
+            - user
+            - deletion
+        login-fail:
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+        login-success:
+          category:
+            - authentication
+          type:
+            - start
+          outcome: success
+        logout:
+          category:
+            - authentication
+          type:
+            - end
+      source: >-
+        ctx.event.kind = 'event';
+        ctx.event.type = 'info';
+        if(ctx?.event?.action == null && ctx.event?.provider == 'event-log') {
+          if(ctx.event?.category == null) {
+            List list = new ArrayList();
+            ctx.event.put("category", list);
+          }
+          ctx.event.category.add('configuration');
+          ctx.event.type = 'change';
+        } else if (ctx?.event?.action == null) {
+          return;
+        }
+        if (params.get(ctx.event.action) == null) {
+          return;
+        }
+        def hm = new HashMap(params.get(ctx.event.action));
+        hm.forEach((k, v) -> ctx.event[k] = v);
   - append:
       if: ctx.source?.ip != null
       field: related.ip
