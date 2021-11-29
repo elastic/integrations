@@ -21,13 +21,22 @@ processors:
         - ISO8601
       ignore_failure: true
   - rename:
-      field: json.firewall_name
-      target_field: observer.name
-      ignore_missing: true
-  - rename:
       field: json.availability_zone
       target_field: cloud.availability_zone
       ignore_missing: true
+  - rename:
+      field: json.firewall_name
+      target_field: observer.name
+      ignore_missing: true
+  - set:
+      field: observer.type
+      value: firewall
+  - set:
+      field: observer.vendor
+      value: AWS
+  - set:
+      field: observer.product
+      value: "Network Firewall"
 
   # Event metadata
   - append:
