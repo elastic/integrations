@@ -82,7 +82,10 @@ An example event for `firewall` looks as following:
         "region": "us-east-2"
     },
     "observer": {
-        "name": "AWSNetworkFirewall"
+        "name": "AWSNetworkFirewall",
+        "product": "Network Firewall",
+        "type": "firewall",
+        "vendor": "AWS"
     },
     "@timestamp": "2021-11-18T17:27:38.039Z",
     "ecs": {
