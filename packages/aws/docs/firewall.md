@@ -5,11 +5,7 @@ This integration is used to fetch logs and metrics from [AWS Network Firewall](h
 ## Logs
 
 The `firewall_logs` dataset collects AWS Network Firewall logs. Users can use these logs to
-monitor network activity. The firewall produces two types of logs, which can be filtered by
-the `event.type` field:
-
-- `alert`: Sent for network traffic that matches stateful rules with an `Alert` or `Drop` action.
-- `netflow`: Sent for all network traffic forwarded from stateless to stateful rules.
+monitor network activity.
 
 An example event for `firewall` looks as following:
 
