@@ -86,6 +86,12 @@ An example event for `waf` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-11-25T14:25:25.000Z",
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws.waf"
+    },
     "rule": {
         "ruleset": "REGULAR",
         "id": "STMTest_SQLi_XSS"
