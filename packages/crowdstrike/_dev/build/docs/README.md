@@ -22,18 +22,38 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 
 ### FDR
 
-The Falcon Data Replicator replicates log data from your CrowdStrike environment to a stand-alone target. 
-This target can be configured in different ways:
+The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike 
+managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is 
+available in S3.
 
-- Use directly the AWS SQS queue provided by Crowdstrike. This is the default.
-- You can use the [FDR tool](https://github.com/CrowdStrike/FDR) (or any other similar) and read from a 
-location, or from a different SQS queue managed by you. 
+This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed 
+SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket 
+and the integration can read from there.
 
-If the intention is to read from local files, is important to note that they can't be in `gzip` format
-and they will need to be extracted first. 
-When using an AWS SQS queue that is not the one managed by
-Crowdstrike, is important to disable the `Is FDR Queue` option in order to parse the notifications properly.
+In both cases SQS messages are deleted after they are processed. This allows you to operate more than one Elastic 
+Agent with this integration if needed and not have duplicate events, but it means you cannot ingest the data a second time.
 
+#### Use with CrowdStrike managed S3/SQS
+
+This is the simplest way to setup the integration, and also the default.
+
+You need to set the integration up with the SQS queue URL provided by Crowdstrike FDR.
+Ensure the `Is FDR queue` option is enabled.
+
+#### Use with FDR tool and data replicated to a self-managed S3 bucket
+
+This option can be used if you want to archive the raw CrowdStrike data.
+
+You need to follow the steps below:
+
+- Create a S3 bucket to receive the logs.
+- Create a SQS queue.
+- Configure your S3 bucket to send object created notifications to your SQS queue.
+- Follow the [FDR tool](https://github.com/CrowdStrike/FDR) instructions to replicate data to your own S3 bucket.
+- Configure the integration to read from your self-managed SQS topic.
+- Disable the `Is FDR queue` option in the integration.
+
+**NOTE: While the FDR tool can replicate the files from S3 to your local file system, this integration cannot read those files because they are gzip compressed, and the log file input does not support reading compressed files.**
 
 #### Configuration for the S3 input
 
