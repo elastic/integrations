@@ -1,6 +1,6 @@
 config_version: 2
-interval: {{ .interval }}
-request.url: {{ .url }}/reporting/issues/?page=1&perPage=10&sortBy=issueTitle&order=asc&groupBy=issue
+interval: {{ interval }}
+request.url: {{ url }}/reporting/issues/?page=1&perPage=10&sortBy=issueTitle&order=asc&groupBy=issue
 request.method: POST
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
@@ -21,7 +21,7 @@ request.transforms:
 - set:
     target: url.params.from
     value: '[[ formatDate (now (parseDuration .cursor.interval)) "2006-01-02" ]]'
-    default: '[[ formatDate (now (parseDuration "-{{ .first_interval }}")) "2006-01-02" ]]'
+    default: '[[ formatDate (now (parseDuration "-{{ first_interval }}")) "2006-01-02" ]]'
 cursor:
   interval:
     value: "-24h"
@@ -29,7 +29,8 @@ request.timeout: 120s
 
 {{#if body_filter}}
 request.body:
-  filters: {{body_filter}}
+  filters:
+    {{body_filter}}
 {{/if}}
 
 response.request_body_on_pagination: true
