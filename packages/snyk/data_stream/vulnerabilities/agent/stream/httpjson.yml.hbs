@@ -27,11 +27,43 @@ cursor:
     value: "-24h"
 request.timeout: 120s
 
-{{#if body_filter}}
 request.body:
   filters:
-    {{body_filter}}
-{{/if}}
+    orgs:
+{{#each orgs as |org i|}}
+    - {{org}}
+{{/each}}
+    severity:
+{{#each severity as |sev i|}}
+    - {{sev}}
+{{/each}}
+    exploitMaturity:
+{{#each exploit_maturity as |mat i|}}
+    - {{mat}}
+{{/each}}
+    types:
+{{#each types as |type i|}}
+    - {{type}}
+{{/each}}
+    languages:
+{{#each languages as |lang i|}}
+    - {{lang}}
+{{/each}}
+    projects:
+{{#each projects as |proj i|}}
+    - {{proj}}
+{{/each}}
+    identifier: {{ identifier }}
+    ignored: {{ ignored }}
+    patched: {{ patched }}
+    fixable: {{ fixable }}
+    isFixed: {{ is_fixed }}
+    isUpgradable: {{ is_upgradeable }}
+    isPatchable: {{ is_patchable }}
+    isPinnable: {{ is_pinnable }}
+    priorityScore:
+      min: {{ min_priority_score }}
+      max: {{ max_priority_score }}
 
 response.request_body_on_pagination: true
 response.pagination:
