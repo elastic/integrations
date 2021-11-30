@@ -3,9 +3,6 @@ description: "Pipeline for AWS Network Firewall logs"
 processors:
   # General data
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
       value: 1.12.0
   - rename:
@@ -65,9 +62,10 @@ processors:
       if: ctx.json?.event?.alert?.action != null
 
   # Source IP/port/geo
-  - rename:
+  - convert:
       field: json.event.src_ip
       target_field: source.address
+      type: ip
       ignore_missing: true
   - set:
       field: source.ip
@@ -98,11 +96,20 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+  - set:
+      field: network.type
+      value: 'ipv4'
+      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(".")'
+  - set:
+      field: network.type
+      value: 'ipv6'
+      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(":")'
 
   # Destination IP/port/geo
-  - rename:
+  - convert:
       field: json.event.dest_ip
       target_field: destination.address
+      type: ip
       ignore_missing: true
   - set:
       field: destination.ip
@@ -180,7 +187,7 @@ processors:
   - set:
       field: network.protocol
       value: "unknown"
-      if: ctx?.network?.protocol == null || ctx?.network?.protocol == "failed"
+      if: ctx?.network?.protocol == "failed"
 
   # HTTP
   - rename:
@@ -331,6 +338,11 @@ processors:
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
+
+  # Community ID
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
 
   # Remove other fields
   - script:
