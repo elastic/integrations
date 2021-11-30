@@ -18,34 +18,74 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-01-31T20:17:14.891Z",
-    "destination": {
-        "address": "192.168.0.0"
-    },
-    "source": {
-        "address": "192.168.2.0",
-        "ip": "192.168.2.0"
-    },
-    "event": {
-        "action": "mac_ipsec_event",
-        "ingested": "2020-11-16T10:43:43.094510300Z",
-        "kind": "event",
-        "outcome": "1"
+    "@timestamp": "2016-01-03T00:37:51.394Z",
+    "agent": {
+        "ephemeral_id": "8cf2e918-3920-4370-8b08-7a4d0f7bf2f0",
+        "id": "32ab9ed2-f4ca-42a0-8cd6-05d7452f62b5",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0"
     },
     "auditd": {
         "log": {
-            "ses": "4294967295",
-            "sequence": 18877201,
-            "op": "SPD-delete",
-            "src_prefixlen": 24,
-            "dst_prefixlen": 16
+            "proctitle": "bash",
+            "sequence": 194438
         }
     },
-    "user": {
-        "audit": {
-            "id": "4294967295"
+    "data_stream": {
+        "dataset": "auditd.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "32ab9ed2-f4ca-42a0-8cd6-05d7452f62b5",
+        "snapshot": true,
+        "version": "8.0.0"
+    },
+    "event": {
+        "action": "proctitle",
+        "agent_id_status": "verified",
+        "dataset": "auditd.log",
+        "ingested": "2021-11-30T10:23:16Z",
+        "kind": "event"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "e5c13e4ad65ad1bdf67f6e352f322288",
+        "ip": [
+            "172.22.0.7"
+        ],
+        "mac": [
+            "02:42:ac:16:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.10.47-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
         }
-    }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/audit.log"
+        },
+        "offset": 1706
+    },
+    "tags": [
+        "auditd-log"
+    ]
 }
 ```
 
