@@ -6,19 +6,6 @@ streams:
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs using s3 input
     vars:
-      - name: shared_credential_file
-        type: text
-        title: Shared Credential File
-        multi: false
-        required: false
-        show_user: false
-        description: Directory of the shared credentials file
-      - name: credential_profile_name
-        type: text
-        title: Credential Profile Name
-        multi: false
-        required: false
-        show_user: false
       - name: access_key_id
         type: text
         title: Access Key ID
@@ -37,6 +24,43 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: queue_url
+        type: text
+        title: Queue URL
+        multi: false
+        required: true
+        show_user: true
+        description: URL of the AWS SQS queue that messages will be received from.
+      - name: is_fdr_queue
+        type: bool
+        title: Is FDR queue
+        multi: false
+        required: true
+        show_user: true
+        description: |
+          By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
+        default: true
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        multi: false
+        required: false
+        show_user: false
+        description: Directory of the shared credentials file
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        multi: false
+        required: false
+        show_user: false
       - name: role_arn
         type: text
         title: Role ARN
@@ -65,13 +89,6 @@ streams:
         required: false
         show_user: false
         description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
-      - name: queue_url
-        type: text
-        title: Queue URL
-        multi: false
-        required: true
-        show_user: true
-        description: URL of the AWS SQS queue that messages will be received from.
       - name: fips_enabled
         type: bool
         title: Enable S3 FIPS
@@ -87,6 +104,30 @@ streams:
         required: false
         show_user: false
         description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: fdr_parsing_script
+        type: text
+        title: FDR Notification Parsing Script
+        multi: false
+        required: true
+        show_user: false
+        description: The JS script used to parse the custom format of SQS FDR notifications.
+        default: |
+          function parse(n) {
+            var m = JSON.parse(n);
+            var evts = [];
+            var files = m.files;
+            var bucket = m.bucket;
+            if (!Array.isArray(files) || (files.length == 0) || bucket == null || bucket == "") {
+              return evts;
+            }
+            files.forEach(function(f){
+              var evt = new S3EventV2();
+              evt.SetS3BucketName(bucket);
+              evt.SetS3ObjectKey(f.path);
+              evts.push(evt);
+            });
+            return evts;
+          }
       - name: tags
         type: text
         title: Tags
@@ -104,14 +145,6 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
   - input: logfile
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs using a log file
@@ -123,6 +156,14 @@ streams:
         default:
           - /var/log/falcon_data_replicator.log
         show_user: true
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
       - name: tags
         type: text
         title: Tags
@@ -140,11 +181,3 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false

@@ -3,13 +3,16 @@ description: Pipeline for processing sample logs
 processors:
   ## Message decoding.
   - rename:
+      tag: message-to-original
       field: message
       target_field: event.original
   - json:
+      tag: json-decoding
       description: Decodes original JSON into `crowdstrike` field.
       field: event.original
       target_field: crowdstrike
   - date:
+      tag: date-timestamp
       description: Parse timestamp from event.
       field: crowdstrike.timestamp
       target_field: event.created
@@ -17,6 +20,7 @@ processors:
         - UNIX_MS
       ignore_failure: true
   - date:
+      tag: date-event-created
       description: Parse timestamp from event.
       field: crowdstrike.CreationTimeStamp
       target_field: event.created
@@ -25,15 +29,18 @@ processors:
       ignore_failure: true
       if: ctx?.event?.created == null
   - set:
+      tag: set-timestamp
       field: "@timestamp"
       copy_from: event.created
       if: ctx?.event?.created != null && (ctx?.crowdstrike?.ContextTimeStamp == null || ctx?.crowdstrike?.ContextTimeStamp == "")
   - date:
+      tag: date-context-timestamp
       field: crowdstrike.ContextTimeStamp
       formats:
         - UNIX
       ignore_failure: true
   - rename:
+      tag: rename-message
       field: crowdstrike.message
       target_field: message
       ignore_missing: true
@@ -45,6 +52,7 @@ processors:
 
   ## Categorization.
   - script:
+      tag: script-categorize-events
       description: Categorize events.
       lang: painless
       source: |-
@@ -306,7 +314,10 @@ processors:
         for (entry in ctx.crowdstrike.entrySet()) {
           def key = entry.getKey().toString();
           if (key.contains("Count") || key.contains("Port")) {
-            ctx.crowdstrike[key] = Long.parseLong(entry.getValue().toString());
+            try {
+              ctx.crowdstrike[key] = Long.parseLong(entry.getValue().toString());
+            } catch (Exception e) {
+            }
           }
         }
   - script:
@@ -370,6 +381,11 @@ processors:
       copy_from: observer.ip
       ignore_empty_value: true
   - rename:
+      field: crowdstrike.AgentVersion
+      target_field: observer.version
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
       field: crowdstrike.ConfigBuild
       target_field: observer.version
       ignore_missing: true
@@ -377,6 +393,9 @@ processors:
   - set:
       field: observer.vendor
       value: crowdstrike
+  - set:
+      field: observer.type
+      value: agent
   - append:
       field: related.ip
       value: "{{observer.ip}}"
@@ -404,6 +423,31 @@ processors:
       value: "{{host.name}}"
       allow_duplicates: false
       if: ctx.host?.name != null
+  - rename:
+      field: crowdstrike.City
+      target_field: host.geo.city_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Continent
+      target_field: host.geo.continent_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Country
+      target_field: host.geo.country_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Timezone
+      target_field: host.geo.timezone
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.MachineDomain
+      target_field: host.domain
+      ignore_missing: true
+      ignore_failure: true
 
   ## IP Geolocation Lookup
   - geoip:
@@ -466,6 +510,12 @@ processors:
       field: crowdstrike.OSVersionString
       target_field: os.version
       ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Version
+      target_field: os.version
+      ignore_missing: true
+      ignore_failure: true
 
   ## Process fields.
   - rename:
@@ -1038,6 +1088,16 @@ processors:
 
   ## Crowdstrike fields.
   - split:
+      field: crowdstrike.FalconGroupingTags
+      separator: ",\\s?"
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      field: crowdstrike.SensorGroupingTags
+      separator: ",\\s?"
+      ignore_missing: true
+      ignore_failure: true
+  - split:
       field: crowdstrike.Tags
       separator: ",\\s?"
       ignore_missing: true
@@ -1102,6 +1162,23 @@ processors:
       formats:
         - UNIX
       if: ctx?.crowdstrike?.AgentLocalTime != null && ctx?.crowdstrike?.AgentLocalTime != ""
+  - date:
+      field: crowdstrike.FirstSeen
+      target_field: crowdstrike.FirstSeen
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.FirstSeen != null && ctx?.crowdstrike?.FirstSeen != ""
+  - date:
+      field: crowdstrike.Time
+      target_field: crowdstrike.Time
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.Time != null && ctx?.crowdstrike?.Time != ""
+  - convert:
+      field: crowdstrike.AgentTimeOffset
+      target_field: crowdstrike.AgentTimeOffset
+      type: float
+      ignore_missing: true
   - convert:
       field: crowdstrike.Timeout
       type: long
@@ -1181,7 +1258,7 @@ processors:
                 handleList(x);
             }
           }
-          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+          map.values().removeIf(v -> v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         void handleList(List list) {
           for (def x : list) {
@@ -1191,10 +1268,10 @@ processors:
                   handleList(x);
               }
           }
-          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+          list.removeIf(v -> v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx);
 on_failure:
   - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}"
