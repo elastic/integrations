@@ -329,8 +329,38 @@ An example event for `falcon` looks as following:
 
 ### FDR
 
-The Falcon Data Replicator replicates log data from your CrowdStrike environment to a stand-alone target. This target can be a location on the file system, or an S3 bucket.
+The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike 
+managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is 
+available in S3.
 
+This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed 
+SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket 
+and the integration can read from there.
+
+In both cases SQS messages are deleted after they are processed. This allows you to operate more than one Elastic 
+Agent with this integration if needed and not have duplicate events, but it means you cannot ingest the data a second time.
+
+#### Use with CrowdStrike managed S3/SQS
+
+This is the simplest way to setup the integration, and also the default.
+
+You need to set the integration up with the SQS queue URL provided by Crowdstrike FDR.
+Ensure the `Is FDR queue` option is enabled.
+
+#### Use with FDR tool and data replicated to a self-managed S3 bucket
+
+This option can be used if you want to archive the raw CrowdStrike data.
+
+You need to follow the steps below:
+
+- Create a S3 bucket to receive the logs.
+- Create a SQS queue.
+- Configure your S3 bucket to send object created notifications to your SQS queue.
+- Follow the [FDR tool](https://github.com/CrowdStrike/FDR) instructions to replicate data to your own S3 bucket.
+- Configure the integration to read from your self-managed SQS topic.
+- Disable the `Is FDR queue` option in the integration.
+
+**NOTE: While the FDR tool can replicate the files from S3 to your local file system, this integration cannot read those files because they are gzip compressed, and the log file input does not support reading compressed files.**
 
 #### Configuration for the S3 input
 
@@ -419,6 +449,7 @@ for more details.
 | @timestamp | Event timestamp. | date |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
+| crowdstrike.AgentTimeOffset |  | float |
 | crowdstrike.AgentVersion |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.ApiReturnValue |  | keyword |
@@ -450,6 +481,7 @@ for more details.
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
+| crowdstrike.ConfigBuild |  | keyword |
 | crowdstrike.ConfigIDBase |  | keyword |
 | crowdstrike.ConfigIDBuild |  | keyword |
 | crowdstrike.ConfigIDPlatform |  | keyword |
@@ -491,6 +523,7 @@ for more details.
 | crowdstrike.FXFileSize |  | keyword |
 | crowdstrike.Facility |  | keyword |
 | crowdstrike.FailedConnectCount |  | long |
+| crowdstrike.FalconGroupingTags |  | keyword |
 | crowdstrike.FeatureExtractionVersion |  | keyword |
 | crowdstrike.FeatureVector |  | keyword |
 | crowdstrike.File |  | keyword |
@@ -500,9 +533,11 @@ for more details.
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirstSeen |  | date |
 | crowdstrike.Flags |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
+| crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.IOServiceClass |  | keyword |
 | crowdstrike.IOServiceName |  | keyword |
 | crowdstrike.IOServicePath |  | keyword |
@@ -569,6 +604,7 @@ for more details.
 | crowdstrike.NewFileIdentifier |  | keyword |
 | crowdstrike.OSVersionFileData |  | keyword |
 | crowdstrike.OSVersionFileName |  | keyword |
+| crowdstrike.OU |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
 | crowdstrike.OutErrors |  | keyword |
@@ -583,6 +619,7 @@ for more details.
 | crowdstrike.PciAttachmentState |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
+| crowdstrike.PointerSize |  | keyword |
 | crowdstrike.PreviousConnectTime |  | date |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
@@ -591,6 +628,7 @@ for more details.
 | crowdstrike.ProcessParameterFlags |  | keyword |
 | crowdstrike.ProcessSxsFlags |  | keyword |
 | crowdstrike.ProcessorPackageCount |  | long |
+| crowdstrike.ProductType |  | keyword |
 | crowdstrike.ProtectVirtualMemoryCount |  | long |
 | crowdstrike.ProvisionState |  | keyword |
 | crowdstrike.PupAdwareConfidence |  | keyword |
@@ -613,13 +651,16 @@ for more details.
 | crowdstrike.SVUID |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
+| crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceDisplayName |  | keyword |
 | crowdstrike.ServiceEventCount |  | long |
+| crowdstrike.ServicePackMajor |  | keyword |
 | crowdstrike.SessionId |  | keyword |
 | crowdstrike.SessionProcessId |  | keyword |
 | crowdstrike.SetThreadContextCount |  | long |
 | crowdstrike.ShareAccess |  | keyword |
+| crowdstrike.SiteName |  | keyword |
 | crowdstrike.Size |  | long |
 | crowdstrike.SnapshotFileOpenCount |  | long |
 | crowdstrike.SourceFileName |  | keyword |
@@ -642,6 +683,7 @@ for more details.
 | crowdstrike.Tags |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
+| crowdstrike.Time |  | date |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
 | crowdstrike.USN |  | keyword |
@@ -750,6 +792,7 @@ for more details.
 | observer.geo.region_name | Region name. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.serial_number | Observer serial number. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
 | os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
