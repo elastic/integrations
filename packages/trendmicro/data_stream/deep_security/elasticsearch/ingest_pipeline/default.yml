@@ -1,0 +1,137 @@
+---
+description: Pipeline for trendmicro deep security logs.
+
+processors:
+  - set:
+      field: event.ingested
+      value: '{{{_ingest.timestamp}}}'
+  - set:
+      field: ecs.version
+      value: '1.12.0'
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: message
+      target_field: trendmicro.event.message
+      ignore_missing: true
+  - rename:
+      field: cef.name
+      target_field: trendmicro.event.name
+      ignore_missing: true
+<<<<<<< HEAD
+  - convert:
+      field: event.code
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+=======
+>>>>>>> c9d1c986886b1bc84d8f0cdbaccfdfff9bccecd4
+
+  # rename externsions field
+  - pipeline:
+      name: '{{ IngestPipeline "application-control-event" }}'
+<<<<<<< HEAD
+      if: "ctx.event?.code >= 6000000 && ctx.event?.code <= 6999999"
+  - pipeline:
+      name: '{{ IngestPipeline "firewall-event" }}'
+      if: "ctx.event?.code == 20 || ctx.event?.code == 21"
+  - pipeline:
+      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
+      if: "ctx.event?.code == 10 || (ctx.event?.code >= 1000000 && ctx.event?.code <= 1999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
+      if: "ctx.event?.code == 30 || (ctx.event?.code >= 2000000 && ctx.event?.code <= 2999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "malware-event" }}'
+      if: "ctx.event?.code >= 4000000 && ctx.event?.code <= 4999999"
+  - pipeline:
+      name: '{{ IngestPipeline "system-event" }}'
+      if: "ctx.event?.code >= 100 && ctx.event?.code <= 7499"
+  - pipeline:
+      name: '{{ IngestPipeline "log-inspection" }}'
+      if: "ctx.event?.code == 40 || (ctx.event?.code >= 3000000 && ctx.event?.code <= 3999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "web-reputation" }}'
+      if: "ctx.event?.code >= 5000000 && ctx.event?.code <= 5999999"
+
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      ignore_failure: true      
+
+  - remove:
+      field:
+        - cef  
+
+on_failure:
+=======
+      if: "ctx.cef?.event?.code >= 6000000 && ctx.cef?.event?.code <= 6999999"
+  - pipeline:
+      name: '{{ IngestPipeline "firewall-event" }}'
+      if: "ctx.cef?.event?.code == 20 || ctx.cef?.event?.code == 21"
+  - pipeline:
+      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
+      if: "ctx.cef?.event?.code == 10 || (ctx.cef?.event?.code >= 1000000 && ctx.cef?.event?.code <= 1999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
+      if: "ctx.cef?.event?.code == 30 || (ctx.cef?.event?.code >= 2000000 && ctx.cef?.event?.code <= 2999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "malware-event" }}'
+      if: "ctx.cef?.event?.code >= 4000000 && ctx.cef?.event?.code <= 4999999"
+  - pipeline:
+      name: '{{ IngestPipeline "system-event" }}'
+      if: "ctx.cef?.event?.code >= 100 && ctx.cef?.event?.code <= 7499"
+  - pipeline:
+      name: '{{ IngestPipeline "log-inspection" }}'
+      if: "ctx.cef?.event?.code == 40 || (ctx.cef?.event?.code >= 3000000 && ctx.cef?.event?.code <= 3999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "web-reputation" }}'
+      if: "ctx.cef?.event?.code >= 5000000 && ctx.cef?.event?.code <= 5999999"
+
+>>>>>>> c9d1c986886b1bc84d8f0cdbaccfdfff9bccecd4
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
