@@ -13,7 +13,28 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.dataset",
+                            "key": "event.kind",
+                            "negate": false,
+                            "params": {
+                                "query": "enrichment"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.kind": "enrichment"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
                                 "ti_anomali.limo",
@@ -27,36 +48,15 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "event.dataset": "ti_anomali.limo"
+                                            "data_stream.dataset": "ti_anomali.limo"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "event.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     }
                                 ]
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "event.kind",
-                            "negate": false,
-                            "params": {
-                                "query": "enrichment"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "event.kind": "enrichment"
                             }
                         }
                     }
@@ -697,7 +697,7 @@
     },
     "references": [
         {
-            "id": "metrics-*",
+            "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },

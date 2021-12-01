@@ -13,7 +13,28 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.dataset",
+                            "key": "threat.indicator.type",
+                            "negate": false,
+                            "params": {
+                                "query": "file"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "threat.indicator.type": "file"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
                                 "ti_anomali.limo",
@@ -27,36 +48,15 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "event.dataset": "ti_anomali.limo"
+                                            "data_stream.dataset": "ti_anomali.limo"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "event.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     }
                                 ]
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "threat.indicator.type",
-                            "negate": false,
-                            "params": {
-                                "query": "file"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "threat.indicator.type": "file"
                             }
                         }
                     }
