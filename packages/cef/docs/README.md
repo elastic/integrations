@@ -132,106 +132,69 @@ An example event for `log` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-04-01T05:14:15.000Z",
     "agent": {
-        "name": "mbp.local",
-        "id": "99a900c1-965f-44d9-8b8f-021b83b2802b",
-        "ephemeral_id": "decd3555-dec5-4df9-8631-ef294216f3a1",
+        "ephemeral_id": "7c497028-3bd9-432d-bbb9-42c7936e4b36",
+        "id": "1b726629-c1fb-49b4-8ca3-b86ed5002a16",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
     },
     "cef": {
-        "severity": "low",
-        "name": "Web request",
-        "extensions": {
-            "destinationPort": 443,
-            "eventId": 3457,
-            "sourcePort": 33876,
-            "destinationAddress": "192.168.10.1",
-            "sourceAddress": "6.7.8.9",
-            "requestContext": "https://www.google.com",
-            "sourceServiceName": "httpd",
-            "requestUrl": "https://www.example.com/cart",
-            "sourceGeoLatitude": 38.915,
-            "sourceGeoLongitude": -77.511,
-            "requestMethod": "POST",
-            "transportProtocol": "TCP"
-        },
         "device": {
-            "product": "Vaporware",
             "event_class_id": "18",
-            "version": "1.0.0-alpha",
-            "vendor": "Elastic"
+            "product": "Vaporware",
+            "vendor": "Elastic",
+            "version": "1.0.0-alpha"
         },
+        "extensions": {
+            "message": "rfc3164"
+        },
+        "name": "Web request",
+        "severity": "low",
         "version": "0"
     },
-    "log": {
-        "offset": 0,
-        "file": {
-            "path": "/var/log/cef.log"
-        }
+    "data_stream": {
+        "dataset": "cef.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "destination": {
-        "port": 443,
-        "ip": "192.168.10.1"
-    },
-    "source": {
-        "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
-            "location": {
-                "lon": -97.822,
-                "lat": 37.751
-            },
-            "country_iso_code": "US"
-        },
-        "port": 33876,
-        "service": {
-            "name": "httpd"
-        },
-        "ip": "6.7.8.9"
-    },
-    "message": "Web request",
-    "url": {
-        "original": "https://www.example.com/cart"
-    },
-    "network": {
-        "community_id": "1:e2rSLr3fJ93cIJDMtVABFxSH5zg=",
-        "transport": "tcp"
-    },
-    "input": {
-        "type": "log"
-    },
-    "observer": {
-        "version": "1.0.0-alpha",
-        "product": "Vaporware",
-        "vendor": "Elastic"
-    },
-    "@timestamp": "2020-11-24T12:28:32.773Z",
     "ecs": {
-        "version": "1.6.0"
+        "version": "1.12.0"
     },
-    "related": {
-        "ip": [
-            "192.168.10.1",
-            "6.7.8.9"
-        ]
-    },
-    "host": {
-        "name": "mbp.local"
-    },
-    "http": {
-        "request": {
-            "method": "POST",
-            "referrer": "https://www.google.com"
-        }
+    "elastic_agent": {
+        "id": "1b726629-c1fb-49b4-8ca3-b86ed5002a16",
+        "snapshot": true,
+        "version": "8.0.0"
     },
     "event": {
-        "severity": 0,
-        "ingested": "2020-12-01T14:15:45.961774100Z",
+        "agent_id_status": "verified",
         "code": "18",
-        "original": "CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 requestMethod=POST slat=38.915 slong=-77.511 proto=TCP sourceServiceName=httpd requestContext=https://www.google.com src=6.7.8.9 spt=33876 dst=192.168.10.1 dpt=443 request=https://www.example.com/cart",
-        "id": 3457
-    }
+        "dataset": "cef.log",
+        "ingested": "2021-11-30T10:40:00Z",
+        "severity": 0
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.29.0.7:57732"
+        },
+        "syslog": {
+            "priority": 163
+        }
+    },
+    "message": "rfc3164",
+    "observer": {
+        "product": "Vaporware",
+        "vendor": "Elastic",
+        "version": "1.0.0-alpha"
+    },
+    "tags": [
+        "cef",
+        "forwarded"
+    ]
 }
 ```
 
