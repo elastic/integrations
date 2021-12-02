@@ -83,6 +83,11 @@ processors:
     field: json.id
     target_field: event.id
     ignore_missing: true
+- fingerprint:
+    fields:
+      - event.id
+    target_field: _id
+    ignore_missing: true
 - rename:
     field: json.interface
     target_field: event.provider
@@ -104,10 +109,12 @@ processors:
     field: json.newValue
     target_field: cloudflare.audit.new_value.value
     ignore_missing: true
+    if: ctx.json?.newValue != "null"
 - rename:
-    field: json.oldValueJsonz
+    field: json.oldValue
     target_field: cloudflare.audit.old_value.value
     ignore_missing: true
+    if: ctx.json?.oldValue != "null"
 - rename:
     field: json.owner.id
     target_field: cloudflare.audit.owner.id
