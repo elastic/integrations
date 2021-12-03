@@ -1,14 +1,11 @@
 {
     "attributes": {
         "columns": [
-            "event.action",
-            "user.name",
-            "user.email",
-            "user.domain",
-            "client.ip",
-            "client.as.organization.name",
-            "client.geo.country_iso_code",
-            "mimecast.application"
+            "@timestamp",
+            "email.attachments.file.extension",
+            "email.attachments.file.myme_type",
+            "email.attachments.hash",
+            "email.attachments.file.name"
         ],
         "description": "",
         "grid": {},
@@ -27,13 +24,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "mimecast.audit_events"
+                                "query": "mimecast.ttp_ap_logs"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "mimecast.audit_events"
+                                "data_stream.dataset": "mimecast.ttp_ap_logs"
                             }
                         }
                     }
@@ -41,7 +38,7 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"mimecast.audit_events\"   "
+                    "query": "data_stream.dataset : \"mimecast.ttp_ap_logs\" and mimecast.result : \"malicious\" "
                 }
             }
         },
@@ -51,10 +48,10 @@
                 "desc"
             ]
         ],
-        "title": "Most recent audit events"
+        "title": "[MImecast] Most recent attachment threats"
     },
     "coreMigrationVersion": "7.16.0",
-    "id": "mimecast-eb3179f0-51ed-11ec-a4ca-b3a74c021655",
+    "id": "mimecast-9749a210-3e4a-11ec-80fa-4dfb04910642",
     "migrationVersion": {
         "search": "7.9.3"
     },
