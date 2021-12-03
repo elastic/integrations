@@ -55,7 +55,7 @@ func createMetricStreamVariables(configFileContent []byte, moduleName, dataStrea
 
 	for _, moduleConfigEntry := range moduleConfig {
 		flatEntry := moduleConfigEntry.flatten()
-		related, err := isConfigEntryRelatedToMetricset(flatEntry, moduleName, dataStreamName)
+		related, err := isConfigEntryRelatedToMetricset(flatEntry, dataStreamName)
 		if err != nil {
 			return nil, errors.Wrapf(err, "checking if config entry is related failed")
 		}
@@ -149,23 +149,16 @@ func shouldConfigOptionBeIgnored(optionName string, value interface{}) bool {
 
 // isConfigEntryRelatedToMetricset method checks if the configuration entry may affect the dataStream settings,
 // in other words, checks if the "metricsets" field is present and contains the given dataStreamName.
-func isConfigEntryRelatedToMetricset(entry mapStr, moduleName, dataStreamName string) (bool, error) {
+func isConfigEntryRelatedToMetricset(entry mapStr, dataStreamName string) (bool, error) {
 	var metricsetRelated bool
 	if metricsets, ok := entry["metricsets"]; ok {
-		metricsetsMapped, ok := metricsets.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("mapping metricsets failed (moduleName: %s, dataStreamName: %s)",
-				moduleName, dataStreamName)
-		}
-		if len(metricsetsMapped) == 0 {
-			return false, fmt.Errorf("no metricsets defined (moduleName: %s, dataStreamName: %s)", moduleName,
-				dataStreamName)
-		}
-
-		for _, metricset := range metricsetsMapped {
-			if metricset.(string) == dataStreamName {
-				metricsetRelated = true
-				break
+		metricsetsMapped, ok := metricsets.([]interface{}) // nats: connection data stream doesn't define a config, but this is fine
+		if ok {
+			for _, metricset := range metricsetsMapped {
+				if metricset.(string) == dataStreamName {
+					metricsetRelated = true
+					break
+				}
 			}
 		}
 	}

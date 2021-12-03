@@ -48,3 +48,24 @@ streams:
           #    -----BEGIN CERTIFICATE-----
           #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
           #    -----END CERTIFICATE-----
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
+      dynamic_templates:
+        - all_values:
+            path_match: "*.value"
+            mapping:
+              type: double
+        - all_counters:
+            path_match: "*.counter"
+            mapping:
+              type: double
+        - all_rates:
+            path_match: "*.rate"
+            mapping:
+              type: double
+        - all_histograms:
+            path_match: "*.histogram"
+            mapping:
+              type: histogram

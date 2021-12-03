@@ -1,0 +1,57 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{ url }}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+auth.basic.user: {{ client_id }}
+auth.basic.password: {{ api_key }}
+
+request.transforms:
+- set:
+    target: url.params.start_date
+    value: '[[.cursor.timestamp]]'
+    default: '[[ formatDate (now (parseDuration "-{{ initial_interval }}")) "2006-01-02T15:04:05-07:00" ]]'
+- set:
+    target: url.params.limit
+    value: {{ limit }}
+
+request.rate_limit.limit: '[[ .last_response.header.Get "X-RateLimit-Limit" ]]'
+request.rate_limit.reset: '[[ .last_response.header.Get "X-RateLimit-Reset" ]]'
+request.rate_limit.remaining: '[[ .last_response.header.Get "X-RateLimit-Remaining" ]]'
+
+response.split:
+  target: body.data
+  keep_parent: true
+
+response.pagination:
+- set:
+    target: url.value
+    value: '[[ .last_response.body.metadata.links.next ]]'
+
+cursor:
+  timestamp:
+    value: '[[ .first_event.data.date ]]'
+
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
