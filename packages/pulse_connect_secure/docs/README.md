@@ -8,94 +8,103 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "pulse_secure": {
-        "session": {
-            "id": "sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75"
-        },
-        "realm": "REALM",
-        "role": "REALM_ROLES"
+    "@timestamp": "2021-10-19T09:10:35.000+02:00",
+    "agent": {
+        "ephemeral_id": "d5c4b2bb-53ec-4258-9566-35037560d6ab",
+        "id": "59e6b190-2ac6-4cb8-ac22-de7544c548b3",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0"
     },
-    "source": {
-        "nat": {
-            "ip": "172.22.27.209"
-        },
-        "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
-            "location": {
-                "lon": -97.822,
-                "lat": 37.751
-            },
-            "country_iso_code": "US"
-        },
+    "client": {
+        "address": "55.53.160.32",
         "as": {
-            "number": 328,
+            "number": 721,
             "organization": {
                 "name": "DoD Network Information Center"
             }
         },
-        "address": "55.53.160.32",
         "ip": "55.53.160.32"
     },
-    "message": "VPN Tunneling: Session started for user (session: sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) with IPv4 address 172.22.27.209, hostname Desktop",
-    "tags": [
-        "preserve_original_event"
-    ],
-    "network": {
-        "type": "ipv4"
+    "data_stream": {
+        "dataset": "pulse_connect_secure.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "observer": {
-        "name": "pcs-node1",
-        "product": "Pulse Secure Connect",
-        "type": "vpn",
-        "vendor": "Pulse Secure",
-        "ip": "10.5.2.3"
-    },
-    "@timestamp": "2021-10-19T09:10:35.000+02:00",
     "ecs": {
         "version": "1.12.0"
     },
+    "elastic_agent": {
+        "id": "59e6b190-2ac6-4cb8-ac22-de7544c548b3",
+        "snapshot": true,
+        "version": "8.0.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2021-10-19T09:10:35.000+02:00",
+        "dataset": "pulse_connect_secure.log",
+        "ingested": "2021-12-04T16:03:23Z",
+        "kind": "event",
+        "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [55.53.160.32] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 55.53.160.32 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
+        "outcome": "success",
+        "timezone": "+02:00"
+    },
     "host": {
-        "name": "Desktop",
         "hostname": "pcs-node1"
     },
-    "client": {
-        "nat": {
-            "ip": "172.22.27.209"
-        },
-        "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
-            "location": {
-                "lon": -97.822,
-                "lat": 37.751
-            },
-            "country_iso_code": "US"
-        },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.144.7:32950"
+        }
+    },
+    "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 55.53.160.32 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
+    "observer": {
+        "ip": "10.5.2.3",
+        "name": "pcs-node1",
+        "product": "Pulse Secure Connect",
+        "type": "vpn",
+        "vendor": "Pulse Secure"
+    },
+    "pulse_secure": {
+        "realm": "REALM",
+        "role": "REALM_ROLES",
+        "session": {
+            "id": "sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75"
+        }
+    },
+    "source": {
+        "address": "55.53.160.32",
         "as": {
-            "number": 328,
+            "number": 721,
             "organization": {
                 "name": "DoD Network Information Center"
             }
         },
-        "address": "55.53.160.32",
         "ip": "55.53.160.32"
     },
-    "event": {
-        "ingested": "2021-10-20T15:27:03.602611453Z",
-        "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [55.53.160.32] user.name(REALM)[REALM_ROLES] - VPN Tunneling: Session started for user (session: sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) with IPv4 address 172.22.27.209, hostname Desktop",
-        "timezone": "+02:00",
-        "created": "2021-10-19T09:10:35.000+02:00",
-        "kind": "event",
-        "category": "network",
-        "type": [
-            "connection",
-            "session",
-            "start"
-        ]
-    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "pulse_connect_secure-log"
+    ],
     "user": {
         "name": "user.name"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Other",
+        "original": "Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        }
     }
 }
 ```
