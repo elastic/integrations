@@ -1,45 +1,53 @@
-# Google Cloud Platform Metrics Integration
+# Custom Metrics
 
-The Google Cloud Platform Metrics integration collects and parses Google Cloud billing metrics.
+Create custom metrics queries for additional data besides the compute, storage, gke, loadbalancing... as shown [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-metricset-gcp-metrics.html).
 
 ## Metrics
 
-### Billing
+This is the `metrics` dataset.
 
-This is the `billing` dataset.
-
-An example event for `billing` looks as following:
+An example event for `metrics` looks as following:
 
 ```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "cloud": {
         "account": {
-            "id": "01475F-5B1080-1137E7"
+            "id": "elastic-observability",
+            "name": "elastic-observability"
         },
-        "project": {
-            "id": "elastic-bi",
-            "name": "elastic-containerlib-prod"
+        "instance": {
+            "id": "4049989596327614796",
+            "name": "nchaulet-loadtest-horde-master"
+        },
+        "machine": {
+            "type": "n1-standard-8"
         },
         "provider": "gcp"
     },
+    "cloud.availability_zone": "us-central1-a",
+    "cloud.region": "us-central1",
     "event": {
-        "dataset": "gcp.billing",
+        "dataset": "gcp.metrics",
         "duration": 115000,
         "module": "gcp"
     },
     "gcp": {
-        "billing": {
-            "billing_account_id": "01475F-5B1080-1137E7",
-            "cost_type": "regular",
-            "invoice_month": "202106",
-            "project_id": "containerlib-prod-12763",
-            "project_name": "elastic-containerlib-prod",
-            "total": 4717.170681
+        "labels": {},
+        "metrics": {
+            "instance": {
+                "uptime_total": {
+                    "value": 791820
+                }
+            }
         }
     },
+    "host": {
+        "id": "4049989596327614796",
+        "name": "nchaulet-loadtest-horde-master"
+    },
     "metricset": {
-        "name": "billing",
+        "name": "metrics",
         "period": 10000
     },
     "service": {
@@ -76,12 +84,6 @@ An example event for `billing` looks as following:
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| gcp.billing.billing_account_id | Project Billing Account ID. | keyword |
-| gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
-| gcp.billing.invoice_month | Billing report month. | keyword |
-| gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
-| gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
-| gcp.billing.total | Total billing amount. | float |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
