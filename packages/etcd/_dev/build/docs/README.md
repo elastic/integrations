@@ -1,21 +1,21 @@
-# Etcd Integration
+# etcd Integration
 
-This integration is used to collect metrics from [Etcd v2 and v3 servers](https://etcd.io/).
+This integration is used to collect metrics from [etcd v2 and v3 servers](https://etcd.io/).
 This integration periodically fetches metrics from [etcd monitoring server APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
 
 ## Compatibility
 
-The Etcd package was tested with Etcd 3.5.1.
+The etcd package was tested with etcd 3.5.1.
 
 ## Metrics
 
-When using V2, metrics are collected using Etcd v2 API. When using V3, metrics are retrieved from the /metrics endpoint as intended for Etcd v3.
+When using etcd v2, metrics are collected using etcd v2 API. When using v3, metrics are retrieved from the /metrics endpoint.
 
-When using V3, metricsest are bundled into `metrics`. When using V2, metricsets available are `leader`, `self` and `store`.
+When using v3, datasets are bundled into `metrics`. When using v2, datasets available are `leader`, `self` and `store`.
 
 ### metrics
 
-This is the `metrics` endpoint metricset of the etcd module. This metrics is being read from the Etcd V3 endpoint and won’t show any activity regarding Etcd V2.
+This is the `metrics` dataset of the etcd package, in charge of retrieving generic metrics from a etcd v3 instance.
 
 {{event "metrics"}}
 
@@ -23,7 +23,7 @@ This is the `metrics` endpoint metricset of the etcd module. This metrics is bei
 
 ### leader
 
-This is the `leader` metricset of the module etcd. This metrics is being read from the Etcd V2 endpoint and won’t show any activity regarding Etcd V3.
+This is the `leader` dataset of the etcd package, in charge of retrieving generic metrics about leader from a etcd v2 instance.
 
 {{event "leader"}}
 
@@ -31,7 +31,7 @@ This is the `leader` metricset of the module etcd. This metrics is being read fr
 
 ### self
 
-This is the `self` metricset of the module etcd. This metrics is being read from the Etcd V2 endpoint and won’t show any activity regarding Etcd V3.
+This is the `self` dataset of the etcd package, in charge of retrieving generic metrics about self from a etcd v2 instance.
 
 {{event "self"}}
 
@@ -39,7 +39,7 @@ This is the `self` metricset of the module etcd. This metrics is being read from
 
 ### store
 
-This is the `store` metricset of the module etcd. This metrics is being read from the Etcd V2 endpoint and won’t show any activity regarding Etcd V3.
+This is the `store` dataset of the etcd package, in charge of retrieving generic metrics about store from a etcd v2 instance.
 
 {{event "store"}}
 

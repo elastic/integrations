@@ -1,21 +1,21 @@
-# Etcd Integration
+# etcd Integration
 
-This integration is used to collect metrics from [Etcd v2 and v3 servers](https://etcd.io/).
+This integration is used to collect metrics from [etcd v2 and v3 servers](https://etcd.io/).
 This integration periodically fetches metrics from [etcd monitoring server APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
 
 ## Compatibility
 
-The Etcd package was tested with Etcd 3.5.1.
+The etcd package was tested with etcd 3.5.1.
 
 ## Metrics
 
-When using V2, metrics are collected using Etcd v2 API. When using V3, metrics are retrieved from the /metrics endpoint as intended for Etcd v3.
+When using etcd v2, metrics are collected using etcd v2 API. When using v3, metrics are retrieved from the /metrics endpoint.
 
-When using V3, metricsest are bundled into `metrics`. When using V2, metricsets available are `leader`, `self` and `store`.
+When using v3, datasets are bundled into `metrics`. When using v2, datasets available are `leader`, `self` and `store`.
 
 ### metrics
 
-This is the `metrics` endpoint metricset of the etcd module. This metrics is being read from the Etcd V3 endpoint and won’t show any activity regarding Etcd V2.
+This is the `metrics` dataset of the etcd package, in charge of retrieving generic metrics from a etcd v3 instance.
 
 An example event for `metrics` looks as following:
 
@@ -161,7 +161,7 @@ An example event for `metrics` looks as following:
 
 ### leader
 
-This is the `leader` metricset of the module etcd. This metrics is being read from the Etcd V2 endpoint and won’t show any activity regarding Etcd V3.
+This is the `leader` dataset of the etcd package, in charge of retrieving generic metrics about leader from a etcd v2 instance.
 
 An example event for `leader` looks as following:
 
@@ -200,8 +200,8 @@ An example event for `leader` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.leader.followers.counts.followers.counts.fail | failed Raft RPC requests | integer |
-| etcd.leader.followers.counts.followers.counts.success | successful Raft RPC requests | integer |
+| etcd.leader.followers.counts.followers.counts.fail | Failed Raft RPC requests | integer |
+| etcd.leader.followers.counts.followers.counts.success | Successful Raft RPC requests | integer |
 | etcd.leader.followers.latency.followers.latency.average |  | scaled_float |
 | etcd.leader.followers.latency.followers.latency.current |  | scaled_float |
 | etcd.leader.followers.latency.followers.latency.maximum |  | scaled_float |
@@ -217,7 +217,7 @@ An example event for `leader` looks as following:
 
 ### self
 
-This is the `self` metricset of the module etcd. This metrics is being read from the Etcd V2 endpoint and won’t show any activity regarding Etcd V3.
+This is the `self` dataset of the etcd package, in charge of retrieving generic metrics about self from a etcd v2 instance.
 
 An example event for `self` looks as following:
 
@@ -277,19 +277,19 @@ An example event for `self` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.self.id | the unique identifier for the member | keyword |
-| etcd.self.leaderinfo.leader | id of the current leader member | keyword |
-| etcd.self.leaderinfo.starttime | the time when this node was started | keyword |
-| etcd.self.leaderinfo.uptime | amount of time the leader has been leader | keyword |
-| etcd.self.name | this member’s name | keyword |
-| etcd.self.recv.appendrequest.count | number of append requests this node has processed | integer |
-| etcd.self.recv.bandwidthrate | number of bytes per second this node is receiving (follower only) | scaled_float |
-| etcd.self.recv.pkgrate | number of requests per second this node is receiving (follower only) | scaled_float |
-| etcd.self.send.appendrequest.count | number of requests that this node has sent | integer |
-| etcd.self.send.bandwidthrate | number of bytes per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
-| etcd.self.send.pkgrate | number of requests per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
-| etcd.self.starttime | the time when this node was started | keyword |
-| etcd.self.state | either leader or follower | keyword |
+| etcd.self.id | The unique identifier for the member | keyword |
+| etcd.self.leaderinfo.leader | ID of the current leader member | keyword |
+| etcd.self.leaderinfo.starttime | The time when this node was started | keyword |
+| etcd.self.leaderinfo.uptime | Amount of time the leader has been leader | keyword |
+| etcd.self.name | This member’s name | keyword |
+| etcd.self.recv.appendrequest.count | Number of append requests this node has processed | integer |
+| etcd.self.recv.bandwidthrate | Number of bytes per second this node is receiving (follower only) | scaled_float |
+| etcd.self.recv.pkgrate | Number of requests per second this node is receiving (follower only) | scaled_float |
+| etcd.self.send.appendrequest.count | Number of requests that this node has sent | integer |
+| etcd.self.send.bandwidthrate | Number of bytes per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
+| etcd.self.send.pkgrate | Number of requests per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
+| etcd.self.starttime | The time when this node was started | keyword |
+| etcd.self.state | Either leader or follower | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.ip | Host ip addresses. | ip |
@@ -299,7 +299,7 @@ An example event for `self` looks as following:
 
 ### store
 
-This is the `store` metricset of the module etcd. This metrics is being read from the Etcd V2 endpoint and won’t show any activity regarding Etcd V3.
+This is the `store` dataset of the etcd package, in charge of retrieving generic metrics about store from a etcd v2 instance.
 
 An example event for `store` looks as following:
 
