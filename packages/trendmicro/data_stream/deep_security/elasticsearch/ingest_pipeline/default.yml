@@ -60,19 +60,15 @@ processors:
       field: cef.name
       target_field: trendmicro.event.name
       ignore_missing: true
-<<<<<<< HEAD
   - convert:
       field: event.code
       type: long
       ignore_missing: true
       ignore_failure: true
-=======
->>>>>>> c9d1c986886b1bc84d8f0cdbaccfdfff9bccecd4
 
   # rename externsions field
   - pipeline:
       name: '{{ IngestPipeline "application-control-event" }}'
-<<<<<<< HEAD
       if: "ctx.event?.code >= 6000000 && ctx.event?.code <= 6999999"
   - pipeline:
       name: '{{ IngestPipeline "firewall-event" }}'
@@ -107,31 +103,6 @@ processors:
         - cef  
 
 on_failure:
-=======
-      if: "ctx.cef?.event?.code >= 6000000 && ctx.cef?.event?.code <= 6999999"
-  - pipeline:
-      name: '{{ IngestPipeline "firewall-event" }}'
-      if: "ctx.cef?.event?.code == 20 || ctx.cef?.event?.code == 21"
-  - pipeline:
-      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
-      if: "ctx.cef?.event?.code == 10 || (ctx.cef?.event?.code >= 1000000 && ctx.cef?.event?.code <= 1999999)"
-  - pipeline:
-      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
-      if: "ctx.cef?.event?.code == 30 || (ctx.cef?.event?.code >= 2000000 && ctx.cef?.event?.code <= 2999999)"
-  - pipeline:
-      name: '{{ IngestPipeline "malware-event" }}'
-      if: "ctx.cef?.event?.code >= 4000000 && ctx.cef?.event?.code <= 4999999"
-  - pipeline:
-      name: '{{ IngestPipeline "system-event" }}'
-      if: "ctx.cef?.event?.code >= 100 && ctx.cef?.event?.code <= 7499"
-  - pipeline:
-      name: '{{ IngestPipeline "log-inspection" }}'
-      if: "ctx.cef?.event?.code == 40 || (ctx.cef?.event?.code >= 3000000 && ctx.cef?.event?.code <= 3999999)"
-  - pipeline:
-      name: '{{ IngestPipeline "web-reputation" }}'
-      if: "ctx.cef?.event?.code >= 5000000 && ctx.cef?.event?.code <= 5999999"
-
->>>>>>> c9d1c986886b1bc84d8f0cdbaccfdfff9bccecd4
   - set:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
