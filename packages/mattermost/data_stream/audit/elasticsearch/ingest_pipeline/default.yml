@@ -23,6 +23,25 @@ processors:
     field: json.event
     target_field: event.action
     ignore_missing: true
+- rename:
+    field: json.err
+    target_field: error.code
+    ignore_missing: true
+- rename:
+    field: json.errors
+    target_field: mattermost.audit.error.message
+    ignore_missing: true
+    if: ctx.json?.errors != "[]"
+- gsub:
+    field: mattermost.audit.error.message
+    pattern: "(\\[|\\])"
+    replacement: ""
+    ignore_missing: true
+- split:
+    field: mattermost.audit.error.message
+    separator: ",\\s+"
+    ignore_missing: true
+    ignore_failure: true
 - set:
     field: event.outcome
     value: success
@@ -30,7 +49,7 @@ processors:
 - set:
     field: event.outcome
     value: failure
-    if: ctx.json?.status == "fail"
+    if: ctx.json?.status == "fail" || ctx.mattermost?.audit?.error?.message != null
 - set:
     field: event.outcome
     value: unknown
@@ -139,33 +158,6 @@ processors:
     field: json.team
     target_field: mattermost.audit.team
     ignore_missing: true
-- set:
-    field: group.name
-    copy_from: mattermost.audit.team.name
-    ignore_empty_value: true
-- set:
-    field: group.id
-    copy_from: mattermost.audit.team.id
-    ignore_empty_value: true
-- rename:
-    field: json.err
-    target_field: error.code
-    ignore_missing: true
-- rename:
-    field: json.errors
-    target_field: mattermost.audit.error.message
-    ignore_missing: true
-    if: ctx.json?.errors != "[]"
-- gsub:
-    field: mattermost.audit.error.message
-    pattern: "(\\[|\\])"
-    replacement: ""
-    ignore_missing: true
-- split:
-    field: mattermost.audit.error.message
-    separator: ",\\s+"
-    ignore_missing: true
-    ignore_failure: true
 - rename:
     field: json.code
     target_field: http.response.status_code
@@ -194,11 +186,192 @@ processors:
     field: json.channeld
     target_field: mattermost.audit.channel
     ignore_missing: true
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+      login:
+        category:
+          - authentication
+          - session
+        type:
+          - start
+      Logout:
+        category:
+          - authentication
+          - session
+        type:
+          - end
+      revokeAllSessionsForUser:
+        category:
+          - session
+        type:
+          - end
+      getConfig:
+        category:
+          - configuration
+        type:
+          - admin
+          - info
+      updateConfig:
+        category:
+          - configuration
+        type:
+          - change
+      updatePassword:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      updatePreferences:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      updateUserActive:
+        category:
+          - iam
+        type:
+          - admin
+          - user
+          - change
+      patchUser:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      createPost:
+        category:
+          - configuration
+        type:
+          - creation
+      createChannel:
+        category:
+          - configuration
+        type:
+          - creation
+      patchChannel:
+        category:
+          - configuration
+        type:
+          - change
+      deleteChannel:
+        category:
+          - configuration
+        type:
+          - deletion
+      convertChannelToPrivate:
+        category:
+          - configuration
+        type:
+          - change
+      restoreChannel:
+        category:
+          - configuration
+        type:
+          - change
+      removeChannelMember:
+        category:
+          - configuration
+        type:
+          - change
+      createTeam:
+        category:
+          - iam
+        type:
+          - group
+          - creation
+      patchTeam:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      deleteTeam:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
+      addTeamMembers:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      removeTeamMember:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.category = ['configuration'];
+      ctx.event.type = ['info'];
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
+- script:
+    lang: painless
+    description: Add ECS User fields
+    if: "ctx.event?.category.contains('iam')"
+    source: >-
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (ctx.group == null) {
+        Map map = new HashMap();
+        ctx.put("group", map);
+      }
+      if (ctx.user == null) {
+        Map map = new HashMap();
+        ctx.put("user", map);
+      }
+      if (ctx.user?.target == null) {
+        Map map = new HashMap();
+        ctx.user.put("target", map);
+      }
+      if (ctx.user?.changes == null) {
+        Map map = new HashMap();
+        ctx.user.put("changes", map);
+      }
+      if (ctx.user?.target?.group == null) {
+        Map map = new HashMap();
+        ctx.user.target.put("group", map);
+      }
+      if(['patchUser'].contains(ctx.event.action)) {
+        if(ctx.user?.target?.name != ctx.mattermost?.audit?.patch?.name) {
+          ctx.user.changes.put("name", ctx.mattermost?.audit?.patch?.name);
+        }
+      }
+      if(['createTeam','patchTeam','deleteTeam'].contains(ctx.event.action)) {
+        ctx.group.put("name", ctx.mattermost?.audit?.team?.name);
+        ctx.group.put("id", ctx.mattermost?.audit?.team?.id);
+      }
+      if(['addTeamMembers','removeTeamMember'].contains(ctx.event.action)) {
+        ctx.user.target.group.put("name", ctx.mattermost?.audit?.team?.name);
+        ctx.user.target.group.put("id", ctx.mattermost?.audit?.team?.id);
+      }
 - append:
     field: related.user
     value: '{{user.name}}'
     allow_duplicates: false
     if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{user.changes.name}}'
+    allow_duplicates: false
+    if: ctx.user?.changes?.name != null
 - append:
     field: related.user
     value: '{{user.id}}'

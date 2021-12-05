@@ -1,6 +1,6 @@
 # Mattermost Integration
 
-The Cloudflare integration collects logs from Mattermost servers.  THis integration has been tested with Mattermost version 5.31.9 but is expected to work with other versions.
+The Mattermost integration collects logs from Mattermost servers.  This integration has been tested with Mattermost version 5.31.9 but is expected to work with other versions.
 
 ## Logs
 
@@ -94,6 +94,7 @@ All access to the Mattermost REST API or CLI is audited.
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.path | Path of the request, such as "/search". | wildcard |
+| user.changes.name | Short name or login of the user. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
@@ -108,3 +109,124 @@ All access to the Mattermost REST API or CLI is audited.
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2021-12-04T23:19:32.051Z",
+    "agent": {
+        "ephemeral_id": "e5ceaebc-037c-4de3-a1fd-3845a8f643d9",
+        "id": "69133499-cc2c-4294-8f54-27391eae4dc7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "dataset": "mattermost.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.12"
+    },
+    "elastic_agent": {
+        "id": "69133499-cc2c-4294-8f54-27391eae4dc7",
+        "snapshot": true,
+        "version": "8.0.0"
+    },
+    "event": {
+        "action": "updateConfig",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "mattermost.audit",
+        "ingested": "2021-12-05T18:07:54Z",
+        "kind": "event",
+        "original": "{\"timestamp\":\"2021-12-04 23:19:32.051 Z\",\"event\":\"updateConfig\",\"status\":\"success\",\"user_id\":\"ag99yu4i1if63jrui63tsmq57y\",\"session_id\":\"pjh4n69j3p883k7hhzippskcba\",\"ip_address\":\"172.19.0.1\",\"api_path\":\"/api/v4/config\",\"cluster_id\":\"jq3utry71f8a7q9qgebmjccf4r\",\"client\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36\"}",
+        "outcome": "success",
+        "type": [
+            "change"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "ef7cd7037b2b513f53d6040c1d3ab8ac",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02:42:ac:17:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.4.0-90-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/audit.log"
+        },
+        "offset": 0
+    },
+    "mattermost": {
+        "audit": {
+            "api_path": "/api/v4/config",
+            "cluster": {
+                "id": "jq3utry71f8a7q9qgebmjccf4r"
+            },
+            "session": {
+                "id": "pjh4n69j3p883k7hhzippskcba"
+            }
+        }
+    },
+    "related": {
+        "ip": [
+            "172.19.0.1"
+        ],
+        "user": [
+            "ag99yu4i1if63jrui63tsmq57y"
+        ]
+    },
+    "source": {
+        "address": "172.19.0.1",
+        "ip": "172.19.0.1"
+    },
+    "tags": [
+        "mattermost-audit",
+        "preserve_original_event"
+    ],
+    "url": {
+        "original": "/api/v4/config",
+        "path": "/api/v4/config"
+    },
+    "user": {
+        "id": "ag99yu4i1if63jrui63tsmq57y"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        },
+        "version": "96.0.4664.45"
+    }
+}
+```
