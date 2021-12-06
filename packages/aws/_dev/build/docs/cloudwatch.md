@@ -9,6 +9,8 @@ setup already.
 
 {{fields "cloudwatch_logs"}}
 
+{{event "cloudwatch_logs"}}
+
 ## Metrics
 
 {{event "cloudwatch_metrics"}}
