@@ -10,18 +10,28 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-10-19T09:10:35.000+02:00",
     "agent": {
-        "ephemeral_id": "d5c4b2bb-53ec-4258-9566-35037560d6ab",
-        "id": "59e6b190-2ac6-4cb8-ac22-de7544c548b3",
+        "ephemeral_id": "487ede05-1841-4312-a8f6-3eee784486ad",
+        "hostname": "docker-fleet-agent",
+        "id": "8bf63e47-c038-4463-8608-aaaa12031474",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "7.16.0"
     },
     "client": {
         "address": "55.53.160.32",
         "as": {
-            "number": 721,
+            "number": 328,
             "organization": {
                 "name": "DoD Network Information Center"
+            }
+        },
+        "geo": {
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 37.751,
+                "lon": -97.822
             }
         },
         "ip": "55.53.160.32"
@@ -35,16 +45,16 @@ An example event for `log` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "59e6b190-2ac6-4cb8-ac22-de7544c548b3",
+        "id": "8bf63e47-c038-4463-8608-aaaa12031474",
         "snapshot": true,
-        "version": "8.0.0"
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
         "created": "2021-10-19T09:10:35.000+02:00",
         "dataset": "pulse_connect_secure.log",
-        "ingested": "2021-12-04T16:03:23Z",
+        "ingested": "2021-12-06T13:26:10Z",
         "kind": "event",
         "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [55.53.160.32] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 55.53.160.32 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
         "outcome": "success",
@@ -58,7 +68,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.144.7:32950"
+            "address": "172.31.0.7:39462"
         }
     },
     "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 55.53.160.32 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
@@ -79,9 +89,18 @@ An example event for `log` looks as following:
     "source": {
         "address": "55.53.160.32",
         "as": {
-            "number": 721,
+            "number": 328,
             "organization": {
                 "name": "DoD Network Information Center"
+            }
+        },
+        "geo": {
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 37.751,
+                "lon": -97.822
             }
         },
         "ip": "55.53.160.32"
