@@ -3,3 +3,5 @@
 ## Logs
 
 {{fields "vpcflow"}}
+
+{{event "vpcflow"}}

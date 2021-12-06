@@ -9,3 +9,5 @@ events for the account. If user creates a trail, it delivers those events as log
  Integrity is turned on, it only reads the CloudTrail logs.
 
 {{fields "cloudtrail"}}
+
+{{event "cloudtrail"}}
