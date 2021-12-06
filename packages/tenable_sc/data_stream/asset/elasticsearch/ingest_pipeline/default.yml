@@ -2,9 +2,6 @@
 description: Pipeline for Tenable.sc asset logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{{ _ingest.timestamp }}}"
-  - set:
       field: ecs.version
       value: '1.12.0'
   - rename:
@@ -30,6 +27,9 @@ processors:
   - set:
       field: event.category
       value: host
+  - append: 
+      field: related.ip
+      value: "{{{json.ip}}}"
   - set: 
       field: host.ip
       copy_from: json.ip
@@ -100,12 +100,39 @@ processors:
   - rename: 
       field: json.pluginSet
       target_field: tenable_sc.asset.plugin_set
-  - rename: 
-      field: json.netbiosName
-      target_field: tenable_sc.asset.netbios.name
-  - rename: 
-      field: json.dnsName
-      target_field: tenable_sc.asset.dns.name
+  - set: 
+      field: tenable_sc.asset.netbios.name
+      copy_from: json.netbiosName
+  - set: 
+      field: host.hostname
+      copy_from: json.dnsName
+  - set: 
+      field: tenable_sc.asset.dns.name
+      copy_from: json.dnsName
+  - script:
+      lang: painless
+      source: |
+        def domain = "";
+        def nameArray = ctx.json.dnsName.toString().splitOnToken(".");
+        if (nameArray?.length > 0) {
+          for (int i = 1; i < nameArray.length; i++) {
+            domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
+          }
+          ctx.host.name = nameArray[0];
+          ctx.host.domain = domain; 
+        }
+  - append:
+      field: related.hosts
+      value: "{{{host.hostname}}}"
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{{json.netbiosName}}}"
+      allow_duplicates: false
   - rename: 
       field: json.osCPE
       target_field: tenable_sc.asset.os_cpe

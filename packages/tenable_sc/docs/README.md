@@ -162,6 +162,7 @@ An example event for `asset` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | tenable_sc.asset.bios.guid | GUID of bios | keyword |
