@@ -230,25 +230,25 @@ An example event for `self` looks as following:
             "id": "8e9e05c52164694d",
             "leaderinfo": {
                 "leader": "8e9e05c52164694d",
-                "starttime": "2019-03-25T18:00:33.457653099+01:00",
+                "start_time": "2019-03-25T18:00:33.457653099+01:00",
                 "uptime": "20.338096195s"
             },
             "name": "default",
             "recv": {
-                "appendrequest": {
+                "append_request": {
                     "count": 0
                 },
-                "bandwidthrate": 0,
-                "pkgrate": 0
+                "bandwidth_rate": 0,
+                "pkg_rate": 0
             },
             "send": {
-                "appendrequest": {
+                "append_request": {
                     "count": 0
                 },
-                "bandwidthrate": 0,
-                "pkgrate": 0
+                "bandwidth_rate": 0,
+                "pkg_rate": 0
             },
-            "starttime": "2019-03-25T18:00:32.755273186+01:00",
+            "start_time": "2019-03-25T18:00:32.755273186+01:00",
             "state": "StateLeader"
         }
     },
@@ -279,16 +279,16 @@ An example event for `self` looks as following:
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
 | etcd.self.id | The unique identifier for the member | keyword |
 | etcd.self.leaderinfo.leader | ID of the current leader member | keyword |
-| etcd.self.leaderinfo.starttime | The time when this node was started | keyword |
+| etcd.self.leaderinfo.start_time | The time when this node was started | keyword |
 | etcd.self.leaderinfo.uptime | Amount of time the leader has been leader | keyword |
 | etcd.self.name | This member’s name | keyword |
-| etcd.self.recv.appendrequest.count | Number of append requests this node has processed | integer |
-| etcd.self.recv.bandwidthrate | Number of bytes per second this node is receiving (follower only) | scaled_float |
-| etcd.self.recv.pkgrate | Number of requests per second this node is receiving (follower only) | scaled_float |
-| etcd.self.send.appendrequest.count | Number of requests that this node has sent | integer |
-| etcd.self.send.bandwidthrate | Number of bytes per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
-| etcd.self.send.pkgrate | Number of requests per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
-| etcd.self.starttime | The time when this node was started | keyword |
+| etcd.self.recv.append_request.count | Number of append requests this node has processed | integer |
+| etcd.self.recv.bandwidth_rate | Number of bytes per second this node is receiving (follower only) | scaled_float |
+| etcd.self.recv.pkg_rate | Number of requests per second this node is receiving (follower only) | scaled_float |
+| etcd.self.send.append_request.count | Number of requests that this node has sent | integer |
+| etcd.self.send.bandwidth_rate | Number of bytes per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
+| etcd.self.send.pkg_rate | Number of requests per second this node is sending (leader only). This value is undefined on single member clusters. | scaled_float |
+| etcd.self.start_time | The time when this node was started | keyword |
 | etcd.self.state | Either leader or follower | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -309,11 +309,11 @@ An example event for `store` looks as following:
     "etcd": {
         "api_version": "2",
         "store": {
-            "compareanddelete": {
+            "compare_and_delete": {
                 "fail": 0,
                 "success": 0
             },
-            "compareandswap": {
+            "compare_and_swap": {
                 "fail": 0,
                 "success": 0
             },
@@ -368,10 +368,10 @@ An example event for `store` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
-| etcd.store.compareanddelete.fail |  | integer |
-| etcd.store.compareanddelete.success |  | integer |
-| etcd.store.compareandswap.fail |  | integer |
-| etcd.store.compareandswap.success |  | integer |
+| etcd.store.compare_and_delete.fail |  | integer |
+| etcd.store.compare_and_delete.success |  | integer |
+| etcd.store.compare_and_swap.fail |  | integer |
+| etcd.store.compare_and_swap.success |  | integer |
 | etcd.store.create.fail |  | integer |
 | etcd.store.create.success |  | integer |
 | etcd.store.delete.fail |  | integer |
