@@ -77,7 +77,7 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | sqlserver.audit.application_name | Name of the application that caused the audit event. | keyword |
 | sqlserver.audit.audit_schema_version | Audit event schema version. | keyword |
 | sqlserver.audit.class_type | Type of auditable entity that the audit occurs on. | keyword |
-| sqlserver.audit.client_ip | "Name or IP address of the machine running the application that caused the audit event." | text |
+| sqlserver.audit.client_ip | "Name or IP address of the machine running the application that caused the audit event." | keyword |
 | sqlserver.audit.connection_id | Connection ID (unique UUID for the connection) | keyword |
 | sqlserver.audit.data_sensitivity_information | Sensitivity information about the operation. | keyword |
 | sqlserver.audit.database_name | The database context in which the action occurred. | keyword |
