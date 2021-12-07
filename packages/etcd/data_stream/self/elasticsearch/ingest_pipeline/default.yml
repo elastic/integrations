@@ -1,0 +1,39 @@
+---
+description: Pipeline for parsing etcd self metrics.
+processors:
+  - rename:
+      field: etcd.self.leaderinfo.starttime
+      target_field: etcd.self.leaderinfo.start_time
+      ignore_missing: true
+  - rename:
+      field: etcd.self.recv.appendrequest
+      target_field: etcd.self.recv.append_request
+      ignore_missing: true
+  - rename:
+      field: etcd.self.recv.bandwidthrate
+      target_field: etcd.self.recv.bandwidth_rate
+      ignore_missing: true
+  - rename:
+      field: etcd.self.recv.pkgrate
+      target_field: etcd.self.recv.pkg_rate
+      ignore_missing: true
+  - rename:
+      field: etcd.self.send.appendrequest
+      target_field: etcd.self.send.append_request
+      ignore_missing: true
+  - rename:
+      field: etcd.self.send.bandwidthrate
+      target_field: etcd.self.send.bandwidth_rate
+      ignore_missing: true
+  - rename:
+      field: etcd.self.send.pkgrate
+      target_field: etcd.self.send.pkg_rate
+      ignore_missing: true
+  - rename:
+      field: etcd.self.starttime
+      target_field: etcd.self.start_time
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
