@@ -6,7 +6,7 @@ The Microsoft SQL Server integration package allows you to search, observe and v
 
 ## Compatibility
 
-The package collects audit events from the event log. Other log sources such as file is not supported.
+The package collects audit events from the event log. Other log sources such as file are not supported.
 
 ## Configuration
 
