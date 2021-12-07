@@ -1129,41 +1129,40 @@ processors:
           action: unsafe-assembly
     source: |-
          def actionIdKey = ctx.sqlserver.audit.action_id;
-         def actions = params.get("actions");
-         def classTypes = params.get("classtypes");
-         ctx.event.type = new ArrayList();
-
+         def actions = params.get('actions');
+         def classTypes = params.get('classtypes');
          // handle class type
          // overwrite the abbreviated key with its value
          def ct = classTypes.get(ctx.sqlserver.audit.class_type);
          if (ct != null) {
-             ctx.sqlserver.audit.class_type = ct;
+           ctx.sqlserver.audit.class_type = ct;
          }
-
          // error case - for unhandled action ids
-         if (actions.get(actionIdKey) == null) {
-             ctx.event.action = "unknown-" + actionIdKey.toLowerCase();
-             ctx.event.type.add("info");
-             return;
+         def actionData = actions.get(actionIdKey);
+         if (actionData == null) {
+           ctx.event.action = 'unknown-' + actionIdKey.toLowerCase();
+           ctx.event.type = ['info'];
+           return;
          }
-         def action = new HashMap(actions.get(actionIdKey));
          // overwrite the action id with its actual value
-         ctx.sqlserver.audit.action_id = action.get("value");
-         def types = new ArrayList(action.get("type"));
-         for (int i = 0; i < types.size(); i++) {
-             ctx.event.type.add(types.get(i));
+         ctx.sqlserver.audit.action_id = actionData.get('value');
+         // event.type
+         def actionType = actionData.get('type');
+         if (actionType != null) {
+           ctx.event.type = new ArrayList(actionType);
          }
-
-         // add category to ctx.event.category
-         def v = action.get("category");
-         if (v != null) {
-             def categories = new ArrayList(v);
-             for (int i = 0; i < categories.size(); i++) {
-                 ctx.event.category.add(categories.get(i));
-             }
+         // event.category
+         def actionCategory = actionData.get('category');
+         if (actionCategory != null) {
+           for (def c : actionCategory) {
+             ctx.event.category.add(c);
+           }
          }
-         ctx.event.action = action.get("action");
-         return;
+         // event.action
+         def action = actionData.get('action');
+         if (action != null) {
+           ctx.event.action = action;
+         }
 - convert:
     field: sqlserver.audit.sequence_number
     type: integer
