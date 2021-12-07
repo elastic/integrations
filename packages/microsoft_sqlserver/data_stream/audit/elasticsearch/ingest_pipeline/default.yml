@@ -1183,10 +1183,14 @@ processors:
     field: sqlserver.audit.is_column_permission
     type: boolean
     ignore_missing: true
-- convert:
-    field: sqlserver.audit.duration_milliseconds
-    type: long
-    ignore_missing: true
+- script:
+    lang: painless
+    description: Convert ms to ns and set it to event.duration
+    source: |-
+        def v = ctx?.sqlserver?.audit?.duration_milliseconds;
+        if (v != null) {
+            ctx.event.duration = Long.parseLong(v) * 1000000;
+        }
 - rename:
     field: winlog.process
     target_field: process
@@ -1212,6 +1216,7 @@ processors:
       - _temp
       - winlog.event_data.param1
       - sqlserver.audit.additional_information
+      - sqlserver.audit.duration_milliseconds 
     ignore_missing: true
 - remove:
     field: event.original
