@@ -22,8 +22,8 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "93ecb95a-f4bc-496c-8a84-e1334d32a802",
-        "id": "dc04019a-fd13-4ad1-a4ed-9a268564d7d3",
+        "ephemeral_id": "7929c607-a157-40b8-ac90-aed2af780558",
+        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -47,16 +47,16 @@ An example event for `limo` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "dc04019a-fd13-4ad1-a4ed-9a268564d7d3",
+        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
         "snapshot": true,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-12-01T10:13:35.468Z",
+        "created": "2021-12-07T08:43:17.664Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2021-12-01T10:13:36Z",
+        "ingested": "2021-12-07T08:43:18Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -70,10 +70,6 @@ An example event for `limo` looks as following:
         "anomali-limo"
     ],
     "threat": {
-        "feed": {
-            "dashboard_id": "ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf",
-            "name": "Anomali Limo"
-        },
         "indicator": {
             "type": "unknown"
         }
@@ -186,10 +182,10 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-01T10:15:06.430Z",
+    "@timestamp": "2021-12-07T08:44:42.569Z",
     "agent": {
-        "ephemeral_id": "40c0f119-8640-4572-82b2-7de291062cbf",
-        "id": "dc04019a-fd13-4ad1-a4ed-9a268564d7d3",
+        "ephemeral_id": "3a4eb141-57f4-4f68-8b66-968e0b8e3a75",
+        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -222,7 +218,7 @@ An example event for `threatstream` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "dc04019a-fd13-4ad1-a4ed-9a268564d7d3",
+        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
         "snapshot": true,
         "version": "8.0.0"
     },
@@ -230,7 +226,7 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2021-12-01T10:15:07Z",
+        "ingested": "2021-12-07T08:44:43Z",
         "kind": "enrichment",
         "original": "{\"classification\":\"private\",\"confidence\":35,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 156\",\"id\":3304738500,\"import_session_id\":3166,\"itype\":\"mal_md5\",\"md5\":\"c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4\",\"resource_uri\":\"/api/v1/intelligence/P24670712639/\",\"severity\":\"low\",\"source\":\"Phony generated indicator\",\"source_feed_id\":1624,\"state\":\"active\",\"trusted_circle_ids\":\"407\",\"update_id\":2184632737,\"value_type\":\"md5\"}",
         "severity": 3,
@@ -245,10 +241,6 @@ An example event for `threatstream` looks as following:
         "anomali-threatstream"
     ],
     "threat": {
-        "feed": {
-            "dashboard_id": "ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf",
-            "name": "Anomali ThreatStream"
-        },
         "indicator": {
             "confidence": "Med",
             "file": {
