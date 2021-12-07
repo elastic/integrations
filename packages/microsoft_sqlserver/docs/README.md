@@ -75,24 +75,24 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | sqlserver.audit.additional_information | Any additional information about the event stored as XML. | text |
 | sqlserver.audit.affected_rows | Number of rows affected by the operation. | long |
 | sqlserver.audit.application_name | Name of the application that caused the audit event. | keyword |
-| sqlserver.audit.audit_schema_version | Audit event schema version. | text |
+| sqlserver.audit.audit_schema_version | Audit event schema version. | keyword |
 | sqlserver.audit.class_type | Type of auditable entity that the audit occurs on. | keyword |
 | sqlserver.audit.client_ip | "Name or IP address of the machine running the application that caused the audit event." | text |
-| sqlserver.audit.connection_id | Connection ID (unique UUID for the connection) | text |
-| sqlserver.audit.data_sensitivity_information | Sensitivity information about the operation. | text |
+| sqlserver.audit.connection_id | Connection ID (unique UUID for the connection) | keyword |
+| sqlserver.audit.data_sensitivity_information | Sensitivity information about the operation. | keyword |
 | sqlserver.audit.database_name | The database context in which the action occurred. | keyword |
 | sqlserver.audit.database_principal_id | ID of the database user context that the action is performed in. | keyword |
 | sqlserver.audit.database_principal_name | Current user. | keyword |
 | sqlserver.audit.duration_milliseconds | Duration of the operation in milliseconds. | long |
-| sqlserver.audit.event_time | Date/time when the auditable action is fired. | text |
+| sqlserver.audit.event_time | Date/time when the auditable action is fired. | date |
 | sqlserver.audit.host_name | SQL Server host name. | keyword |
 | sqlserver.audit.is_column_permission | Flag indicating a column level permission | boolean |
 | sqlserver.audit.object_id | "The primary ID of the entity on which the audit occurred. This ID can be one of server objects, databases, database objects or schema objects." | keyword |
 | sqlserver.audit.object_name | "The name of the entity on which the audit occurred. This can be server objects, databases, database objects, schema objects or TSQL statement (if any)." | keyword |
-| sqlserver.audit.permission_bitmask | When applicable shows the permissions that were granted, denied or revoked. | text |
+| sqlserver.audit.permission_bitmask | When applicable shows the permissions that were granted, denied or revoked. | keyword |
 | sqlserver.audit.response_rows | Number of rows returned. | long |
 | sqlserver.audit.schema_name | The schema context in which the action occurred. | keyword |
-| sqlserver.audit.sequence_group_id | Sequence group ID (unique UUID). | text |
+| sqlserver.audit.sequence_group_id | Sequence group ID (unique UUID). | keyword |
 | sqlserver.audit.sequence_number | Tracks the sequence of records within a single audit record  that was too large to fit in the write buffer for audits. | integer |
 | sqlserver.audit.server_instance_name | "Name of the server instance where the audit occurred. Uses the standard machine\\instance format." | keyword |
 | sqlserver.audit.server_principal_id | ID of the login context that the action is performed in. | keyword |

@@ -44,6 +44,23 @@ processors:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 ##
+# Set host.mac to dash separated upper case value
+# as per ECS recommendation
+##
+- gsub:
+    field: host.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: host.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: host.mac
+    ignore_missing: true
+##
 # Event kind, code and action
 ##
 - set:
