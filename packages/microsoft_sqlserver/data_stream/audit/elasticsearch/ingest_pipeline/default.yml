@@ -9,13 +9,10 @@ processors:
     field: winlog.event_data.param1
     pattern: '(?m)^\.$'
     replacement: ''
-- grok:
+- dissect:
+    description: Extract statement
+    pattern: "%{}statement:%{_temp.stmt}\nadditional_information:%{}"
     field: winlog.event_data.param1
-    patterns:
-      - '%{EXTRACT_STMT}'
-    pattern_definitions:
-      STMT: (.*\s)*
-      EXTRACT_STMT: '(statement:)%{STMT:_temp.stmt}(?=additional_information:)'
 - gsub:
     field: winlog.event_data.param1
     pattern: 'statement:(.*\s)*(?=additional_information:)'
