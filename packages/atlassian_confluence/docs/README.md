@@ -100,83 +100,142 @@ An example event for `audit` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-11-22T23:44:13.873Z",
+    "agent": {
+        "ephemeral_id": "b6449e10-b093-49e2-8869-5a94c0a56cbb",
+        "hostname": "docker-fleet-agent",
+        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
     "confluence": {
         "audit": {
-            "method": "Browser",
-            "affected_objects": [
+            "extra_attributes": [
                 {
-                    "name": "asdf",
-                    "id": "2c9680837d4a3682017d67821e520003",
-                    "type": "User",
-                    "uri": "http://confluence.internal:8090/admin/users/viewuser.action?username=asdf123"
+                    "name": "Query",
+                    "nameI18nKey": "atlassian.audit.event.attribute.query"
+                },
+                {
+                    "name": "Results returned",
+                    "nameI18nKey": "atlassian.audit.event.attribute.results",
+                    "value": "57"
+                },
+                {
+                    "name": "ID Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.id",
+                    "value": "1 - 57"
+                },
+                {
+                    "name": "Timestamp Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.timestamp",
+                    "value": "2021-11-22T23:42:45.791Z - 2021-11-22T23:43:22.615Z"
                 }
             ],
+            "method": "Browser",
             "type": {
-                "actionI18nKey": "audit.logging.summary.user.renamed",
-                "action": "User renamed",
-                "categoryI18nKey": "audit.logging.category.user.management",
-                "category": "Users and groups"
-            },
-            "changed_values": [
-                {
-                    "from": "asdf",
-                    "to": "asdf123",
-                    "i18nKey": "audit.logging.changed.value.username",
-                    "key": "Username"
-                }
-            ]
+                "action": "Audit Log search performed",
+                "actionI18nKey": "atlassian.audit.event.action.audit.search",
+                "area": "AUDIT_LOG",
+                "category": "Auditing",
+                "categoryI18nKey": "atlassian.audit.event.category.audit",
+                "level": "BASE"
+            }
         }
     },
-    "@timestamp": "2021-11-28T17:05:37.142Z",
+    "data_stream": {
+        "dataset": "atlassian_confluence.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "1.12.0"
     },
-    "related": {
-        "user": [
-            "admin123",
-            "asdf",
-            "asdf123"
+    "elastic_agent": {
+        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "event": {
+        "action": "atlassian.audit.event.action.audit.search",
+        "agent_id_status": "verified",
+        "dataset": "atlassian_confluence.audit",
+        "ingested": "2021-12-08T15:10:44Z",
+        "kind": "event",
+        "original": "{\"affectedObjects\":[],\"auditType\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"area\":\"AUDIT_LOG\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\",\"level\":\"BASE\"},\"author\":{\"id\":\"2c9580827d4a06e8017d4a07c3e10000\",\"name\":\"test.user\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"57\"},{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"1 - 57\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-22T23:42:45.791Z - 2021-11-22T23:43:22.615Z\"}],\"method\":\"Browser\",\"source\":\"81.2.69.143\",\"system\":\"http://confluence.internal:8090\",\"timestamp\":{\"epochSecond\":1637624653,\"nano\":873000000},\"version\":\"1.0\"}",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "83a5cd10d1960dd73f42bd2801d238c3",
+        "ip": [
+            "192.168.176.5"
         ],
+        "mac": [
+            "02:42:c0:a8:b0:05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.4.0-90-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/test-audit.log"
+        },
+        "offset": 0
+    },
+    "related": {
         "hosts": [
             "confluence.internal"
         ],
         "ip": [
-            "10.100.100.2"
+            "81.2.69.143"
         ]
     },
     "service": {
         "address": "http://confluence.internal:8090"
     },
     "source": {
-        "address": "10.100.100.2",
-        "ip": "10.100.100.2"
-    },
-    "event": {
-        "action": "audit.logging.summary.user.renamed",
-        "ingested": "2021-11-28T17:41:58.711683518Z",
-        "original": "{\"timestamp\":\"2021-11-28T17:05:37.142Z\",\"author\":{\"name\":\"Joe Bob\",\"type\":\"user\",\"id\":\"2c9680837d4a3682017d4a375a280000\",\"uri\":\"http://confluence.internal:8090/admin/users/viewuser.action?username=admin123\",\"avatarUri\":\"\"},\"type\":{\"categoryI18nKey\":\"audit.logging.category.user.management\",\"category\":\"Users and groups\",\"actionI18nKey\":\"audit.logging.summary.user.renamed\",\"action\":\"User renamed\"},\"affectedObjects\":[{\"name\":\"asdf\",\"type\":\"User\",\"uri\":\"http://confluence.internal:8090/admin/users/viewuser.action?username=asdf123\",\"id\":\"2c9680837d4a3682017d67821e520003\"}],\"changedValues\":[{\"key\":\"Username\",\"i18nKey\":\"audit.logging.changed.value.username\",\"from\":\"asdf\",\"to\":\"asdf123\"}],\"source\":\"10.100.100.2\",\"system\":\"http://confluence.internal:8090\",\"method\":\"Browser\",\"extraAttributes\":[]}",
-        "type": [
-            "user",
-            "change"
-        ],
-        "category": [
-            "iam"
-        ],
-        "kind": "event"
-    },
-    "user": {
-        "name": "admin123",
-        "changes": {
-            "name": "asdf123"
+        "address": "81.2.69.143",
+        "as": {
+            "number": 20712,
+            "organization": {
+                "name": "Andrews \u0026 Arnold Ltd"
+            }
         },
-        "full_name": "Joe Bob",
-        "id": "2c9680837d4a3682017d4a375a280000",
-        "target": {
-            "name": "asdf"
-        }
+        "geo": {
+            "city_name": "Abingdon",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.7095,
+                "lon": -1.3614
+            },
+            "region_iso_code": "GB-OXF",
+            "region_name": "Oxfordshire"
+        },
+        "ip": "81.2.69.143"
     },
     "tags": [
-        "preserve_original_event"
-    ]
+        "preserve_original_event",
+        "confluence-audit"
+    ],
+    "user": {
+        "full_name": "test.user",
+        "id": "2c9580827d4a06e8017d4a07c3e10000"
+    }
 }
 ```
