@@ -1,0 +1,15 @@
+---
+description: Pipeline for parsing etcd store metrics.
+processors:
+  - rename:
+      field: etcd.store.compareandswap
+      target_field: etcd.store.compare_and_swap
+      ignore_missing: true
+  - rename:
+      field: etcd.store.compareanddelete
+      target_field: etcd.store.compare_and_delete
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

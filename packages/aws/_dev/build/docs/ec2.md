@@ -9,6 +9,8 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 
 {{fields "ec2_logs"}}
 
+{{event "ec2_logs"}}
+
 ## Metrics
 
 {{event "ec2_metrics"}}
