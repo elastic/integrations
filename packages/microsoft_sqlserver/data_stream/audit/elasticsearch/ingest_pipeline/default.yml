@@ -9,6 +9,7 @@ processors:
     field: winlog.event_data.param1
     pattern: '(?m)^\.$'
     replacement: ''
+    if: ctx?.winlog?.event_id == "33205"
 - dissect:
     description: Extract statement
     pattern: "%{}statement:%{_temp.stmt}\nadditional_information:%{}"
@@ -24,7 +25,6 @@ processors:
     target_field: sqlserver.audit
     trim_key: \n
     trim_value: \n
-    if: ctx?.winlog?.event_id == "33205"
 - set:
     field: sqlserver.audit.statement
     copy_from: _temp.stmt
@@ -1195,19 +1195,40 @@ processors:
     field: winlog.process
     target_field: process
     ignore_missing: true
-- rename:
-    field: winlog.user
-    target_field: user
+##
+# Set user.name, user.domain and user.id values from
+# SPN
+##
+- dissect:
+    description: Extract user domain and name
+    pattern: "%{_temp.domain}\\%{_temp.username}"
+    field: sqlserver.audit.server_principal_name
+    if: 'ctx?.sqlserver?.audit?.server_principal_name != null && ctx?.sqlserver?.audit?.server_principal_name.contains("\\")'
     ignore_missing: true
-- rename:
-    field: user.identifier
-    target_field: user.id
-    ignore_missing: true
-# user.type is not an ECS field. Move it back under winlog.user
-- rename:
-    field: user.type
-    target_field: winlog.user.type
-    ignore_missing: true
+- set:
+    description: Set username as is if domain is not present
+    field: user.name
+    copy_from: sqlserver.audit.server_principal_name
+    if: 'ctx?.sqlserver?.audit?.server_principal_name != null && !ctx?.sqlserver?.audit?.server_principal_name.contains("\\")'
+- set:
+    description: Set username if it was extracted from Domain\User format
+    field: user.name
+    copy_from: _temp.username
+    if: "ctx?._temp?.username != null"
+- set:
+    description: Set domain if it was extracted from Domain\User format
+    field: user.domain
+    copy_from: _temp.domain
+    if: "ctx?._temp?.domain != null"
+- set:
+    field: user.id
+    copy_from: sqlserver.audit.server_principal_sid
+- set:
+    field: user.target.name
+    copy_from: sqlserver.audit.target_server_principal_name
+- set:
+    field: user.target.id
+    copy_from: sqlserver.audit.target_server_principal_sid
 ##
 # Clean up
 ##
@@ -1217,6 +1238,10 @@ processors:
       - winlog.event_data.param1
       - sqlserver.audit.additional_information
       - sqlserver.audit.duration_milliseconds 
+      - sqlserver.audit.server_principal_name
+      - sqlserver.audit.server_principal_sid
+      - sqlserver.audit.target_server_principal_name
+      - sqlserver.audit.target_server_principal_sid
     ignore_missing: true
 - remove:
     field: event.original
