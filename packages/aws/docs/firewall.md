@@ -74,7 +74,9 @@ An example event for `firewall` looks as following:
     ],
     "network": {
         "protocol": "http",
-        "transport": "tcp"
+        "community_id": "1:+Arv0tAf8Q00mJ6C2ho2P6pp0Io=",
+        "transport": "tcp",
+        "type": "ipv4"
     },
     "cloud": {
         "availability_zone": "us-east-2a",
