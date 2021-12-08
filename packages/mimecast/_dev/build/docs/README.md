@@ -77,23 +77,10 @@ For the reference on how to create or edit dashboard, please visit this [link](h
 
 ### Export/Import Dashboard
 
-Kibana provides very useful feature – to export and import dashboards. To do that, follow these visualizations of the steps described:
+Kibana provides very useful feature – to export and import dashboards. Any search query, visualization and/or dashboard you can save for later use. And once you want to switch back to them you can find them in Saved Objects and opent them, delete them and export, import them from there. For dashboards, it can be useful to export/import them. To do that, follow these instructions:
 
-To export:
- 
-1. Go to Kibana
-2. Click on Management
-3. Click on Saved Objects
-4. Select each Dashboards, Searches and Visualizations you need and click on Export
-5. Click on Export in top right corner
+https://www.elastic.co/guide/en/kibana/7.9/managing-saved-objects.html
 
-to Import:
-
-1. Go to Kibana
-2. Click on Management
-3. Click on Saved Objects
-4. Click on Import in top right corner
-5. Select a file to import
 6. Click Import button to Confirm
 
 This integration also has already exported a few dashboards made as an example for you and you can see them below.
