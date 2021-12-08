@@ -1,0 +1,137 @@
+---
+description: Pipeline for parsing Pulse Connect Secure logs
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.12.0'
+  - rename:
+      field: message
+      target_field: event.original
+  - set:
+      field: observer.vendor
+      value: Pulse Secure
+  - set:
+      field: observer.product
+      value: Pulse Secure Connect
+  - set:
+      field: observer.type
+      value: vpn
+  - grok:
+      field: event.original
+      patterns:
+        - '%{SYSLOGTIMESTAMP} %{SYSLOGHOST:host.hostname} %{INT} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{IP:observer.ip} PulseSecure: - - - %{DATE2} - %{SYSLOGHOST:observer.name} - \[%{IPORHOST:client.address}\] %{USERNAME:user.name}?\(%{DATA:pulse_secure.realm}?\)\[%{DATA:pulse_secure.role}\] - %{GREEDYDATA:message}'
+      pattern_definitions:
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
+        DATE2: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      timezone: "{{ event.timezone }}"
+      formats:
+      - ISO8601
+      if: ctx.event?.timezone != null   
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+      - ISO8601
+      if: ctx.event?.timezone == null      
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+  - convert:
+      field: client.address
+      target_field: client.ip
+      type: ip
+      ignore_missing: true 
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: network
+  - grok:
+      field: message
+      patterns:
+        - 'Agent login %{WORD:_tmp.outcome} for %{DATA}%{SESSION} from %{IP} with %{GREEDYDATA:user_agent.original}.'
+        - 'VPN Tunneling: Session %{WORD:_tmp.type} for user %{SESSION} with %{NOTSPACE:network.type} address %{IP:client.nat.ip}(, hostname %{HOSTNAME:host.name})?'
+        - "Session %{WORD} from user agent '%{GREEDYDATA:user_agent.original}' %{SESSION}."
+        - 'Login %{WORD:_tmp.outcome}( %{GREEDYDATA})?. Reason: %{GREEDYDATA:event.reason}'
+        - '^Primary authentication %{WORD_tmp.outcome}'
+        - '%{SESSION}'
+      pattern_definitions:
+        SESSION: \(session:%{SPACE}?%{NOTSPACE:pulse_secure.session.id}\)
+      ignore_failure: true
+  - lowercase:
+      field: network.type
+      ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: 'ctx._tmp?.outcome != null && ["failed"].contains(ctx._tmp?.outcome)'
+  - set:
+      field: event.outcome
+      value: success
+      if: 'ctx._tmp?.outcome != null && ["successful", "succeeded"].contains(ctx._tmp?.outcome)'
+  - append:
+      field: event.type
+      value:
+        - connection
+        - session
+        - start
+      if: ctx._tmp?.type != null && ctx._tmp?.type == "started"
+  - append:
+      field: event.type
+      value:
+        - connection
+        - session
+        - end
+      if: ctx._tmp?.type != null && ctx._tmp?.type == "ended"
+  # IP Geolocation Lookup
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - set:
+      field: source
+      copy_from: client
+
+
+      
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
