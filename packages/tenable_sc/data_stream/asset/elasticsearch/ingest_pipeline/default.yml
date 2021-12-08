@@ -36,79 +36,82 @@ processors:
   - rename: 
       field: json.ip
       target_field: tenable_sc.asset.ip
+      ignore_missing: true
   - rename: 
       field: json.uuid
       target_field: tenable_sc.asset.uuid
+      ignore_missing: true
   - convert: 
-      field: json.score
-      type: long
-      ignore_failure: true
-  - rename: 
       field: json.score
       target_field: tenable_sc.asset.score
-  - convert: 
-      field: json.total
       type: long
       ignore_failure: true
-  - rename: 
+  - convert: 
       field: json.total
       target_field: tenable_sc.asset.total
-  - convert: 
-      field: json.severityInfo
       type: long
       ignore_failure: true
-  - rename: 
+  - convert: 
       field: json.severityInfo
       target_field: tenable_sc.asset.severity.info
-  - convert: 
-      field: json.severityLow
       type: long
       ignore_failure: true
-  - rename: 
+  - convert: 
       field: json.severityLow
       target_field: tenable_sc.asset.severity.low
-  - convert: 
-      field: json.severityMedium
       type: long
       ignore_failure: true
-  - rename: 
+  - convert: 
       field: json.severityMedium
       target_field: tenable_sc.asset.severity.medium
-  - convert: 
-      field: json.severityHigh
       type: long
       ignore_failure: true
-  - rename: 
+  - convert: 
       field: json.severityHigh
       target_field: tenable_sc.asset.severity.high
-  - convert: 
-      field: json.severityCritical
       type: long
       ignore_failure: true
-  - rename: 
+  - convert: 
       field: json.severityCritical
       target_field: tenable_sc.asset.severity.critical
-  - set: 
+      type: long
+      ignore_failure: true
+  - gsub:
+      field: json.macAddress
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: json.macAddress
+      ignore_missing: true
+  - append:
+      if: ctx?.json?.macAddress != null
       field: host.mac
-      copy_from: json.macAddress 
+      value: '{{{json.macAddress}}}'
+      allow_duplicates: false
   - rename: 
       field: json.macAddress
       target_field: tenable_sc.asset.mac
   - rename: 
       field: json.policyName
       target_field: tenable_sc.asset.policy.name
+      ignore_missing: true
   - rename: 
       field: json.pluginSet
       target_field: tenable_sc.asset.plugin_set
+      ignore_missing: true
   - set: 
       field: tenable_sc.asset.netbios.name
       copy_from: json.netbiosName
+      ignore_failure: true
   - set: 
       field: host.hostname
       copy_from: json.dnsName
+      ignore_failure: true
   - set: 
       field: tenable_sc.asset.dns.name
       copy_from: json.dnsName
+      ignore_failure: true
   - script:
       lang: painless
       source: |
@@ -136,42 +139,55 @@ processors:
   - rename: 
       field: json.osCPE
       target_field: tenable_sc.asset.os_cpe
+      ignore_missing: true
   - rename: 
       field: json.biosGUID
       target_field: tenable_sc.asset.bios.guid
+      ignore_missing: true
   - rename: 
       field: json.tpmID
       target_field: tenable_sc.asset.tpm.id
+      ignore_missing: true
   - rename: 
       field: json.mcafeeGUID
       target_field: tenable_sc.asset.mcafee.guid
+      ignore_missing: true
   - rename: 
       field: json.lastAuthRun
       target_field: tenable_sc.asset.last_auth_run
+      ignore_missing: true
   - rename: 
       field: json.lastUnauthRun
       target_field: tenable_sc.asset.last_unauth_run
+      ignore_missing: true
   - rename: 
       field: json.hostUniqueness
       target_field: tenable_sc.asset.host_uniqueness
+      ignore_missing: true
   - rename: 
       field: json.uniqueness
       target_field: tenable_sc.asset.uniqueness
+      ignore_missing: true
   - rename: 
       field: json.repository.id 
       target_field: tenable_sc.asset.repository.id
+      ignore_missing: true
   - rename: 
       field: json.repository.name 
       target_field: tenable_sc.asset.repository.name
+      ignore_missing: true
   - rename: 
       field: json.repository.description
       target_field: tenable_sc.asset.repository.description
+      ignore_missing: true
   - rename: 
       field: json.repository.sciID 
       target_field: tenable_sc.asset.repository.sci.id
+      ignore_missing: true
   - rename: 
       field: json.repository.dataFormat 
       target_field: tenable_sc.asset.repository.data_format
+      ignore_missing: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -191,7 +207,7 @@ processors:
         drop(ctx);
   - remove: 
       field: json
-      if: ctx?.json != null
+      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

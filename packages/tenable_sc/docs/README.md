@@ -30,11 +30,11 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-19T07:33:02.529Z",
+    "@timestamp": "2021-12-08T11:35:59.905Z",
     "agent": {
-        "ephemeral_id": "00f1c9ba-46a4-4197-84fe-b0d7e647ee49",
+        "ephemeral_id": "15aa6437-cc70-4042-a3e2-ad3c69529250",
         "hostname": "docker-fleet-agent",
-        "id": "131c493a-0861-41e3-b081-6e03d323e783",
+        "id": "d73c25b7-0de7-474e-8ffb-42eb961ccbd3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -48,26 +48,41 @@ An example event for `asset` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "131c493a-0861-41e3-b081-6e03d323e783",
+        "id": "d73c25b7-0de7-474e-8ffb-42eb961ccbd3",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "host",
-        "created": "2021-11-19T07:33:02.529Z",
+        "created": "2021-12-08T11:35:59.905Z",
         "dataset": "tenable_sc.asset",
-        "ingested": "2021-11-19T07:33:06Z",
+        "ingested": "2021-12-08T11:36:03Z",
         "kind": "state",
         "original": "{\"biosGUID\":\"9e8c4d43-982b-4405-a76c-d56c1d6cf117\",\"dnsName\":\"rnkmigauv2l8zeyf.example\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"0.0.228.153\",\"lastAuthRun\":\"\",\"lastUnauthRun\":\"\",\"macAddress\":\"00:00:00:47:05:0d\",\"mcafeeGUID\":\"\",\"netbiosName\":\"UNKNOWN\\\\RNKMIGAUV2L8ZEYF.EXAMPLE\",\"osCPE\":\"cpe:/o:microsoft:windows_10:::x64-home\",\"pluginSet\":\"201901281542\",\"policyName\":\"Basic Agent Scan\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"2\",\"name\":\"Staged-Large\",\"sciID\":\"1\"},\"score\":\"307\",\"severityCritical\":\"6\",\"severityHigh\":\"4\",\"severityInfo\":\"131\",\"severityLow\":\"0\",\"severityMedium\":\"9\",\"total\":\"150\",\"tpmID\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"4add65d0-27fc-491c-91ba-3f498a61f49e\"}",
         "type": "info"
     },
     "host": {
+        "domain": "example",
+        "hostname": "rnkmigauv2l8zeyf.example",
         "ip": "0.0.228.153",
-        "mac": "00:00:00:47:05:0d"
+        "mac": [
+            "00-00-00-47-05-0D"
+        ],
+        "name": "rnkmigauv2l8zeyf"
     },
     "input": {
         "type": "httpjson"
+    },
+    "related": {
+        "hosts": [
+            "rnkmigauv2l8zeyf.example",
+            "rnkmigauv2l8zeyf",
+            "UNKNOWN\\RNKMIGAUV2L8ZEYF.EXAMPLE"
+        ],
+        "ip": [
+            "0.0.228.153"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -84,7 +99,7 @@ An example event for `asset` looks as following:
             },
             "host_uniqueness": "repositoryID,ip,dnsName",
             "ip": "0.0.228.153",
-            "mac": "00:00:00:47:05:0d",
+            "mac": "00-00-00-47-05-0D",
             "netbios": {
                 "name": "UNKNOWN\\RNKMIGAUV2L8ZEYF.EXAMPLE"
             },
@@ -204,9 +219,9 @@ An example event for `plugin` looks as following:
 {
     "@timestamp": "2021-09-27T01:33:53.000Z",
     "agent": {
-        "ephemeral_id": "8e780ce4-6009-4662-bece-aff034fc2528",
+        "ephemeral_id": "2146d57d-40a3-4efa-aa74-8f68fa431eb0",
         "hostname": "docker-fleet-agent",
-        "id": "131c493a-0861-41e3-b081-6e03d323e783",
+        "id": "d73c25b7-0de7-474e-8ffb-42eb961ccbd3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -220,15 +235,15 @@ An example event for `plugin` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "131c493a-0861-41e3-b081-6e03d323e783",
+        "id": "d73c25b7-0de7-474e-8ffb-42eb961ccbd3",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-11-19T07:33:50.125Z",
+        "created": "2021-12-08T11:37:06.013Z",
         "dataset": "tenable_sc.plugin",
-        "ingested": "2021-11-19T07:33:53Z",
+        "ingested": "2021-12-08T11:37:09Z",
         "kind": "event",
         "original": "{\"baseScore\":\"7.8\",\"checkType\":\"remote\",\"copyright\":\"This script is Copyright (C) 2003-2020 John Lampe\",\"cpe\":\"\",\"cvssV3BaseScore\":null,\"cvssV3TemporalScore\":null,\"cvssV3Vector\":\"\",\"cvssV3VectorBF\":\"0\",\"cvssVector\":\"AV:N/AC:L/Au:N/C:N/I:N/A:C/E:U/RL:OF/RC:C\",\"cvssVectorBF\":\"2164920932\",\"dependencies\":\"find_service1.nasl,http_version.nasl,www_fingerprinting_hmap.nasl\",\"description\":\"Microsoft IIS, running Frontpage extensions, is vulnerable to a remote denial of service attack usually called the 'malformed web submission' vulnerability.  An attacker, exploiting this vulnerability, will be able to render the service unusable.\\n\\nIf this machine serves a business-critical function, there could be an impact to the business.\",\"dstPort\":null,\"exploitAvailable\":\"false\",\"exploitEase\":\"No known exploits are available\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"11\",\"name\":\"Web Servers\",\"type\":\"active\"},\"id\":\"10585\",\"md5\":\"38b2147401eb5c3a15af52182682f345\",\"modifiedTime\":\"1632706433\",\"name\":\"Microsoft IIS Frontpage Server Extensions (FPSE) Malformed Form DoS\",\"patchModDate\":\"-1\",\"patchPubDate\":\"-1\",\"pluginModDate\":\"1591963200\",\"pluginPubDate\":\"1058875200\",\"protocol\":\"\",\"requiredPorts\":\"\",\"requiredUDPPorts\":\"\",\"riskFactor\":\"High\",\"seeAlso\":\"https://docs.microsoft.com/en-us/security-updates/SecurityBulletins/2000/ms00-100\",\"solution\":\"Microsoft has released a set of patches for IIS 4.0 and 5.0.\",\"sourceFile\":\"IIS_frontpage_DOS_2.nasl\",\"srcPort\":null,\"stigSeverity\":null,\"synopsis\":\"The remote web server is vulnerable to a denial of service\",\"temporalScore\":\"5.8\",\"type\":\"active\",\"version\":\"1.28\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":3.6000000000000001},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Low\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"\\u003e 365 days\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"4.4\",\"vulnPubDate\":\"977486400\",\"xrefs\":\"CVE:CVE-2001-0096, BID:2144, MSFT:MS00-100, MSKB:280322\"}",
         "type": "info"
@@ -459,9 +474,9 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2021-09-25T16:08:45.000Z",
     "agent": {
-        "ephemeral_id": "b6379470-37ed-4264-bdb6-25389fe05d4b",
+        "ephemeral_id": "db17a141-bde7-468d-aa19-035029029126",
         "hostname": "docker-fleet-agent",
-        "id": "131c493a-0861-41e3-b081-6e03d323e783",
+        "id": "d73c25b7-0de7-474e-8ffb-42eb961ccbd3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -475,23 +490,28 @@ An example event for `vulnerability` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "131c493a-0861-41e3-b081-6e03d323e783",
+        "id": "d73c25b7-0de7-474e-8ffb-42eb961ccbd3",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-11-19T07:34:38.295Z",
+        "created": "2021-12-08T11:38:03.375Z",
         "dataset": "tenable_sc.vulnerability",
-        "ingested": "2021-11-19T07:34:41Z",
+        "ingested": "2021-12-08T11:38:06Z",
         "kind": "event",
         "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.1\",\"ips\":\"10.238.64.1\",\"lastSeen\":\"1632586125\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
         "type": "info"
     },
     "host": {
+        "domain": "lxd",
+        "hostname": "_gateway.lxd",
         "ip": "10.238.64.1",
-        "mac": "00:16:3e:a1:12:f7",
+        "mac": [
+            "00-16-3E-A1-12-F7"
+        ],
+        "name": "_gateway",
         "os": {
             "full": "Linux Kernel 2.6"
         }
@@ -500,6 +520,10 @@ An example event for `vulnerability` looks as following:
         "type": "httpjson"
     },
     "related": {
+        "hosts": [
+            "_gateway.lxd",
+            "_gateway"
+        ],
         "ip": [
             "10.238.64.1"
         ]
@@ -535,7 +559,7 @@ An example event for `vulnerability` looks as following:
             "ip": "10.238.64.1",
             "is_vulnerability_published": true,
             "last_seen": "2021-09-25T16:08:45.000Z",
-            "mac": "00:16:3e:a1:12:f7",
+            "mac": "00-16-3E-A1-12-F7",
             "operating_system": "Linux Kernel 2.6",
             "patch": {
                 "is_published": false
@@ -700,6 +724,7 @@ An example event for `vulnerability` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | tenable_sc.vulnerability.accept_risk | N/A | keyword |

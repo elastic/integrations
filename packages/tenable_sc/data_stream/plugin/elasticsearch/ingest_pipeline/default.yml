@@ -51,28 +51,32 @@ processors:
   - rename:
       field: json.id
       target_field: tenable_sc.plugin.id
+      ignore_missing: true
   - rename:
       field: json.name
       target_field: tenable_sc.plugin.name
+      ignore_missing: true
   - rename:
       field: json.description
       target_field: tenable_sc.plugin.description
+      ignore_missing: true
   - rename:
       field: json.type
       target_field: tenable_sc.plugin.type
+      ignore_missing: true
   - rename:
       field: json.copyright
       target_field: tenable_sc.plugin.copyright
-  - rename:
+      ignore_missing: true
+  - convert: 
       field: json.version
       target_field: tenable_sc.plugin.version
-  - convert: 
-      field: tenable_sc.plugin.version
       type: double
       ignore_failure: true
   - rename:
       field: json.sourceFile
       target_field: tenable_sc.plugin.source_file
+      ignore_missing: true
   - split:
       field: json.dependencies
       target_field: tenable_sc.plugin.dependencies
@@ -81,9 +85,11 @@ processors:
   - rename:
       field: json.requiredPorts
       target_field: tenable_sc.plugin.required_ports
+      ignore_missing: true
   - rename:
       field: json.requiredUDPPorts
       target_field: tenable_sc.plugin.required_udp_ports
+      ignore_missing: true
   - split:
       field: json.cpe
       target_field: tenable_sc.plugin.cpe
@@ -92,20 +98,23 @@ processors:
   - rename:
       field: json.srcPort
       target_field: tenable_sc.plugin.src_port
-      if: ctx?.json?.srcPort != null
+      ignore_missing: true
   - rename:
       field: json.dstPort
       target_field: tenable_sc.plugin.dst_port
-      if: ctx?.json?.dstPort != null
+      ignore_missing: true
   - rename:
       field: json.protocol
       target_field: tenable_sc.plugin.protocol
+      ignore_missing: true
   - rename:
       field: json.riskFactor
-      target_field: tenable_sc.plugin.risk_factor  
+      target_field: tenable_sc.plugin.risk_factor
+      ignore_missing: true
   - rename:
       field: json.solution
       target_field: tenable_sc.plugin.solution
+      ignore_missing: true
   - split:
       field: json.seeAlso
       target_field: tenable_sc.plugin.see_also
@@ -114,6 +123,7 @@ processors:
   - rename:
       field: json.synopsis
       target_field: tenable_sc.plugin.synopsis
+      ignore_missing: true
   - rename:
       field: json.checkType
       target_field: tenable_sc.plugin.check_type
@@ -121,12 +131,15 @@ processors:
   - rename:
       field: json.exploitEase
       target_field: tenable_sc.plugin.exploit.ease
+      ignore_missing: true
   - rename:
       field: json.exploitAvailable
       target_field: tenable_sc.plugin.exploit.is_available
+      ignore_missing: true
   - rename:
       field: json.exploitFrameworks
       target_field: tenable_sc.plugin.exploit.frameworks
+      ignore_missing: true
   - rename:
       field: json.cvssVector
       target_field: tenable_sc.plugin.cvss_vector
@@ -135,20 +148,14 @@ processors:
       field: json.cvssVectorBF
       target_field: tenable_sc.plugin.cvss_vector_bf
       if: ctx?.json?.cvssVectorBF != '0'
-  - rename:
+  - convert:
       field: json.baseScore
       target_field: tenable_sc.plugin.base_score
-      if: ctx?.json?.baseScore != null
-  - convert:
-      field: tenable_sc.plugin.base_score
       type: double
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.temporalScore
       target_field: tenable_sc.plugin.temporal_score
-      if: ctx?.json?.temporalScore != null
-  - convert:
-      field: tenable_sc.plugin.temporal_score
       type: double
       ignore_failure: true
   - rename:
@@ -161,27 +168,19 @@ processors:
       if: ctx?.json?.cvssV3VectorBF != '0'
   - convert:
       field: json.cvssV3BaseScore
-      type: double
-      ignore_failure: true
-  - rename:
-      field: json.cvssV3BaseScore
       target_field: tenable_sc.plugin.cvssv3_base_score
-      if: ctx?.json?.cvssV3BaseScore != null
-  - convert:
-      field: json.cvssV3TemporalScore
       type: double
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.cvssV3TemporalScore
       target_field: tenable_sc.plugin.cvssv3_temporal_score
-      if: ctx?.json?.cvssV3TemporalScore != null
-  - convert:
-      field: json.vprScore
       type: double
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.vprScore
       target_field: tenable_sc.plugin.vpr.score
+      type: double
+      ignore_failure: true
   - json: 
       field: json.vprContext
       target_field: json.vprContext
@@ -202,10 +201,11 @@ processors:
   - rename:
       field: json.stigSeverity
       target_field: tenable_sc.plugin.stig_severity
-      if: ctx?.json?.stigSeverity != null
+      ignore_missing: true
   - set: 
       field: tenable_sc.plugin.is_plugin_published
       value: false
+      if: ctx?.json?.pluginPubDate != null
   - set: 
       field: tenable_sc.plugin.is_plugin_published
       value: true
@@ -220,6 +220,7 @@ processors:
   - set: 
       field: tenable_sc.plugin.is_plugin_modified
       value: false
+      if: ctx?.json?.pluginModDate != null
   - set: 
       field: tenable_sc.plugin.is_plugin_modified
       value: true
@@ -234,6 +235,7 @@ processors:
   - set: 
       field: tenable_sc.plugin.is_patch_published
       value: false
+      if: ctx?.json?.patchPubDate != null
   - set: 
       field: tenable_sc.plugin.is_patch_published
       value: true
@@ -248,6 +250,7 @@ processors:
   - set: 
       field: tenable_sc.plugin.is_patch_modified
       value: false
+      if: ctx?.json?.patchModDate != null
   - set: 
       field: tenable_sc.plugin.is_patch_modified
       value: true
@@ -262,6 +265,7 @@ processors:
   - set: 
       field: tenable_sc.plugin.is_vulnerability_published
       value: false
+      if: ctx?.json?.vulnPubDate != null
   - set: 
       field: tenable_sc.plugin.is_vulnerability_published
       value: true
@@ -282,6 +286,7 @@ processors:
   - rename:
       field: json.md5
       target_field: tenable_sc.plugin.md5
+      ignore_missing: true
   - split:
       field: json.xrefs
       target_field: tenable_sc.plugin.xrefs
@@ -294,12 +299,15 @@ processors:
   - rename:
       field: json.family.id
       target_field: tenable_sc.plugin.family.id
+      ignore_missing: true
   - rename:
       field: json.family.name
       target_field: tenable_sc.plugin.family.name
+      ignore_missing: true
   - rename:
       field: json.family.type
       target_field: tenable_sc.plugin.family.type
+      ignore_missing: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -319,7 +327,7 @@ processors:
         drop(ctx);
   - remove:
       field: json
-      if: ctx?.json != null
+      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
