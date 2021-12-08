@@ -51,19 +51,19 @@ Here is the explanation of the typical log types we mentioned in the previous ch
 
 #### Log Types
 
-• Audit Events — more information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+• Audit Events — these logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
 
-• DLP Logs - more information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
+• DLP Logs - these logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
 
-• TTP Attachment Protection Logs - learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+• TTP Attachment Protection Logs - these logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
 
-• TTP Impersonation Protect Logs—  learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
+• TTP Impersonation Protect Logs — these logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
 
-•	TTP URL Log - more about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
+•	TTP URL Log - these logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
 
-•	Threat Intel Feed - more about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
+•	Threat Intel Feed - these logs contain information about messages that return identified malware threats at a customer or regional grid level. There are two types of these logs - malware_grid (Regional) and malware_customer (Targeted) and we ingest them separately. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
 
-•	SIEM logs - more about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+•	SIEM logs - these logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
 
 ## Dashboards
 
@@ -80,8 +80,6 @@ For the reference on how to create or edit dashboard, please visit this [link](h
 Kibana provides very useful feature – to export and import dashboards. Any search query, visualization and/or dashboard you can save for later use. And once you want to switch back to them you can find them in Saved Objects and opent them, delete them and export, import them from there. For dashboards, it can be useful to export/import them. To do that, follow these instructions:
 
 https://www.elastic.co/guide/en/kibana/7.9/managing-saved-objects.html
-
-6. Click Import button to Confirm
 
 This integration also has already exported a few dashboards made as an example for you and you can see them below.
 
