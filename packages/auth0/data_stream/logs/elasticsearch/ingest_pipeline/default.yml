@@ -25,123 +25,961 @@ processors:
     field: log.level
     value: error
     if: ctx?.auth0?.logs?.data?.details?.error != null
+##
+# Event kind, code and action
+##
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value: authentication
 - script:
     lang: painless
     description: Sets event type, category and action based on type
     if: ctx?.auth0?.logs?.data?.type != null
+    params:
+      actions:
+        f:
+          classification: "Login - Failure"
+          value: "Failed login"
+          type:
+            - info
+          action: failed-login
+        fc:
+          classification: "Login - Failure"
+          value: "Failed connector login"
+          type:
+            - info
+          action: failed-connector-login
+        fco:
+          classification: "Login - Failure"
+          value: "Origin is not in the application's Allowed Origins list"
+          type:
+            - info
+          action: origin-not-allowed
+        fcoa:
+          classification: "Login - Failure"
+          value: "Failed cross-origin authentication"
+          type:
+            - info
+          action: failed-cross-origin-authentication
+        fens:
+          classification: "Login - Failure"
+          value: "Failed native social login"
+          type:
+            - info
+          action: failed-native-social-login
+        fp:
+          classification: "Login - Failure"
+          value: "Incorrect password"
+          type:
+            - info
+          action: incorrect-password
+        fu:
+          classification: "Login - Failure"
+          value: "Invalid email or username"
+          type:
+            - info
+            - indicator
+          category:
+            - threat
+          action: invalid-username-or-email
+        w:
+          classification: "Login - Notification"
+          value: "Warnings during login"
+          type:
+            - info
+            - indicator
+          category:
+            - threat
+          action: warnings-during-login
+        s:
+          classification: "Login - Success"
+          value: "Successful login"
+          type:
+            - info
+            - start
+          category:
+            - session
+          action: successful-login
+        scoa:
+          classification: "Login - Success"
+          value: "Successful cross-origin authentication"
+          type:
+            - info
+            - start
+          category:
+            - session
+          action: successful-cross-origin-authentication
+        sens:
+          classification: "Login - Success"
+          value: "Successful native social login"
+          type:
+            - info
+            - start
+          category:
+            - session
+          action: successful-native-social-login
+        flo:
+          classification: "Logout - Failure"
+          value: "User logout failed"
+          type:
+            - info
+          category:
+            - session
+          action: user-logout-failed
+        slo:
+          classification: "Logout - Success"
+          value: "User successfully logged out"
+          type:
+            - info
+            - end
+          category:
+            - session
+          action: user-logout-successful
+        fs:
+          classification: "Signup - Failure"
+          value: "User signup failed"
+          type:
+            - info
+            - creation
+            - user
+          category:
+            - iam
+          action: user-signup-failed
+        fsa:
+          classification: "Silent Authentication - Failure"
+          value: "Failed silent authentication"
+          type:
+            - info
+            - indicator
+          category:
+            - threat
+          action: failed-silent-authentication
+        ssa:
+          classification: "Silent Authentication - Success"
+          value: "Successful silent authentication"
+          type:
+            - info
+          action: successful-silent-authentication
+        feacft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Authorization Code for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-auth-code-for-access-token
+        feccft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Access Token for a Client Credentials Grant"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-access-token-for-client-cred-grant
+        fede:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Device Code for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-device-code-for-access-token
+        feoobft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Password and OOB Challenge for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-password-oob-challenge-for-access-token
+        feotpft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Password and OTP Challenge for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-password-otp-challenge-for-access-token
+        fepft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Password for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-password-for-access-token
+        fepotpft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Passwordless OTP for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-passwordless-otp-for-access-token
+        fercft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Password and MFA Recovery code for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-password-mfa-recovery-code-for-access-token
+        ferrt:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Rotating Refresh Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-rotating-refresh-token
+        fertft:
+          classification: "Token Exchange - Failure"
+          value: "Failed exchange of Refresh Token for Access Token"
+          type:
+            - info
+            - protocol
+            - error
+          category:
+            - network
+            - web
+          action: failed-exchange-refresh-token-for-access-token
+        seacft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Authorization Code for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-auth-code-for-access-token
+        seccft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Access Token for a Client Credentials Grant"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-access-token-for-client-cred-grant
+        sede:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Device Code for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-device-code-for-access-token
+        seoobft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Password and OOB Challenge for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-password-oob-challange-for-access-token
+        seotpft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Password and OTP Challenge for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-password-otp-challenge-for-access-token
+        sepft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Password for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-password-for-access-token
+        sercft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Password and MFA Recovery code for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-mfa-recovery-code-for-access-token
+        sertft:
+          classification: "Token Exchange - Success"
+          value: "Successful exchange of Refresh Token for Access Token"
+          type:
+            - info
+            - protocol
+            - access
+          category:
+            - network
+            - web
+          action: success-exchange-refresh-token-for-access-token
+        fapi:
+          classification: "Management API - Failure"
+          value: "Failed Management API operation"
+          type:
+            - info
+            - error
+          category:
+            - web
+          action: failed-mgmt-api-operation
+        sapi:
+          classification: "Management API - Success"
+          value: "Successful Management API operation"
+          type:
+            - info
+            - access
+            - change
+          category:
+            - web
+            - iam
+          action: success-mgmt-api-op
+        mgmt_api_read:
+          classification: "Management API - Success"
+          value: "API GET operation returning secrets completed successfully"
+          type:
+            - info
+            - access
+          category:
+            - web
+            - iam
+          action: success-mgmt-api-op-secrets-returned
+        admin_update_launch:
+          classification: "System - Notification"
+          value: "Auth0 Update Launched"
+          type:
+            - change
+          category:
+            - configuration
+          action: auth0-update-launched
+        api_limit:
+          classification: "System - Notification"
+          value: "The maximum number of requests to the Authentication or Management APIs in given time has reached"
+          type:
+            - info
+            - access
+          category:
+            - network
+          action: max-requests-reached
+        coff:
+          classification: "System - Notification"
+          value: "AD/LDAP Connector is offline"
+          type:
+            - error
+            - connection
+          category:
+            - network
+            - web
+          action: ad-ldap-connector-offline
+        con:
+          classification: "System - Notification"
+          value: "AD/LDAP Connector is online and working"
+          type:
+            - info
+            - connection
+          category:
+            - network
+          action: ad-ldap-connector-online
+        depnote:
+          classification: "System - Notification"
+          value: "Deprecation Notice"
+          type:
+            - info
+          action: deprecation-notice
+        fcpro:
+          classification: "System - Notification"
+          value: "Failed to provision a AD/LDAP connector"
+          type:
+            - info
+            - connection
+            - error
+          category:
+            - network
+          action: failed-ad-ldap-provision
+        fui:
+          classification: "System - Notification"
+          value: "Failed to import users"
+          type:
+            - info
+            - user
+            - error
+          category:
+            - iam
+            - web
+          action: failed-to-import-users
+        limit_delegation:
+          classification: "System - Notification"
+          value: "Rate limit exceeded to /delegation endpoint"
+          type:
+            - info
+            - access
+          category:
+            - network
+          action: rate-limit-exceeded-to-delegation-endpoint
+        limit_mu:
+          classification: "System - Notification"
+          value: "An IP address is blocked with 100 failed login attempts using different usernames"
+          type:
+            - indicator
+            - info
+          category:
+            - threat
+            - intrusion_detection
+          action: hundred-failed-logins-ip-address-blocked
+        limit_wc:
+          classification: "System - Notification"
+          value: "An IP address is blocked with 10 failed login attempts into a single account from the same IP address"
+          type:
+            - indicator
+            - info
+          category:
+            - threat
+            - intrusion_detection
+          action: ten-failed-logins-ip-address-blocked
+        sys_os_update_start:
+          classification: "System - Notification"
+          value: "Auth0 OS Update Started"
+          type:
+            - change
+            - start
+            - installation
+          category:
+            - configuration
+            - package
+          action: auth0-os-update-started
+        sys_os_update_end:
+          classification: "System - Notification"
+          value: "Auth0 OS Update Ended"
+          type:
+            - change
+            - end
+            - installation
+          category:
+            - configuration
+            - package
+          action: auth0-os-update-ended
+        sys_update_start:
+          classification: "System - Notification"
+          value: "Auth0 Update Started"
+          type:
+            - change
+            - start
+            - installation
+          category:
+            - configuration
+            - package
+          action: auth0-update-started
+        sys_update_end:
+          classification: "System - Notification"
+          value: "Auth0 Update Ended"
+          type:
+            - change
+            - end
+            - installation
+          category:
+            - configuration
+            - package
+          action: auth0-update-ended
+        fce:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to change user email"
+          type:
+            - change
+            - user
+          category:
+            - iam
+          action: failed-to-change-user-email
+        fcp:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to change password"
+          type:
+            - change
+            - user
+          category:
+            - iam
+          action: failed-to-change-password
+        fcpn:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to change phone number"
+          type:
+            - change
+            - user
+          category:
+            - iam
+          action: failed-to-change-phone-number
+        fcpr:
+          classification: "User/Behavioral - Failure"
+          value: "Failed change password request"
+          type:
+            - change
+            - user
+          category:
+            - iam
+          action: failed-change-password-request
+        fcu:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to change username"
+          type:
+            - change
+            - user
+          category:
+            - iam
+          action: failed-to-change-username
+        fd:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to generate delegation token"
+          type:
+            - info
+            - user
+          category:
+            - iam
+          action: failed-to-generate-delegation-token
+        fdeaz:
+          classification: "User/Behavioral - Failure"
+          value: "Device authorization request failed"
+          type:
+            - info
+            - user
+          category:
+            - iam
+          action: failed-device-authorization-request
+        fdecc:
+          classification: "User/Behavioral - Failure"
+          value: "User did not confirm device"
+          type:
+            - info
+          action: user-device-not-confirmed
+        fdu:
+          classification: "User/Behavioral - Failure"
+          value: "Failed user deletion"
+          type:
+            - deletion
+            - user
+          category:
+            - iam
+          action: failed-user-deletion
+        fn:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to send email notification"
+          type:
+            - info
+          action: failed-to-send-email-notification
+        fv:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to send verification email"
+          type:
+            - info
+          action: failed-to-send-verification-email
+        fvr:
+          classification: "User/Behavioral - Failure"
+          value: "Failed to process verification email request"
+          type:
+            - info
+          action: failed-to-process-verification-email
+        cs:
+          classification: "User/Behavioral - Notification"
+          value: "Passwordless login code has been sent"
+          type:
+            - info
+          action: passwordless-login-code-sent
+        du:
+          classification: "User/Behavioral - Notification"
+          value: "User has been deleted"
+          type:
+            - info
+            - user
+            - deletion
+          category:
+            - iam
+          action: user-deleted
+        gd_enrollment_complete:
+          classification: "User/Behavioral - Notification"
+          value: "A first time MFA user has successfully enrolled using one of the factors"
+          type:
+            - info
+            - change
+            - end
+          category:
+            - iam
+            - session
+          action: mfa-enrollment-completed
+        gd_start_enroll:
+          classification: "User/Behavioral - Notification"
+          value: "Multi-factor authentication enroll has started"
+          type:
+            - info
+            - change
+            - start
+          category:
+            - iam
+            - session
+          action: mfa-enrollment-started
+        gd_unenroll:
+          classification: "User/Behavioral - Notification"
+          value: "Device used for second factor authentication has been unenrolled"
+          type:
+            - info
+            - deletion
+          category:
+            - iam
+          action: mfa-device-unenrolled
+        gd_update_device_account:
+          classification: "User/Behavioral - Notification"
+          value: "Device used for second factor authentication has been updated"
+          type:
+            - info
+            - change
+          category:
+            - iam
+          action: mfa-device-updated
+        ublkdu:
+          classification: "User/Behavioral - Notification"
+          value: "User block setup by anomaly detection has been released"
+          type:
+            - info
+          action: user-login-block-released
+        sce:
+          classification: "User/Behavioral - Success"
+          value: "Successfully changed user email"
+          type:
+            - info
+            - change
+            - user
+          category:
+            - iam
+          action: user-email-changed-successfully
+        scp:
+          classification: "User/Behavioral - Success"
+          value: "Successfully changed password"
+          type:
+            - info
+            - change
+            - user
+          category:
+            - iam
+          action: user-password-changed-successfully
+        scpn:
+          classification: "User/Behavioral - Success"
+          value: "Successfully changed phone number"
+          type:
+            - info
+            - change
+            - user
+          category:
+            - iam
+          action: user-phone-number-changed-successfully
+        scpr:
+          classification: "User/Behavioral - Success"
+          value: "Successful change password request"
+          type:
+            - info
+            - change
+            - user
+          category:
+            - iam
+          action: user-password-change-request-successful
+        scu:
+          classification: "User/Behavioral - Success"
+          value: "Successfully changed username"
+          type:
+            - info
+            - change
+            - user
+          category:
+            - iam
+          action: username-changed-successfully
+        sdu:
+          classification: "User/Behavioral - Success"
+          value: "User successfully deleted"
+          type:
+            - info
+            - deletion
+          category:
+            - iam
+          action: user-deleted-successfully
+        srrt:
+          classification: "User/Behavioral - Success"
+          value: "Successfully revoked a Refresh Token"
+          type:
+            - info
+            - deletion
+          category:
+            - iam
+          action: revoked-refresh-token-successfully
+        sui:
+          classification: "User/Behavioral - Success"
+          value: "Successfully imported users"
+          type:
+            - info
+            - user
+          category:
+            - iam
+          action: imported-users-successfully
+        sv:
+          classification: "User/Behavioral - Success"
+          value: "Sent verification email"
+          type:
+            - info
+            - user
+          category:
+            - iam
+          action: sent-verification-email
+        svr:
+          classification: "User/Behavioral - Success"
+          value: "Successfully processed verification email request"
+          type:
+            - info
+            - user
+          category:
+            - iam
+          action: email-verification-processed-successfully
+        fcph:
+          classification: "Other"
+          value: "Failed Post Change Password Hook"
+          type:
+            - change
+            - user
+          category:
+            - iam
+          action: failed-post-change-password-hook
+        fdeac:
+          classification: "Other"
+          value: "Failed to activate device"
+          type:
+            - info
+          action: failed-to-activate-device
+        fi:
+          classification: "Other"
+          value: "Failed to accept a user invitation. This could happen if the user accepts an invitation using a different email address than provided in the invitation, or due to a system failure while provisioning the invitation."
+          type:
+            - info
+          action: failed-to-accept-user-invitation
+        gd_auth_failed:
+          classification: "Other"
+          value: "Multi-factor authentication failed. This could happen due to a wrong code entered for SMS/Voice/Email/TOTP factors, or a system failure."
+          type:
+            - info
+          action: mfa-authentication-failed-wrong-code
+        gd_auth_rejected:
+          classification: "Other"
+          value: "A user rejected a Multi-factor authentication request via push-notification."
+          type:
+            - info
+          action: user-rejected-mfa-request
+        gd_auth_succeed:
+          classification: "Other"
+          value: "Multi-factor authentication success."
+          type:
+            - info
+          action: mfa-authentication-succeeded
+        gd_otp_rate_limit_exceed:
+          classification: "Other"
+          value: "A user, during enrollment or authentication, enters an incorrect code more than the maximum allowed number of times. Ex: A user enrolling in SMS enters the 6-digit code wrong more than 10 times in a row."
+          type:
+            - info
+            - indicator
+          category:
+            - threat
+          action: user-entered-too-many-incorrect-codes
+        gd_recovery_failed:
+          classification: "Other"
+          value: "A user enters a wrong recovery code when attempting to authenticate."
+          type:
+            - info
+          action: user-entered-wrong-recovery-code
+        gd_recovery_rate_limit_exceed:
+          classification: "Other"
+          value: "A user enters a wrong recovery code too many times."
+          type:
+            - info
+            - indicator
+          category:
+            - threat
+          action: user-entered-too-many-wrong-codes
+        gd_recovery_succeed:
+          classification: "Other"
+          value: "A user successfully authenticates with a recovery code"
+          type:
+            - info
+          action: recovery-succeeded
+        gd_send_pn:
+          classification: "Other"
+          value: "Push notification for MFA sent successfully sent."
+          type:
+            - info
+          action: push-notification-sent
+        gd_send_sms:
+          classification: "Other"
+          value: "SMS for MFA successfully sent."
+          type:
+            - info
+          action: sms-sent
+        gd_send_sms_failure:
+          classification: "Other"
+          value: "Attempt to send SMS for MFA failed."
+          type:
+            - info
+          action: failed-to-send-sms
+        gd_send_voice:
+          classification: "Other"
+          value: "Voice call for MFA successfully made."
+          type:
+            - info
+          action: voice-call-made
+        gd_send_voice_failure:
+          classification: "Other"
+          value: "Attempt to make Voice call for MFA failed."
+          type:
+            - info
+          action: voice-call-failure
+        gd_start_auth:
+          classification: "Other"
+          value: "Second factor authentication event started for MFA."
+          type:
+            - info
+          action: 2fa-auth-event-started
+        gd_tenant_update:
+          classification: "Other"
+          value: "Guardian tenant update"
+          type:
+            - info
+          action: guardian-tenant-update
+        limit_sul:
+          classification: "Other"
+          value: "A user is temporarily prevented from logging in because more than 20 logins per minute occurred from the same IP address"
+          type:
+            - info
+            - indicator
+          category:
+            - threat
+          action: user-blocked-too-many-failed-logins-from-same-ip
+        mfar:
+          classification: "Other"
+          value: "A user has been prompted for multi-factor authentication (MFA). When using Adaptive MFA, Auth0 includes details about the risk assessment."
+          type:
+            - info
+          action: user-prompted-for-mfa
+        pla:
+          classification: "Other"
+          value: "This log is generated before a login and helps in monitoring the behavior of bot detection without having to enable it."
+          type:
+            - info
+          action: pre-login-assessment
+        pwd_leak:
+          classification: "Other"
+          value: "Someone behind the IP address attempted to login with a leaked password."
+          type:
+            - info
+          category:
+            - intrusion_detection
+          action: login-with-breached-password
+        scph:
+          classification: "Other"
+          value: "Success Post Change Password Hook"
+          type:
+            - info
+          action: success-post-change-password-hook
+        sd:
+          classification: "Other"
+          value: "Success delegation"
+          type:
+            - info
+          action: success-delegation
+        si:
+          classification: "Other"
+          value: "Successfully accepted a user invitation"
+          type:
+            - info
+          action: successfully-accepted-user-invitation
+        ss:
+          classification: "Other"
+          value: "Success Signup"
+          type:
+            - info
+          action: success-signup
     source: |-
-         // Map of event type to category and description
-         HashMap authTypeToDescription = [
-                "f":    ["Login - Failure","Failed login"],
-                "fc":   ["Login - Failure","Failed connector login"],
-                "fco":  ["Login - Failure","Origin is not in the application's Allowed Origins list"],
-                "fcoa": ["Login - Failure","Failed cross-origin authentication"],
-                "fens": ["Login - Failure","Failed native social login"],
-                "fp":   ["Login - Failure","Incorrect password"],
-                "fu":   ["Login - Failure","Invalid email or username"],
-
-                "w":    ["Login - Notification","Warnings during login"],
-
-                "s":    ["Login - Success","Successful login"],
-                "scoa": ["Login - Success","Successful cross-origin authentication"],
-                "sens": ["Login - Success","Successful native social login"],
-
-                "flo": ["Logout - Failure","User logout failed"],
-                "slo": ["Logout - Success","User successfully logged out"],
-
-                "ss":  ["Signup - Success","Successful user signup"],
-
-                "fs":  ["Signup - Failure","User signup failed"],
-                "fsa": ["Signup - Success","Failed silent authentication"],
-
-                "ssa": ["Silent Authentication - Success","Successful silent authentication"],
-
-                "feacft":   ["Token Exchange - Failure","Failed exchange of Authorization Code for Access Token"],
-                "feccft":   ["Token Exchange - Failure","Failed exchange of Access Token for a Client Credentials Grant"],
-                "fede":     ["Token Exchange - Failure","Failed exchange of Device Code for Access Token"],
-                "feoobft":  ["Token Exchange - Failure","Failed exchange of Password and OOB Challenge for Access Token"],
-                "feotpft":  ["Token Exchange - Failure","Failed exchange of Password and OTP Challenge for Access Token"],
-                "fepft":    ["Token Exchange - Failure","Failed exchange of Password for Access Token"],
-                "fepotpft": ["Token Exchange - Failure","Failed exchange of Passwordless OTP for Access Token"],
-                "fercft":   ["Token Exchange - Failure","Failed exchange of Password and MFA Recovery code for Access Token"],
-                "ferrt":    ["Token Exchange - Failure","Failed exchange of Rotating Refresh Token"],
-                "fertft":   ["Token Exchange - Failure","Failed exchange of Refresh Token for Access Token"],
-
-                "seacft":  ["Token Exchange - Success","Successful exchange of Authorization Code for Access Token"],
-                "seccft":  ["Token Exchange - Success","Successful exchange of Access Token for a Client Credentials Grant"],
-                "sede":    ["Token Exchange - Success","Successful exchange of Device Code for Access Token"],
-                "seoobft": ["Token Exchange - Success","Successful exchange of Password and OOB Challenge for Access Token"],
-                "seotpft": ["Token Exchange - Success","Successful exchange of Password and OTP Challenge for Access Token"],
-                "sepft":   ["Token Exchange - Success","Successful exchange of Password for Access Token"],
-                "sercft":  ["Token Exchange - Success","Successful exchange of Password and MFA Recovery code for Access Token"],
-                "sertft":  ["Token Exchange - Success","Successful exchange of Refresh Token for Access Token"],
-
-                "fapi": ["Management API - Failure","Failed Management API operation"],
-
-                "sapi":          ["Management API - Success","Successful Management API operation"],
-                "mgmt_api_read": ["Management API - Success","API GET operation returning secrets completed successfully"],
-
-                "admin_update_launch": ["System - Notification","Auth0 Update Launched"],
-                "api_limit":           ["System - Notification","The maximum number of requests to the Authentication or Management APIs in given time has reached"],
-                "coff":                ["System - Notification","AD/LDAP Connector is offline"],
-                "con":                 ["System - Notification","AD/LDAP Connector is online and working"],
-                "depnote":             ["System - Notification","Deprecation Notice"],
-                "fcpro":               ["System - Notification","Failed to provision a AD/LDAP connector"],
-                "fui":                 ["System - Notification","Failed to import users"],
-                "limit_delegation":    ["System - Notification","Rate limit exceeded to /delegation endpoint"],
-                "limit_mu":            ["System - Notification","An IP address is blocked with 100 failed login attempts using different usernames"],
-                "limit_wc":            ["System - Notification","An IP address is blocked with 10 failed login attempts into a single account from the same IP address"],
-                "sys_os_update_start": ["System - Notification","Auth0 OS Update Started"],
-                "sys_os_update_end":   ["System - Notification","Auth0 OS Update Ended"],
-                "sys_update_start":    ["System - Notification","Auth0 Update Started"],
-                "sys_update_end":      ["System - Notification","Auth0 Update Ended"],
-
-                "fce":   ["User/Behavioral - Failure","Failed to change user email"],
-                "fcp":   ["User/Behavioral - Failure","Failed to change password"],
-                "fcpn":  ["User/Behavioral - Failure","Failed to change phone number"],
-                "fcpr":  ["User/Behavioral - Failure","Failed change password request"],
-                "fcu":   ["User/Behavioral - Failure","Failed to change username"],
-                "fd":    ["User/Behavioral - Failure","Failed to generate delegation token"],
-                "fdeaz": ["User/Behavioral - Failure","Device authorization request failed"],
-                "fdecc": ["User/Behavioral - Failure","User did not confirm device"],
-                "fdu":   ["User/Behavioral - Failure","Failed user deletion"],
-                "fn":    ["User/Behavioral - Failure","Failed to send email notification"],
-                "fv":    ["User/Behavioral - Failure","Failed to send verification email"],
-                "fvr":   ["User/Behavioral - Failure","Failed to process verification email request"],
-
-                "cs":                       ["User/Behavioral - Notification","Passwordless login code has been sent"],
-                "du":                       ["User/Behavioral - Notification","User has been deleted"],
-                "gd_enrollment_complete":   ["User/Behavioral - Notification","A first time MFA user has successfully enrolled using one of the factors"],
-                "gd_start_enroll":          ["User/Behavioral - Notification","Multi-factor authentication enroll has started"],
-                "gd_unenroll":              ["User/Behavioral - Notification","Device used for second factor authentication has been unenrolled"],
-                "gd_update_device_account": ["User/Behavioral - Notification","Device used for second factor authentication has been updated"],
-                "ublkdu":                   ["User/Behavioral - Notification","User block setup by anomaly detection has been released"],
-
-                "sce":  ["User/Behavioral - Success","Successfully changed user email"],
-                "scp":  ["User/Behavioral - Success","Successfully changed password"],
-                "scpn": ["User/Behavioral - Success","Successfully changed phone number"],
-                "scpr": ["User/Behavioral - Success","Successful change password request"],
-                "scu":  ["User/Behavioral - Success","Successfully changed username"],
-                "sdu":  ["User/Behavioral - Success","User successfully deleted"],
-                "srrt": ["User/Behavioral - Success","Successfully revoked a Refresh Token"],
-                "sui":  ["User/Behavioral - Success","Successfully imported users"],
-                "sv":   ["User/Behavioral - Success","Sent verification email"],
-                "svr":  ["User/Behavioral - Success","Successfully processed verification email request"]
-         ];
-         if (ctx.event == null) {
-             ctx.event = new HashMap();
-         }
-         def v = authTypeToDescription.get(ctx.auth0.logs.data.type);
-         ctx.event.type = ctx.auth0.logs.data.type;
-         if (v == null) {
-             ctx.event.category = "Unknown category";
-             ctx.event.action = "Unknown";
+         def eventType = ctx.auth0.logs.data.type;
+         def actions = params.get('actions');
+         def actionData = actions.get(eventType);
+         if (actionData == null) {
+             ctx.event.action = 'unknown-' + eventType;
+             ctx.event.type = ['info'];
              return;
          }
-         def category = v[0];
-         def descr = v[1];
-         ctx.event.category = category;
-         ctx.event.action = descr;
+         // overwrite type abbreviation with actual value
+         def eventTypeVal = actionData.get('value');
+         if (eventTypeVal != null) {
+             ctx.auth0.logs.data.type = eventTypeVal;
+         }
+         // event.type
+         def actionType = actionData.get('type');
+         if (actionType != null) {
+           ctx.event.type = new ArrayList(actionType);
+         }
+         // event.category
+         def actionCategory = actionData.get('category');
+         if (actionCategory != null) {
+           for (def c : actionCategory) {
+             ctx.event.category.add(c);
+           }
+         }
+         // event.action
+         def action = actionData.get('action');
+         if (action != null) {
+           ctx.event.action = action;
+         }
+         // auth0 event category / classification group
+         def classification = actionData.get('classification');
+         if (classification != null) {
+           ctx.auth0.logs.data.classification = classification;
+         }
 - date:
     if: "ctx.auth0.logs.data.type == 's' && ctx.auth0.logs.data.details.initiatedAt != null"
     field: auth0.logs.data.details.initiatedAt
