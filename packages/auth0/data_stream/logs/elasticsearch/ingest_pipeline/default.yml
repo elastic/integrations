@@ -977,6 +977,14 @@ processors:
          if (classification != null) {
            ctx.auth0.logs.data.classification = classification;
          }
+         // event.outcome
+         if (classification.toLowerCase().contains("success")) {
+           ctx.event.outcome = "success";
+         } else if (classification.toLowerCase().contains("failure")) {
+           ctx.event.outcome = "failure";
+         } else {
+           ctx.event.outcome = "unknown";
+         }
 - date:
     if: "ctx.auth0.logs.data.type == 's' && ctx.auth0.logs.data.details.initiatedAt != null"
     field: auth0.logs.data.details.initiatedAt
