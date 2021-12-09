@@ -4,15 +4,16 @@ processors:
   - rename:
       field: message
       target_field: event.original
+  - set:
+      if: ctx['@timestamp'] != null
+      field: event.created
+      copy_from: '@timestamp'
   - json:
       field: event.original
       target_field: json
   - pipeline:
       if: ctx?.json?.preview != null
       name: '{{ IngestPipeline "third-party" }}'
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
       value: '1.12.0'
@@ -22,9 +23,6 @@ processors:
       ignore_failure: true
       formats:
         - ISO8601
-  - set:
-      field: event.created
-      value: '{{@timestamp}}'
   - script:
       description: Drops null/empty values recursively
       lang: painless
