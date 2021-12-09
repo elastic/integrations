@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "4db9fb0a-46d2-4e86-9d51-b2dbb13522ad": {
+                            "columnOrder": [
+                                "45ed899d-b0ba-4c0e-92f3-3b1331be047c"
+                            ],
+                            "columns": {
+                                "45ed899d-b0ba-4c0e-92f3-3b1331be047c": {
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Count of records",
+                                    "operationType": "count",
+                                    "scale": "ratio",
+                                    "sourceField": "Records"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": {
+                            "query": "mimecast.ttp_ip_logs"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "data_stream.dataset": "mimecast.ttp_ip_logs"
+                        }
+                    }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-1",
+                        "key": "mimecast.identifiers",
+                        "negate": false,
+                        "params": {
+                            "query": "reply_address_mismatch"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "mimecast.identifiers": "reply_address_mismatch"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": "data_stream.dataset : \"mimecast.ttp_ip_logs\" and mimecast.identifiers :\"reply_address_mismatch\"    "
+            },
+            "visualization": {
+                "accessor": "45ed899d-b0ba-4c0e-92f3-3b1331be047c",
+                "layerId": "4db9fb0a-46d2-4e86-9d51-b2dbb13522ad",
+                "layerType": "data"
+            }
+        },
+        "title": "[Mimecast] ReplyAddressMismatchCount",
+        "visualizationType": "lnsMetric"
+    },
+    "coreMigrationVersion": "7.16.0",
+    "id": "mimecast-47017670-3e40-11ec-80fa-4dfb04910642",
+    "migrationVersion": {
+        "lens": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-4db9fb0a-46d2-4e86-9d51-b2dbb13522ad",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-1",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}

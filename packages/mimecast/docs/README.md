@@ -2,11 +2,18 @@
 
 The Mimecast integration collects events from the Mimecast API.
 
+## Configuration
+
+Authorization parameters for the Mimecast API (`Application Key`, `Application ID`, `Access Key`, and `Secret Key`), should be provided by a Mimecast representative for this integration.
+Under `Advanced options` you can set the time interval between two API requests as well as the API URL. A Mimecast representative should also be able to give you with this information in case you need to change the defaults. 
+
+Note that rate limit quotas may require you to set up different credentials for the different available log types.
+
 ## Logs
 
-### AUDIT EVENTS
+### Audit Events
 
-This is the `mimecast.audit_events` dataset.
+This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
 
 An example event for `audit_events` looks as following:
 
@@ -168,9 +175,9 @@ An example event for `audit_events` looks as following:
 | user.name | Short name or login of the user. | keyword |
 
 
-### DLP LOGS
+### DLP Logs
 
-This is the `mimecast.dlp_logs` dataset.
+This is the `mimecast.dlp_logs` dataset. These logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
 
 An example event for `dlp` looks as following:
 
@@ -291,9 +298,9 @@ An example event for `dlp` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-### SIEM LOGS
+### SIEM Logs
 
-This is the `mimecast.siem_logs` dataset.
+This is the `mimecast.siem_logs` dataset. These logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
 
 An example event for `siem` looks as following:
 
@@ -441,6 +448,7 @@ An example event for `siem` looks as following:
 | mimecast.acc | The Mimecast account code for your account. | keyword |
 | mimecast.credentialTheft | The info about credential theft. | keyword |
 | mimecast.log_type | String to get type of SIEM log. | keyword |
+| mimecast.msgid | The internet message id of the email. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.domain | Source domain. | keyword |
@@ -453,9 +461,9 @@ An example event for `siem` looks as following:
 | user.email | User email address. | keyword |
 
 
-### TTP IMPERSONATION LOGS
+### TTP Impersonation Logs
 
-This is the `mimecast.ttp_ip_logs` dataset.
+This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
 
 An example event for `ttp_ip` looks as following:
 
@@ -585,9 +593,9 @@ An example event for `ttp_ip` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-### TTP ATTACHMENT LOGS
+### TTP Attachment Logs
 
-This is the `mimecast.ttp_ap_logs` dataset.
+This is the `mimecast.ttp_ap_logs` dataset. These logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
 
 An example event for `ttp_ap` looks as following:
 
@@ -708,9 +716,9 @@ An example event for `ttp_ap` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-### TTP URL LOGS
+### TTP URL Logs
 
-This is the `mimecast.ttp_url_logs` dataset.
+This is the `mimecast.ttp_url_logs` dataset. These logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
 
 An example event for `ttp_url` looks as following:
 
@@ -851,9 +859,9 @@ An example event for `ttp_url` looks as following:
 | user.name | Short name or login of the user. | keyword |
 
 
-### THREAT INTEL FEED MALWARE CUSTOMER
+### Threat Intel Feed Malware: Customer
 
-This is the `mimecast.threat_intel_malware_customer` dataset.
+This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain information about messages that return identified malware threats at a customer level. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
 
 An example event for `threat_intel_malware_customer` looks as following:
 
@@ -969,9 +977,9 @@ An example event for `threat_intel_malware_customer` looks as following:
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
 
 
-### THREAT INTEL FEED MALWARE GRID
+### Threat Intel Feed Malware: Grid
 
-This is the `mimecast.threat_intel_malware_grid` dataset.
+This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain information about messages that return identified malware threats at a regional grid level. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
 
 An example event for `threat_intel_malware_grid` looks as following:
 
