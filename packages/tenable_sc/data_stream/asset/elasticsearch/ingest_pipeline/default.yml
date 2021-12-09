@@ -30,9 +30,11 @@ processors:
   - append: 
       field: related.ip
       value: "{{{json.ip}}}"
-  - set: 
+      if: ctx?.json?.ip != null
+  - append:
       field: host.ip
-      copy_from: json.ip
+      value: "{{{json.ip}}}"
+      if: ctx?.json?.ip != null
   - rename: 
       field: json.ip
       target_field: tenable_sc.asset.ip
