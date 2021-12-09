@@ -2,161 +2,74 @@
 
 The Mimecast integration collects events from the Mimecast API.
 
-Full guide how to configure, deploy and use this integration find [here]()
+## Configuration
 
-# Documenation
+Authorization parameters for the Mimecast API (`Application Key`, `Application ID`, `Access Key`, and `Secret Key`), should be provided by a Mimecast representative for this integration.
+Under `Advanced options` you can set the time interval between two API requests as well as the API URL. A Mimecast representative should also be able to give you with this information in case you need to change the defaults. 
 
-## Introduction
-
-The purpose of this integration is to fetch logs from the Mimecast API periodically and ingest them into the Elastic in automated manner.
-
-The integration is made based on the specification defined by the Elastic team. Each Elastic Integration is an Elastic Package that defines how to observe a specific product with the Elastic Stack.
-
-An Elastic Package may define configuration for the Elastic Agent as well as assets for the Elastic Stack (such as Kibana dashboards and Elasticsearch index templates). It should also include documentation about the package. Finally, a package may also define tests to ensure that it is functioning as expected.
-Elastic Packages have a certain, well-defined structure. This structure is described by the Package Specification. The repository is also used for discussions about extending the specification (with proposals).
-
-More about Elastic package stack and general idea about making integration this way read [here](https://www.elastic.co/blog/elastic-agent-and-fleet-make-it-easier-to-integrate-your-systems-with-elastic).
-
-## Deployment and Configuration Guide
-
-### Prerequisites
-
-The integration package will be deployed and made available by Elastic on their cloud platform. To access it and use it accordingly, up and running Elastic stack along with the Elastic account will be needed to find, access, and deploy the package through Kibana.
-
-The access to Kibana is available on your instance of Elastic stack, through the specific port and an URL based on your configuration. Steps to deploy and configure the package are provided below.
-
-### Deployment and configuration 
-
-Deployment is straight-forward through Kibana. You have two steps to take in order to deploy. The first step is to add an agent, and the second step is to add and configure integration.
-
-To complete the first step, follow the instructions on this [link](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-To complete the second step, go to this [link](https://www.elastic.co/guide/en/fleet/7.15/integrations.htm#add-integration-under-integrations) and follow the instructions to Add integration to a policy.
-Step 3 is where you should add any configuration options that are required.
-Those parameters are authorization parameters against the Mimecast API (Application Key, Application ID, Access Key, and Secret Key), and they should be provided by a Mimecast representative for this integration.
-Similarly, tapping the Advanced options link expands the form, allowing you to choose the time interval between two API requests as well as the API URL as the API endpoint. A Mimecast representative should also be able to give you with this information. The default interval value is 5m, but you can modify it. If you do, be sure to provide the time measurement unit (m for minute, s for seconds) rather than just a number.
-
-Because parameters can differ, repeat the second step for each supported log you want to consume (A list of supported logs can be found in Log Types section below).
-Ingesting all logs is enabled by default, but you can disable it by moving the blue slider next to the log name.
-
-Once you save and confirm, ingesting logs will start automatically and you will be able to search for them.
-
-## User guide
-
-After you've finished setting and deploying integration, the elastic agent will begin ingesting data right away, and you'll be able to query it through Kibana. Instructions on how to do that can be found [here] (https://www.elastic.co/guide/en/beats/packetbeat/current/kibana-queries-filters.html).
-
-### Understanding Logs
-
-Here is the explanation of the typical log types we mentioned in the previous chapters, with relevant links toward the Mimecast documentation. 
-
-#### Log Types
-
-• Audit Events — these logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
-
-• DLP Logs - these logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
-
-• TTP Attachment Protection Logs - these logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
-
-• TTP Impersonation Protect Logs — these logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
-
-•	TTP URL Log - these logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
-
-•	Threat Intel Feed - these logs contain information about messages that return identified malware threats at a customer or regional grid level. There are two types of these logs - malware_grid (Regional) and malware_customer (Targeted) and we ingest them separately. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
-
-•	SIEM logs - these logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
-
-## Dashboards
-
-Kibana provides the ability to make a visual representation of the ingested log data. Based on the Mimecast documentation for available log types, it is possible to identify the most important data from the logs and display them within the Kibana dashboards. 
-
-### Create and Edit Dashboard
-
-ELK provides the ability to make a visual representation of the ingested log data. Based on the Mimecast documentation for available log types, it is possible to identify the most important data from the logs and display them within the Kibana dashboards.
-
-For the reference on how to create or edit dashboard, please visit this [link](https://www.elastic.co/guide/en/kibana/current/dashboard.html). 
-
-### Export/Import Dashboard
-
-Kibana provides very useful feature – to export and import dashboards. Any search query, visualization and/or dashboard you can save for later use. And once you want to switch back to them you can find them in Saved Objects and opent them, delete them and export, import them from there. For dashboards, it can be useful to export/import them. To do that, follow these instructions:
-
-https://www.elastic.co/guide/en/kibana/7.9/managing-saved-objects.html
-
-This integration also has already exported a few dashboards made as an example for you and you can see them below.
-
-### Dashboard Examples
-
-We made a couple dashboards to show you how they can be used. Steps to find them:
-
-1. Go to Kibana
-2. Click on Dashboards
-3. Type "Mimecast" in Search Field
-
-or you can follow [this] instructions.
-
-There should be nine dashboards with the word [[Mimecast]] in the title.
-Dashboards like those are examples of dashboards. 
+Note that rate limit quotas may require you to set up different credentials for the different available log types.
 
 ## Logs
 
-### AUDIT EVENTS
+### Audit Events
 
-This is the `mimecast.audit_events` dataset.
+This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
 
 {{event "audit_events"}}
 
 {{fields "audit_events"}}
 
-### DLP LOGS
+### DLP Logs
 
-This is the `mimecast.dlp_logs` dataset.
+This is the `mimecast.dlp_logs` dataset. These logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
 
 {{event "dlp_logs"}}
 
 {{fields "dlp_logs"}}
 
-### SIEM LOGS
+### SIEM Logs
 
-This is the `mimecast.siem_logs` dataset.
+This is the `mimecast.siem_logs` dataset. These logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
 
 {{event "siem_logs"}}
 
 {{fields "siem_logs"}}
 
-### TTP IMPERSONATION LOGS
+### TTP Impersonation Logs
 
-This is the `mimecast.ttp_ip_logs` dataset.
+This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
 
 {{event "ttp_ip_logs"}}
 
 {{fields "ttp_ip_logs"}}
 
-### TTP ATTACHMENT LOGS
+### TTP Attachment Logs
 
-This is the `mimecast.ttp_ap_logs` dataset.
+This is the `mimecast.ttp_ap_logs` dataset. These logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
 
 {{event "ttp_ap_logs"}}
 
 {{fields "ttp_ap_logs"}}
 
-### TTP URL LOGS
+### TTP URL Logs
 
-This is the `mimecast.ttp_url_logs` dataset.
+This is the `mimecast.ttp_url_logs` dataset. These logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
 
 {{event "ttp_url_logs"}}
 
 {{fields "ttp_url_logs"}}
 
-### THREAT INTEL FEED MALWARE CUSTOMER
+### Threat Intel Feed Malware: Customer
 
-This is the `mimecast.threat_intel_malware_customer` dataset.
+This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain information about messages that return identified malware threats at a customer level. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
 
 {{event "threat_intel_malware_customer"}}
 
 {{fields "threat_intel_malware_customer"}}
 
-### THREAT INTEL FEED MALWARE GRID
+### Threat Intel Feed Malware: Grid
 
-This is the `mimecast.threat_intel_malware_grid` dataset.
+This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain information about messages that return identified malware threats at a regional grid level. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
 
 {{event "threat_intel_malware_grid"}}
 
