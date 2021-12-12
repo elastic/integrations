@@ -1,0 +1,308 @@
+---
+description: Pipeline for Google Cloud DNS Public Zone Query Logs
+
+processors:
+- set:
+    field: event.ingested
+    value: "{{_ingest.timestamp}}"
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: json
+- date:
+    field: json.timestamp
+    timezone: UTC
+    formats:
+      - ISO8601
+- set:
+    field: cloud.provider
+    value: gcp
+- set:
+    field: event.kind
+    value: event
+- set:
+    field: event.category
+    value: network
+- set:
+    field: event.action
+    value: dns-query
+- rename:
+    field: json.logName
+    target_field: log.logger
+    ignore_missing: true
+- rename:
+    field: json.severity
+    target_field: log.level
+    ignore_missing: true
+- rename:
+    field: json.resource.labels.project_id
+    target_field: cloud.project.id
+    ignore_missing: true
+- rename: 
+    field: json.insertId
+    target_field: event.idjson.insertId 
+    ignore_missing: true
+- gsub:
+    field: json.jsonPayload.queryName
+    pattern: \.$
+    replacement: ""
+    ignore_missing: true
+- registered_domain:
+    field: json.jsonPayload.queryName
+    target_field: dns.question
+    ignore_missing: true
+- rename:
+    field: dns.question.domain
+    target_field: dns.question.name
+    ignore_missing: true
+- rename:
+    field: json.jsonPayload.queryName
+    target_field: dns.question.name
+    ignore_missing: true
+    if: ctx.dns?.question?.name == null
+- rename:
+    field: json.jsonPayload.queryType
+    target_field: dns.question.type
+    ignore_missing: true
+- rename:
+    field: json.jsonPayload.responseCode
+    target_field: dns.response_code
+    ignore_missing: true
+- rename:
+    field: json.jsonPayload.structuredRdata
+    target_field: dns.answers
+    ignore_missing: true
+- script:
+    lang: painless
+    ignore_failure: true
+    if: ctx.dns?.answers != null && ctx.dns?.answers instanceof List
+    source: >-
+      List answers = new ArrayList();
+      for (answer in ctx.dns.answers) {
+        Map new_answer = new HashMap();
+        if(answer?.class != null) {
+          new_answer.put("class", answer?.class);
+        }
+        if(answer?.type != null) {
+          new_answer.put("type", answer?.type);
+        }
+        if(answer?.ttl != null) {
+          new_answer.put("ttl", answer?.ttl);
+        }
+        if(answer?.rvalue != null) {
+          new_answer.put("data", answer?.rvalue);
+          if (new_answer?.data != null && new_answer.data.length() > 0 && new_answer.data.substring(new_answer.data.length() - 1) == '.') {
+              new_answer.data = new_answer.data.substring(0, new_answer.data.length() - 1);
+          }
+          if (answer?.domainName != null) {
+            new_answer.put("name", answer?.domainName);
+          }
+        }
+        answers.add(new_answer);
+        if(ctx.related == null) {
+          ctx.put('related', new HashMap());
+        }
+        if(ctx.related?.ip == null) {
+          ctx.related.put('ip',new ArrayList());
+        }
+        if(ctx.related?.hosts == null) {
+          ctx.related.put('hosts',new ArrayList());
+        }
+        if(['A','AAAA'].contains(new_answer.type)) {
+          ctx.related.ip.add(new_answer.data);
+        }
+        if(['CNAME'].contains(new_answer.type) && !ctx.related.hosts.contains(new_answer.data)) {
+          ctx.related.hosts.add(new_answer.data);
+        }
+      }
+      ctx.dns.answers = answers;
+- rename:
+    field: json.jsonPayload.protocol
+    target_field: network.transport
+    ignore_missing: true
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+- set:
+    field: network.iana_number
+    value: '6'
+    if: ctx.network?.transport == "tcp"
+- set:
+    field: network.iana_number
+    value: '17'
+    if: ctx.network?.transport == "udp"
+- set:
+    field: network.protocol
+    value: dns
+- rename:
+    field: json.jsonPayload.vmProjectId
+    target_field: source.vpc.project_id
+    ignore_missing: true
+- rename:
+    field: json.jsonPayload.sourceNetwork
+    target_field: source.vpc.vpc_name
+    ignore_missing: true
+- set:
+    field: source.instance.project_id
+    copy_from: source.vpc.project_id
+    ignore_empty_value: true
+- rename:
+    field: json.jsonPayload.vmZoneName
+    target_field: cloud.availability_zone
+    ignore_missing: true
+- set:
+    field: source.instance.zone
+    copy_from: cloud.availability_zone
+    ignore_empty_value: true
+- rename:
+    field: json.jsonPayload.vmInstanceId
+    target_field: cloud.instance.id
+    ignore_missing: true
+- rename:
+    field: json.jsonPayload.vmInstanceName
+    target_field: cloud.instance.name
+    ignore_missing: true
+- rename:
+    field: json.jsonPayload.sourceIP
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+# IP Geolocation Lookup
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+
+- rename:
+    field: json.jsonPayload.destinationIP
+    target_field: destination.address
+    ignore_missing: true
+- convert:
+    field: destination.address
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+# IP Geolocation Lookup
+- geoip:
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+- set:
+    field: network.type
+    value: ipv4
+    if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
+- set:
+    field: network.type
+    value: ipv6
+    if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value: network
+- append:
+    field: event.type
+    value: protocol
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.dns?.response_code == "NOERROR"
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.dns?.response_code != "NOERROR"
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    if: ctx.source?.ip != null
+- append:
+    field: related.ip
+    value: "{{destination.ip}}"
+    if: ctx.destination?.ip != null
+- append:
+    field: related.hosts
+    value: "{{dns.question.name}}"
+    if: ctx.dns?.question?.name != null
+- remove:
+    field:
+    - json
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
