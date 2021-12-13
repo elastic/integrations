@@ -1,0 +1,383 @@
+---
+description: "Pipeline for AWS Network Firewall logs"
+processors:
+  # General data
+  - set:
+      field: ecs.version
+      value: 1.12.0
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: json
+  - date:
+      field: json.event.timestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      ignore_failure: true
+  - rename:
+      field: json.availability_zone
+      target_field: cloud.availability_zone
+      ignore_missing: true
+  - rename:
+      field: json.firewall_name
+      target_field: observer.name
+      ignore_missing: true
+  - set:
+      field: observer.type
+      value: firewall
+  - set:
+      field: observer.vendor
+      value: AWS
+  - set:
+      field: observer.product
+      value: "Network Firewall"
+
+  # Event metadata
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+  - set:
+      field: json.event.event_type
+      value: event
+      if: ctx.json?.event?.event_type == "netflow"
+  - set:
+      field: event.kind
+      value: "{{json.event.event_type}}"
+      if: ctx.json?.event?.event_type != null
+  - set:
+      field: json.event.alert.action
+      value: denied
+      if: ctx.json?.event?.alert?.action == "blocked"
+  - append:
+      field: event.type
+      value: "{{json.event.alert.action}}"
+      if: ctx.json?.event?.alert?.action != null
+
+  # Source IP/port/geo
+  - convert:
+      field: json.event.src_ip
+      target_field: source.address
+      type: ip
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: source.address
+      if: ctx?.source?.address != null
+  - convert:
+      field: json.event.src_port
+      type: integer
+      target_field: source.port
+      if: ctx?.json?.event?.src_port != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: network.type
+      value: 'ipv4'
+      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(".")'
+  - set:
+      field: network.type
+      value: 'ipv6'
+      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(":")'
+
+  # Destination IP/port/geo
+  - convert:
+      field: json.event.dest_ip
+      target_field: destination.address
+      type: ip
+      ignore_missing: true
+  - set:
+      field: destination.ip
+      copy_from: destination.address
+      if: ctx?.destination?.address != null
+  - convert:
+      field: json.event.dest_port
+      type: integer
+      target_field: destination.port
+      if: ctx?.json?.event?.dest_port != null
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # Transport protocol
+  - rename:
+      field: json.event.proto
+      target_field: network.transport
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+
+  # Alert and metadata
+  - convert:
+      field: json.event.alert.category
+      target_field: message
+      type: string
+      ignore_missing: true
+  - set:
+      field: rule.category
+      value: "{{json.event.alert.category}}"
+      ignore_empty_value: true
+  - set:
+      field: rule.id
+      value: "{{json.event.alert.signature_id}}"
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      value: "{{json.event.alert.signature}}"
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      value: rule.id
+      if: ctx?.rule?.name == null && ctx?.rule?.id != null
+  - rename:
+      field: json.event.alert.rev_id
+      target_field: rule.version
+      ignore_missing: true
+  - rename:
+      field: json.event.alert.severity
+      target_field: event.severity
+      ignore_missing: true
+  - rename:
+      field: json.event.app_proto
+      target_field: network.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      value: "unknown"
+      if: ctx?.network?.protocol == null || ctx?.network?.protocol == "failed"
+
+  # HTTP
+  - rename:
+      field: json.event.http.hostname
+      target_field: destination.domain
+      ignore_missing: true
+  - uri_parts:
+      field: json.event.http.url
+      if: ctx?.json?.event?.http?.url != null
+  - rename:
+      field: json.event.http.http_method
+      target_field: http.request.method
+      ignore_missing: true
+  - user_agent:
+      field: json.event.http.http_user_agent
+      ignore_missing: true
+  - dissect:
+      field: json.event.http.protocol
+      pattern: "HTTP/%{http.version}"
+      ignore_missing: true
+
+  # TLS
+  - rename:
+      field: json.event.tls.sni
+      target_field: tls.client.server_name
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: tls.client.server_name
+      if: ctx?.tls?.client?.server_name != null
+  - dissect:
+      field: json.event.tls.version
+      pattern: "%{tls.version_protocol} %{tls.version}"
+      ignore_missing: true
+      if: ctx?.json?.event?.tls?.version != "UNDETERMINED"
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - rename:
+      field: json.event.tls.ja3s.hash
+      target_field: tls.server.ja3s
+      ignore_missing: true
+  - rename:
+      field: json.event.tls.ja3.hash
+      target_field: tls.server.ja3
+      ignore_missing: true
+  - rename:
+      field: json.event.tls.certificate
+      target_field: tls.server.certificate
+      ignore_missing: true
+  - rename:
+      field: tls.server.certificate_chain
+      target_field: json.event.tls.chain
+      ignore_missing: true
+  - rename:
+      field: tls.server.x509.serial_number
+      target_field: json.event.tls.serial
+      ignore_missing: true
+  - gsub:
+      field: tls.server.x509.serial_number
+      pattern: ":"
+      replacement: ""
+      ignore_missing: true
+  - date:
+      field: json.event.tls.notafter
+      target_field: tls.server.not_after
+      formats:
+        - ISO8601
+      if: ctx.json?.event?.tls?.notafter != null
+  - date:
+      field: json.event.tls.notbefore
+      target_field: tls.server.not_before
+      formats:
+        - ISO8601
+      if: ctx.json?.event?.tls?.notbefore != null
+  - rename:
+      field: tls.server.not_after
+      target_field: tls.server.x509.not_after
+      ignore_missing: true
+  - rename:
+      field: tls.server.not_before
+      target_field: tls.server.x509.not_before
+      ignore_missing: true
+
+  # TCP
+  - rename:
+      field: json.event.tcp.tcp_flags
+      target_field: aws.firewall.tcp_flags
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: "ctx?.aws?.firewall?.tcp_flags != null"
+      source: |
+        if (ctx.aws.firewall.tcp_flags_array == null) {
+          ArrayList al = new ArrayList();
+          ctx.aws.firewall.put("tcp_flags_array", al);
+        }
+
+        def flags = Integer.parseUnsignedInt(ctx.aws.firewall.tcp_flags);
+
+        if ((flags & 0x01) != 0) {
+          ctx.aws.firewall.tcp_flags_array.add("fin");
+        }
+        if ((flags & 0x02) != 0) {
+          ctx.aws.firewall.tcp_flags_array.add("syn");
+        }
+        if ((flags & 0x04) != 0) {
+          ctx.aws.firewall.tcp_flags_array.add("rst");
+        }
+        if ((flags & 0x08) != 0) {
+          ctx.aws.firewall.tcp_flags_array.add("psh");
+        }
+        if ((flags & 0x10) != 0) {
+          ctx.aws.firewall.tcp_flags_array.add("ack");
+        }
+        if ((flags & 0x20) != 0) {
+          ctx.aws.firewall.tcp_flags_array.add("urg");
+        }
+
+  # Flow
+  - rename:
+      field: json.event.netflow
+      target_field: aws.firewall.flow
+      ignore_missing: true
+  - rename:
+      field: json.event.flow_id
+      target_field: aws.firewall.flow.id
+      ignore_missing: true
+  - convert:
+      field: aws.firewall.flow.id
+      type: string
+      ignore_missing: true
+
+  # Related IPs
+  - append:
+      field: related.hosts
+      value: "{{url.domain}}"
+      if: ctx.url?.domain != null && ctx.url?.domain != ""
+      allow_duplicates: false
+  - append:
+      if: ctx?.source?.ip != null
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+  - append:
+      if: ctx?.destination?.ip != null
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+
+  # Community ID
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
+
+  # Remove other fields
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: 'ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))'
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
