@@ -223,6 +223,8 @@ An example event for `activitylogs` looks as following:
 | geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
+| geo.region_iso_code | Region ISO code. | keyword |
+| geo.region_name | Region name. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
