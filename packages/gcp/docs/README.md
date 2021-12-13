@@ -1,7 +1,7 @@
-# Google Cloud Integration
+# Google Cloud Platform Integration
 
-The Google Cloud integration collects and parses Google Cloud audit, VPC flow,
-and firewall logs that have been exported from Stackdriver to a Google Pub/Sub topic sink.
+This integration is used to fetches logs and metrics from 
+[Google Cloud Platform](https://cloud.google.com/).
 
 ## Logs
 
@@ -717,6 +717,8 @@ An example event for `vpcflow` looks as following:
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+## GCP Credentials
+GCP credentials are required for running GCP integration. 
 
 
 ### DNS

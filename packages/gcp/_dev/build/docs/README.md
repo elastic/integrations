@@ -1,38 +1,12 @@
-# Google Cloud Integration
+# Google Cloud Platform Integration
 
-The Google Cloud integration collects and parses Google Cloud audit, VPC flow,
-and firewall logs that have been exported from Stackdriver to a Google Pub/Sub topic sink.
+This integration is used to fetches logs and metrics from 
+[Google Cloud Platform](https://cloud.google.com/).
 
-## Logs
+## GCP Credentials
+GCP credentials are required for running GCP integration. 
 
-### Audit
-
-This is the `audit` dataset.
-
-{{event "audit"}}
-
-{{fields "audit"}}
-
-### Firewall
-
-This is the `firewall` dataset.
-
-{{event "firewall"}}
-
-{{fields "firewall"}}
-
-### VPC Flow
-
-This is the `VPC Flow` dataset.
-
-{{event "vpcflow"}}
-
-{{fields "vpcflow"}}
-
-### DNS
-
-This is the `DNS` dataset.
-
-{{event "dns"}}
-
-{{fields "dns"}}
+### Configuration parameters
+* *project_id*: ID of the GCP project.
+* *credentials_file*: Path to JSON file with GCP credentials. Required when not using `credentials_json`.
+* *credentials_json*: Raw JSON text of GCP Credentials. Required when not using `credentials_file`.
