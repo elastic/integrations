@@ -69,6 +69,10 @@ processors:
 - user_agent:
     field: auth0.logs.data.user_agent
     ignore_missing: true
+- set:
+    field: event.id
+    copy_from: auth0.logs.data.log_id
+    if: 'ctx?.auth0?.logs?.data?.log_id != null'
 ##
 # Event kind, code and action
 ##
@@ -1066,6 +1070,8 @@ processors:
       - auth0.logs.data.user_name
       - auth0.logs.data.user_id
       - auth0.logs.data.user_agent
+      - auth0.logs.data.log_id
+      - auth0.logs.log_id
     ignore_missing: true
 - remove:
     field: event.original
