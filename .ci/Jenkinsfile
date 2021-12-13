@@ -147,6 +147,20 @@ def checkGitDiff() {
 }
 
 def isPrAffected(integrationName) {
+  def manifest = readYaml(file: "${integrationName}/manifest.yml")
+
+  // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
+  if (manifest != null && manifest['conditions'] != null) {
+    def kibanaVersionCondition = manifest['conditions']['kibana.version']
+    if (kibanaVersionCondition != null) {
+      def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
+      if (version.startsWith('8.') && "${env.STACK_VERSION}".startsWith('7.')) {
+        echo "[${integrationName}] PR is not affected: unsupported stack"
+        return false
+      }
+    }
+  }
+
   if (env.BRANCH_NAME == "master") {
     echo "[${integrationName}] PR is affected: running on master branch"
     return true
