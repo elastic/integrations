@@ -73,6 +73,7 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
@@ -148,6 +149,7 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
@@ -223,6 +225,7 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.file.elf.telfhash | telfhash symbol hash for ELF file. | keyword |
 | threat.indicator.file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
