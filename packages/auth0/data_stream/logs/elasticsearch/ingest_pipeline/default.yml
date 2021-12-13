@@ -58,6 +58,17 @@ processors:
     field: network.type
     value: ipv4
     if: 'ctx.network?.type == null && ctx.source?.ip != null'
+- set:
+    field: user.name
+    copy_from: auth0.logs.data.user_name
+    if: 'ctx?.auth0?.logs?.data?.user_name != null'
+- set:
+    field: user.id
+    copy_from: auth0.logs.data.user_id
+    if: 'ctx?.auth0?.logs?.data?.user_id != null'
+- user_agent:
+    field: auth0.logs.data.user_agent
+    ignore_missing: true
 ##
 # Event kind, code and action
 ##
@@ -1052,6 +1063,9 @@ processors:
     field: 
       - json
       - auth0.logs.data.ip
+      - auth0.logs.data.user_name
+      - auth0.logs.data.user_id
+      - auth0.logs.data.user_agent
     ignore_missing: true
 - remove:
     field: event.original
