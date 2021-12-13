@@ -143,7 +143,8 @@ An example event for `limo` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
@@ -332,7 +333,8 @@ An example event for `threatstream` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
