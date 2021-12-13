@@ -22,8 +22,8 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "7929c607-a157-40b8-ac90-aed2af780558",
-        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
+        "ephemeral_id": "15637538-7a2c-42e3-adbf-93bf0f156afb",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -47,16 +47,16 @@ An example event for `limo` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "snapshot": true,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-12-07T08:43:17.664Z",
+        "created": "2021-12-13T06:00:37.662Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2021-12-07T08:43:18Z",
+        "ingested": "2021-12-13T06:00:38Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -143,7 +143,8 @@ An example event for `limo` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
@@ -182,10 +183,10 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-07T08:44:42.569Z",
+    "@timestamp": "2021-12-13T06:02:03.635Z",
     "agent": {
-        "ephemeral_id": "3a4eb141-57f4-4f68-8b66-968e0b8e3a75",
-        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
+        "ephemeral_id": "78f6f452-5888-448d-b560-2cc5da34c0ab",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -218,7 +219,7 @@ An example event for `threatstream` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "a46beff8-5d3c-4c6c-a66e-4328fb94a8e3",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "snapshot": true,
         "version": "8.0.0"
     },
@@ -226,7 +227,7 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2021-12-07T08:44:43Z",
+        "ingested": "2021-12-13T06:02:04Z",
         "kind": "enrichment",
         "original": "{\"classification\":\"private\",\"confidence\":35,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 156\",\"id\":3304738500,\"import_session_id\":3166,\"itype\":\"mal_md5\",\"md5\":\"c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4\",\"resource_uri\":\"/api/v1/intelligence/P24670712639/\",\"severity\":\"low\",\"source\":\"Phony generated indicator\",\"source_feed_id\":1624,\"state\":\"active\",\"trusted_circle_ids\":\"407\",\"update_id\":2184632737,\"value_type\":\"md5\"}",
         "severity": 3,
@@ -332,7 +333,8 @@ An example event for `threatstream` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
