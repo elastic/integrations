@@ -13,8 +13,8 @@ processors:
     if: ctx.message.startsWith('<')
     field: message
     patterns:
-      - '<%{NONNEGINT:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:timestamp}|%{TIMESTAMP_ISO8601:timestamp})(?: %{SYSLOGFACILITY})?(?: %{SYSLOGHOST:log.syslog.host.hostname})?(?: %{SYSLOGPROG}:)? %{GREEDYDATA:message}'
-      - '%{SYSLOG5424LINE}'
+      - '^<%{NONNEGINT:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:timestamp}|%{TIMESTAMP_ISO8601:timestamp})(?: %{SYSLOGFACILITY})?(?: %{SYSLOGHOST:log.syslog.host.hostname})?(?: %{SYSLOGPROG}:)? %{GREEDYDATA:message}'
+      - '^%{SYSLOG5424LINE}'
     pattern_definitions:
       SYSLOGPROG: '%{PROG:log.syslog.process.name}(?:\[%{POSINT:log.syslog.process.pid:long}\])?'
       SYSLOG5424PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
