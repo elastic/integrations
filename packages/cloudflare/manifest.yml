@@ -1,12 +1,12 @@
 name: cloudflare
 title: Cloudflare
-version: 1.1.1
+version: 1.2.0
 release: ga
 description: Collect and parse logs from Cloudflare API with Elastic Agent.
 type: integration
 format_version: 1.0.0
 license: basic
-categories: [security, network, web]
+categories: [security, network, web, cloud]
 conditions:
   kibana.version: "^7.16.0 || ^8.0.0"
 icons:
@@ -43,5 +43,34 @@ policy_templates:
       - type: httpjson
         title: "Collect Cloudflare logs via API"
         description: "Collecting logs from Cloudflare via API"
+        vars:
+          - name: api_url
+            type: text
+            title: API URL.
+            description: The API URL without the path.
+            multi: false
+            required: true
+            show_user: false
+            default: https://api.cloudflare.com
+          - name: ssl
+            type: yaml
+            title: SSL
+            multi: false
+            required: false
+            show_user: false
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            multi: false
+            required: false
+            show_user: true
+            default: 60s
 owner:
   github: elastic/security-external-integrations

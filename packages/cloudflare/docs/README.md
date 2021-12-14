@@ -1,8 +1,179 @@
 # Cloudflare Integration
 
-The Cloudflare integration collects events from the Cloudflare API, specifically reading from the Cloudflare Logpull API.
+The Cloudflare integration collects events from the Cloudflare API.
 
 ## Logs
+
+### Audit
+
+The Cloudflare Audit records all events related to your Cloudflare account. 
+To use this integration, you must have the `Account.Access: Audit Logs: Read` permission and you must use your email and your Global API Key (not an API Token).
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloudflare.audit.actor.type | The type of actor, whether a User, Cloudflare Admin, or an Automated System. Valid values: user, admin, Cloudflare. | keyword |
+| cloudflare.audit.metadata | An object which can lend more context to the action being logged. This is a flexible value and varies between different actions. | flattened |
+| cloudflare.audit.new_value | The new value of the resource that was modified | flattened |
+| cloudflare.audit.old_value | The value of the resource before it was modified | flattened |
+| cloudflare.audit.owner.id | User identifier tag | keyword |
+| cloudflare.audit.resource.id | An identifier for the resource that was affected by the action | keyword |
+| cloudflare.audit.resource.type | A short string that describes the resource that was affected by the action | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Path to the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2021-11-30T13:42:04.000Z",
+    "agent": {
+        "ephemeral_id": "3bf4aa7e-0f2a-43c0-99ec-94382279f26e",
+        "id": "2e957b0a-27e7-40dd-87ad-f1c68acf4ad7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0"
+    },
+    "cloud": {
+        "account": {
+            "id": "aaabbbccc"
+        },
+        "provider": "cloudflare"
+    },
+    "cloudflare": {
+        "audit": {
+            "actor": {
+                "type": "user"
+            },
+            "owner": {
+                "id": "enl3j9du8rnx2swwd9l32qots7l54t9s"
+            },
+            "resource": {
+                "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
+                "type": "account"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "2e957b0a-27e7-40dd-87ad-f1c68acf4ad7",
+        "snapshot": true,
+        "version": "8.0.0"
+    },
+    "event": {
+        "action": "rotate_api_key",
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "created": "2021-11-30T23:43:26.237Z",
+        "dataset": "cloudflare.audit",
+        "id": "8d3396e8-c903-5a66-9421-00fc34570550",
+        "ingested": "2021-11-30T23:43:27Z",
+        "kind": "event",
+        "original": "{\"action\":{\"info\":\"key digest: c6b5d100d7ce492d24c5b13160fce1cc0092ce7e8d8430e9f5cf5468868be6f6\",\"result\":true,\"type\":\"rotate_API_key\"},\"actor\":{\"email\":\"user@example.com\",\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ip\":\"52.91.36.10\",\"type\":\"user\"},\"id\":\"8d3396e8-c903-5a66-9421-00fc34570550\",\"interface\":\"\",\"metadata\":{},\"newValue\":\"\",\"oldValue\":\"\",\"owner\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\"},\"resource\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"type\":\"account\"},\"when\":\"2021-11-30T13:42:04Z\"}",
+        "outcome": "success",
+        "type": [
+            "change"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "ip": [
+            "52.91.36.10"
+        ],
+        "user": [
+            "enl3j9du8rnx2swwd9l32qots7l54t9s"
+        ]
+    },
+    "source": {
+        "address": "52.91.36.10",
+        "ip": "52.91.36.10"
+    },
+    "tags": [
+        "forwarded",
+        "cloudflare-audit",
+        "preserve_original_event"
+    ],
+    "user": {
+        "email": "user@example.com",
+        "id": "enl3j9du8rnx2swwd9l32qots7l54t9s"
+    }
+}
+```
 
 ### Logpull
 

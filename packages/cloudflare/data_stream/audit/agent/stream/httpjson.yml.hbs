@@ -1,0 +1,62 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{api_url}}/client/v4/accounts/{{account}}/audit_logs?page=1&direction=desc
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+
+request.transforms:
+  - set:
+      target: header.X-Auth-Email
+      value: "{{auth_email}}"
+  - set:
+      target: header.X-Auth-Key
+      value: "{{auth_key}}"
+  - set:
+      target: url.params.since
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+
+response.split:
+  target: body.result
+response.pagination:
+- set:
+    target: url.params.page
+    value: '[[add .last_response.page 1]]'
+    fail_on_template_error: true
+          
+cursor:
+  last_timestamp:
+    value: "[[.first_event.when]]"
+    fail_on_template_error: true
+
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+processors:
+- add_fields:
+    target: _config
+    fields:
+      account_id: {{account}}
+{{#if processors}}
+{{processors}}
+{{/if}}
