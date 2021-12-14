@@ -1,17 +1,17 @@
 # Symantec Endpoint Protection Integration
 
 This integration is for Symantec Endpoint Protection (SEP) logs. It can be used
-to receive logs sent by SEP over syslog.
+to receive logs sent by SEP over syslog or read logs exported to a text file.
 
 The log message is expected to be in CSV format. Syslog RFC3164 and RCF5424
 headers are allowed and will be parsed if present. The data is mapped to
-ECS field where applicable and the remaining fields are written under
+ECS fields where applicable and the remaining fields are written under
 `symantec_endpoint.log.*`.
 
 If a specific SEP log type is detected then `event.provider` is set (e.g.
 `Agent Traffic Log`).
 
-## Setup steps
+## Syslog setup steps
 
 1. Enable this integration with the UDP input.
 2. If the Symantec management server and Elastic Agent are running on different 
@@ -24,6 +24,17 @@ https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security
 in the SEP guide. Use the IP address or hostname of the Elastic Agent as the
 syslog server address. And use the listen port as the destination port (default
 is 9008).
+
+## Log file setup steps
+
+1. Configure the Symantec management server to export log data to a text file.
+See [Exporting log data to a text file](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-protection/all/Monitoring-Reporting-and-Enforcing-Compliance/viewing-logs-v7522439-d37e464/exporting-log-data-to-a-text-file-v8440135-d15e1197.html).
+2. Enable this integration with the log file input. Configure the input to
+read from the location where the log files are being written. The default is
+`C:\Program Files (x86)\Symantec\Symantec Endpoint Protection Manager\data\dump\*.log`.
+
+Logs exported to text file always begin with the event time and severity
+columns (e.g. `2020-01-16 08:00:31,Critical,...`).
 
 ## Log samples
 
@@ -178,6 +189,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type. | keyword |
 | log.file.path | Path to the log file. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.host.hostname |  | keyword |
