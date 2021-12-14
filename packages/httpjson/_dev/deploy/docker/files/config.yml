@@ -1,0 +1,62 @@
+rules:
+  - path: /testtransforms/api
+    methods: ["POST"]
+    request_headers:
+      Authorization: "Basic dGVzdDp0ZXN0"
+    request_body: '{"message":{"limit":"1500"}}'
+    responses:
+      - status_code: 200
+        body: |-
+          {"message": "success"}
+  - path: /testpagination/api
+    methods: ["GET"]
+    query_params:
+      page: 2
+    request_headers:
+      Authorization: "Basic dGVzdDp0ZXN0"
+    responses:
+      - status_code: 200
+        body: |-
+          {"message": "success"}
+  - path: /testpagination/api
+    methods: ["GET"]
+    query_params:
+      page: 1
+    request_headers:
+      Authorization: "Basic dGVzdDp0ZXN0"
+    responses:
+      - status_code: 200
+        body: |-
+          {"message": "success", "page": 2}
+  - path: /testbasicauth/api
+    methods: ["GET"]
+    request_headers:
+      Authorization: "Basic dGVzdDp0ZXN0"
+    responses:
+      - status_code: 200
+        body: |-
+          {"message": "success"}
+  - path: /testoauth/token
+    methods: [POST]
+    query_params:
+      grant_type: client_credentials
+    request_headers:
+      Content-Type:
+        - application/x-www-form-urlencoded
+      Authorization:
+        - "Basic dGVzdDp0ZXN0"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token": "testaccess","token_type": "Bearer","expires_in": 172799,"refresh_token": "testrefresh"}
+  - path: /testoauth/api
+    methods: ["GET"]
+    request_headers:
+      Authorization: "Bearer testaccess"
+    responses:
+      - status_code: 200
+        body: |-
+          {"message": "success"}
