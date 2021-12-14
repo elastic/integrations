@@ -1,0 +1,276 @@
+---
+description: Pipeline for parsing cloudflare audit logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- set:
+    field: cloud.provider
+    value: cloudflare
+- set:
+    field: cloud.account.id
+    copy_from: _config.account_id
+    ignore_empty_value: true
+- date:
+    field: json.when
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+- rename:
+    field: json.action.type
+    target_field: event.action
+    ignore_missing: true
+- lowercase:
+    field: event.action
+    ignore_missing: true
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.json?.action?.result
+- set:
+    field: event.outcome
+    value: failure
+    if: "!ctx.json?.action?.result"
+- rename:
+    field: json.actor.email
+    target_field: user.email
+    ignore_missing: true
+- rename:
+    field: json.actor.id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.actor.ip
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.actor.type
+    target_field: cloudflare.audit.actor.type
+    ignore_missing: true
+- rename:
+    field: json.id
+    target_field: event.id
+    ignore_missing: true
+- fingerprint:
+    fields:
+      - event.id
+    target_field: _id
+    ignore_missing: true
+- rename:
+    field: json.interface
+    target_field: event.provider
+    ignore_missing: true
+    if: ctx.json?.interface != ""
+- rename:
+    field: json.metadata
+    target_field: cloudflare.audit.metadata
+    ignore_missing: true
+- rename:
+    field: json.newValueJson
+    target_field: cloudflare.audit.new_value
+    ignore_missing: true
+- rename:
+    field: json.oldValueJson
+    target_field: cloudflare.audit.old_value
+    ignore_missing: true
+- rename:
+    field: json.newValue
+    target_field: cloudflare.audit.new_value.value
+    ignore_missing: true
+    if: ctx.json?.newValue != "null"
+- rename:
+    field: json.oldValue
+    target_field: cloudflare.audit.old_value.value
+    ignore_missing: true
+    if: ctx.json?.oldValue != "null"
+- rename:
+    field: json.owner.id
+    target_field: cloudflare.audit.owner.id
+    ignore_missing: true
+- rename:
+    field: json.resource
+    target_field: cloudflare.audit.resource
+    ignore_missing: true
+- append:
+    field: related.user
+    value: "{{user.id}}"
+    allow_duplicates: false
+    if: ctx.user?.id != null
+- append:
+    field: related.user
+    value: "{{cloudflare.audit.resource.id}}"
+    allow_duplicates: false
+    if: ctx.cloudflare?.audit?.resource?.id != null && ctx.cloudflare?.audit?.resource?.type == "user"
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    if: ctx.source?.ip != null
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+      login:
+        category:
+          - authentication
+        type:
+          - info
+        outcome: success
+      token_create:
+        category: 
+          - iam
+        type:
+          - creation
+      token_revoke:
+        category: 
+          - iam
+        type:
+          - deletion
+      token_roll:
+        category: 
+          - iam
+        type:
+          - change
+      api_key_view:
+        category: 
+          - iam
+        type:
+          - info
+      rotate_api_key:
+        category: 
+          - iam
+        type:
+          - change
+      api_key_created:
+        category: 
+          - iam
+        type:
+          - creation
+      purge:
+        category: 
+          - configuration
+        type:
+          - deletion
+      tls_settings_deployed:
+        category: 
+          - configuration
+        type:
+          - info
+      add:
+        category: 
+          - configuration
+        type:
+          - creation
+      delete:
+        category: 
+          - configuration
+        type:
+          - deletion
+      rec_add:
+        category: 
+          - configuration
+        type:
+          - creation
+      rec_del:
+        category: 
+          - configuration
+        type:
+          - deletion
+      pending:
+        category: 
+          - configuration
+        type:
+          - info
+      change_setting:
+        category: 
+          - configuration
+        type:
+          - change
+      add_enforce_twofactor:
+        category: 
+          - iam
+          - configuration
+        type:
+          - admin
+          - info
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.type = 'info';
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
+- remove:
+    field:
+      - json
+      - _config
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
