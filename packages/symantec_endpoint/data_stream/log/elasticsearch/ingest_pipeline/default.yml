@@ -279,6 +279,8 @@ processors:
         columns:
           - index: 0
             name: event_description
+          - index: 16
+            name: submission_recommended
           - index: 28
             name: file_path
           - index: 29
@@ -288,6 +290,8 @@ processors:
         columns:
           - index: 0
             name: event_description
+          - index: 17
+            name: submission_recommended
           - index: 29
             name: file_path
           - index: 30
@@ -587,12 +591,6 @@ processors:
     if: ctx?._csv_map?.local_host_ip != null && ctx._csv_map.local_host_ip != "0.0.0.0"
     field: source.address
     copy_from: _csv_map.local_host_ip
-- convert:
-    field: source.address
-    target_field: source.ip
-    type: ip
-    ignore_missing: true
-    ignore_failure: true
 
 # Local Host MAC
 - rename:
@@ -666,12 +664,6 @@ processors:
     if: ctx?._csv_map?.remote_host_ip != null && ctx._csv_map.remote_host_ip != "0.0.0.0"
     field: destination.address
     copy_from: _csv_map.remote_host_ip
-- convert:
-    field: destination.address
-    target_field: destination.ip
-    type: ip
-    ignore_missing: true
-    ignore_failure: true
 
 # Remote Host MAC
 - rename:
@@ -716,12 +708,6 @@ processors:
     target_field: rule.name
     ignore_missing: true
 
-# Server
-#- set:
-#    field: host.hostname
-#    copy_from: _csv_map.server
-#    ignore_failure: true
-
 # SHA-256
 - rename:
     field: _csv_map.sha-256
@@ -745,6 +731,30 @@ processors:
     if: ctx?._csv_map?.signing_timestamp != null
     field: file.x509.not_before
     copy_from: _csv_map.signing_timestamp
+
+# Source Computer
+- set:
+    if: ctx?._csv_map?.source_computer != null
+    field: source.domain
+    copy_from: _csv_map.source_computer
+
+# Source IP
+- set:
+    if: ctx?._csv_map?.source_ip != null
+    field: source.address
+    copy_from: _csv_map.source_ip
+
+# Submission Recommended (Recommendation in the form of YES or NO on whether to submit this detection to Symantec or not.)
+- set:
+    if: ctx?._csv_map?.submission_recommended != null && ctx._csv_map.submission_recommended.toLowerCase().contains('yes')
+    field: _csv_map.submission_recommended
+    value: true
+    override: true
+- set:
+    if: ctx?._csv_map?.submission_recommended != null && !ctx._csv_map.submission_recommended.toLowerCase().contains('yes')
+    field: _csv_map.submission_recommended
+    value: false
+    override: true
 
 # Traffic Direction
 # NOTE: inbound/outbound is changed to ingress/egress because this is a host
@@ -870,6 +880,22 @@ processors:
     if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on succeeded')
     field: event.outcome
     value: success
+
+# Destination IP
+- convert:
+    field: destination.address
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+
+# Source IP
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
 
 # Host IP
 - append:

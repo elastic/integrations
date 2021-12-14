@@ -155,10 +155,10 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
@@ -252,11 +252,13 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.computer |  | keyword |
 | symantec_endpoint.log.computer_name |  | keyword |
 | symantec_endpoint.log.confidence |  | keyword |
+| symantec_endpoint.log.description | Description of the virus file. | keyword |
 | symantec_endpoint.log.detection_score |  | keyword |
 | symantec_endpoint.log.detection_source |  | keyword |
 | symantec_endpoint.log.detection_type |  | keyword |
 | symantec_endpoint.log.device_id |  | keyword |
 | symantec_endpoint.log.disposition |  | keyword |
+| symantec_endpoint.log.download_site | The URL determined from where the image was downloaded. | keyword |
 | symantec_endpoint.log.downloaded_by |  | keyword |
 | symantec_endpoint.log.duration_(seconds) |  | keyword |
 | symantec_endpoint.log.event_source |  | keyword |
@@ -279,6 +281,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.requested_action |  | keyword |
 | symantec_endpoint.log.risk_level |  | keyword |
 | symantec_endpoint.log.risk_name |  | keyword |
+| symantec_endpoint.log.risk_type | Localized strings for Heuristic / Cookie / Admin Black List / BPE / System Change / N/A. | keyword |
 | symantec_endpoint.log.scan_complete |  | keyword |
 | symantec_endpoint.log.scan_id |  | keyword |
 | symantec_endpoint.log.secondary_action |  | keyword |
@@ -291,16 +294,21 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.signing_timestamp |  | date |
 | symantec_endpoint.log.site |  | keyword |
 | symantec_endpoint.log.source |  | keyword |
+| symantec_endpoint.log.source_computer |  | keyword |
+| symantec_endpoint.log.source_ip |  | keyword |
+| symantec_endpoint.log.submission_recommended | Recommendation on whether to submit this detection to Symantec. | boolean |
 | symantec_endpoint.log.threats |  | keyword |
 | symantec_endpoint.log.total_file |  | keyword |
 | symantec_endpoint.log.total_files |  | keyword |
 | symantec_endpoint.log.url_tracking_status |  | keyword |
 | symantec_endpoint.log.user1 | User when scan started. | keyword |
 | symantec_endpoint.log.user2 | User when scan ended. | keyword |
+| symantec_endpoint.log.web_domain | The web domain. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.path | Path of the request, such as "/search". | wildcard |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
