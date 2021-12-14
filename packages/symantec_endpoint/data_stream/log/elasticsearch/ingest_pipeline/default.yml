@@ -551,16 +551,16 @@ processors:
           field: _csv_map.last_update_time
 
 # Local Host IP
+- set:
+    if: ctx?._csv_map?.local_host_ip != null && ctx._csv_map.local_host_ip != "0.0.0.0"
+    field: source.address
+    copy_from: _csv_map.local_host_ip
 - convert:
-    if: ctx?._csv_map?.local_host_ip != "0.0.0.0"
-    field: _csv_map.local_host_ip
+    field: source.address
     target_field: source.ip
     type: ip
     ignore_missing: true
-    on_failure:
-      - rename:
-          field: _csv_map.local_host_ip
-          target_field: source.address
+    ignore_failure: true
 
 # Local Host MAC
 - rename:
@@ -630,16 +630,16 @@ processors:
     ignore_failure: true
 
 # Remote Host IP
+- set:
+    if: ctx?._csv_map?.remote_host_ip != null && ctx._csv_map.remote_host_ip != "0.0.0.0"
+    field: destination.address
+    copy_from: _csv_map.remote_host_ip
 - convert:
-    if: ctx?._csv_map?.remote_host_ip != "0.0.0.0"
-    field: _csv_map.remote_host_ip
+    field: destination.address
     target_field: destination.ip
     type: ip
     ignore_missing: true
-    on_failure:
-      - rename:
-          field: _csv_map.remote_host_ip
-          target_field: destination.address
+    ignore_failure: true
 
 # Remote Host MAC
 - rename:
