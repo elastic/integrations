@@ -1,0 +1,297 @@
+---
+description: Pipeline for parsing QNAP NAS logs
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.12.0'
+  - rename:
+      field: message
+      target_field: event.original
+  - set:
+      field: observer.vendor
+      value: QNAP
+  - set:
+      field: observer.product
+      value: NAS
+  - set:
+      field: observer.type
+      value: nas
+  - grok:
+      field: event.original
+      patterns:
+        - '^(%{ECS_SYSLOG_PRI})?%{SYSLOGTIMESTAMP:_tmp.timestamp} %{NAS} %{SYSLOGPROG}: %{LOG_TYPE:event.provider}: %{GREEDYDATA:_tmp.message}'
+      pattern_definitions:
+        NAS: '(?:%{IP:host.ip}|%{HOSTNAME:host.name})'
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+        SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
+        LOG_TYPE: '(event log|conn log)'
+  - set:
+      field: event.timezone
+      value: "{{_tmp.tz_offset}}"
+      if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      timezone: "{{ event.timezone }}"
+      formats:
+      - MMM  d HH:mm:ss
+      - MMM dd HH:mm:ss
+      if: ctx.event?.timezone != null   
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats:
+      - MMM  d HH:mm:ss
+      - MMM dd HH:mm:ss
+      if: ctx.event?.timezone == null      
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+  - grok:
+      field: _tmp.message
+      patterns:
+        - '^%{SHARED}, Application: %{DATA:qnap.nas.application}, Category: %{DATA:qnap.nas.category}, Content: %{DATA:message}$' 
+        - '^%{SHARED}, Connection type: %{DATA:qnap.nas.connection_type}, Accessed resources: %{RESOURCE}, Action: %{DATA:event.action}$'     
+      pattern_definitions:
+        SHARED: 'Users: %{USER:user.name}, Source IP: (127.0.0.1|%{IP:source.address}), Computer name: (---|%{HOSTNAME:source.domain})'
+        RESOURCE: '(\[%{DATA:qnap.nas.application}\] )?(---|%{FILE_PATH:qnap.nas.file.path}|%{DATA:qnap.nas.application})'
+        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)+'
+  - grok:
+      field: message
+      patterns:
+        - '^\[Shared Folders\] %{ACTION:event.action} "%{DATA:qnap.nas.file.path}"\.$'
+        - '^\[User Groups\] %{ACTION:event.action} "%{DATA:group.name}"\.$'
+        - '^\[Users\] %{USER_EVENTS} "%{DATA:user.target.name}"\.$'
+      pattern_definitions:
+        ACTION: (Created|Deleted) %{DATA}
+        USER_EVENTS: (%{ACTION:event.action}|%{DATA:event.action} of user)
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+          - asn
+          - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - grok:
+      field: qnap.nas.file.path
+      patterns:
+        - '%{FILE_PATH:file.path} -> %{FILE_PATH:qnap.nas.file.new_path}'
+        - '%{FILE_PATH:file.path}'
+      pattern_definitions:
+        FILE_PATH: '[_%\(\)!$@:.,+~\-\s[:alnum:]]*(\/[_%\(\)!$@:.,+~\-\s[:alnum:]]*)*'
+      ignore_failure: true
+      ignore_missing: true
+  - grok:
+      field: file.path
+      patterns:
+        - '\.%{DATA:file.extension}$'
+      ignore_failure: true
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      pattern: 'the '
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      pattern: \s
+      replacement: '-'
+      ignore_missing: true
+  - gsub:
+      field: event.provider
+      pattern: \s
+      replacement: '-'
+      ignore_missing: true
+
+  - script:
+      lang: painless
+      description: Add ECS categorization
+      params:
+        create-directory:
+          category:
+            - file
+          type:
+            - creation
+        read:
+          category:
+            - file
+          type:
+            - access
+        rename:
+          category:
+            - file
+          type:
+            - change
+        delete:
+          category:
+            - file
+          type:
+            - deletion
+        add:
+          category:
+            - file
+          type:
+            - creation
+        created-shared-folder:
+          category:
+            - file
+          type:
+            - creation
+        deleted-shared-folder:
+          category:
+            - file
+          type:
+            - deletion
+        created-user-group:
+          category:
+            - iam
+          type:
+            - group
+            - creation
+        deleted-user-group:
+          category:
+            - iam
+          type:
+            - group
+            - deletion
+        changed-password:
+          category:
+            - iam
+          type:
+            - user
+            - change
+          outcome: success
+        edited-account-profile:
+          category:
+            - iam
+          type:
+            - user
+            - change
+          outcome: success
+        created-user:
+          category:
+            - iam
+          type:
+            - user
+            - creation
+        deleted-user:
+          category:
+            - iam
+          type:
+            - user
+            - deletion
+        login-fail:
+          category:
+            - authentication
+          type:
+            - info
+          outcome: failure
+        login-success:
+          category:
+            - authentication
+          type:
+            - start
+          outcome: success
+        logout:
+          category:
+            - authentication
+          type:
+            - end
+      source: >-
+        ctx.event.kind = 'event';
+        ctx.event.type = 'info';
+        if(ctx?.event?.action == null && ctx.event?.provider == 'event-log') {
+          if(ctx.event?.category == null) {
+            List list = new ArrayList();
+            ctx.event.put("category", list);
+          }
+          ctx.event.category.add('configuration');
+          ctx.event.type = 'change';
+        } else if (ctx?.event?.action == null) {
+          return;
+        }
+        if (params.get(ctx.event.action) == null) {
+          return;
+        }
+        def hm = new HashMap(params.get(ctx.event.action));
+        hm.forEach((k, v) -> ctx.event[k] = v);
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{source.ip}}'
+      allow_duplicates: false
+  - append:
+      if: ctx.source?.domain != null
+      field: related.hosts
+      value: '{{source.domain}}'
+      allow_duplicates: false    
+  - append:
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{user.name}}'
+      allow_duplicates: false    
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == "---");
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
