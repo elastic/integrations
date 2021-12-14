@@ -1,0 +1,63 @@
+config_version: 2
+interval: {{interval}}
+request.url: {{url}}/{{audit_type}}/{{audit_id}}/audit?page=1&sortOrder=ASC
+request.method: POST
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+- set:
+    target: header.Authorization
+    value: token {{ api_token }}
+- set:
+    target: url.params.to
+    value: '[[ formatDate (now) "2006-01-02" ]]'
+- set:
+    target: url.params.from
+    value: '[[ formatDate (now (parseDuration .cursor.interval)) "2006-01-02" ]]'
+    default: '[[ formatDate (now (parseDuration "-{{ first_interval }}")) "2006-01-02" ]]'
+cursor:
+  interval:
+    value: "-24h"
+
+request.body:
+  filters:
+{{#if userId }}
+    userId: {{ userId }}
+{{/if}}
+{{#if email_address }}
+    email: {{ email_address }}
+{{/if}}
+{{#if event }}
+    event: {{ event }}
+{{/if}}
+{{#if project_id }}
+    project_id: {{ project_id }}
+{{/if}}
+
+response.request_body_on_pagination: true
+response.pagination:
+- set:
+    target: url.params.page
+    value: '[[add .last_response.page 1]]'
+    fail_on_template_error: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

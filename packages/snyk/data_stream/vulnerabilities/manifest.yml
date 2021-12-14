@@ -1,0 +1,200 @@
+title: "Collect Snyk Vulnerability Data"
+type: logs
+streams:
+  - input: httpjson
+    title: "Collect Snyk Vulnerability Data"
+    description: "Collect Snyk Vulnerability data via the Snyk API"
+    enabled: true
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: orgs
+        type: text
+        title: Orgs
+        multi: true
+        show_user: true
+        required: true
+        description: The list of org IDs to filter the results by
+      - name: severity
+        type: text
+        title: Severity
+        multi: true
+        show_user: true
+        required: false
+        description: The severity levels of issues to filter the results by
+        default:
+          - critical
+          - high
+          - medium
+          - low
+      - name: exploit_maturity
+        type: text
+        title: Exploit Maturity
+        multi: true
+        show_user: true
+        required: false
+        description: The exploit maturity levels of issues to filter the results by
+        default:
+          - mature
+          - proof-of-concept
+          - no-known-exploit
+          - no-data
+      - name: types
+        type: text
+        title: Types
+        multi: true
+        show_user: true
+        required: false
+        description: The type of issues to filter the results by
+        default:
+          - vuln
+          - license
+          - configuration
+      - name: languages
+        type: text
+        title: Languages
+        multi: true
+        show_user: true
+        required: false
+        description: The type of languages to filter the results by
+        default:
+          - javascript
+          - ruby
+          - java
+          - scala
+          - python
+          - golang
+          - php
+          - dotnet
+          - swift-objective-c
+          - elixir
+          - docker
+          - terraform
+          - kubernetes
+          - helm
+          - cloudformation
+      - name: projects
+        type: text
+        title: Projects
+        multi: true
+        show_user: true
+        required: false
+        description: The list of project IDs to filter issues by, max projects allowed is 1000
+      - name: identifier
+        type: text
+        title: Identifier
+        multi: false
+        show_user: true
+        required: false
+        description: Search term to filter issue name by, or an exact CVE or CWE
+      - name: ignored
+        type: bool
+        title: Ignored
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are ignored, if set to false, only include issues which are not ignored
+      - name: patched
+        type: bool
+        title: Patched
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are patched, if set to false, only include issues which are not patched
+      - name: fixable
+        type: bool
+        title: Fixable
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are fixable, if set to false, only include issues which are not fixable. An issue is fixable if it is either upgradable, patchable or pinnable. Also see isUpgradable, isPatchable and isPinnable filters.
+      - name: is_fixed
+        type: bool
+        title: Is Fixed
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are fixed, if set to false, only include issues which are not fixed
+      - name: is_upgradeable
+        type: bool
+        title: Is Upgradeable
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are upgradable, if set to false, only include issues which are not upgradable
+      - name: is_patchable
+        type: bool
+        title: Is Patchable
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are patchable, if set to false, only include issues which are not patchable
+      - name: is_pinnable
+        type: bool
+        title: Is Pinnable
+        multi: false
+        show_user: true
+        required: false
+        default: false
+        description: If set to true, only include issues which are pinnable, if set to false, only include issues which are not pinnable
+      - name: min_priority_score
+        type: text
+        title: Min Priority Score
+        multi: false
+        show_user: true
+        required: false
+        description: The priority score ranging between 0-1000
+        default: 0
+      - name: max_priority_score
+        type: text
+        title: Max Priority Score
+        multi: false
+        show_user: true
+        required: false
+        description: The priority score ranging between 0-1000
+        default: 1000
+      - name: interval
+        type: text
+        title: Interval to query Snyk Events API
+        description: Go Duration syntax (eg. 10s)
+        multi: false
+        show_user: false
+        required: true
+        default: 24h
+      - name: first_interval
+        type: text
+        title: Initial interval to query Snyk Events API
+        description: Go Duration syntax (eg. 10s)
+        multi: false
+        show_user: false
+        required: true
+        default: 24h
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - snyk-vulnerabilities
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
