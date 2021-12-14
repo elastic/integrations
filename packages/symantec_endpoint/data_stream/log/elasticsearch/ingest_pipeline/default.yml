@@ -2,8 +2,8 @@
 description: Pipeline for parsing Symantec Endpoint logs
 processors:
 - set:
-    copy_from: message
     field: event.original
+    copy_from: message
 
 - set:
     field: ecs.version
@@ -308,10 +308,10 @@ processors:
 
       ctx['event']['provider'] = provider.name;
       if (provider?.event_category != null) {
-        ctx['event']['category'] = provider.event_category;
+        ctx['event']['category'] = new ArrayList(provider.event_category);
       }
       if (provider?.event_type!= null) {
-        ctx['event']['type'] = provider.event_type;
+        ctx['event']['type'] = new ArrayList(provider.event_type);
       }
       provider.columns.forEach(c -> {
         ctx._csv_map[c.name] = ctx._csv_array.get(c.index);
@@ -811,12 +811,14 @@ processors:
     field: event.kind
     value: event
 - append:
-    if: ctx?.event.action == 'blocked' || (ctx?.message != null && !ctx.message.contains('not blocked') && ctx.message.contains('blocked'))
+    description: Set event.type to allowed when activity is blocked.
+    if: ctx?.event?.action == 'blocked' || (ctx?.message != null && !ctx.message.contains('not blocked') && ctx.message.contains('blocked'))
     field: event.type
     value: denied
     allow_duplicates: false
 - append:
-    if: ctx?.event.action == 'not blocked' || (ctx?.message != null && ctx.message.contains('not blocked'))
+    description: Set event.type to allowed when activity is not blocked.
+    if: ctx?.event?.action == 'not blocked' || (ctx?.message != null && ctx.message.contains('not blocked'))
     field: event.type
     value: allowed
     allow_duplicates: false
