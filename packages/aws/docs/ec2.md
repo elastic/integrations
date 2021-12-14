@@ -54,6 +54,38 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | tags | List of keywords used to tag each event. | keyword |
 
 
+An example event for `ec2` looks as following:
+
+```json
+{
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws.ec2_logs"
+    },
+    "process": {
+        "name": "systemd"
+    },
+    "@timestamp": "2020-02-20T07:01:01.000Z",
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "event": {
+        "ingested": "2021-07-19T21:47:04.871450600Z",
+        "original": "2020-02-20T07:01:01.000Z Feb 20 07:01:01 ip-172-31-81-156 systemd: Stopping User Slice of root."
+    },
+    "aws": {
+        "ec2": {
+            "ip_address": "ip-172-31-81-156"
+        }
+    },
+    "message": "Stopping User Slice of root.",
+    "tags": [
+        "preserve_original_event"
+    ]
+}
+```
+
 ## Metrics
 
 An example event for `ec2` looks as following:

@@ -22,12 +22,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "fb887d16-d8b1-413d-82d6-25070087272d",
-        "hostname": "docker-fleet-agent",
-        "id": "efa53f45-863c-4532-b896-0748b5888221",
+        "ephemeral_id": "15637538-7a2c-42e3-adbf-93bf0f156afb",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "anomali": {
         "limo": {
@@ -48,16 +47,16 @@ An example event for `limo` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "efa53f45-863c-4532-b896-0748b5888221",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "snapshot": true,
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-12T19:09:18.878Z",
+        "created": "2021-12-13T06:00:37.662Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2021-10-12T19:09:20Z",
+        "ingested": "2021-12-13T06:00:38Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -144,6 +143,8 @@ An example event for `limo` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
@@ -182,34 +183,30 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-12T19:10:53.003Z",
+    "@timestamp": "2021-12-13T06:02:03.635Z",
     "agent": {
-        "ephemeral_id": "650730db-b44b-4c25-9547-8a0e91a389d6",
-        "hostname": "docker-fleet-agent",
-        "id": "efa53f45-863c-4532-b896-0748b5888221",
+        "ephemeral_id": "78f6f452-5888-448d-b560-2cc5da34c0ab",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "anomali": {
         "threatstream": {
-            "classification": "public",
-            "confidence": 56,
-            "detail2": "imported by user 723",
-            "id": "1785659799",
-            "import_session_id": "244",
+            "classification": "private",
+            "confidence": 35,
+            "detail2": "imported by user 156",
+            "id": "3304738500",
+            "import_session_id": "3166",
             "itype": "mal_md5",
-            "md5": "6466e2",
-            "resource_uri": "/api/v1/intelligence/P44706407813/",
-            "severity": "very-high",
-            "source_feed_id": "3759",
+            "resource_uri": "/api/v1/intelligence/P24670712639/",
+            "severity": "low",
+            "source_feed_id": "1624",
             "state": "active",
             "trusted_circle_ids": [
-                "439",
-                "942",
-                "801"
+                "407"
             ],
-            "update_id": "3898969521",
+            "update_id": "2184632737",
             "value_type": "md5"
         }
     },
@@ -222,18 +219,18 @@ An example event for `threatstream` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "efa53f45-863c-4532-b896-0748b5888221",
+        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
         "snapshot": true,
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2021-10-12T19:10:54Z",
+        "ingested": "2021-12-13T06:02:04Z",
         "kind": "enrichment",
-        "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
-        "severity": 9,
+        "original": "{\"classification\":\"private\",\"confidence\":35,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 156\",\"id\":3304738500,\"import_session_id\":3166,\"itype\":\"mal_md5\",\"md5\":\"c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4\",\"resource_uri\":\"/api/v1/intelligence/P24670712639/\",\"severity\":\"low\",\"source\":\"Phony generated indicator\",\"source_feed_id\":1624,\"state\":\"active\",\"trusted_circle_ids\":\"407\",\"update_id\":2184632737,\"value_type\":\"md5\"}",
+        "severity": 3,
         "type": "indicator"
     },
     "input": {
@@ -247,14 +244,19 @@ An example event for `threatstream` looks as following:
     "threat": {
         "indicator": {
             "confidence": "Med",
+            "file": {
+                "hash": {
+                    "sha256": "c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4"
+                }
+            },
             "first_seen": "2020-10-08T12:22:16.000Z",
             "last_seen": "2020-10-08T12:24:42.000Z",
             "marking": {
                 "tlp": [
-                    "White"
+                    "Amber"
                 ]
             },
-            "provider": "Default Organization",
+            "provider": "Phony generated indicator",
             "type": "file"
         }
     }
@@ -331,6 +333,8 @@ An example event for `threatstream` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
