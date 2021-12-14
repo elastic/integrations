@@ -10,7 +10,7 @@ The extensive documentation for the input are currently available [here](https:/
 
 The most commonly used configuration options are available on the main integration page, while more advanced and customizable options currently resides under the "advanced options" part of the integration settings page.
 
-Configuration is split into 3 main categories, Request, Response and Cursor.
+Configuration is split into three main categories, Request, Response, and Cursor.
 
 The request part of the configuration handles points like which URL endpoint to communicate with, the request body, specific transformations that have to happen before a request is sent out and some custom options like request proxy, timeout and similar options.
 
