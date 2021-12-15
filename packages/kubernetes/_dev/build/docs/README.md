@@ -80,6 +80,11 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
+#### audit-logs
+
+The audit-logs dataset requires access to the log files on each Kubernetes node where the audit logs are stored.
+This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
+
 ## Compatibility
 
 The Kubernetes package is tested with Kubernetes 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, and 1.18.x
