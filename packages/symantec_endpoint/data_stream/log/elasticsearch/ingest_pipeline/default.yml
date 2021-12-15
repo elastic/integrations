@@ -347,9 +347,13 @@ processors:
       if (provider?.event_type!= null) {
         ctx['event']['type'] = new ArrayList(provider.event_type);
       }
-      provider.columns.forEach(c -> {
-        ctx._csv_map[c.name] = ctx._csv_array.get(c.index);
-      });
+      for (def c : provider.columns) {
+        def v = ctx._csv_array.get(c.index).trim();
+        if (!v.isEmpty()) {
+          ctx._csv_map[c.name] = v;
+        }
+      }
+
 
 - rename:
     field: _csv_map
