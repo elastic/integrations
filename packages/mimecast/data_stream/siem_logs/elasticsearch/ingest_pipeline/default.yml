@@ -1,0 +1,368 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  # Generic event/ecs fields we always want to populated
+  - set:
+      field: event.ingested
+      value: "{{ _ingest.timestamp }}"
+  - set:
+      field: ecs.version
+      value: "1.12.0"
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      description: Parse 'message' JSON contents into a 'mimecast' object.
+      field: event.original
+      target_field: mimecast
+  - drop:
+      if: ctx?.mimecast?.datetime == null
+  - date:
+      description: Use 'mimecast.datetime' as the '@timestamp'
+      field: mimecast.datetime
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ssZ
+
+  ### RECEIPT LOGS
+  - rename:
+      field: mimecast.aCode
+      target_field: email.local_id
+      ignore_missing: true
+      if: 'ctx?.mimecast?.aCode !=null'
+  - rename:
+      field: mimecast.Act
+      target_field: event.action
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Act !=null'
+  - rename:
+      field: mimecast.Cphr
+      target_field: tls.cipher
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Cphr !=null'
+  - rename:
+      field: mimecast.Dir
+      target_field: email.direction
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Dir !=null'
+  - rename:
+      field: mimecast.Error
+      target_field: error.message
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Error !=null'
+  - rename:
+      field: mimecast.IP
+      target_field: source.ip
+      ignore_missing: true
+      if: 'ctx?.mimecast?.IP !=null'
+  - rename:
+      field: mimecast.MsgId
+      target_field: email.message_id
+      ignore_missing: true
+      if: 'ctx?.mimecast?.MsgId !=null'
+  - rename:
+      field: mimecast.Rcpt
+      target_field: email.to.address
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Rcpt !=null'
+  - rename:
+      field: mimecast.headerFrom
+      target_field: email.header_from
+      ignore_missing: true
+      if: 'ctx?.mimecast?.headerFrom !=null'
+  - rename:
+      field: mimecast.RejCode
+      target_field: error.code
+      ignore_missing: true
+      if: 'ctx?.mimecast?.RejCode !=null'
+  - rename:
+      field: mimecast.RejInfo
+      target_field: event.reason
+      ignore_missing: true
+      if: 'ctx?.mimecast?.RejInfo !=null'
+  - rename:
+      field: mimecast.RejType
+      target_field: error.type
+      ignore_missing: true
+      if: 'ctx?.mimecast?.RejType !=null'
+  - rename:
+      field: mimecast.Sender
+      target_field: email.from.address
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Sender !=null'
+  - rename:
+      field: mimecast.Subject
+      target_field: email.subject
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Subject !=null'
+  - rename:
+      field: mimecast.TlsVer
+      target_field: tls.version
+      ignore_missing: true
+      if: 'ctx?.mimecast?.TlsVer !=null'
+  ### PROCESS LOGS
+  - rename:
+      field: mimecast.AttSize
+      target_field: email.attachments.file.size
+      ignore_missing: true
+      if: 'ctx?.mimecast?.AttSize !=null'
+  - rename:
+      field: mimecast.AttNames
+      target_field: email.attachments.file.name
+      ignore_missing: true
+      if: 'ctx?.mimecast?.AttNames !=null'
+  - rename:
+      field: mimecast.Hld
+      target_field: event.reason
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Hld !=null'
+  - rename:
+      field: mimecast.MsgSize
+      target_field: email.message_size
+      ignore_missing: true
+      if: 'ctx?.mimecast?.MsgSize !=null'
+    ### DELIVERY LOGS 
+  - rename:
+      field: mimecast.Err
+      target_field: error.message
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Err !=null'
+  - rename:
+      field: mimecast.Route
+      target_field: rule.name
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Route !=null'
+  - rename:
+      field: mimecast.UseTls
+      target_field: tls.established
+      ignore_missing: true
+      if: 'ctx?.mimecast?.UseTls !=null'
+      ### AV LOGS
+  - rename:
+      field: mimecast.fileExt
+      target_field: email.attachments.file.extension
+      ignore_missing: true
+      if: 'ctx?.mimecast?.fileExt !=null'
+  - rename:
+      field: mimecast.fileMime
+      target_field: email.attachments.file.mime_type
+      ignore_missing: true
+      if: 'ctx?.mimecast?.fileMime !=null'
+  - rename:
+      field: mimecast.md5
+      target_field: email.attachments.hash.md5
+      ignore_missing: true
+      if: 'ctx?.mimecast?.md5 !=null'
+  - rename:
+      field: mimecast.Recipient
+      target_field: email.to.address
+      ignore_missing: true  
+      if: 'ctx?.mimecast?.Recipient !=null'
+  - rename:
+      field: mimecast.SenderDomain
+      target_field: source.domain
+      ignore_missing: true
+      if: 'ctx?.mimecast?.SenderDomain !=null'
+  - rename:
+      field: mimecast.sha1
+      target_field: email.attachments.hash.sha1
+      ignore_missing: true
+      if: 'ctx?.mimecast?.sha1 !=null'
+  - rename:
+      field: mimecast.sha256
+      target_field: email.attachments.hash.sha256
+      ignore_missing: true
+      if: 'ctx?.mimecast?.sha256 !=null'
+  - rename:
+      field: mimecast.Size
+      target_field: email.attachments.file.size
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Size !=null'
+  - rename:
+      field: mimecast.fileName
+      target_field: email.attachments.file.name
+      ignore_missing: true
+      if: 'ctx?.mimecast?.fileName !=null'
+      ### SPAM EVENT THREAD LOGS
+  - rename:
+      field: mimecast.SourceIP
+      target_field: source.ip
+      ignore_missing: true
+      if: 'ctx?.mimecast?.SourceIP !=null'   
+      ### SIEM Email Protect Logs
+  - rename:
+      field: mimecast.URL
+      target_field: url.full
+      ignore_missing: true
+      if: 'ctx?.mimecast?.URL !=null'
+      ### SIEM Impersonation logs                       
+  - rename:
+      field: mimecast.Action
+      target_field: event.action
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Action !=null'
+  - rename:
+      field: mimecast.Definition
+      target_field: rule.name
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Definition !=null'
+  - rename:
+      field: mimecast.NewDomain
+      target_field: source.domain
+      ignore_missing: true
+      if: 'ctx?.mimecast?.NewDomain !=null'
+      ### SIEM TTP Url Logs
+  - rename:
+      field: mimecast.reason
+      target_field: event.reason
+      ignore_missing: true
+      if: 'ctx?.mimecast?.reason !=null'
+  - rename:
+      field: mimecast.recipient
+      target_field: email.to.address
+      ignore_missing: true
+      if: 'ctx?.mimecast?.recipient !=null'
+  - rename:
+      field: mimecast.route
+      target_field: email.direction
+      ignore_missing: true
+      if: 'ctx?.mimecast?.route !=null'
+  - rename:
+      field: mimecast.sender
+      target_field: email.from.address
+      ignore_missing: true
+      if: 'ctx?.mimecast?.sender !=null'
+  - rename:
+      field: mimecast.senderDomain
+      target_field: source.domain
+      ignore_missing: true
+      if: 'ctx?.mimecast?.senderDomain !=null'
+  - rename:
+      field: mimecast.sourceIp
+      target_field: source.ip
+      ignore_missing: true
+      if: 'ctx?.mimecast?.sourceIp !=null'
+  - rename:
+      field: mimecast.subject
+      target_field: email.subject
+      ignore_missing: true
+      if: 'ctx?.mimecast?.subject !=null'
+  - rename:
+      field: mimecast.url
+      target_field: url.full
+      ignore_missing: true
+      if: 'ctx?.mimecast?.url !=null'
+  - rename:
+      field: mimecast.action
+      target_field: event.action
+      ignore_missing: true
+      if: 'ctx?.mimecast?.action !=null'
+  - dissect:
+      field: mimecast.Content-Disposition
+      pattern: "%{?drop->}=\"%{mimecast.log_type}.%{?drop->}"
+      ignore_missing: true
+  - split:
+      field: mimecast.log_type
+      separator: "_"
+      target_field: mimecast.log_type_parts
+      if: 'ctx?.mimecast?.log_type != null'
+  - set:
+      field: mimecast.log_type_part1
+      copy_from: mimecast.log_type_parts.0
+      if: 'ctx?.mimecast?.log_type_parts !=null'
+  - set:
+      field: mimecast.log_type_part2
+      copy_from: mimecast.log_type_parts.1
+      if: 'ctx?.mimecast?.log_type_parts !=null'
+  - set:
+      field: mimecast.log_type
+      value: "{{mimecast.log_type_part1}}"
+      if: 'ctx?.mimecast?.log_type_part1 != "ttp"'
+      ignore_failure: true
+  - set:
+      field: mimecast.log_type
+      value: "{{mimecast.log_type_part1}}_{{mimecast.log_type_part2}}"
+      if: 'ctx?.mimecast?.log_type_part1 =="ttp"'
+      ignore_failure: true 
+  - set:
+      field: event.created
+      value: "{{mimecast.datetime}}"
+      if: 'ctx?.mimecast?.datetime != null'
+  - set:
+      field: tls.established
+      value: false
+      if: 'ctx?.tls?.established == "No"'
+  - set:
+      field: tls.established
+      value: true
+      if: 'ctx?.tls?.established == "Yes"'
+  - rename:
+      field: mimecast.Delivered
+      target_field: event.outcome
+      ignore_missing: true
+      if: 'ctx?.mimecast?.Delivered !=null'
+  - set:
+      field: event.outcome
+      value: "success"
+      if: 'ctx?.event?.outcome ==true'
+  - set:
+      field: event.outcome
+      value: "failure"
+      if: 'ctx?.event?.outcome ==false'
+  - set:
+      field: event.outcome
+      value: "unknown"
+      if: 'ctx?.event?.outcome ==null'
+  # Cleanup
+  - remove:
+      description: Cleanup of repeated/unwanted/temporary fields.
+      field: 
+        - mimecast.eventTime
+        - mimecast.Content-Disposition
+        - mimecast.datetime
+        - mimecast.log_type_part1
+        - mimecast.log_type_part2
+        - mimecast.log_type_parts
+      ignore_missing: true
+  - remove:
+      description: Remove 'mimecast.RecieptApk' if null
+      field: mimecast.ReceiptAck
+      if: 'ctx?.mimecast?.ReceiptAck == null'
+      ignore_missing: true
+  - remove:
+      description: Remove 'mimecast.AttNames' if null
+      field: mimecast.AttNames
+      if: 'ctx?.mimecast?.AttNames == null'
+      ignore_missing: true
+  - remove:
+      description: Remove 'mimecast.MsgId' if null
+      field: mimecast.MsgId
+      if: 'ctx?.mimecast?.MsgId == null'
+      ignore_missing: true
+  - remove:
+      description: Remove 'mimecast.Subject' if null
+      field: mimecast.Subject
+      if: 'ctx?.mimecast?.Subject == null'
+      ignore_missing: true
+  - remove:
+      description: Remove 'event.original' if 'preserve_original_event' is not set.
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+  - remove:
+      description: Remove 'mimecast.credentialTheft' if null
+      field: mimecast.credentialTheft
+      if: 'ctx?.mimecast?.credentialTheft == null'
+      ignore_missing: true    
+  - remove:
+      description: Remove 'mimecast.msgid' if null
+      field: mimecast.msgid
+      if: 'ctx?.mimecast?.msgid == null'
+      ignore_missing: true     
+  ###
+
+# Error handling
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

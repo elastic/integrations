@@ -1,0 +1,86 @@
+config_version: 2
+data_stream:
+  dataset: {{data_stream.dataset}}
+interval: {{request_interval}}
+{{#unless oauth_id}}
+{{#if username}}
+auth.basic.user: {{username}}
+{{/if}}
+{{#if password}}
+auth.basic.password: {{password}}
+{{/if}}
+{{/unless}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+{{#if oauth_id}}
+auth.oauth2:
+{{#if oauth_id}}
+  client.id: {{oauth_id}}
+{{/if}}
+{{#if oauth_secret}}
+  client.secret: {{oauth_secret}}
+{{/if}}
+{{#if oauth_token_url}}
+  token_url: {{oauth_token_url}}
+{{/if}}
+{{#if oauth_custom}}
+{{oauth_custom}}
+{{/if}}
+{{/if}}
+
+request:
+  url: {{request_url}}
+  method: {{request_method}}
+{{#if request_body}}
+  body: 
+    {{request_body}}
+{{/if}}
+{{#if request_transforms}}
+  transforms:
+    {{request_transforms}}
+{{/if}}
+{{#if request_ssl}}
+  ssl: 
+    {{ssl}}
+{{/if}}
+{{#if request_custom}}
+{{request_custom}}
+{{/if}}
+
+{{#if response_transforms}}
+response.transforms: 
+{{response_transforms}}
+{{/if}}
+{{#if response_split}}
+response.split: 
+{{response_split}}
+{{/if}}
+{{#if response_pagination}}
+response.pagination: {{response_pagination}}
+{{/if}}
+{{#if response_decode_as}}
+response.decode_as: {{response_decode_as}}
+{{/if}}
+{{#if response_request_body_on_pagination}}
+response.request_body_on_pagination: {{response_request_body_on_pagination}}
+{{/if}}
+
+{{#if cursor}}
+cursor:
+  {{cursor}}
+{{/if}}
+
+{{#if tags}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+  {{processors}}
+{{/if}}

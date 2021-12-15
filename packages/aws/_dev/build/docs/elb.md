@@ -16,6 +16,8 @@ For network load balancer, please follow [enable access log for network load bal
 
 {{fields "elb_logs"}}
 
+{{event "elb_logs"}} 
+
 ## Metrics
 
 {{event "elb_metrics"}}
