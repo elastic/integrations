@@ -231,12 +231,18 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.port | Port of the source. | long |
 | symantec_endpoint.log._uid |  | keyword |
+| symantec_endpoint.log.action |  | keyword |
 | symantec_endpoint.log.actual_action |  | keyword |
+| symantec_endpoint.log.admin |  | keyword |
 | symantec_endpoint.log.api_name |  | keyword |
+| symantec_endpoint.log.application |  | keyword |
 | symantec_endpoint.log.application_hash |  | keyword |
 | symantec_endpoint.log.application_name |  | keyword |
 | symantec_endpoint.log.application_type |  | keyword |
 | symantec_endpoint.log.application_version |  | keyword |
+| symantec_endpoint.log.begin |  | keyword |
+| symantec_endpoint.log.caller_process_id |  | keyword |
+| symantec_endpoint.log.caller_process_name |  | keyword |
 | symantec_endpoint.log.caller_return_address |  | keyword |
 | symantec_endpoint.log.caller_return_module_name |  | keyword |
 | symantec_endpoint.log.category |  |  |
@@ -246,6 +252,9 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.certificate_serial_number |  | keyword |
 | symantec_endpoint.log.certificate_signer |  | keyword |
 | symantec_endpoint.log.certificate_thumbprint |  | keyword |
+| symantec_endpoint.log.cids_signature_id |  | keyword |
+| symantec_endpoint.log.cids_signature_string |  | keyword |
+| symantec_endpoint.log.cids_signature_subid |  | keyword |
 | symantec_endpoint.log.coh_engine_version |  | keyword |
 | symantec_endpoint.log.command |  | keyword |
 | symantec_endpoint.log.company_name |  | keyword |
@@ -258,39 +267,56 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.detection_type |  | keyword |
 | symantec_endpoint.log.device_id |  | keyword |
 | symantec_endpoint.log.disposition |  | keyword |
+| symantec_endpoint.log.domain_name |  | keyword |
 | symantec_endpoint.log.download_site | The URL determined from where the image was downloaded. | keyword |
 | symantec_endpoint.log.downloaded_by |  | keyword |
 | symantec_endpoint.log.duration_(seconds) |  | keyword |
+| symantec_endpoint.log.end |  | keyword |
+| symantec_endpoint.log.event_description |  | keyword |
 | symantec_endpoint.log.event_source |  | keyword |
 | symantec_endpoint.log.event_time |  | date |
+| symantec_endpoint.log.file_path |  | keyword |
+| symantec_endpoint.log.file_size_bytes |  | keyword |
 | symantec_endpoint.log.first_seen |  | keyword |
 | symantec_endpoint.log.group |  | keyword |
 | symantec_endpoint.log.hash_type |  | keyword |
 | symantec_endpoint.log.infected |  | keyword |
 | symantec_endpoint.log.inserted |  | date |
 | symantec_endpoint.log.intensive_protection_level |  | keyword |
+| symantec_endpoint.log.intrusion_id |  | keyword |
 | symantec_endpoint.log.intrusion_payload_url |  | keyword |
+| symantec_endpoint.log.intrusion_url |  | keyword |
 | symantec_endpoint.log.ip_address |  | keyword |
 | symantec_endpoint.log.last_update_time |  | date |
 | symantec_endpoint.log.local_host |  | keyword |
+| symantec_endpoint.log.local_host_ip |  | keyword |
+| symantec_endpoint.log.local_host_mac |  | keyword |
+| symantec_endpoint.log.local_host_name |  | keyword |
+| symantec_endpoint.log.local_port |  | keyword |
+| symantec_endpoint.log.location |  | keyword |
+| symantec_endpoint.log.md-5 |  | keyword |
+| symantec_endpoint.log.network_protocol |  | keyword |
+| symantec_endpoint.log.occurrences |  | keyword |
 | symantec_endpoint.log.omitted |  | keyword |
 | symantec_endpoint.log.parameters |  | keyword |
 | symantec_endpoint.log.permitted_application_reason |  | keyword |
 | symantec_endpoint.log.policy_name |  | keyword |
 | symantec_endpoint.log.prevalence |  | keyword |
+| symantec_endpoint.log.remote_host_ip |  | keyword |
+| symantec_endpoint.log.remote_host_mac |  | keyword |
+| symantec_endpoint.log.remote_port |  | keyword |
 | symantec_endpoint.log.requested_action |  | keyword |
 | symantec_endpoint.log.risk_level |  | keyword |
 | symantec_endpoint.log.risk_name |  | keyword |
 | symantec_endpoint.log.risk_type | Localized strings for Heuristic / Cookie / Admin Black List / BPE / System Change / N/A. | keyword |
+| symantec_endpoint.log.rule |  | keyword |
 | symantec_endpoint.log.scan_complete |  | keyword |
 | symantec_endpoint.log.scan_id |  | keyword |
 | symantec_endpoint.log.secondary_action |  | keyword |
 | symantec_endpoint.log.sensitivity |  | keyword |
 | symantec_endpoint.log.server |  | keyword |
 | symantec_endpoint.log.server_name |  | keyword |
-| symantec_endpoint.log.signature.id |  | keyword |
-| symantec_endpoint.log.signature.name |  | keyword |
-| symantec_endpoint.log.signature.sub_id |  | keyword |
+| symantec_endpoint.log.sha-256 |  | keyword |
 | symantec_endpoint.log.signing_timestamp |  | date |
 | symantec_endpoint.log.site |  | keyword |
 | symantec_endpoint.log.source |  | keyword |
@@ -300,9 +326,11 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.threats |  | keyword |
 | symantec_endpoint.log.total_file |  | keyword |
 | symantec_endpoint.log.total_files |  | keyword |
+| symantec_endpoint.log.traffic_direction |  | keyword |
 | symantec_endpoint.log.url_tracking_status |  | keyword |
 | symantec_endpoint.log.user1 | User when scan started. | keyword |
 | symantec_endpoint.log.user2 | User when scan ended. | keyword |
+| symantec_endpoint.log.user_name |  | keyword |
 | symantec_endpoint.log.web_domain | The web domain. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |

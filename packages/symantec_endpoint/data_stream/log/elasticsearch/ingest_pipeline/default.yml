@@ -142,14 +142,15 @@ processors:
         'user': 'user_name'
       ]);
 
-      def pattern = /^([a-zA-Z][a-zA-Z0-9 \(\)-]{0,28}):(?:\s(.+)|\s)?/;
+      def keyPattern = /^([a-zA-Z][a-zA-Z0-9 \(\)-]{0,28}):(?:\s(.+)|\s)?/;
       def keyValue = [:];
       def fingerprint = [];
       ctx._csv_array.forEach(v -> {
-          def m = pattern.matcher(v);
+          def m = keyPattern.matcher(v);
           def key = 'NONE';
           if (m.matches()) {
             key = m.group(1).toLowerCase().replace(' ', '_');
+            key = /[\(\)]+/.matcher(key).replaceAll('');
 
             def tmp = aliases[key];
             if (tmp != null) {
@@ -187,7 +188,7 @@ processors:
       providers:
       # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Behavior
       - name: 'Agent Behavior Log'
-        fingerprint: NONE|NONE|NONE|NONE|NONE|begin|end|rule|NONE|NONE|NONE|NONE|NONE|user_name|domain_name|action_type|file_size_(bytes)|device_id
+        fingerprint: NONE|NONE|NONE|NONE|NONE|begin|end|rule|NONE|NONE|NONE|NONE|NONE|user_name|domain_name|action_type|file_size_bytes|device_id
         event_category: [intrusion_detection]
         event_type: [process]
         columns:
@@ -275,7 +276,7 @@ processors:
             name: event_description
       # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Proactive_Detection
       - name: 'Agent Proactive Detection Log'
-        fingerprint: NONE|computer_name|detection_type|first_seen|application_name|application_type|application_version|hash_type|application_hash|company_name|file_size_(bytes)|sensitivity|detection_score|coh_engine_version|NONE|permitted_application_reason|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|risk_level|detection_source|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|domain_name|group|server|user_name|source_computer|source_ip
+        fingerprint: NONE|computer_name|detection_type|first_seen|application_name|application_type|application_version|hash_type|application_hash|company_name|file_size_bytes|sensitivity|detection_score|coh_engine_version|NONE|permitted_application_reason|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|risk_level|detection_source|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|domain_name|group|server|user_name|source_computer|source_ip
         columns:
           - index: 0
             name: event_description
@@ -286,7 +287,7 @@ processors:
           - index: 29
             name: description
       - name: 'Agent Proactive Detection Log'
-        fingerprint: NONE|computer_name|ip_address|detection_type|first_seen|application_name|application_type|application_version|hash_type|application_hash|company_name|file_size_(bytes)|sensitivity|detection_score|coh_engine_version|NONE|permitted_application_reason|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|risk_level|risk_type|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|domain_name|group|server|user_name|source_computer|source_ip|intensive_protection_level|certificate_issuer|certificate_signer|certificate_thumbprint|signing_timestamp|certificate_serial_number
+        fingerprint: NONE|computer_name|ip_address|detection_type|first_seen|application_name|application_type|application_version|hash_type|application_hash|company_name|file_size_bytes|sensitivity|detection_score|coh_engine_version|NONE|permitted_application_reason|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|risk_level|risk_type|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|domain_name|group|server|user_name|source_computer|source_ip|intensive_protection_level|certificate_issuer|certificate_signer|certificate_thumbprint|signing_timestamp|certificate_serial_number
         columns:
           - index: 0
             name: event_description
@@ -304,7 +305,7 @@ processors:
             name: policy_name
       # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Scan
       - name: 'Agent Scan Log'
-        fingerprint: scan_id|begin|end|NONE|duration_(seconds)|user1|user2|NONE|scan_complete|command|threats|infected|total_files|omitted|computer|ip_address|domain_name|group|server
+        fingerprint: scan_id|begin|end|NONE|duration_seconds|user1|user2|NONE|scan_complete|command|threats|infected|total_files|omitted|computer|ip_address|domain_name|group|server
         columns:
           - index: 3
             name: action
@@ -312,7 +313,7 @@ processors:
             name: event_description
       # https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Risk
       - name: 'Agent Risk Log'
-        fingerprint: NONE|ip_address|computer_name|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|last_update_time|domain_name|group|server|user_name|source_computer|source_ip|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|first_seen|sensitivity|permitted_application_reason|application_hash|hash_type|company_name|application_name|application_version|application_type|file_size_(bytes)|category_set|category_type|location|intensive_protection_level|certificate_issuer|certificate_signer|certificate_thumbprint|signing_timestamp|certificate_serial_number
+        fingerprint: NONE|ip_address|computer_name|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|last_update_time|domain_name|group|server|user_name|source_computer|source_ip|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|first_seen|sensitivity|permitted_application_reason|application_hash|hash_type|company_name|application_name|application_version|application_type|file_size_bytes|category_set|category_type|location|intensive_protection_level|certificate_issuer|certificate_signer|certificate_thumbprint|signing_timestamp|certificate_serial_number
         columns:
           - index: 0
             name: event_description
@@ -348,49 +349,59 @@ processors:
         ctx._csv_map[c.name] = ctx._csv_array.get(c.index);
       });
 
+- rename:
+    field: _csv_map
+    target_field: symantec_endpoint.log
+    ignore_missing: true
+
+###
+# BEGIN handling of Symantec Endpoint fields.
+###
+
 # Action
 - lowercase:
-    field: _csv_map.action
+    field: symantec_endpoint.log.action
     ignore_missing: true
-- rename:
-    field: _csv_map.action
-    target_field: event.action
-    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: symantec_endpoint.log.action
+    ignore_failure: true
 
 # Actual Action
 - set:
     if: ctx?.event?.action == null
-    copy_from: _csv_map.actual_action
     field: event.action
+    copy_from: symantec_endpoint.log.actual_action
     ignore_failure: true
 
 # Admin
 - set:
-    copy_from: _csv_map.admin
     field: user.name
+    copy_from: symantec_endpoint.log.admin
     ignore_failure: true
 
 # Application
-- rename:
-    field: _csv_map.application
-    target_field: process.executable
-    ignore_missing: true
+- set:
+    if: ctx?.process?.executable == null
+    field: process.executable
+    copy_from: symantec_endpoint.log.application
+    ignore_failure: true
 
 # Application Name
 - set:
-    if: ctx?._csv_map?.application_name != null
     field: file.pe.product
-    copy_from: _csv_map.application_name
+    copy_from: symantec_endpoint.log.application_name
+    ignore_failure: true
 
 # Application Version
 - set:
-    if: ctx?._csv_map?.application_version != null
     field: file.pe.file_version
-    copy_from: _csv_map.application_version
+    copy_from: symantec_endpoint.log.application_version
+    ignore_failure: true
 
 # Begin
 - date:
-    field: _csv_map.begin
+    field: symantec_endpoint.log.begin
     target_field: event.start
     ignore_failure: true
     formats:
@@ -399,93 +410,85 @@ processors:
 # Caller MD-5
 - dissect:
     tag: caller-md5
-    field: _csv_map.event_description
+    field: symantec_endpoint.log.event_description
     pattern: '%{} Caller MD5=%{process.hash.md5}'
     ignore_failure: true
 
 # Caller Process ID
 - convert:
-    field: _csv_map.caller_process_id
+    field: symantec_endpoint.log.caller_process_id
     target_field: process.pid
     type: long
     ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.caller_process_id
 
 # Caller Process Name
-- rename:
+- set:
     if: ctx?.process?.executable == null
-    field: _csv_map.caller_process_name
-    target_field: process.executable
-    ignore_missing: true
+    field: process.executable
+    copy_from: symantec_endpoint.log.caller_process_name
+    ignore_failure: true
 
 # Certificate Issuer
 - append:
-    if: ctx?._csv_map?.certificate_issuer != null
+    if: ctx?.symantec_endpoint?.log?.certificate_issuer != null
     field: file.x509.issuer.common_name
-    value: '{{{_csv_map.certificate_issuer}}}'
+    value: '{{{symantec_endpoint.log.certificate_issuer}}}'
 
 # Certificate Serial Number
 - set:
-    if: ctx?._csv_map?.certificate_serial_number != null
     field: file.x509.serial_number
-    copy_from: _csv_map.certificate_serial_number
+    copy_from: symantec_endpoint.log.certificate_serial_number
+    ignore_failure: true
 
  # Certificate Signer
 - append:
-    if: ctx?._csv_map?.certificate_signer != null
+    if: ctx?.symantec_endpoint?.log?.certificate_signer != null
     field: file.x509.issuer.common_name
-    value: '{{{_csv_map.certificate_signer}}}'
+    value: '{{{symantec_endpoint.log.certificate_signer}}}'
 
 # Certificate Thumbprint (hex encoded sha1 hashes are 40 characters)
 - lowercase:
-    if: ctx?._csv_map?.certificate_thumbprint != null && ctx._csv_map.certificate_thumbprint.length() == 40
-    field: _csv_map.certificate_thumbprint
+    if: ctx?.symantec_endpoint?.log?.certificate_thumbprint != null && ctx.symantec_endpoint.log.certificate_thumbprint.length() == 40
+    field: symantec_endpoint.log.certificate_thumbprint
     target_field: file.hash.sha1
 
 # CIDS Signature ID
-- rename:
-    field: _csv_map.cids_signature_id
-    target_field: symantec_endpoint.log.signature.id
-    ignore_missing: true
 
 # CIDS Signature String
-- rename:
-    field: _csv_map.cids_signature_string
-    target_field: symantec_endpoint.log.signature.name
-    ignore_missing: true
 
 # CIDS Signature Sub-ID
-- rename:
-    field: _csv_map.cids_signature_subid
-    target_field: symantec_endpoint.log.signature.sub_id
-    ignore_missing: true
 
 # Company Name
 - set:
-    if: ctx?._csv_map?.company_name != null
     field: file.pe.company
-    copy_from: _csv_map.company_name
+    copy_from: symantec_endpoint.log.company_name
+    ignore_failure: true
 
 # Domain Name
-- rename:
+- set:
     if: ctx?.user?.domain == null
-    field: _csv_map.domain_name
-    target_field: user.domain
-    ignore_missing: true
+    field: user.domain
+    copy_from: symantec_endpoint.log.domain_name
+    ignore_failure: true
 
 # Downloaded by
 - set:
-    if: ctx?._csv_map?.downloaded_by != null
+    if: ctx?.process?.executable == null
     field: process.executable
-    copy_from: _csv_map.downloaded_by
+    copy_from: symantec_endpoint.log.downloaded_by
+    ignore_failure: true
 
 # Download site
 - uri_parts:
-    field: _csv_map.download_site
+    field: symantec_endpoint.log.download_site
     ignore_failure: true
 
 # Duration (seconds)
 - convert:
-    field: _csv_map.duration_(seconds)
+    field: symantec_endpoint.log.duration_seconds
     target_field: event.duration
     type: long
     ignore_missing: true
@@ -499,47 +502,43 @@ processors:
 
 # End
 - date:
-    field: _csv_map.end
+    field: symantec_endpoint.log.end
     target_field: event.end
     ignore_failure: true
     formats:
       - yyyy-MM-dd HH:mm:ss
 
 # Event Description
-- remove:
-    if: ctx?._csv_map?.event_description != null
+- set:
     field: message
-    ignore_missing: true
-- rename:
-    field: _csv_map.event_description
-    target_field: message
-    ignore_missing: true
+    copy_from: symantec_endpoint.log.event_description
+    ignore_failure: true
 
 # Event Time
 - date:
-    if: ctx?._csv_map?.event_time != null
-    field: _csv_map.event_time
-    target_field: _csv_map.event_time
+    if: ctx?.symantec_endpoint?.log?.event_time != null
+    field: symantec_endpoint.log.event_time
+    target_field: symantec_endpoint.log.event_time
     ignore_failure: true
     formats:
       - yyyy-MM-dd HH:mm:ss
     on_failure:
       - remove:
-          field: _csv_map.event_time
+          field: symantec_endpoint.log.event_time
 - set:
-    if: ctx?._csv_map?.event_time != null
+    if: ctx?.symantec_endpoint?.log?.event_time != null
     field: '@timestamp'
-    copy_from: _csv_map.event_time
+    copy_from: symantec_endpoint.log.event_time
 
 # File Path
-- rename:
-    field: _csv_map.file_path
-    target_field: file.path
-    ignore_missing: true
+- set:
+    field: file.path
+    copy_from: symantec_endpoint.log.file_path
+    ignore_failure: true
 
 # File Size (bytes)
 - convert:
-    field: _csv_map.file_size_(bytes)
+    field: symantec_endpoint.log.file_size_bytes
     target_field: file.size
     type: long
     ignore_missing: true
@@ -547,56 +546,52 @@ processors:
 
 # Inserted
 - date:
-    if: ctx?._csv_map?.inserted != null
-    field: _csv_map.inserted
-    target_field: _csv_map.inserted
+    if: ctx?.symantec_endpoint?.log?.inserted != null
+    field: symantec_endpoint.log.inserted
+    target_field: symantec_endpoint.log.inserted
     ignore_failure: true
     formats:
       - yyyy-MM-dd HH:mm:ss
     on_failure:
       - remove:
-          field: _csv_map.inserted
+          field: symantec_endpoint.log.inserted
 
 # Intrusion ID
-- rename:
-    field: _csv_map.intrusion_id
-    target_field: rule.id
-    ignore_missing: true
+- set:
+    field: rule.id
+    copy_from: symantec_endpoint.log.intrusion_id
+    ignore_failure: true
 
 # Intrusion Payload URL
-- rename:
-    field: _csv_map.intrusion_payload_url
-    target_field: symantec_endpoint.log.intrusion_payload_url
-    ignore_missing: true
 
 # Intrusion URL
-- rename:
-    field: _csv_map.intrusion_url
-    target_field: url.original
-    ignore_missing: true
+- set:
+    field: url.original
+    copy_from: symantec_endpoint.log.intrusion_url
+    ignore_failure: true
 
 # Last Update Time (listed as always being in GMT)
 - date:
-    if: ctx?._csv_map?.last_update_time != null
-    field: _csv_map.last_update_time
-    target_field: _csv_map.last_update_time
+    if: ctx?.symantec_endpoint?.log?.last_update_time != null
+    field: symantec_endpoint.log.last_update_time
+    target_field: symantec_endpoint.log.last_update_time
     formats:
       - yyyy-MM-dd HH:mm:ss
     on_failure:
       - remove:
-          field: _csv_map.last_update_time
+          field: symantec_endpoint.log.last_update_time
 
 # Local Host IP
 - set:
-    if: ctx?._csv_map?.local_host_ip != null && ctx._csv_map.local_host_ip != "0.0.0.0"
+    if: ctx?.symantec_endpoint?.log?.local_host_ip != null && ctx.symantec_endpoint.log.local_host_ip != "0.0.0.0"
     field: source.address
-    copy_from: _csv_map.local_host_ip
+    copy_from: symantec_endpoint.log.local_host_ip
 
 # Local Host MAC
-- rename:
-    field: _csv_map.local_host_mac
-    target_field: source.mac
-    ignore_missing: true
+- set:
+    field: source.mac
+    copy_from: symantec_endpoint.log.local_host_mac
+    ignore_failure: true
 - gsub:
     field: source.mac
     pattern: '[-:.]'
@@ -615,61 +610,62 @@ processors:
     ignore_missing: true
 
 # Local Host Name
-- rename:
-    field: _csv_map.local_host_name
-    target_field: source.domain
-    ignore_missing: true
+- set:
+    if: ctx?.symantec_endpoint?.log?.local_host_name != ""
+    field: source.domain
+    copy_from: symantec_endpoint.log.local_host_name
+    ignore_failure: true
 
 # Local Port
 - convert:
-    if: ctx?._csv_map?.local_port != "0"
-    field: _csv_map.local_port
+    if: ctx?.symantec_endpoint?.log?.local_port != "0"
+    field: symantec_endpoint.log.local_port
     target_field: source.port
     type: long
     ignore_failure: true
 
 # Location
-- rename:
-    field: _csv_map.location
-    target_field: source.geo.name
-    ignore_missing: true
+- set:
+    field: source.geo.name
+    copy_from: symantec_endpoint.log.location
+    ignore_failure: true
 
 # MD-5
-- rename:
-    field: _csv_map.md-5
-    target_field: process.hash.md5
-    ignore_missing: true
+- set:
+    field: process.hash.md5
+    copy_from: symantec_endpoint.log.md-5
+    ignore_failure: true
 - lowercase:
     field: process.hash.md5
     ignore_missing: true
 
 # Network Protocol (known as ECS network transport)
-- rename:
-    field: _csv_map.network_protocol
-    target_field: network.transport
-    ignore_missing: true
+- set:
+    field: network.transport
+    copy_from: symantec_endpoint.log.network_protocol
+    ignore_failure: true
 - lowercase:
     field: network.transport
     ignore_missing: true
 
 # Occurrences
 - convert:
-    field: _csv_map.occurrences
+    field: symantec_endpoint.log.occurrences
     target_field: event.count
     type: long
     ignore_failure: true
 
 # Remote Host IP
 - set:
-    if: ctx?._csv_map?.remote_host_ip != null && ctx._csv_map.remote_host_ip != "0.0.0.0"
+    if: ctx?.symantec_endpoint?.log?.remote_host_ip != null && ctx.symantec_endpoint.log.remote_host_ip != "0.0.0.0"
     field: destination.address
-    copy_from: _csv_map.remote_host_ip
+    copy_from: symantec_endpoint.log.remote_host_ip
 
 # Remote Host MAC
-- rename:
-    field: _csv_map.remote_host_mac
-    target_field: destination.mac
-    ignore_missing: true
+- set:
+    field: destination.mac
+    copy_from: symantec_endpoint.log.remote_host_mac
+    ignore_failure: true
 - gsub:
     field: destination.mac
     pattern: '[-:.]'
@@ -688,81 +684,79 @@ processors:
     ignore_missing: true
 
 # Remote Host Name
-- rename:
-    if: ctx?._csv_map?.remote_host_name != ""
-    field: _csv_map.remote_host_name
-    target_field: destination.domain
-    ignore_missing: true
+- set:
+    if: ctx?.symantec_endpoint?.log?.remote_host_name != ""
+    field: destination.domain
+    copy_from: symantec_endpoint.log.remote_host_name
+    ignore_failure: true
 
 # Remote Port
 - convert:
-    if: ctx?._csv_map?.remote_port != "0"
-    field: _csv_map.remote_port
+    if: ctx?.symantec_endpoint?.log?.remote_port != "0"
+    field: symantec_endpoint.log.remote_port
     target_field: destination.port
     type: long
     ignore_failure: true
 
 # Rule
-- rename:
-    field: _csv_map.rule
-    target_field: rule.name
-    ignore_missing: true
+- set:
+    field: rule.name
+    copy_from: symantec_endpoint.log.rule
+    ignore_failure: true
 
 # SHA-256
-- rename:
-    field: _csv_map.sha-256
-    target_field: process.hash.sha256
-    ignore_missing: true
+- set:
+    field: process.hash.sha256
+    copy_from: symantec_endpoint.log.sha-256
+    ignore_failure: true
 - lowercase:
     field: process.hash.sha256
     ignore_missing: true
 
 # Signing Timestamp (Agent Risk Log)
 - date:
-    if: ctx?._csv_map?.signing_timestamp != null
-    field: _csv_map.signing_timestamp
-    target_field: _csv_map.signing_timestamp
+    if: ctx?.symantec_endpoint?.log?.signing_timestamp != null
+    field: symantec_endpoint.log.signing_timestamp
+    target_field: symantec_endpoint.log.signing_timestamp
     formats:
       - UNIX
     on_failure:
       - remove:
-          field: _csv_map.event_time
+          field: symantec_endpoint.log.signing_timestamp
 - set:
-    if: ctx?._csv_map?.signing_timestamp != null
     field: file.x509.not_before
-    copy_from: _csv_map.signing_timestamp
+    copy_from: symantec_endpoint.log.signing_timestamp
+    ignore_failure: true
 
 # Source Computer
 - set:
-    if: ctx?._csv_map?.source_computer != null
     field: source.domain
-    copy_from: _csv_map.source_computer
+    copy_from: symantec_endpoint.log.source_computer
+    ignore_failure: true
 
 # Source IP
 - set:
-    if: ctx?._csv_map?.source_ip != null
     field: source.address
-    copy_from: _csv_map.source_ip
+    copy_from: symantec_endpoint.log.source_ip
+    ignore_failure: true
 
 # Submission Recommended (Recommendation in the form of YES or NO on whether to submit this detection to Symantec or not.)
 - set:
-    if: ctx?._csv_map?.submission_recommended != null && ctx._csv_map.submission_recommended.toLowerCase().contains('yes')
-    field: _csv_map.submission_recommended
+    if: ctx?.symantec_endpoint?.log?.submission_recommended != null && ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
+    field: symantec_endpoint.log.submission_recommended
     value: true
-    override: true
 - set:
-    if: ctx?._csv_map?.submission_recommended != null && !ctx._csv_map.submission_recommended.toLowerCase().contains('yes')
-    field: _csv_map.submission_recommended
+    if: ctx?.symantec_endpoint?.log?.submission_recommended != null && !ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
+    field: symantec_endpoint.log.submission_recommended
     value: false
-    override: true
 
 # Traffic Direction
 # NOTE: inbound/outbound is changed to ingress/egress because this is a host
 # based EDR and ECS guidelines say to use ingress/egress for hosts.
-- rename:
-    field: _csv_map.traffic_direction
-    target_field: network.direction
-    ignore_missing: true
+- set:
+    field: network.direction
+    copy_from: symantec_endpoint.log.traffic_direction
+    ignore_failure: true
 - lowercase:
     field: network.direction
     ignore_missing: true
@@ -776,77 +770,78 @@ processors:
     value: egress
 
 # User Name
-- rename:
-    field: _csv_map.user_name
-    target_field: user.name
-    ignore_missing: true
+- set:
+    field: user.name
+    copy_from: symantec_endpoint.log.user_name
+    ignore_failure: true
 
 # User1
 - set:
-    if: ctx?._csv_map?.user1 != null && ctx?.user?.name == null
+    if: ctx?.symantec_endpoint?.log?.user1 != null && ctx?.user?.name == null
     field: user.name
-    copy_from: _csv_map.user1
+    copy_from: symantec_endpoint.log.user1
+
+###
+# END handling of Symantec Endpoint fields.
+###
 
 - remove:
-    description: Remove columns that are mapped to ECS.
+    if: ctx?._conf?.remove_mapped_fields == true
+    description: Remove symantec_endpoint.log fields that are mapped in some way to ECS.
     ignore_missing: true
     field:
-      - _csv_map.action
-      - _csv_map.admin
-      - _csv_map.application
-      - _csv_map.begin
-      - _csv_map.caller_process_id
-      - _csv_map.caller_process_name
-      - _csv_map.cids_signature_id
-      - _csv_map.cids_signature_string
-      - _csv_map.cids_signature_subid
-      - _csv_map.domain_name
-      - _csv_map.duration_(seconds)
-      - _csv_map.end
-      - _csv_map.event_description
-      - _csv_map.file_size_(bytes)
-      - _csv_map.intrusion_id
-      - _csv_map.intrusion_payload_url
-      - _csv_map.intrusion_url
-      - _csv_map.local_host_ip
-      - _csv_map.local_host_mac
-      - _csv_map.local_host_name
-      - _csv_map.local_port
-      - _csv_map.location
-      - _csv_map.md-5
-      - _csv_map.network_protocol
-      - _csv_map.occurrences
-      - _csv_map.remote_host_ip
-      - _csv_map.remote_host_mac
-      - _csv_map.remote_host_name
-      - _csv_map.remote_port
-      - _csv_map.rule
-      - _csv_map.sha-256
-      - _csv_map.traffic_direction
-      - _csv_map.user_name
+      - symantec_endpoint.log.action
+      - symantec_endpoint.log.actual_action
+      - symantec_endpoint.log.admin
+      - symantec_endpoint.log.application
+      - symantec_endpoint.log.application_name
+      - symantec_endpoint.log.application_version
+      - symantec_endpoint.log.begin
+      - symantec_endpoint.log.caller_process_id
+      - symantec_endpoint.log.caller_process_name
+      - symantec_endpoint.log.certificate_serial_number
+      - symantec_endpoint.log.certificate_thumbprint
+      - symantec_endpoint.log.company_name
+      - symantec_endpoint.log.domain_name
+      - symantec_endpoint.log.download_site
+      - symantec_endpoint.log.downloaded_by
+      - symantec_endpoint.log.duration_seconds
+      - symantec_endpoint.log.end
+      - symantec_endpoint.log.event_description
+      - symantec_endpoint.log.event_time
+      - symantec_endpoint.log.file_path
+      - symantec_endpoint.log.file_size_bytes
+      - symantec_endpoint.log.inserted
+      - symantec_endpoint.log.intrusion_id
+      - symantec_endpoint.log.intrusion_url
+      - symantec_endpoint.log.last_update_time
+      - symantec_endpoint.log.local_host_ip
+      - symantec_endpoint.log.local_host_mac
+      - symantec_endpoint.log.local_host_name
+      - symantec_endpoint.log.local_port
+      - symantec_endpoint.log.location
+      - symantec_endpoint.log.md-5
+      - symantec_endpoint.log.network_protocol
+      - symantec_endpoint.log.occurrences
+      - symantec_endpoint.log.remote_host_ip
+      - symantec_endpoint.log.remote_host_mac
+      - symantec_endpoint.log.remote_host_name
+      - symantec_endpoint.log.remote_port
+      - symantec_endpoint.log.rule
+      - symantec_endpoint.log.sha-256
+      - symantec_endpoint.log.signing_timestamp
+      - symantec_endpoint.log.source_computer
+      - symantec_endpoint.log.source_ip
+      - symantec_endpoint.log.submission_recommended
+      - symantec_endpoint.log.traffic_direction
+      - symantec_endpoint.log.user1
+      - symantec_endpoint.log.user_name
 
-- script:
-    description: Merge key/values not mapped to ECS into symantec_endpoint.log.
-    tag: merge-unmapped-keys
-    lang: painless
-    source: |
-      if (ctx?._csv_map != null && !ctx?._csv_map.isEmpty()) {
-        def sep = ctx['symantec_endpoint'];
-        if (sep == null) {
-          sep = [:];
-          ctx['symantec_endpoint'] = sep;
-        }
-        def log = sep['log'];
-        if (log == null) {
-          log = [:];
-          sep['log'] = log;
-        }
-        ctx._csv_map.forEach((k, v) -> {
-          log[k] = v;
-        });
-      }
-
-      ctx.remove('_csv_map');
+- remove:
+    description: Remove empty symantec_endpoint.log object.
+    if: ctx?.symantec_endpoint?.log != null && ctx.symantec_endpoint.log.isEmpty()
+    field: symantec_endpoint
+    ignore_missing: true
 
 # ECS Categorization
 - set:
