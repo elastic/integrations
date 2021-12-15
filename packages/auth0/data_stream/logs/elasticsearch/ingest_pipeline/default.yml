@@ -1037,19 +1037,19 @@ processors:
            ctx.event.outcome = "unknown";
          }
 - date:
-    if: "ctx.auth0.logs.data.type == 'Successful login' && ctx.auth0.logs.data.details.initiatedAt != null"
+    if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
     field: auth0.logs.data.details.initiatedAt
     target_field: auth0.logs.data.login.initiatedAt
     formats:
       - UNIX_MS
 - date:
-    if: "ctx.auth0.logs.data.type == 'Successful login' && ctx.auth0.logs.data.details.completedAt != null"
+    if: ctx?.auth0?.logs?.data?.details?.completedAt != null
     field: auth0.logs.data.details.completedAt
     target_field: auth0.logs.data.login.completedAt
     formats:
       - UNIX_MS
 - convert:
-    if: "ctx.auth0.logs.data.type == 'Successful login'"
+    if:  ctx?.auth0?.logs?.data?.details?.elapsedTime != null
     field: auth0.logs.data.details.elapsedTime
     target_field: auth0.logs.data.login.elapsedTime
     type: long
