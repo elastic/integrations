@@ -4,6 +4,8 @@ processors:
 - set:
     field: event.original
     copy_from: message
+    # Never override event.original (for the reindexing use case).
+    override: false
 
 - set:
     field: ecs.version
@@ -11,8 +13,8 @@ processors:
 
 - grok:
     description: Parse syslog header.
-    if: ctx.message.startsWith('<')
-    field: message
+    if: ctx.event.original.startsWith('<')
+    field: event.original
     patterns:
       - '^<%{NONNEGINT:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:timestamp}|%{TIMESTAMP_ISO8601:timestamp})(?: %{SYSLOGFACILITY})?(?: %{SYSLOGHOST:log.syslog.host.hostname})?(?: %{SYSLOGPROG}:)? %{GREEDYDATA:message}'
       - '^%{SYSLOG5424LINE}'
@@ -23,8 +25,8 @@ processors:
       SYSLOG5424LINE: '%{SYSLOG5424BASE} +%{GREEDYDATA:message}'
 - grok:
     description: Parse date/severity from log file dump format.
-    if: ctx.message.startsWith('20') || ctx.message.startsWith('19')
-    field: message
+    if: ctx.event.original.startsWith('20') || ctx.event.original.startsWith('19')
+    field: event.original
     patterns:
       - '^%{TIMESTAMP_ISO8601:timestamp},%{LOG_SEVERITY:log.level},%{GREEDYDATA:message}'
     pattern_definitions:
