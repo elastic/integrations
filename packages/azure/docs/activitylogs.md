@@ -223,6 +223,7 @@ An example event for `activitylogs` looks as following:
 | geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
+| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | geo.region_iso_code | Region ISO code. | keyword |
 | geo.region_name | Region name. | keyword |
 | host.architecture | Operating system architecture. | keyword |

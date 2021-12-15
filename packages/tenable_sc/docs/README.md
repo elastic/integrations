@@ -59,14 +59,14 @@ An example event for `asset` looks as following:
         "dataset": "tenable_sc.asset",
         "ingested": "2021-12-09T09:09:52Z",
         "kind": "state",
-        "original": "{\"biosGUID\":\"9e8c4d43-982b-4405-a76c-d56c1d6cf117\",\"dnsName\":\"rnkmigauv2l8zeyf.example\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"0.0.228.153\",\"lastAuthRun\":\"\",\"lastUnauthRun\":\"\",\"macAddress\":\"00:00:00:47:05:0d\",\"mcafeeGUID\":\"\",\"netbiosName\":\"UNKNOWN\\\\RNKMIGAUV2L8ZEYF.EXAMPLE\",\"osCPE\":\"cpe:/o:microsoft:windows_10:::x64-home\",\"pluginSet\":\"201901281542\",\"policyName\":\"Basic Agent Scan\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"2\",\"name\":\"Staged-Large\",\"sciID\":\"1\"},\"score\":\"307\",\"severityCritical\":\"6\",\"severityHigh\":\"4\",\"severityInfo\":\"131\",\"severityLow\":\"0\",\"severityMedium\":\"9\",\"total\":\"150\",\"tpmID\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"4add65d0-27fc-491c-91ba-3f498a61f49e\"}",
+        "original": "{\"biosGUID\":\"9e8c4d43-982b-4405-a76c-d56c1d6cf117\",\"dnsName\":\"rnkmigauv2l8zeyf.example\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"89.160.20.156\",\"lastAuthRun\":\"\",\"lastUnauthRun\":\"\",\"macAddress\":\"00:00:00:47:05:0d\",\"mcafeeGUID\":\"\",\"netbiosName\":\"UNKNOWN\\\\RNKMIGAUV2L8ZEYF.EXAMPLE\",\"osCPE\":\"cpe:/o:microsoft:windows_10:::x64-home\",\"pluginSet\":\"201901281542\",\"policyName\":\"Basic Agent Scan\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"2\",\"name\":\"Staged-Large\",\"sciID\":\"1\"},\"score\":\"307\",\"severityCritical\":\"6\",\"severityHigh\":\"4\",\"severityInfo\":\"131\",\"severityLow\":\"0\",\"severityMedium\":\"9\",\"total\":\"150\",\"tpmID\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"4add65d0-27fc-491c-91ba-3f498a61f49e\"}",
         "type": "info"
     },
     "host": {
         "domain": "example",
         "hostname": "rnkmigauv2l8zeyf.example",
         "ip": [
-            "0.0.228.153"
+            "89.160.20.156"
         ],
         "mac": [
             "00-00-00-47-05-0D"
@@ -83,7 +83,7 @@ An example event for `asset` looks as following:
             "UNKNOWN\\RNKMIGAUV2L8ZEYF.EXAMPLE"
         ],
         "ip": [
-            "0.0.228.153"
+            "89.160.20.156"
         ]
     },
     "tags": [
@@ -100,7 +100,7 @@ An example event for `asset` looks as following:
                 "name": "rnkmigauv2l8zeyf.example"
             },
             "host_uniqueness": "repositoryID,ip,dnsName",
-            "ip": "0.0.228.153",
+            "ip": "89.160.20.156",
             "mac": "00-00-00-47-05-0D",
             "netbios": {
                 "name": "UNKNOWN\\RNKMIGAUV2L8ZEYF.EXAMPLE"

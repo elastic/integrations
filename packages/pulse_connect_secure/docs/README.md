@@ -18,7 +18,7 @@ An example event for `log` looks as following:
         "version": "7.16.0"
     },
     "client": {
-        "address": "55.53.160.32",
+        "address": "89.160.20.156",
         "as": {
             "number": 328,
             "organization": {
@@ -34,7 +34,7 @@ An example event for `log` looks as following:
                 "lon": -97.822
             }
         },
-        "ip": "55.53.160.32"
+        "ip": "89.160.20.156"
     },
     "data_stream": {
         "dataset": "pulse_connect_secure.log",
@@ -56,7 +56,7 @@ An example event for `log` looks as following:
         "dataset": "pulse_connect_secure.log",
         "ingested": "2021-12-08T13:55:56Z",
         "kind": "event",
-        "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [55.53.160.32] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 55.53.160.32 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
+        "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [89.160.20.156] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
         "outcome": "success",
         "timezone": "+02:00"
     },
@@ -71,7 +71,7 @@ An example event for `log` looks as following:
             "address": "172.31.0.7:53480"
         }
     },
-    "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 55.53.160.32 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
+    "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
     "observer": {
         "ip": "10.5.2.3",
         "name": "pcs-node1",
@@ -87,7 +87,7 @@ An example event for `log` looks as following:
         }
     },
     "source": {
-        "address": "55.53.160.32",
+        "address": "89.160.20.156",
         "as": {
             "number": 328,
             "organization": {
@@ -103,7 +103,7 @@ An example event for `log` looks as following:
                 "lon": -97.822
             }
         },
-        "ip": "55.53.160.32"
+        "ip": "89.160.20.156"
     },
     "tags": [
         "preserve_original_event",
@@ -136,10 +136,13 @@ An example event for `log` looks as following:
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
+| client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
 | client.geo.country_name | Country name. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -195,10 +198,13 @@ An example event for `log` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | tags | List of keywords used to tag each event. | keyword |
