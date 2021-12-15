@@ -259,8 +259,31 @@ processors:
       if: 'ctx?.mimecast?.action !=null'
   - dissect:
       field: mimecast.Content-Disposition
-      pattern: "%{?drop->}=\"%{mimecast.log_type}_%{?drop->}"
+      pattern: "%{?drop->}=\"%{mimecast.log_type}.%{?drop->}"
       ignore_missing: true
+  - split:
+      field: mimecast.log_type
+      separator: "_"
+      target_field: mimecast.log_type_parts
+      if: 'ctx?.mimecast?.log_type != null'
+  - set:
+      field: mimecast.log_type_part1
+      copy_from: mimecast.log_type_parts.0
+      if: 'ctx?.mimecast?.log_type_parts !=null'
+  - set:
+      field: mimecast.log_type_part2
+      copy_from: mimecast.log_type_parts.1
+      if: 'ctx?.mimecast?.log_type_parts !=null'
+  - set:
+      field: mimecast.log_type
+      value: "{{mimecast.log_type_part1}}"
+      if: 'ctx?.mimecast?.log_type_part1 != "ttp"'
+      ignore_failure: true
+  - set:
+      field: mimecast.log_type
+      value: "{{mimecast.log_type_part1}}_{{mimecast.log_type_part2}}"
+      if: 'ctx?.mimecast?.log_type_part1 =="ttp"'
+      ignore_failure: true 
   - set:
       field: event.created
       value: "{{mimecast.datetime}}"
@@ -297,6 +320,9 @@ processors:
         - mimecast.eventTime
         - mimecast.Content-Disposition
         - mimecast.datetime
+        - mimecast.log_type_part1
+        - mimecast.log_type_part2
+        - mimecast.log_type_parts
       ignore_missing: true
   - remove:
       description: Remove 'mimecast.RecieptApk' if null
@@ -323,8 +349,16 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
-    
-     
+  - remove:
+      description: Remove 'mimecast.credentialTheft' if null
+      field: mimecast.credentialTheft
+      if: 'ctx?.mimecast?.credentialTheft == null'
+      ignore_missing: true    
+  - remove:
+      description: Remove 'mimecast.msgid' if null
+      field: mimecast.msgid
+      if: 'ctx?.mimecast?.msgid == null'
+      ignore_missing: true     
   ###
 
 # Error handling

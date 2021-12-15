@@ -1,0 +1,69 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+request.url: {{api_url}}/rest/auditing/1.0/events
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#unless token}}
+{{#if username}}
+{{#if password}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+{{/unless}}
+
+request.transforms:
+{{#unless username}}
+{{#unless password}}
+{{#if token}}
+  - set:
+      target: header.Authorization
+      value: Bearer {{token}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+  - set:
+      target: url.params.from
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+  - set:
+      target: url.params.to
+      value: '[[formatDate now]]'
+  - set:
+      target: url.params.limit
+      value: {{ limit }}
+
+response.split:
+  target: body.entities
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[ .last_response.body.pagingInfo.nextPageLink ]]'
+      fail_on_template_error: true
+
+cursor:
+  last_timestamp:
+    value: "[[.first_event.timestamp]]"
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}} 
