@@ -4,6 +4,7 @@ streams:
   - input: winlog
     description: Collect Windows event logs from a custom channel
     title: Windows Event Logs
+    template_path: winlog.yml.hbs
     vars:
       - name: channel
         type: text
@@ -40,6 +41,21 @@ streams:
           #  - drop_event.when.not.or:
           #    - equals.winlog.event_id: '903'
           #    - equals.winlog.event_id: '1024'
+      - name: event_id
+        type: text
+        title: Event ID
+        description: >-
+          A list of included and excluded (blocked) event IDs. The value is a comma-separated list.  The accepted values are single event IDs to include (e.g. 4624), a range of event IDs to include (e.g. 4700-4800),  and single event IDs to exclude (e.g. -4735).  Limit 22 IDs.
+        required: true
+        show_user: false
+      - name: language
+        type: text
+        title: Language ID
+        description: >-
+          The language ID the events will be rendered in. The language will be forced regardless of the system language. A complete list of language IDs can be found [here](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c). It defaults to `0`, which indicates to use the system language. E.g.: `0x0409` for `en-US`
+        required: false
+        show_user: false
+        default: 0
   - input: httpjson
     title: Windows ForwardedEvents via Splunk Enterprise REST API
     description: Collect ForwardedEvents via Splunk Enterprise REST API
