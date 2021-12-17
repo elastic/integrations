@@ -153,9 +153,12 @@ def isPrAffected(integrationName) {
   if (manifest != null && manifest['conditions'] != null) {
     def kibanaVersionCondition = manifest['conditions']['kibana.version']
     if (kibanaVersionCondition != null) {
-      def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
-      if (version.startsWith('8.') && "${env.STACK_VERSION}".startsWith('7.')) {
-        echo "[${integrationName}] PR is not affected: unsupported stack"
+      if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
+        echo "[${integrationName}] PR is not affected: unsupported stack (7.x)"
+        return false
+      }
+      if (!kibanaVersionCondition.contains('^8.') && "${env.STACK_VERSION}".startsWith('8.')) {
+        echo "[${integrationName}] PR is not affected: unsupported stack (8.x)"
         return false
       }
     }
