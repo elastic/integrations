@@ -959,9 +959,17 @@ processors:
 
 # Host Hostname
 - set:
-    if: ctx?.source?.domain  != null
     field: host.hostname
-    value: '{{{source.domain}}}'
+    copy_from: source.domain
+    override: false
+    ignore_failure: true
+
+# Host Name
+- set:
+    field: host.name
+    copy_from: host.hostname
+    override: false
+    ignore_failure: true
 
 # Related IP
 - append:
