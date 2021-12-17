@@ -230,104 +230,102 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.port | Port of the source. | long |
-| symantec_endpoint.log._uid |  | keyword |
-| symantec_endpoint.log.action |  | keyword |
-| symantec_endpoint.log.actual_action |  | keyword |
-| symantec_endpoint.log.admin |  | keyword |
-| symantec_endpoint.log.api_name |  | keyword |
-| symantec_endpoint.log.application |  | keyword |
-| symantec_endpoint.log.application_hash |  | keyword |
-| symantec_endpoint.log.application_name |  | keyword |
-| symantec_endpoint.log.application_type |  | keyword |
-| symantec_endpoint.log.application_version |  | keyword |
-| symantec_endpoint.log.begin |  | keyword |
-| symantec_endpoint.log.caller_process_id |  | keyword |
-| symantec_endpoint.log.caller_process_name |  | keyword |
-| symantec_endpoint.log.caller_return_address |  | keyword |
-| symantec_endpoint.log.caller_return_module_name |  | keyword |
-| symantec_endpoint.log.category |  |  |
-| symantec_endpoint.log.category_set |  | keyword |
-| symantec_endpoint.log.category_type |  | keyword |
-| symantec_endpoint.log.certificate_issuer |  | keyword |
-| symantec_endpoint.log.certificate_serial_number |  | keyword |
-| symantec_endpoint.log.certificate_signer |  | keyword |
-| symantec_endpoint.log.certificate_thumbprint |  | keyword |
-| symantec_endpoint.log.cids_signature_id |  | keyword |
-| symantec_endpoint.log.cids_signature_string |  | keyword |
-| symantec_endpoint.log.cids_signature_subid |  | keyword |
-| symantec_endpoint.log.coh_engine_version |  | keyword |
-| symantec_endpoint.log.command |  | keyword |
-| symantec_endpoint.log.company_name |  | keyword |
-| symantec_endpoint.log.computer |  | keyword |
-| symantec_endpoint.log.computer_name |  | keyword |
-| symantec_endpoint.log.confidence |  | keyword |
+| symantec_endpoint.log.action | The action taken on the traffic, e.g. "Blocked". | keyword |
+| symantec_endpoint.log.actual_action | Actual action from risk logs and proactive detection (SONAR) logs. | keyword |
+| symantec_endpoint.log.admin | Name of the SEPM admin. | keyword |
+| symantec_endpoint.log.api_name | API name that was blocked (agent behavior log). | keyword |
+| symantec_endpoint.log.application | The full path name of the application involved. | keyword |
+| symantec_endpoint.log.application_hash | The hash for this application. | keyword |
+| symantec_endpoint.log.application_name | The application name. | keyword |
+| symantec_endpoint.log.application_type | Application type (Trojan, key logger etc). | keyword |
+| symantec_endpoint.log.application_version | The application version. | keyword |
+| symantec_endpoint.log.begin | Start time of the event (also see event.start). | keyword |
+| symantec_endpoint.log.caller_process_id | The ID of the process that triggers the logging. | keyword |
+| symantec_endpoint.log.caller_process_name | The full path name of the application involved. It may be empty if the application is unknown, or if OS itself is involved, or if no application is involved. Also, it may be empty if profile says, "don't log application name in raw traffic log". | keyword |
+| symantec_endpoint.log.caller_return_address | The return address of the caller. This field allows the detection of the calling module that makes the API call. This is historically not used. You can expect Return Address to always be 0. | keyword |
+| symantec_endpoint.log.caller_return_module_name | The module name of the caller. See CallerReturnAddress for more information. Return Module name is historically unused.  You can expect Return Module name to always be "No Module Name" except where you see Sysplant when sysplant has started. | keyword |
+| symantec_endpoint.log.category | Agent system log category (generally not populated by SEPM). | keyword |
+| symantec_endpoint.log.category_set | Agent risk log category. | keyword |
+| symantec_endpoint.log.category_type | Agent risk log category type. | keyword |
+| symantec_endpoint.log.certificate_issuer | The certificate's issuer. | keyword |
+| symantec_endpoint.log.certificate_serial_number | The certificate's serial number. | keyword |
+| symantec_endpoint.log.certificate_signer | The certificate's signer. | keyword |
+| symantec_endpoint.log.certificate_thumbprint | The certificate's thumbprint. | keyword |
+| symantec_endpoint.log.cids_signature_id | The signature ID. | keyword |
+| symantec_endpoint.log.cids_signature_string | The signature name. | keyword |
+| symantec_endpoint.log.cids_signature_subid | The signature sub ID. | keyword |
+| symantec_endpoint.log.coh_engine_version | TruScan engine version. | keyword |
+| symantec_endpoint.log.command | Command sent from the SEPM. | keyword |
+| symantec_endpoint.log.company_name | The company name from the application (used in agent risk logs). | keyword |
+| symantec_endpoint.log.computer | Name of the machine on which the scan was run (used in agent scan logs). | keyword |
+| symantec_endpoint.log.computer_name | Name of the host machine (used in agent risk logs). | keyword |
+| symantec_endpoint.log.confidence | The Confidence level that produced the conviction. Examples: High, low, bad, trustworthy etc. "Confidence: There is strong evidence that this file is untrustworthy." | keyword |
 | symantec_endpoint.log.description | Description of the virus file. | keyword |
-| symantec_endpoint.log.detection_score |  | keyword |
-| symantec_endpoint.log.detection_source |  | keyword |
-| symantec_endpoint.log.detection_type |  | keyword |
-| symantec_endpoint.log.device_id |  | keyword |
-| symantec_endpoint.log.disposition |  | keyword |
-| symantec_endpoint.log.domain_name |  | keyword |
+| symantec_endpoint.log.detection_score | Score of detection. | keyword |
+| symantec_endpoint.log.detection_source | Source of the detection. | keyword |
+| symantec_endpoint.log.detection_type | Type of detection (e.g. heuristic). | keyword |
+| symantec_endpoint.log.device_id | The GUID of an external device (floppy disk, DVD, USB device, etc.). | keyword |
+| symantec_endpoint.log.disposition | Good / Bad / Unknown / Not available. | keyword |
+| symantec_endpoint.log.domain_name | SEPM domain name. | keyword |
 | symantec_endpoint.log.download_site | The URL determined from where the image was downloaded. | keyword |
-| symantec_endpoint.log.downloaded_by |  | keyword |
-| symantec_endpoint.log.duration_(seconds) |  | keyword |
-| symantec_endpoint.log.end |  | keyword |
-| symantec_endpoint.log.event_description |  | keyword |
-| symantec_endpoint.log.event_source |  | keyword |
-| symantec_endpoint.log.event_time |  | date |
-| symantec_endpoint.log.file_path |  | keyword |
-| symantec_endpoint.log.file_size_bytes |  | keyword |
-| symantec_endpoint.log.first_seen |  | keyword |
-| symantec_endpoint.log.group |  | keyword |
-| symantec_endpoint.log.hash_type |  | keyword |
-| symantec_endpoint.log.infected |  | keyword |
-| symantec_endpoint.log.inserted |  | date |
-| symantec_endpoint.log.intensive_protection_level |  | keyword |
-| symantec_endpoint.log.intrusion_id |  | keyword |
-| symantec_endpoint.log.intrusion_payload_url |  | keyword |
-| symantec_endpoint.log.intrusion_url |  | keyword |
-| symantec_endpoint.log.ip_address |  | keyword |
-| symantec_endpoint.log.last_update_time |  | date |
-| symantec_endpoint.log.local_host |  | keyword |
-| symantec_endpoint.log.local_host_ip |  | keyword |
-| symantec_endpoint.log.local_host_mac |  | keyword |
-| symantec_endpoint.log.local_host_name |  | keyword |
-| symantec_endpoint.log.local_port |  | keyword |
-| symantec_endpoint.log.location |  | keyword |
-| symantec_endpoint.log.md-5 |  | keyword |
-| symantec_endpoint.log.network_protocol |  | keyword |
-| symantec_endpoint.log.occurrences |  | keyword |
-| symantec_endpoint.log.omitted |  | keyword |
-| symantec_endpoint.log.parameters |  | keyword |
-| symantec_endpoint.log.permitted_application_reason |  | keyword |
-| symantec_endpoint.log.policy_name |  | keyword |
-| symantec_endpoint.log.prevalence |  | keyword |
-| symantec_endpoint.log.remote_host_ip |  | keyword |
-| symantec_endpoint.log.remote_host_mac |  | keyword |
-| symantec_endpoint.log.remote_port |  | keyword |
-| symantec_endpoint.log.requested_action |  | keyword |
-| symantec_endpoint.log.risk_level |  | keyword |
+| symantec_endpoint.log.downloaded_by | The creator process of the dropper threat. | keyword |
+| symantec_endpoint.log.duration_seconds | The length of the scan, in seconds. | keyword |
+| symantec_endpoint.log.end | Start time of the event (also see event.end). | keyword |
+| symantec_endpoint.log.event_description | Description of the event. Usually, the first line of the description is treated as the summary. | keyword |
+| symantec_endpoint.log.event_source | The data source. NETPORT, NATSRV, Network Intrusion Protection System, LiveUpdate Manager etc. | keyword |
+| symantec_endpoint.log.event_time | Time of event occurrence. | date |
+| symantec_endpoint.log.file_path | The file path of the attacked file. | keyword |
+| symantec_endpoint.log.file_size_bytes | File size of application. | keyword |
+| symantec_endpoint.log.first_seen | The first seen date for the convicted application. | keyword |
+| symantec_endpoint.log.group | SEPM client group name. | keyword |
+| symantec_endpoint.log.hash_type | Application hash type (MD5, SHA1, SHA256 etc). | keyword |
+| symantec_endpoint.log.infected | The number of files that the scan found that were infected. | long |
+| symantec_endpoint.log.inserted | The time that the event was inserted into the database. | date |
+| symantec_endpoint.log.intensive_protection_level | The High Intensity Detection Level. | keyword |
+| symantec_endpoint.log.intrusion_id | Intrusion ID. | keyword |
+| symantec_endpoint.log.intrusion_payload_url | The URL that hosted the payload. | keyword |
+| symantec_endpoint.log.intrusion_url | The URL from the detection. | keyword |
+| symantec_endpoint.log.ip_address | IP Address of the machine. | keyword |
+| symantec_endpoint.log.last_update_time | The time on the server when the event is logged into the system or updated in the system (GMT). | date |
+| symantec_endpoint.log.local_host | The host name of the client computer. | keyword |
+| symantec_endpoint.log.local_host_ip | The IP address of the local computer. | keyword |
+| symantec_endpoint.log.local_host_mac | The MAC address of the local computer. | keyword |
+| symantec_endpoint.log.local_host_name | The host name of the client computer. | keyword |
+| symantec_endpoint.log.local_port | The TCP/UDP port of the local computer. | keyword |
+| symantec_endpoint.log.location | The location used when the event occurred. | keyword |
+| symantec_endpoint.log.md-5 | The MD5 hash value. | keyword |
+| symantec_endpoint.log.network_protocol | Localized string for Others/ TCP/ UDP/ ICMP. | keyword |
+| symantec_endpoint.log.occurrences | The number of attacks. Sometime, when a hacker launches a mass attack, it may be reduced to one event by the log system, depending on the damper period. | keyword |
+| symantec_endpoint.log.omitted | The number of files that were omitted. | long |
+| symantec_endpoint.log.parameters | Parameters is the name of the module, process, registry location or file that was used in the API call. Each parameter was converted to string format and separated by one space character. Double quotation mark characters within the string are escaped with a \ character. As an example, in the SEPM ADC policy you may have a rule with a condition which monitors for Load DLL Attempts with the rule being applied to mscoree.dll.  In this case, in the parameters field you'd expect to see C:\Windows\SysWOW64\mscoree.dll. | keyword |
+| symantec_endpoint.log.permitted_application_reason | Reason for allow listing (e.g. Symantec permitted application list, Administrator permitted application list). | keyword |
+| symantec_endpoint.log.policy_name | Name of the policy. | keyword |
+| symantec_endpoint.log.prevalence | Number of users that have seen this. | keyword |
+| symantec_endpoint.log.remote_host_ip | The IP address of the remote computer. | keyword |
+| symantec_endpoint.log.remote_host_mac | The MAC address of the remote computer. | keyword |
+| symantec_endpoint.log.remote_port | The TCP/UDP port of the remote computer. | keyword |
+| symantec_endpoint.log.requested_action | Requested action by policy. | keyword |
+| symantec_endpoint.log.risk_level | The risk level (high, med, low) for the convicted threat. | keyword |
 | symantec_endpoint.log.risk_name |  | keyword |
 | symantec_endpoint.log.risk_type | Localized strings for Heuristic / Cookie / Admin Black List / BPE / System Change / N/A. | keyword |
-| symantec_endpoint.log.rule |  | keyword |
-| symantec_endpoint.log.scan_complete |  | keyword |
-| symantec_endpoint.log.scan_id |  | keyword |
-| symantec_endpoint.log.secondary_action |  | keyword |
-| symantec_endpoint.log.sensitivity |  | keyword |
-| symantec_endpoint.log.server |  | keyword |
-| symantec_endpoint.log.server_name |  | keyword |
-| symantec_endpoint.log.sha-256 |  | keyword |
-| symantec_endpoint.log.signing_timestamp |  | date |
-| symantec_endpoint.log.site |  | keyword |
-| symantec_endpoint.log.source |  | keyword |
-| symantec_endpoint.log.source_computer |  | keyword |
-| symantec_endpoint.log.source_ip |  | keyword |
+| symantec_endpoint.log.rule | The name of the rule that was triggered by the event. If the rule name is not specified in the security rule, then this field is empty. Having the rule name can be useful for troubleshooting. You may recognize a rule by the rule ID, but rule name can help you recognize it more quickly. | keyword |
+| symantec_endpoint.log.scan_complete | Scan message when scan ended. | keyword |
+| symantec_endpoint.log.scan_id | The scan ID provided by the agent. | keyword |
+| symantec_endpoint.log.secondary_action | Secondary action requested by policy | keyword |
+| symantec_endpoint.log.sensitivity | Engine sensitivity that produced this detection | long |
+| symantec_endpoint.log.server | Name of the server. | keyword |
+| symantec_endpoint.log.server_name | Name of the server. | keyword |
+| symantec_endpoint.log.sha-256 | The SHA-256 hash value. | keyword |
+| symantec_endpoint.log.signing_timestamp | The certificate's signature timestamp. | date |
+| symantec_endpoint.log.site | SEPM site name. | keyword |
+| symantec_endpoint.log.source | Scan source (e.g. scheduled). | keyword |
+| symantec_endpoint.log.source_computer | Computer name where this event occurred. | keyword |
+| symantec_endpoint.log.source_ip | IP address of the machine on which the event occurred. | keyword |
 | symantec_endpoint.log.submission_recommended | Recommendation on whether to submit this detection to Symantec. | boolean |
-| symantec_endpoint.log.threats |  | keyword |
-| symantec_endpoint.log.total_file |  | keyword |
-| symantec_endpoint.log.total_files |  | keyword |
-| symantec_endpoint.log.traffic_direction |  | keyword |
-| symantec_endpoint.log.url_tracking_status |  | keyword |
+| symantec_endpoint.log.threats | The number of threats that the scan found. | long |
+| symantec_endpoint.log.total_files | The number of files scanned. | long |
+| symantec_endpoint.log.traffic_direction | Unknown / Inbound / Outbound | keyword |
+| symantec_endpoint.log.url_tracking_status | Network intrusion prevention status | keyword |
 | symantec_endpoint.log.user1 | User when scan started. | keyword |
 | symantec_endpoint.log.user2 | User when scan ended. | keyword |
 | symantec_endpoint.log.user_name |  | keyword |

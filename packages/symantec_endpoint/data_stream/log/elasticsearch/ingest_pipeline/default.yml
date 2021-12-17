@@ -550,6 +550,15 @@ processors:
     ignore_missing: true
     ignore_failure: true
 
+# Infected
+- convert:
+    field: symantec_endpoint.log.infected
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.infected
+
 # Inserted
 - date:
     if: ctx?.symantec_endpoint?.log?.inserted != null
@@ -661,6 +670,15 @@ processors:
     type: long
     ignore_failure: true
 
+# Omitted
+- convert:
+    field: symantec_endpoint.log.omitted
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.omitted
+
 # Remote Host IP
 - set:
     if: ctx?.symantec_endpoint?.log?.remote_host_ip != null && ctx.symantec_endpoint.log.remote_host_ip != "0.0.0.0"
@@ -709,6 +727,15 @@ processors:
     field: rule.name
     copy_from: symantec_endpoint.log.rule
     ignore_failure: true
+
+# Sensitivity
+- convert:
+    field: symantec_endpoint.log.sensitivity
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.sensitivity
 
 # SHA-256
 - set:
@@ -774,6 +801,24 @@ processors:
     if: ctx?.network?.direction == "outbound"
     field: network.direction
     value: egress
+
+# Threats
+- convert:
+    field: symantec_endpoint.log.threats
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.threats
+
+# Total files
+- convert:
+    field: symantec_endpoint.log.total_files
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.total_files
 
 # User Name
 - set:
