@@ -943,6 +943,16 @@ processors:
     ignore_missing: true
     ignore_failure: true
 
+# Network Type
+- set:
+    if: ctx?.source?.ip != null && !ctx.source.ip.contains(':')
+    field: network.type
+    value: ipv4
+- set:
+    if: ctx?.source?.ip != null && ctx.source.ip.contains(':')
+    field: network.type
+    value: ipv6
+
 # Host IP
 - append:
     if: ctx?.source?.ip != null
