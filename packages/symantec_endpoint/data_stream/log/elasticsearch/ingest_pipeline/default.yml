@@ -586,6 +586,13 @@ processors:
     copy_from: symantec_endpoint.log.intrusion_url
     ignore_failure: true
 
+# IP Address
+- append:
+    if: ctx?.symantec_endpoint.log?.ip_address != null
+    field: host.ip
+    value: '{{{symantec_endpoint.log.ip_address}}}'
+    allow_duplicates: false
+
 # Last Update Time (listed as always being in GMT)
 - date:
     if: ctx?.symantec_endpoint?.log?.last_update_time != null
