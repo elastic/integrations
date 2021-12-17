@@ -258,8 +258,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | symantec_endpoint.log.coh_engine_version | TruScan engine version. | keyword |
 | symantec_endpoint.log.command | Command sent from the SEPM. | keyword |
 | symantec_endpoint.log.company_name | The company name from the application (used in agent risk logs). | keyword |
-| symantec_endpoint.log.computer | Name of the machine on which the scan was run (used in agent scan logs). | keyword |
-| symantec_endpoint.log.computer_name | Name of the host machine (used in agent risk logs). | keyword |
+| symantec_endpoint.log.computer_name | Name of the host machine (used in agent risk/scan logs). | keyword |
 | symantec_endpoint.log.confidence | The Confidence level that produced the conviction. Examples: High, low, bad, trustworthy etc. "Confidence: There is strong evidence that this file is untrustworthy." | keyword |
 | symantec_endpoint.log.description | Description of the virus file. | keyword |
 | symantec_endpoint.log.detection_score | Score of detection. | keyword |
