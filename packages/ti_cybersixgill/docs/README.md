@@ -69,6 +69,8 @@ All relevant documentation on how to install and configure the Python script is 
 | input.type | Input type. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
@@ -95,10 +97,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-10T16:23:37.697Z",
+    "@timestamp": "2021-12-13T09:11:38.695Z",
     "agent": {
-        "ephemeral_id": "91f9698d-4b04-4bf5-b627-4828961d79f5",
-        "id": "a5953362-7087-485a-ae94-1a12e5b5a105",
+        "ephemeral_id": "b926046b-e163-47a4-a876-63fa4de055fd",
+        "id": "4f10d4e8-cc5a-44f6-b968-c8c2ae0e5ee5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -125,7 +127,7 @@ An example event for `threat` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "a5953362-7087-485a-ae94-1a12e5b5a105",
+        "id": "4f10d4e8-cc5a-44f6-b968-c8c2ae0e5ee5",
         "snapshot": true,
         "version": "8.0.0"
     },
@@ -133,7 +135,7 @@ An example event for `threat` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_cybersixgill.threat",
-        "ingested": "2021-11-10T16:23:38Z",
+        "ingested": "2021-12-13T09:11:39Z",
         "kind": "enrichment",
         "original": "{\"cybersixgill\":{\"actor\":\"IfOnlyYouKnew\",\"feedname\":\"darkweb_vt_links\",\"mitre\":{\"description\":\"Mitre attack tactics and technique reference\"},\"title\":\"OpenCore [1.0.0] C# Source\",\"valid_from\":\"2021-06-06T06:39:31Z\",\"virustotal\":{\"pr\":\"none\",\"url\":\"https://virustotal.com/#/file/1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd\"}},\"event\":{\"severity\":70},\"tags\":[\"malicious-activity\",\"malware\",\"malicious\",\"Test capabilities\",\"Test signature detection for file upload/email filters\"],\"threat\":{\"indicator\":{\"confidence\":80,\"description\":\"Virustotal link that appeared on a dark web site, generally to show malware that is undetected\",\"file\":{\"hash\":{\"md5\":\"6279649f4e3a8e9f907080c154c34605\",\"sha1\":\"bd4e4bd96222c1570a99b8016eb0b59ca5c33100\",\"sha256\":\"1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd\"}},\"first_seen\":\"2021-06-07T00:40:52.134Z\",\"last_seen\":\"2021-06-07T00:40:52.134Z\",\"provider\":\"forum_mpgh\",\"reference\":\"https://portal.cybersixgill.com/#/search?q=_id:58f8623e1f18f5c5accf617ad282837dd469bd29\",\"type\":\"file\",\"url\":{\"full\":\"https://rapidgator.net/file/71827fac0618ea3b1192bb51d5cbff45/101.Woodworking.Tips.Complete.Book.A.Collection.Of.Easy.To.Follow.Projects.And.Plans.2021.pdf\"}},\"tactic\":{\"id\":\"TA0025\",\"name\":\"Test capabilities\",\"reference\":\"https://attack.mitre.org/tactics/TA0025/\"}}}",
         "severity": 70,

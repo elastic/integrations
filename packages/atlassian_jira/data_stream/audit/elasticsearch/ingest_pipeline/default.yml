@@ -1,0 +1,404 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- set:
+    field: _tmp.timestamp
+    copy_from: json.timestamp
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
+- set:
+    field: _tmp.timestamp
+    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
+- date:
+    field: _tmp.timestamp
+    formats:
+    - UNIX
+    - ISO8601
+    target_field: "@timestamp"
+- rename:
+    field: json.source
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.author.id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.author.name
+    target_field: user.name
+    ignore_missing: true
+- rename:
+    field: json.auditType
+    target_field: jira.audit.type
+    ignore_missing: true
+- rename:
+    field: json.type
+    target_field: jira.audit.type
+    ignore_missing: true
+- rename:
+    field: json.method
+    target_field: jira.audit.method
+    ignore_missing: true
+- rename:
+    field: json.system
+    target_field: service.address
+    ignore_missing: true
+- uri_parts:
+    field: service.address
+    target_field: _tmp.service
+    ignore_failure: true
+    if: ctx.service?.address != null
+- rename:
+    field: json.extraAttributes
+    target_field: jira.audit.extra_attributes
+    ignore_missing: true
+- rename:
+    field: json.changedValues
+    target_field: jira.audit.changed_values
+    ignore_missing: true
+- rename:
+    field: json.affectedObjects
+    target_field: jira.audit.affected_objects
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: jira.audit.type.actionI18nKey
+    ignore_empty_value: true
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+      jira.auditing.user.created:
+        category:
+          - iam
+        type:
+          - user
+          - creation
+      jira.auditing.user.updated:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      jira.auditing.user.deleted:
+        category:
+          - iam
+        type:
+          - user
+          - deletion
+      jira.auditing.user.added.to.group:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      jira.auditing.user.removed.from.group:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      jira.auditing.user.logged.in:
+        category:
+          - authentication
+        type:
+          - start
+        outcome: success
+      jira.auditing.user.logged.out:
+        category:
+          - authentication
+        type:
+          - end
+      jira.auditing.user.password.changed:
+        category:
+          - iam
+        type:
+          - user
+          - change
+        outcome: success
+      jira.auditing.user.login.failed:
+        category:
+          - authentication
+        type:
+          - info
+        outcome: failure
+      jira.auditing.websudo.session.started:
+        category:
+          - authentication
+        type:
+          - start
+      jira.auditing.websudo.session.invalidated:
+        category:
+          - authentication
+        type:
+          - end
+      jira.auditing.group.created:
+        category:
+          - iam
+        type:
+          - group
+          - creation
+      jira.auditing.group.deleted:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
+      jira.auditing.global.permission.added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
+      personal.access.tokens.audit.log.summary.token.created:
+        category:
+          - iam
+        type:
+          - admin
+          - creation
+      personal.access.tokens.audit.log.summary.token.deleted:
+        category:
+          - iam
+        type:
+          - admin
+          - deletion
+      jira.auditing.issue.type.created:
+        category:
+          - configuration
+        type:
+          - creation
+      atlassian.audit.event.action.audit.config.updated:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
+      jira.auditing.project.created:
+        category:
+          - configuration
+        type:
+          - creation
+      jira.auditing.project.lead.updated:
+        category:
+          - configuration
+        type:
+          - change
+      jira.auditing.project.default.assignee.updated:
+        category:
+          - configuration
+        type:
+          - change
+      jira.auditing.project.updated:
+        category:
+          - configuration
+        type:
+          - change
+      jira.auditing.permission.scheme.removed.from.project:
+        category:
+          - configuration
+          - iam
+        type:
+          - deletion
+      jira.auditing.issue.type.screen.scheme.removed:
+        category:
+          - configuration
+        type:
+          - deletion
+      jira.auditing.project.deleted:
+        category:
+          - configuration
+        type:
+          - deletion
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.type = 'info';
+
+      if (ctx?.event?.action == null) {
+          return;
+      }
+
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
+- script:
+    lang: painless
+    description: Add ECS User fields
+    if: "['jira.auditing.category.usermanagement','jira.auditing.category.groupmanagement'].contains(ctx.jira?.audit?.type?.categoryI18nKey)"
+    source: >-
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (ctx.group == null) {
+        Map map = new HashMap();
+        ctx.put("group", map);
+      }
+      if (ctx.user == null) {
+        Map map = new HashMap();
+        ctx.put("user", map);
+      }
+      if (ctx.user?.target == null) {
+        Map map = new HashMap();
+        ctx.user.put("target", map);
+      }
+      if (ctx.user?.changes == null) {
+        Map map = new HashMap();
+        ctx.user.put("changes", map);
+      }
+      if (ctx.user?.target?.group == null) {
+        Map map = new HashMap();
+        ctx.user.target.put("group", map);
+      }
+      if(ctx.jira?.audit?.affected_objects != null) {
+        for (def j = 0; j < ctx.jira?.audit?.affected_objects.length; j++) {
+          if(ctx.jira?.audit?.affected_objects[j]?.type == 'GROUP') {
+            if(['jira.auditing.group.created', 'jira.auditing.group.deleted'].contains(ctx.event.action)) {
+              ctx.group.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
+            }
+            if(['jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group'].contains(ctx.event.action)) {
+              ctx.user.target.group.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
+              ctx.user.target.group.put("id", ctx.jira?.audit?.affected_objects[j]?.id);
+            }
+          }
+          if(ctx.jira?.audit?.affected_objects[j]?.type == 'USER') {
+            if(['jira.auditing.user.created', 'jira.auditing.user.deleted','jira.auditing.user.password.changed','jira.auditing.user.updated','jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group'].contains(ctx.event.action)) {
+              ctx.user.target.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
+              ctx.user.target.put("id", ctx.jira?.audit?.affected_objects[j]?.id);
+            }
+          }
+        }
+      }
+      if(ctx.jira?.audit?.changed_values != null) {
+        for (def j = 0; j < ctx.jira?.audit?.changed_values.length; j++) {
+          if(['jira.auditing.user.renamed'].contains(ctx.event.action)) {
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.username') {
+              ctx.user.changes.put("name", ctx.jira?.audit?.changed_values[j]?.to);
+              ctx.user.target.put("name", ctx.jira?.audit?.changed_values[j]?.from);
+            }
+          }
+          if(['jira.auditing.user.created','jira.auditing.user.updated'].contains(ctx.event.action)) {
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.username') {
+              ctx.user.changes.put("name", ctx.jira?.audit?.changed_values[j]?.to);
+              if(ctx.jira?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("name", ctx.jira?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.email') {
+              ctx.user.changes.put("email", ctx.jira?.audit?.changed_values[j]?.to);
+              if(ctx.jira?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("email", ctx.jira?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.fullname') {
+              ctx.user.changes.put("full_name", ctx.jira?.audit?.changed_values[j]?.to);
+              if(ctx.jira?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("full_name", ctx.jira?.audit?.changed_values[j]?.from);
+              }
+            }
+          }
+        }
+      }
+- append:
+    field: related.user
+    value: '{{user.name}}'
+    allow_duplicates: false
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{user.target.name}}'
+    allow_duplicates: false
+    if: ctx.user?.target?.name != null
+- append:
+    field: related.user
+    value: '{{user.changes.name}}'
+    allow_duplicates: false
+    if: ctx.user?.changes?.name != null
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- append:
+    field: related.hosts
+    value: '{{_tmp.service.domain}}'
+    allow_duplicates: false
+    if: ctx._tmp?.service?.domain != null
+- remove:
+    field:
+      - json
+      - _tmp
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

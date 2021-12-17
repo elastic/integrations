@@ -1,8 +1,17 @@
 # Cloudflare Integration
 
-The Cloudflare integration collects events from the Cloudflare API, specifically reading from the Cloudflare Logpull API.
+The Cloudflare integration collects events from the Cloudflare API.
 
 ## Logs
+
+### Audit
+
+The Cloudflare Audit records all events related to your Cloudflare account. 
+To use this integration, you must have the `Account.Access: Audit Logs: Read` permission and you must use your email and your Global API Key (not an API Token).
+
+{{fields "audit"}}
+
+{{event "audit"}}
 
 ### Logpull
 

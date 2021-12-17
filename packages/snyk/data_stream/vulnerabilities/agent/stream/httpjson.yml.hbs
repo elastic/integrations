@@ -1,0 +1,92 @@
+config_version: 2
+interval: {{ interval }}
+request.url: {{ url }}/reporting/issues/?page=1&perPage=10&sortBy=issueTitle&order=asc&groupBy=issue
+request.method: POST
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+- set:
+    target: header.Authorization
+    value: token {{ api_token }}
+- set:
+    target: url.params.to
+    value: '[[ formatDate (now) "2006-01-02" ]]'
+- set:
+    target: url.params.from
+    value: '[[ formatDate (now (parseDuration .cursor.interval)) "2006-01-02" ]]'
+    default: '[[ formatDate (now (parseDuration "-{{ first_interval }}")) "2006-01-02" ]]'
+cursor:
+  interval:
+    value: "-24h"
+request.timeout: 120s
+
+request.body:
+  filters:
+    orgs:
+{{#each orgs as |org i|}}
+    - {{org}}
+{{/each}}
+    severity:
+{{#each severity as |sev i|}}
+    - {{sev}}
+{{/each}}
+    exploitMaturity:
+{{#each exploit_maturity as |mat i|}}
+    - {{mat}}
+{{/each}}
+    types:
+{{#each types as |type i|}}
+    - {{type}}
+{{/each}}
+    languages:
+{{#each languages as |lang i|}}
+    - {{lang}}
+{{/each}}
+    projects:
+{{#each projects as |proj i|}}
+    - {{proj}}
+{{/each}}
+    identifier: {{ identifier }}
+    ignored: {{ ignored }}
+    patched: {{ patched }}
+    fixable: {{ fixable }}
+    isFixed: {{ is_fixed }}
+    isUpgradable: {{ is_upgradeable }}
+    isPatchable: {{ is_patchable }}
+    isPinnable: {{ is_pinnable }}
+    priorityScore:
+      min: {{ min_priority_score }}
+      max: {{ max_priority_score }}
+
+response.request_body_on_pagination: true
+response.pagination:
+- set:
+    target: url.params.page
+    value: '[[add .last_response.page 1]]'
+    fail_on_template_error: true
+
+response.split:
+  target: body.results
+
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

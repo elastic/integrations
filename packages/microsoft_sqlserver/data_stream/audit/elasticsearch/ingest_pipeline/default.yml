@@ -1,0 +1,1279 @@
+---
+description: Pipeline for processing SQL Server audit logs
+processors:
+- set:
+    field: ecs.version
+    value: 1.12.0
+- gsub:
+    description: Strip final dot from param1.
+    field: winlog.event_data.param1
+    pattern: '(?m)^\.$'
+    replacement: ''
+    if: ctx?.winlog?.event_id == "33205"
+- dissect:
+    description: Extract statement
+    pattern: "%{}statement:%{_temp.stmt}\nadditional_information:%{}"
+    field: winlog.event_data.param1
+- gsub:
+    field: winlog.event_data.param1
+    pattern: 'statement:(.*\s)*(?=additional_information:)'
+    replacement: ''
+- kv:
+    field: winlog.event_data.param1
+    field_split: \n
+    value_split: ':'
+    target_field: sqlserver.audit
+    trim_key: \n
+    trim_value: \n
+- set:
+    field: sqlserver.audit.statement
+    copy_from: _temp.stmt
+- set:
+    field: log.level
+    copy_from: winlog.log.level
+    ignore_empty_value: true
+    if: ctx?.winlog?.log?.level != ""
+- date:
+    field: sqlserver.audit.event_time
+    formats:
+      - "yyyy-MM-dd HH:mm:ss.SSSSSSS"
+##
+# Set host.mac to dash separated upper case value
+# as per ECS recommendation
+##
+- gsub:
+    field: host.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: host.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: host.mac
+    ignore_missing: true
+##
+# Event kind, code and action
+##
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value: database
+- trim:
+    field: sqlserver.audit.action_id
+    ignore_missing: true
+- trim:
+    field: sqlserver.audit.class_type
+    ignore_missing: true
+- uppercase:
+    field: sqlserver.audit.action_id
+    ignore_missing: true
+- uppercase:
+    field: sqlserver.audit.class_type
+    ignore_missing: true
+- script:
+    lang: painless
+    description: The script processor enables setting event type, action and category based on action_id and class_type fields.
+    params:
+      classtypes:
+        "DB": "DATABASE"
+        "OB": "OBJECT"
+        "TY": "TYPE"
+        "SC": "SCHEMA"
+        "SX": "XML SCHEMA COLLECTION"
+        "AS": "ASSEMBLY"
+        "US": "USER"
+        "RL": "ROLE"
+        "AR": "APPLICATION ROLE"
+        "MT": "MESSAGE TYPE"
+        "CT": "CONTRACT"
+        "SV": "SERVICE"
+        "BN": "REMOTE SERVICE BINDING"
+        "RT": "ROUTE"
+        "FC": "FULLTEXT CATALOG"
+        "FL": "FULLTEXT STOPLIST"
+        "FP": "SEARCH PROPERTY LIST"
+        "SK": "SYMMETRIC KEY"
+        "CR": "CERTIFICATE"
+        "AK": "ASYMMETRIC KEY"
+        "DC": "DATABASE SCOPED CREDENTIAL"
+        "EL": "EXTERNAL LIBRARY"
+        "LA": "EXTERNAL LANGUAGE"
+        "SR": "SERVER"
+        "EP": "ENDPOINT"
+        "SG": "SERVER ROLE"
+        "AG": "AVAILABILITY GROUP"
+        "LX": "LOGIN"
+        "CK": "COLUMN ENCRYPTION KEY"
+        "CM": "COLUMN MASTER KEY"
+        "DA": "DATABASE AUDIT SPECIFICATION"
+        "DU": "AUDIT"
+        "DS": "DATABASE SCOPED CONFIGURATION"
+        "DR": "DATABASE SCOPED RESOURCE GOVERNOR"
+        "DN": "EVENT NOTIFICATION DATABASE"
+        "DT": "TRIGGER DATABASE"
+        "MK": "MASTER KEY"
+        "DK": "DATABASE ENCRYPTION KEY"
+        "ON": "EVENT NOTIFICATION OBJECT"
+        "PF": "PARTITION FUNCTION"
+        "PR": "BROKER PRIORITY"
+        "PS": "PARTITION SCHEME"
+        "DE": "DATABASE EVENT SESSION"
+        "AQ": "ADHOC QUERY"
+        "AF": "AGGREGATE"
+        "AP": "Undocumented"
+        "C": "CHECK CONSTRAINT"
+        "D": "DEFAULT"
+        "EC": "EDGE CONSTRAINT"
+        "EN": "EVENT NOTIFICATION"
+        "F": "FOREIGN KEY CONSTRAINT"
+        "FS": "FUNCTION SCALAR ASSEMBLY"
+        "FT": "FUNCTION TABLE-VALUED ASSEMBLY"
+        "FN": "FUNCTION SCALAR SQL"
+        "IX": "INDEX"
+        "IF": "FUNCTION TABLE-VALUED INLINE SQL"
+        "IS": "FUNCTION SCALAR INLINE SQL"
+        "IT": "INTERNAL TABLE"
+        "PQ": "PREPARED ADHOC QUERY"
+        "PK": "PRIMARY KEY"
+        "P": "STORED PROCEDURE"
+        "PC": "STORED PROCEDURE ASSEMBLY"
+        "RF": "STORED PROCEDURE REPLICATION FILTER"
+        "R": "RULE"
+        "SP": "SECURITY POLICY"
+        "SO": "SEQUENCE OBJECT"
+        "ST": "STATISTICS"
+        "SQ": "QUEUE"
+        "SN": "SYNONYM"
+        "S": "TABLE SYSTEM"
+        "TF": "FUNCTION TABLE-VALUED SQL"
+        "TA": "TRIGGER ASSEMBLY"
+        "TR": "TRIGGER"
+        "UQ": "UNIQUE CONSTRAINT"
+        "U": "TABLE"
+        "V": "VIEW"
+        "X": "STORED PROCEDURE EXTENDED"
+        "XR": "XREL TREE"
+        "AU": "ASYMMETRIC KEY USER"
+        "CU": "CERTIFICATE USER"
+        "GU": "GROUP USER"
+        "SU": "SQL USER"
+        "WU": "WINDOWS USER"
+        "XU": "EXTERNAL USER"
+        "PU": "EXTERNAL GROUP USER"
+        "A": "SERVER AUDIT"
+        "CD": "CREDENTIAL"
+        "CP": "CRYPTOGRAPHIC PROVIDER"
+        "ED": "EXTERNAL DATA SOURCE"
+        "EF": "EXTERNAL FILE FORMAT"
+        "RG": "RESOURCE GOVERNOR"
+        "SA": "SERVER AUDIT SPECIFICATION"
+        "SD": "EVENT NOTIFICATION SERVER"
+        "T": "TRIGGER SERVER"
+        "SE": "EVENT SESSION"
+        "CO": "SERVER CONFIG"
+        "AL": "ASYMMETRIC KEY LOGIN"
+        "CL": "CERTIFICATE LOGIN"
+        "SL": "SQL LOGIN"
+        "WG": "WINDOWS GROUP"
+        "WL": "WINDOWS LOGIN"
+        "ER": "EXTERNAL RESOURCE POOL"
+        "EX": "EXTERNAL SCRIPT QUERY"
+        "PL": "EXTERNAL GROUP LOGIN"
+        "XL": "EXTERNAL LOGIN"
+      actions:
+        "ACDO":
+          value: "DATABASE_OBJECT_ACCESS_GROUP"
+          type:
+            - access
+          action: database-object-accessed
+        "ACO":
+          value: "SCHEMA_OBJECT_ACCESS_GROUP"
+          type:
+            - access
+          action: schema-object-permission-checked
+        "ADBO":
+          value: "BULK ADMIN"
+          type:
+            - change
+          action: bulk-admin-operation
+        "ADDP":
+          value: "DATABASE_ROLE_MEMBER_CHANGE_GROUP"
+          type:
+            - admin
+            - change
+            - user
+          category:
+            - iam
+          action: login-changed-from-database-role
+        "ADFR":
+          # SQL 2019 feature to tackle dynamic SQL
+          # and SQL injection threats. By restricting
+          # ErrorMessages and WaitFor statement.
+          value: "ADD FEATURE RESTRICTION"
+          type:
+            - info
+          action: add-feature-restriction
+        "ADSC":
+          value: "ADD SENSITIVITY CLASSIFICATION"
+          type:
+            - change
+          action: add-sensitivity-classification-to-db-columns
+        "ADSP":
+          value: "SERVER_ROLE_MEMBER_CHANGE_GROUP"
+          type:
+            - admin
+            - change
+            - user
+          category:
+            - iam
+          action: login-changed-from-server-role
+        "AL":
+          value: "ALTER"
+          type:
+            - change
+          action: alter-object
+        "ALCN":
+          value: "ALTER CONNECTION"
+          type:
+            - change
+            - connection
+          category:
+            - network
+          action: alter-connection
+        "ALRS":
+          value: "ALTER RESOURCES"
+          type:
+            - change
+          action: alter-resources
+        "ALSS":
+          value: "ALTER SERVER STATE"
+          type:
+            - change
+          action: alter-server-state
+        "ALST":
+          value: "ALTER SETTINGS"
+          type:
+            - change
+          category:
+            - configuration
+          action: alter-settings
+        "ALTR":
+          value: "ALTER TRACE"
+          type:
+            - change
+          action: alter-trace
+        "APRL":
+          value: "ADD MEMBER"
+          type:
+            - change
+          action: add-member
+        "AS":
+          value: "ACCESS"
+          type:
+            - access
+          action: access-object
+        "AUSC":
+          # To troubleshoot what goes on after this event
+          # configure login auditing
+          # https://docs.microsoft.com/en-us/sql/ssms/configure-login-auditing-sql-server-management-studio
+          value: "AUDIT SESSION CHANGED"
+          type:
+            - change
+          action: audit-session-changed
+        "AUSF":
+          # https://docs.microsoft.com/en-us/sql/t-sql/statements/create-server-audit-transact-sql
+          # See ON_FAILURE
+          value: "AUDIT SHUTDOWN ON FAILURE"
+          type:
+            - error
+          action: audit-write-failed-database-shutdown
+        "AUTH":
+          # Changing authentication mode for login
+          value: "AUTHENTICATE"
+          type:
+            - info
+          action: authenticate
+        "BA":
+          # https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql
+          value: "BACKUP"
+          type:
+            - info
+          action: database-backup-executed
+        "BAL":
+          # https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql
+          value: "BACKUP LOG"
+          type:
+            - info
+          action: transaction-log-backup-executed
+        "BCM":
+          value: "BATCH COMPLETED"
+          type:
+            - info
+          action: transact-sql-batch-completed
+        "BCMG":
+          value: "BATCH_COMPLETED_GROUP"
+          type:
+            - info
+          action: batch-text-stored-proc-or-txn-mgmt-op-ended
+        "BRDB":
+          value: "BACKUP_RESTORE_GROUP"
+          type:
+            - admin
+          action: backup-or-restore-command-issued
+        "BST":
+          value: "BATCH STARTED"
+          type:
+            - info
+          action: transact-sql-batch-started
+        "BSTG":
+          value: "BATCH_STARTED_GROUP"
+          type:
+            - info
+          action: batch-text-stored-proc-txn-mgmt-op-started
+        "C2OF":
+          # https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/c2-audit-mode-server-configuration-option
+          value: "TRACE AUDIT C2OFF"
+          type:
+            - change
+          action: c2-audit-mode-server-config-off
+        "C2ON":
+          value: "TRACE AUDIT C2ON"
+          type:
+            - info
+          action: c2-audit-mode-server-config-on
+        "CCLG":
+          value: "CHANGE LOGIN CREDENTIAL"
+          type:
+            - change
+          action: change-login-credential
+        "CMLG":
+          value: "CREDENTIAL MAP TO LOGIN"
+          type:
+            - change
+          action: credential-mapped-to-sql-server-login
+        "CNAU":
+          value: "AUDIT_CHANGE_GROUP"
+          type:
+            - change
+          action: audit-or-audit-spec-changed
+        "CO":
+          # nodoc or TSQL
+          value: "CONNECT"
+          type:
+            - info
+          action: connect
+        "CP":
+          value: "CHECKPOINT"
+          type:
+            - info
+          action: checkpoint-created
+        "CR":
+          value: "CREATE"
+          type:
+            - info
+          action: create
+        "DABO":
+          # bulk ops like bulk insert, copy, load
+          # and so on.
+          value: "DATABASE BULK ADMIN"
+          type:
+            - change
+          action: database-bulk-admin
+        "DAGF":
+          # principal login to contained database failed.
+          # https://docs.microsoft.com/en-us/sql/relational-databases/security/contained-database-users-making-your-database-portable
+          value: "FAILED_DATABASE_AUTHENTICATION_GROUP"
+          type:
+            - error
+          action: principal-login-failed
+        "DAGL":
+          value: "DATABASE_LOGOUT_GROUP"
+          type:
+            - info
+            - end
+          category:
+            - session
+          action: contained-database-user-logout
+        "DAGS":
+          value: "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP"
+          type:
+            - info
+            - start
+          category:
+            - session
+          action: principal-login-to-contained-database-successful
+        "DBAF":
+          # nodoc
+          value: "DATABASE AUTHENTICATION FAILED"
+          type:
+            - error
+          action: database-authentication-failed
+        "DBAS":
+          value: "DATABASE AUTHENTICATION SUCCEEDED"
+          type:
+            - access
+            - info
+          action: database-authentication-succeeded
+        "DBCC":
+          # https://docs.microsoft.com/en-us/sql/t-sql/database-console-commands/dbcc-transact-sql
+          value: "DBCC"
+          type:
+            - change
+          category:
+            - configuration
+          action: principal-issued-dbcc-command
+        "DBCG":
+          value: "DBCC_GROUP"
+          type:
+            - change
+          category:
+            - configuration
+          action: principal-issued-dbcc-command
+        "DBL":
+          # nodoc
+          value: "DATABASE LOGOUT"
+          type:
+            - end
+          category:
+            - session
+          action: database-logout
+        "D":
+          # TSQL
+          value: "DENY"
+          type:
+            - info
+          action: permission-denied-to-principal
+        "DL":
+          # nodoc
+          # TSQL DELETE
+          value: "DELETE"
+          type:
+            - change
+          action: delete
+        "DPRL":
+          # ? https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-droprolemember-transact-sql
+          value: "DROP MEMBER"
+          type:
+            - info
+          action: drop-security-account-from-role
+        "DR":
+          value: "DROP"
+          type:
+            - change
+          action: drop-object
+        "DRFR":
+          # SQL 2019 feature to tackle dynamic SQL
+          # and SQL injection threats. By restricting
+          # ErrorMessages and WaitFor statement.
+          value: "DROP FEATURE RESTRICTION"
+          type:
+            - change
+          action: drop-feature-restriction
+        "DRSC":
+          value: "DROP SENSITIVITY CLASSIFICATION"
+          type:
+            - change
+          action: drop-sensitivity-classification-from-db-columns
+        "DWC":
+          # TSQL
+          value: "DENY WITH CASCADE"
+          type:
+            - change
+          action: permission-denied-with-cascade
+        "EX":
+          value: "EXECUTE"
+          type:
+            - info
+          action: execute-stored-proc-or-function
+        "FRCG":
+          # nodoc
+          # 2019 feature see ADFR and DRFR
+          value: "FEATURE_RESTRICTION_CHANGE_GROUP"
+          type:
+            - change
+          action: feature-restriction-changed
+        "FT":
+          # nodoc
+          # using FTG
+          value: "FULLTEXT"
+          type:
+            - info
+          action: fulltext-event-occurred
+        "FTG":
+          value: "FULLTEXT_GROUP"
+          type:
+            - info
+          action: fulltext-event-occurred
+        "G":
+          # TSQL
+          value: "GRANT"
+          type:
+            - info
+          action: grant-permission-to-principal
+        "GRDB":
+          value: "DATABASE_PERMISSION_CHANGE_GROUP"
+          type:
+            - change
+          action: grant-revoke-or-deny-permission
+        "GRDO":
+          value: "DATABASE_OBJECT_PERMISSION_CHANGE_GROUP"
+          type:
+            - change
+          action: grant-revoke-or-deny-permission-on-schema-or-assemblies
+        "GRO":
+          # schema objects like database tables, views etc.
+          value: "SCHEMA_OBJECT_PERMISSION_CHANGE_GROUP"
+          type:
+            - change
+          action: grant-revoke-or-deny-permission-on-schema-objects
+        "GRSO":
+          value: "SERVER_OBJECT_PERMISSION_CHANGE_GROUP"
+          type:
+            - change
+          action: grant-revoke-or-deny-permission-on-server-objects
+        "GRSV":
+          value: "SERVER_PERMISSION_CHANGE_GROUP"
+          type:
+            - change
+          action: grant-revoke-or-deny-permission-issued-in-server-scope
+        "GWG":
+          # TSQL
+          value: "GRANT WITH GRANT"
+          type:
+            - info
+          action: grant-with-grant-issued-to-principal
+        "IMDP":
+          value: "DATABASE_PRINCIPAL_IMPERSONATION_GROUP"
+          type:
+            - info
+          action: database-user-impersonation-occurred
+        "IMP":
+          # nodoc
+          # using IMDP
+          value: "IMPERSONATE"
+          type:
+            - info
+          action: database-user-impersonation-occurred
+        "IMSP":
+          value: "SERVER_PRINCIPAL_IMPERSONATION_GROUP"
+          type:
+            - user
+          action: server-login-impersonation-occurred
+        "IN":
+          value: "INSERT"
+          type:
+            - info
+          action: insert
+        "LGB":
+          # nodoc
+          # using LGBG
+          value: "BROKER LOGIN"
+          type:
+            - info
+          action: service-broker-transport-security-event
+        "LGBG":
+          value: "BROKER_LOGIN_GROUP"
+          type:
+            - info
+          action: service-broker-transport-security-event
+        "LGDA":
+          # Can be disable trigger or indexes and constraints
+          value: "DISABLE"
+          type:
+            - change
+          action: disable
+        "LGDB":
+          value: "CHANGE DEFAULT DATABASE"
+          type:
+            - change
+          action: change-default-database
+        "LGEA":
+          value: "ENABLE"
+          type:
+            - info
+          action: enable
+        "LGFL":
+          value: "FAILED_LOGIN_GROUP"
+          type:
+            - error
+          category:
+            - authentication
+          action: principal-login-failed
+        "LGGG":
+          # nodoc
+          value: "GLOBAL_TRANSACTIONS_LOGIN_GROUP"
+          type:
+            - info
+          action: global-transactions-login
+        "LGG":
+          # nodoc
+          # https://www.manageengine.com/products/eventlog/sql-auditing/global-transaction-login-in-sql-server-24337.html
+          value: "GLOBAL TRANSACTIONS LOGIN"
+          type:
+            - info
+          action: global-transactions-login
+        "LGIF":
+          value: "LOGIN FAILED"
+          type:
+            - error
+          category:
+            - authentication
+          action: login-failed
+        "LGIS":
+          value: "LOGIN SUCCEEDED"
+          type:
+            - info
+            - start
+          category:
+            - session
+          action: login-succeeded
+        "LGLG":
+          value: "CHANGE DEFAULT LANGUAGE"
+          type:
+            - change
+          action: change-default-language
+        "LGM":
+          # using LGMG
+          value: "DATABASE MIRRORING LOGIN"
+          type:
+            - info
+          action: database-mirroring-transport-security-event
+        "LGMG":
+          value: "DATABASE_MIRRORING_LOGIN_GROUP"
+          type:
+            - info
+          action: database-mirroring-transport-security-event
+        "LGNM":
+          value: "NAME CHANGE"
+          type:
+            - change
+          action: name-change
+        "LGO":
+          value: "LOGOUT"
+          type:
+            - end
+          category:
+            - session
+          action: logout
+        "LGSD":
+          value: "SUCCESSFUL_LOGIN_GROUP"
+          type:
+            - info
+            - start
+          category:
+            - session
+          action: user-login-succeeded
+        "LGSG":
+          # nodoc
+          value: "STORAGE_LOGIN_GROUP"
+          type:
+            - info
+          action: storage-login
+        "LGS":
+          # nodoc
+          value: "STORAGE LOGIN"
+          type:
+            - info
+          action: storage-login
+        "LO":
+          value: "LOGOUT_GROUP"
+          type:
+            - info
+            - end
+          category:
+            - session
+          action: user-logout-succeeded
+        "MNDB":
+          value: "DATABASE_CHANGE_GROUP"
+          type:
+            - change
+          action: database-created-altered-or-dropped
+        "MNDO":
+          value: "DATABASE_OBJECT_CHANGE_GROUP"
+          type:
+            - change
+          action: database-object-created-altered-or-dropped
+        "MNDP":
+          value: "DATABASE_PRINCIPAL_CHANGE_GROUP"
+          type:
+            - change
+          action: principals-created-altered-or-dropped
+        "MNO":
+          value: "SCHEMA_OBJECT_CHANGE_GROUP"
+          type:
+            - change
+          action: schema-object-create-alter-or-dropped
+        "MNSO":
+          # server objects like databases or endpoints
+          value: "SERVER_OBJECT_CHANGE_GROUP"
+          type:
+            - change
+          action: server-object-create-alter-or-dropped
+        "MNSP":
+          value: "SERVER_PRINCIPAL_CHANGE_GROUP"
+          type:
+            - change
+          action: server-principal-create-alter-or-dropped
+        "NMLG":
+          # no credential map to login probably unable to execute
+          # external operation
+          # https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/create-a-credential
+          value: "NO CREDENTIAL MAP TO LOGIN"
+          type:
+            - error
+          action: no-credential-map-to-login
+        "OPDB":
+          value: "DATABASE_OPERATION_GROUP"
+          type:
+            - info
+          action: db-checkpoint-or-subscribe-query-notification-executed
+        "OP":
+          # open cursor
+          value: "OPEN"
+          type:
+            - access
+          action: open
+        "OPSV":
+          value: "SERVER_OPERATION_GROUP"
+          type:
+            - change
+          action: alter-settings-resources-or-external-access
+        "PWAR":
+          value: "APPLICATION_ROLE_CHANGE_PASSWORD_GROUP"
+          type:
+            - change
+          action: password-changed-for-application-role
+        "PWC":
+          # nodoc
+          # using PWAR
+          value: "CHANGE PASSWORD"
+          type:
+            - change
+          action: password-changed-for-application-role
+        "PWCG":
+          value: "LOGIN_CHANGE_PASSWORD_GROUP"
+          type:
+            - change
+          action: login-password-changed-via-alter-or-sp-password
+        "PWCS":
+          # nodoc
+          value: "CHANGE OWN PASSWORD"
+          type:
+            - change
+          action: change-own-password
+        "PWEX":
+          # nodoc
+          value: "PASSWORD EXPIRATION"
+          type:
+            - info
+          action: password-expired
+        "PWMC":
+          # nodoc
+          value: "MUST CHANGE PASSWORD"
+          type:
+            - info
+          action: must-change-password
+        "PWPL":
+          # nodoc
+          value: "PASSWORD POLICY"
+          type:
+            - info
+          action: password-policy
+        "PWR":
+          # nodoc
+          value: "RESET PASSWORD"
+          type:
+            - change
+          action: reset-password
+        "PWRS":
+          # nodoc
+          value: "RESET OWN PASSWORD"
+          type:
+            - change
+          action: reset-own-password
+        "PWU":
+          # TSQL ALTER LOGIN UNLOCK
+          value: "UNLOCK ACCOUNT"
+          type:
+            - change
+          action: unlock-sql-server-login-account
+        "RCM":
+          value: "RPC COMPLETED"
+          type:
+            - end
+          category:
+            - network
+          action: rpc-completed
+        "RC":
+          value: "RECEIVE"
+          type:
+            - access
+          action: retrieve-message-from-queue
+        "RF":
+          value: "REFERENCES"
+          type:
+            - info
+          action: references
+        "R":
+          value: "REVOKE"
+          type:
+            - change
+          action: remove-granted-or-denied-permission
+        "RS":
+          value: "RESTORE"
+          type:
+            - change
+          action: restore-database-backup
+        "RST":
+          value: "RPC STARTED"
+          type:
+            - start
+          category:
+            - network
+          action: rpc-started
+        "RWC":
+          value: "REVOKE WITH CASCADE"
+          type:
+            - change
+          action: revoke-granted-or-denied-permission-with-cascade
+        "RWG":
+          value: "REVOKE WITH GRANT"
+          type:
+            - change
+          action: revoke-with-grant
+        "SCCG":
+          # sensitivity classification for columns
+          # https://docs.microsoft.com/en-us/sql/t-sql/statements/add-sensitivity-classification-transact-sql
+          value: "SENSITIVITY_CLASSIFICATION_CHANGE_GROUP"
+          type:
+            - change
+          action: sensitivity-classification-changed
+        "SL":
+          value: "SELECT"
+          type:
+            - access
+          action: select
+        "SN":
+          value: "SEND"
+          type:
+            - access
+          action: send-message-to-queue
+        "SPLN":
+          # https://docs.microsoft.com/en-us/sql/t-sql/statements/set-showplan-all-transact-sql
+          value: "SHOW PLAN"
+          type:
+            - info
+          action: show-plan
+        "STSV":
+          value: "SERVER_STATE_CHANGE_GROUP"
+          type:
+            - info
+          action: server-service-state-changed
+        "SUQN":
+          value: "SUBSCRIBE QUERY NOTIFICATION"
+          type:
+            - info
+          action: subscribe-query-notification
+        "SVCN":
+          value: "SERVER CONTINUE"
+          type:
+            - change
+          action: server-service-state-changed-to-continue
+        "SVPD":
+          value: "SERVER PAUSED"
+          type:
+            - change
+          action: server-service-state-changed-to-paused
+        "SVSD":
+          value: "SERVER SHUTDOWN"
+          type:
+            - change
+          action: server-service-state-changed-to-shutdown
+        "SVSR":
+          value: "SERVER STARTED"
+          type:
+            - change
+          action: server-service-state-changed-to-start
+        "TASA":
+          # nodoc
+          value: "TRACE AUDIT START"
+          type:
+            - info
+          action: trace-audit-start
+        "TASP":
+          # nodoc
+          value: "TRACE AUDIT STOP"
+          type:
+            - info
+          action: trace-audit-stop
+        "TODB":
+          value: "DATABASE_OWNERSHIP_CHANGE_GROUP"
+          type:
+            - change
+          action: permission-check-performed-to-change-database-owner
+        "TODO":
+          value: "DATABASE_OBJECT_OWNERSHIP_CHANGE_GROUP"
+          type:
+            - change
+          action: database-object-owner-changed
+        "TOO":
+          value: "SCHEMA_OBJECT_OWNERSHIP_CHANGE_GROUP"
+          type:
+            - info
+          action: permission-check-performed-to-change-schema-object
+        "TOSO":
+          value: "SERVER_OBJECT_OWNERSHIP_CHANGE_GROUP"
+          type:
+            - change
+          action: server-scoped-object-owner-changed
+        "TO":
+          # nodoc
+          value: "TAKE OWNERSHIP"
+          type:
+            - info
+          action: take-ownership
+        "TRBC":
+          value: "TRANSACTION BEGIN COMPLETED"
+          type:
+            - info
+          action: transaction-begin-completed
+        "TRBS":
+          value: "TRANSACTION BEGIN STARTING"
+          type:
+            - info
+          action: transaction-begin-starting
+        "TRCC":
+          value: "TRANSACTION COMMIT COMPLETED"
+          type:
+            - info
+          action: transaction-commit-completed
+        "TRCG":
+          value: "TRACE_CHANGE_GROUP"
+          type:
+            - info
+          action: permission-checked-for-alter-trace
+        "TRCS":
+          value: "TRANSACTION COMMIT STARTING"
+          type:
+            - info
+          action: transaction-commit-starting
+        "TRGC":
+          value: "TRANSACTION PROPAGATE COMPLETED"
+          type:
+            - info
+          action: transaction-propogation-completed
+        "TRGS":
+          value: "TRANSACTION PROPAGATE STARTING"
+          type:
+            - info
+          action: transaction-propogation-starting
+        "TRO":
+          value: "TRANSFER"
+          type:
+            - info
+          action: data-transfer
+        "TRPC":
+          # https://docs.microsoft.com/en-us/sql/relational-databases/clr-integration-data-access-transactions/transaction-promotion
+          value: "TRANSACTION PROMOTE COMPLETED"
+          type:
+            - info
+          action: local-to-distributed-transaction-promote-completed
+        "TRPS":
+          # https://docs.microsoft.com/en-us/sql/relational-databases/clr-integration-data-access-transactions/transaction-promotion
+          value: "TRANSACTION PROMOTE STARTING"
+          type:
+            - info
+          action: local-to-distributed-transaction-promote-starting
+        "TRRC":
+          value: "TRANSACTION ROLLBACK COMPLETED"
+          type:
+            - info
+          action: transaction-rollback-completed
+        "TRRS":
+          value: "TRANSACTION ROLLBACK STARTING"
+          type:
+            - info
+          action: transaction-rollback-starting
+        "TRSC":
+          value: "TRANSACTION SAVEPOINT COMPLETED"
+          type:
+            - info
+          action: transaction-savepoint-completed
+        "TRSS":
+          value: "TRANSACTION SAVEPOINT STARTING"
+          type:
+            - info
+          action: transaction-savepoint-starting
+        "TXBG":
+          value: "TRANSACTION BEGIN"
+          type:
+            - info
+          action: transaction-begin
+        "TXCG":
+          value: "TRANSACTION_COMMIT_GROUP"
+          type:
+            - info
+          action: transaction-commit-group-event
+        "TXCM":
+          value: "TRANSACTION COMMIT"
+          type:
+            - info
+          action: transaction-commit
+        "TXGG":
+          value: "TRANSACTION_BEGIN_GROUP"
+          type:
+            - info
+          action: transaction-begin-group-event
+        "TXRB":
+          value: "TRANSACTION ROLLBACK"
+          type:
+            - info
+          action: transaction-rollback
+        "TXRG":
+          value: "TRANSACTION_ROLLBACK_GROUP"
+          type:
+            - info
+          action: transaction-rollback-group
+        "TX":
+          value: "TRANSACTION_GROUP"
+          type:
+            - info
+          action: transaction-event-occurred
+        "UCGP":
+          value: "USER_CHANGE_PASSWORD_GROUP"
+          type:
+            - change
+          action: password-of-contained-database-user-changed
+        "UDAG":
+          value: "USER_DEFINED_AUDIT_GROUP"
+          type:
+            - info
+          action: user-defined-audit-event-sp-audit-write
+        "UDAU":
+          value: "USER DEFINED AUDIT"
+          type:
+            - info
+          action: user-defined-audit-event-sp-audit-write
+        "UNDG":
+          value: "STATEMENT_ROLLBACK_GROUP"
+          type:
+            - info
+          action: statement-rollback-group
+        "UNDO":
+          value: "STATEMENT ROLLBACK"
+          type:
+            - info
+          action: statement-rollback
+        "UP":
+          value: "UPDATE"
+          type:
+            - change
+          action: update
+        "USAF":
+          value: "CHANGE USERS LOGIN AUTO"
+          type:
+            - change
+          action: change-users-login-auto
+        "USLG":
+          value: "CHANGE USERS LOGIN"
+          type:
+            - change
+          action: change-users-login
+        "USTC":
+          # https://docs.microsoft.com/en-us/troubleshoot/sql/security/transfer-logins-passwords-between-instances
+          value: "COPY PASSWORD"
+          type:
+            - info
+          action: password-copied
+        "VDST":
+          value: "VIEW DATABASE STATE"
+          type:
+            - info
+          action: view-database-state
+        "VSST":
+          value: "VIEW SERVER STATE"
+          type:
+            - info
+          action: view-server-state
+        "VWCT":
+          value: "VIEW CHANGETRACKING"
+          type:
+            - info
+          action: view-change-tracking
+        "VW":
+          value: "VIEW"
+          type:
+            - info
+          action: view
+        "XA":
+          # see EXTERNAL_ACCESS
+          # https://docs.microsoft.com/en-us/sql/relational-databases/clr-integration/assemblies/creating-an-assembly
+          value: "EXTERNAL ACCESS ASSEMBLY"
+          type:
+            - access
+          category:
+            - network
+            - registry
+          action: external-access-assembly
+        "XU":
+          # see UNSAFE
+          # https://docs.microsoft.com/en-us/sql/relational-databases/clr-integration/assemblies/creating-an-assembly
+          value: "UNSAFE ASSEMBLY"
+          type:
+            - access
+          action: unsafe-assembly
+    source: |-
+         def actionIdKey = ctx.sqlserver.audit.action_id;
+         def actions = params.get('actions');
+         def classTypes = params.get('classtypes');
+         // handle class type
+         // overwrite the abbreviated key with its value
+         def ct = classTypes.get(ctx.sqlserver.audit.class_type);
+         if (ct != null) {
+           ctx.sqlserver.audit.class_type = ct;
+         }
+         // error case - for unhandled action ids
+         def actionData = actions.get(actionIdKey);
+         if (actionData == null) {
+           ctx.event.action = 'unknown-' + actionIdKey.toLowerCase();
+           ctx.event.type = ['info'];
+           return;
+         }
+         // overwrite the action id with its actual value
+         ctx.sqlserver.audit.action_id = actionData.get('value');
+         // event.type
+         def actionType = actionData.get('type');
+         if (actionType != null) {
+           ctx.event.type = new ArrayList(actionType);
+         }
+         // event.category
+         def actionCategory = actionData.get('category');
+         if (actionCategory != null) {
+           for (def c : actionCategory) {
+             ctx.event.category.add(c);
+           }
+         }
+         // event.action
+         def action = actionData.get('action');
+         if (action != null) {
+           ctx.event.action = action;
+         }
+- convert:
+    field: sqlserver.audit.sequence_number
+    type: integer
+    ignore_missing: true
+- convert:
+    field: sqlserver.audit.succeeded
+    type: boolean
+    ignore_missing: true
+- convert:
+    field: sqlserver.audit.affected_rows
+    type: long
+    ignore_missing: true
+- convert:
+    field: sqlserver.audit.response_rows
+    type: long
+    ignore_missing: true
+- convert:
+    field: sqlserver.audit.is_column_permission
+    type: boolean
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Convert ms to ns and set it to event.duration
+    source: |-
+        def v = ctx?.sqlserver?.audit?.duration_milliseconds;
+        if (v != null) {
+            ctx.event.duration = Long.parseLong(v) * 1000000;
+        }
+- rename:
+    field: winlog.process
+    target_field: process
+    ignore_missing: true
+##
+# Set user.name, user.domain and user.id values from
+# SPN
+##
+- dissect:
+    description: Extract user domain and name
+    pattern: "%{_temp.domain}\\%{_temp.username}"
+    field: sqlserver.audit.server_principal_name
+    if: 'ctx?.sqlserver?.audit?.server_principal_name != null && ctx?.sqlserver?.audit?.server_principal_name.contains("\\")'
+    ignore_missing: true
+- set:
+    description: Set username as is if domain is not present
+    field: user.name
+    copy_from: sqlserver.audit.server_principal_name
+    if: 'ctx?.sqlserver?.audit?.server_principal_name != null && !ctx?.sqlserver?.audit?.server_principal_name.contains("\\")'
+- set:
+    description: Set username if it was extracted from Domain\User format
+    field: user.name
+    copy_from: _temp.username
+    if: "ctx?._temp?.username != null"
+- set:
+    description: Set domain if it was extracted from Domain\User format
+    field: user.domain
+    copy_from: _temp.domain
+    if: "ctx?._temp?.domain != null"
+- set:
+    field: user.id
+    copy_from: sqlserver.audit.server_principal_sid
+- set:
+    field: user.target.name
+    copy_from: sqlserver.audit.target_server_principal_name
+- set:
+    field: user.target.id
+    copy_from: sqlserver.audit.target_server_principal_sid
+##
+# Clean up
+##
+- remove:
+    field:
+      - _temp
+      - winlog.event_data.param1
+      - sqlserver.audit.additional_information
+      - sqlserver.audit.duration_milliseconds 
+      - sqlserver.audit.server_principal_name
+      - sqlserver.audit.server_principal_sid
+      - sqlserver.audit.target_server_principal_name
+      - sqlserver.audit.target_server_principal_sid
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
