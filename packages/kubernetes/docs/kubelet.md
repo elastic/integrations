@@ -1037,7 +1037,7 @@ An example event for `volume` looks as following:
 | kubernetes.volume.fs.inodes.free | Free inodes | long |  | gauge |
 | kubernetes.volume.fs.inodes.used | Used inodes | long |  | gauge |
 | kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long | byte | gauge |
-| kubernetes.volume.fs.used.pct | Percentage of filesystem total used | long | percent | gauge |
+| kubernetes.volume.fs.used.pct | Percentage of filesystem total used | scaled_float | percent | gauge |
 | kubernetes.volume.name | Volume name | keyword |  |  |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
