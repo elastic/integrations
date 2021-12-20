@@ -84,7 +84,7 @@ An example event for `compute` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
@@ -104,24 +104,25 @@ An example event for `compute` looks as following:
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gcp.compute.firewall.dropped.bytes | Incoming bytes dropped by the firewall | long |
+| gcp.compute.firewall.dropped_packets_count.value | Incoming packets dropped by the firewall | long |
 | gcp.compute.instance.cpu.reserved_cores.value | Number of cores reserved on the host of the instance | double |
-| gcp.compute.instance.cpu.usage_time.value | Usage for all cores in seconds | double |
-| gcp.compute.instance.cpu.utilization.value | The fraction of the allocated CPU that is currently in use on the instance | double |
-| gcp.compute.instance.disk.read_bytes_count.value | Count of bytes read from disk | long |
+| gcp.compute.instance.cpu.usage.pct | The fraction of the allocated CPU that is currently in use on the instance | double |
+| gcp.compute.instance.cpu.usage_time.sec | Usage for all cores in seconds | double |
+| gcp.compute.instance.disk.read.bytes | Count of bytes read from disk | long |
 | gcp.compute.instance.disk.read_ops_count.value | Count of disk read IO operations | long |
-| gcp.compute.instance.disk.write_bytes_count.value | Count of bytes written to disk | long |
+| gcp.compute.instance.disk.write.bytes | Count of bytes written to disk | long |
 | gcp.compute.instance.disk.write_ops_count.value | Count of disk write IO operations | long |
-| gcp.compute.instance.firewall.dropped_bytes_count.value | Incoming bytes dropped by the firewall | long |
-| gcp.compute.instance.firewall.dropped_packets_count.value | Incoming packets dropped by the firewall | long |
 | gcp.compute.instance.memory.balloon.ram_size.value | The total amount of memory in the VM. This metric is only available for VMs that belong to the e2 family. | long |
 | gcp.compute.instance.memory.balloon.ram_used.value | Memory currently used in the VM. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.memory.balloon.swap_in_bytes_count.value | The amount of memory read into the guest from its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.memory.balloon.swap_out_bytes_count.value | The amount of memory written from the guest to its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
-| gcp.compute.instance.network.received_bytes_count.value | Count of bytes received from the network | long |
-| gcp.compute.instance.network.received_packets_count.value | Count of packets received from the network | long |
-| gcp.compute.instance.network.sent_bytes_count.value | Count of bytes sent over the network | long |
-| gcp.compute.instance.network.sent_packets_count.value | Count of packets sent over the network | long |
-| gcp.compute.instance.uptime.value | How long the VM has been running, in seconds | long |
+| gcp.compute.instance.memory.balloon.swap_in.bytes | The amount of memory read into the guest from its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
+| gcp.compute.instance.memory.balloon.swap_out.bytes | The amount of memory written from the guest to its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
+| gcp.compute.instance.network.egress.bytes | Count of bytes sent over the network | long |
+| gcp.compute.instance.network.egress.packets.count | Count of packets sent over the network | long |
+| gcp.compute.instance.network.ingress.bytes | Count of bytes received from the network | long |
+| gcp.compute.instance.network.ingress.packets.count | Count of packets received from the network | long |
+| gcp.compute.instance.uptime.sec | Number of seconds the VM has been running. | long |
+| gcp.compute.instance.uptime_total.sec | Elapsed time since the VM was started, in seconds. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long |
 | gcp.labels.metadata.\* |  | object |
 | gcp.labels.metrics.\* |  | object |
 | gcp.labels.resource.\* |  | object |
