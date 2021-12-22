@@ -53,6 +53,7 @@ processors:
     field: json.query_name
     target_field: dns.question
     ignore_missing: true
+    if: '!ctx.json?.query_name.endsWith("in-addr.arpa") && !ctx.json?.query_name.endsWith("ip6.arpa")'
 - rename:
     field: dns.question.domain
     target_field: dns.question.name
@@ -114,7 +115,7 @@ processors:
         if(['A','AAAA'].contains(new_answer.type)) {
           ctx.related.ip.add(new_answer.data);
         }
-        if(['CNAME'].contains(new_answer.type)) {
+        if(['CNAME', 'PTR'].contains(new_answer.type)) {
           ctx.related.hosts.add(new_answer.data);
         }
       }
@@ -214,10 +215,43 @@ processors:
     field: related.ip
     value: "{{source.ip}}"
     if: ctx.source?.ip != null
+- script:
+    lang: painless
+    ignore_failure: true
+    if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == "PTR"
+    source: >-
+      String ip;
+      if(ctx.dns?.question?.name.contains(".in-addr.arpa")) {
+        List reverse_ip = Arrays.asList(ctx.dns?.question?.name.replace(".in-addr.arpa", "").splitOnToken("."));
+        List ip_arr = new ArrayList();
+        for (int i = reverse_ip.length; i > 0 ; i--) {
+            ip_arr.add(reverse_ip[i-1]);
+        }
+        ip = String.join(".",ip_arr);
+      } else if (ctx.dns?.question?.name.contains(".ip6.arpa")) {
+        List reverse_ip = Arrays.asList(ctx.dns?.question?.name.replace(".ip6.arpa", "").splitOnToken("."));
+        List ip_arr = new ArrayList();
+        int j = 1;
+        for (int i = reverse_ip.length; i > 0 ; i--) {
+            ip_arr.add(reverse_ip[i-1]);
+            if(j % 4 == 0 && i != 1) {
+              j = 0;
+              ip_arr.add(":");
+            }
+            j++;
+        }
+        ip = String.join("",ip_arr);    
+      }    
+      if(ctx.related?.ip == null) {
+        ctx.related.put('ip',new ArrayList());
+      }
+      if(ip != null && !ctx.related?.ip.contains(ip)) {
+        ctx.related.ip.add(ip);
+      }   
 - append:
     field: related.hosts
     value: "{{dns.question.name}}"
-    if: ctx.dns?.question?.name != null
+    if: ctx.dns?.question?.name != null && ctx.dns?.question?.type != "PTR"
 - remove:
     field:
     - json
