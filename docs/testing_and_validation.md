@@ -104,7 +104,8 @@ export ELASTIC_PACKAGE_KIBANA_HOST=http://127.0.0.1:5601
 
 The `elastic-package` tool can calculate test coverage for packages and export coverage reports in the [Cobertura](https://cobertura.github.io/cobertura/) format.
 Coverage reports contain information about present/missing pipeline, system and static tests, so they help in identifying untested
-integrations.
+integrations. For pipeline tests, it features detailed source-code coverage reports
+highlighting the ingest processors that are covered during testing.
 
 The CI job runner collects coverage data and stores them together with build artifacts. The Cobertura plugin (*Coverage Report* tab) uses these data
 to visualize test coverage grouped by package, data stream and test type.
@@ -123,3 +124,13 @@ We decided to make few assumptions for the Cobertura classification:
 **Class** - test type (pipeline tests, system tests, etc.)
 
 **Method** - "OK" if there are any tests present
+
+For pipeline tests, which include actual source-code coverage, the mapping is different:
+
+**Package** - integration.data_stream
+
+**File** - Path to ingest pipeline file
+
+**Class** - Ingest pipeline name
+
+**Method** - Ingest processor
