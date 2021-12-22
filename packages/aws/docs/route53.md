@@ -324,8 +324,11 @@ An example event for `route53_resolver` looks as following:
 | aws.instance_id | The ID of the instance that's associated with network interface for which the traffic is recorded, if the instance is owned by you. | keyword |
 | aws.route53.firewall.action | The action specified by the rule that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
 | aws.route53.firewall.domain_list.id | The domain list used by the rule that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
-| aws.route53.rule_group.id | The ID of the DNS Firewall rule group that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
+| aws.route53.firewall.rule_group.id | The ID of the DNS Firewall rule group that matched the domain name in the query. This is populated only if DNS Firewall found a match for a rule with action set to alert or block. | keyword |
 | aws.vpc_id | The ID of the VPC that contains the network interface for which the traffic is recorded. | keyword |
+| awscloudwatch.ingestion_time | AWS CloudWatch ingest time | date |
+| awscloudwatch.log_group | AWS CloudWatch Log Group name | keyword |
+| awscloudwatch.log_stream | AWS CloudWatch Log Stream name | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -370,6 +373,8 @@ An example event for `route53_resolver` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Path to the log file. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
