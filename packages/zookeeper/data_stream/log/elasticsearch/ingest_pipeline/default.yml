@@ -1,0 +1,71 @@
+---
+description: Pipeline for parsing ZooKeeper log messages
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- rename:
+    field: message
+    target_field: event.original
+- grok:
+    field: event.original
+    trace_match: true
+    patterns:
+      - '%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}\[myid:(%{POSINT:service.node.name})?\]%{SPACE}-%{SPACE}%{LOGLEVEL:log.level}%{SPACE}\[%{DATA:_tmp.process}\]%{SPACE}-%{SPACE}%{GREEDYDATA:message}'
+- grok:
+    field: _tmp.process
+    ignore_missing: true
+    ignore_failure: true
+    patterns:
+    - '%{GREEDYDATA:process.thread.name}:%{CALLER_CLASS:log.logger}@%{POSINT:log.origin.file.line}'
+    pattern_definitions:
+      CALLER_CLASS: (%{JAVACLASS}|%{NOTSPACE})
+- set:
+    field: event.timezone
+    value: "{{_tmp.tz_offset}}"
+    if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
+- date:
+    if: ctx.event.timezone == null
+    field: _tmp.timestamp
+    target_field: '@timestamp'
+    formats:
+    - yyyy-MM-dd HH:mm:ss,SSS
+    on_failure:
+- date:
+    if: ctx.event.timezone != null
+    field: _tmp.timestamp
+    target_field: '@timestamp'
+    formats:
+    - yyyy-MM-dd HH:mm:ss,SSS
+    timezone: '{{ event.timezone }}'
+    on_failure:
+- set:
+    field: event.kind
+    value: event
+- script:
+    lang: painless
+    source: >-
+      def errorLevels = ["ERROR", "FATAL"];
+      if (ctx?.log?.level != null) {
+        if (errorLevels.contains(ctx.log.level)) {
+          ctx.event.type = "error";
+        } else {
+          ctx.event.type = "info";
+        }
+      }
+- remove:
+    field:
+    - _tmp
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
