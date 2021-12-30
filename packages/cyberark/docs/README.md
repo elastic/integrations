@@ -14,7 +14,7 @@ An example event for `corepas` looks as following:
 {
     "@timestamp": "2021-01-05T06:22:49.000Z",
     "agent": {
-        "ephemeral_id": "7420b1f8-b0bd-462e-9f47-cac35b82c665",
+        "ephemeral_id": "c0d83ead-881d-45db-bb19-ab58902c4864",
         "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -38,7 +38,7 @@ An example event for `corepas` looks as following:
         "agent_id_status": "verified",
         "code": "ectobea",
         "dataset": "cyberark.corepas",
-        "ingested": "2021-12-30T05:49:12Z",
+        "ingested": "2021-12-30T05:59:12Z",
         "timezone": "+00:00"
     },
     "file": {
@@ -49,12 +49,12 @@ An example event for `corepas` looks as following:
         "ip": "10.178.160.245"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "level": "very-high",
         "source": {
-            "address": "172.22.0.7:60772"
+            "address": "172.22.0.7:41476"
         }
     },
     "observer": {
@@ -68,9 +68,9 @@ An example event for `corepas` looks as following:
             "10.178.160.245"
         ],
         "user": [
+            "olupta",
             "turQuis",
-            "fdeFinib",
-            "olupta"
+            "fdeFinib"
         ]
     },
     "rsa": {
