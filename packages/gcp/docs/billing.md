@@ -1,10 +1,6 @@
-# Google Cloud Platform Metrics Integration
-
-The Google Cloud Platform Metrics integration collects and parses Google Cloud billing metrics.
+# Billing
 
 ## Metrics
-
-### Billing
 
 This is the `billing` dataset.
 
