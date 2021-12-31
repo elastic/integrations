@@ -23,12 +23,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-05-15T18:03:36.000Z",
     "agent": {
-        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
-        "hostname": "docker-fleet-agent",
-        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "ephemeral_id": "57394a4e-292b-4915-8240-a57e60080596",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "fortinet.firewall",
@@ -37,42 +36,39 @@ An example event for `firewall` looks as following:
     },
     "destination": {
         "as": {
-            "number": 41690,
-            "organization": {
-                "name": "Dailymotion S.A."
-            }
+            "number": 35908
         },
         "geo": {
-            "continent_name": "Europe",
-            "country_iso_code": "FR",
-            "country_name": "France",
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
             "location": {
-                "lat": 48.8582,
-                "lon": 2.3387
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
-        "ip": "195.8.215.136",
+        "ip": "67.43.156.14",
         "port": 443
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "app-ctrl-all",
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "code": "1059028704",
         "dataset": "fortinet.firewall",
-        "ingested": "2021-06-03T12:38:44.458586716Z",
+        "ingested": "2021-12-31T02:44:48Z",
         "kind": "event",
-        "module": "fortinet",
-        "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=195.8.215.136 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"\n",
+        "original": "\u003c190\u003edate=2019-05-15 time=18:03:36 logid=\"1059028704\" type=\"utm\" subtype=\"app-ctrl\" eventtype=\"app-ctrl-all\" level=\"information\" vd=\"root\" eventtime=1557968615 appid=40568 srcip=10.1.100.22 dstip=67.43.156.14 srcport=50798 dstport=443 srcintf=\"port10\" srcintfrole=\"lan\" dstintf=\"port9\" dstintfrole=\"wan\" proto=6 service=\"HTTPS\" direction=\"outgoing\" policyid=1 sessionid=4414 applist=\"block-social.media\" appcat=\"Web.Client\" app=\"HTTPS.BROWSER\" action=\"pass\" hostname=\"www.dailymotion.com\" incidentserialno=1962906680 url=\"/\" msg=\"Web.Client: HTTPS.BROWSER,\" apprisk=\"medium\" scertcname=\"*.dailymotion.com\" scertissuer=\"DigiCert SHA2 High Assurance Server CA\"\n",
         "outcome": "success",
         "start": "2019-05-16T01:03:35.000Z",
         "type": [
@@ -99,7 +95,7 @@ An example event for `firewall` looks as following:
     "log": {
         "level": "information",
         "source": {
-            "address": "192.168.240.4:54617"
+            "address": "172.22.0.7:50056"
         }
     },
     "message": "Web.Client: HTTPS.BROWSER,",
@@ -127,7 +123,7 @@ An example event for `firewall` looks as following:
     "related": {
         "ip": [
             "10.1.100.22",
-            "195.8.215.136"
+            "67.43.156.14"
         ]
     },
     "rule": {
@@ -140,9 +136,9 @@ An example event for `firewall` looks as following:
         "port": 50798
     },
     "tags": [
+        "preserve_original_event",
         "fortinet-firewall",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ],
     "tls": {
         "server": {
@@ -189,7 +185,7 @@ An example event for `firewall` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -682,12 +678,12 @@ An example event for `firewall` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
@@ -747,14 +743,13 @@ An example event for `clientendpoint` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-05T21:33:08.000Z",
+    "@timestamp": "2021-01-05T06:22:49.000Z",
     "agent": {
-        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
-        "hostname": "docker-fleet-agent",
-        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "ephemeral_id": "0ec42f63-5539-49e0-9eb3-6f548661ad48",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "fortinet.clientendpoint",
@@ -763,41 +758,42 @@ An example event for `clientendpoint` looks as following:
     },
     "destination": {
         "ip": [
-            "10.203.5.162"
+            "10.225.255.211"
         ],
-        "port": 7290
+        "port": 3369
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "deny",
-        "code": "pop3",
+        "agent_id_status": "verified",
+        "code": "ms-wbt-server",
         "dataset": "fortinet.clientendpoint",
-        "ingested": "2021-06-03T12:35:28.382730111Z",
-        "original": "June 5 21:33:08 tatno4987.www5.localhost proto=ggp service=pop3 status=deny src=10.54.231.100 dst=10.203.5.162 src_port=5616 dst_port=7290 server_app=iam pid=6096 app_name=ciati traff_direct=unknown block_count=3162 logon_user=umdolore@eniam7007.api.invalid msg=success\n",
+        "ingested": "2021-12-31T02:38:47Z",
+        "original": "January 5 06:22:49 gelitsed3249.corp proto=icmp service=ms-wbt-server status=deny src=10.138.210.116 dst=10.225.255.211 src_port=5595 dst_port=3369 server_app=rum pid=2442 app_name=eursinto traff_direct=external block_count=956 logon_user=fugiatn@uaeabi3728.www5.invalid msg=failure\n",
         "outcome": "failure",
         "timezone": "+00:00"
     },
     "host": {
-        "name": "tatno4987.www5.localhost"
+        "name": "gelitsed3249.corp"
     },
     "input": {
         "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.240.4:43222"
+            "address": "172.22.0.7:33411"
         }
     },
     "network": {
-        "direction": "unknown",
-        "protocol": "ggp"
+        "direction": "external",
+        "protocol": "icmp"
     },
     "observer": {
         "product": "FortiClient",
@@ -805,28 +801,28 @@ An example event for `clientendpoint` looks as following:
         "vendor": "Fortinet"
     },
     "process": {
-        "pid": 6096
+        "pid": 2442
     },
     "related": {
         "hosts": [
-            "eniam7007.api.invalid",
-            "tatno4987.www5.localhost"
+            "uaeabi3728.www5.invalid",
+            "gelitsed3249.corp"
         ],
         "ip": [
-            "10.54.231.100",
-            "10.203.5.162"
+            "10.138.210.116",
+            "10.225.255.211"
         ],
         "user": [
-            "umdolore"
+            "fugiatn"
         ]
     },
     "rsa": {
         "counters": {
-            "dclass_c1": 3162,
+            "dclass_c1": 956,
             "dclass_c1_str": "block_count"
         },
         "internal": {
-            "messageid": "pop3"
+            "messageid": "ms-wbt-server"
         },
         "investigations": {
             "ec_outcome": "Failure",
@@ -837,38 +833,38 @@ An example event for `clientendpoint` looks as following:
             "action": [
                 "deny"
             ],
-            "result": "success\n"
+            "result": "failure\n"
         },
         "network": {
             "alias_host": [
-                "tatno4987.www5.localhost"
+                "gelitsed3249.corp"
             ],
-            "domain": "eniam7007.api.invalid",
-            "network_service": "pop3"
+            "domain": "uaeabi3728.www5.invalid",
+            "network_service": "ms-wbt-server"
         },
         "time": {
-            "event_time": "2020-06-05T21:33:08.000Z"
+            "event_time": "2021-01-05T06:22:49.000Z"
         }
     },
     "server": {
-        "domain": "eniam7007.api.invalid",
-        "registered_domain": "api.invalid",
-        "subdomain": "eniam7007",
+        "domain": "uaeabi3728.www5.invalid",
+        "registered_domain": "www5.invalid",
+        "subdomain": "uaeabi3728",
         "top_level_domain": "invalid"
     },
     "source": {
         "ip": [
-            "10.54.231.100"
+            "10.138.210.116"
         ],
-        "port": 5616
+        "port": 5595
     },
     "tags": [
+        "preserve_original_event",
         "fortinet-clientendpoint",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ],
     "user": {
-        "name": "umdolore"
+        "name": "fugiatn"
     }
 }
 ```
@@ -878,7 +874,7 @@ An example event for `clientendpoint` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | client.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | client.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -902,7 +898,7 @@ An example event for `clientendpoint` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
@@ -960,26 +956,25 @@ An example event for `clientendpoint` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -988,9 +983,9 @@ An example event for `clientendpoint` looks as following:
 | observer.version | Observer version. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.pid | Process id. | long |
 | process.parent.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -1668,7 +1663,7 @@ An example event for `clientendpoint` looks as following:
 | rsa.wireless.wlan_name | This key captures either WLAN number/name | keyword |
 | rsa.wireless.wlan_ssid | This key is used to capture the ssid of a Wireless Session | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| server.domain | Server domain. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -1677,7 +1672,7 @@ An example event for `clientendpoint` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
@@ -1713,12 +1708,11 @@ An example event for `fortimail` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
-        "hostname": "docker-fleet-agent",
-        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "ephemeral_id": "71ca9348-3eb7-4f99-b39a-23830b3c6818",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "fortinet.fortimail",
@@ -1726,23 +1720,21 @@ An example event for `fortimail` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "event",
+        "agent_id_status": "verified",
         "code": "nes",
         "dataset": "fortinet.fortimail",
-        "ingested": "2021-06-03T12:42:09.362670647Z",
+        "ingested": "2021-12-31T02:49:34Z",
         "original": "date=2016-1-29 time=06:09:59 device_id=pexe log_id=nes log_part=eab type=event subtype=update pri=high msg=\"boNemoe\"\n",
         "timezone": "+00:00"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "udp"
@@ -1750,18 +1742,13 @@ An example event for `fortimail` looks as following:
     "log": {
         "level": "high",
         "source": {
-            "address": "192.168.240.4:60044"
+            "address": "172.22.0.7:56461"
         }
     },
     "observer": {
         "product": "FortiMail",
         "type": "Firewall",
         "vendor": "Fortinet"
-    },
-    "related": {
-        "hosts": [
-            "docker-fleet-agent"
-        ]
     },
     "rsa": {
         "internal": {
@@ -1783,9 +1770,9 @@ An example event for `fortimail` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "fortinet-fortimail",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ]
 }
 ```
@@ -1795,7 +1782,7 @@ An example event for `fortimail` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | client.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | client.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -1819,7 +1806,7 @@ An example event for `fortimail` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
@@ -1877,26 +1864,25 @@ An example event for `fortimail` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -1905,9 +1891,9 @@ An example event for `fortimail` looks as following:
 | observer.version | Observer version. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.pid | Process id. | long |
 | process.parent.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -2585,7 +2571,7 @@ An example event for `fortimail` looks as following:
 | rsa.wireless.wlan_name | This key captures either WLAN number/name | keyword |
 | rsa.wireless.wlan_ssid | This key is used to capture the ssid of a Wireless Session | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| server.domain | Server domain. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -2594,7 +2580,7 @@ An example event for `fortimail` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
@@ -2630,12 +2616,11 @@ An example event for `fortimanager` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "74b27709-c288-4314-b386-659dbc5a62ea",
-        "hostname": "docker-fleet-agent",
-        "id": "2164018d-05cd-45b4-979d-4032bdd775f6",
+        "ephemeral_id": "6e15ac13-f4fe-4302-9510-69963e0570a3",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "fortinet.fortimanager",
@@ -2657,23 +2642,21 @@ An example event for `fortimanager` looks as following:
         "port": 6125
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "allow",
+        "agent_id_status": "verified",
         "code": "sse",
         "dataset": "fortinet.fortimanager",
-        "ingested": "2021-06-03T12:45:50.284271932Z",
+        "ingested": "2021-12-31T02:57:07Z",
         "original": "logver=iusm devname=\"modtempo\" devid=\"olab\" vd=nto date=2016-1-29 time=6:09:59 logid=sse type=exercita subtype=der level=very-high eventtime=odoco logtime=ria srcip=10.20.234.169 srcport=1001 srcintf=eth5722 srcintfrole=vol dstip=10.44.173.44 dstport=6125 dstintf=enp0s3068 dstintfrole=nseq poluuid=itinvol sessionid=psa proto=21 action=allow policyid=ntium policytype=psaq crscore=13.800000 craction=eab crlevel=aliqu appcat=Ute service=lupt srccountry=dolore dstcountry=sequa trandisp=abo tranip=10.189.58.145 tranport=5273 duration=14.119000 sentbyte=7880 rcvdbyte=449 sentpkt=mqui app=nci\n",
         "timezone": "+00:00"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "udp"
@@ -2681,7 +2664,7 @@ An example event for `fortimanager` looks as following:
     "log": {
         "level": "very-high",
         "source": {
-            "address": "192.168.240.4:36529"
+            "address": "172.22.0.7:52944"
         }
     },
     "network": {
@@ -2704,13 +2687,12 @@ An example event for `fortimanager` looks as following:
     },
     "related": {
         "hosts": [
-            "modtempo",
-            "docker-fleet-agent"
+            "modtempo"
         ],
         "ip": [
-            "10.44.173.44",
+            "10.189.58.145",
             "10.20.234.169",
-            "10.189.58.145"
+            "10.44.173.44"
         ]
     },
     "rsa": {
@@ -2757,9 +2739,9 @@ An example event for `fortimanager` looks as following:
         "port": 1001
     },
     "tags": [
+        "preserve_original_event",
         "fortinet-fortimanager",
-        "forwarded",
-        "preserve_original_event"
+        "forwarded"
     ]
 }
 ```
@@ -2769,7 +2751,7 @@ An example event for `fortimanager` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | client.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | client.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -2793,7 +2775,7 @@ An example event for `fortimanager` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
@@ -2841,7 +2823,7 @@ An example event for `fortimanager` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -2851,26 +2833,25 @@ An example event for `fortimanager` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -2879,9 +2860,9 @@ An example event for `fortimanager` looks as following:
 | observer.version | Observer version. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.pid | Process id. | long |
 | process.parent.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -3559,7 +3540,7 @@ An example event for `fortimanager` looks as following:
 | rsa.wireless.wlan_name | This key captures either WLAN number/name | keyword |
 | rsa.wireless.wlan_ssid | This key is used to capture the ssid of a Wireless Session | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| server.domain | Server domain. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -3568,7 +3549,7 @@ An example event for `fortimanager` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
