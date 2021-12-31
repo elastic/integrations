@@ -55,14 +55,13 @@ An example event for `saml` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:02:13.000Z",
+    "@timestamp": "2021-12-30T05:45:12.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "cf199734-f6bb-40b4-a403-d39b5844eaae",
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
@@ -70,24 +69,24 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "login_failure",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "authentication",
             "session"
         ],
-        "created": "2021-06-16T13:02:13.755Z",
+        "created": "2021-12-31T05:45:12.877Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2021-06-16T13:02:14.774956509Z",
+        "ingested": "2021-12-31T05:45:13Z",
         "outcome": "failure",
         "provider": "saml",
         "type": [
@@ -114,9 +113,6 @@ An example event for `saml` looks as following:
             "status_code": "SUCCESS_URI"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -135,20 +131,8 @@ An example event for `saml` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -282,14 +266,13 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:03:09.000Z",
+    "@timestamp": "2021-12-30T05:46:01.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "8f5cd177-9d7f-4401-a3ed-b323cd16b468",
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
@@ -297,23 +280,23 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "2sv_disable",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2021-06-16T13:03:09.529Z",
+        "created": "2021-12-31T05:46:01.845Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2021-06-16T13:03:10.552894458Z",
+        "ingested": "2021-12-31T05:46:02Z",
         "provider": "user_accounts",
         "type": [
             "change",
@@ -331,9 +314,6 @@ An example event for `user_accounts` looks as following:
         "organization": {
             "domain": "elastic.com"
         }
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -353,20 +333,8 @@ An example event for `user_accounts` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -494,14 +462,13 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:01:21.000Z",
+    "@timestamp": "2021-12-30T05:44:25.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "9a0da8a6-1bba-414f-8f05-6bc4a279addd",
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
@@ -509,23 +476,23 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "account_disabled_password_leak",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "created": "2021-06-16T13:01:21.813Z",
+        "created": "2021-12-31T05:44:25.834Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2021-06-16T13:01:22.836420693Z",
+        "ingested": "2021-12-31T05:44:26Z",
         "provider": "login",
         "type": [
             "user",
@@ -547,9 +514,6 @@ An example event for `login` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -569,20 +533,8 @@ An example event for `login` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -722,14 +674,13 @@ An example event for `admin` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T12:58:47.000Z",
+    "@timestamp": "2021-12-30T05:42:02.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "9462302e-bdbd-450d-94a0-275cde586777",
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
@@ -737,24 +688,24 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam",
             "configuration"
         ],
-        "created": "2021-06-16T12:58:47.527Z",
+        "created": "2021-12-31T05:42:02.413Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2021-06-16T12:58:48.550215693Z",
+        "ingested": "2021-12-31T05:42:03Z",
         "provider": "admin",
         "type": [
             "change"
@@ -777,9 +728,6 @@ An example event for `admin` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -798,20 +746,8 @@ An example event for `admin` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -1036,14 +972,13 @@ An example event for `drive` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T12:59:39.000Z",
+    "@timestamp": "2021-12-30T05:42:54.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "f7970899-07f2-48ad-9690-4d6bb5f56ab1",
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
@@ -1051,23 +986,23 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "add_to_folder",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "file"
         ],
-        "created": "2021-06-16T12:59:39.884Z",
+        "created": "2021-12-31T05:42:54.778Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2021-06-16T12:59:40.904399475Z",
+        "ingested": "2021-12-31T05:42:55Z",
         "provider": "drive",
         "type": [
             "change"
@@ -1106,9 +1041,6 @@ An example event for `drive` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -1128,20 +1060,8 @@ An example event for `drive` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -1298,14 +1218,13 @@ An example event for `groups` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:00:32.000Z",
+    "@timestamp": "2021-12-30T05:43:40.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "4723de13-1260-4442-ae6d-a631be1293c5",
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
@@ -1313,23 +1232,23 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "change_acl_permission",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2021-06-16T13:00:32.455Z",
+        "created": "2021-12-31T05:43:40.418Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2021-06-16T13:00:33.478404747Z",
+        "ingested": "2021-12-31T05:43:41Z",
         "provider": "groups",
         "type": [
             "group",
@@ -1363,9 +1282,6 @@ An example event for `groups` looks as following:
         "domain": "example.com",
         "name": "group"
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -1384,20 +1300,8 @@ An example event for `groups` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
