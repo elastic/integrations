@@ -33,40 +33,60 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-03-04T17:27:14.000Z",
+    "@timestamp": "2021-03-05T11:00:06.000Z",
+    "agent": {
+        "ephemeral_id": "37bd1842-45c5-4713-b416-21c0d8acd175",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
     "cyberarkpas": {
         "audit": {
-            "action": "Logon",
-            "desc": "Logon",
-            "iso_timestamp": "2021-03-04T17:27:14Z",
-            "issuer": "PVWAGWUser",
-            "message": "Logon",
+            "action": "Auto Clear Users History start",
+            "desc": "Auto Clear Users History start",
+            "iso_timestamp": "2021-03-05T11:00:06Z",
+            "issuer": "Batch",
+            "message": "Auto Clear Users History start",
             "rfc5424": true,
             "severity": "Info",
-            "station": "10.0.1.20",
-            "timestamp": "Mar 04 09:27:14"
+            "station": "0.0.0.0",
+            "timestamp": "Mar 05 03:00:06"
         }
     },
+    "data_stream": {
+        "dataset": "cyberarkpas.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
     "event": {
-        "action": "authentication_success",
-        "category": [
-            "authentication",
-            "session"
-        ],
-        "code": "7",
+        "action": "auto clear users history start",
+        "agent_id_status": "verified",
+        "code": "288",
+        "dataset": "cyberarkpas.audit",
+        "ingested": "2021-12-30T06:16:25Z",
         "kind": "event",
-        "module": "cyberarkpas",
-        "outcome": "success",
         "severity": 2,
-        "timezone": "-02:00",
-        "type": [
-            "start"
-        ]
+        "timezone": "+00:00"
     },
     "host": {
         "name": "VAULT"
     },
+    "input": {
+        "type": "udp"
+    },
     "log": {
+        "source": {
+            "address": "172.22.0.7:34242"
+        },
         "syslog": {
             "priority": 5
         }
@@ -79,23 +99,17 @@ An example event for `audit` looks as following:
     },
     "related": {
         "ip": [
-            "10.0.1.20"
-        ],
-        "user": [
-            "PVWAGWUser"
+            "0.0.0.0"
         ]
     },
     "source": {
-        "address": "10.0.1.20",
-        "ip": "10.0.1.20"
+        "address": "0.0.0.0",
+        "ip": "0.0.0.0"
     },
     "tags": [
-        "cyberarkpas.audit",
+        "cyberarkpas-audit",
         "forwarded"
-    ],
-    "user": {
-        "name": "PVWAGWUser"
-    }
+    ]
 }
 ```
 
@@ -182,7 +196,7 @@ An example event for `audit` looks as following:
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -216,7 +230,7 @@ An example event for `audit` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
 | observer.product | The product name of the observer. | keyword |
