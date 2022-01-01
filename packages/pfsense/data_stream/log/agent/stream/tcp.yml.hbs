@@ -9,18 +9,15 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
 processors:
 - add_locale: ~
 - add_fields:
     target: _tmp
     fields:
       tz_offset: {{tz_offset}}
-{{#if internal_networks.length}}
-      internal_networks:
-        {{#each internal_networks as |ntwrk i|}}
-        - {{ntwrk}}
-        {{/each}}
-{{/if}}
 {{#if processors}}
 {{processors}}
 {{/if}}
