@@ -8,4 +8,6 @@ datasets for receiving logs over syslog or read from a file:
 
 The `firewall` dataset collects Sonicwall-FW logs.
 
+{{event "firewall"}}
+
 {{fields "firewall"}}
