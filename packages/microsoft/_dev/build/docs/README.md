@@ -64,4 +64,6 @@ These values are:
 
 The `dhcp` dataset collects Microsoft DHCP logs.
 
+{{event "dhcp"}}
+
 {{fields "dhcp"}}
