@@ -26,12 +26,11 @@ An example event for `log` looks as following:
         "thread": "main"
     },
     "agent": {
-        "ephemeral_id": "25872b0f-3987-4b56-8a85-0c5cc3b781c5",
-        "hostname": "docker-fleet-agent",
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
+        "ephemeral_id": "5f9c381f-46da-4c4a-b016-9c97da4fc5ea",
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "activemq.log",
@@ -39,17 +38,17 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.log",
-        "ingested": "2021-09-28T09:17:42Z",
+        "ingested": "2022-01-03T09:11:11Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": "info"
@@ -58,18 +57,18 @@ An example event for `log` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.26.0.7"
+            "192.168.176.6"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:b0:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -102,7 +101,7 @@ An example event for `log` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -110,7 +109,7 @@ An example event for `log` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -126,7 +125,7 @@ An example event for `log` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -162,18 +161,17 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-28T09:15:45.696Z",
+    "@timestamp": "2022-01-03T09:08:57.310Z",
     "activemq": {
         "thread": "qtp443290224-47",
         "user": "anonymous"
     },
     "agent": {
-        "ephemeral_id": "749d825d-e21b-425d-9a78-435f24b0d99b",
-        "hostname": "docker-fleet-agent",
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
+        "ephemeral_id": "0f566b3d-c46d-420e-a31c-08e8fea76297",
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "activemq.audit",
@@ -181,17 +179,17 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.audit",
-        "ingested": "2021-09-28T09:15:49Z",
+        "ingested": "2022-01-03T09:08:58Z",
         "kind": "event",
         "type": "info"
     },
@@ -199,18 +197,18 @@ An example event for `audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.26.0.7"
+            "192.168.176.6"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:b0:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -258,7 +256,7 @@ An example event for `audit` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -282,7 +280,7 @@ An example event for `audit` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -297,7 +295,7 @@ An example event for `audit` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -335,11 +333,11 @@ An example event for `broker` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-28T09:16:43.707Z",
+    "@timestamp": "2022-01-03T09:10:04.412Z",
     "activemq": {
         "broker": {
             "connections": {
-                "count": 11
+                "count": 19
             },
             "consumers": {
                 "count": 0
@@ -357,12 +355,12 @@ An example event for `broker` looks as following:
                 }
             },
             "messages": {
-                "count": 11,
+                "count": 19,
                 "dequeue": {
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 24
+                    "count": 40
                 }
             },
             "name": "localhost",
@@ -372,12 +370,11 @@ An example event for `broker` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "ec4b57d3-beb8-43d6-8844-702f75a21fa3",
-        "hostname": "docker-fleet-agent",
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
+        "ephemeral_id": "06f90006-8d6b-4b37-b077-4373a32e6216",
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "activemq.broker",
@@ -385,36 +382,36 @@ An example event for `broker` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.broker",
-        "duration": 11296900,
-        "ingested": "2021-09-28T09:16:44Z",
+        "duration": 43890522,
+        "ingested": "2022-01-03T09:10:05Z",
         "module": "activemq"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.26.0.7"
+            "192.168.176.6"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:b0:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -426,7 +423,7 @@ An example event for `broker` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_activemq_1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-activemq-1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "activemq"
     }
 }
@@ -451,7 +448,7 @@ An example event for `broker` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -459,7 +456,7 @@ An example event for `broker` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -474,7 +471,7 @@ An example event for `broker` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -510,7 +507,7 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-28T09:18:39.882Z",
+    "@timestamp": "2022-01-03T09:12:21.710Z",
     "activemq": {
         "queue": {
             "consumers": {
@@ -530,7 +527,7 @@ An example event for `queue` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 11,
+                    "count": 21,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -551,16 +548,15 @@ An example event for `queue` looks as following:
             "producers": {
                 "count": 0
             },
-            "size": 11
+            "size": 21
         }
     },
     "agent": {
-        "ephemeral_id": "30c7946c-1a1e-4925-8269-683f5b13de28",
-        "hostname": "docker-fleet-agent",
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
+        "ephemeral_id": "28d705b3-e3d5-46d3-972b-14dbebab2cbd",
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "activemq.queue",
@@ -568,36 +564,36 @@ An example event for `queue` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.queue",
-        "duration": 15094500,
-        "ingested": "2021-09-28T09:18:43Z",
+        "duration": 34550833,
+        "ingested": "2022-01-03T09:12:22Z",
         "module": "activemq"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.26.0.7"
+            "192.168.176.6"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:b0:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -609,7 +605,7 @@ An example event for `queue` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_activemq_1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-activemq-1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "activemq"
     }
 }
@@ -638,7 +634,7 @@ An example event for `queue` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -646,7 +642,7 @@ An example event for `queue` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -661,7 +657,7 @@ An example event for `queue` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -697,13 +693,13 @@ An example event for `topic` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-28T09:19:34.266Z",
+    "@timestamp": "2022-01-03T09:13:25.689Z",
     "activemq": {
         "topic": {
             "consumers": {
                 "count": 0
             },
-            "mbean": "org.apache.activemq:brokerName=localhost,destinationName=ActiveMQ.Advisory.MasterBroker,destinationType=Topic,type=Broker",
+            "mbean": "org.apache.activemq:brokerName=localhost,destinationName=ActiveMQ.Advisory.Connection,destinationType=Topic,type=Broker",
             "memory": {
                 "broker": {
                     "pct": 0
@@ -717,7 +713,7 @@ An example event for `topic` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 1,
+                    "count": 18,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -734,19 +730,18 @@ An example event for `topic` looks as following:
                     "avg": 1024
                 }
             },
-            "name": "ActiveMQ.Advisory.MasterBroker",
+            "name": "ActiveMQ.Advisory.Connection",
             "producers": {
                 "count": 0
             }
         }
     },
     "agent": {
-        "ephemeral_id": "f5635b0d-b202-4fa6-9624-9248bd61b9ef",
-        "hostname": "docker-fleet-agent",
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
+        "ephemeral_id": "e3e5764c-ebf4-4a6a-ba62-550c0a6e5260",
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "activemq.topic",
@@ -754,36 +749,36 @@ An example event for `topic` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "2bc8293d-05be-4978-829c-195a572275bb",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "b7abf8ef-c5bb-41c6-900c-ed4f1cf763f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.topic",
-        "duration": 13002400,
-        "ingested": "2021-09-28T09:19:37Z",
+        "duration": 11825760,
+        "ingested": "2022-01-03T09:13:26Z",
         "module": "activemq"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.26.0.7"
+            "192.168.176.6"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:b0:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -795,7 +790,7 @@ An example event for `topic` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_activemq_1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-activemq-1:8161/api/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "activemq"
     }
 }
@@ -823,7 +818,7 @@ An example event for `topic` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -831,7 +826,7 @@ An example event for `topic` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -846,7 +841,7 @@ An example event for `topic` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
