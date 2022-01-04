@@ -3,9 +3,6 @@
 description: Pipeline for processing Microsoft DHCP logs.
 processors:
   - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-  - set:
       field: ecs.version
       value: "1.12.0"
   - set:
@@ -82,6 +79,34 @@ processors:
       field: event.action
       value: dhcp-release
       if: "ctx.event?.code == '12'"
+  - set:
+      field: event.action
+      value: dhcp-deny
+      if: "ctx.event?.code == '15'"
+  - set:
+      field: event.action
+      value: dhcp-delete
+      if: "ctx.event?.code == '16'"
+  - set:
+      field: event.action
+      value: dhcp-expire
+      if: "['17', '18'].contains(ctx.event?.code)"
+  - set:
+      field: event.action
+      value: ip-cleanup-start
+      if: "ctx.event?.code == '24'"
+  - set:
+      field: event.action
+      value: ip-cleanup-end
+      if: "ctx.event?.code == '25'"
+  - set:
+      field: event.action
+      value: dhcp-dns-update
+      if: "['30', '31', '32', '34', '35'].contains(ctx.event?.code)"
+  - set:
+      field: event.action
+      value: rogue-server-detection
+      if: "ctx._tmp_?.code > 50"
   - append:
       field: event.category
       value: network
@@ -96,15 +121,19 @@ processors:
       field: event.type
       value: user
       if: "ctx._tmp_?.code >= 50 && ctx._tmp_?.code >= 60"
-  # Related error codes according to documentation
   - append:
       field: event.type
-      value: error
-      if: "['50', '54', '56', '59', '64'].contains(ctx.checkpoint?.rule_action)"
+      value: allowed
+      if: "['10', '11', '12', '20', '21'].contains(ctx.event?.code)"
+  - append:
+      field: event.type
+      value: denied
+      if: "['14', '15', '22', '35', '36'].contains(ctx.event?.code)"
+  # Related error codes according to documentation
   - set:
       field: event.outcome
       value: failure
-      if: "['50', '54', '56', '59', '64'].contains(ctx.checkpoint?.rule_action)"
+      if: "['02', '15', '22', '31', '33', '34', '35', '36'].contains(ctx.event?.code)"
   - set:
       field: event.outcome
       value: success
