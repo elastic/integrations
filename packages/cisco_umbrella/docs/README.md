@@ -9,7 +9,7 @@ datasets for receiving logs from an AWS S3 bucket using an SQS notification queu
 
 ### Umbrella
 
-When using Cisco Managed S3 buckets that does not use SQS there is no load balancing possibilities for multiple agents, a single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically
+When using Cisco Managed S3 buckets that does not use SQS there is no load balancing possibilities for multiple agents, a single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically.
 
 The `log` dataset collects Cisco Umbrella logs.
 
