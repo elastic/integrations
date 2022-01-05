@@ -11,10 +11,6 @@ processors:
   - set:
       field: cloud.provider
       value: aws
-  # - set:
-  #     if: ctx.aws?.vpcflow?.account_id != null
-  #     field: cloud.account.id
-  #     value: '{{aws.vpcflow.account_id}}'
   - set:
       field: event.kind
       value: event
@@ -53,6 +49,7 @@ processors:
       field: _tmp.question
       target_field: dns.question
       ignore_missing: true
+      if: '!ctx._tmp?.question.endsWith("in-addr.arpa")'
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
