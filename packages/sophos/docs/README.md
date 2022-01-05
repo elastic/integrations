@@ -838,12 +838,12 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "1ebbd6ba-fd45-414d-9236-71549d9ef6a6",
+        "ephemeral_id": "ada9c7f9-d4b3-4cae-b0bb-6364bab05ec4",
         "hostname": "docker-fleet-agent",
-        "id": "eb25da7f-df21-4267-99e8-f335f4a11c6e",
+        "id": "58328c6f-d43f-44a6-879a-f7e5ff9d9b02",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "7.16.0"
     },
     "client": {
         "ip": "10.108.108.49"
@@ -857,9 +857,9 @@ An example event for `xg` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "eb25da7f-df21-4267-99e8-f335f4a11c6e",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "58328c6f-d43f-44a6-879a-f7e5ff9d9b02",
+        "snapshot": false,
+        "version": "7.16.0"
     },
     "event": {
         "action": "alert",
@@ -869,7 +869,7 @@ An example event for `xg` looks as following:
         ],
         "code": "058420116010",
         "dataset": "sophos.xg",
-        "ingested": "2021-10-11T10:56:15Z",
+        "ingested": "2021-12-16T04:42:45Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -884,7 +884,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.21.0.7:47587"
+            "address": "192.168.128.4:47976"
         }
     },
     "observer": {
@@ -972,6 +972,7 @@ An example event for `xg` looks as following:
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
@@ -1057,6 +1058,7 @@ An example event for `xg` looks as following:
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.nat.port | Translated port of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | long |
 | server.packets | Packets sent from the server to the client. | long |
 | server.port | Port of the server. | long |
@@ -1125,6 +1127,7 @@ An example event for `xg` looks as following:
 | sophos.xg.duration | Durability of traffic (seconds) | long |
 | sophos.xg.email_subject | Email Subject | keyword |
 | sophos.xg.ep_uuid | Endpoint UUID | keyword |
+| sophos.xg.ether_type | ethernet frame type | keyword |
 | sophos.xg.eventid | ATP Evenet ID | keyword |
 | sophos.xg.eventtime | Event time | date |
 | sophos.xg.eventtype | ATP event type | keyword |
@@ -1202,6 +1205,7 @@ An example event for `xg` looks as following:
 | sophos.xg.source | Source | keyword |
 | sophos.xg.sourceip | Original source IP address of traffic | ip |
 | sophos.xg.spamaction | Spam Action | keyword |
+| sophos.xg.sqli | related SQLI caught by the WAF | keyword |
 | sophos.xg.src_country_code | Code of the country to which the source IP belongs | keyword |
 | sophos.xg.src_domainname | Sender domain name | keyword |
 | sophos.xg.src_ip | Original source IP address of traffic | ip |
@@ -1247,6 +1251,7 @@ An example event for `xg` looks as following:
 | sophos.xg.vconn_id | Connection ID of the master connection | integer |
 | sophos.xg.virus | virus name | keyword |
 | sophos.xg.website | Website | keyword |
+| sophos.xg.xss | related XSS caught by the WAF | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
