@@ -6,21 +6,61 @@ streams:
     enabled: false
     title: Cisco Umbrella logs
     description: Collect Cisco Umbrella logs
+    template_path: aws-s3.yml.hbs
     vars:
       - name: queue_url
         type: text
         title: Queue URL
         multi: false
-        required: true
+        required: false
         show_user: true
-        description: URL of the AWS SQS queue that messages will be received from.
+        description: URL of the AWS SQS queue that messages will be received from. For Cisco Managed S3 buckets or S3 without SQS, use Bucket ARN.
+      - name: bucket_arn
+        type: text
+        title: Bucket ARN
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Required for Cisco Managed S3. If the S3 bucket does not use SQS, this is the address for the S3 bucket, one example is `arn:aws:s3:::cisco-managed-eu-central-1` For a list of Cisco Managed buckets, please see https://docs.umbrella.com/mssp-deployment/docs/enable-logging-to-a-cisco-managed-s3-bucket.
+      - name: region
+        type: text
+        title: Bucket Region
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Required for Cisco Managed S3. The region the bucket is located in.
+      - name: bucket_list_prefix
+        type: text
+        title: Bucket List Prefix
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Required for Cisco Managed S3. This sets the root folder of the S3 bucket that should be monitored, found in the S3 Web UI. Example value: `1235_654vcasd23431e5dd6f7fsad457sdf1fd5`. Forward slash at the end required for Cisco Managed S3.
+      - name: number_of_workers
+        type: text
+        title: Number of Workers
+        multi: false
+        required: false
+        show_user: true
+        default: 1
+        description: Required for Cisco Managed S3. Number of workers that will process the S3 objects listed. Minimum is 1.
+      - name: bucket_list_interval
+        type: text
+        title: Bucket List Interval
+        multi: false
+        required: false
+        show_user: true
+        description: Time interval for polling listing of the S3 bucket. Defaults to 120s.
       - name: shared_credential_file
         type: text
         title: Shared Credential File
         multi: false
         required: false
         show_user: false
-        description: Directory of the shared credentials file
+        description: Directory of the shared credentials file.
       - name: credential_profile_name
         type: text
         title: Credential Profile Name
@@ -58,7 +98,7 @@ streams:
         required: false
         show_user: false
         default: "amazonaws.com"
-        description: URL of the entry point for an AWS web service
+        description: URL of the entry point for an AWS web service.
       - name: visibility_timeout
         type: text
         title: Visibility Timeout
@@ -94,7 +134,7 @@ streams:
         required: true
         show_user: true
         title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
         type: bool
         multi: false
         default: false

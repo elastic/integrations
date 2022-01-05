@@ -1,13 +1,15 @@
 # Cisco Umbrella Integration
 
 This integration is for Cisco Umbrella . It includes the following
-datasets for receiving logs from an AWS S3 bucket using an SQS notification queue:
+datasets for receiving logs from an AWS S3 bucket using an SQS notification queue and Cisco Managed S3 bucket without SQS:
 
 - `log` dataset: supports Cisco Umbrella logs.
 
 ## Logs
 
 ### Umbrella
+
+When using Cisco Managed S3 buckets that does not use SQS there is no load balancing possibilities for multiple agents, a single agent should be configured to poll the S3 bucket for new and updated files, and the number of workers can be configured to scale vertically.
 
 The `log` dataset collects Cisco Umbrella logs.
 
@@ -124,6 +126,16 @@ An example event for `log` looks as following:
 | cisco.umbrella.av_detections | The detection name according to the antivirus engine used in file inspection. | keyword |
 | cisco.umbrella.blocked_categories | The categories that resulted in the destination being blocked. Available in version 4 and above. | keyword |
 | cisco.umbrella.categories | The security or content categories that the destination matches. | keyword |
+| cisco.umbrella.cisco.umbrella.certificate_errors |  | keyword |
+| cisco.umbrella.cisco.umbrella.destination_lists_id |  | keyword |
+| cisco.umbrella.cisco.umbrella.dlp_status |  | keyword |
+| cisco.umbrella.cisco.umbrella.file_name |  | keyword |
+| cisco.umbrella.cisco.umbrella.identities |  | keyword |
+| cisco.umbrella.cisco.umbrella.identity_types |  | keyword |
+| cisco.umbrella.cisco.umbrella.request_method |  | keyword |
+| cisco.umbrella.cisco.umbrella.rule_id |  | keyword |
+| cisco.umbrella.cisco.umbrella.ruleset_id |  | keyword |
+| cisco.umbrella.computer_name | The computer name related to the event. | keyword |
 | cisco.umbrella.content_type | The type of web content, typically text/html. | keyword |
 | cisco.umbrella.datacenter | The name of the Umbrella Data Center that processed the user-generated traffic. | keyword |
 | cisco.umbrella.identities | An array of the different identities related to the event. | keyword |
@@ -205,6 +217,7 @@ An example event for `log` looks as following:
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Type of Filebeat input. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |

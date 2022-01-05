@@ -2,243 +2,368 @@
 description: Pipeline for Cisco Umbrella
 
 processors:
-# ECS event.ingested
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
-    field: ecs.version
-    value: '1.12.0'
-- set:
-    field: observer.vendor
-    value: Cisco
-- set:
-    field: observer.product
-    value: Umbrella
-- rename:
-    field: message
-    target_field: event.original
+  # ECS event.ingested
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: "1.12.0"
+  - set:
+      field: observer.vendor
+      value: Cisco
+  - set:
+      field: observer.product
+      value: Umbrella
+  - rename:
+      field: message
+      target_field: event.original
+  ############
+  # DNS Logs #
+  ############
+  - csv:
+      field: event.original
+      target_fields:
+        - cisco.umbrella._tmp.time
+        - user.name
+        - cisco.umbrella.identities
+        - source.address
+        - destination.address
+        - cisco.umbrella.action
+        - dns.question.type
+        - dns.response_code
+        - dns.question.name
+        - cisco.umbrella.categories
+        - cisco.umbrella.policy_identity_type
+        - cisco.umbrella.identity_types
+        - cisco.umbrella.blocked_categories
+      if: ctx?.log?.file?.path.contains('dnslogs')
 
-- grok:
-    field: event.original
-    patterns:
-      - '"%{TIMESTAMP_ISO8601:cisco.umbrella._tmp_time}","%{DATA:user.name}","%{DATA:cisco.umbrella.identities}","%{IP:source.address}","%{IP:destination.address}","%{WORD:cisco.umbrella.action}","%{DATA}\(%{WORD:dns.question.type}\)","%{WORD:dns.response_code}","%{HOSTNAME:dns.question.name}","%{DATA:cisco.umbrella.categories}","%{DATA:cisco.umbrella.policy_identity_type}","%{DATA:cisco.umbrella.identity_types}","%{DATA:cisco.umbrella.blocked_categories}"'
-      - '"%{TIMESTAMP_ISO8601:cisco.umbrella._tmp_time}","%{DATA:user.name}","%{IP:source.address}","%{NONNEGINT:source.port:long}","%{IP:destination.address}","%{NONNEGINT:destination.port:long}","%{DATA:cisco.umbrella.categories}"'
-      - '"%{TIMESTAMP_ISO8601:cisco.umbrella._tmp_time}","%{DATA:user.name}","%{DATA:cisco.umbrella.identities}","%{IP:source.address}","%{IP:source.nat.ip}","(%{IP:destination.address}|)","%{DATA:cisco.umbrella.content_type}","%{WORD:cisco.umbrella.verdict}","%{DATA:url.original}","%{DATA:http.request.referrer}","%{DATA:user_agent.original}","%{POSINT:http.response.status_code:long}","%{POSINT:http.request.bytes:long}","(%{POSINT:http.response.bytes:long}|)","(%{POSINT:http.response.body.bytes:long}|)","%{DATA:cisco.umbrella.sha_sha256}","%{DATA:cisco.umbrella.categories}","%{DATA:cisco.umbrella.av_detections}","%{DATA:cisco.umbrella.puas}","%{DATA:cisco.umbrella.amp_disposition}","%{DATA:cisco.umbrella.amp_malware_name}","%{DATA:cisco.umbrella.amp_score}","%{DATA:cisco.umbrella.identity_types}","%{DATA:cisco.umbrella.blocked_categories}"'
-      - '%{TIMESTAMP_ISO8601:cisco.umbrella._tmp_time},\[%{DATA:cisco.umbrella.origin_id}\],%{DATA:user.name},%{DATA:cisco.umbrella.identity_types},%{WORD:cisco.umbrella.direction},%{NONNEGINT:network.transport},%{NONNEGINT:source.bytes:long},%{IP:source.address},(%{NONNEGINT:source.port:long}|),%{IP:destination.address},(%{NONNEGINT:destination.port:long}|),%{DATA:cisco.umbrella.datacenter},%{DATA:cisco.umbrella.ruleid},%{WORD:cisco.umbrella.verdict}'
-    ignore_failure: true
-- set:
-    field: observer.type
-    value: dns
-    if: ctx?.dns != null
-- set:
-    field: observer.type
-    value: firewall
-    if: ctx?.destination?.port != null
-- set:
-    field: observer.type
-    value: proxy
-    if: ctx?.url?.original != null
-- uri_parts:
-    field: url.original
-    ignore_failure: true
-    if: ctx?.url?.original != null
-- set:
-    field: url.full
-    copy_from: url.original
-    ignore_empty_value: true
+  - set:
+      field: observer.type
+      value: dns
+      if: ctx?.log?.file?.path.contains('dnslogs')
+  ###########
+  # IP Logs #
+  ###########
+  - csv:
+      field: event.original
+      target_fields:
+        - cisco.umbrella._tmp.time
+        - user.name
+        - source.address
+        - source.port
+        - destination.address
+        - destination.port
+        - cisco.umbrella.categories
+      if: ctx?.log?.file?.path.contains('iplogs')
 
-# Identifies is a field that includes any sort of username, device or other asset that is included in the request.
-# Converting this to an array to make it easier to use in searches and visualizations
-- split:
-    field: cisco.umbrella.identities
-    separator: ","
-    preserve_trailing: false
-    if: "ctx?.cisco?.umbrella?.identities != null"
+  - set:
+      field: observer.type
+      value: firewall
+      if: ctx?.log?.file?.path.contains('iplogs')
 
-######################
-# General ECS Fields #
-######################
-# This field is always in UTC, so no timezone should need to be set
-- date:
-    field: cisco.umbrella._tmp_time
-    target_field: "@timestamp"
-    formats:
-      - "yyyy-MM-dd HH:mm:ss"
+  ##############
+  # Proxy Logs #
+  ##############
+  - csv:
+      field: event.original
+      target_fields:
+        - cisco.umbrella._tmp.time
+        - cisco.umbrella.computer_name
+        - cisco.umbrella.identities
+        - source.address
+        - source.nat.ip
+        - destination.address
+        - cisco.umbrella.content_type
+        - cisco.umbrella.verdict
+        - url.full
+        - http.request.referrer
+        - user_agent.original
+        - http.response.status_code
+        - http.request.bytes
+        - http.response.bytes
+        - http.response.body.bytes
+        - cisco.umbrella.sha_sha256
+        - cisco.umbrella.categories
+        - cisco.umbrella.av_detections
+        - cisco.umbrella.puas
+        - cisco.umbrella.amp_disposition
+        - cisco.umbrella.amp_malware_name
+        - cisco.umbrella.amp_score
+        - cisco.umbrella.identity_types
+        - cisco.umbrella.blocked_categories
+        - cisco.umbrella.identity_types
+        - cisco.umbrella.request_method
+        - cisco.umbrella.dlp_status
+        - cisco.umbrella.certificate_errors
+        - cisco.umbrella.file_name
+        - cisco.umbrella.ruleset_id
+        - cisco.umbrella.rule_id
+        - cisco.umbrella.destination_lists_id
+      if: ctx?.log?.file?.path.contains('proxylogs')
 
-##################
-# DNS ECS Fields #
-##################
-- set:
-    field: dns.type
-    value: query
-    if: ctx?.cisco?.umbrella?.action != null
+  - set:
+      field: observer.type
+      value: proxy
+      if: ctx?.log?.file?.path.contains('proxylogs')
 
-######################
-# Network ECS Fields #
-######################
-- lowercase:
-    field: cisco.umbrella.direction
-    target_field: network.direction
-    if: ctx?.cisco?.umbrella?.direction != null
+  #######################
+  # Cloud Firewall Logs #
+  #######################
+  - csv:
+      field: event.original
+      target_fields:
+        - cisco.umbrella._tmp.time
+        - cisco.umbrella.origin_id
+        - user.name
+        - cisco.umbrella.identity_types
+        - cisco.umbrella.direction
+        - network.transport
+        - source.bytes
+        - source.address
+        - source.port
+        - destination.address
+        - destination.port
+        - cisco.umbrella.datacenter
+        - cisco.umbrella.ruleid
+        - cisco.umbrella.verdict
+      if: ctx?.log?.file?.path.contains('cloudfirewalllogs')
 
-###################
-# Rule ECS Fields #
-###################
-- rename:
-    field: cisco.umbrella.ruleid
-    target_field: rule.id
-    if: ctx?.cisco?.umbrella?.ruleid != null
+  - set:
+      field: observer.type
+      value: firewall
+      if: ctx?.log?.file?.path.contains('cloudfirewalllogs')
 
-####################
-# Event ECS Fields #
-####################
-- set:
-    field: event.action
-    value: "dns-request-{{cisco.umbrella.action}}"
-    if: ctx?.cisco?.umbrella?.action != null
-- set:
-    field: event.category
-    value: network
-- append:
-    field: event.type
-    value: allowed
-    if: "ctx?.cisco?.umbrella?.action == 'Allowed' || ['ALLOWED','ALLOW'].contains(ctx?.cisco?.umbrella?.verdict)"
-- append:
-    field: event.type
-    value: denied
-    if: "ctx?.cisco?.umbrella?.action == 'Blocked' || ['BLOCKED','BLOCK'].contains(ctx?.cisco?.umbrella?.verdict)"
-- append:
-    field: event.type
-    value: connection
-    if: ctx?.cisco?.umbrella?.action != null
-# Converting address fields to either ip or domain
-- convert:
-    field: source.address
-    target_field: source.ip
-    type: ip
-    ignore_failure: true
-    ignore_missing: true
-- convert:
-    field: destination.address
-    target_field: destination.ip
-    type: ip
-    ignore_failure: true
-    ignore_missing: true
-- community_id:
-    ignore_missing: true
-- geoip:
-    field: source.ip
-    target_field: source.geo
-    ignore_missing: true
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: source.ip
-    target_field: source.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- rename:
-    field: source.as.asn
-    target_field: source.as.number
-    ignore_missing: true
-- rename:
-    field: source.as.organization_name
-    target_field: source.as.organization.name
-    ignore_missing: true
-- geoip:
-    field: destination.ip
-    target_field: destination.geo
-    ignore_missing: true
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: destination.ip
-    target_field: destination.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- rename:
-    field: destination.as.asn
-    target_field: destination.as.number
-    ignore_missing: true
-- rename:
-    field: destination.as.organization_name
-    target_field: destination.as.organization.name
-    ignore_missing: true
-######################
-# Related ECS Fields #
-######################
-- append:
-    field: related.user
-    value: "{{user.name}}"
-    if: ctx?.source?.user?.name != null
-- append:
-    field: related.ip
-    value: "{{source.ip}}"
-    if: ctx?.source?.ip != null
-- append:
-    field: related.ip
-    value: "{{source.nat.ip}}"
-    if: ctx?.source?.nat?.ip != null
-- append:
-    field: related.ip
-    value: "{{destination.ip}}"
-    if: ctx?.destination?.ip != null
-- append:
-    field: related.hosts
-    value: "{{source.domain}}"
-    if: ctx?.source?.domain != null
-- append:
-    field: related.hosts
-    value: "{{dns.question.name}}"
-    if: ctx?.dns?.question?.name != null
-- append:
-    field: related.hash
-    value: "{{cisco.umbrella.sha_sha256}}"
-    if: ctx?.cisco?.umbrella?.sha_sha256 != null
-- script:
-    if: ctx?.cisco?.umbrella?.identities != null && ctx.cisco.umbrella.identities instanceof List
-    lang: painless
-    description: "Extract user name values from ctx.cisco.umbrella.identities and append it to related.user"
-    source: |-
-      void addRelatedUser(def ctx, def x) {
-        if (ctx?.related == null) {
-          Map map = new HashMap();
-          ctx.put("related", map);
+  - uri_parts:
+      field: url.full
+      ignore_failure: true
+      if: ctx?.url?.full != null
+
+  # Identifies is a field that includes any sort of username, device or other asset that is included in the request.
+  # Converting this to an array to make it easier to use in searches and visualizations
+  - split:
+      field: cisco.umbrella.identities
+      separator: ","
+      preserve_trailing: false
+      if: "ctx?.log?.file?.path.contains('dnslogs') && ctx?.cisco?.umbrella?.identities != null"
+
+  - split:
+      field: cisco.umbrella.categories
+      separator: ","
+      preserve_trailing: false
+      if: "ctx?.log?.file?.path.contains('dnslogs') && ctx?.cisco?.umbrella?.categories != null"
+  - split:
+      field: cisco.umbrella.blocked_categories
+      separator: ","
+      preserve_trailing: false
+      if: "ctx?.log?.file?.path.contains('dnslogs') && ctx?.cisco?.umbrella?.blocked_categories != null"
+  ######################
+  # General ECS Fields #
+  ######################
+  # This field is always in UTC, so no timezone should need to be set
+  - date:
+      field: cisco.umbrella._tmp.time
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      if: ctx?.cisco?.umbrella?._tmp?.time != null
+  ##################
+  # DNS ECS Fields #
+  ##################
+  - set:
+      field: dns.type
+      value: query
+      if: ctx?.cisco?.umbrella?.action != null
+  ######################
+  # Network ECS Fields #
+  ######################
+  - lowercase:
+      field: cisco.umbrella.direction
+      target_field: network.direction
+      if: ctx?.cisco?.umbrella?.direction != null
+  - convert:
+      field: source.bytes
+      type: long
+      if: ctx?.source?.bytes != null
+  - convert:
+      field: source.port
+      type: long
+      if: ctx?.source?.port != null
+  - convert:
+      field: destination.port
+      type: long
+      if: ctx?.destination?.port != null
+  ###################
+  # HTTP ECS Fields #
+  ###################
+  - convert:
+      field: http.request.bytes
+      type: long
+      if: ctx?.http?.request?.bytes != null
+  - convert:
+      field: http.response.bytes
+      type: long
+      if: ctx?.http?.response?.bytes != null
+  - convert:
+      field: http.response.status_code
+      type: long
+      if: ctx?.http?.response?.status_code != null
+  ###################
+  # Rule ECS Fields #
+  ###################
+  - rename:
+      field: cisco.umbrella.ruleid
+      target_field: rule.id
+      if: ctx?.cisco?.umbrella?.ruleid != null
+
+  ####################
+  # Event ECS Fields #
+  ####################
+  - set:
+      field: event.action
+      value: "dns-request-{{cisco.umbrella.action}}"
+      if: ctx?.cisco?.umbrella?.action != null
+  - set:
+      field: event.category
+      value: network
+  - append:
+      field: event.type
+      value: allowed
+      if: "ctx?.cisco?.umbrella?.action == 'Allowed' || ['ALLOWED','ALLOW'].contains(ctx?.cisco?.umbrella?.verdict)"
+  - append:
+      field: event.type
+      value: denied
+      if: "ctx?.cisco?.umbrella?.action == 'Blocked' || ['BLOCKED','BLOCK'].contains(ctx?.cisco?.umbrella?.verdict)"
+  - append:
+      field: event.type
+      value: connection
+      if: ctx?.cisco?.umbrella?.action != null
+  # Converting address fields to either ip or domain
+  - grok:
+      field: source.address
+      patterns:
+        - "(?:%{IP:source.ip}|%{GREEDYDATA:source.domain})"
+      ignore_failure: true
+  - grok:
+      field: destination.address
+      patterns:
+        - "(?:%{IP:destination.ip}|%{GREEDYDATA:destination.domain})"
+      ignore_failure: true
+  - community_id:
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  ######################
+  # Related ECS Fields #
+  ######################
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      if: ctx?.source?.user?.name != null
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx?.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{source.nat.ip}}"
+      if: ctx?.source?.nat?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: ctx?.destination?.ip != null
+  - append:
+      field: related.hosts
+      value: "{{source.domain}}"
+      if: ctx?.source?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{dns.question.name}}"
+      if: ctx?.dns?.question?.name != null
+  - append:
+      field: related.hash
+      value: "{{cisco.umbrella.sha_sha256}}"
+      if: ctx?.cisco?.umbrella?.sha_sha256 != null
+  - script:
+      if: ctx?.cisco?.umbrella?.identities != null && ctx.cisco.umbrella.identities instanceof List
+      lang: painless
+      description: "Extract user name values from ctx.cisco.umbrella.identities and append it to related.user"
+      source: |-
+        void addRelatedUser(def ctx, def x) {
+          if (ctx?.related == null) {
+            Map map = new HashMap();
+            ctx.put("related", map);
+          }
+          if (ctx?.related?.user == null) {
+            ArrayList al = new ArrayList();
+            ctx.related.put("user", al);
+          }
+          if (!ctx.related.user.contains(x)) {
+            ctx.related.user.add(x);
+          }
         }
-        if (ctx?.related?.user == null) {
-          ArrayList al = new ArrayList();
-          ctx.related.put("user", al);
+        for (cisco_identity in ctx.cisco.umbrella.identities) {
+          if (cisco_identity.contains('@')) {
+            addRelatedUser(ctx, cisco_identity);
+          }
         }
-        if (!ctx.related.user.contains(x)) {
-          ctx.related.user.add(x);
-        }
-      }
-      for (cisco_identity in ctx.cisco.umbrella.identities) {
-        if (cisco_identity.contains('@')) {
-          addRelatedUser(ctx, cisco_identity);
-        }
-      }
 
-###########
-# Cleanup #
-###########
-- remove:
-    field:
-    - cisco.umbrella._tmp_time
-    - cisco.umbrella.direction
-    - cisco.umbrella.action
-    - cisco.umbrella.verdict
-    ignore_missing: true
-    
-- remove:
-    field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
+  ###########
+  # Cleanup #
+  ###########
+  - remove:
+      field:
+        - cisco.umbrella._tmp
+        - cisco.umbrella.direction
+        - cisco.umbrella.action
+        - cisco.umbrella.verdict
+      ignore_missing: true
+
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
-- append:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
