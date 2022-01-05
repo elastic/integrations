@@ -243,6 +243,7 @@ An example event for `container` looks as following:
 | kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
 | kubernetes.container.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
+| kubernetes.container.memory.workingset.limit.pct | Working set memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.container.rootfs.available.bytes | Root filesystem total available in bytes | long | byte | gauge |
 | kubernetes.container.rootfs.capacity.bytes | Root filesystem total capacity in bytes | long | byte | gauge |
@@ -727,6 +728,7 @@ An example event for `pod` looks as following:
 | kubernetes.pod.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.pod.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
 | kubernetes.pod.memory.working_set.bytes | Total working set memory | long | percent | gauge |
+| kubernetes.pod.memory.working_set.limit.pct | Working set memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float |  |  |
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.network.rx.bytes | Received bytes | long | byte | counter |
 | kubernetes.pod.network.rx.errors | Rx errors | long |  | counter |
