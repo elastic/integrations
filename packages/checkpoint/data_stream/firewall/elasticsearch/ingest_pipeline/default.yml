@@ -414,6 +414,26 @@ processors:
       field: checkpoint.proto
       target_field: network.iana_number
       ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        if (ctx?.network == null) {
+            ctx.network = new HashMap();
+        }
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        }
   - rename:
       field: checkpoint.packets
       target_field: network.packets
