@@ -835,18 +835,26 @@ processors:
       field: crowdstrike.Protocol
       target_field: network.iana_number
       ignore_missing: true
-  - set:
-      field: network.transport
-      value: icmp
-      if: ctx?.network?.iana_number == "1"
-  - set:
-      field: network.transport
-      value: tcp
-      if: ctx?.network?.iana_number == "6"
-  - set:
-      field: network.transport
-      value: udp
-      if: ctx?.network?.iana_number == "17"
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        if (ctx?.network == null) {
+            ctx.network = new HashMap();
+        }
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        }
   - set:
       field: network.direction
       value: outbound
