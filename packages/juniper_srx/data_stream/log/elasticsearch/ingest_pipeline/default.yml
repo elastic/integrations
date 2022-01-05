@@ -4,9 +4,6 @@
 description: Pipeline for parsing junipersrx firewall logs
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -229,6 +226,26 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "secintel" }}'
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        if (ctx?.network == null) {
+            ctx.network = new HashMap();
+        }
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        }
 
 #########################
 ## ECS Related Mapping ##
