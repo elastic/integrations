@@ -2,9 +2,6 @@
 description: Pipeline for processing Hashicorp Vault audit logs.
 processors:
   - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-  - set:
       field: ecs.version
       value: '1.12.0'
   - rename:
@@ -82,6 +79,7 @@ processors:
   - set:
       field: event.id
       copy_from: hashicorp_vault.audit.request.id
+      ignore_failure: true
   - set:
       field: message
       copy_from: hashicorp_vault.audit.error
