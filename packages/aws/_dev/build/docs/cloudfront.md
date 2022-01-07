@@ -1,0 +1,9 @@
+# CloudFront
+
+## Logs
+
+The `cloudfront` dataset collects access logs from AWS CloudFront. CloudFront standard logs provide detailed records about every request that’s made to a distribution. These logs are useful for many scenarios, including security and access audits.
+
+{{fields "cloudwatch_logs"}}
+
+{{event "cloudwatch_logs"}}
