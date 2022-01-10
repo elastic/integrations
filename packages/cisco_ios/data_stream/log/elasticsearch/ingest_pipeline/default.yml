@@ -40,6 +40,10 @@ processors:
       ignore_missing: true
       pattern: ' {2,}'
       replacement: ' '
+  - set:
+      field: _conf.tz_offset
+      value: UTC
+      override: false
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
@@ -54,6 +58,7 @@ processors:
         - "MMM d HH:mm:ss.SSS"
         - "MMM d HH:mm:ss z"
         - "MMM d HH:mm:ss"
+      timezone: '{{{_conf.tz_offset}}}'
   - grok:
       field: message
       patterns:
@@ -263,7 +268,9 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - remove:
-      field: _temp_
+      field:
+       - _temp_
+       - _conf
       ignore_missing: true
   - remove:
       field: event.original
@@ -273,7 +280,9 @@ processors:
 
 on_failure:
   - remove:
-      field: _temp_
+      field:
+        - _temp_
+        - _conf
       ignore_missing: true
   - set:
       field: error.message
