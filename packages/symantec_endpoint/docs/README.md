@@ -192,7 +192,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| log.syslog.host.hostname |  | keyword |
+| log.syslog.hostname | Hostname parsed from syslog header. | keyword |
 | log.syslog.priority |  | long |
 | log.syslog.process.name |  | keyword |
 | log.syslog.process.pid |  | long |
