@@ -3,15 +3,9 @@ description: Pipeline for Cisco IOS logs.
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '1.12.0'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
+
   - set:
       field: event.category
       value: network
@@ -21,13 +15,54 @@ processors:
   - set:
       field: event.type
       value: info
+
+  - set:
+      field: event.original
+      copy_from: message
+      override: false
+  - remove:
+      field: message
+      ignore_missing: true
   - dissect:
       field: event.original
-      pattern: "%{_temp_.ts->} %{+_temp_.ts} %{+_temp_.ts->} %{log.source.address} %{event.sequence}: %{_temp_.timestamp}: %{_temp_.message}"
+      pattern: '%{_temp_.header} %%{message}'
   - grok:
-      field: _temp_.message
+      field: _temp_.header
       patterns:
-        - "%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}: %{GREEDYDATA:message}"
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:event.sequence}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
+        - '%{SYSLOGHOST:log.syslog.hostname} %{NUMBER:event.sequence}: %{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
+      pattern_definitions:
+        CISCO_TIMESTAMP: '%{CISCOTIMESTAMP}(?: %{TZ})?'
+      ignore_failure: true
+  - gsub:
+      description: Remove double spacing from the date.
+      field: _temp_.cisco_timestamp
+      ignore_missing: true
+      pattern: ' {2,}'
+      replacement: ' '
+  - set:
+      field: _conf.tz_offset
+      value: UTC
+      override: false
+  - date:
+      if: ctx?._temp_.cisco_timestamp != null
+      field: _temp_.cisco_timestamp
+      formats:
+        - "MMM d yyyy HH:mm:ss.SSS z"
+        - "MMM d yyyy HH:mm:ss.SSS"
+        - "MMM d yyyy HH:mm:ss z"
+        - "MMM d yyyy HH:mm:ss"
+
+        # Repeat without year.
+        - "MMM d HH:mm:ss.SSS z"
+        - "MMM d HH:mm:ss.SSS"
+        - "MMM d HH:mm:ss z"
+        - "MMM d HH:mm:ss"
+      timezone: '{{{_conf.tz_offset}}}'
+  - grok:
+      field: message
+      patterns:
+        - "%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}: %{GREEDYDATA:message}"
   - convert:
       field: event.severity
       type: long
@@ -83,18 +118,20 @@ processors:
        field: event.reason
        value: "Invalid RP"
        if: ctx.event?.code == "INVALID_RP_JOIN"      
-  - set:
-      field: destination.ip
-      value: '{{ destination.address }}'
-      if: ctx.destination?.address != null
-  - set:
-      field: source.ip
-      value: '{{ source.address }}'
-      if: ctx.source?.address != null
   - convert:
-        field: cisco.ios.pim.source.ip
-        type: ip
-        ignore_missing: true
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+  - convert:
+      field: cisco.ios.pim.source.ip
+      type: ip
+      ignore_missing: true
   - convert:
       field: source.port
       type: long
@@ -168,7 +205,7 @@ processors:
       if: "ctx.event.severity == 7"
       value: debug
 
-    # IP Geolocation Lookup
+  # IP Geolocation Lookup
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -178,7 +215,7 @@ processors:
       target_field: destination.geo
       ignore_missing: true
 
-# IP Autonomous System (AS) Lookup
+  # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -211,26 +248,29 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.user
-      value: "{{source.user.name}}"
+      value: "{{{source.user.name}}}"
       allow_duplicates: false
       if: ctx.source?.user?.name != null
   - community_id:
       ignore_missing: true
       ignore_failure: true
   - remove:
-      field: _temp_
+      field:
+       - _temp_
+       - _conf
       ignore_missing: true
   - remove:
       field: event.original
@@ -239,6 +279,11 @@ processors:
       ignore_missing: true
 
 on_failure:
+  - remove:
+      field:
+        - _temp_
+        - _conf
+      ignore_missing: true
   - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "processor {{{ _ingest.on_failure_processor_type}}}: {{{ _ingest.on_failure_message }}}"
