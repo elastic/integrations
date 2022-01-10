@@ -32,7 +32,10 @@ An example event for `container` looks as following:
                     "bytes": 0
                 },
                 "workingset": {
-                    "bytes": 1490817024
+                    "bytes": 1490817024,
+                    "limit": {
+                        "pct": 0.15029874419
+                    }
                 },
                 "pagefaults": 589314
             },
@@ -559,7 +562,10 @@ An example event for `pod` looks as following:
                 },
                 "page_faults": 27027,
                 "working_set": {
-                    "bytes": 96862208
+                    "bytes": 96862208,
+                    "limit": {
+                        "pct": 0.00976529512
+                    }
                 }
             },
             "ip": "172.20.0.2",
