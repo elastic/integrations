@@ -1,0 +1,190 @@
+title: Symantec Endpoint Protection (SEP) Logs
+type: logs
+release: beta
+streams:
+  - input: udp
+    template_path: udp.yml.hbs
+    title: SEP logs (syslog over UDP)
+    description: Collect Symantec Endpoint Protection (SEP) logs over UDP.
+    enabled: true
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The UDP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9008
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - symantec-endpoint-log
+          - forwarded
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: remove_mapped_fields
+        required: true
+        show_user: false
+        title: Remove fields mapped to ECS
+        description: Remove symantec_endpoint.log fields that have been used to populate ECS fields. This reduces the size of events by removing duplicated data.
+        type: bool
+        multi: false
+        default: false
+  - input: tcp
+    template_path: tcp.yml.hbs
+    title: SEP logs (syslog over TCP)
+    description: Collect Symantec Endpoint Protection (SEP) logs over TCP.
+    enabled: false
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The TCP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9008
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening TCP socket. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - symantec-endpoint-log
+          - forwarded
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: remove_mapped_fields
+        required: true
+        show_user: false
+        title: Remove fields mapped to ECS
+        description: Remove symantec_endpoint.log fields that have been used to populate ECS fields. This reduces the size of events by removing duplicated data.
+        type: bool
+        multi: false
+        default: false
+  - input: logfile
+    template_path: logfile.yml.hbs
+    title: SEP logs (from file)
+    description: Collect Symantec Endpoint Protection (SEP) logs from a file.
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - 'C:\Program Files (x86)\Symantec\Symantec Endpoint Protection Manager\data\dump\*.log'
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - symantec-endpoint-log
+          - forwarded
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+      - name: remove_mapped_fields
+        required: true
+        show_user: false
+        title: Remove fields mapped to ECS
+        description: Remove symantec_endpoint.log fields that have been used to populate ECS fields. This reduces the size of events by removing duplicated data.
+        type: bool
+        multi: false
+        default: false
