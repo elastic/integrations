@@ -33,93 +33,295 @@ processors:
       formats:
         - "MM/dd/yy HH:mm:ss"
       timezone: "{{{event.timezone}}}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "date processor failed to convert the timestamp"
-  - convert:
-      field: event.code
-      target_field: _tmp_.code
-      type: integer
-  - set:
-      field: event.action
-      value: log-start
-      if: "ctx?.event?.code == '00'"
-  - set:
-      field: event.action
-      value: log-end
-      if: "ctx?.event?.code == '01'"
-  - set:
-      field: event.action
-      value: log-pause
-      if: "ctx?.event?.code == '02'"
-  - set:
-      field: event.action
-      value: dhcp-new
-      if: "ctx?.event?.code == '10'"
-  - set:
-      field: event.action
-      value: dhcp-renew
-      if: "ctx?.event?.code == '11'"
-  - set:
-      field: event.action
-      value: dhcp-release
-      if: "ctx?.event?.code == '12'"
-  - set:
-      field: event.action
-      value: dhcp-deny
-      if: "ctx?.event?.code == '15'"
-  - set:
-      field: event.action
-      value: dhcp-delete
-      if: "ctx?.event?.code == '16'"
-  - set:
-      field: event.action
-      value: dhcp-expire
-      if: "ctx?.event?.code != null && ['17', '18'].contains(ctx.event.code)"
-  - set:
-      field: event.action
-      value: ip-cleanup-start
-      if: "ctx?.event?.code == '24'"
-  - set:
-      field: event.action
-      value: ip-cleanup-end
-      if: "ctx?.event?.code == '25'"
-  - set:
-      field: event.action
-      value: dhcp-dns-update
-      if: "ctx?.event?.code != null && ['30', '31', '32', '34', '35'].contains(ctx.event.code)"
-  - set:
-      field: event.action
-      value: rogue-server-detection
-      if: "ctx?._tmp_?.code > 50"
-  - append:
-      field: event.category
-      value: network
-  - append:
-      field: event.category
-      value: authentication
-      if: "ctx?._tmp_?.code >= 50 && ctx?._tmp_?.code >= 60"
-  - append:
-      field: event.type
-      value: connection
-  - append:
-      field: event.type
-      value: user
-      if: "ctx?._tmp_?.code >= 50 && ctx?._tmp_?.code >= 60"
-  - append:
-      field: event.type
-      value: allowed
-      if: "ctx?.event?.code != null && ['10', '11', '12', '20', '21'].contains(ctx.event.code)"
-  - append:
-      field: event.type
-      value: denied
-      if: "ctx?.event?.code != null && ['14', '15', '22', '35', '36'].contains(ctx.event.code)"
-  # Related error codes according to documentation
-  - set:
-      field: event.outcome
-      value: failure
-      if: "ctx?.event?.code != null && ['02', '15', '22', '31', '33', '34', '35', '36'].contains(ctx.event.code)"
+  - script:
+      description: Set event action, category, outcome, and type for all known event types.
+      lang: painless
+      tag: Add ECS categorization fields
+      params:
+        "00":
+          action: log-start
+          category:
+            - process
+          type:
+            - start
+        "01":
+          action: log-end
+          category:
+            - process
+          type:
+            - end
+        "02":
+          action: log-pause
+          category:
+            - process
+          type:
+            - change
+          outcome: failure
+        "10":
+          action: dhcp-new
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "11":
+          action: dhcp-renew
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "12":
+          action: dhcp-release
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "13":
+          category:
+            - network
+          type:
+            - connection
+        "14":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "15":
+          action: dhcp-deny
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "16":
+          action: dhcp-delete
+          category:
+            - network
+          type:
+            - connection
+        "17":
+          action: dhcp-expire
+          category:
+            - network
+          type:
+            - connection
+        "18":
+          action: dhcp-expire
+          category:
+            - network
+          type:
+            - connection
+        "20":
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "21":
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "22":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "23":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "24":
+          action: ip-cleanup-start
+          category:
+            - process
+          type:
+            - start
+        "25":
+          action: ip-cleanup-end
+          category:
+            - process
+          type:
+            - start
+        "30":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+        "31":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "32":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+        "33":
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "34":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "35":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "36":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "50":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+          outcome: failure
+        "51":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - allowed
+            - connection
+        "52":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "53":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - allowed
+            - connection
+        "54":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "55":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - allowed
+            - connection
+        "56":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "57":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "58":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+          outcome: failure
+        "59":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+          outcome: failure
+        "60":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "61":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "62":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "63":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "64":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+      source: |-
+        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+          return;
+        }
+        def hm = new HashMap(params[ctx.event.code]);
+        hm.forEach((k, v) -> ctx.event[k] = v);
   - set:
       field: event.outcome
       value: success
