@@ -24,7 +24,7 @@ processors:
       field: _tmp_.timestamp
       formats:
         - "MM/dd/yy HH:mm:ss"
-      timezone: "{{event.timezone}}"
+      timezone: "{{{event.timezone}}}"
   - script:
       description: Set event action, category, outcome, and type for all known event types.
       lang: painless
@@ -266,7 +266,7 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.event?.outcome == null
+      if: ctx?.event?.outcome == null
 on_failure:
   - set:
       field: error.message

@@ -10,17 +10,24 @@ processors:
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
-      if: "ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'"
+      if: "ctx?._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
+  - set:
+      field: event.original
+      override: false
+      copy_from: message
+  - remove:
+      field: message
+      ignore_missing: true
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: "!ctx?.log?.file?.path?.contains('V6')"
+      if: "ctx?.log?.file?.path != null && !ctx.log.file.path.contains('V6')"
   - pipeline:
       name: '{{ IngestPipeline "dhcpv6" }}'
-      if: "ctx?.log?.file?.path?.contains('V6')"
+      if: "ctx?.log?.file?.path != null && ctx.log.file.path.contains('V6')"
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

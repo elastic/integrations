@@ -32,7 +32,7 @@ processors:
       field: _tmp_.timestamp
       formats:
         - "MM/dd/yy HH:mm:ss"
-      timezone: "{{event.timezone}}"
+      timezone: "{{{event.timezone}}}"
       on_failure:
         - append:
             field: error.message
@@ -44,100 +44,98 @@ processors:
   - set:
       field: event.action
       value: log-start
-      if: "ctx.event?.code == '00'"
+      if: "ctx?.event?.code == '00'"
   - set:
       field: event.action
       value: log-end
-      if: "ctx.event?.code == '01'"
+      if: "ctx?.event?.code == '01'"
   - set:
       field: event.action
       value: log-pause
-      if: "ctx.event?.code == '02'"
+      if: "ctx?.event?.code == '02'"
   - set:
       field: event.action
       value: dhcp-new
-      if: "ctx.event?.code == '10'"
+      if: "ctx?.event?.code == '10'"
   - set:
       field: event.action
       value: dhcp-renew
-      if: "ctx.event?.code == '11'"
+      if: "ctx?.event?.code == '11'"
   - set:
       field: event.action
       value: dhcp-release
-      if: "ctx.event?.code == '12'"
+      if: "ctx?.event?.code == '12'"
   - set:
       field: event.action
       value: dhcp-deny
-      if: "ctx.event?.code == '15'"
+      if: "ctx?.event?.code == '15'"
   - set:
       field: event.action
       value: dhcp-delete
-      if: "ctx.event?.code == '16'"
+      if: "ctx?.event?.code == '16'"
   - set:
       field: event.action
       value: dhcp-expire
-      if: "['17', '18'].contains(ctx.event?.code)"
+      if: "ctx?.event?.code != null && ['17', '18'].contains(ctx.event.code)"
   - set:
       field: event.action
       value: ip-cleanup-start
-      if: "ctx.event?.code == '24'"
+      if: "ctx?.event?.code == '24'"
   - set:
       field: event.action
       value: ip-cleanup-end
-      if: "ctx.event?.code == '25'"
+      if: "ctx?.event?.code == '25'"
   - set:
       field: event.action
       value: dhcp-dns-update
-      if: "['30', '31', '32', '34', '35'].contains(ctx.event?.code)"
+      if: "ctx?.event?.code != null && ['30', '31', '32', '34', '35'].contains(ctx.event.code)"
   - set:
       field: event.action
       value: rogue-server-detection
-      if: "ctx._tmp_?.code > 50"
+      if: "ctx?._tmp_?.code > 50"
   - append:
       field: event.category
       value: network
   - append:
       field: event.category
       value: authentication
-      if: "ctx._tmp_?.code >= 50 && ctx._tmp_?.code >= 60"
+      if: "ctx?._tmp_?.code >= 50 && ctx?._tmp_?.code >= 60"
   - append:
       field: event.type
       value: connection
   - append:
       field: event.type
       value: user
-      if: "ctx._tmp_?.code >= 50 && ctx._tmp_?.code >= 60"
+      if: "ctx?._tmp_?.code >= 50 && ctx?._tmp_?.code >= 60"
   - append:
       field: event.type
       value: allowed
-      if: "['10', '11', '12', '20', '21'].contains(ctx.event?.code)"
+      if: "ctx?.event?.code != null && ['10', '11', '12', '20', '21'].contains(ctx.event.code)"
   - append:
       field: event.type
       value: denied
-      if: "['14', '15', '22', '35', '36'].contains(ctx.event?.code)"
+      if: "ctx?.event?.code != null && ['14', '15', '22', '35', '36'].contains(ctx.event.code)"
   # Related error codes according to documentation
   - set:
       field: event.outcome
       value: failure
-      if: "['02', '15', '22', '31', '33', '34', '35', '36'].contains(ctx.event?.code)"
+      if: "ctx?.event?.code != null && ['02', '15', '22', '31', '33', '34', '35', '36'].contains(ctx.event.code)"
   - set:
       field: event.outcome
       value: success
-      if: ctx.event?.outcome == null
-  - script:
-      description: Converts the MAC format to conform with RFC 7042
-      lang: painless
-      if: ctx._tmp_?.mac != null
-      source: |
-        def mac = ctx._tmp_.mac;
-        StringBuilder sb = new StringBuilder(mac);
-        for (int i = 1; i < mac.length()/2; ++i) {
-          sb.insert(i*2+(i -1), "-");
-        }
-        if (ctx.host == null) {
-          ctx.host = new HashMap();
-        }
-        ctx.host.put("mac", sb.toString());
+      if: ctx?.event?.outcome == null
+  - gsub:
+      field: _tmp_.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: _tmp_.mac
+      ignore_missing: true
+  - set:
+      if: ctx?._tmp_?.mac != null
+      field: host.mac
+      value: '{{{_tmp_.mac}}}'
 on_failure:
   - set:
       field: error.message
