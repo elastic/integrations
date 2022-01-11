@@ -1,0 +1,194 @@
+---
+description: Pipeline for processing f5 LTM HTTP logs
+processors:
+- set:
+    field: event.ingested
+    value: "{{_ingest.timestamp}}"
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- rename:
+    field: message
+    target_field: event.original
+- grok:
+      field: event.original
+      patterns:
+        - "%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP_ISO8601:syslog5424_ts}|-) +(?:%{HOSTNAME:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII:syslog5424_app}) +(-|%{SYSLOG5424PRINTASCII:syslog5424_proc}) +(-|%{SYSLOG5424PRINTASCII:syslog5424_msgid}) +(?:%{SYSLOG5424SD:syslog5424_sd}|-|)"
+              #  - "<%{NONNEGINT:syslog_pri}>%{NONNEGINT:version}%{SPACE}(?:-|%{TIMESTAMP_ISO8601:syslog_timestamp})%{SPACE}(?:-|%{IPORHOST:hostname})%{SPACE}(?:%{SYSLOG5424PRINTASCII:program}|-)%{SPACE}(?:-|%{SYSLOG5424PRINTASCII:process_id})%{SPACE}(?:-|%{SYSLOG5424PRINTASCII:message_id})%{SPACE}(?:-|(?<structured_data>(\[.*?[^\\]\])+))(?:%{SPACE}%{GREEDYDATA:syslog_message}|)"
+- kv:
+      field: syslog5424_sd
+      field_split: " (?=[a-z\\_\\-]+=)"
+      value_split: "="
+      prefix: "f5.ltm."
+      ignore_missing: true
+      ignore_failure: false
+      trim_value: '"'
+- script:
+      lang: painless
+      source: |
+        def lb = ctx?.f5?.ltm;
+        if (lb != null) {
+            lb.entrySet().removeIf(entry -> entry.getValue() == "N/A");
+        }
+- set:
+      field: observer.vendor
+      value: f5
+- set:
+      field: observer.product
+      value: BigIP
+- set:
+      field: observer.type
+      value: loadbalancer
+#- set:
+#      field: event.timezone
+#      value: "{{f5.ltm.tz}}"
+#      ignore_empty_value: true
+- date:
+      field: syslog5424_ts
+      target_field: "@timestamp"
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss Z
+        - yyyy-MM-dd HH:mm:ss z
+        - ISO8601
+#      on_failure:
+#      - append:
+#          field: error.message
+#          value: '{{ _ingest.on_failure_message }}'
+- remove:
+      field: syslog5424_ts
+- rename:
+      field: syslog5424_host
+      target_field: observer.name
+      ignore_missing: true
+- script:
+      lang: painless
+      source: "ctx.event.duration = Long.parseLong(ctx.f5.ltm.rtt) * 1000000"
+      if: "ctx.f5?.ltm?.rtt != null"
+- convert:
+      field: f5.ltm.responsetime
+      type: long
+      ignore_missing: true
+- convert:
+      field: f5.ltm.sessiontime
+      type: long
+      ignore_missing: true
+- convert:
+      field: f5.ltm.realport
+      type: long
+      ignore_missing: true
+- date:
+      field: f5.ltm.reqtime
+      target_field: f5.ltm.reqts
+      formats:
+        - UNIX_MS
+      timezone:
+      ignore_failure: true
+- convert:
+      field: f5.ltm.status
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+- rename:
+      field: f5.ltm.method
+      target_field: http.request.method
+      ignore_missing: true
+- rename:
+      field: f5.ltm.host
+      target_field: destination.domain
+      ignore_missing: true
+- uri_parts:
+      field: f5.ltm.uri
+      target_field: url
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+      if: "ctx?.f5?.ltm?.uri != null"
+- user_agent:
+      field: f5.ltm.uagent
+      target_field: user_agent.original
+      extract_device_type: true
+      ignore_missing: true
+- convert:
+      field: f5.ltm.srcip
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+- convert:
+      field: f5.ltm.vsip
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+- convert:
+      field: f5.ltm.realserver
+      type: ip
+      ignore_failure: true
+- geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+- geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+- rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+- rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+- convert:
+      field: f5.ltm.bytes
+      target_field: http.response.bytes
+      type: long
+      if: "ctx.f5?.ltm?.bytes != null"
+- append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: "ctx?.source?.ip != null"
+- append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: "ctx?.destination?.ip != null"
+- append:
+      field: related.ip
+      value: "{{f5.ltm.realserver}}"
+      if: "ctx?.f5?.ltm?.realserver != null"
+- append:
+      field: related.hosts
+      value: "{{destination.domain}}"
+      if: "ctx?.destination?.domain != null"
+- set:
+      field: event.outcome
+      value: success
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+- set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+- set:
+      field: event.kind
+      value: event
+- append:
+      field: event.category
+      value: web
+      if: "ctx?.f5?.ltm?.host != null"
+#- rename:
+#      field: f5.ltm.level
+#      target_field: log.level
+#      ignore_missing: true
+- remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
