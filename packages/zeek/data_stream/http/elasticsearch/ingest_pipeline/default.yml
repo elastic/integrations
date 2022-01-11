@@ -120,9 +120,19 @@ processors:
       target_field: http.response.body.bytes
       ignore_missing: true
   - uri_parts:
-      field: zeek.http.uri
-      remove_if_successful: true
       if: ctx?.zeek?.http?.uri != null
+      field: zeek.http.uri
+      on_failure:
+        - set:
+            field: url.original
+            copy_from: zeek.http.uri
+            ignore_failure: true
+        - append:
+            field: tags
+            value: _zeek_http_url_parse_failure
+  - remove:
+      field: zeek.http.uri
+      ignore_missing: true
   - remove:
       field: url.domain
       ignore_missing: true
