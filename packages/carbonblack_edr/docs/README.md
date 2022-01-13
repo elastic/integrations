@@ -35,8 +35,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2014-04-11T19:21:33.682Z",
     "agent": {
-        "ephemeral_id": "96884d51-70a4-43c9-8db6-302f9ec5ffc5",
-        "id": "dc24c927-160c-478a-91b1-38ca127bf628",
+        "ephemeral_id": "c6db40f5-292e-4514-ae87-07ef3e74860d",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -61,7 +61,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "dc24c927-160c-478a-91b1-38ca127bf628",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -69,7 +69,7 @@ An example event for `log` looks as following:
         "action": "unknown",
         "agent_id_status": "verified",
         "dataset": "carbonblack_edr.log",
-        "ingested": "2021-12-25T03:53:17Z",
+        "ingested": "2022-01-13T02:31:22Z",
         "kind": "event",
         "original": "{\"md5\":\"506708142BC63DABA64F2D3AD1DCD5BF\",\"report_id\":\"dxmtest1_04\",\"ioc_type\":\"md5\",\"ioc_value\":\"506708142bc63daba64f2d3ad1dcd5bf\",\"ioc_attr\":{},\"feed_id\":7,\"hostname\":\"FS-SEA-529\",\"sensor_id\":3321,\"cb_version\":\"4.2.1.140808.1059\",\"server_name\":\"localhost.localdomain\",\"feed_name\":\"dxmtest1\",\"event_timestamp\":1397244093.682}\n"
     },
@@ -81,7 +81,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.22.0.4:40481"
+            "address": "172.18.0.7:46839"
         }
     },
     "observer": {
@@ -96,7 +96,7 @@ An example event for `log` looks as following:
         "forwarded",
         "preserve_original_event"
     ],
-    "threatintel": {
+    "threat": {
         "indicator": {
             "file": {
                 "hash": {
