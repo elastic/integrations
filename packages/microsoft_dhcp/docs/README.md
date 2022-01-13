@@ -11,6 +11,9 @@ This integration has been made to support the DHCP log format from Windows Serve
 Ingest logs from Microsoft DHCP Server, by default logged with the filename format:
 `%windir%\System32\DHCP\DhcpSrvLog-*.log`
 
+Logs may also be ingested from Microsoft DHCPv6 Server, by default logged with the filename format:
+`%windir%\System32\DHCP\DhcpV6SrvLog-*.log`
+
 Relevant documentation for Microsoft DHCP can be found on [this]https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd183591(v=ws.10) location.
 
 An example event for `log` looks as following:
@@ -105,13 +108,20 @@ An example event for `log` looks as following:
 | microsoft.dhcp.correlation_id | The NAP correlation ID related to the client/server transaction. | keyword |
 | microsoft.dhcp.dhc_id | The related DHCID (DHC DNS record). | keyword |
 | microsoft.dhcp.dns_error_code | DNS error code communicated to client. | keyword |
+| microsoft.dhcp.duid.hex | The related DHCP Unique Identifier (DUID) for the host (DHCPv6). | keyword |
+| microsoft.dhcp.duid.length | The length of the DUID field. | keyword |
+| microsoft.dhcp.error_code | DHCP server error code. | keyword |
 | microsoft.dhcp.probation_time | The probation time before lease ends on specific IP. | keyword |
 | microsoft.dhcp.relay_agent_info | Information about DHCP relay agent used for the DHCP request. | keyword |
 | microsoft.dhcp.result | The DHCP result type, for example "NoQuarantine", "Drop Packet" etc. | keyword |
+| microsoft.dhcp.subnet_prefix | The number of bits for the subnet prefix. | keyword |
 | microsoft.dhcp.transaction_id | The DHCP transaction ID. | keyword |
 | microsoft.dhcp.user.hex | Hex representation of the user. | keyword |
 | microsoft.dhcp.user.string | String representation of the user. | keyword |
 | microsoft.dhcp.vendor.hex | Hex representation of the vendor. | keyword |
 | microsoft.dhcp.vendor.string | String representation of the vendor. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
+| observer.ip | IP addresses of the observer. | ip |
+| observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
