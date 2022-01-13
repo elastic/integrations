@@ -1,0 +1,34 @@
+---
+description: "Pipeline for AWS GuardDuty logs - Port Probe Action"
+processors:
+- rename:
+    field: json.service.action.portProbeAction.blocked
+    target_field: aws.guardduty.action.blocked
+    ignore_missing: true
+- script:
+    lang: painless
+    if: ctx.json?.service?.action?.portProbeAction?.portProbeDetails != null
+    description: Iterate through Port Probe IPs
+    source: |
+      if (ctx.related == null) {
+        Map map = new HashMap();
+        ctx.put("related", map);
+      }
+      if (ctx.related.ip == null) {
+        ArrayList list = new ArrayList();
+        ctx.related.put("ip", list);
+      }
+      for (def x : ctx.json?.service?.action?.portProbeAction?.portProbeDetails) {
+          if (x instanceof Map) {
+            if(x.localIpDetails?.ipAddressV4 != null && !ctx.related.ip.contains(x.localIpDetails.ipAddressV4)) {
+              ctx.related.ip.add(x.localIpDetails.ipAddressV4);
+            }
+            if(x.remoteIpDetails?.ipAddressV4 != null && !ctx.related.ip.contains(x.remoteIpDetails.ipAddressV4)) {
+              ctx.related.ip.add(x.remoteIpDetails.ipAddressV4);
+            }
+          }
+      }
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

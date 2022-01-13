@@ -1,0 +1,76 @@
+---
+description: "Pipeline for AWS GuardDuty logs - Network Connection Action"
+processors:
+- rename:
+    field: json.service.action.networkConnectionAction.connectionDirection
+    target_field: network.direction
+    ignore_missing: true
+- lowercase:
+    field: network.direction
+    ignore_missing: true
+- rename:
+    field: json.service.action.networkConnectionAction.localIpDetails.ipAddressV4
+    target_field: source.address
+    ignore_missing: true
+    if: ctx.network?.direction == 'outbound'
+- rename:
+    field: json.service.action.networkConnectionAction.localIpDetails.ipAddressV4
+    target_field: destination.address
+    ignore_missing: true
+    if: ctx.network?.direction == 'inbound'
+- rename:
+    field: json.service.action.networkConnectionAction.remoteIpDetails.ipAddressV4
+    target_field: source.address
+    ignore_missing: true
+    if: ctx.network?.direction == 'inbound'
+- rename:
+    field: json.service.action.networkConnectionAction.remoteIpDetails.ipAddressV4
+    target_field: destination.address
+    ignore_missing: true
+    if: ctx.network?.direction == 'outbound'
+- convert:
+    field: json.service.action.networkConnectionAction.localPortDetails.port
+    target_field: source.port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.network?.direction == 'outbound'
+- convert:
+    field: json.service.action.networkConnectionAction.localPortDetails.port
+    target_field: destination.port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.network?.direction == 'inbound'
+- convert:
+    field: json.service.action.networkConnectionAction.remotePortDetails.port
+    target_field: source.port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.network?.direction == 'inbound'
+- convert:
+    field: json.service.action.networkConnectionAction.remotePortDetails.port
+    target_field: destination.port
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx.network?.direction == 'outbound'
+- rename:
+    field: json.service.action.networkConnectionAction.protocol
+    target_field: network.transport
+    ignore_missing: true
+    if: ctx.json?.service?.action?.networkConnectionAction?.protocol != null && !(/^\d+$/.matcher(ctx.json.service.action.networkConnectionAction.protocol).matches())
+- rename:
+    field: json.service.action.networkConnectionAction.protocol
+    target_field: network.iana_number
+    ignore_missing: true
+    if: ctx.json?.service?.action?.networkConnectionAction?.protocol != null && (/^\d+$/.matcher(ctx.json.service.action.networkConnectionAction.protocol).matches())
+- rename:
+    field: json.service.action.networkConnectionAction.blocked
+    target_field: aws.guardduty.action.blocked
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

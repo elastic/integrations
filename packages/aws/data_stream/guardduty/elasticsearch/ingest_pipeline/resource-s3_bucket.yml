@@ -1,0 +1,11 @@
+---
+description: "Pipeline for AWS GuardDuty logs - S3 Bucket Resource"
+processors:
+- rename:
+    field: json.resource.s3BucketDetails
+    target_field: aws.guardduty.resource.s3
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

@@ -1,0 +1,302 @@
+---
+description: "Pipeline for AWS GuardDuty logs"
+processors:
+- set:
+    field: ecs.version
+    value: '1.12.0'
+- append:
+    field: event.kind
+    value: alert
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: json
+- date:
+    field: json.updatedAt
+    target_field: aws.guardduty.updated_at
+    ignore_failure: true
+    formats:
+    - ISO8601
+- date:
+    field: json.createdAt
+    target_field: event.created
+    ignore_failure: true
+    formats:
+    - ISO8601
+- set:
+    field: '@timestamp'
+    copy_from: aws.guardduty.updated_at
+    ignore_empty_value: true
+- set:
+    field: cloud.provider
+    value: aws
+    ignore_empty_value: true
+- rename:
+    field: json.accountId
+    target_field: cloud.account.id
+    ignore_missing: true
+- set:    
+    field: cloud.region
+    copy_from: json.region
+    ignore_empty_value: true
+- rename:
+    field: json.id
+    target_field: event.id
+    ignore_missing: true
+- rename:
+    field: json.arn
+    target_field: aws.guardduty.arn
+    ignore_missing: true
+- rename:
+    field: json.type
+    target_field: aws.guardduty.type
+    ignore_missing: true
+- set:
+    field: rule.name
+    copy_from: aws.guardduty.type
+    ignore_empty_value: true
+- grok:
+    field: rule.name
+    patterns:
+      - '%{RULESET:rule.ruleset}'
+    pattern_definitions:
+      RULESET: '%{WORD:rule.category}:%{WORD}'
+- rename:
+    field: json.title
+    target_field: aws.guardduty.title
+    ignore_missing: true
+- rename:
+    field: json.description
+    target_field: aws.guardduty.description
+    ignore_missing: true
+- rename:
+    field: json.severity
+    target_field: event.severity
+    ignore_missing: true
+- rename:
+    field: json.resource.resourceType
+    target_field: aws.guardduty.resource.type
+    ignore_missing: true
+# Access Key Details
+- pipeline:
+    name: '{{ IngestPipeline "resource-access_key" }}'
+    if: "ctx.json?.resource?.accessKeyDetails != null"
+# Instance Details
+- pipeline:
+    name: '{{ IngestPipeline "resource-instance" }}'
+    if: "ctx.json?.resource?.instanceDetails != null"
+# EKS CLuster Resource
+- pipeline:
+    name: '{{ IngestPipeline "resource-eks_cluster" }}'
+    if: "ctx.json?.resource?.eksClusterDetails != null || ctx.json?.resource?.kubernetesDetails != null"
+# S3 Bucket Details
+- pipeline:
+    name: '{{ IngestPipeline "resource-s3_bucket" }}'
+    if: "ctx.json?.resource?.s3BucketDetails != null"
+
+# Service
+- rename:
+    field: json.service.serviceName
+    target_field: cloud.service.name
+    ignore_missing: true
+- rename:
+    field: json.service.detectorId
+    target_field: aws.guardduty.detector.id
+    ignore_missing: true
+- rename:
+    field: json.service.count
+    target_field: aws.guardduty.count
+    ignore_missing: true
+- rename:
+    field: json.service.archived
+    target_field: aws.guardduty.archived
+    ignore_missing: true
+- rename:
+    field: json.service.sample
+    target_field: aws.guardduty.sample
+    ignore_missing: true
+- date:
+    field: json.service.eventFirstSeen
+    target_field: aws.guardduty.first_seen
+    ignore_failure: true
+    formats:
+    - ISO8601
+- date:
+    field: json.service.eventLastSeen
+    target_field: aws.guardduty.last_seen
+    ignore_failure: true
+    formats:
+    - ISO8601
+- set:
+    field: event.action
+    copy_from: json.service.action.actionType
+    ignore_empty_value: true
+- rename:
+    field: json.service.resourceRole
+    target_field: aws.guardduty.resource.role
+    ignore_missing: true
+- user_agent:
+    field: json.service.additionalInfo.userAgent.fullUserAgent
+    target_field: user_agent
+    ignore_missing: true
+    on_failure:
+      - rename:
+          field: json.service.additionalInfo.userAgent.fullUserAgent
+          target_field: user_agent.original
+          ignore_failure: true
+          ignore_missing: true
+# AWS API Call Action
+- pipeline:
+    name: '{{ IngestPipeline "action-aws_api_call" }}'
+    if: "ctx.event?.action == 'AWS_API_CALL'"
+# Network Connection Action
+- pipeline:
+    name: '{{ IngestPipeline "action-network_connection" }}'
+    if: "ctx.event?.action == 'NETWORK_CONNECTION'"
+# Port Probe Action
+- pipeline:
+    name: '{{ IngestPipeline "action-port_probe" }}'
+    if: "ctx.event?.action == 'PORT_PROBE'"
+# DNS Request Action
+- pipeline:
+    name: '{{ IngestPipeline "action-dns_request" }}'
+    if: "ctx.event?.action == 'DNS_REQUEST'"
+# Kubernetes API Call Action
+- pipeline:
+    name: '{{ IngestPipeline "action-kubernetes_api_call" }}'
+    if: "ctx.event?.action == 'KUBERNETES_API_CALL'"
+
+# ECS Stuff
+- append:
+    field: event.category
+    value: network
+    allow_duplicates: false
+    if: '["NETWORK_CONNECTION","PORT_PROBE","DNS_REQUEST"].contains(ctx.event.action)'
+- append:
+    field: event.category
+    value: configuration
+    allow_duplicates: false
+    if: '["AWS_API_CALL","KUBERNETES_API_CALL"].contains(ctx.event.action)'
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+- append:
+    field: event.type
+    value: allowed
+    allow_duplicates: false
+    if: ctx.aws?.guardduty?.action?.blocked != null && !ctx.aws?.guardduty?.action?.blocked
+- append:
+    field: event.type
+    value: denied
+    allow_duplicates: false
+    if: >- 
+      (ctx.aws?.guardduty?.action?.blocked != null && ctx.aws?.guardduty?.action?.blocked) ||
+      (ctx.aws?.guardduty?.action?.error_code != null && ctx.aws?.guardduty?.action?.error_code == 'AccessDenied')
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- convert:
+    field: destination.address
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- geoip:
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+- community_id:
+    target_field: network.community_id
+    ignore_missing: true
+    ignore_failure: true
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- append:
+    field: related.ip
+    value: '{{destination.ip}}'
+    allow_duplicates: false
+    if: ctx.destination?.ip != null
+#
+# Remove temporary fields
+#
+- remove:
+    field: json
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+        void handleMap(Map map) {
+            for (def x : map.values()) {
+                if (x instanceof Map) {
+                    handleMap(x);
+                } else if (x instanceof List) {
+                    handleList(x);
+                }
+            }
+            map.values().removeIf(v -> v == null || v == "" || v == "-" || ((v instanceof List || v instanceof Map) && v.isEmpty()));
+        }
+        void handleList(List list) {
+            for (def x : list) {
+                if (x instanceof Map) {
+                    handleMap(x);
+                } else if (x instanceof List) {
+                    handleList(x);
+                }
+            }
+        }
+        handleMap(ctx);
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

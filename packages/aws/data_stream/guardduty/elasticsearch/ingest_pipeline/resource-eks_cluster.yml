@@ -1,0 +1,71 @@
+---
+description: "Pipeline for AWS GuardDuty logs - EKS & Kubernetes Resource"
+processors:
+- rename:
+    field: json.resource.eksClusterDetails.name
+    target_field: orchestrator.cluster.name
+    ignore_missing: true
+- rename:
+    field: json.resource.eksClusterDetails.arn
+    target_field: aws.guardduty.resource.eks_cluster.arn
+    ignore_missing: true
+- date:
+    field: json.resource.eksClusterDetails.created_at
+    target_field: aws.guardduty.resource.eks_cluster.created_at
+    ignore_failure: true
+    formats:
+    - UNIX
+- rename:
+    field: json.resource.eksClusterDetails.vpcId
+    target_field: aws.guardduty.resource.eks_cluster.vpc_id
+    ignore_missing: true
+- set:
+    field: network.name
+    copy_from: aws.guardduty.resource.eks_cluster.vpc_id
+    ignore_empty_value: true
+- rename:
+    field: json.resource.eksClusterDetails.status
+    target_field: aws.guardduty.resource.eks_cluster.status
+    ignore_missing: true
+- set:
+    field: orchestrator.type
+    copy_from: kubernetes
+    ignore_empty_value: true
+- rename:
+    field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.name
+    target_field: orchestrator.resource.name
+    ignore_missing: true
+- rename:
+    field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.namespace
+    target_field: orchestrator.namespace
+    ignore_missing: true
+- rename:
+    field: json.resource.kubernetesDetails.kubernetesWorkloadDetails.type
+    target_field: orchestrator.resource.type
+    ignore_missing: true
+- rename:
+    field: json.resource.kubernetesDetails.kubernetesUserDetails.username
+    target_field: user.name
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.resource.kubernetesDetails.kubernetesUserDetails.uid
+    target_field: user.id
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.resource.kubernetesDetails.kubernetesUserDetails.groups
+    target_field: user.roles
+    ignore_missing: true
+- script:
+    lang: painless
+    if: ctx.json?.resource?.eksClusterDetails?.tags != null
+    source: |
+        ctx.aws.guardduty.resource.eks_cluster.tags = new HashMap();
+        for (def i = 0; i < ctx.json.resource.eksClusterDetails.tags.length; i++) {
+          ctx.aws.guardduty.resource.eks_cluster.tags[ctx.json.resource.eksClusterDetails.tags[i].key] = ctx.json.resource.eksClusterDetails.tags[i].value;
+        }
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

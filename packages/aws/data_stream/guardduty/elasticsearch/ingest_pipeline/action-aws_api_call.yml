@@ -1,0 +1,35 @@
+---
+description: "Pipeline for AWS GuardDuty logs - AWS API Call Action"
+processors:
+- rename:
+    field: json.service.action.awsApiCallAction.api
+    target_field: aws.guardduty.action.api
+    ignore_missing: true
+- rename:
+    field: json.service.action.awsApiCallAction.serviceName
+    target_field: aws.guardduty.action.service_name
+    ignore_missing: true
+- set:
+    field: event.provider
+    copy_from: aws.guardduty.action.service_name
+    ignore_empty_value: true
+- rename:
+    field: json.service.action.awsApiCallAction.callerType
+    target_field: aws.guardduty.action.caller_type
+    ignore_missing: true
+- rename:
+    field: json.service.action.awsApiCallAction.affectedResources
+    target_field: aws.guardduty.action.affected_resources
+    ignore_missing: true
+- rename:
+    field: json.service.action.awsApiCallAction.remoteIpDetails.ipAddressV4
+    target_field: source.address
+    ignore_missing: true
+- rename:
+    field: json.service.action.awsApiCallAction.errorCode
+    target_field: aws.guardduty.action.error_code
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

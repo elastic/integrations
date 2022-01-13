@@ -1,0 +1,25 @@
+---
+description: "Pipeline for AWS GuardDuty logs - Access Key Resource"
+processors:
+- rename:
+    field: json.resource.accessKeyDetails.accessKeyId
+    target_field: aws.guardduty.resource.access_key.id
+    ignore_missing: true
+- rename:
+    field: json.resource.accessKeyDetails.principalId
+    target_field: user.id
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.resource.accessKeyDetails.userType
+    target_field: aws.guardduty.resource.access_key.user.type
+    ignore_missing: true
+- rename:
+    field: json.resource.accessKeyDetails.userName
+    target_field: user.name
+    ignore_missing: true
+    ignore_failure: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

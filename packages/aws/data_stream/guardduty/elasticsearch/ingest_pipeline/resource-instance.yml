@@ -1,0 +1,102 @@
+---
+description: "Pipeline for AWS GuardDuty logs - Instance Resource"
+processors:
+- rename:
+    field: json.resource.instanceDetails.instanceId
+    target_field: cloud.instance.id
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.instanceType
+    target_field: cloud.machine.type
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.outpostArn
+    target_field: aws.guardduty.resource.instance.outpost_arn
+    ignore_missing: true
+- date:
+    field: json.resource.instanceDetails.launchTime
+    target_field: aws.guardduty.resource.instance.launch_time
+    ignore_failure: true
+    formats:
+    - ISO8601
+- rename:
+    field: json.resource.instanceDetails.iamInstanceProfile.arn
+    target_field: aws.guardduty.resource.instance.iam_instance_profile.arn
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.iamInstanceProfile.id
+    target_field: aws.guardduty.resource.instance.iam_instance_profile.id
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.instanceState
+    target_field: aws.guardduty.resource.instance.state
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.availabilityZone
+    target_field: cloud.availability_zone
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.imageId
+    target_field: aws.guardduty.resource.instance.image.id
+    ignore_missing: true
+- rename:
+    field: json.resource.instanceDetails.imageDescription
+    target_field: aws.guardduty.resource.instance.image.description
+    ignore_missing: true
+- script:
+    lang: painless
+    if: ctx.json?.resource?.instanceDetails?.tags != null
+    description: Iterate through the tags to make single map of key value pairs
+    source: |
+        ctx.aws.guardduty.resource.instance.tags = new HashMap();
+        for (def i = 0; i < ctx.json.resource.instanceDetails.tags.length; i++) {
+          ctx.aws.guardduty.resource.instance.tags[ctx.json.resource.instanceDetails.tags[i].key] = ctx.json.resource.instanceDetails.tags[i].value;
+        }
+- rename:
+    field: json.resource.instanceDetails.networkInterfaces
+    target_field: aws.guardduty.resource.instance.network_interfaces
+    ignore_missing: true
+- script:
+    lang: painless
+    if: ctx.aws?.guardduty?.resource?.instance?.network_interfaces != null
+    description: Iterate through network interfaces to capture the Public/Private IPs/Hostnames
+    source: |
+      if (ctx.aws?.guardduty?.resource?.instance?.network_interfaces[0]?.vpcId != null) {
+          ctx.aws.guardduty.resource.instance.put("vpc_id", ctx.aws?.guardduty?.resource?.instance?.network_interfaces[0]?.vpcId);
+      }
+      if (ctx.related == null) {
+        Map map = new HashMap();
+        ctx.put("related", map);
+      }
+      if (ctx.related.ip == null) {
+        ArrayList list = new ArrayList();
+        ctx.related.put("ip", list);
+      }
+      if (ctx.related.hosts == null) {
+        ArrayList list = new ArrayList();
+        ctx.related.put("hosts", list);
+      }
+      for (def x : ctx.aws.guardduty.resource.instance.network_interfaces) {
+        if (x instanceof Map) {
+            if(x.privateIpAddress != null && !ctx.related.ip.contains(x.privateIpAddress)) {
+                ctx.related.ip.add(x.privateIpAddress);
+            }
+            if(x.publicIp != null && !ctx.related.ip.contains(x.publicIp)) {
+                ctx.related.ip.add(x.publicIp);
+            }
+            if(x.privateDnsName != null && !ctx.related.hosts.contains(x.privateDnsName)) {
+                ctx.related.hosts.add(x.privateDnsName);
+            }
+            if(x.publicDnsName != null && !ctx.related.hosts.contains(x.publicDnsName)) {
+                ctx.related.hosts.add(x.publicDnsName);
+            }
+        }
+      }
+- set:
+    field: network.name
+    copy_from: aws.guardduty.resource.instance.vpc_id
+    ignore_empty_value: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

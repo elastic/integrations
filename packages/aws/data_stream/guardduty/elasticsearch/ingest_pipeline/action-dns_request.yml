@@ -1,0 +1,33 @@
+---
+description: "Pipeline for AWS GuardDuty logs - Port Probe Action"
+processors:
+- rename:
+    field: json.service.action.dnsRequestAction.blocked
+    target_field: aws.guardduty.action.blocked
+    ignore_missing: true
+- registered_domain:
+    field: json.service.action.dnsRequestAction.domain
+    target_field: dns.question
+    ignore_missing: true
+- rename:
+    field: dns.question.domain
+    target_field: dns.question.name
+    ignore_missing: true
+- rename:
+    field: json.service.action.dnsRequestAction.domain
+    target_field: dns.question.name
+    ignore_missing: true
+    if: ctx.dns?.question?.name == null
+- append:
+    field: related.hosts
+    value: '{{dns.question.name}}'
+    allow_duplicates: false
+    if: ctx.dns?.question?.name != null
+- rename:
+    field: json.service.action.dnsRequestAction.protocol
+    target_field: network.transport
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'

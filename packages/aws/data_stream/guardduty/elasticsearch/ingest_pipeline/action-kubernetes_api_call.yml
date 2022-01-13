@@ -1,0 +1,27 @@
+---
+description: "Pipeline for AWS GuardDuty logs - Kubernetes API Call Action"
+processors:
+- rename:
+    field: json.service.action.kubernetesApiCallAction.api
+    target_field: url.original
+    ignore_missing: true
+- rename:
+    field: json.service.action.kubernetesApiCallAction.verb
+    target_field: http.request.method
+    ignore_missing: true
+- rename:
+    field: json.service.action.kubernetesApiCallAction.statusCode
+    target_field: http.response.status_code
+    ignore_missing: true
+- user_agent:
+    field: json.service.action.kubernetesApiCallAction.verb
+    target_field: user_agent
+    ignore_missing: true
+- rename:
+    field: json.service.action.kubernetesApiCallAction.remoteIpDetails.ipAddressV4
+    target_field: source.address
+    ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
