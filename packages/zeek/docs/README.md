@@ -1,15 +1,22 @@
 # Zeek Integration
 
-This is an integration for Zeek, which used to be called Bro. It
-parses logs that are in the [Zeek JSON
-format](https://www.zeek.org/manual/release/logs/index.html).
+This is an integration for [Zeek](https://www.zeek.org/), which was formerly
+named Bro. Zeek is a passive, open-source network traffic analyzer. This
+integrations ingests the logs Zeek produces about the network traffic that it
+analyzes.
+
+Zeek logs must be output in JSON format. This is normally done by appending the 
+[json-logs policy](https://docs.zeek.org/en/lts/scripts/policy/tuning/json-logs.zeek.html)
+to your `local.zeek` file. Add this line to your `local.zeek`.
+
+`@load policy/tuning/json-logs.zeek`
 
 ## Compatibility
-This module has been developed against Zeek 2.6.1, but is expected to
-work with other versions of Zeek.
+This module has been developed against Zeek 2.6.1, but is expected to work with
+other versions of Zeek.
 
 Zeek requires a Unix-like platform, and it currently supports Linux,
-FreeBSD, and Mac OS X.  Find out how to use Zeek [here](https://www.zeek.org/).
+FreeBSD, and Mac OS X.
 
 ## Logs
 ### capture_loss
