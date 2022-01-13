@@ -1,6 +1,5 @@
 ---
-## Reference document for DHCP field mapping: https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd183591(v=ws.10)
-description: Pipeline for processing Microsoft DHCP logs.
+description: Pipeline for processing Microsoft DHCP Server logs.
 processors:
   - set:
       field: ecs.version
@@ -11,147 +10,24 @@ processors:
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
-      if: "ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'"
+      if: "ctx?._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
+  - set:
+      field: event.original
+      override: false
+      copy_from: message
+  - remove:
+      field: message
+      ignore_missing: true
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
-  - csv:
-      field: event.original
-      target_fields:
-        - event.code
-        - _tmp_.date
-        - _tmp_.time
-        - message
-        - host.ip
-        - host.domain
-        - _tmp_.mac
-        - user.name
-        - microsoft.dhcp.transaction_id
-        - microsoft.dhcp.result
-        - microsoft.dhcp.probation_time
-        - microsoft.dhcp.correlation_id
-        - microsoft.dhcp.dhc_id
-        - microsoft.dhcp.vendor.hex
-        - microsoft.dhcp.vendor.string
-        - microsoft.dhcp.user.hex
-        - microsoft.dhcp.user.string
-        - microsoft.dhcp.relay_agent_info
-        - microsoft.dhcp.dns_error_code
-      ignore_failure: true
-  - set:
-      field: _tmp_.timestamp
-      value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
-  - date:
-      field: _tmp_.timestamp
-      formats:
-        - "MM/dd/yy HH:mm:ss"
-      timezone: "{{event.timezone}}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "date processor failed to convert the timestamp"
-  - convert:
-      field: event.code
-      target_field: _tmp_.code
-      type: integer
-  - set:
-      field: event.action
-      value: log-start
-      if: "ctx.event?.code == '00'"
-  - set:
-      field: event.action
-      value: log-end
-      if: "ctx.event?.code == '01'"
-  - set:
-      field: event.action
-      value: log-pause
-      if: "ctx.event?.code == '02'"
-  - set:
-      field: event.action
-      value: dhcp-new
-      if: "ctx.event?.code == '10'"
-  - set:
-      field: event.action
-      value: dhcp-renew
-      if: "ctx.event?.code == '11'"
-  - set:
-      field: event.action
-      value: dhcp-release
-      if: "ctx.event?.code == '12'"
-  - set:
-      field: event.action
-      value: dhcp-deny
-      if: "ctx.event?.code == '15'"
-  - set:
-      field: event.action
-      value: dhcp-delete
-      if: "ctx.event?.code == '16'"
-  - set:
-      field: event.action
-      value: dhcp-expire
-      if: "['17', '18'].contains(ctx.event?.code)"
-  - set:
-      field: event.action
-      value: ip-cleanup-start
-      if: "ctx.event?.code == '24'"
-  - set:
-      field: event.action
-      value: ip-cleanup-end
-      if: "ctx.event?.code == '25'"
-  - set:
-      field: event.action
-      value: dhcp-dns-update
-      if: "['30', '31', '32', '34', '35'].contains(ctx.event?.code)"
-  - set:
-      field: event.action
-      value: rogue-server-detection
-      if: "ctx._tmp_?.code > 50"
-  - append:
-      field: event.category
-      value: network
-  - append:
-      field: event.category
-      value: authentication
-      if: "ctx._tmp_?.code >= 50 && ctx._tmp_?.code >= 60"
-  - append:
-      field: event.type
-      value: connection
-  - append:
-      field: event.type
-      value: user
-      if: "ctx._tmp_?.code >= 50 && ctx._tmp_?.code >= 60"
-  - append:
-      field: event.type
-      value: allowed
-      if: "['10', '11', '12', '20', '21'].contains(ctx.event?.code)"
-  - append:
-      field: event.type
-      value: denied
-      if: "['14', '15', '22', '35', '36'].contains(ctx.event?.code)"
-  # Related error codes according to documentation
-  - set:
-      field: event.outcome
-      value: failure
-      if: "['02', '15', '22', '31', '33', '34', '35', '36'].contains(ctx.event?.code)"
-  - set:
-      field: event.outcome
-      value: success
-      if: ctx.event?.outcome == null
-  - script:
-      description: Converts the MAC format to conform with RFC 7042
-      lang: painless
-      if: ctx._tmp_?.mac != null
-      source: |
-        def mac = ctx._tmp_.mac;
-        StringBuilder sb = new StringBuilder(mac);
-        for (int i = 1; i < mac.length()/2; ++i) {
-          sb.insert(i*2+(i -1), "-");
-        }
-        if (ctx.host == null) {
-          ctx.host = new HashMap();
-        }
-        ctx.host.put("mac", sb.toString());
+  - pipeline:
+      name: '{{ IngestPipeline "dhcp" }}'
+      if: "ctx?.log?.file?.path != null && !ctx.log.file.path.contains('V6')"
+  - pipeline:
+      name: '{{ IngestPipeline "dhcpv6" }}'
+      if: "ctx?.log?.file?.path != null && ctx.log.file.path.contains('V6')"
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
@@ -163,6 +39,11 @@ processors:
         - _conf
       ignore_missing: true
 on_failure:
-  - append:
+  - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - remove:
+      field:
+        - _tmp_
+        - _conf

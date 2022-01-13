@@ -1,0 +1,244 @@
+---
+description: Pipeline for processing Microsoft DHCPv6 Server logs.
+processors:
+  - csv:
+      field: event.original
+      target_fields:
+        - event.code
+        - _tmp_.date
+        - _tmp_.time
+        - message
+        - host.ip
+        - host.domain
+        - microsoft.dhcp.error_code
+        - microsoft.dhcp.duid.length
+        - microsoft.dhcp.duid.hex
+        - microsoft.dhcp.user.string
+        - microsoft.dhcp.dhc_id
+        - microsoft.dhcp.subnet_prefix
+      ignore_failure: true
+  - set:
+      field: _tmp_.timestamp
+      value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
+  - date:
+      field: _tmp_.timestamp
+      formats:
+        - "MM/dd/yy HH:mm:ss"
+      timezone: "{{{event.timezone}}}"
+  - script:
+      description: Set event action, category, outcome, and type for all known event types.
+      lang: painless
+      tag: Add ECS categorization fields
+      params:
+        "11000":
+          action: dhcpv6-solicit
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+        "11001":
+          action: dhcpv6-advertise
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+        "11002":
+          action: dhcpv6-request
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+        "11003":
+          action: dhcpv6-confirm
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+        "11004":
+          action: dhcpv6-renew
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+        "11005":
+          action: dhcpv6-rebind
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+        "11006":
+          action: dhcpv6-decline
+          category:
+            - network
+          type:
+            - connection
+            - protocol
+          outcome: failure
+        "11007":
+          action: dhcpv6-release
+          category:
+            - network
+          type:
+            - connection
+        "11008":
+          action: dhcpv6-info-request
+          category:
+            - network
+          type:
+            - connection
+        "11009":
+          action: dhcpv6-scope-full
+          category:
+            - network
+          type:
+            - connection
+        "11010":
+          action: log-start
+          category:
+            - process
+          type:
+            - start
+        "11011":
+          action: log-stop
+          category:
+            - process
+          type:
+            - stop
+        "11012":
+          action: log-pause
+          category:
+            - process
+          type:
+            - change
+        "11013":
+          action: log-file
+          category:
+            - process
+          type:
+            - info
+        "11014":
+          action: dhcpv6-bad-address
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "11015":
+          action: dhcpv6-address-in-use
+          category:
+            - network
+          type:
+            - connection
+        "11016":
+          action: dhcpv6-client-deleted
+          category:
+            - network
+          type:
+            - connection
+        "11017":
+          action: ipv6-dns-record-not-deleted
+          category:
+            - network
+          type:
+            - connection
+        "11018":
+          action: dhcpv6-expired
+          category:
+            - network
+          type:
+            - connection
+        "11019":
+          action: dhcpv6-lease-expired-deleted
+          category:
+            - network
+          type:
+            - connection
+        "11020":
+          action: dhcpv6-cleanup-start
+          category:
+            - process
+          type:
+            - start
+        "11021":
+          action: dhcpv6-cleanup-end
+          category:
+            - process
+          type:
+            - end
+        "11022":
+          action: ipv6-dns-update-request
+          category:
+            - network
+          type:
+            - connection
+            - start
+        "11023":
+          action: ipv6-dns-update-failed
+          category:
+            - network
+          type:
+            - connection
+            - end
+          outcome: failure
+        "11024":
+          action: ipv6-dns-update-successful
+          category:
+            - network
+          type:
+            - connection
+            - end
+        "11028":
+          action: ipv6-dns-update-request-queue-exceeded
+          category:
+            - network
+          type:
+            - connection
+            - end
+          outcome: failure
+        "11029":
+          action: ipv6-dns-update-request-failed
+          category:
+            - network
+          type:
+            - connection
+            - end
+          outcome: failure
+        "11030":
+          action: dhcpv6-stateless-clients-pruged
+          category:
+            - process
+          type:
+            - change
+        "11031":
+          action: dhcpv6-stateless-clients-expired
+          category:
+            - process
+          type:
+            - change
+        "11032":
+          action: dhcpv6-stateless-client-info-request
+          category:
+            - network
+          type:
+            - info
+      source: |-
+        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+          return;
+        }
+        def hm = new HashMap(params[ctx.event.code]);
+        hm.forEach((k, v) -> ctx.event[k] = v);
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.event?.outcome == null
+on_failure:
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
