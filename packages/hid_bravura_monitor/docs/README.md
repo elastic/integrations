@@ -2,9 +2,9 @@
 
 The *Hitachi ID Bravura Monitor* integration fetches and parses logs from a Bravura Security Fabric instance.
 
-When you run the integration, it performs a few tasks under the hood:
+When you run the integration, it performs the following tasks automatically:
 
-* Sets the default paths to the log files (but don't worry, you can override the
+* Sets the default paths to the log files (you can override the
 defaults)
 
 * Makes sure each multiline log event gets sent as a single event
@@ -16,9 +16,9 @@ for visualizing in Kibana
 
 ## Compatibility
 
-The *Hitachi ID Bravura Monitor* integration was tested with logs from `IDM Suite 12.3.0` running on Windows Server 2016.
+The *Hitachi ID Bravura Monitor* integration was tested with logs from `Bravura Security Fabric 12.3.0` running on Windows Server 2016.
 
-The integration was also tested with IDM Suite 11.x, 12.x series.
+The integration was also tested with Bravura Security Fabric/IDM Suite 11.x, 12.x series.
 
 This integration is not available for Linux or Mac.
 
@@ -68,7 +68,7 @@ However it can be configured for any file path. See the following example.
 
 *`hid_bravura_monitor.instancename`*
 
-The name of the IDM Suite instance. The default is `default`. For example:
+The name of the Bravura Security Fabric instance. The default is `default`. For example:
 
 ```yaml
 processors:
@@ -107,7 +107,7 @@ processors:
 
 *`hid_bravura_monitor.environment`*
 
-The environment of the IDM Suite instance; choices are DEVELOPMENT, TESTING, PRODUCTION. The default is `PRODUCTION`. For example:
+The environment of the Bravura Security Fabric instance; choices are DEVELOPMENT, TESTING, PRODUCTION. The default is `PRODUCTION`. For example:
 
 ```yaml
 processors:
@@ -120,7 +120,7 @@ processors:
 
 *`hid_bravura_monitor.instancetype`*
 
-The type of IDM Suite instance installed; choices are any combinations of Privilege, Identity or Password. The default is `Privilege-Identity-Password`. For example:
+The type of Bravura Security Fabric instance installed; choices are any combinations of Privilege, Identity or Password. The default is `Privilege-Identity-Password`. For example:
 
 ```yaml
 processors:
@@ -145,7 +145,7 @@ empty, {beatname_uc} will choose log paths based on your operating system.
 
 ### log
 
-The `log` dataset collects the Hitachi ID IDM Suite application logs.
+The `log` dataset collects the Hitachi ID Bravura Security Fabric application logs.
 
 An example event for `log` looks as following:
 
@@ -419,7 +419,7 @@ An example event for `log` looks as following:
 
 ### winlog
 
-The `winglog` dataset collects the Hitachi ID IDM Suite event logs.
+The `winglog` dataset collects the Hitachi ID Bravura Security Fabric event logs.
 
 An example event for `winlog` looks as following:
 
@@ -607,16 +607,16 @@ An example event for `winlog` looks as following:
 | winlog.computerObject.name |  | keyword |
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
-| winlog.event_data.Account |  | keyword |
+| winlog.event_data.Account | An object on a target system that establishes a user’s identity on that target system. | keyword |
 | winlog.event_data.Action |  | keyword |
 | winlog.event_data.ActionId |  | keyword |
 | winlog.event_data.Arguments |  | keyword |
-| winlog.event_data.AuthChain |  | keyword |
-| winlog.event_data.AuthUser |  | keyword |
-| winlog.event_data.BatchSig |  | keyword |
+| winlog.event_data.AuthChain | Authentication chains offer a flexible authentication infrastructure, allowing you to customize the end-user authentication experience. An authentication chain contains authentication methods offered by available authentication modules. | keyword |
+| winlog.event_data.AuthUser | Authentication user. | keyword |
+| winlog.event_data.BatchSig | Request batch ID. | keyword |
 | winlog.event_data.Binding |  | keyword |
-| winlog.event_data.CanceledBy |  | keyword |
-| winlog.event_data.ChangedBy |  | keyword |
+| winlog.event_data.CanceledBy | The user who canceled the request. | keyword |
+| winlog.event_data.ChangedBy | The user who made the change. | keyword |
 | winlog.event_data.Checkout |  | keyword |
 | winlog.event_data.ClientIPs |  | ip |
 | winlog.event_data.DelayThreshold |  | long |
@@ -628,54 +628,54 @@ An example event for `winlog` looks as following:
 | winlog.event_data.FailedTargets |  | keyword |
 | winlog.event_data.GroupSet |  | keyword |
 | winlog.event_data.Hostname |  | keyword |
-| winlog.event_data.Identity |  | keyword |
+| winlog.event_data.Identity | Identify users. | keyword |
 | winlog.event_data.Initiator |  | keyword |
 | winlog.event_data.Issuer |  | keyword |
-| winlog.event_data.Language |  | keyword |
-| winlog.event_data.LoginURL |  | keyword |
+| winlog.event_data.Language | Language used. | keyword |
+| winlog.event_data.LoginURL | User login URL. | keyword |
 | winlog.event_data.LogonDomain |  | keyword |
 | winlog.event_data.LogonSystem |  | keyword |
 | winlog.event_data.LogonUser |  | keyword |
-| winlog.event_data.MAQ |  | keyword |
+| winlog.event_data.MAQ | Account set access. | keyword |
 | winlog.event_data.Message |  | keyword |
 | winlog.event_data.MessageType |  | keyword |
 | winlog.event_data.Method |  | keyword |
 | winlog.event_data.Node |  | keyword |
 | winlog.event_data.OSLogin |  | keyword |
-| winlog.event_data.OTPLogin |  | keyword |
+| winlog.event_data.OTPLogin | API login. | keyword |
 | winlog.event_data.Operation |  | keyword |
-| winlog.event_data.Orchestration |  | keyword |
+| winlog.event_data.Orchestration | Subscriber orchestration. | keyword |
 | winlog.event_data.Owner |  | keyword |
 | winlog.event_data.Platform |  | keyword |
 | winlog.event_data.Policy |  | keyword |
 | winlog.event_data.Port |  | keyword |
 | winlog.event_data.Procedure |  | keyword |
 | winlog.event_data.Profile |  | keyword |
-| winlog.event_data.QSetID |  | keyword |
-| winlog.event_data.QSetType |  | keyword |
-| winlog.event_data.QueueDelay |  | long |
-| winlog.event_data.QueueSize |  | long |
-| winlog.event_data.QueueType |  | keyword |
+| winlog.event_data.QSetID | Question set ID. | keyword |
+| winlog.event_data.QSetType | Question set type. | keyword |
+| winlog.event_data.QueueDelay | Database replication queue delay. | long |
+| winlog.event_data.QueueSize | Database replication queue size. | long |
+| winlog.event_data.QueueType | Database replication queue type. | keyword |
 | winlog.event_data.Reason |  | keyword |
-| winlog.event_data.Recipient |  | keyword |
-| winlog.event_data.Replica |  | keyword |
+| winlog.event_data.Recipient | Recipient of the request. | keyword |
+| winlog.event_data.Replica | Replica database or server. | keyword |
 | winlog.event_data.RequestID |  | keyword |
 | winlog.event_data.Requester |  | keyword |
 | winlog.event_data.Result |  | keyword |
-| winlog.event_data.RevokedBy |  | keyword |
+| winlog.event_data.RevokedBy | Workflow request has been revoked by. | keyword |
 | winlog.event_data.Runtime |  | long |
-| winlog.event_data.SPFolder |  | keyword |
+| winlog.event_data.SPFolder | Service provider folder. | keyword |
 | winlog.event_data.SessionID |  | keyword |
-| winlog.event_data.Skin |  | keyword |
+| winlog.event_data.Skin | Skin for Bravura Security Fabric instance. | keyword |
 | winlog.event_data.Source |  | keyword |
-| winlog.event_data.StoredProc |  | keyword |
+| winlog.event_data.StoredProc | Stored procedure. | keyword |
 | winlog.event_data.System |  | keyword |
 | winlog.event_data.Target |  | keyword |
 | winlog.event_data.TargetName |  | keyword |
-| winlog.event_data.TermintedBy |  | keyword |
+| winlog.event_data.TermintedBy | Request terminated by. | keyword |
 | winlog.event_data.Type |  | keyword |
-| winlog.event_data.URI |  | keyword |
-| winlog.event_data.WaterMark |  | keyword |
+| winlog.event_data.URI | The HTTP(S) address of the SOAP API of the Bravura Security Fabric server. | keyword |
+| winlog.event_data.WaterMark | Database replication watermark. | keyword |
 | winlog.event_data.Workstation |  | keyword |
 | winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 | winlog.keywords | The keywords are used to classify an event. | keyword |
