@@ -2,9 +2,9 @@
 
 The *Hitachi ID Bravura Monitor* integration fetches and parses logs from a Bravura Security Fabric instance.
 
-When you run the integration, it performs a few tasks under the hood:
+When you run the integration, it performs the following tasks automatically:
 
-* Sets the default paths to the log files (but don't worry, you can override the
+* Sets the default paths to the log files (you can override the
 defaults)
 
 * Makes sure each multiline log event gets sent as a single event
@@ -16,9 +16,9 @@ for visualizing in Kibana
 
 ## Compatibility
 
-The *Hitachi ID Bravura Monitor* integration was tested with logs from `IDM Suite 12.3.0` running on Windows Server 2016.
+The *Hitachi ID Bravura Monitor* integration was tested with logs from `Bravura Security Fabric 12.3.0` running on Windows Server 2016.
 
-The integration was also tested with IDM Suite 11.x, 12.x series.
+The integration was also tested with Bravura Security Fabric/IDM Suite 11.x, 12.x series.
 
 This integration is not available for Linux or Mac.
 
@@ -68,7 +68,7 @@ However it can be configured for any file path. See the following example.
 
 *`hid_bravura_monitor.instancename`*
 
-The name of the IDM Suite instance. The default is `default`. For example:
+The name of the Bravura Security Fabric instance. The default is `default`. For example:
 
 ```yaml
 processors:
@@ -107,7 +107,7 @@ processors:
 
 *`hid_bravura_monitor.environment`*
 
-The environment of the IDM Suite instance; choices are DEVELOPMENT, TESTING, PRODUCTION. The default is `PRODUCTION`. For example:
+The environment of the Bravura Security Fabric instance; choices are DEVELOPMENT, TESTING, PRODUCTION. The default is `PRODUCTION`. For example:
 
 ```yaml
 processors:
@@ -120,7 +120,7 @@ processors:
 
 *`hid_bravura_monitor.instancetype`*
 
-The type of IDM Suite instance installed; choices are any combinations of Privilege, Identity or Password. The default is `Privilege-Identity-Password`. For example:
+The type of Bravura Security Fabric instance installed; choices are any combinations of Privilege, Identity or Password. The default is `Privilege-Identity-Password`. For example:
 
 ```yaml
 processors:
@@ -145,7 +145,7 @@ empty, {beatname_uc} will choose log paths based on your operating system.
 
 ### log
 
-The `log` dataset collects the Hitachi ID IDM Suite application logs.
+The `log` dataset collects the Hitachi ID Bravura Security Fabric application logs.
 
 {{event "log"}}
 
@@ -153,7 +153,7 @@ The `log` dataset collects the Hitachi ID IDM Suite application logs.
 
 ### winlog
 
-The `winglog` dataset collects the Hitachi ID IDM Suite event logs.
+The `winglog` dataset collects the Hitachi ID Bravura Security Fabric event logs.
 
 {{event "winlog"}}
 
