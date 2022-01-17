@@ -1,6 +1,6 @@
-# ZScaler ZIA
+# Zscaler ZIA
 
-This integration is for ZScaler Internet Access logs. It can be used
+This integration is for Zscaler Internet Access logs. It can be used
 to receive logs sent by NSS log server on respective TCP ports.
 
 The log message is expected to be in JSON format. The data is mapped to
@@ -10,14 +10,13 @@ ECS fields where applicable and the remaining fields are written under
 ## Setup steps
 
 1. Enable the integration with the TCP input.
-2. Configure the ZScaler NSS Server and NSS Feeds to send logs to the Elastic Agent
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent
 that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address/hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen.
-
-*Please make sure to use the given response formats.*
+3. *Please make sure to use the given response formats.*
 
 ## Compatibility
 
-This package has been tested against `ZScaler Internet Access version 6.1`
+This package has been tested against `Zscaler Internet Access version 6.1`
 
 ## Documentation and configuration
 
@@ -27,7 +26,7 @@ Default port: _9006_
 
 Vendor documentation: https://help.zscaler.com/zia/about-alerts
 
-ZScaler response format:  
+Zscaler response format:  
 ```json
 <%d{syslogid}>%s{Monthname} %2d{Dayofmonth} %02d{Hour}:%02d{Minutes}:%02d{Seconds} [%s{Deviceip}] ZscalerNSS: %s{Eventinfo}\n
 ```
@@ -43,7 +42,7 @@ Default port: _9007_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-dns-logs
 
-ZScaler response format:  
+Zscaler response format:  
 ```json
 \{ "sourcetype" : "zscalernss-dns", "event" :\{"datetime":"%s{time}","user":"%s{elogin}","department":"%s{edepartment}","location":"%s{elocation}","reqaction":"%s{reqaction}","resaction":"%s{resaction}","reqrulelabel":"%s{reqrulelabel}","resrulelabel":"%s{resrulelabel}","dns_reqtype":"%s{reqtype}","dns_req":"%s{req}","dns_resp":"%s{res}","srv_dport":"%d{sport}","durationms":"%d{durationms}","clt_sip":"%s{cip}","srv_dip":"%s{sip}","category":"%s{domcat}","deviceowner":"%s{deviceowner}","devicehostname":"%s{devicehostname}"\}\}
 ```
@@ -59,7 +58,7 @@ Default port: _9008_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs
 
-ZScaler response format:  
+Zscaler response format:  
 ```json
 \{ "sourcetype" : "zscalernss-fw", "event" :\{"datetime":"%s{time}","user":"%s{elogin}","department":"%s{edepartment}","locationname":"%s{elocation}","cdport":"%d{cdport}","csport":"%d{csport}","sdport":"%d{sdport}","ssport":"%d{ssport}","csip":"%s{csip}","cdip":"%s{cdip}","ssip":"%s{ssip}","sdip":"%s{sdip}","tsip":"%s{tsip}","tunsport":"%d{tsport}","tuntype":"%s{ttype}","action":"%s{action}","dnat":"%s{dnat}","stateful":"%s{stateful}","aggregate":"%s{aggregate}","nwsvc":"%s{nwsvc}","nwapp":"%s{nwapp}","proto":"%s{ipproto}","ipcat":"%s{ipcat}","destcountry":"%s{destcountry}","avgduration":"%d{avgduration}","rulelabel":"%s{erulelabel}","inbytes":"%ld{inbytes}","outbytes":"%ld{outbytes}","duration":"%d{duration}","durationms":"%d{durationms}","numsessions":"%d{numsessions}","ipsrulelabel":"%s{ipsrulelabel}","threatcat":"%s{threatcat}","threatname":"%s{ethreatname}","deviceowner":"%s{deviceowner}","devicehostname":"%s{devicehostname}"\}\}
 ```
@@ -75,7 +74,7 @@ Default port: _9009_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-tunnel-logs
 
-ZScaler response format:
+Zscaler response format:
 - Tunnel Event:
     ```json
     \{ "sourcetype" : "zscalernss-tunnel", "event" : \{"datetime":"%s{datetime}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","user":"%s{vpncredentialname}","location":"%s{elocationname}","sourceip":"%s{sourceip}","destinationip":"%s{destvip}","sourceport":"%d{srcport}","event":"%s{event}","eventreason":"%s{eventreason}","recordid":"%d{recordid}"\}\}
@@ -105,7 +104,7 @@ Default port: _9010_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
 
-ZScaler response format:
+Zscaler response format:
 ```json
 \{ "sourcetype" : "zscalernss-web", "event" :\{"time":"%s{time}","login":"%s{login}","proto":"%s{proto}","eurl":"%s{eurl}","action":"%s{action}","appname":"%s{appname}","appclass":"%s{appclass}","reqsize":"%d{reqsize}","respsize":"%d{respsize}","stime":"%d{stime}","ctime":"%d{ctime}","urlclass":"%s{urlclass}","urlsupercat":"%s{urlsupercat}","urlcat":"%s{urlcat}","malwarecat":"%s{malwarecat}","threatname":"%s{threatname}","riskscore":"%d{riskscore}","dlpeng":"%s{dlpeng}","dlpdict":"%s{dlpdict}","location":"%s{location}","dept":"%s{dept}","cip":"%s{cip}","sip":"%s{sip}","reqmethod":"%s{reqmethod}","respcode":"%s{respcode}","ua":"%s{ua}","ereferer":"%s{ereferer}","ruletype":"%s{ruletype}","rulelabel":"%s{rulelabel}","contenttype":"%s{contenttype}","unscannabletype":"%s{unscannabletype}","deviceowner":"%s{deviceowner}","devicehostname":"%s{devicehostname}"\}\}
 ```
