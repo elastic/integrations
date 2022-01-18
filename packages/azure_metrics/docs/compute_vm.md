@@ -49,7 +49,7 @@ https://login.microsoftonline.de for azure USGovernmentCloud
 
 `Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `compute_vm` should have a value of `300s` or multiple of `300s`for relevant results.
 
-`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format /subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}.
+`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
   Should return a list of resources.
 
 `Resource Groups`:: (_[]string_) This option will return all virtual machines inside the resource group.
@@ -59,10 +59,10 @@ If no resource filter is specified, then all virtual machines inside the entire 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
 
-## Guest metrics 
+## Guest metrics
 
-For more insight into the state of the virtual machines, users can collect guest-level metrics, logs and other diagnostic data using the Guest-Level Diagnostics feature. 
-Once this monitoring feature is enabled in the Diagnostic Settings area (Performance Counters tab for Windows VM's and Metrics tab for Linux VM's), a diagnostics agent is installed on the selected virtual machine and a set of extended metrics are added to collect usage data at each interval specified in the configuration. 
+For more insight into the state of the virtual machines, users can collect guest-level metrics, logs and other diagnostic data using the Guest-Level Diagnostics feature.
+Once this monitoring feature is enabled in the Diagnostic Settings area (Performance Counters tab for Windows VM's and Metrics tab for Linux VM's), a diagnostics agent is installed on the selected virtual machine and a set of extended metrics are added to collect usage data at each interval specified in the configuration.
 
 ## Additional notes about metrics and costs
 
@@ -76,14 +76,14 @@ Authentication: Dedicated authentication token will be created and updated regul
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.compute_vm.\*.\* | compute_vm | object |
-| azure.dimensions.\* | Azure metric dimensions. | object |
-| azure.metrics.\*.\* | Metrics returned. | object |
+| azure.compute_vm.*.* | compute_vm | object |
+| azure.dimensions.* | Azure metric dimensions. | object |
+| azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.\* | Azure resource tags. | object |
+| azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -108,7 +108,7 @@ Authentication: Dedicated authentication token will be created and updated regul
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

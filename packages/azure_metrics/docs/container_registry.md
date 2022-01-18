@@ -50,7 +50,7 @@ https://login.microsoftonline.de for azure USGovernmentCloud
 
 `Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `container_registry` should have a value of `300s` or multiple of `300s`for relevant results.
 
-`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format /subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}.
+`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
   Should return a list of resources.
 
 `Resource Groups`:: (_[]string_) This option will return all container registries inside the resource group.
@@ -73,14 +73,14 @@ Authentication: we are handling authentication on our side (creating/renewing th
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.application_id | The application ID | keyword |
-| azure.container_registry.\*.\* | container registry | object |
-| azure.dimensions.\* | Azure metric dimensions. | object |
-| azure.metrics.\*.\* | Metrics returned. | object |
+| azure.container_registry.*.* | container registry | object |
+| azure.dimensions.* | Azure metric dimensions. | object |
+| azure.metrics.*.* | Metrics returned. | object |
 | azure.namespace | The namespace selected | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | The id of the resource | keyword |
 | azure.resource.name | The name of the resource | keyword |
-| azure.resource.tags.\* | Azure resource tags. | object |
+| azure.resource.tags.* | Azure resource tags. | object |
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
@@ -105,7 +105,7 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host | A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
