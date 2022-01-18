@@ -45,18 +45,21 @@ from containerd's metrics APIs.
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | container.id | Unique container id. | keyword |  |  |
-| containerd.cpu.system.total | Total user and system CPU time spent in seconds. | double |  |  |
+| containerd.cpu.system.total | Total user and system CPU time spent in seconds. | double | s | gauge |
 | containerd.cpu.usage.cpu.\*.ns | CPU usage nanoseconds in this cpu. | object |  |  |
-| containerd.cpu.usage.kernel.ns | CPU Kernel usage nanoseconds | double |  | gauge |
+| containerd.cpu.usage.kernel.ns | CPU Kernel usage nanoseconds | double | nanos | gauge |
 | containerd.cpu.usage.kernel.pct | Percentage of time in kernel space normalized by the number of CPU cores. | scaled_float | percent | gauge |
-| containerd.cpu.usage.total.ns | CPU total usage nanoseconds | double |  | gauge |
+| containerd.cpu.usage.total.ns | CPU total usage nanoseconds | double | nanos | gauge |
 | containerd.cpu.usage.total.pct | Percentage of total CPU time normalized by the number of CPU cores | scaled_float | percent | gauge |
-| containerd.cpu.usage.user.ns | CPU User usage nanoseconds | double |  | gauge |
+| containerd.cpu.usage.user.ns | CPU User usage nanoseconds | double | nanos | gauge |
 | containerd.cpu.usage.user.pct | Percentage of time in user space normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | containerd.namespace | Containerd namespace | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `cpu` looks as following:
@@ -190,6 +193,9 @@ from containerd's metrics APIs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `memory` looks as following:
@@ -314,20 +320,23 @@ from containerd's metrics APIs.
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| container.id | Unique container id. | keyword |
-| containerd.blkio.read.bytes | Bytes read during the life of the container | long |
-| containerd.blkio.read.ops | Number of reads during the life of the container | long |
-| containerd.blkio.summary.bytes | Bytes read and written during the life of the container | long |
-| containerd.blkio.summary.ops | Number of I/O operations during the life of the container | long |
-| containerd.blkio.write.bytes | Bytes written during the life of the container | long |
-| containerd.blkio.write.ops | Number of writes during the life of the container | long |
-| containerd.namespace | Containerd namespace | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| containerd.blkio.read.bytes | Bytes read during the life of the container | long | byte | gauge |
+| containerd.blkio.read.ops | Number of reads during the life of the container | long |  | gauge |
+| containerd.blkio.summary.bytes | Bytes read and written during the life of the container | long | byte | gauge |
+| containerd.blkio.summary.ops | Number of I/O operations during the life of the container | long |  | gauge |
+| containerd.blkio.write.bytes | Bytes written during the life of the container | long | byte | gauge |
+| containerd.blkio.write.ops | Number of writes during the life of the container | long |  | gauge |
+| containerd.namespace | Containerd namespace | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `blkio` looks as following:
