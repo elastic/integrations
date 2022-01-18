@@ -67,7 +67,8 @@ resource "google_bigquery_table" "default" {
     command = <<EOT
 bq --location=EU load \
   --source_format=NEWLINE_DELIMITED_JSON \
-  ${var.project_id}:${google_bigquery_dataset.testing.dataset_id}.${google_bigquery_table.default.table_id} \
+  --project_id=${var.project_id} \
+  ${google_bigquery_dataset.testing.dataset_id}.${google_bigquery_table.default.table_id} \
   "${path.root}/${var.test_data_file}" \
   "${path.root}/${var.billing_biquery_schema_file}"
 EOT
