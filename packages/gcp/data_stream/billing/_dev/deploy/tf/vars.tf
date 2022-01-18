@@ -4,7 +4,7 @@ variable "TEST_RUN_ID" {
 
 variable "project_id" {
   type    = string
-  default = "elastic-observability"
+  default = "elastic-obs-integrations-dev"
 }
 
 variable "test_data_file" {
