@@ -18,11 +18,36 @@ resource "google_bigquery_dataset" "testing" {
   }
 }
 
+
+# Creates a local file with useful test data for gcp.billing data stream.
+# The underlying metricbeat metricset queries based on current year and month,
+# so this file, which is then uploaded to BigQuery table, should have current
+# year and month.
+# NOTE: project.id must not be NULL (used to filter results)
+# NOTE: project.name must not be NULL (used to build eventID)
+# NOTE: when this resource content changes, google_bigquery_table.default should be tainted
+resource "local_file" "bq_test_data" {
+  content = templatefile("${path.root}/${var.test_data_file}.tftpl", {
+    ymd           = "2021-12-22"
+    invoice_month = "202112"
+  })
+
+  filename = "${path.root}/${var.test_data_file}"
+
+  file_permission = "0660"
+}
+
 resource "google_bigquery_table" "default" {
   dataset_id = google_bigquery_dataset.testing.dataset_id
   table_id   = "billing_export_test_data_${var.TEST_RUN_ID}"
 
   deletion_protection = false
+
+  # NOTE: generation of test data file is required, as the file is used in the 
+  # local-exec provisioner where there are no dependency checks.
+  # NOTE: when this resource content changes the provisioner is not run 
+  # automatically.
+  depends_on = [local_file.bq_test_data]
 
   time_partitioning {
     type = "DAY"
