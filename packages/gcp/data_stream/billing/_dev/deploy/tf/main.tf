@@ -12,7 +12,7 @@ resource "google_bigquery_dataset" "testing" {
   default_table_expiration_ms = 3600000
 
   labels = {
-    owner  = "elastic_integrations"
+    team   = "integrations"
     env    = "test"
     run_id = var.TEST_RUN_ID
   }
@@ -54,7 +54,7 @@ resource "google_bigquery_table" "default" {
   }
 
   labels = {
-    owner  = "elastic_integrations"
+    team   = "integrations"
     env    = "test"
     run_id = var.TEST_RUN_ID
   }
