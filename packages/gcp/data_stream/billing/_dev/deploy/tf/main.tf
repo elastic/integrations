@@ -2,6 +2,8 @@ provider "google" {
   project = var.project_id
 }
 
+provider "local" {}
+
 resource "google_bigquery_dataset" "testing" {
   dataset_id                  = "integration_testing_${var.TEST_RUN_ID}"
   friendly_name               = "GCP Integration testing"
