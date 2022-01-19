@@ -120,6 +120,7 @@ The filters themselves are based on the [MISP API documentation](https://www.cir
 | misp.timestamp | The timestamp of when the event object was created. | date |
 | misp.uuid | The UUID of the event object. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name |  | keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
@@ -157,12 +158,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2014-10-06T07:12:57.000Z",
     "agent": {
-        "ephemeral_id": "1a21a200-bfd3-4320-8c4e-3174f215f902",
-        "hostname": "docker-fleet-agent",
-        "id": "798c7d2d-cc42-42e0-9397-f8613ee0bd2f",
+        "ephemeral_id": "8ee8d642-33f4-45af-83d7-ed1bd8fce547",
+        "id": "e483e2af-1a54-4dc8-9eba-625b28ed6baf",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "ti_misp.threat",
@@ -173,16 +173,16 @@ An example event for `threat` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "798c7d2d-cc42-42e0-9397-f8613ee0bd2f",
+        "id": "e483e2af-1a54-4dc8-9eba-625b28ed6baf",
         "snapshot": true,
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-19T15:40:09.765Z",
+        "created": "2022-01-10T08:29:02.097Z",
         "dataset": "ti_misp.threat",
-        "ingested": "2021-10-19T15:40:10Z",
+        "ingested": "2022-01-10T08:29:03Z",
         "kind": "enrichment",
         "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Network activity\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"22\",\"first_seen\":null,\"id\":\"12394\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1462454963\",\"to_ids\":false,\"type\":\"domain\",\"uuid\":\"572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16\",\"value\":\"whatsapp.com\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":[],\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"5877549f-ea76-4b91-91fb-c72ad682b4a5\"},\"Orgc\":{\"id\":\"2\",\"local\":false,\"name\":\"CthulhuSPRL.be\",\"uuid\":\"55f6ea5f-fd34-43b8-ac1d-40cb950d210f\"},\"RelatedEvent\":[],\"ShadowAttribute\":[],\"Tag\":[{\"colour\":\"#004646\",\"exportable\":true,\"hide_tag\":false,\"id\":\"1\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"type:OSINT\",\"numerical_value\":null,\"user_id\":\"0\"},{\"colour\":\"#339900\",\"exportable\":true,\"hide_tag\":false,\"id\":\"2\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"tlp:green\",\"numerical_value\":null,\"user_id\":\"0\"}],\"analysis\":\"2\",\"attribute_count\":\"29\",\"date\":\"2014-10-03\",\"disable_correlation\":false,\"distribution\":\"3\",\"extends_uuid\":\"\",\"id\":\"2\",\"info\":\"OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"2\",\"proposal_email_lock\":false,\"publish_timestamp\":\"1610622316\",\"published\":true,\"sharing_group_id\":\"0\",\"threat_level_id\":\"2\",\"timestamp\":\"1412579577\",\"uuid\":\"54323f2c-e50c-4268-896c-4867950d210b\"}}",
         "type": "indicator"
