@@ -12,7 +12,7 @@ pipeline {
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.11.1"
-    K8S_VERSION = "v1.20.2"
+    K8S_VERSION = "v1.23.0"
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'beats-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
@@ -153,9 +153,12 @@ def isPrAffected(integrationName) {
   if (manifest != null && manifest['conditions'] != null) {
     def kibanaVersionCondition = manifest['conditions']['kibana.version']
     if (kibanaVersionCondition != null) {
-      def version = findOldestSupportedVersion(versionCondition: kibanaVersionCondition)
-      if (version.startsWith('8.') && "${env.STACK_VERSION}".startsWith('7.')) {
-        echo "[${integrationName}] PR is not affected: unsupported stack"
+      if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
+        echo "[${integrationName}] PR is not affected: unsupported stack (7.x)"
+        return false
+      }
+      if (!kibanaVersionCondition.contains('^8.') && "${env.STACK_VERSION}".startsWith('8.')) {
+        echo "[${integrationName}] PR is not affected: unsupported stack (8.x)"
         return false
       }
     }
