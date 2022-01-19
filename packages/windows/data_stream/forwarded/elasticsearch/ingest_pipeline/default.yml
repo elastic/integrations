@@ -3,7 +3,7 @@ description: Pipeline for Windows forwarded Event Logs
 processors:
   - pipeline:
       name: '{{ IngestPipeline "security" }}'
-      if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Security"
+      if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Security" && ctx?.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx?.winlog?.provider_name)
   - pipeline:
       name: '{{ IngestPipeline "powershell" }}'
       if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Windows PowerShell"
