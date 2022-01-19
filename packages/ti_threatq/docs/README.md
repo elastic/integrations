@@ -62,7 +62,8 @@ By default the indicators will be collected every 1 minute, and deduplication is
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name |  | keyword |
+| threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
+| threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
@@ -101,12 +102,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-10-01T18:36:03.000Z",
     "agent": {
-        "ephemeral_id": "e9f080c4-d427-41e0-8604-5e7092e5b247",
-        "hostname": "docker-fleet-agent",
-        "id": "32b4b77a-aad6-45af-b440-5b22dbed7c9c",
+        "ephemeral_id": "961a8e14-c6fd-4576-bdac-3c597af12f22",
+        "id": "71b817f1-63a0-4fff-ad03-957bd841c290",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
@@ -117,16 +117,16 @@ An example event for `threat` looks as following:
         "version": "1.12"
     },
     "elastic_agent": {
-        "id": "32b4b77a-aad6-45af-b440-5b22dbed7c9c",
+        "id": "71b817f1-63a0-4fff-ad03-957bd841c290",
         "snapshot": true,
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-10-26T07:52:48.767Z",
+        "created": "2022-01-19T07:59:53.357Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2021-10-26T07:52:49Z",
+        "ingested": "2022-01-19T07:59:54Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":5,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893068,\"indicator_id\":106767,\"name\":\"Contact\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca\"},{\"attribute_id\":9,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893069,\"indicator_id\":106767,\"name\":\"Router Port\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"9000\"},{\"attribute_id\":6,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893070,\"indicator_id\":106767,\"name\":\"Flags\",\"touched_at\":\"2021-10-02 18:36:08\",\"updated_at\":\"2021-10-02 18:36:08\",\"value\":\"ERDV\"}],\"class\":\"network\",\"created_at\":\"2021-10-01 18:36:03\",\"expires_calculated_at\":\"2021-10-23 18:40:17\",\"hash\":\"69beef49fdbd1f54eef3cab324c7b6cf\",\"id\":106767,\"published_at\":\"2021-10-01 18:36:03\",\"score\":0,\"sources\":[{\"created_at\":\"2021-10-01 18:36:06\",\"creator_source_id\":12,\"id\":3699669,\"indicator_id\":106767,\"indicator_status_id\":1,\"indicator_type_id\":15,\"name\":\"www.dan.me.uk Tor Node List\",\"published_at\":\"2021-10-01 18:36:06\",\"reference_id\":37,\"source_id\":12,\"source_type\":\"connectors\",\"updated_at\":\"2021-10-24 18:36:10\"}],\"status\":{\"description\":\"Poses a threat and is being exported to detection tools.\",\"id\":1,\"name\":\"Active\"},\"status_id\":1,\"touched_at\":\"2021-10-24 18:36:10\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2021-10-01 18:36:03\",\"value\":\"107.189.1.90\"}",
         "type": "indicator"
