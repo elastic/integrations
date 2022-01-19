@@ -324,6 +324,7 @@ from containerd's metrics APIs.
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | container.id | Unique container id. | keyword |  |  |
+| containerd.blkio.device | Name of block device | keyword |  |  |
 | containerd.blkio.read.bytes | Bytes read during the life of the container | long | byte | gauge |
 | containerd.blkio.read.ops | Number of reads during the life of the container | long |  | gauge |
 | containerd.blkio.summary.bytes | Bytes read and written during the life of the container | long | byte | gauge |
