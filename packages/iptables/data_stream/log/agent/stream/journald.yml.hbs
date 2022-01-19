@@ -1,0 +1,27 @@
+condition: ${host.platform} == 'linux'
+
+{{#if paths}}
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+{{/if}}
+
+include_matches:
+- _TRANSPORT=kernel
+
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+- drop_event:
+    when.not.regexp.message: 'IN=[^ ]* OUT='
+{{processors}}
+{{/if}}

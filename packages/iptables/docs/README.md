@@ -1,12 +1,13 @@
 # Iptables Integration
 
 This is an integration for `iptables` and `ip6tables` logs. It parses logs
-received over the network via syslog (UDP) or from a file. Also, it understands
-the prefix added by some Ubiquiti firewalls, which includes the rule set name,
-rule number, and the action performed on the traffic (allow/deny).
+received over the network via syslog (UDP), read from a file, or read from
+journald. Also, it understands the prefix added by some Ubiquiti firewalls,
+which includes the rule set name, rule number, and the action performed on the
+traffic (allow/deny).
 
 The module is by default configured to run with the `udp` input on port `9001`.
-However, it can also be configured to read from a file path.
+However, it can also be configured to read from a file path or journald.
 
 ## Logs
 
@@ -203,10 +204,14 @@ An example event for `log` looks as following:
 | iptables.ubiquiti.rule_number | The rule number within the rule set. | keyword |
 | iptables.ubiquiti.rule_set | The rule set name. | keyword |
 | iptables.udp.length | Length of the UDP header and payload. | long |
+| journald.host.boot_id | The kernel boot ID for the boot the message was generated in, formatted as a 128-bit hexadecimal string. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.identifier | Identifier (usually process) contained in the syslog header. | keyword |
+| log.syslog.pid | PID contained in the syslog header. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
@@ -233,5 +238,6 @@ An example event for `log` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.port | Port of the source. | long |
+| systemd.transport | How the entry was received by the journal service. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
