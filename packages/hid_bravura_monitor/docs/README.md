@@ -545,7 +545,7 @@ An example event for `winlog` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
@@ -572,6 +572,7 @@ An example event for `winlog` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| message | initial raw message | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -630,6 +631,7 @@ An example event for `winlog` looks as following:
 | winlog.event_data.Hostname |  | keyword |
 | winlog.event_data.Identity | Identify users. | keyword |
 | winlog.event_data.Initiator |  | keyword |
+| winlog.event_data.Instance |  | keyword |
 | winlog.event_data.Issuer |  | keyword |
 | winlog.event_data.Language | Language used. | keyword |
 | winlog.event_data.LoginURL | User login URL. | keyword |
@@ -640,6 +642,7 @@ An example event for `winlog` looks as following:
 | winlog.event_data.Message |  | keyword |
 | winlog.event_data.MessageType |  | keyword |
 | winlog.event_data.Method |  | keyword |
+| winlog.event_data.Module |  | keyword |
 | winlog.event_data.Node |  | keyword |
 | winlog.event_data.OSLogin |  | keyword |
 | winlog.event_data.OTPLogin | API login. | keyword |
@@ -695,6 +698,7 @@ An example event for `winlog` looks as following:
 | winlog.trustDirection |  | keyword |
 | winlog.trustType |  | keyword |
 | winlog.user.domain | The domain that the account associated with this event is a member of. | keyword |
+| winlog.user.identifier | Identifier of the user associated with this event. | keyword |
 | winlog.user.name | Name of the user associated with this event. | keyword |
 | winlog.user.type | The type of account associated with this event. | keyword |
 | winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
