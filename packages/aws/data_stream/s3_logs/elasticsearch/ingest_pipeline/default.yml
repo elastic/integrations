@@ -3,15 +3,12 @@ description: "Pipeline for logs ingested from S3"
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '1.12.0'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
+  - set:
+      field: event.original
+      copy_from: message
+      override: false
   - set:
       field: cloud.provider
       value: aws
