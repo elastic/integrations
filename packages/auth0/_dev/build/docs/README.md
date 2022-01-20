@@ -45,3 +45,5 @@ Enable to collect Auth0 log events for all the applications configured for the c
 The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log events are available in the `auth0.logs` field group.
 
 {{fields "logs"}}
+
+{{event "logs"}}

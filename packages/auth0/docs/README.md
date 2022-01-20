@@ -69,7 +69,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.location_info.latitude | Global latitude (horizontal) position. | keyword |
 | auth0.logs.data.location_info.longitude | Global longitude (vertical) position. | keyword |
 | auth0.logs.data.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | keyword |
-| auth0.logs.data.log_id | Unique ID of the event. | keyword |
+| auth0.logs.data.log_id | Unique log event identifier | keyword |
 | auth0.logs.data.login.completedAt | Time at which the operation was completed | date |
 | auth0.logs.data.login.elapsedTime | Number of milliseconds the operation took to complete. | long |
 | auth0.logs.data.login.initiatedAt | Time at which the operation was initiated | date |
@@ -106,6 +106,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| input.type | Input type. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
@@ -134,6 +135,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
@@ -149,3 +151,154 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
+An example event for `logs` looks as following:
+
+```json
+{
+    "@timestamp": "2021-11-04T00:15:10.706Z",
+    "agent": {
+        "ephemeral_id": "cb99b081-eb2d-4474-a4f3-253173423836",
+        "hostname": "docker-fleet-agent",
+        "id": "d63c487b-4ddc-4cf0-8cb7-500490695a55",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.2"
+    },
+    "auth0": {
+        "logs": {
+            "data": {
+                "classification": "Login - Success",
+                "client_id": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB",
+                "client_name": "Default App",
+                "connection": "Username-Password-Authentication",
+                "connection_id": "con_1a5wCUmAs6VOU17n",
+                "date": "2021-11-04T00:15:10.706Z",
+                "details": {
+                    "completedAt": 1635984910705,
+                    "elapsedTime": 10287,
+                    "initiatedAt": 1635984900418,
+                    "prompts": [
+                        {
+                            "completedAt": 1635984910474,
+                            "connection": "Username-Password-Authentication",
+                            "connection_id": "con_1a5wCUmAs6VOU17n",
+                            "identity": "618223a4e3f49e006948565c",
+                            "name": "prompt-authenticate",
+                            "stats": {
+                                "loginsCount": 4
+                            },
+                            "strategy": "auth0"
+                        },
+                        {
+                            "completedAt": 1635984910503,
+                            "elapsedTime": 10076,
+                            "flow": "universal-login",
+                            "initiatedAt": 1635984900427,
+                            "name": "login",
+                            "timers": {
+                                "rules": 4
+                            },
+                            "user_id": "auth0|618223a4e3f49e006948565c",
+                            "user_name": "dev@test.com"
+                        }
+                    ],
+                    "session_id": "m5SgtzMKxmeNBxj_kCfUUJhzrSdfvLFu",
+                    "stats": {
+                        "loginsCount": 4
+                    }
+                },
+                "hostname": "dev-yoj8axza.au.auth0.com",
+                "login": {
+                    "completedAt": "2021-11-04T00:15:10.705Z",
+                    "elapsedTime": 10287,
+                    "initiatedAt": "2021-11-04T00:15:00.418Z",
+                    "stats": {
+                        "loginsCount": 4
+                    }
+                },
+                "strategy": "auth0",
+                "strategy_type": "database",
+                "type": "Successful login"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "auth0.logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "d63c487b-4ddc-4cf0-8cb7-500490695a55",
+        "snapshot": false,
+        "version": "7.16.2"
+    },
+    "event": {
+        "action": "successful-login",
+        "agent_id_status": "verified",
+        "category": [
+            "authentication",
+            "session"
+        ],
+        "dataset": "auth0.logs",
+        "id": "90020211104001515271334544008635532534914988032684720226",
+        "ingested": "2022-01-20T04:52:33Z",
+        "kind": "event",
+        "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-04T00:15:10.706Z\",\"details\":{\"completedAt\":1635984910705,\"elapsedTime\":10287,\"initiatedAt\":1635984900418,\"prompts\":[{\"completedAt\":1635984910474,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"618223a4e3f49e006948565c\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":4},\"strategy\":\"auth0\"},{\"completedAt\":1635984910503,\"elapsedTime\":10076,\"flow\":\"universal-login\",\"initiatedAt\":1635984900427,\"name\":\"login\",\"timers\":{\"rules\":4},\"user_id\":\"auth0|618223a4e3f49e006948565c\",\"user_name\":\"dev@test.com\"}],\"session_id\":\"m5SgtzMKxmeNBxj_kCfUUJhzrSdfvLFu\",\"stats\":{\"loginsCount\":4}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211104001515271334544008635532534914988032684720226\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36\",\"user_id\":\"auth0|618223a4e3f49e006948565c\",\"user_name\":\"dev@test.com\"},\"log_id\":\"90020211104001515271334544008635532534914988032684720226\"}",
+        "outcome": "success",
+        "type": [
+            "info",
+            "start"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "log": {
+        "level": "info"
+    },
+    "network": {
+        "type": "ipv4"
+    },
+    "source": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.143"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "auth0-logstream"
+    ],
+    "user": {
+        "id": "auth0|618223a4e3f49e006948565c",
+        "name": "dev@test.com"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
+        "os": {
+            "full": "Mac OS X 10.15.7",
+            "name": "Mac OS X",
+            "version": "10.15.7"
+        },
+        "version": "95.0.4638.69"
+    }
+}
+```

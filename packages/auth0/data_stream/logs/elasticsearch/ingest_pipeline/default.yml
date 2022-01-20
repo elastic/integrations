@@ -4,13 +4,9 @@ processors:
 - set:
     field: ecs.version
     value: '1.12.0'
-- rename:
-    field: message
-    target_field: event.original
-    ignore_missing: true
 - set:
-    field: auth0.logs
-    copy_from: json
+    field: auth0.logs.data
+    copy_from: json.data
 - date:
     field: auth0.logs.data.date
     formats:
@@ -1071,7 +1067,6 @@ processors:
       - auth0.logs.data.user_id
       - auth0.logs.data.user_agent
       - auth0.logs.data.log_id
-      - auth0.logs.log_id
     ignore_missing: true
 - remove:
     field: event.original
