@@ -28,8 +28,8 @@ resource "google_bigquery_dataset" "testing" {
 # NOTE: when this resource content changes, google_bigquery_table.default should be tainted
 resource "local_file" "bq_test_data" {
   content = templatefile("${path.root}/${var.test_data_file}.tftpl", {
-    ymd           = "2021-12-22"
-    invoice_month = "202112"
+    ymd           = formatdate("YYYY-MM-DD", timestamp())
+    invoice_month = formatdate("YYYYMM", timestamp())
   })
 
   filename = "${path.root}/${var.test_data_file}"
