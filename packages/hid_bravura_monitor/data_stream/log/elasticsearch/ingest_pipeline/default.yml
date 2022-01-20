@@ -1,0 +1,196 @@
+---
+description: Pipeline for parsing hid_bravura_monitor logs
+processors:
+  - set:
+      field: ecs.version
+      value: 1.12.0
+      description: Set ecs.version to 1.12.0
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
+      patterns:
+        - >-
+          (^[[:cntrl:]])?%{TIMESTAMP_ISO8601:logdate}.%{NONNEGINT} -
+          \[(%{DATA:pslogid})?\] %{DATA:log.logger}
+          \[%{NONNEGINT:process.pid},%{NONNEGINT:process.thread.id}\]
+          %{DATA:log.level}: %{MULTILINEDATA:msg}
+      pattern_definitions:
+        MULTILINEDATA: |-
+          (.|
+          )*
+      description: Initial parse
+  - drop:
+      if: ctx?.msg.contains('last message repeated')
+      description: Drop repeated log message
+  - grok:
+      field: event.original
+      patterns:
+        - >-
+          (^[[:cntrl:]])?%{TIMESTAMP_ISO8601}.%{NONNEGINT} - \[%{DATA}\] %{DATA}
+          \[%{NONNEGINT},%{NONNEGINT}\] %{DATA}:
+          %{NOTSPACE:hid_bravura_monitor.perf.kind}. %{GREEDYDATA:kvpairs}
+      ignore_missing: true
+      if: ctx?.log?.level.contains('Perf')
+      description: Parse Perf messages
+  - set:
+      field: log.level
+      value: Perf
+      if: ctx?.log?.level.contains('Perf')
+      description: Set log.level to Perf
+  - kv:
+      if: ctx?.log?.level.contains('Perf')
+      trim_key: ' \r\n'
+      trim_value: ' {}\r\n'
+      value_split: ': '
+      target_field: hid_bravura_monitor.perf
+      ignore_missing: true
+      description: Separate perf info
+      field: kvpairs
+      field_split: ' \| '
+  - rename:
+      if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfAjax'
+      target_field: user.id
+      field: hid_bravura_monitor.perf.User
+      ignore_missing: true
+      description: Rename hid_bravura_monitor.perf.User to user.id
+  - script:
+      if: ctx?.log?.level.contains('Perf')
+      source: >-
+        Map m = new HashMap(); ctx['hid_bravura_monitor']['perf'].forEach((k,v)
+        -> m.put(k.toLowerCase(), v));
+        ctx['hid_bravura_monitor'].remove('perf');
+        ctx['hid_bravura_monitor']['perf'] = new HashMap(); m.forEach((k,v) ->
+        ctx['hid_bravura_monitor']['perf'][k] = v ); 
+      description: lowercase perf fields
+  - set:
+      if: ctx?.hid_bravura_monitor?.perf?.kind == 'PerfExe'
+      field: hid_bravura_monitor.perf.exe
+      copy_from: log.logger
+      ignore_empty_value: true
+      description: Copy log.logger to hid_bravura_monitor.perf.exe
+  - remove:
+      field: kvpairs
+      ignore_missing: true
+      description: Remove kvpairs
+  - grok:
+      field: pslogid
+      patterns:
+        - >-
+          %{UUID:hid_bravura_monitor.request.id}
+        - >-
+          %{[A-Fa-f0-9]{32}:hid_bravura_monitor.request.id}
+      ignore_missing: true
+      ignore_failure: true
+      description: Set requestid if batchid
+  - rename:
+      target_field: user.id
+      field: pslogid
+      ignore_missing: true
+      if: ctx.hid_bravura_monitor?.request?.id == null && ctx?.hid_bravura_monitor?.perf?.kind != 'PerfAjax'
+      description: Set userid if not a guid
+  - remove:
+      field: pslogid
+      ignore_missing: true
+      description: Remove pslogid
+  - date:
+      field: logdate
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss.SSS'
+      timezone: '{{event.timezone}}'
+      description: Convert logdate to @timestamp
+  - rename:
+      target_field: message
+      field: msg
+      description: Override message
+  - remove:
+      field: logdate
+      description: Remove logdate
+  - set:
+      if: ctx?.hid_bravura_monitor?.node == '0.0.0.0'
+      field: hid_bravura_monitor.node
+      copy_from: host.name
+      ignore_empty_value: true
+      description: Copy host.name to hid_bravura_monitor.node if left as default
+  - convert:
+      field: process.pid
+      type: long
+      ignore_missing: true
+      description: process.pid to Long
+  - convert:
+      field: process.thread.id
+      type: long
+      ignore_missing: true
+      description: process.thread.id to Long
+  - convert:
+      field: hid_bravura_monitor.perf.duration
+      type: long
+      ignore_missing: true
+      description: hid_bravura_monitor.perf.duration to Long
+  - convert:
+      field: hid_bravura_monitor.perf.kernel
+      type: long
+      ignore_missing: true
+      description: hid_bravura_monitor.perf.kernel to Long
+  - convert:
+      field: hid_bravura_monitor.perf.user
+      type: long
+      ignore_missing: true
+      description: hid_bravura_monitor.perf.user to Long
+  - dot_expander:
+      field: hid_bravura_monitor.perf.kind
+      ignore_failure: true
+      description: move hid_bravura_monitor.perf.kind to object
+  - convert:
+      field: hid_bravura_monitor.perf.line
+      type: long
+      ignore_missing: true
+      description: hid_bravura_monitor.perf.line to Long
+  - convert:
+      field: hid_bravura_monitor.perf.records
+      type: long
+      ignore_missing: true
+      description: hid_bravura_monitor.perf.records to Long
+  - convert:
+      field: hid_bravura_monitor.perf.result
+      type: long
+      ignore_missing: true
+      description: hid_bravura_monitor.perf.result to Long
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

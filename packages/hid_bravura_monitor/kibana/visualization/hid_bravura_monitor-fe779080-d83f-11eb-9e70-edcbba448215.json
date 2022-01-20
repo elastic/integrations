@@ -1,0 +1,219 @@
+{
+    "attributes": {
+        "description": "63 - Self-service password reset successful.\n64 - Self-service password reset failed.\n66 - Help-desk assisted password reset  successful.\n67 - Help-desk assisted password reset failed.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.code",
+                            "negate": false,
+                            "params": [
+                                "63",
+                                "64",
+                                "66",
+                                "67"
+                            ],
+                            "type": "phrases",
+                            "value": "63, 64, 66, 67"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "event.code": "63"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "event.code": "64"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "event.code": "66"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "event.code": "67"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "savedSearchRefName": "search_0",
+        "title": "Password Resets Trend",
+        "uiStateJSON": {},
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {},
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "drop_partials": false,
+                        "extended_bounds": {},
+                        "field": "@timestamp",
+                        "interval": "auto",
+                        "min_doc_count": 1,
+                        "scaleMetricValues": false,
+                        "timeRange": {
+                            "from": "now-1y",
+                            "to": "now"
+                        },
+                        "useNormalizedEsInterval": true
+                    },
+                    "schema": "segment",
+                    "type": "date_histogram"
+                },
+                {
+                    "enabled": true,
+                    "id": "3",
+                    "params": {
+                        "customLabel": "Event",
+                        "field": "event.code",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "order": "desc",
+                        "orderBy": "1",
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "size": 5
+                    },
+                    "schema": "group",
+                    "type": "terms"
+                }
+            ],
+            "params": {
+                "addLegend": true,
+                "addTimeMarker": false,
+                "addTooltip": true,
+                "categoryAxes": [
+                    {
+                        "id": "CategoryAxis-1",
+                        "labels": {
+                            "filter": true,
+                            "show": true,
+                            "truncate": 100
+                        },
+                        "position": "bottom",
+                        "scale": {
+                            "type": "linear"
+                        },
+                        "show": true,
+                        "style": {},
+                        "title": {},
+                        "type": "category"
+                    }
+                ],
+                "detailedTooltip": true,
+                "fittingFunction": "zero",
+                "grid": {
+                    "categoryLines": false
+                },
+                "isVislibVis": true,
+                "labels": {},
+                "legendPosition": "right",
+                "palette": {
+                    "name": "kibana_palette",
+                    "type": "palette"
+                },
+                "seriesParams": [
+                    {
+                        "data": {
+                            "id": "1",
+                            "label": "Count"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "line",
+                        "valueAxis": "ValueAxis-1"
+                    }
+                ],
+                "thresholdLine": {
+                    "color": "#E7664C",
+                    "show": false,
+                    "style": "full",
+                    "value": 10,
+                    "width": 1
+                },
+                "times": [],
+                "type": "line",
+                "valueAxes": [
+                    {
+                        "id": "ValueAxis-1",
+                        "labels": {
+                            "filter": false,
+                            "rotate": 0,
+                            "show": true,
+                            "truncate": 100
+                        },
+                        "name": "LeftAxis-1",
+                        "position": "left",
+                        "scale": {
+                            "mode": "normal",
+                            "type": "linear"
+                        },
+                        "show": true,
+                        "style": {},
+                        "title": {
+                            "text": "Count"
+                        },
+                        "type": "value"
+                    }
+                ]
+            },
+            "title": "Password Resets Trend",
+            "type": "line"
+        }
+    },
+    "coreMigrationVersion": "7.15.0",
+    "id": "hid_bravura_monitor-fe779080-d83f-11eb-9e70-edcbba448215",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
+    "namespaces": [
+        "default"
+    ],
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "hid_bravura_monitor-dca8bb20-d397-11eb-9e70-edcbba448215",
+            "name": "search_0",
+            "type": "search"
+        }
+    ],
+    "type": "visualization"
+}
