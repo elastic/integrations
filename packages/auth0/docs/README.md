@@ -69,7 +69,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.location_info.latitude | Global latitude (horizontal) position. | keyword |
 | auth0.logs.data.location_info.longitude | Global longitude (vertical) position. | keyword |
 | auth0.logs.data.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | keyword |
-| auth0.logs.data.log_id | Unique log event identifier | keyword |
+| auth0.logs.data.log_id | Unique ID of the event. | keyword |
 | auth0.logs.data.login.completedAt | Time at which the operation was completed | date |
 | auth0.logs.data.login.elapsedTime | Number of milliseconds the operation took to complete. | long |
 | auth0.logs.data.login.initiatedAt | Time at which the operation was initiated | date |
@@ -93,9 +93,11 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event timestamp. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event timestamp. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
@@ -156,11 +158,11 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-04T00:15:10.706Z",
+    "@timestamp": "2021-11-03T03:25:28.923Z",
     "agent": {
-        "ephemeral_id": "cb99b081-eb2d-4474-a4f3-253173423836",
+        "ephemeral_id": "3c2232a0-df0e-48e0-8440-96d5500ce25c",
         "hostname": "docker-fleet-agent",
-        "id": "d63c487b-4ddc-4cf0-8cb7-500490695a55",
+        "id": "38ed1ea2-8c9a-4d5a-81ee-826cead96859",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -173,48 +175,60 @@ An example event for `logs` looks as following:
                 "client_name": "Default App",
                 "connection": "Username-Password-Authentication",
                 "connection_id": "con_1a5wCUmAs6VOU17n",
-                "date": "2021-11-04T00:15:10.706Z",
+                "date": "2021-11-03T03:25:28.923Z",
                 "details": {
-                    "completedAt": 1635984910705,
-                    "elapsedTime": 10287,
-                    "initiatedAt": 1635984900418,
+                    "completedAt": 1635909928922,
+                    "elapsedTime": 1110091,
+                    "initiatedAt": 1635908818831,
                     "prompts": [
                         {
-                            "completedAt": 1635984910474,
+                            "completedAt": 1635909903693,
                             "connection": "Username-Password-Authentication",
                             "connection_id": "con_1a5wCUmAs6VOU17n",
-                            "identity": "618223a4e3f49e006948565c",
+                            "identity": "6182002f34f4dd006b05b5c7",
                             "name": "prompt-authenticate",
                             "stats": {
-                                "loginsCount": 4
+                                "loginsCount": 1
                             },
                             "strategy": "auth0"
                         },
                         {
-                            "completedAt": 1635984910503,
-                            "elapsedTime": 10076,
+                            "completedAt": 1635909903745,
+                            "elapsedTime": 1084902,
                             "flow": "universal-login",
-                            "initiatedAt": 1635984900427,
+                            "initiatedAt": 1635908818843,
                             "name": "login",
                             "timers": {
-                                "rules": 4
+                                "rules": 5
                             },
-                            "user_id": "auth0|618223a4e3f49e006948565c",
-                            "user_name": "dev@test.com"
+                            "user_id": "auth0|6182002f34f4dd006b05b5c7",
+                            "user_name": "neo@test.com"
+                        },
+                        {
+                            "completedAt": 1635909928352,
+                            "elapsedTime": 23378,
+                            "flow": "consent",
+                            "grantInfo": {
+                                "audience": "https://dev-yoj8axza.au.auth0.com/userinfo",
+                                "id": "618201284369c9b4f9cd6d52",
+                                "scope": "openid profile"
+                            },
+                            "initiatedAt": 1635909904974,
+                            "name": "consent"
                         }
                     ],
-                    "session_id": "m5SgtzMKxmeNBxj_kCfUUJhzrSdfvLFu",
+                    "session_id": "1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc",
                     "stats": {
-                        "loginsCount": 4
+                        "loginsCount": 1
                     }
                 },
                 "hostname": "dev-yoj8axza.au.auth0.com",
                 "login": {
-                    "completedAt": "2021-11-04T00:15:10.705Z",
-                    "elapsedTime": 10287,
-                    "initiatedAt": "2021-11-04T00:15:00.418Z",
+                    "completedAt": "2021-11-03T03:25:28.922Z",
+                    "elapsedTime": 1110091,
+                    "initiatedAt": "2021-11-03T03:06:58.831Z",
                     "stats": {
-                        "loginsCount": 4
+                        "loginsCount": 1
                     }
                 },
                 "strategy": "auth0",
@@ -232,7 +246,7 @@ An example event for `logs` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "d63c487b-4ddc-4cf0-8cb7-500490695a55",
+        "id": "38ed1ea2-8c9a-4d5a-81ee-826cead96859",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -244,10 +258,10 @@ An example event for `logs` looks as following:
             "session"
         ],
         "dataset": "auth0.logs",
-        "id": "90020211104001515271334544008635532534914988032684720226",
-        "ingested": "2022-01-20T04:52:33Z",
+        "id": "90020211103032530111223343147286033102509916061341581378",
+        "ingested": "2022-01-20T05:57:05Z",
         "kind": "event",
-        "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-04T00:15:10.706Z\",\"details\":{\"completedAt\":1635984910705,\"elapsedTime\":10287,\"initiatedAt\":1635984900418,\"prompts\":[{\"completedAt\":1635984910474,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"618223a4e3f49e006948565c\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":4},\"strategy\":\"auth0\"},{\"completedAt\":1635984910503,\"elapsedTime\":10076,\"flow\":\"universal-login\",\"initiatedAt\":1635984900427,\"name\":\"login\",\"timers\":{\"rules\":4},\"user_id\":\"auth0|618223a4e3f49e006948565c\",\"user_name\":\"dev@test.com\"}],\"session_id\":\"m5SgtzMKxmeNBxj_kCfUUJhzrSdfvLFu\",\"stats\":{\"loginsCount\":4}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211104001515271334544008635532534914988032684720226\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36\",\"user_id\":\"auth0|618223a4e3f49e006948565c\",\"user_name\":\"dev@test.com\"},\"log_id\":\"90020211104001515271334544008635532534914988032684720226\"}",
+        "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-03T03:25:28.923Z\",\"details\":{\"completedAt\":1635909928922,\"elapsedTime\":1110091,\"initiatedAt\":1635908818831,\"prompts\":[{\"completedAt\":1635909903693,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"6182002f34f4dd006b05b5c7\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":1},\"strategy\":\"auth0\"},{\"completedAt\":1635909903745,\"elapsedTime\":1084902,\"flow\":\"universal-login\",\"initiatedAt\":1635908818843,\"name\":\"login\",\"timers\":{\"rules\":5},\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},{\"completedAt\":1635909928352,\"elapsedTime\":23378,\"flow\":\"consent\",\"grantInfo\":{\"audience\":\"https://dev-yoj8axza.au.auth0.com/userinfo\",\"expiration\":null,\"id\":\"618201284369c9b4f9cd6d52\",\"scope\":\"openid profile\"},\"initiatedAt\":1635909904974,\"name\":\"consent\"}],\"session_id\":\"1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc\",\"stats\":{\"loginsCount\":1}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103032530111223343147286033102509916061341581378\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\",\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},\"log_id\":\"90020211103032530111223343147286033102509916061341581378\"}",
         "outcome": "success",
         "type": [
             "info",
@@ -284,21 +298,19 @@ An example event for `logs` looks as following:
         "auth0-logstream"
     ],
     "user": {
-        "id": "auth0|618223a4e3f49e006948565c",
-        "name": "dev@test.com"
+        "id": "auth0|6182002f34f4dd006b05b5c7",
+        "name": "neo@test.com"
     },
     "user_agent": {
         "device": {
-            "name": "Mac"
+            "name": "Other"
         },
-        "name": "Chrome",
-        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
+        "name": "Firefox",
+        "original": "Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
         "os": {
-            "full": "Mac OS X 10.15.7",
-            "name": "Mac OS X",
-            "version": "10.15.7"
+            "name": "Ubuntu"
         },
-        "version": "95.0.4638.69"
+        "version": "93.0."
     }
 }
 ```
