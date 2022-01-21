@@ -3,7 +3,7 @@ description: Pipeline for Zscaler firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - rename:
       field: message
       target_field: event.original
@@ -53,9 +53,15 @@ processors:
       field: json.nwsvc
       target_field: network.protocol
       ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
   - rename: 
       field: json.proto
       target_field: network.transport
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
       ignore_missing: true
   - append: 
       field: rule.name
@@ -185,7 +191,10 @@ processors:
       ignore_missing: true
   - rename: 
       field: json.action
-      target_field: zscaler_zia.firewall.action
+      target_field: event.action
+      ignore_missing: true
+  - lowercase: 
+      field: event.action
       ignore_missing: true
   - rename: 
       field: json.dnat

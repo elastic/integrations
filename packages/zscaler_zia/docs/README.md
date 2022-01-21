@@ -27,12 +27,12 @@ Default port: _9006_
 Vendor documentation: https://help.zscaler.com/zia/about-alerts
 
 Zscaler response format:  
-```json
+```
 <%d{syslogid}>%s{Monthname} %2d{Dayofmonth} %02d{Hour}:%02d{Minutes}:%02d{Seconds} [%s{Deviceip}] ZscalerNSS: %s{Eventinfo}\n
 ```
 
 Sample Response: 
-```json
+```
 <114>Dec 10 14:04:28 [175.16.199.1] ZscalerNSS: Zscaler cloud configuration connection to  175.16.199.1:443 lost and unavailable for the past 2325.00 minutes
 ```
 
@@ -43,7 +43,7 @@ Default port: _9007_
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-dns-logs
 
 Zscaler response format:  
-```json
+```
 \{ "sourcetype" : "zscalernss-dns", "event" :\{"datetime":"%s{time}","user":"%s{elogin}","department":"%s{edepartment}","location":"%s{elocation}","reqaction":"%s{reqaction}","resaction":"%s{resaction}","reqrulelabel":"%s{reqrulelabel}","resrulelabel":"%s{resrulelabel}","dns_reqtype":"%s{reqtype}","dns_req":"%s{req}","dns_resp":"%s{res}","srv_dport":"%d{sport}","durationms":"%d{durationms}","clt_sip":"%s{cip}","srv_dip":"%s{sip}","category":"%s{domcat}","deviceowner":"%s{deviceowner}","devicehostname":"%s{devicehostname}"\}\}
 ```
 
@@ -59,7 +59,7 @@ Default port: _9008_
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs
 
 Zscaler response format:  
-```json
+```
 \{ "sourcetype" : "zscalernss-fw", "event" :\{"datetime":"%s{time}","user":"%s{elogin}","department":"%s{edepartment}","locationname":"%s{elocation}","cdport":"%d{cdport}","csport":"%d{csport}","sdport":"%d{sdport}","ssport":"%d{ssport}","csip":"%s{csip}","cdip":"%s{cdip}","ssip":"%s{ssip}","sdip":"%s{sdip}","tsip":"%s{tsip}","tunsport":"%d{tsport}","tuntype":"%s{ttype}","action":"%s{action}","dnat":"%s{dnat}","stateful":"%s{stateful}","aggregate":"%s{aggregate}","nwsvc":"%s{nwsvc}","nwapp":"%s{nwapp}","proto":"%s{ipproto}","ipcat":"%s{ipcat}","destcountry":"%s{destcountry}","avgduration":"%d{avgduration}","rulelabel":"%s{erulelabel}","inbytes":"%ld{inbytes}","outbytes":"%ld{outbytes}","duration":"%d{duration}","durationms":"%d{durationms}","numsessions":"%d{numsessions}","ipsrulelabel":"%s{ipsrulelabel}","threatcat":"%s{threatcat}","threatname":"%s{ethreatname}","deviceowner":"%s{deviceowner}","devicehostname":"%s{devicehostname}"\}\}
 ```
 
@@ -76,26 +76,25 @@ Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-tunnel
 
 Zscaler response format:
 - Tunnel Event:
-    ```json
+    ```
     \{ "sourcetype" : "zscalernss-tunnel", "event" : \{"datetime":"%s{datetime}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","user":"%s{vpncredentialname}","location":"%s{elocationname}","sourceip":"%s{sourceip}","destinationip":"%s{destvip}","sourceport":"%d{srcport}","event":"%s{event}","eventreason":"%s{eventreason}","recordid":"%d{recordid}"\}\}
     ```
 - Sample Event:
-    ```json
+    ```
     \{ "sourcetype" : "zscalernss-tunnel", "event" : \{"datetime":"%s{datetime}","Recordtype":"%s{tunnelactionname}","tunneltype":"%s{tunneltype}","user":"%s{vpncredentialname}","location":"%s{elocationname}","sourceip":"%s{sourceip}","destinationip":"%s{destvip}","sourceport":"%d{srcport}","txbytes":"%lu{txbytes}","rxbytes":"%lu{rxbytes}","dpdrec":"%d{dpdrec}","recordid":"%d{recordid}"\}\}
     ```
 - IKE Phase 1
-    ```json
+    ```
     \{ "sourcetype" : "zscalernss-tunnel", "event" : \{"datetime":"%s{datetime}","Recordtype":"%s{tunnelactionname}","tunneltype":"IPSEC IKEV %d{ikeversion}","user":"%s{vpncredentialname}","location":"%s{elocationname}","sourceip":"%s{sourceip}","destinationip":"%s{destvip}","sourceport":"%d{srcport}","destinationport":"%d{dstport}","lifetime":"%d{lifetime}","ikeversion":"%d{ikeversion}","spi_in":"%lu{spi_in}","spi_out":"%lu{spi_out}","algo":"%s{algo}","authentication":"%s{authentication}","authtype":"%s{authtype}","recordid":"%d{recordid}"\}\}
     ```
 - IKE Phase 2
-    ```json
+    ```
     \{ "sourcetype" : "zscalernss-tunnel", "event" : \{"datetime":"%s{datetime}","Recordtype":"%s{tunnelactionname}","tunneltype":"IPSEC IKEV %d{ikeversion}","user":"%s{vpncredentialname}","location":"%s{elocationname}","sourceip":"%s{sourceip}","destinationip":"%s{destvip}","sourceport":"%d{srcport}","sourceportstart":"%d{srcportstart}","destinationportstart":"%d{destportstart}","srcipstart":"%s{srcipstart}","srcipend":"%s{srcipend}","destinationipstart":"%s{destipstart}","destinationipend":"%s{destipend}","lifetime":"%d{lifetime}","ikeversion":"%d{ikeversion}","lifebytes":"%d{lifebytes}","spi":"%d{spi}","algo":"%s{algo}","authentication":"%s{authentication}","authtype":"%s{authtype}","protocol":"%s{protocol}","tunnelprotocol":"%s{tunnelprotocol}","policydirection":"%s{policydirection}","recordid":"%d{recordid}"\}\}
     ```
 
 Sample Response: 
 ```json
 { "sourcetype" : "zscalernss-tunnel", "event" : {"datetime":"Thu Dec 30 11:40:27 2021","Recordtype":"IPSec Phase1","tunneltype":"IPSEC IKEV 2","user":"81.2.69.145","location":"some-location","sourceip":"81.2.69.145","destinationip":"81.2.69.143","sourceport":"500","destinationport":"500","lifetime":"0","ikeversion":"2","spi_in":"00000000000000000000","spi_out":"11111111111111111111","algo":"AES-CBS","authentication":"HMAC-SHA1-96","authtype":"PSK","recordid":"1111111111111111111"}}
-
 ```
 
 ### Web Log
@@ -104,8 +103,8 @@ Default port: _9010_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
 
-Zscaler response format:
-```json
+Zscaler response format:  
+```
 \{ "sourcetype" : "zscalernss-web", "event" :\{"time":"%s{time}","login":"%s{login}","proto":"%s{proto}","eurl":"%s{eurl}","action":"%s{action}","appname":"%s{appname}","appclass":"%s{appclass}","reqsize":"%d{reqsize}","respsize":"%d{respsize}","stime":"%d{stime}","ctime":"%d{ctime}","urlclass":"%s{urlclass}","urlsupercat":"%s{urlsupercat}","urlcat":"%s{urlcat}","malwarecat":"%s{malwarecat}","threatname":"%s{threatname}","riskscore":"%d{riskscore}","dlpeng":"%s{dlpeng}","dlpdict":"%s{dlpdict}","location":"%s{location}","dept":"%s{dept}","cip":"%s{cip}","sip":"%s{sip}","reqmethod":"%s{reqmethod}","respcode":"%s{respcode}","ua":"%s{ua}","ereferer":"%s{ereferer}","ruletype":"%s{ruletype}","rulelabel":"%s{rulelabel}","contenttype":"%s{contenttype}","unscannabletype":"%s{unscannabletype}","deviceowner":"%s{deviceowner}","devicehostname":"%s{devicehostname}"\}\}
 ```
 
@@ -164,23 +163,23 @@ Sample Response:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | zscaler_zia.alerts.connection_lost_minutes | Amount of time after loosing connection to a server in Minutes. | double |
 | zscaler_zia.alerts.log_feed_name | Name of the NSS log feed. | keyword |
-| zscaler_zia.alerts.priority_number | The priority number ((Facility Number x 8) + Severity). | long |
 
 
 An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-10T13:40:32.000Z",
+    "@timestamp": "2022-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "7a80f26a-df70-445f-a567-4a0e5b2fb1e6",
+        "ephemeral_id": "8c093fcf-fb2f-4baa-b794-40edb011194d",
         "hostname": "docker-fleet-agent",
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -196,24 +195,27 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2021-12-31T10:41:17Z"
+        "ingested": "2022-02-04T06:31:25Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.28.0.7:41384"
+            "address": "172.21.0.7:32902"
+        },
+        "syslog": {
+            "priority": 114
         }
     },
     "message": "ZscalerNSS: SIEM Feed connection \"DNS Logs Feed\" to 81.2.69.193:9012 lost and unavailable for the past 2440.00 minutes",
@@ -229,13 +231,11 @@ An example event for `alerts` looks as following:
     "zscaler_zia": {
         "alerts": {
             "connection_lost_minutes": 2440,
-            "log_feed_name": "DNS Logs Feed",
-            "priority_number": 114
+            "log_feed_name": "DNS Logs Feed"
         }
     }
 }
 ```
-
 
 ## DNS Logs
 
@@ -328,9 +328,9 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "c30f479c-06d5-42e6-9b5c-ff3ded9f0aa2",
+        "ephemeral_id": "d288c261-b8db-45af-99c0-a673c3c6d8e1",
         "hostname": "docker-fleet-agent",
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -365,10 +365,10 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -376,7 +376,7 @@ An example event for `dns` looks as following:
         "agent_id_status": "verified",
         "category": "network",
         "dataset": "zscaler_zia.dns",
-        "ingested": "2021-12-31T10:42:16Z",
+        "ingested": "2022-02-04T06:32:56Z",
         "kind": "event",
         "type": [
             "info"
@@ -387,7 +387,7 @@ An example event for `dns` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.28.0.7:47286"
+            "address": "172.21.0.7:54202"
         }
     },
     "related": {
@@ -476,6 +476,7 @@ An example event for `dns` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -497,9 +498,9 @@ An example event for `dns` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
@@ -507,7 +508,6 @@ An example event for `dns` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| zscaler_zia.firewall.action | Action that the service took on the transaction: Allowed or Blocked. | keyword |
 | zscaler_zia.firewall.aggregate |  | keyword |
 | zscaler_zia.firewall.client.destination.ip | Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate. | keyword |
 | zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | double |
@@ -539,9 +539,9 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "0293e6f2-ef7a-4298-b42a-c977e4733d5f",
+        "ephemeral_id": "41987f90-74dc-4b4b-9936-4347028cf558",
         "hostname": "docker-fleet-agent",
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -555,18 +555,19 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
     "event": {
+        "action": "drop",
         "agent_id_status": "verified",
         "category": "network",
         "dataset": "zscaler_zia.firewall",
-        "ingested": "2021-12-31T10:43:15Z",
+        "ingested": "2022-02-04T06:34:17Z",
         "kind": "event",
         "original": "{ \"sourcetype\" : \"zscalernss-fw\", \"event\" :{\"datetime\":\"Fri Dec 17 07:27:54 2021\",\"user\":\"some_user@example.com\",\"department\":\"Unknown\",\"locationname\":\"TestLoc%20DB\",\"cdport\":443,\"csport\":55018,\"sdport\":443,\"ssport\":0,\"csip\":\"0.0.0.0\",\"cdip\":\"0.0.0.0\",\"ssip\":\"0.0.0.0\",\"sdip\":\"0.0.0.0\",\"tsip\":\"0.0.0.0\",\"tunsport\":0,\"tuntype\":\"ZscalerClientConnector\",\"action\":\"Drop\",\"dnat\":\"No\",\"stateful\":\"Yes\",\"aggregate\":\"No\",\"nwsvc\":\"HTTPS\",\"nwapp\":\"http\",\"proto\":\"TCP\",\"ipcat\":\"Test Name\",\"destcountry\":\"Ireland\",\"avgduration\":486,\"rulelabel\":\"Access%20Blocked\",\"inbytes\":19052,\"outbytes\":1734,\"duration\":0,\"durationms\":486,\"numsessions\":1,\"ipsrulelabel\":\"None\",\"threatcat\":\"None\",\"threatname\":\"None\",\"deviceowner\":\"admin77\",\"devicehostname\":\"Machine9000\"}}",
         "type": "info"
@@ -579,13 +580,13 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.28.0.7:36578"
+            "address": "172.21.0.7:58194"
         }
     },
     "network": {
         "application": "http",
-        "protocol": "HTTPS",
-        "transport": "TCP"
+        "protocol": "https",
+        "transport": "tcp"
     },
     "related": {
         "ip": [
@@ -614,7 +615,6 @@ An example event for `firewall` looks as following:
     },
     "zscaler_zia": {
         "firewall": {
-            "action": "Drop",
             "aggregate": "No",
             "client": {
                 "destination": {
@@ -756,9 +756,9 @@ An example event for `tunnel` looks as following:
 {
     "@timestamp": "2021-12-30T11:20:12.000Z",
     "agent": {
-        "ephemeral_id": "27f12f5e-c4ee-4373-a396-a9ccf2b288ae",
+        "ephemeral_id": "63ac98b6-0ff6-4943-820e-8505eff15937",
         "hostname": "docker-fleet-agent",
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -772,10 +772,10 @@ An example event for `tunnel` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -784,7 +784,7 @@ An example event for `tunnel` looks as following:
         "category": "network",
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2021-12-31T10:44:13Z",
+        "ingested": "2022-02-04T06:36:16Z",
         "kind": "event",
         "type": [
             "info"
@@ -795,7 +795,7 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.28.0.7:51558"
+            "address": "172.21.0.7:44374"
         }
     },
     "related": {
@@ -897,8 +897,10 @@ An example event for `tunnel` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -916,7 +918,7 @@ An example event for `tunnel` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.mime_type | Mime type of the body of the request. This value must only be populated based on the content of the request body, not on the `Content-Type` header. Comparing the mime type of a request with the request's Content-Type header can be helpful in detecting threats or misconfigured clients. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
@@ -924,7 +926,7 @@ An example event for `tunnel` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.name | The name of the rule or signature generating the event. | keyword |
@@ -948,7 +950,6 @@ An example event for `tunnel` looks as following:
 | user_agent.os.name | Operating system name, without the version. | keyword |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
-| zscaler_zia.web.action | Action that the service took on the transaction. | keyword |
 | zscaler_zia.web.app.class | The web application class of the application that was accessed. Equivalent to module. | keyword |
 | zscaler_zia.web.app.name | Cloud application name. | keyword |
 | zscaler_zia.web.bandwidth_throttle | Indicates whether the transaction was throttled due to a configured bandwidth policy. | keyword |
@@ -965,7 +966,6 @@ An example event for `tunnel` looks as following:
 | zscaler_zia.web.malware.category | The category of malware that was detected in the transaction, if any. Also indicates if a file was submitted to the Sandbox engine for analysis and the result of the analysis. | keyword |
 | zscaler_zia.web.malware.class | The class of malware that was detected in the transaction, if any. | keyword |
 | zscaler_zia.web.record.id | N/A | keyword |
-| zscaler_zia.web.risk.score | The Page Risk Index score of the destination URL. The service computes risk for each page by weighing several factors, including page locations, reputation of destination, and content that may look suspicious. The range is 0 - 100, from the lowest to the highest risk. | long |
 | zscaler_zia.web.stime | The round trip time between the ZEN request and the server. | long |
 | zscaler_zia.web.threat.name | The name of the threat that was detected in the transaction, if any. | keyword |
 | zscaler_zia.web.total.size | Total size, in bytes, of the HTTP transaction; sum of the total request size and total response size. | long |
@@ -981,9 +981,9 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "aeb93118-fcdf-483e-b780-664a4bdde01c",
+        "ephemeral_id": "ced1fd2e-2f17-4f67-b8b1-d38a1920abbb",
         "hostname": "docker-fleet-agent",
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -1003,19 +1003,21 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "de08fe88-af0d-4e3c-8276-d03ad32eab51",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
     "event": {
+        "action": "blocked",
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "zscaler_zia.web",
-        "ingested": "2021-12-31T10:45:17Z",
+        "ingested": "2022-02-04T08:48:57Z",
         "kind": "event",
+        "risk_score": 0,
         "type": [
             "info"
         ]
@@ -1037,11 +1039,11 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.28.0.7:52812"
+            "address": "172.21.0.7:48722"
         }
     },
     "network": {
-        "protocol": "HTTP_PROXY"
+        "protocol": "http_proxy"
     },
     "related": {
         "hosts": [
@@ -1082,7 +1084,6 @@ An example event for `web` looks as following:
     },
     "zscaler_zia": {
         "web": {
-            "action": "Blocked",
             "app": {
                 "class": "General Browsing",
                 "name": "General Browsing"
@@ -1099,9 +1100,6 @@ An example event for `web` looks as following:
             "location": "Test DB",
             "malware": {
                 "category": "None"
-            },
-            "risk": {
-                "score": 0
             },
             "stime": 0,
             "threat": {

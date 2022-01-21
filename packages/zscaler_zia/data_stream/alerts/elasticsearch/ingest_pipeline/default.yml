@@ -3,7 +3,7 @@ description: Pipeline for Zscaler alert logs
 processors:
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - rename:
       field: message
       target_field: event.original
@@ -11,24 +11,12 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - <%{NUMBER:zscaler_zia.alerts.priority_number}>%{SYSLOGTIMESTAMP:_tmp.timestamp} \[%{IPORHOST:destination.address}\] %{GREEDYDATA:message}
+        - <%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} \[%{IPORHOST:destination.address}\] %{GREEDYDATA:message}
   - grok:
       field: message
       patterns:
-        - 'ZscalerNSS: Zscaler cloud configuration connection to  %{IPORHOST:destination.address}:%{NUMBER:destination.port} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes} minutes'
-        - 'ZscalerNSS: SIEM Feed connection "%{GREEDYDATA:zscaler_zia.alerts.log_feed_name}" to %{IPORHOST:destination.address}:%{NUMBER:destination.port} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes} minutes'
-      ignore_failure: true
-  - convert:
-      field: zscaler_zia.alerts.priority_number
-      type: long
-      ignore_failure: true
-  - convert:
-      field: zscaler_zia.alerts.connection_lost_minutes
-      type: double
-      ignore_failure: true
-  - convert:
-      field: destination.port
-      type: long
+        - 'ZscalerNSS: Zscaler cloud configuration connection to  %{IPORHOST:destination.address}:%{NUMBER:destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes'
+        - 'ZscalerNSS: SIEM Feed connection "%{GREEDYDATA:zscaler_zia.alerts.log_feed_name}" to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes'
       ignore_failure: true
   - convert:
       field: destination.address
