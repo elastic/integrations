@@ -17,14 +17,13 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-03-18T20:39:44.000Z",
+    "@timestamp": "2022-01-12T04:40:22.000Z",
     "agent": {
-        "ephemeral_id": "e500ecee-9e3f-4056-94ff-1cb0d411d7fe",
-        "hostname": "docker-fleet-agent",
-        "id": "945634fb-af88-4ace-ab8e-58c7177e751c",
+        "ephemeral_id": "49d5036c-5357-4aee-b7ae-08e2615d64e2",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.13.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "traefik.access",
@@ -32,21 +31,22 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.8.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "3fe93adb-3018-49ae-933f-252502b43737",
-        "snapshot": true,
-        "version": "7.13.0"
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2021-03-18T20:39:53.657Z",
+        "created": "2022-01-12T04:40:38.534Z",
         "dataset": "traefik.access",
-        "duration": 9000000,
-        "ingested": "2021-03-18T20:39:54.688854100Z",
+        "duration": 0,
+        "ingested": "2022-01-12T04:40:39Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -75,6 +75,9 @@ An example event for `access` looks as following:
         },
         "offset": 0
     },
+    "network": {
+        "transport": "tcp"
+    },
     "related": {
         "ip": [
             "127.0.0.1"
@@ -84,9 +87,12 @@ An example event for `access` looks as following:
         "address": "127.0.0.1",
         "ip": "127.0.0.1"
     },
+    "tags": [
+        "forwarded"
+    ],
     "traefik": {
         "access": {
-            "backend_url": "http://172.26.0.2:80",
+            "backend_url": "http://172.21.0.2:80",
             "frontend_name": "Host-backend-elastic-package-service-docker-localhost-0",
             "request_count": 1,
             "user_identifier": "-"
@@ -103,8 +109,8 @@ An example event for `access` looks as following:
             "name": "Other"
         },
         "name": "curl",
-        "original": "curl/7.67.0",
-        "version": "7.67.0"
+        "original": "curl/7.79.1",
+        "version": "7.79.1"
     }
 }
 ```
@@ -120,7 +126,7 @@ An example event for `access` looks as following:
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -134,7 +140,7 @@ An example event for `access` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -143,7 +149,7 @@ An example event for `access` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -186,14 +192,13 @@ An example event for `health` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-03-18T20:40:18.823Z",
+    "@timestamp": "2022-01-12T04:42:17.051Z",
     "agent": {
-        "ephemeral_id": "7679e46c-fb2a-4862-a5cb-dd23154a73c7",
-        "hostname": "docker-fleet-agent",
-        "id": "16ad4a02-aaa8-4069-8adf-28759817fa07",
+        "ephemeral_id": "ddbf0fe2-5932-46a6-833b-101861fae9e6",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.13.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "traefik.health",
@@ -201,24 +206,48 @@ An example event for `health` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.8.0"
+        "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "3fe93adb-3018-49ae-933f-252502b43737",
-        "snapshot": true,
-        "version": "7.13.0"
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "traefik.health",
-        "duration": 12419800,
+        "duration": 37594678,
+        "ingested": "2022-01-12T04:42:18Z",
         "module": "traefik"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
     },
     "metricset": {
         "name": "health",
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_traefik_format_common_1:8080/health",
+        "address": "http://elastic-package-service-traefik_format_common-1:8080/health",
         "name": "traefik",
         "type": "traefik"
     },
@@ -226,15 +255,15 @@ An example event for `health` looks as following:
         "health": {
             "response": {
                 "avg_time": {
-                    "us": 1708
+                    "us": 3441
                 },
-                "count": 9,
+                "count": 16,
                 "status_codes": {
-                    "200": 9
+                    "200": 16
                 }
             },
             "uptime": {
-                "sec": 10
+                "sec": 20
             }
         }
     }
