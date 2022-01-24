@@ -409,12 +409,11 @@ An example event for `security` looks as following:
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
-        "ephemeral_id": "a0a43394-02c9-45ec-b1be-07f107bcc5eb",
-        "hostname": "docker-fleet-agent",
-        "id": "ef9fa2de-d50b-435f-a12b-c84c87b1ad22",
+        "ephemeral_id": "0efb22b5-730e-4431-b563-cbe251d53595",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.13.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "system.security",
@@ -422,22 +421,23 @@ An example event for `security` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "26eba643-ca27-421e-a6d9-a843188ba452",
-        "snapshot": true,
-        "version": "7.13.0"
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "logging-service-shutdown",
+        "agent_id_status": "verified",
         "category": [
             "process"
         ],
         "code": "1100",
-        "created": "2021-06-02T08:02:12.685Z",
+        "created": "2022-01-12T04:32:11.973Z",
         "dataset": "system.security",
-        "ingested": "2021-06-02T08:02:13.706065692Z",
+        "ingested": "2022-01-12T04:32:13Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "outcome": "success",
@@ -556,7 +556,7 @@ An example event for `security` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -1632,9 +1632,9 @@ This dataset is available on:
 | process.cpu.start_time | The time when the process was started. | date |  |  |
 | process.memory.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float |  |  |
 | process.name | Process name. Sometimes called program name or similar. | keyword |  |  |
+| process.parent.pid | Process id. | long |  |  |
 | process.pgid | Identifier of the group of processes the process belongs to. | long |  |  |
 | process.pid | Process id. | long |  |  |
-| process.ppid | Parent process' pid. | long |  |  |
 | process.state | The process state. For example: "running". | keyword |  |  |
 | process.working_directory | The working directory of the process. | keyword |  |  |
 | system.process.cgroup.blkio.id | ID of the cgroup. | keyword |  |  |
