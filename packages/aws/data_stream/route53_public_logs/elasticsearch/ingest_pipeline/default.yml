@@ -1,0 +1,126 @@
+---
+description: Pipeline for AWS Route53 Logs
+
+processors:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '1.12.0'
+  - set:
+      field: cloud.provider
+      value: aws
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+  - append:
+      field: event.type
+      value: protocol
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
+      patterns:
+        - '%{BASE10NUM} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{DATA:aws.route53.hosted_zone_id} %{HOSTNAME:_tmp.question} %{WORD:dns.question.type} %{WORD:dns.response_code} %{WORD:network.transport} %{EDGE_LOCATION:aws.route53.edge_location} %{IP:source.address} (%{SUBNET:aws.route53.edns_client_subnet}|-)'
+      pattern_definitions:
+        EDGE_LOCATION: '[A-Z]{3}\d+'
+        SUBNET: '%{IP}/[0-9]+'
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.dns?.response_code == "NOERROR"
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.dns?.response_code != "NOERROR"
+  - registered_domain:
+      field: _tmp.question
+      target_field: dns.question
+      ignore_missing: true
+      if: '!ctx._tmp?.question.endsWith("in-addr.arpa")'
+  - rename:
+      field: dns.question.domain
+      target_field: dns.question.name
+      ignore_missing: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      value: dns
+  - set:
+      field: network.type
+      value: ipv4
+      if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
+  - set:
+      field: network.type
+      value: ipv6
+      if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
+  - set:
+      field: network.iana_number
+      value: '6'
+      if: ctx.network?.transport == "tcp"
+  - set:
+      field: network.iana_number
+      value: '17'
+      if: ctx.network?.transport == "udp"
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+  - append:
+      field: related.hosts
+      value: "{{dns.question.name}}"
+      if: ctx.dns?.question?.name != null
+  - remove:
+      field:
+        - _tmp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
