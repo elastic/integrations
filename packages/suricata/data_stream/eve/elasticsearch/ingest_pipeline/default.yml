@@ -23,28 +23,30 @@ processors:
       field: suricata.eve.src_ip
       target_field: source.address
       ignore_missing: true
-  - set:
-      field: source.ip
-      copy_from: source.address
-      if: ctx?.source?.address != null
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
   - convert:
       field: suricata.eve.src_port
-      type: integer
       target_field: source.port
-      if: ctx?.suricata?.eve?.src_port != null
+      type: integer
+      ignore_failure: true
   - rename:
       field: suricata.eve.dest_ip
       target_field: destination.address
       ignore_missing: true
-  - set:
-      field: destination.ip
-      copy_from: destination.address
-      if: ctx?.destination?.ip != null
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
   - convert:
       field: suricata.eve.dest_port
-      type: integer
       target_field: destination.port
-      if: ctx?.suricata?.eve?.dest_port != null
+      type: integer
+      ignore_failure: true
   - rename:
       field: suricata.eve.proto
       target_field: network.transport
