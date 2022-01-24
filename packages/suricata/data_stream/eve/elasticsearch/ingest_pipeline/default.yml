@@ -19,6 +19,37 @@ processors:
       field: suricata.eve.ether.src_mac
       target_field: source.mac
       ignore_missing: true
+
+  # Format source.mac address.
+  - gsub:
+      field: source.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+
+  # Format destination.mac address.
+  - gsub:
+      field: destination.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+
   - rename:
       field: suricata.eve.src_ip
       target_field: source.address
