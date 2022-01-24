@@ -1,11 +1,6 @@
 {
     "attributes": {
-        "columns": [
-            "user.name",
-            "user.target.name",
-            "github.org",
-            "event.action"
-        ],
+        "columns": [],
         "description": "",
         "hits": 0,
         "kibanaSavedObjectMeta": {
@@ -19,17 +14,34 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
-                            "negate": false,
+                            "key": "hid_bravura_monitor.perf.transid",
+                            "negate": true,
                             "params": {
-                                "query": "github.audit"
+                                "query": ""
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "github.audit"
+                                "hid_bravura_monitor.perf.transid": ""
                             }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "exists": {
+                            "field": "hid_bravura_monitor.perf.transid"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "hid_bravura_monitor.perf.transid",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
                         }
                     }
                 ],
@@ -40,15 +52,23 @@
                 }
             }
         },
-        "sort": [],
-        "title": "test User",
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "title": "Users: Pages: Search",
         "version": 1
     },
-    "coreMigrationVersion": "7.16.0",
-    "id": "github-c5657210-205d-11ec-8b10-11a4c5e322a0",
+    "coreMigrationVersion": "7.15.0",
+    "id": "hid_bravura_monitor-77cbe8b0-de89-11eb-a272-2d62b237e243",
     "migrationVersion": {
         "search": "7.9.3"
     },
+    "namespaces": [
+        "default"
+    ],
     "references": [
         {
             "id": "logs-*",
@@ -58,6 +78,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],
