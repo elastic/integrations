@@ -109,7 +109,7 @@ integrations.
 The CI job runner collects coverage data and stores them together with build artifacts. The Cobertura plugin (*Coverage Report* tab) uses these data
 to visualize test coverage grouped by package, data stream and test type.
 
-See test coverage report for the *master* branch: [link](https://beats-ci.elastic.co/job/Ingest-manager/job/integrations/job/master/cobertura/)
+See test coverage report for the *main* branch: [link](https://beats-ci.elastic.co/job/Ingest-manager/job/integrations/job/main/cobertura/)
 
 ### Cobertura format vs. package domain language
 

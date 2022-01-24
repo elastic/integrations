@@ -127,7 +127,7 @@ Feel free to merge the PR once you receive an approval from the Integrations tea
 
 ### Remember to bump up the version
 
-When the PR is merged, the CI will kick off a build job for the master branch, which can release your integration to
+When the PR is merged, the CI will kick off a build job for the main branch, which can release your integration to
 the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
 the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
 
