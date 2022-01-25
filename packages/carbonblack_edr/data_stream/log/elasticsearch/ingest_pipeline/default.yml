@@ -7,7 +7,7 @@ processors:
 
 - set:
     field: ecs.version
-    value: 1.12.0
+    value: 8.0.0
 
 # Validate that the input document conforms to the expected format
 # to avoid repetitive checks.
@@ -728,26 +728,26 @@ processors:
     ignore_missing: true
 
 #
-# Map ioc_type field to STIX 2.0 Cyber Observable values (threatintel.indicator.type).
+# Map ioc_type field to STIX 2.0 Cyber Observable values (threat.indicator.type).
 #
 - script:
     lang: painless
     if: 'ctx.json.ioc_type != null'
     description: >
-      Maps ioc_type field to STIX 2.0 Cyber Observable values (threatintel.indicator.type).
+      Maps ioc_type field to STIX 2.0 Cyber Observable values (threat.indicator.type).
     params:
       dns:
         type: domain-name
-        target: threatintel.indicator.domain.name
+        target: threat.indicator.url.domain
       ipv4:
         type: ipv4-addr
-        target: threatintel.indicator.ip
+        target: threat.indicator.ip
       ipv6:
         type: ipv6-addr
-        target: threatintel.indicator.ip
+        target: threat.indicator.ip
       md5:
         type: file
-        target: threatintel.indicator.file.hash.md5
+        target: threat.indicator.file.hash.md5
 
     source: >
       void _set(Map base, def path, def value) {
@@ -764,7 +764,7 @@ processors:
       }
       def mapping = params[ctx.json.ioc_type.toLowerCase()];
       if (mapping == null) return;
-      set(ctx, "threatintel.indicator.type", mapping.type);
+      set(ctx, "threat.indicator.type", mapping.type);
       def value = ctx.json.ioc_value;
       if (value == null) return;
       set(ctx, mapping.target, value);
@@ -780,12 +780,12 @@ processors:
       - json.ioc_type
       - json.ioc_value
 - lowercase:
-    field: threatintel.indicator.file.hash.md5
+    field: threat.indicator.file.hash.md5
     ignore_missing: true
 
 - convert:
     field: json.ioc_attr.port
-    target_field: threatintel.indicator.port
+    target_field: threat.indicator.port
     type: long
     ignore_missing: true
 
