@@ -15,14 +15,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-25T10:51:17.043Z",
+    "@timestamp": "2022-01-25T12:10:52.945Z",
     "agent": {
-        "ephemeral_id": "dc13a92f-83d4-4af5-95b7-e432ee86872a",
-        "hostname": "docker-fleet-agent",
-        "id": "0a0be70a-90aa-494d-8be3-b06a8a05e08c",
+        "ephemeral_id": "168bb285-37c0-4f83-9ac8-fb8599371dad",
+        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "cisco_nexus.log",
@@ -33,15 +32,15 @@ An example event for `log` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "0a0be70a-90aa-494d-8be3-b06a8a05e08c",
-        "snapshot": false,
-        "version": "7.16.2"
+        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
+        "snapshot": true,
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "code": "pam_aaa",
         "dataset": "cisco_nexus.log",
-        "ingested": "2022-01-25T10:51:18Z",
+        "ingested": "2022-01-25T12:10:53Z",
         "original": "2012 Dec 18 14:51:08 Nexus5010-B %AUTHPRIV-3-SYSTEM_MSG: pam_aaa:Authentication failed for user en from 2.2.2.1 - login\n",
         "timezone": "+00:00"
     },
@@ -50,7 +49,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.4:55649"
+            "address": "172.30.0.4:48333"
         }
     },
     "observer": {
