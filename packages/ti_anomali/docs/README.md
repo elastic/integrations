@@ -22,8 +22,8 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "d927674a-0637-4b19-94c7-13023287a6c8",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "8efe1113-788d-47cf-8e81-b0ebadc3f5ba",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -47,16 +47,16 @@ An example event for `limo` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-01-03T02:01:11.311Z",
+        "created": "2022-01-25T02:58:03.288Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2022-01-03T02:01:12Z",
+        "ingested": "2022-01-25T02:58:04Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -183,10 +183,10 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-03T02:03:26.548Z",
+    "@timestamp": "2022-01-25T03:00:07.167Z",
     "agent": {
-        "ephemeral_id": "39f68fbc-bbb3-449a-8fdc-a3844e912514",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "764c192d-9491-492a-b9e0-722495b33397",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -222,7 +222,7 @@ An example event for `threatstream` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -230,7 +230,7 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2022-01-03T02:03:27Z",
+        "ingested": "2022-01-25T03:00:08Z",
         "kind": "enrichment",
         "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
         "severity": 9,
