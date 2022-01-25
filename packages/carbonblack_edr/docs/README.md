@@ -35,19 +35,17 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2014-04-11T19:21:33.682Z",
     "agent": {
-        "ephemeral_id": "32419a14-1cb5-40a3-aacb-2cddb9bffbb7",
-        "hostname": "docker-fleet-agent",
-        "id": "14b8a890-7d0f-4390-af82-11d3665bf3b2",
+        "ephemeral_id": "7bb86a18-d262-4348-b206-131e38d2d1c8",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "carbonblack": {
         "edr": {
             "event_timestamp": 1397244093.682,
             "feed_id": 7,
             "feed_name": "dxmtest1",
-            "hostname": "FS-SEA-529",
             "ioc_attr": {},
             "md5": "506708142BC63DABA64F2D3AD1DCD5BF",
             "report_id": "dxmtest1_04",
@@ -60,30 +58,30 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "14b8a890-7d0f-4390-af82-11d3665bf3b2",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "unknown",
         "agent_id_status": "verified",
         "dataset": "carbonblack_edr.log",
-        "ingested": "2021-08-17T19:44:15Z",
+        "ingested": "2022-01-25T07:45:03Z",
         "kind": "event",
         "original": "{\"md5\":\"506708142BC63DABA64F2D3AD1DCD5BF\",\"report_id\":\"dxmtest1_04\",\"ioc_type\":\"md5\",\"ioc_value\":\"506708142bc63daba64f2d3ad1dcd5bf\",\"ioc_attr\":{},\"feed_id\":7,\"hostname\":\"FS-SEA-529\",\"sensor_id\":3321,\"cb_version\":\"4.2.1.140808.1059\",\"server_name\":\"localhost.localdomain\",\"feed_name\":\"dxmtest1\",\"event_timestamp\":1397244093.682}\n"
     },
     "host": {
-        "name": "docker-fleet-agent"
+        "name": "FS-SEA-529"
     },
     "input": {
         "type": "udp"
     },
     "log": {
         "source": {
-            "address": "172.30.0.4:42135"
+            "address": "172.19.0.4:46263"
         }
     },
     "observer": {
@@ -98,7 +96,7 @@ An example event for `log` looks as following:
         "forwarded",
         "preserve_original_event"
     ],
-    "threatintel": {
+    "threat": {
         "indicator": {
             "file": {
                 "hash": {
@@ -312,7 +310,7 @@ An example event for `log` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
@@ -335,10 +333,10 @@ An example event for `log` looks as following:
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| threatintel.indicator.domain | Identifies a threat indicator as a domain (irrespective of direction). | keyword |
-| threatintel.indicator.file.hash.md5 | The file's md5 hash, if available. | keyword |
-| threatintel.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
-| threatintel.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
-| threatintel.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0 | keyword |
+| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 
 
