@@ -35,8 +35,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2014-04-11T19:21:33.682Z",
     "agent": {
-        "ephemeral_id": "c6db40f5-292e-4514-ae87-07ef3e74860d",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "7bb86a18-d262-4348-b206-131e38d2d1c8",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -61,7 +61,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -69,7 +69,7 @@ An example event for `log` looks as following:
         "action": "unknown",
         "agent_id_status": "verified",
         "dataset": "carbonblack_edr.log",
-        "ingested": "2022-01-13T02:31:22Z",
+        "ingested": "2022-01-25T07:45:03Z",
         "kind": "event",
         "original": "{\"md5\":\"506708142BC63DABA64F2D3AD1DCD5BF\",\"report_id\":\"dxmtest1_04\",\"ioc_type\":\"md5\",\"ioc_value\":\"506708142bc63daba64f2d3ad1dcd5bf\",\"ioc_attr\":{},\"feed_id\":7,\"hostname\":\"FS-SEA-529\",\"sensor_id\":3321,\"cb_version\":\"4.2.1.140808.1059\",\"server_name\":\"localhost.localdomain\",\"feed_name\":\"dxmtest1\",\"event_timestamp\":1397244093.682}\n"
     },
@@ -81,7 +81,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:46839"
+            "address": "172.19.0.4:46263"
         }
     },
     "observer": {
@@ -338,10 +338,5 @@ An example event for `log` looks as following:
 | threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| threatintel.indicator.domain | Identifies a threat indicator as a domain (irrespective of direction). | keyword |
-| threatintel.indicator.file.hash.md5 | The file's md5 hash, if available. | keyword |
-| threatintel.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
-| threatintel.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
-| threatintel.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0 | keyword |
 
 
