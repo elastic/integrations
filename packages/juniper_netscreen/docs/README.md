@@ -12,7 +12,7 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "111d9423-1849-4022-a565-33e9f84bfd2e",
+        "ephemeral_id": "1d0b19ed-8fb1-4e91-873a-19f2949ff20e",
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -35,7 +35,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "code": "00628",
         "dataset": "juniper_netscreen.log",
-        "ingested": "2022-01-25T11:49:55Z",
+        "ingested": "2022-01-25T12:47:59Z",
         "timezone": "+00:00"
     },
     "input": {
@@ -44,7 +44,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "low",
         "source": {
-            "address": "172.30.0.4:48052"
+            "address": "172.30.0.4:59406"
         }
     },
     "observer": {
