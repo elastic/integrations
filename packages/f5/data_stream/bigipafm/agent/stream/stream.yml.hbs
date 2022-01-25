@@ -8,7 +8,7 @@ tags:
   - preserve_original_event
 {{/if}}
 {{#each tags as |tag i|}}
- - {{tag}}
+  - {{tag}}
 {{/each}}
 fields_under_root: true
 fields:
