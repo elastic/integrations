@@ -2620,12 +2620,11 @@ An example event for `fortimanager` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "c76bdcee-7ea6-4bd5-ad99-76f8ecb695c5",
-        "hostname": "docker-fleet-agent",
-        "id": "0a0be70a-90aa-494d-8be3-b06a8a05e08c",
+        "ephemeral_id": "607e3bda-a938-4637-8dd4-02613e9144ac",
+        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "fortinet.fortimanager",
@@ -2650,16 +2649,16 @@ An example event for `fortimanager` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "0a0be70a-90aa-494d-8be3-b06a8a05e08c",
-        "snapshot": false,
-        "version": "7.16.2"
+        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
+        "snapshot": true,
+        "version": "8.0.0"
     },
     "event": {
         "action": "allow",
         "agent_id_status": "verified",
         "code": "sse",
         "dataset": "fortinet.fortimanager",
-        "ingested": "2022-01-25T09:05:52Z",
+        "ingested": "2022-01-25T12:33:50Z",
         "original": "logver=iusm devname=\"modtempo\" devid=\"olab\" vd=nto date=2016-1-29 time=6:09:59 logid=sse type=exercita subtype=der level=very-high eventtime=odoco logtime=ria srcip=10.20.234.169 srcport=1001 srcintf=eth5722 srcintfrole=vol dstip=10.44.173.44 dstport=6125 dstintf=enp0s3068 dstintfrole=nseq poluuid=itinvol sessionid=psa proto=21 action=allow policyid=ntium policytype=psaq crscore=13.800000 craction=eab crlevel=aliqu appcat=Ute service=lupt srccountry=dolore dstcountry=sequa trandisp=abo tranip=10.189.58.145 tranport=5273 duration=14.119000 sentbyte=7880 rcvdbyte=449 sentpkt=mqui app=nci\n",
         "timezone": "+00:00"
     },
@@ -2669,7 +2668,7 @@ An example event for `fortimanager` looks as following:
     "log": {
         "level": "very-high",
         "source": {
-            "address": "172.19.0.4:46281"
+            "address": "172.30.0.4:60997"
         }
     },
     "network": {
@@ -2695,9 +2694,9 @@ An example event for `fortimanager` looks as following:
             "modtempo"
         ],
         "ip": [
+            "10.189.58.145",
             "10.20.234.169",
-            "10.44.173.44",
-            "10.189.58.145"
+            "10.44.173.44"
         ]
     },
     "rsa": {
