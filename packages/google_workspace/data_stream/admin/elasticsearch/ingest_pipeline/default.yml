@@ -124,15 +124,12 @@ processors:
         for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
           if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
             ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
-            return;
           }
           if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
             ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
-            return;
           }
           if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
             ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
-            return;
           }
         }
   - remove:
@@ -690,6 +687,10 @@ processors:
         ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
         ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
         ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+  - convert:
+      field: google_workspace.admin.bulk_upload.total
+      type: long
+      ignore_missing: true
   - convert:
       field: google_workspace.admin.bulk_upload.failed
       type: long
