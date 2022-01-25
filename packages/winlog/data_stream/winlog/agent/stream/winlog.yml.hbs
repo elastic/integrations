@@ -2,14 +2,22 @@ condition: ${host.platform} == 'windows'
 data_stream:
   dataset: {{data_stream.dataset}}
 name: {{channel}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
 {{#if event_id}}
 event_id: {{event_id}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
 {{/if}}
 {{#if language}}
 language: {{language}}
 {{/if}}
+{{#if tags.length}}
 tags:
-{{#each tags}}
-  - {{this}}
+{{#each tags as |tag i|}}
+  - {{tag}}
 {{/each}}
+{{/if}}
 {{custom}}
