@@ -11,14 +11,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-07T08:52:57.573Z",
+    "@timestamp": "2021-12-29T23:28:57.662Z",
     "agent": {
-        "ephemeral_id": "765b4904-7081-42ae-b0ad-d83c71a18761",
-        "hostname": "docker-fleet-agent",
-        "id": "547db394-bd43-42b1-bec4-98d5ca28ab8f",
+        "ephemeral_id": "74768486-101e-44bc-8eca-3f379325c2b6",
+        "id": "18c952cc-80e4-43a5-afa9-79993d53ebf6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "cisco": {
         "ios": {
@@ -36,12 +35,12 @@ An example event for `log` looks as following:
         "ip": "224.0.0.22"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "547db394-bd43-42b1-bec4-98d5ca28ab8f",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "18c952cc-80e4-43a5-afa9-79993d53ebf6",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "deny",
@@ -49,46 +48,39 @@ An example event for `log` looks as following:
         "category": "network",
         "code": "IPACCESSLOGRP",
         "dataset": "cisco_ios.log",
-        "ingested": "2021-09-07T08:52:58Z",
-        "original": "Feb  8 04:00:48 198.51.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet",
+        "ingested": "2021-12-29T23:28:58Z",
+        "original": "Feb  8 04:00:48 192.168.100.2 585917: Feb  8 04:00:47.272: %SEC-6-IPACCESSLOGRP: list 177 denied igmp 192.168.100.197 -\u003e 224.0.0.22, 1 packet\n",
         "provider": "firewall",
         "sequence": 585917,
         "severity": 6,
         "timezone": "+00:00",
         "type": "denied"
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
-        "type": "log"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/cisco-ios.log"
-        },
         "level": "informational",
-        "offset": 0,
         "source": {
-            "address": "198.51.100.2"
+            "address": "192.168.100.2"
         }
     },
-    "message": "list 177 denied igmp 198.51.100.197 -\u003e 224.0.0.22, 1 packet",
+    "message": "list 177 denied igmp 192.168.100.197 -\u003e 224.0.0.22, 1 packet",
     "network": {
-        "community_id": "1:Rt5RGlrNED3cg8Wokm4+KGsDz+4=",
+        "community_id": "1:NCx7UOZoQUvxIB+uzqMmGnZTSzI=",
         "packets": 1,
         "transport": "igmp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "198.51.100.197",
+            "192.168.100.197",
             "224.0.0.22"
         ]
     },
     "source": {
-        "address": "198.51.100.197",
-        "ip": "198.51.100.197",
+        "address": "192.168.100.197",
+        "ip": "192.168.100.197",
         "packets": 1
     },
     "tags": [
@@ -191,8 +183,8 @@ An example event for `log` looks as following:
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | process.program | Process from syslog header. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
