@@ -12,7 +12,7 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "e235c9af-4b78-47b1-a51b-e7c18c61a8fb",
+        "ephemeral_id": "6a56393e-9900-4580-9cd7-a2468e6398de",
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -36,7 +36,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "code": "RPD_SCHED_TASK_LONGRUNTIME",
         "dataset": "juniper_junos.log",
-        "ingested": "2022-01-25T11:40:41Z",
+        "ingested": "2022-01-25T12:44:44Z",
         "timezone": "+00:00"
     },
     "input": {
@@ -44,7 +44,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.4:44075"
+            "address": "172.30.0.4:36281"
         }
     },
     "message": "task extended runtime",
