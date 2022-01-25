@@ -837,12 +837,11 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "ada9c7f9-d4b3-4cae-b0bb-6364bab05ec4",
-        "hostname": "docker-fleet-agent",
-        "id": "58328c6f-d43f-44a6-879a-f7e5ff9d9b02",
+        "ephemeral_id": "f43c7a66-9b0a-475c-89c5-16218fb4d7b5",
+        "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "client": {
         "ip": "10.108.108.49"
@@ -853,12 +852,12 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "58328c6f-d43f-44a6-879a-f7e5ff9d9b02",
-        "snapshot": false,
-        "version": "7.16.0"
+        "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
+        "snapshot": true,
+        "version": "8.0.0"
     },
     "event": {
         "action": "alert",
@@ -868,7 +867,7 @@ An example event for `xg` looks as following:
         ],
         "code": "058420116010",
         "dataset": "sophos.xg",
-        "ingested": "2021-12-16T04:42:45Z",
+        "ingested": "2022-01-25T18:07:40Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -883,7 +882,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.128.4:47976"
+            "address": "172.25.0.7:50257"
         }
     },
     "observer": {
