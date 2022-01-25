@@ -15,6 +15,75 @@ This module has been tested against Check Point Log Exporter on R80.X but should
 
 Consists of log entries from the Log Exporter in the Syslog format.
 
+An example event for `firewall` looks as following:
+
+```json
+{
+    "@timestamp": "2020-03-29T13:19:20.000Z",
+    "agent": {
+        "ephemeral_id": "7c0059da-6518-4067-9e8d-0f1b316dfef5",
+        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "checkpoint": {
+        "sys_message": "The eth0 interface is not protected by the anti-spoofing feature. Your network may be at risk"
+    },
+    "data_stream": {
+        "dataset": "checkpoint.firewall",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2021-12-25T09:18:51.178Z",
+        "dataset": "checkpoint.firewall",
+        "id": "{0x5e80a059,0x0,0x6401a8c0,0x3c7878a}",
+        "ingested": "2021-12-25T09:18:52Z",
+        "kind": "event",
+        "sequence": 1,
+        "timezone": "+00:00"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.32.7:52492"
+        }
+    },
+    "network": {
+        "direction": "inbound"
+    },
+    "observer": {
+        "ingress": {
+            "interface": {
+                "name": "daemon"
+            }
+        },
+        "name": "192.168.1.100",
+        "product": "System Monitor",
+        "type": "firewall",
+        "vendor": "Checkpoint"
+    },
+    "tags": [
+        "forwarded"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -446,7 +515,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -512,7 +581,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Path to the log file. | keyword |
@@ -520,7 +589,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address of logs received over the network. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
@@ -552,7 +621,7 @@ Consists of log entries from the Log Exporter in the Syslog format.
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

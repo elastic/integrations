@@ -15,4 +15,6 @@ This module has been tested against Check Point Log Exporter on R80.X but should
 
 Consists of log entries from the Log Exporter in the Syslog format.
 
+{{event "firewall"}}
+
 {{fields "firewall"}}
