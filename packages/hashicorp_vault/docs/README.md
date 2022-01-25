@@ -75,14 +75,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-13T03:27:26.362Z",
+    "@timestamp": "2022-01-13T01:55:47.409Z",
     "agent": {
-        "ephemeral_id": "fb2d978e-e42d-49f5-8ca1-4fac9f7d9b52",
-        "hostname": "docker-fleet-agent",
-        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
+        "ephemeral_id": "ac8958a4-a5b5-4ebe-b774-713c6579f46b",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "hashicorp_vault.audit",
@@ -90,12 +89,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "update",
@@ -104,10 +103,10 @@ An example event for `audit` looks as following:
             "authentication"
         ],
         "dataset": "hashicorp_vault.audit",
-        "id": "ce68275e-dce8-42b4-4a79-6b366a3b702e",
-        "ingested": "2021-10-13T03:27:54Z",
+        "id": "21e29f23-3b72-03a4-070a-35f7543b9981",
+        "ingested": "2022-01-13T01:56:16Z",
         "kind": "event",
-        "original": "{\"time\":\"2021-10-13T03:27:26.362354182Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"ce68275e-dce8-42b4-4a79-6b366a3b702e\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
+        "original": "{\"time\":\"2022-01-13T01:55:47.409126389Z\",\"type\":\"request\",\"auth\":{\"token_type\":\"default\"},\"request\":{\"id\":\"21e29f23-3b72-03a4-070a-35f7543b9981\",\"operation\":\"update\",\"namespace\":{\"id\":\"root\"},\"path\":\"sys/audit/test\"}}",
         "outcome": "success",
         "type": [
             "change"
@@ -119,7 +118,7 @@ An example event for `audit` looks as following:
                 "token_type": "default"
             },
             "request": {
-                "id": "ce68275e-dce8-42b4-4a79-6b366a3b702e",
+                "id": "21e29f23-3b72-03a4-070a-35f7543b9981",
                 "namespace": {
                     "id": "root"
                 },
@@ -133,18 +132,18 @@ An example event for `audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "192.168.176.4"
+            "172.18.0.4"
         ],
         "mac": [
-            "02:42:c0:a8:b0:04"
+            "02:42:ac:12:00:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-37-generic",
+            "kernel": "5.11.0-44-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -288,14 +287,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-13T03:28:31.135Z",
+    "@timestamp": "2022-01-13T01:56:49.423Z",
     "agent": {
-        "ephemeral_id": "cb3b166e-309d-4fea-8cd3-c65ca734fb4b",
-        "hostname": "docker-fleet-agent",
-        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
+        "ephemeral_id": "519f95f7-ce93-4b23-b4ba-cb55bee8d69c",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "hashicorp_vault.log",
@@ -303,19 +301,19 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "348f4f6e-829a-463d-aed0-37c853e7ce84",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hashicorp_vault.log",
-        "ingested": "2021-10-13T03:29:02Z",
+        "ingested": "2022-01-13T01:57:16Z",
         "kind": "event",
-        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2021-10-13T03:28:31.135796Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
+        "original": "{\"@level\":\"info\",\"@message\":\"proxy environment\",\"@timestamp\":\"2022-01-13T01:56:49.423084Z\",\"http_proxy\":\"\",\"https_proxy\":\"\",\"no_proxy\":\"\"}"
     },
     "hashicorp_vault": {
         "log": {
@@ -328,18 +326,18 @@ An example event for `log` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "192.168.176.4"
+            "172.18.0.4"
         ],
         "mac": [
-            "02:42:c0:a8:b0:04"
+            "02:42:ac:12:00:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-37-generic",
+            "kernel": "5.11.0-44-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
