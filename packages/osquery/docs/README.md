@@ -26,12 +26,11 @@ An example event for `result` looks as following:
 {
     "@timestamp": "2018-01-08T14:51:55.000Z",
     "agent": {
-        "ephemeral_id": "52c6e71e-baf4-4213-a267-13392719380c",
-        "hostname": "docker-fleet-agent",
-        "id": "3f497f07-16ca-4367-b8a8-12fa87e169c4",
+        "ephemeral_id": "b33539a4-b177-41fd-9c97-5664d8bd5120",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "osquery.result",
@@ -39,19 +38,19 @@ An example event for `result` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "315bb3a9-e66e-4b71-a016-1a59eccd75f8",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "added",
-        "agent_id_status": "agent_id_mismatch",
-        "created": "2021-06-17T09:28:55.203Z",
+        "agent_id_status": "verified",
+        "created": "2022-01-02T05:31:42.889Z",
         "dataset": "osquery.result",
-        "ingested": "2021-06-17T09:28:56.245919600Z",
+        "ingested": "2022-01-02T05:31:43Z",
         "kind": "event",
         "type": "info"
     },
@@ -61,16 +60,16 @@ An example event for `result` looks as following:
         "hostname": "ubuntu-xenial",
         "id": "72E1287B-D1BC-4FC6-B9D8-64F4352776A9",
         "ip": [
-            "192.168.48.7"
+            "172.18.0.5"
         ],
         "mac": [
-            "02:42:c0:a8:30:07"
+            "02:42:ac:12:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.25-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -189,7 +188,6 @@ An example event for `result` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | osquery.result.action |  | keyword |
 | osquery.result.calendar_time | String representation of the collection time, as formatted by osquery. | keyword |
 | osquery.result.columns.active |  | keyword |
