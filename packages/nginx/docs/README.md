@@ -30,13 +30,85 @@ An example event for `access` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-01-12T03:18:38.000Z",
+    "_tmp": {},
     "agent": {
-        "hostname": "a73e7856c209",
-        "name": "a73e7856c209",
-        "id": "3987d2b3-b40a-4aa0-99fc-478f9d7079ea",
-        "ephemeral_id": "6d41da1c-5f71-4bd4-b326-a8913bfaa884",
+        "ephemeral_id": "4056dd2e-500d-40c2-8e0d-353f6c75d828",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.11.0"
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "nginx.access",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-01-12T03:19:08.403Z",
+        "dataset": "nginx.access",
+        "ingested": "2022-01-12T03:19:09Z",
+        "kind": "event",
+        "outcome": "success",
+        "timezone": "+00:00",
+        "type": [
+            "access"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 97
+            },
+            "status_code": 200
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/access.log"
+        },
+        "offset": 0
     },
     "nginx": {
         "access": {
@@ -45,93 +117,28 @@ An example event for `access` looks as following:
             ]
         }
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/access.log"
-        },
-        "offset": 0
-    },
-    "elastic_agent": {
-        "id": "5ca3af72-37c3-48b6-92e8-176d154bb66f",
-        "version": "7.11.0",
-        "snapshot": true
-    },
-    "source": {
-        "address": "127.0.0.1",
-        "ip": "127.0.0.1"
-    },
-    "url": {
-        "original": "/server-status"
-    },
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2020-12-03T11:41:57.000Z",
-    "ecs": {
-        "version": "1.6.0"
-    },
     "related": {
         "ip": [
             "127.0.0.1"
         ]
     },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "nginx.access"
+    "source": {
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1"
     },
-    "host": {
-        "hostname": "a73e7856c209",
-        "os": {
-            "kernel": "4.9.184-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "192.168.80.6"
-        ],
-        "name": "a73e7856c209",
-        "id": "06c26569966fd125c15acac5d7feffb6",
-        "mac": [
-            "02:42:c0:a8:50:06"
-        ],
-        "architecture": "x86_64"
-    },
-    "http": {
-        "request": {
-            "method": "get"
-        },
-        "response": {
-            "status_code": 200,
-            "body": {
-                "bytes": 97
-            }
-        },
-        "version": "1.1"
-    },
-    "event": {
-        "timezone": "+00:00",
-        "created": "2020-12-03T11:42:17.116Z",
-        "kind": "event",
-        "category": [
-            "web"
-        ],
-        "type": [
-            "access"
-        ],
-        "dataset": "nginx.access",
-        "outcome": "success"
+    "tags": [
+        "nginx-access"
+    ],
+    "url": {
+        "original": "/server-status",
+        "path": "/server-status"
     },
     "user_agent": {
-        "original": "curl/7.64.0",
-        "name": "curl",
         "device": {
             "name": "Other"
         },
+        "name": "curl",
+        "original": "curl/7.64.0",
         "version": "7.64.0"
     }
 }
@@ -158,7 +165,7 @@ An example event for `access` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -181,7 +188,7 @@ An example event for `access` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -227,13 +234,76 @@ An example event for `error` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-01-12T03:19:41.000Z",
     "agent": {
-        "hostname": "a73e7856c209",
-        "name": "a73e7856c209",
-        "id": "3987d2b3-b40a-4aa0-99fc-478f9d7079ea",
-        "ephemeral_id": "6d41da1c-5f71-4bd4-b326-a8913bfaa884",
+        "ephemeral_id": "49a8eb72-7a5e-4584-821f-b26b95b52624",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.11.0"
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "nginx.error",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-01-12T03:20:00.439Z",
+        "dataset": "nginx.error",
+        "ingested": "2022-01-12T03:20:06Z",
+        "kind": "event",
+        "timezone": "+00:00",
+        "type": [
+            "error"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/error.log"
+        },
+        "level": "warn",
+        "offset": 0
+    },
+    "message": "conflicting server name \"localhost\" on 0.0.0.0:80, ignored",
+    "nginx": {
+        "error": {}
     },
     "process": {
         "pid": 1,
@@ -241,67 +311,9 @@ An example event for `error` looks as following:
             "id": 1
         }
     },
-    "nginx": {
-        "error": {}
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/error.log"
-        },
-        "offset": 0,
-        "level": "warn"
-    },
-    "elastic_agent": {
-        "id": "5ca3af72-37c3-48b6-92e8-176d154bb66f",
-        "version": "7.11.0",
-        "snapshot": true
-    },
-    "message": "conflicting server name \"localhost\" on 0.0.0.0:80, ignored",
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2020-12-03T11:44:39.000Z",
-    "ecs": {
-        "version": "1.6.0"
-    },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "nginx.error"
-    },
-    "host": {
-        "hostname": "a73e7856c209",
-        "os": {
-            "kernel": "4.9.184-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "192.168.80.6"
-        ],
-        "name": "a73e7856c209",
-        "id": "06c26569966fd125c15acac5d7feffb6",
-        "mac": [
-            "02:42:c0:a8:50:06"
-        ],
-        "architecture": "x86_64"
-    },
-    "event": {
-        "timezone": "+00:00",
-        "created": "2020-12-03T11:44:52.803Z",
-        "kind": "event",
-        "category": [
-            "web"
-        ],
-        "type": [
-            "error"
-        ],
-        "dataset": "nginx.error"
-    }
+    "tags": [
+        "nginx-error"
+    ]
 }
 ```
 
@@ -379,75 +391,77 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-12-03T11:47:31.996Z",
+    "@timestamp": "2022-01-12T03:20:44.909Z",
+    "agent": {
+        "ephemeral_id": "8f176291-ce69-4319-bca2-af6b2dde74c5",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "nginx.stubstatus",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "nginx.stubstatus",
+        "duration": 1633671,
+        "ingested": "2022-01-12T03:20:46Z",
+        "module": "nginx"
+    },
     "host": {
-        "hostname": "a73e7856c209",
         "architecture": "x86_64",
-        "os": {
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.9.184-linuxkit"
-        },
-        "name": "a73e7856c209",
-        "id": "06c26569966fd125c15acac5d7feffb6",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "192.168.80.6"
+            "172.18.0.4"
         ],
         "mac": [
-            "02:42:c0:a8:50:06"
-        ]
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
     },
-    "service": {
-        "type": "nginx",
-        "address": "http://elastic-package-service_nginx_1:80/server-status"
+    "metricset": {
+        "name": "stubstatus",
+        "period": 10000
     },
     "nginx": {
         "stubstatus": {
-            "requests": 13,
-            "waiting": 0,
-            "hostname": "elastic-package-service_nginx_1:80",
-            "accepts": 13,
-            "handled": 13,
-            "current": 13,
-            "dropped": 0,
-            "writing": 1,
+            "accepts": 18,
             "active": 1,
-            "reading": 0
+            "current": 18,
+            "dropped": 0,
+            "handled": 18,
+            "hostname": "elastic-package-service-nginx-1:80",
+            "reading": 0,
+            "requests": 18,
+            "waiting": 0,
+            "writing": 1
         }
     },
-    "elastic_agent": {
-        "snapshot": true,
-        "version": "7.11.0",
-        "id": "5ca3af72-37c3-48b6-92e8-176d154bb66f"
-    },
-    "ecs": {
-        "version": "1.6.0"
-    },
-    "event": {
-        "dataset": "nginx.stubstatus",
-        "module": "nginx",
-        "duration": 2231100
-    },
-    "metricset": {
-        "period": 10000,
-        "name": "stubstatus"
-    },
-    "data_stream": {
-        "type": "metrics",
-        "dataset": "nginx.stubstatus",
-        "namespace": "ep"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "version": "7.11.0",
-        "hostname": "a73e7856c209",
-        "ephemeral_id": "1fbb4215-4ba3-42fa-9984-244b112c9a17",
-        "id": "2689a72c-6e18-45fe-b493-af1ec86af2b3",
-        "name": "a73e7856c209"
+    "service": {
+        "address": "http://elastic-package-service-nginx-1:80/server-status",
+        "type": "nginx"
     }
 }
 ```
