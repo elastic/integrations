@@ -11,4 +11,6 @@ with other versions of Suricata.
 
 ## EVE
 
+{{event "eve"}}
+
 {{fields "eve"}}

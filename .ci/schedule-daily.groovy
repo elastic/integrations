@@ -6,7 +6,7 @@ pipeline {
     NOTIFY_TO = credentials('notify-to')
     PIPELINE_LOG_LEVEL = 'INFO'
     SLACK_CHANNEL = "#beats-build"
-    INTEGRATION_JOB = 'Ingest-manager/integrations/master'
+    INTEGRATION_JOB = 'Ingest-manager/integrations/main'
   }
   options {
     timeout(time: 4, unit: 'HOURS')
