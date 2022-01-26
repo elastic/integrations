@@ -3,14 +3,21 @@ description: Pipeline for parsing Suricata EVE logs
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
-  - rename:
+  - set:
+      field: event.original
+      copy_from: message
+      override: false
+      ignore_failure: true
+  - remove:
       field: message
-      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+      override: false
+      ignore_failure: true
   - json:
       field: event.original
       target_field: suricata.eve
@@ -22,32 +29,65 @@ processors:
       field: suricata.eve.ether.src_mac
       target_field: source.mac
       ignore_missing: true
+
+  # Format source.mac address.
+  - gsub:
+      field: source.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+
+  # Format destination.mac address.
+  - gsub:
+      field: destination.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+
   - rename:
       field: suricata.eve.src_ip
       target_field: source.address
       ignore_missing: true
-  - set:
-      field: source.ip
-      copy_from: source.address
-      if: ctx?.source?.address != null
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
   - convert:
       field: suricata.eve.src_port
-      type: integer
       target_field: source.port
-      if: ctx?.suricata?.eve?.src_port != null
+      type: integer
+      ignore_failure: true
   - rename:
       field: suricata.eve.dest_ip
       target_field: destination.address
       ignore_missing: true
-  - set:
-      field: destination.ip
-      copy_from: destination.address
-      if: ctx?.destination?.ip != null
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
   - convert:
       field: suricata.eve.dest_port
-      type: integer
       target_field: destination.port
-      if: ctx?.suricata?.eve?.dest_port != null
+      type: integer
+      ignore_failure: true
   - rename:
       field: suricata.eve.proto
       target_field: network.transport
@@ -181,8 +221,8 @@ processors:
         ctx?.suricata?.eve?.app_proto != "template" &&
         ctx?.suricata?.eve?.app_proto != "template-rust"
       field: network.protocol
-      value: '{{suricata.eve.app_proto}}'
-      ignore_empty_value: true
+      copy_from: suricata.eve.app_proto
+      ignore_failure: true
   ## HTTP
   - set:
       if: 'ctx?.suricata?.eve?.event_type == "http" && ctx?.suricata?.eve?.http?.status != null && ctx?.suricata?.eve?.http?.status < 400'
@@ -217,16 +257,16 @@ processors:
       value:
         - end
   - set:
-      value: "{{suricata.eve.http.http_method}}"
       field: http.request.method
-      if: "ctx?.suricata?.eve?.http?.http_method != null"
+      copy_from: suricata.eve.http.http_method
+      ignore_failure: true
   - rename:
       field: suricata.eve.http.status
       target_field: http.response.status_code
       ignore_missing: true
   - append:
       if: ctx.suricata?.eve?.http?.hostname != null
-      value: '{{suricata.eve.http.hostname}}'
+      value: '{{{suricata.eve.http.hostname}}}'
       field: destination.domain
       allow_duplicates: false
   - remove:
@@ -248,8 +288,8 @@ processors:
   - set:
       if: "ctx?.network?.protocol == 'http'"
       field: url.domain
-      value: '{{destination.domain}}'
-      ignore_empty_value: true
+      copy_from: destination.domain
+      ignore_failure: true
   - grok:
       field: suricata.eve.http.url
       patterns:
@@ -291,15 +331,15 @@ processors:
       ignore_missing: true
   - set:
       field: rule.category
-      value: "{{suricata.eve.alert.category}}"
+      value: "{{{suricata.eve.alert.category}}}"
       ignore_empty_value: true
   - set:
       field: rule.id
-      value: "{{suricata.eve.alert.signature_id}}"
+      value: "{{{suricata.eve.alert.signature_id}}}"
       ignore_empty_value: true
   - set:
       field: rule.name
-      value: "{{suricata.eve.alert.signature}}"
+      value: "{{{suricata.eve.alert.signature}}}"
       ignore_empty_value: true
   - set:
       field: suricata.eve.alert.action
@@ -307,7 +347,7 @@ processors:
       if:  "ctx?.suricata?.eve?.alert?.action == 'blocked'"
   - append:
       field: event.type
-      value: "{{suricata.eve.alert.action}}"
+      value: "{{{suricata.eve.alert.action}}}"
       if: "ctx?.suricata?.eve?.alert?.action != null"
   - remove:
       field: suricata.eve.alert.action
@@ -562,18 +602,18 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{url.domain}}'
+      value: '{{{url.domain}}}'
       if: ctx.url?.domain != null && ctx.url?.domain != ''
       allow_duplicates: false
   - append:
       if: ctx?.source?.ip != null
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
       if: ctx?.destination?.ip != null
       field: related.ip
-      value: '{{destination.ip}}'
+      value: '{{{destination.ip}}}'
       allow_duplicates: false
   - remove:
       field: suricata.eve.alert.metadata
