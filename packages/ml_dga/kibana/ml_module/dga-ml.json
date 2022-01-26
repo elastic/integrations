@@ -1,79 +1,79 @@
 {
-  "attributes": {
-    "id": "problem_child",
-    "title": "Problem child anomaly detection",
-    "description": "Identify malicious processes.",
-    "type": "ML model",
-    "logo": {
-      "icon": "machineLearningApp"
-    },
-    "query": {
-      "bool": {
-        "filter": [
-          {
-            "exists": {
-              "field": "ml_is_dga.malicious_probability"
-            }
-          }
-        ]
-      }
-    },
-    "jobs": [
-      {
-        "id": "dga_high_sum_probability",
-        "config": {
-          "description": "A population analysis machine learning job to detect potential DGA (domain generation alogrithm) activity that is often used by malware comand and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity. This is an experimental job and is therefore unsupported.",
-          "analysis_config": {
-            "bucket_span": "15m",
-            "detectors": [
-              {
-                "detector_description": "high_sum(\"ml_is_dga.malicious_probability\") over \"source.ip\"",
-                "detector_index": 0,
-                "field_name": "ml_is_dga.malicious_probability",
-                "function": "high_sum",
-                "over_field_name": "source.ip"
-              }
-            ],
-            "influencers": [
-              "source.ip"
-            ]
-          },
-          "data_description": {
-            "time_field": "@timestamp",
-            "time_format": "epoch_ms"
-          }
-        }
-      }
-    ],
-    "datafeeds": [
-      {
-        "id": "datafeed-dga_high_sum_probability",
-        "job_id": "dga_high_sum_probability",
-        "config": {
-          "indices": [
-            "packetbeat-*",
-            "winlogbeat-*"
-          ],
-          "job_id": "dga_high_sum_probability",
-          "query": {
+    "attributes": {
+        "id": "problem_child",
+        "title": "Problem child anomaly detection",
+        "description": "Identify malicious processes.",
+        "type": "ML model",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
             "bool": {
-              "filter": [
-                {
-                  "exists": {
-                    "field": "ml_is_dga.malicious_probability"
-                  }
-                }
-              ]
+                "filter": [
+                    {
+                        "exists": {
+                            "field": "ml_is_dga.malicious_probability"
+                        }
+                    }
+                ]
             }
-          }
-        }
-      }
-    ]
-  },
-  "id": "dga",
-  "migrationVersion": {
-    "search": "7.16.0"
-  },
-  "references": [],
-  "type": "ml-module"
+        },
+        "jobs": [
+            {
+                "id": "dga_high_sum_probability",
+                "config": {
+                    "description": "A population analysis machine learning job to detect potential DGA (domain generation alogrithm) activity that is often used by malware comand and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity. This is an experimental job and is therefore unsupported.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "high_sum(\"ml_is_dga.malicious_probability\") over \"source.ip\"",
+                                "detector_index": 0,
+                                "field_name": "ml_is_dga.malicious_probability",
+                                "function": "high_sum",
+                                "over_field_name": "source.ip"
+                            }
+                        ],
+                        "influencers": [
+                            "source.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-dga_high_sum_probability",
+                "job_id": "dga_high_sum_probability",
+                "config": {
+                    "indices": [
+                        "packetbeat-*",
+                        "winlogbeat-*"
+                    ],
+                    "job_id": "dga_high_sum_probability",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "ml_is_dga.malicious_probability"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "id": "dga",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
 }
