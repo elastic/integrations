@@ -33,11 +33,11 @@ pipeline {
         )
       }
     }
-    stage('Daily integration builds with 8.0') {
+    stage('Daily integration builds with 8.1') {
       steps {
         build(
           job: env.INTEGRATION_JOB,
-          parameters: [stringParam(name: 'stackVersion', value: '8.0-SNAPSHOT')],
+          parameters: [stringParam(name: 'stackVersion', value: '8.1-SNAPSHOT')],
           quietPeriod: 0,
           wait: true,
           propagate: true,
