@@ -22,22 +22,22 @@ pipeline {
     cron('H H(2-5) * * *')
   }
   stages {
-    stage('Daily integration builds with 7.16') {
+    stage('Daily integration builds with 7.17') {
       steps {
         build(
           job: env.INTEGRATION_JOB,
-          parameters: [stringParam(name: 'stackVersion', value: '7.16-SNAPSHOT')],
+          parameters: [stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT')],
           quietPeriod: 0,
           wait: true,
           propagate: true,
         )
       }
     }
-    stage('Daily integration builds with 8.0') {
+    stage('Daily integration builds with 8.1') {
       steps {
         build(
           job: env.INTEGRATION_JOB,
-          parameters: [stringParam(name: 'stackVersion', value: '8.0-SNAPSHOT')],
+          parameters: [stringParam(name: 'stackVersion', value: '8.1-SNAPSHOT')],
           quietPeriod: 0,
           wait: true,
           propagate: true,
