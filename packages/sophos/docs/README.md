@@ -27,7 +27,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | client.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | client.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -39,7 +39,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
@@ -85,26 +85,25 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.application | A name given to an application level protocol. This can be arbitrarily assigned for things like microservices, but also apply to things like skype, icq, facebook, twitter. This would be used in situations where the vendor or service can be decoded such as from the source/dest IP owners, ports, or wire format. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -113,9 +112,9 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | observer.version | Observer version. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.pid | Process id. | long |
 | process.parent.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -793,7 +792,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | rsa.wireless.wlan_name | This key captures either WLAN number/name | keyword |
 | rsa.wireless.wlan_ssid | This key is used to capture the ssid of a Wireless Session | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| server.domain | Server domain. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -802,7 +801,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
@@ -838,12 +837,11 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "ada9c7f9-d4b3-4cae-b0bb-6364bab05ec4",
-        "hostname": "docker-fleet-agent",
-        "id": "58328c6f-d43f-44a6-879a-f7e5ff9d9b02",
+        "ephemeral_id": "f43c7a66-9b0a-475c-89c5-16218fb4d7b5",
+        "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0"
     },
     "client": {
         "ip": "10.108.108.49"
@@ -854,12 +852,12 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "58328c6f-d43f-44a6-879a-f7e5ff9d9b02",
-        "snapshot": false,
-        "version": "7.16.0"
+        "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
+        "snapshot": true,
+        "version": "8.0.0"
     },
     "event": {
         "action": "alert",
@@ -869,7 +867,7 @@ An example event for `xg` looks as following:
         ],
         "code": "058420116010",
         "dataset": "sophos.xg",
-        "ingested": "2021-12-16T04:42:45Z",
+        "ingested": "2022-01-25T18:07:40Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -884,7 +882,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.128.4:47976"
+            "address": "172.25.0.7:50257"
         }
     },
     "observer": {
@@ -1023,7 +1021,7 @@ An example event for `xg` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
@@ -1032,14 +1030,13 @@ An example event for `xg` looks as following:
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
@@ -1255,7 +1252,7 @@ An example event for `xg` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
