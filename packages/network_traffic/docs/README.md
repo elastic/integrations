@@ -1930,7 +1930,7 @@ Fields published for TLS packets.
 | tls.detailed.server_certificate.subject.state_or_province | Province or region within country. | keyword |
 | tls.detailed.server_certificate.version | X509 format version. | long |
 | tls.detailed.server_certificate.version_number | Version of x509 format. | keyword |
-| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | keyword |
+| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | array |
 | tls.detailed.server_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
 | tls.detailed.server_hello.extensions.ec_points_formats | List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse. | keyword |
