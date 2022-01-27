@@ -2,6 +2,22 @@
 
 ## Logs
 
+Module for the AWS virtual private cloud (VPC) logs which captures information
+about the IP traffic going to and from network interfaces in VPC. These logs can
+help with:
+
+* Diagnosing overly restrictive security group rules
+* Monitoring the traffic that is reaching your instance
+* Determining the direction of the traffic to and from the network interfaces
+
+Implementation based on the description of the flow logs from the
+documentation that can be found in:
+
+* Default Flow Log Format: https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html
+* Custom Format with Traffic Through a NAT Gateway: https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html
+* Custom Format with Traffic Through a Transit Gateway:
+  https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -79,8 +95,8 @@
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
