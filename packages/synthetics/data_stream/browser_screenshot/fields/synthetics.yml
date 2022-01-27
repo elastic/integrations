@@ -34,6 +34,13 @@
           type: integer
         - name: status
           type: keyword
+        - name: duration
+          type: group
+          description: Duration required to complete the step.
+          fields:
+            - name: us
+              type: integer
+              description: Duration in microseconds
     - name: journey
       type: group
       fields:
@@ -52,3 +59,20 @@
           type: text
         - name: stack
           type: text
+    - name: screenshot_ref
+      type: group
+      dynamic: false
+      fields:
+        - name: width
+          type: integer
+          description: Width of the full screenshot in pixels.
+        - name: height
+          type: integer
+          description: Height of the full screenshot in pixels
+        - name: blocks
+          type: group
+          description: Attributes representing individual screenshot blocks. Only hash is indexed since it's the only one we'd query on.
+          fields:
+            - name: hash
+              type: keyword
+              description: Hash that uniquely identifies this image by content. Corresponds to block document id.
