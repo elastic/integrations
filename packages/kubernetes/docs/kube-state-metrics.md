@@ -1385,8 +1385,10 @@ An example event for `state_pod` looks as following:
 | kubernetes.annotations.\* | Kubernetes annotations map | object |
 | kubernetes.container.image | Kubernetes container image | keyword |
 | kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |
 | kubernetes.labels.\* | Kubernetes labels map | object |
 | kubernetes.namespace | Kubernetes namespace | keyword |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |
