@@ -1,0 +1,36 @@
+---
+description: Pipeline for parsing Hadoop metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: jolokia
+      target_field: hadoop
+      ignore_missing: true
+  - remove:
+      field: hadoop.metrics.mbean
+      ignore_failure: true
+      ignore_missing: true
+  - date:
+      field: "hadoop.metrics.datanode.last_volume_failure_date"
+      target_field: "hadoop.metrics.datanode.last_volume_failure_date"
+      formats:
+        - "epoch_millis"
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: database
+  - set:
+      field: event.module
+      value: hadoop  
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

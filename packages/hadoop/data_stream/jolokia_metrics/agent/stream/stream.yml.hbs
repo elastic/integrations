@@ -1,0 +1,134 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{period}}
+username: {{username}}
+password: {{password}}
+ssl.verification_mode: "none"
+jmx.mappings:
+  - mbean: 'Hadoop:name=FSNamesystem,service=NameNode'
+    attributes:
+    - attr: CapacityTotal
+      field: namenode.capacity.total
+    - attr: CapacityUsed
+      field: namenode.capacity.used
+    - attr: CapacityRemaining
+      field: namenode.capacity.remaining
+    - attr: TotalLoad
+      field: namenode.total_load
+    - attr: LockQueueLength
+      field: namenode.lock_queue_length
+    - attr: BlocksTotal
+      field: namenode.blocks.total
+    - attr: CorruptBlocks
+      field: namenode.blocks.corrupt
+    - attr: FilesTotal
+      field: namenode.files_total
+    - attr: PendingReplicationBlocks
+      field: namenode.replication_blocks.pending
+    - attr: UnderReplicatedBlocks
+      field: namenode.replication_blocks.under
+    - attr: ScheduledReplicationBlocks
+      field: namenode.replication_blocks.scheduled
+    - attr: PendingDeletionBlocks
+      field: namenode.pending_deletion_blocks     
+    - attr: NumLiveDataNodes
+      field: namenode.data_nodes.num_live
+    - attr: NumDeadDataNodes
+      field: namenode.data_nodes.num_dead
+    - attr: NumDecomLiveDataNodes
+      field: namenode.data_nodes.num_decom_live
+    - attr: NumDecomDeadDataNodes
+      field: namenode.data_nodes.num_decom_dead
+    - attr: NumDecommissioningDataNodes
+      field: namenode.data_nodes.num_decommissioning
+    - attr: StaleDataNodes
+      field: namenode.data_nodes.stale
+    - attr: VolumeFailuresTotal
+      field: namenode.volume_failures_total
+    - attr: EstimatedCapacityLostTotal
+      field: namenode.estimated_capacity_lost_total  
+    - attr: NumStaleStorages
+      field: namenode.num_stale_storages
+    - attr: MissingReplOneBlocks
+      field: namenode.missing_repl_one_blocks                                                    
+  - mbean: 'Hadoop:name=FSDatasetState,service=DataNode'
+    attributes:
+    - attr: LastVolumeFailureDate
+      field: datanode.last_volume_failure_date
+    - attr: NumFailedVolumes
+      field: datanode.num_failed_volumes 
+    - attr: NumBlocksFailedToCache
+      field: datanode.num_blocks_failed.to_cache
+    - attr: NumBlocksFailedToUnCache
+      field: datanode.num_blocks_failed.to_uncache 
+    - attr: DfsUsed
+      field: datanode.dfs_used 
+    - attr: Remaining
+      field: datanode.disk_space.remaining 
+    - attr: Capacity
+      field: datanode.disk_space.capacity 
+    - attr: EstimatedCapacityLostTotal
+      field: datanode.estimated_capacity_lost_total
+    - attr: CacheCapacity
+      field: datanode.cache.capacity
+    - attr: CacheUsed
+      field: datanode.cache.used
+    - attr: NumBlocksCached
+      field: datanode.cache.num_blocks
+    - attr: tag.Hostname
+      field: datanode.tag.hostname
+    - attr: tag.Context
+      field: datanode.tag.context
+    - attr: tag.StorageInfo
+      field: datanode.tag.storage_info
+  - mbean: 'Hadoop:name=DataNodeActivity*,service=DataNode'
+    attributes:
+    - attr: BytesRead
+      field: datanode.bytes.read
+    - attr: BytesWritten
+      field: datanode.bytes.write
+  - mbean: 'Hadoop:service=NodeManager,name=NodeManagerMetrics'
+    attributes:
+    - attr: ContainerLaunchDurationAvgTime
+      field: nodemanager.container.launch_duration_avg_time
+    - attr: ContainerLaunchDurationNumOps
+      field: nodemanager.container.launch_duration_num_ops
+    - attr: AllocatedContainers
+      field: nodemanager.container.allocated
+    - attr: ContainersCompleted
+      field: nodemanager.container.completed
+    - attr: ContainersFailed
+      field: nodemanager.container.failed
+    - attr: ContainersIniting
+      field: nodemanager.container.initing
+    - attr: ContainersKilled
+      field: nodemanager.container.killed
+    - attr: ContainersLaunched
+      field: nodemanager.container.launched
+    - attr: ContainersRunning
+      field: nodemanager.container.running
+  - mbean: 'Hadoop:service=ResourceManager,name=ClusterMetrics'
+    attributes:
+    - attr: AMLaunchDelayAvgTime
+      field: cluster_metrics.application_master.launch_delay_avg_time
+    - attr: AMLaunchDelayNumOps
+      field: cluster_metrics.application_master.launch_delay_num_ops
+    - attr: AMRegisterDelayAvgTime
+      field: cluster_metrics.application_master.register_delay_avg_time
+    - attr: AMRegisterDelayNumOps
+      field: cluster_metrics.application_master.register_delay_num_ops
+    - attr: NumActiveNMs
+      field: cluster_metrics.node_managers.num_active
+    - attr: NumDecommissionedNMs
+      field: cluster_metrics.node_managers.num_decommissioned
+    - attr: NumLostNMs
+      field: cluster_metrics.node_managers.num_lost
+    - attr: NumRebootedNMs
+      field: cluster_metrics.node_managers.num_rebooted
+    - attr: NumUnhealthyNMs
+      field: cluster_metrics.node_managers.num_unhealthy

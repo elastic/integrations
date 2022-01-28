@@ -1,0 +1,176 @@
+---
+description: Pipeline for parsing expanded cluster metrics logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: database
+  - rename:
+      field: json.clusterMetrics.appsSubmitted
+      target_field: hadoop.metrics.expanded_cluster_metrics.apps.submitted
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.appsCompleted
+      target_field: hadoop.metrics.expanded_cluster_metrics.apps.completed
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.appsPending
+      target_field: hadoop.metrics.expanded_cluster_metrics.apps.pending
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.appsRunning
+      target_field: hadoop.metrics.expanded_cluster_metrics.apps.running
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.appsFailed
+      target_field: hadoop.metrics.expanded_cluster_metrics.apps.failed
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.appsKilled
+      target_field: hadoop.metrics.expanded_cluster_metrics.apps.killed
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.reservedMB
+      target_field: hadoop.metrics.expanded_cluster_metrics.memory.reserved
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.availableMB
+      target_field: hadoop.metrics.expanded_cluster_metrics.memory.available
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.allocatedMB
+      target_field: hadoop.metrics.expanded_cluster_metrics.memory.allocated
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.totalMB
+      target_field: hadoop.metrics.expanded_cluster_metrics.memory.total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.reservedVirtualCores
+      target_field: hadoop.metrics.expanded_cluster_metrics.virtual_cores.reserved
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.availableVirtualCores
+      target_field: hadoop.metrics.expanded_cluster_metrics.virtual_cores.available
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.allocatedVirtualCores
+      target_field: hadoop.metrics.expanded_cluster_metrics.virtual_cores.allocated
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.totalVirtualCores
+      target_field: hadoop.metrics.expanded_cluster_metrics.virtual_cores.total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.containersAllocated
+      target_field: hadoop.metrics.expanded_cluster_metrics.containers.allocated
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.containersReserved
+      target_field: hadoop.metrics.expanded_cluster_metrics.containers.reserved
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.containersPending
+      target_field: hadoop.metrics.expanded_cluster_metrics.containers.pending
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.totalNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.activeNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.active
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.lostNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.lost
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.unhealthyNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.unhealthy
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.decommissioningNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.decommissioning
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.decommissionedNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.decommissioned
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.rebootedNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.rebooted
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.clusterMetrics.shutdownNodes
+      target_field: hadoop.metrics.expanded_cluster_metrics.nodes.shutdown
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: json
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
