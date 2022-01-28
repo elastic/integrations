@@ -22,11 +22,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "15637538-7a2c-42e3-adbf-93bf0f156afb",
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
+        "ephemeral_id": "8efe1113-788d-47cf-8e81-b0ebadc3f5ba",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.0.0-beta1"
     },
     "anomali": {
         "limo": {
@@ -44,19 +44,19 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-12-13T06:00:37.662Z",
+        "created": "2022-01-25T02:58:03.288Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2021-12-13T06:00:38Z",
+        "ingested": "2022-01-25T02:58:04Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -183,30 +183,33 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-13T06:02:03.635Z",
+    "@timestamp": "2022-01-25T03:00:07.167Z",
     "agent": {
-        "ephemeral_id": "78f6f452-5888-448d-b560-2cc5da34c0ab",
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
+        "ephemeral_id": "764c192d-9491-492a-b9e0-722495b33397",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.0.0-beta1"
     },
     "anomali": {
         "threatstream": {
-            "classification": "private",
-            "confidence": 35,
-            "detail2": "imported by user 156",
-            "id": "3304738500",
-            "import_session_id": "3166",
+            "classification": "public",
+            "confidence": 56,
+            "detail2": "imported by user 723",
+            "id": "1785659799",
+            "import_session_id": "244",
             "itype": "mal_md5",
-            "resource_uri": "/api/v1/intelligence/P24670712639/",
-            "severity": "low",
-            "source_feed_id": "1624",
+            "md5": "6466e2",
+            "resource_uri": "/api/v1/intelligence/P44706407813/",
+            "severity": "very-high",
+            "source_feed_id": "3759",
             "state": "active",
             "trusted_circle_ids": [
-                "407"
+                "439",
+                "942",
+                "801"
             ],
-            "update_id": "2184632737",
+            "update_id": "3898969521",
             "value_type": "md5"
         }
     },
@@ -216,21 +219,21 @@ An example event for `threatstream` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2021-12-13T06:02:04Z",
+        "ingested": "2022-01-25T03:00:08Z",
         "kind": "enrichment",
-        "original": "{\"classification\":\"private\",\"confidence\":35,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 156\",\"id\":3304738500,\"import_session_id\":3166,\"itype\":\"mal_md5\",\"md5\":\"c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4\",\"resource_uri\":\"/api/v1/intelligence/P24670712639/\",\"severity\":\"low\",\"source\":\"Phony generated indicator\",\"source_feed_id\":1624,\"state\":\"active\",\"trusted_circle_ids\":\"407\",\"update_id\":2184632737,\"value_type\":\"md5\"}",
-        "severity": 3,
+        "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
+        "severity": 9,
         "type": "indicator"
     },
     "input": {
@@ -244,19 +247,14 @@ An example event for `threatstream` looks as following:
     "threat": {
         "indicator": {
             "confidence": "Med",
-            "file": {
-                "hash": {
-                    "sha256": "c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4"
-                }
-            },
             "first_seen": "2020-10-08T12:22:16.000Z",
             "last_seen": "2020-10-08T12:24:42.000Z",
             "marking": {
                 "tlp": [
-                    "Amber"
+                    "White"
                 ]
             },
-            "provider": "Phony generated indicator",
+            "provider": "Default Organization",
             "type": "file"
         }
     }
@@ -337,7 +335,7 @@ An example event for `threatstream` looks as following:
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
-| threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
