@@ -253,8 +253,10 @@ An example event for `container` looks as following:
 | kubernetes.container.rootfs.inodes.used | Used inodes | long |  | gauge |
 | kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long | byte | gauge |
 | kubernetes.container.start_time | Start time | date |  |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
