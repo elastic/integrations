@@ -8,7 +8,7 @@ An example event for `s3_storage_lens` looks as following:
 {
     "@timestamp": "2021-11-07T20:38:00.000Z",
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "data_stream": {
         "namespace": "default",
