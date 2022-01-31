@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM centos:7
 ARG SERVICE_VERSION=${SERVICE_VERSION:-3.3.1}
 ARG HADOOP_VERSION=${SERVICE_VERSION} 
 
@@ -96,5 +96,5 @@ ENV YARN_NODEMANAGER_USER=yarn
 
 
 RUN rm -rf /run/nologin
-RUN chmod -R 600 /etc/crypto-policies/
+
 CMD ["bash","/entrypoint.sh"]
