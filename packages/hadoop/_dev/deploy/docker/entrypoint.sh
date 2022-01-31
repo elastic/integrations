@@ -68,8 +68,8 @@ if [ "$JOLOKIA_ENABLED" = 'yes' ]; then
 
 	echo "export HDFS_NAMENODE_OPTS="-javaagent\:`echo /jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=7777`"" >> "/hadoop-${HADOOP_LATEST_VERSION}/etc/hadoop/hadoop-env.sh"
     echo "export HDFS_DATANODE_OPTS="-javaagent\:`echo /jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=7779`"" >> "/hadoop-${HADOOP_LATEST_VERSION}/etc/hadoop/hadoop-env.sh"
-    echo "export YARN_NODEMANAGER_OPTS="-javaagent\:`echo /jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=7782`"" >> "/${HADOOP_LATEST_VERSION}/etc/hadoop/hadoop-env.sh"
-    echo "export YARN_RESOURCEMANAGER_OPTS="-javaagent\:`echo /jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=7781`"" >> "/${HADOOP_LATEST_VERSION}/etc/hadoop/hadoop-env.sh"
+    echo "export YARN_NODEMANAGER_OPTS="-javaagent\:`echo /jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=7782`"" >> "/hadoop-${HADOOP_LATEST_VERSION}/etc/hadoop/hadoop-env.sh"
+    echo "export YARN_RESOURCEMANAGER_OPTS="-javaagent\:`echo /jolokia-jvm-${JOLOKIA_VERSION}-agent.jar=host=${JOLOKIA_HOST},port=7781`"" >> "/hadoop-${HADOOP_LATEST_VERSION}/etc/hadoop/hadoop-env.sh"
    
 fi
 
