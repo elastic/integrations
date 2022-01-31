@@ -1,17 +1,42 @@
 ---
-description: Pipeline for IPTables
+description: Pipeline for iptables logs.
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
       value: '1.12.0'
+
+  # These two fields are treated as immutable in the case reindexing.
+  - set:
+      field: event.original
+      copy_from: message
+      override: false
+  - set:
+      field: event.created
+      copy_from: '@timestamp'
+      override: false
+
+  # Journald input field cleanup.
+  - remove:
+      field:
+        - syslog.priority
+        - syslog.facility
+      ignore_missing: true
   - rename:
-      field: message
-      target_field: event.original
+      field: syslog.pid
+      target_field: log.syslog.pid
+      ignore_missing: true
+  - rename:
+      field: syslog.identifier
+      target_field: log.syslog.identifier
+      ignore_missing: true
+  - remove:
+      description: Cleanup an empty syslog object.
+      if: ctx?.syslog != null && ctx.syslog instanceof Map && ctx.syslog.isEmpty()
+      field: syslog
+
+  # Parse the header if it is syslog, otherwise treat the whole value as 'message'.
   - grok:
-      description: Parse syslog header
+      description: Parse syslog header.
       field: event.original
       patterns:
         - '^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} %{GREEDYDATA:message}'
@@ -19,6 +44,11 @@ processors:
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
         SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
+      on_failure:
+        - set:
+            field: message
+            copy_from: event.original
+
   - grok:
       field: message
       patterns:
@@ -77,7 +107,7 @@ processors:
       pattern_definitions:
         UBIQUITI_FIELD: '[^-]*'
   - date:
-      if: ctx?._tmp.timestamp8601 != null
+      if: ctx?._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
       formats:
         - ISO8601
@@ -90,34 +120,34 @@ processors:
       on_failure:
       - append:
           field: error.message
-          value: '{{ _ingest.on_failure_message }}'
+          value: 'date processor error: {{{ _ingest.on_failure_message }}}'
   - date:
       if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
       field: _tmp.timestamp
       formats:
       - MMM  d HH:mm:ss
       - MMM dd HH:mm:ss
-      timezone: '{{ event.timezone }}'
+      timezone: '{{{ event.timezone }}}'
       on_failure:
       - append:
           field: error.message
-          value: '{{ _ingest.on_failure_message }}'
+          value: 'date processor error: {{{ _ingest.on_failure_message }}}'
   - set:
       field: observer.name
-      value: "{{hostname}}"
-      ignore_empty_value: true
-      if: ctx?.observer?.name == null
+      copy_from: hostname
+      if: ctx?.observer?.name == null && ctx?.hostname != null
   - set:
       field: observer.hostname
-      value: "{{hostname}}"
-      ignore_empty_value: true
-      if: ctx?.observer?.name == null
+      copy_from: hostname
+      if: ctx?.observer?.name == null && ctx?.hostname != null
   - lowercase:
       field: network.transport
       ignore_missing: true
   - lowercase:
       field: event.action
       ignore_missing: true
+
+  # GeoIP and Autonomous System Enrichment
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -158,6 +188,7 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+
   - script:
       description: Enrich event with ECS fields.
       lang: painless
@@ -258,16 +289,16 @@ processors:
   - append:
       field: event.type
       value: connection
-      if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
+      if: ctx?.source?.ip != null && ctx?.destination?.ip != null
   - append:
       field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
       allow_duplicates: false
   - rename:
       field: iptables.tcp_reserved_bits
@@ -282,21 +313,52 @@ processors:
       separator: "\\s+"
       ignore_missing: true
   - set:
+      if: ctx?.iptables?.ubiquiti?.output_zone != null
       field: observer.egress.zone
-      value: "{{iptables.ubiquiti.output_zone}}"
-      ignore_empty_value: true
+      copy_from: iptables.ubiquiti.output_zone
   - set:
+      if: ctx?.iptables?.ubiquiti?.input_zone != null
       field: observer.ingress.zone
-      value: "{{iptables.ubiquiti.input_zone}}"
-      ignore_empty_value: true
+      copy_from: iptables.ubiquiti.input_zone
   - set:
+      if: ctx?.iptables?.ubiquiti?.rule_number != null
       field: rule.id
-      value: "{{iptables.ubiquiti.rule_number}}"
-      ignore_empty_value: true
+      copy_from: iptables.ubiquiti.rule_number
   - set:
+      if: ctx?.iptables?.ubiquiti?.rule_set != null
       field: rule.name
-      value: "{{iptables.ubiquiti.rule_set}}"
-      ignore_empty_value: true
+      copy_from: iptables.ubiquiti.rule_set
+
+  # Format source.mac address.
+  - gsub:
+      field: source.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+
+  # Format destination.mac address.
+  - gsub:
+      field: destination.mac
+      pattern: '[-:.]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+
   - remove:
       field:
         - _tmp
@@ -313,4 +375,4 @@ on_failure:
       ignore_failure: true
   - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
