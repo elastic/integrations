@@ -1712,10 +1712,11 @@ processors:
   #
   # Populate ECS event.code
   #
-  - rename:
-      field: _temp_.cisco.message_id
-      target_field: event.code
+  - set:
+      field: event.code
+      value: "{{_temp_.cisco.message_id}}"
       ignore_failure: true
+      if: ctx?._temp_?.cisco?.message_id != null
   - remove:
       field:
         - _temp_.cisco.message_id
