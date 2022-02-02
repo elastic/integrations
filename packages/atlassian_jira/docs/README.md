@@ -71,7 +71,7 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -99,14 +99,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-22T00:05:08.514Z",
+    "@timestamp": "2021-11-22T00:31:52.991Z",
     "agent": {
-        "ephemeral_id": "f8b482e3-30b8-41b0-bf10-62e73045c273",
-        "hostname": "docker-fleet-agent",
-        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
+        "ephemeral_id": "970494dc-6fd0-4e64-bd87-6d1fc7deba3f",
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "atlassian_jira.audit",
@@ -114,80 +113,57 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
-        "action": "jira.auditing.group.created",
+        "action": "atlassian.audit.event.action.audit.search",
         "agent_id_status": "verified",
-        "category": [
-            "iam"
-        ],
+        "created": "2021-12-24T00:59:55.629Z",
         "dataset": "atlassian_jira.audit",
-        "ingested": "2021-12-08T14:52:36Z",
+        "ingested": "2021-12-24T00:59:56Z",
         "kind": "event",
-        "original": "{\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\"}],\"auditType\":{\"action\":\"Group created\",\"actionI18nKey\":\"jira.auditing.group.created\",\"area\":\"USER_MANAGEMENT\",\"category\":\"group management\",\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":{\"epochSecond\":1637539508,\"nano\":514000000},\"version\":\"1.0\"}",
-        "type": [
-            "group",
-            "creation"
-        ]
-    },
-    "group": {
-        "name": "jira-software-users"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "83a5cd10d1960dd73f42bd2801d238c3",
-        "ip": [
-            "192.168.176.5"
-        ],
-        "mac": [
-            "02:42:c0:a8:b0:05"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.4.0-90-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
+        "original": "{\"affectedObjects\":[],\"author\":{\"avatarUri\":\"\",\"id\":\"10000\",\"name\":\"test.user\",\"type\":\"ApplicationUser\",\"uri\":\"http://jira.internal:8088/secure/ViewProfile.jspa?name=test.user\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"41 - 90\"},{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"50\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-22T00:08:33.887Z - 2021-11-22T00:31:37.412Z\"}],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":\"2021-11-22T00:31:52.991Z\",\"type\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\"}}",
+        "type": "info"
     },
     "input": {
-        "type": "log"
+        "type": "httpjson"
     },
     "jira": {
         "audit": {
-            "affected_objects": [
+            "extra_attributes": [
                 {
-                    "name": "jira-software-users",
-                    "type": "GROUP"
+                    "name": "ID Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.id",
+                    "value": "41 - 90"
+                },
+                {
+                    "name": "Query",
+                    "nameI18nKey": "atlassian.audit.event.attribute.query"
+                },
+                {
+                    "name": "Results returned",
+                    "nameI18nKey": "atlassian.audit.event.attribute.results",
+                    "value": "50"
+                },
+                {
+                    "name": "Timestamp Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.timestamp",
+                    "value": "2021-11-22T00:08:33.887Z - 2021-11-22T00:31:37.412Z"
                 }
             ],
             "method": "Browser",
             "type": {
-                "action": "Group created",
-                "actionI18nKey": "jira.auditing.group.created",
-                "area": "USER_MANAGEMENT",
-                "category": "group management",
-                "categoryI18nKey": "jira.auditing.category.groupmanagement",
-                "level": "BASE"
+                "action": "Audit Log search performed",
+                "actionI18nKey": "atlassian.audit.event.action.audit.search",
+                "category": "Auditing",
+                "categoryI18nKey": "atlassian.audit.event.category.audit"
             }
         }
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/test-audit.log"
-        },
-        "offset": 0
     },
     "related": {
         "hosts": [
@@ -197,7 +173,7 @@ An example event for `audit` looks as following:
             "10.50.33.72"
         ],
         "user": [
-            "Anonymous"
+            "test.user"
         ]
     },
     "service": {
@@ -209,11 +185,12 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "preserve_original_event",
+        "forwarded",
         "jira-audit"
     ],
     "user": {
-        "id": "-2",
-        "name": "Anonymous"
+        "id": "10000",
+        "name": "test.user"
     }
 }
 ```

@@ -1,0 +1,1110 @@
+---
+description: Pipeline for parsing Symantec Endpoint logs
+processors:
+- set:
+    field: event.original
+    copy_from: message
+    # Never override event.original (for the reindexing use case).
+    override: false
+
+- set:
+    field: ecs.version
+    value: '1.12.0'
+
+- grok:
+    description: Parse syslog header.
+    if: ctx.event.original.startsWith('<')
+    field: event.original
+    patterns:
+      - '^<%{NONNEGINT:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:timestamp}|%{TIMESTAMP_ISO8601:timestamp})(?: %{SYSLOGFACILITY})?(?: %{SYSLOGHOST:log.syslog.hostname})?(?: %{SYSLOGPROG}:)? %{GREEDYDATA:message}'
+      - '^%{SYSLOG5424LINE}'
+    pattern_definitions:
+      SYSLOGPROG: '%{PROG:log.syslog.process.name}(?:\[%{POSINT:log.syslog.process.pid:long}\])?'
+      SYSLOG5424PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOG5424BASE: '%{SYSLOG5424PRI}%{NONNEGINT:log.syslog.version:long} +(?:-|%{TIMESTAMP_ISO8601:timestamp}) +(?:-|%{IPORHOST:log.syslog.hostname}) +(?:-|%{SYSLOG5424PRINTASCII:log.syslog.process.name}) +(?:-|%{POSINT:log.syslog.process.pid:long}) +(?:-|%{SYSLOG5424PRINTASCII:log.syslog.message_id}) +(?:-|%{SYSLOG5424SD:log.syslog.structured_data})?'
+      SYSLOG5424LINE: '%{SYSLOG5424BASE} +%{GREEDYDATA:message}'
+- grok:
+    description: Parse date/severity from log file dump format.
+    if: ctx.event.original.startsWith('20') || ctx.event.original.startsWith('19')
+    field: event.original
+    patterns:
+      - '^%{TIMESTAMP_ISO8601:timestamp},%{LOG_SEVERITY:log.level},%{GREEDYDATA:message}'
+    pattern_definitions:
+      LOG_SEVERITY: '(?:%{LOGLEVEL}|[Cc]ritical|CRITICAL|[Mm]ajor|MAJOR|[Mm]inor|MINOR|[Ii]nfo|INFO|[Ww]arning|WARNING|[Ee]rror|ERROR|[Ff]atal|FATAL)'
+    ignore_failure: true
+- date:
+    if: ctx?.timestamp != null
+    field: timestamp
+    target_field: "@timestamp"
+    formats:
+      - "MMM dd HH:mm:ss"
+      - "MMM  d HH:mm:ss"
+      - "MMM d HH:mm:ss"
+      - ISO8601
+      - "YYYY-dd-MM HH:mm:ss"
+    timezone: '{{{_conf.tz_offset}}}'
+- remove:
+    ignore_missing: true
+    field: timestamp
+
+###
+# Processing steps:
+# 1. Parse the CSV into an array of column values.
+# 2. Parse labels from each column if the value takes the form of 'Label Name: Some Value' or 'Label Name:'.
+# 3. Fingerprint the message based by joining the labels separated by '|'. Use 'NONE' for columns without an embedded label.
+# 4. Set 'event.provider' based on the message fingerprint. The different log types are listed in https://knowledge.broadcom.com/external/article?legacyId=tech171741#Administrative.
+# 5. Handle columns without an embedded label. Based on the fingerprint, map unlabeled columns to a key.
+###
+
+- csv:
+    field: message
+    empty_value: ""
+    target_fields:
+      - '_csv_array.00'
+      - '_csv_array.01'
+      - '_csv_array.02'
+      - '_csv_array.03'
+      - '_csv_array.04'
+      - '_csv_array.05'
+      - '_csv_array.06'
+      - '_csv_array.07'
+      - '_csv_array.08'
+      - '_csv_array.09'
+      - '_csv_array.10'
+      - '_csv_array.11'
+      - '_csv_array.12'
+      - '_csv_array.13'
+      - '_csv_array.14'
+      - '_csv_array.15'
+      - '_csv_array.16'
+      - '_csv_array.17'
+      - '_csv_array.18'
+      - '_csv_array.19'
+      - '_csv_array.20'
+      - '_csv_array.21'
+      - '_csv_array.22'
+      - '_csv_array.23'
+      - '_csv_array.24'
+      - '_csv_array.25'
+      - '_csv_array.26'
+      - '_csv_array.27'
+      - '_csv_array.28'
+      - '_csv_array.29'
+      - '_csv_array.30'
+      - '_csv_array.31'
+      - '_csv_array.32'
+      - '_csv_array.33'
+      - '_csv_array.34'
+      - '_csv_array.35'
+      - '_csv_array.36'
+      - '_csv_array.37'
+      - '_csv_array.38'
+      - '_csv_array.39'
+      - '_csv_array.40'
+      - '_csv_array.41'
+      - '_csv_array.42'
+      - '_csv_array.43'
+      - '_csv_array.44'
+      - '_csv_array.45'
+      - '_csv_array.46'
+      - '_csv_array.47'
+      - '_csv_array.48'
+      - '_csv_array.49'
+      - '_csv_array.50'
+
+- script:
+    description: Create array from CSV values.
+    tag: csv-map-to-array
+    lang: painless
+    source: |
+      def columnArray = [];
+      def sortedMap = new TreeMap();
+      sortedMap.putAll(ctx._csv_array);
+      sortedMap.forEach((key, value) -> {
+        def v = value;
+        if (v.startsWith("'") && v.endsWith("'"))
+        {
+          v = v.substring(1, v.length() - 1);
+        }
+        columnArray.add(v);
+      });
+      ctx['_csv_array'] = columnArray;
+
+- script:
+    description: Split colon separated key/values.
+    tag: split-colon-separated-key-value
+    lang: painless
+    source: |
+      def aliases = Collections.unmodifiableMap([
+        'computer': 'computer_name',
+        'domain': 'domain_name',
+        'end_time': 'end',
+        'local': 'local_host_ip',
+        'local_host': 'local_host_ip',
+        'server_name': 'server',
+        'user': 'user_name'
+      ]);
+
+      def keyPattern = /^([a-zA-Z][a-zA-Z0-9 \(\)-]{0,28}):(?:\s(.+)|\s)?/;
+      def keyValue = [:];
+      def fingerprint = [];
+      ctx._csv_array.forEach(v -> {
+          def m = keyPattern.matcher(v);
+          def key = 'NONE';
+          if (m.matches()) {
+            key = m.group(1).toLowerCase().replace(' ', '_');
+            key = /[\(\)]+/.matcher(key).replaceAll('');
+
+            def tmp = aliases[key];
+            if (tmp != null) {
+              key = tmp;
+            }
+
+
+            def value = m.group(2);
+            if (value != null && !value.trim().isEmpty()) {
+              keyValue[key] = value.trim();
+            }
+          }
+
+          fingerprint.add(key);
+          return true;
+      });
+      if (!keyValue.isEmpty()) {
+        ctx['_csv_map'] = keyValue;
+      }
+      ctx['_fingerprint'] = String.join("|", fingerprint);
+
+- remove:
+    field: message
+    ignore_missing: true
+
+###
+# Note to maintainers:
+# The fingerprints below can be generated by adding 'debug' to the tags field.
+# This causes a new _fingerprint field to be added to the event.
+###
+- script:
+    description: Assign keys to unlabeled columns based on fingerprints.
+    lang: painless
+    params:
+      providers:
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Behavior
+      - name: 'Agent Behavior Log'
+        fingerprint: NONE|NONE|NONE|NONE|NONE|begin|end|rule|NONE|NONE|NONE|NONE|NONE|user_name|domain_name|action_type|file_size_bytes|device_id
+        event_category: [intrusion_detection]
+        event_type: [process]
+        columns:
+          - index: 1
+            name: local_host_ip
+          - index: 2
+            name: action
+          - index: 3
+            name: event_description
+          - index: 4
+            name: api_name
+          - index: 8
+            name: caller_process_id
+          - index: 9
+            name: caller_process_name
+          - index: 10
+            name: caller_return_address
+          - index: 11
+            name: caller_return_module_name
+          - index: 12
+            name: parameters # name of the module, process, registry location or file
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Security
+      - name: 'Agent Security Log'
+        fingerprint:
+          - NONE|event_description|local_host_ip|local_host_mac|remote_host_name|remote_host_ip|remote_host_mac|NONE|NONE|intrusion_id|begin|end|occurrences|application|location|user_name|domain_name|local_port|remote_port|cids_signature_id|cids_signature_string|cids_signature_subid|intrusion_url|intrusion_payload_url|sha-256|md-5
+          - NONE|event_description|local_host_ip|local_host_mac|remote_host_name|remote_host_ip|remote_host_mac|NONE|NONE|NONE|begin|end|occurrences|application|location|user_name|domain_name|local_port|remote_port|cids_signature_id|cids_signature_string|cids_signature_subid|intrusion_url|intrusion_payload_url|sha-256|md-5
+        event_category: [intrusion_detection, network]
+        event_type: [connection, process]
+        columns:
+          - index: 7
+            name: traffic_direction
+          - index: 8
+            name: network_protocol
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Traffic
+      - name: 'Agent Traffic Log'
+        fingerprint: NONE|local_host_ip|local_port|local_host_mac|remote_host_ip|remote_host_name|remote_port|remote_host_mac|NONE|NONE|begin|end|occurrences|application|rule|location|user_name|domain_name|action|sha-256|md-5
+        event_category: [intrusion_detection, network]
+        event_type: [connection, process]
+        columns:
+          - index: 9
+            name: traffic_direction
+          - index: 8
+            name: network_protocol
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Activity
+      - name: 'Agent Activity Log'
+        fingerprint: site|server|domain_name|NONE|NONE|NONE|NONE
+        columns:
+          - index: 3
+            name: event_description
+          - index: 4
+            name: local_host_name
+          - index: 5
+            name: user_name
+          - index: 6
+            name: domain_name
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Packet
+      - name: 'Agent Packet Log'
+        fingerprint:
+          - NONE|local_host_ip|local_port|remote_host_ip|remote_host_name|remote_port|NONE|application|action
+        event_category: [intrusion_detection, network]
+        event_type: [connection, process]
+        columns:
+          - index: 6
+            name: traffic_direction
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_System
+      - name: 'Agent System Log'
+        fingerprint:
+          - NONE|category|NONE|NONE|event_time
+        columns:
+          - index: 2
+            name: event_source
+          - index: 3
+            name: event_description
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Administrative
+      - name: 'Administrative Log'
+        fingerprint: site|server|domain_name|admin|NONE
+        columns:
+          - index: 4
+            name: event_description
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#System
+      - name: 'System Log'
+        fingerprint: site|server|NONE
+        columns:
+          - index: 2
+            name: event_description
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Proactive_Detection
+      - name: 'Agent Proactive Detection Log'
+        fingerprint: NONE|computer_name|detection_type|first_seen|application_name|application_type|application_version|hash_type|application_hash|company_name|file_size_bytes|sensitivity|detection_score|coh_engine_version|NONE|permitted_application_reason|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|risk_level|detection_source|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|domain_name|group|server|user_name|source_computer|source_ip
+        columns:
+          - index: 0
+            name: event_description
+          - index: 16
+            name: submission_recommended
+          - index: 28
+            name: file_path
+          - index: 29
+            name: description
+      - name: 'Agent Proactive Detection Log'
+        fingerprint: NONE|computer_name|ip_address|detection_type|first_seen|application_name|application_type|application_version|hash_type|application_hash|company_name|file_size_bytes|sensitivity|detection_score|coh_engine_version|NONE|permitted_application_reason|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|risk_level|risk_type|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|domain_name|group|server|user_name|source_computer|source_ip|intensive_protection_level|certificate_issuer|certificate_signer|certificate_thumbprint|signing_timestamp|certificate_serial_number
+        columns:
+          - index: 0
+            name: event_description
+          - index: 17
+            name: submission_recommended
+          - index: 29
+            name: file_path
+          - index: 30
+            name: description
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Policy
+      - name: 'Policy Log'
+        fingerprint: site|server|domain_name|admin|event_description|NONE
+        columns:
+          - index: 5
+            name: policy_name
+      # https://knowledge.broadcom.com/external/article?legacyId=TECH171741#Agent_Scan
+      - name: 'Agent Scan Log'
+        fingerprint: scan_id|begin|end|NONE|duration_seconds|user1|user2|NONE|scan_complete|command|threats|infected|total_files|omitted|computer_name|ip_address|domain_name|group|server
+        columns:
+          - index: 3
+            name: action
+          - index: 7
+            name: event_description
+      # https://knowledge.broadcom.com/external/article?legacyId=tech171741#Agent_Risk
+      - name: 'Agent Risk Log'
+        fingerprint: NONE|ip_address|computer_name|source|risk_name|occurrences|NONE|NONE|actual_action|requested_action|secondary_action|event_time|inserted|end|last_update_time|domain_name|group|server|user_name|source_computer|source_ip|disposition|download_site|web_domain|downloaded_by|prevalence|confidence|url_tracking_status|first_seen|sensitivity|permitted_application_reason|application_hash|hash_type|company_name|application_name|application_version|application_type|file_size_bytes|category_set|category_type|location|intensive_protection_level|certificate_issuer|certificate_signer|certificate_thumbprint|signing_timestamp|certificate_serial_number
+        columns:
+          - index: 0
+            name: event_description
+          - index: 6
+            name: file_path
+    source: |
+      // Assume first column is always the host.hostname.
+      def hostname = ctx._csv_array.get(0);
+      if (/[\.a-zA-Z0-9_-]+/.matcher(hostname).matches()) {
+        if (ctx?.host == null) {
+          ctx['host'] = [:];
+        }
+        ctx['host']['hostname'] = hostname;
+      }
+
+      def provider = null;
+      for (def p: params.providers) {
+        if (p.fingerprint == ctx._fingerprint || (p.fingerprint instanceof Collection && p.fingerprint.contains(ctx._fingerprint))) {
+          provider = p;
+          break;
+        }
+      }
+      if (provider == null) { return; }
+
+      ctx['event']['provider'] = provider.name;
+      if (provider?.event_category != null) {
+        ctx['event']['category'] = new ArrayList(provider.event_category);
+      }
+      if (provider?.event_type!= null) {
+        ctx['event']['type'] = new ArrayList(provider.event_type);
+      }
+      for (def c : provider.columns) {
+        def v = ctx._csv_array.get(c.index).trim();
+        if (!v.isEmpty()) {
+          ctx._csv_map[c.name] = v;
+        }
+      }
+
+
+- rename:
+    field: _csv_map
+    target_field: symantec_endpoint.log
+    ignore_missing: true
+
+###
+# BEGIN handling of Symantec Endpoint fields.
+###
+
+# Action
+- lowercase:
+    field: symantec_endpoint.log.action
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: symantec_endpoint.log.action
+    ignore_failure: true
+
+# Actual Action
+- set:
+    if: ctx?.event?.action == null
+    field: event.action
+    copy_from: symantec_endpoint.log.actual_action
+    ignore_failure: true
+
+# Admin
+- set:
+    field: user.name
+    copy_from: symantec_endpoint.log.admin
+    ignore_failure: true
+
+# Application
+- set:
+    if: ctx?.process?.executable == null
+    field: process.executable
+    copy_from: symantec_endpoint.log.application
+    ignore_failure: true
+
+# Application Name
+- set:
+    field: file.pe.product
+    copy_from: symantec_endpoint.log.application_name
+    ignore_failure: true
+
+# Application Version
+- set:
+    field: file.pe.file_version
+    copy_from: symantec_endpoint.log.application_version
+    ignore_failure: true
+
+# Begin
+- date:
+    field: symantec_endpoint.log.begin
+    target_field: event.start
+    ignore_failure: true
+    formats:
+      - yyyy-MM-dd HH:mm:ss
+
+# Caller MD-5
+- dissect:
+    tag: caller-md5
+    field: symantec_endpoint.log.event_description
+    pattern: '%{} Caller MD5=%{process.hash.md5}'
+    ignore_failure: true
+
+# Caller Process ID
+- convert:
+    field: symantec_endpoint.log.caller_process_id
+    target_field: process.pid
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.caller_process_id
+
+# Caller Process Name
+- set:
+    if: ctx?.process?.executable == null
+    field: process.executable
+    copy_from: symantec_endpoint.log.caller_process_name
+    ignore_failure: true
+
+# Certificate Issuer
+- append:
+    if: ctx?.symantec_endpoint?.log?.certificate_issuer != null
+    field: file.x509.issuer.common_name
+    value: '{{{symantec_endpoint.log.certificate_issuer}}}'
+
+# Certificate Serial Number
+- set:
+    field: file.x509.serial_number
+    copy_from: symantec_endpoint.log.certificate_serial_number
+    ignore_failure: true
+
+ # Certificate Signer
+- append:
+    if: ctx?.symantec_endpoint?.log?.certificate_signer != null
+    field: file.x509.issuer.common_name
+    value: '{{{symantec_endpoint.log.certificate_signer}}}'
+
+# Certificate Thumbprint (hex encoded sha1 hashes are 40 characters)
+- lowercase:
+    if: ctx?.symantec_endpoint?.log?.certificate_thumbprint != null && ctx.symantec_endpoint.log.certificate_thumbprint.length() == 40
+    field: symantec_endpoint.log.certificate_thumbprint
+    target_field: file.hash.sha1
+
+# Company Name
+- set:
+    field: file.pe.company
+    copy_from: symantec_endpoint.log.company_name
+    ignore_failure: true
+
+# Company Name
+- set:
+    field: host.hostname
+    copy_from: symantec_endpoint.log.computer_name
+    override: false
+    ignore_failure: true
+
+# Domain Name
+- set:
+    if: ctx?.user?.domain == null
+    field: user.domain
+    copy_from: symantec_endpoint.log.domain_name
+    ignore_failure: true
+
+# Downloaded by
+- set:
+    if: ctx?.process?.executable == null
+    field: process.executable
+    copy_from: symantec_endpoint.log.downloaded_by
+    ignore_failure: true
+
+# Download site
+- uri_parts:
+    field: symantec_endpoint.log.download_site
+    ignore_failure: true
+
+# Duration (seconds)
+- convert:
+    field: symantec_endpoint.log.duration_seconds
+    target_field: event.duration
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+- script:
+    description: Convert event.duration from seconds to nanoseconds.
+    if: ctx?.event?.duration != null
+    lang: painless
+    source:
+      ctx.event['duration'] = ctx.event.duration * 1e9;
+
+# End
+- date:
+    field: symantec_endpoint.log.end
+    target_field: event.end
+    ignore_failure: true
+    formats:
+      - yyyy-MM-dd HH:mm:ss
+
+# Event Description
+- set:
+    field: message
+    copy_from: symantec_endpoint.log.event_description
+    ignore_failure: true
+
+# Event Time
+- date:
+    if: ctx?.symantec_endpoint?.log?.event_time != null
+    field: symantec_endpoint.log.event_time
+    target_field: symantec_endpoint.log.event_time
+    ignore_failure: true
+    formats:
+      - yyyy-MM-dd HH:mm:ss
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.event_time
+- set:
+    if: ctx?.symantec_endpoint?.log?.event_time != null
+    field: '@timestamp'
+    copy_from: symantec_endpoint.log.event_time
+
+# File Path
+- set:
+    field: file.path
+    copy_from: symantec_endpoint.log.file_path
+    ignore_failure: true
+
+# File Size (bytes)
+- convert:
+    field: symantec_endpoint.log.file_size_bytes
+    target_field: file.size
+    type: long
+    ignore_missing: true
+    ignore_failure: true
+
+# Infected
+- convert:
+    field: symantec_endpoint.log.infected
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.infected
+
+# Inserted
+- date:
+    if: ctx?.symantec_endpoint?.log?.inserted != null
+    field: symantec_endpoint.log.inserted
+    target_field: symantec_endpoint.log.inserted
+    ignore_failure: true
+    formats:
+      - yyyy-MM-dd HH:mm:ss
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.inserted
+
+# Intrusion ID
+- set:
+    field: rule.id
+    copy_from: symantec_endpoint.log.intrusion_id
+    ignore_failure: true
+
+# Intrusion Payload URL
+
+# Intrusion URL
+- set:
+    field: url.original
+    copy_from: symantec_endpoint.log.intrusion_url
+    ignore_failure: true
+
+# IP Address
+- append:
+    if: ctx?.symantec_endpoint.log?.ip_address != null
+    field: host.ip
+    value: '{{{symantec_endpoint.log.ip_address}}}'
+    allow_duplicates: false
+
+# Last Update Time (listed as always being in GMT)
+- date:
+    if: ctx?.symantec_endpoint?.log?.last_update_time != null
+    field: symantec_endpoint.log.last_update_time
+    target_field: symantec_endpoint.log.last_update_time
+    formats:
+      - yyyy-MM-dd HH:mm:ss
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.last_update_time
+
+# Local Host IP
+- set:
+    if: ctx?.symantec_endpoint?.log?.local_host_ip != null && ctx.symantec_endpoint.log.local_host_ip != "0.0.0.0"
+    field: source.address
+    copy_from: symantec_endpoint.log.local_host_ip
+
+# Local Host MAC
+- set:
+    field: source.mac
+    copy_from: symantec_endpoint.log.local_host_mac
+    ignore_failure: true
+- gsub:
+    field: source.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- remove:
+    if: ctx?.source?.mac == '000000000000'
+    field: source.mac
+- gsub:
+    field: source.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: source.mac
+    ignore_missing: true
+
+# Local Host Name
+- set:
+    if: ctx?.symantec_endpoint?.log?.local_host_name != ""
+    field: source.domain
+    copy_from: symantec_endpoint.log.local_host_name
+    ignore_failure: true
+
+# Local Port
+- convert:
+    if: ctx?.symantec_endpoint?.log?.local_port != "0"
+    field: symantec_endpoint.log.local_port
+    target_field: source.port
+    type: long
+    ignore_failure: true
+
+# Location
+- set:
+    field: source.geo.name
+    copy_from: symantec_endpoint.log.location
+    ignore_failure: true
+
+# MD-5
+- set:
+    field: process.hash.md5
+    copy_from: symantec_endpoint.log.md-5
+    ignore_failure: true
+- lowercase:
+    field: process.hash.md5
+    ignore_missing: true
+
+# Network Protocol (known as ECS network transport)
+- set:
+    field: network.transport
+    copy_from: symantec_endpoint.log.network_protocol
+    ignore_failure: true
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+
+# Occurrences
+- convert:
+    field: symantec_endpoint.log.occurrences
+    target_field: event.count
+    type: long
+    ignore_failure: true
+
+# Omitted
+- convert:
+    field: symantec_endpoint.log.omitted
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.omitted
+
+# Remote Host IP
+- set:
+    if: ctx?.symantec_endpoint?.log?.remote_host_ip != null && ctx.symantec_endpoint.log.remote_host_ip != "0.0.0.0"
+    field: destination.address
+    copy_from: symantec_endpoint.log.remote_host_ip
+
+# Remote Host MAC
+- set:
+    field: destination.mac
+    copy_from: symantec_endpoint.log.remote_host_mac
+    ignore_failure: true
+- gsub:
+    field: destination.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- remove:
+    if: ctx?.destination?.mac == '000000000000'
+    field: destination.mac
+- gsub:
+    field: destination.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+- uppercase:
+    field: destination.mac
+    ignore_missing: true
+
+# Remote Host Name
+- set:
+    if: ctx?.symantec_endpoint?.log?.remote_host_name != ""
+    field: destination.domain
+    copy_from: symantec_endpoint.log.remote_host_name
+    ignore_failure: true
+
+# Remote Port
+- convert:
+    if: ctx?.symantec_endpoint?.log?.remote_port != "0"
+    field: symantec_endpoint.log.remote_port
+    target_field: destination.port
+    type: long
+    ignore_failure: true
+
+# Rule
+- set:
+    field: rule.name
+    copy_from: symantec_endpoint.log.rule
+    ignore_failure: true
+
+# Sensitivity
+- convert:
+    field: symantec_endpoint.log.sensitivity
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.sensitivity
+
+# SHA-256
+- set:
+    field: process.hash.sha256
+    copy_from: symantec_endpoint.log.sha-256
+    ignore_failure: true
+- lowercase:
+    field: process.hash.sha256
+    ignore_missing: true
+
+# Signing Timestamp (Agent Risk Log)
+- date:
+    if: ctx?.symantec_endpoint?.log?.signing_timestamp != null
+    field: symantec_endpoint.log.signing_timestamp
+    target_field: symantec_endpoint.log.signing_timestamp
+    formats:
+      - UNIX
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.signing_timestamp
+- set:
+    field: file.x509.not_before
+    copy_from: symantec_endpoint.log.signing_timestamp
+    ignore_failure: true
+
+# Source Computer
+- set:
+    field: source.domain
+    copy_from: symantec_endpoint.log.source_computer
+    ignore_failure: true
+
+# Source IP
+- set:
+    field: source.address
+    copy_from: symantec_endpoint.log.source_ip
+    ignore_failure: true
+
+# Submission Recommended (Recommendation in the form of YES or NO on whether to submit this detection to Symantec or not.)
+- set:
+    if: ctx?.symantec_endpoint?.log?.submission_recommended != null && ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
+    field: symantec_endpoint.log.submission_recommended
+    value: true
+- set:
+    if: ctx?.symantec_endpoint?.log?.submission_recommended != null && !ctx.symantec_endpoint.log.submission_recommended.toLowerCase().contains('yes')
+    field: symantec_endpoint.log.submission_recommended
+    value: false
+
+# Traffic Direction
+# NOTE: inbound/outbound is changed to ingress/egress because this is a host
+# based EDR and ECS guidelines say to use ingress/egress for hosts.
+- set:
+    field: network.direction
+    copy_from: symantec_endpoint.log.traffic_direction
+    ignore_failure: true
+- lowercase:
+    field: network.direction
+    ignore_missing: true
+- set:
+    if: ctx?.network?.direction == "inbound"
+    field: network.direction
+    value: ingress
+- set:
+    if: ctx?.network?.direction == "outbound"
+    field: network.direction
+    value: egress
+
+# Threats
+- convert:
+    field: symantec_endpoint.log.threats
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.threats
+
+# Total files
+- convert:
+    field: symantec_endpoint.log.total_files
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: symantec_endpoint.log.total_files
+
+# User Name
+- set:
+    field: user.name
+    copy_from: symantec_endpoint.log.user_name
+    ignore_failure: true
+
+# User1
+- set:
+    if: ctx?.symantec_endpoint?.log?.user1 != null && ctx?.user?.name == null
+    field: user.name
+    copy_from: symantec_endpoint.log.user1
+
+###
+# END handling of Symantec Endpoint fields.
+###
+
+- remove:
+    if: ctx?._conf?.remove_mapped_fields == true
+    description: Remove symantec_endpoint.log fields that are mapped in some way to ECS.
+    ignore_missing: true
+    field:
+      - symantec_endpoint.log.action
+      - symantec_endpoint.log.actual_action
+      - symantec_endpoint.log.admin
+      - symantec_endpoint.log.application
+      - symantec_endpoint.log.application_name
+      - symantec_endpoint.log.application_version
+      - symantec_endpoint.log.begin
+      - symantec_endpoint.log.caller_process_id
+      - symantec_endpoint.log.caller_process_name
+      - symantec_endpoint.log.certificate_serial_number
+      - symantec_endpoint.log.certificate_thumbprint
+      - symantec_endpoint.log.company_name
+      - symantec_endpoint.log.domain_name
+      - symantec_endpoint.log.download_site
+      - symantec_endpoint.log.downloaded_by
+      - symantec_endpoint.log.duration_seconds
+      - symantec_endpoint.log.end
+      - symantec_endpoint.log.event_description
+      - symantec_endpoint.log.event_time
+      - symantec_endpoint.log.file_path
+      - symantec_endpoint.log.file_size_bytes
+      - symantec_endpoint.log.inserted
+      - symantec_endpoint.log.intrusion_id
+      - symantec_endpoint.log.intrusion_url
+      - symantec_endpoint.log.last_update_time
+      - symantec_endpoint.log.local_host_ip
+      - symantec_endpoint.log.local_host_mac
+      - symantec_endpoint.log.local_host_name
+      - symantec_endpoint.log.local_port
+      - symantec_endpoint.log.location
+      - symantec_endpoint.log.md-5
+      - symantec_endpoint.log.network_protocol
+      - symantec_endpoint.log.occurrences
+      - symantec_endpoint.log.remote_host_ip
+      - symantec_endpoint.log.remote_host_mac
+      - symantec_endpoint.log.remote_host_name
+      - symantec_endpoint.log.remote_port
+      - symantec_endpoint.log.rule
+      - symantec_endpoint.log.sha-256
+      - symantec_endpoint.log.signing_timestamp
+      - symantec_endpoint.log.source_computer
+      - symantec_endpoint.log.source_ip
+      - symantec_endpoint.log.submission_recommended
+      - symantec_endpoint.log.traffic_direction
+      - symantec_endpoint.log.user1
+      - symantec_endpoint.log.user_name
+
+- remove:
+    description: Remove empty symantec_endpoint.log object.
+    if: ctx?.symantec_endpoint?.log != null && ctx.symantec_endpoint.log.isEmpty()
+    field: symantec_endpoint
+    ignore_missing: true
+
+# ECS Categorization
+- set:
+    field: event.kind
+    value: event
+- append:
+    description: Set event.type to allowed when activity is blocked.
+    if: ctx?.event?.action == 'blocked' || (ctx?.message != null && !ctx.message.contains('not blocked') && ctx.message.contains('blocked'))
+    field: event.type
+    value: denied
+    allow_duplicates: false
+- append:
+    description: Set event.type to allowed when activity is not blocked.
+    if: ctx?.event?.action == 'not blocked' || (ctx?.message != null && ctx.message.contains('not blocked'))
+    field: event.type
+    value: allowed
+    allow_duplicates: false
+- append:
+    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on')
+    field: event.category
+    value: authentication
+- append:
+    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on')
+    field: event.type
+    value: info
+- set:
+    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on failed')
+    field: event.outcome
+    value: failure
+- set:
+    if: ctx?.event?.provider == 'Administrative Log' && ctx.message.contains('log on succeeded')
+    field: event.outcome
+    value: success
+
+# Destination IP
+- convert:
+    field: destination.address
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+
+# Source IP
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+
+# Network Type
+- set:
+    if: ctx?.source?.ip != null && !ctx.source.ip.contains(':')
+    field: network.type
+    value: ipv4
+- set:
+    if: ctx?.source?.ip != null && ctx.source.ip.contains(':')
+    field: network.type
+    value: ipv6
+
+# Host IP
+- append:
+    if: ctx?.source?.ip != null
+    field: host.ip
+    value: '{{{source.ip}}}'
+    allow_duplicates: false
+
+# Host MAC
+- append:
+    if: ctx?.source?.mac != null
+    field: host.mac
+    value: '{{{source.mac}}}'
+    allow_duplicates: false
+
+# Host Hostname
+- set:
+    field: host.hostname
+    copy_from: source.domain
+    override: false
+    ignore_failure: true
+
+# Host Name
+- set:
+    field: host.name
+    copy_from: host.hostname
+    override: false
+    ignore_failure: true
+
+# Related IP
+- append:
+    if: ctx?.source?.ip != null
+    field: related.ip
+    value: '{{{source.ip}}}'
+    allow_duplicates: false
+- append:
+    if: ctx?.destination?.ip != null
+    field: related.ip
+    value: '{{{destination.ip}}}'
+    allow_duplicates: false
+
+# Related Hash
+- append:
+    if: ctx?.file?.hash?.sha1 != null
+    field: related.hash
+    value: '{{{file.hash.sha1}}}'
+    allow_duplicates: true
+- append:
+    if: ctx?.process?.hash?.md5 != null
+    field: related.hash
+    value: '{{{process.hash.md5}}}'
+    allow_duplicates: true
+- append:
+    if: ctx?.process?.hash?.sha256 != null
+    field: related.hash
+    value: '{{{process.hash.sha256}}}'
+    allow_duplicates: true
+
+# Community ID
+- community_id:
+    ignore_failure: true
+
+# IP Geolocation Lookup
+- geoip:
+    if: ctx.source?.geo == null
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    if: ctx.destination?.geo == null
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+
+- script:
+    # Local was assumed to be source and remote was assumed to be destination.
+    # But if direction is ingress then swap the two around.
+    description: Swap source/destination for "ingress".
+    tag: swap-source-destination-on-ingress
+    if: ctx?.network?.direction == "ingress" && ctx?.source != null && ctx?.destination != null
+    lang: painless
+    source: |
+      def tmp = ctx.source;
+      ctx.source = ctx.destination;
+      ctx.destination = tmp;
+
+- remove:
+    description: Retain event.original when preserve_original_event tag exists.
+    if: ctx?.tags == null || !ctx.tags.contains('preserve_original_event')
+    field: event.original
+    ignore_missing: true
+
+- remove:
+    if: ctx?.tags == null || !ctx.tags.contains('debug')
+    ignore_missing: true
+    field:
+      - _conf
+      - _csv_array
+      - _fingerprint
+
+on_failure:
+- set:
+    field: error.message
+    value: 'processor {{ _ingest.on_failure_processor_type }}: {{ _ingest.on_failure_message }}'
+
+- remove:
+    if: ctx?.tags == null || !ctx.tags.contains('debug')
+    ignore_missing: true
+    field:
+      - _conf
+      - _csv_array
+      - _csv_map
+      - _fingerprint
