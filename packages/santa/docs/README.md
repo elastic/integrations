@@ -23,8 +23,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-12-10T06:45:16.802Z",
     "agent": {
-        "ephemeral_id": "45fed2c6-7c07-4385-a401-e414ce2ad338",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "e9d120ee-3138-47d0-9bf8-5b007a85f20e",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -38,7 +38,7 @@ An example event for `log` looks as following:
         "version": "1.12.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
             "process"
         ],
         "dataset": "santa.log",
-        "ingested": "2022-01-02T10:04:47Z",
+        "ingested": "2022-02-02T05:02:06Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -73,16 +73,16 @@ An example event for `log` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02:42:ac:13:00:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
