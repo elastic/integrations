@@ -21,20 +21,41 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "process": {
-        "args": [
-            "/usr/libexec/xpcproxy",
-            "/usr/sbin/newsyslog"
-        ],
-        "start": "2018-12-10T06:45:16.802Z",
-        "pid": 29678,
-        "hash": {
-            "sha256": "c4bc09fd2f248534552f517acf3edb9a635aba2b02e46f49df683ea9b778e5b4"
-        },
-        "executable": "/usr/libexec/xpcproxy",
-        "ppid": 1
-    },
     "@timestamp": "2018-12-10T06:45:16.802Z",
+    "agent": {
+        "ephemeral_id": "e9d120ee-3138-47d0-9bf8-5b007a85f20e",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "santa.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "exec",
+        "agent_id_status": "verified",
+        "category": [
+            "process"
+        ],
+        "dataset": "santa.log",
+        "ingested": "2022-02-02T05:02:06Z",
+        "kind": "event",
+        "outcome": "success",
+        "type": [
+            "start"
+        ]
+    },
     "file": {
         "x509": {
             "issuer": {
@@ -42,48 +63,82 @@ An example event for `log` looks as following:
             }
         }
     },
-    "related": {
-        "user": [
-            "root"
+    "group": {
+        "id": "0",
+        "name": "wheel"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
         ],
+        "mac": [
+            "02:42:ac:13:00:06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/santa.log"
+        },
+        "level": "I",
+        "offset": 0
+    },
+    "process": {
+        "args": [
+            "/usr/libexec/xpcproxy",
+            "/usr/sbin/newsyslog"
+        ],
+        "executable": "/usr/libexec/xpcproxy",
+        "hash": {
+            "sha256": "c4bc09fd2f248534552f517acf3edb9a635aba2b02e46f49df683ea9b778e5b4"
+        },
+        "parent": {
+            "pid": 1
+        },
+        "pid": 29678,
+        "start": "2018-12-10T06:45:16.802Z"
+    },
+    "related": {
         "hash": [
             "2aa4b9973b7ba07add447ee4da8b5337c3ee2c3a991911e80e7282e8a751fc32",
             "c4bc09fd2f248534552f517acf3edb9a635aba2b02e46f49df683ea9b778e5b4"
+        ],
+        "user": [
+            "root"
         ]
     },
-    "log": {
-        "level": "I",
-        "original": "[2018-12-10T06:45:16.802Z] I santad: action=EXEC|decision=ALLOW|reason=CERT|sha256=c4bc09fd2f248534552f517acf3edb9a635aba2b02e46f49df683ea9b778e5b4|path=/usr/libexec/xpcproxy|args=/usr/sbin/newsyslog|cert_sha256=2aa4b9973b7ba07add447ee4da8b5337c3ee2c3a991911e80e7282e8a751fc32|cert_cn=Software Signing|pid=29678|ppid=1|uid=0|user=root|gid=0|group=wheel|mode=M"
-    },
-    "event": {
-        "action": "exec",
-        "ingested": "2020-12-03T10:59:31.411714739Z",
-        "category": [
-            "process"
-        ],
-        "type": [
-            "start"
-        ],
-        "kind": "event",
-        "outcome": "success"
-    },
-    "user": {
-        "name": "root",
-        "id": "0"
-    },
-    "group": {
-        "name": "wheel",
-        "id": "0"
-    },
     "santa": {
-        "mode": "M",
-        "certificate": {
-            "sha256": "2aa4b9973b7ba07add447ee4da8b5337c3ee2c3a991911e80e7282e8a751fc32",
-            "common_name": "Software Signing"
-        },
-        "reason": "CERT",
         "action": "EXEC",
-        "decision": "ALLOW"
+        "certificate": {
+            "common_name": "Software Signing",
+            "sha256": "2aa4b9973b7ba07add447ee4da8b5337c3ee2c3a991911e80e7282e8a751fc32"
+        },
+        "decision": "ALLOW",
+        "mode": "M",
+        "reason": "CERT"
+    },
+    "tags": [
+        "santa-log"
+    ],
+    "user": {
+        "id": "0",
+        "name": "root"
     }
 }
 ```
@@ -136,12 +191,11 @@ An example event for `log` looks as following:
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
+| process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.start | The time the process started. | date |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
