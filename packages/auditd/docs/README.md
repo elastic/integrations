@@ -20,12 +20,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-03T00:37:51.394Z",
     "agent": {
-        "ephemeral_id": "343dc998-61c5-4706-b453-423b66dc6a20",
-        "hostname": "docker-fleet-agent",
-        "id": "61b0b093-6007-4584-958c-ac5d4cf64698",
+        "ephemeral_id": "26e35ddc-258e-426f-87cf-40517f808d30",
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "auditd": {
         "log": {
@@ -39,36 +38,36 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "61b0b093-6007-4584-958c-ac5d4cf64698",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "proctitle",
         "agent_id_status": "verified",
         "dataset": "auditd.log",
-        "ingested": "2021-12-02T11:17:45Z",
+        "ingested": "2021-12-24T01:30:55Z",
         "kind": "event"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "f44e74f5c0d5b729550b8016eee97b6d",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.30.0.7"
+            "192.168.224.7"
         ],
         "mac": [
-            "02:42:ac:1e:00:07"
+            "02:42:c0:a8:e0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.11.0-41-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -228,8 +227,8 @@ An example event for `log` looks as following:
 | process.executable | Absolute path to the process executable. | keyword |
 | process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
-| process.ppid | Parent process' pid. | long |
 | process.working_directory | The working directory of the process. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
