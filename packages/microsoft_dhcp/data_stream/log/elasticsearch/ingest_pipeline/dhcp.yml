@@ -1,0 +1,345 @@
+---
+## Reference document for DHCP field mapping: https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd183591(v=ws.10)
+description: Pipeline for processing Microsoft DHCP Server logs.
+processors:
+  - csv:
+      field: event.original
+      target_fields:
+        - event.code
+        - _tmp_.date
+        - _tmp_.time
+        - message
+        - host.ip
+        - host.domain
+        - _tmp_.mac
+        - user.name
+        - microsoft.dhcp.transaction_id
+        - microsoft.dhcp.result
+        - microsoft.dhcp.probation_time
+        - microsoft.dhcp.correlation_id
+        - microsoft.dhcp.dhc_id
+        - microsoft.dhcp.vendor.hex
+        - microsoft.dhcp.vendor.string
+        - microsoft.dhcp.user.hex
+        - microsoft.dhcp.user.string
+        - microsoft.dhcp.relay_agent_info
+        - microsoft.dhcp.dns_error_code
+      ignore_failure: true
+  - set:
+      field: _tmp_.timestamp
+      value: "{{{_tmp_.date}}} {{{_tmp_.time}}}"
+  - date:
+      field: _tmp_.timestamp
+      formats:
+        - "MM/dd/yy HH:mm:ss"
+      timezone: "{{{event.timezone}}}"
+  - script:
+      description: Set event action, category, outcome, and type for all known event types.
+      lang: painless
+      tag: Add ECS categorization fields
+      params:
+        "00":
+          action: log-start
+          category:
+            - process
+          type:
+            - start
+        "01":
+          action: log-end
+          category:
+            - process
+          type:
+            - end
+        "02":
+          action: log-pause
+          category:
+            - process
+          type:
+            - change
+          outcome: failure
+        "10":
+          action: dhcp-new
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "11":
+          action: dhcp-renew
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "12":
+          action: dhcp-release
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "13":
+          category:
+            - network
+          type:
+            - connection
+        "14":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "15":
+          action: dhcp-deny
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "16":
+          action: dhcp-delete
+          category:
+            - network
+          type:
+            - connection
+        "17":
+          action: dhcp-expire
+          category:
+            - network
+          type:
+            - connection
+        "18":
+          action: dhcp-expire
+          category:
+            - network
+          type:
+            - connection
+        "20":
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "21":
+          category:
+            - network
+          type:
+            - allowed
+            - connection
+        "22":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "23":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "24":
+          action: ip-cleanup-start
+          category:
+            - process
+          type:
+            - start
+        "25":
+          action: ip-cleanup-end
+          category:
+            - process
+          type:
+            - start
+        "30":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+        "31":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "32":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+        "33":
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "34":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+          outcome: failure
+        "35":
+          action: dhcp-dns-update
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "36":
+          category:
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "50":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+          outcome: failure
+        "51":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - allowed
+            - connection
+        "52":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "53":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - allowed
+            - connection
+        "54":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "55":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - allowed
+            - connection
+        "56":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+            - denied
+          outcome: failure
+        "57":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "58":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+          outcome: failure
+        "59":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+          outcome: failure
+        "60":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "61":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "62":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "63":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+        "64":
+          action: rogue-server-detection
+          category:
+            - authentication
+            - network
+          type:
+            - connection
+      source: |-
+        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+          return;
+        }
+        def hm = new HashMap(params[ctx.event.code]);
+        hm.forEach((k, v) -> ctx.event[k] = v);
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.event?.outcome == null
+  - gsub:
+      field: _tmp_.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      ignore_missing: true
+  - uppercase:
+      field: _tmp_.mac
+      ignore_missing: true
+  - append:
+      if: ctx?._tmp_?.mac != null
+      field: host.mac
+      value: '{{{_tmp_.mac}}}'
+on_failure:
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"

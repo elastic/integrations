@@ -32,7 +32,10 @@ An example event for `container` looks as following:
                     "bytes": 0
                 },
                 "workingset": {
-                    "bytes": 1490817024
+                    "bytes": 1490817024,
+                    "limit": {
+                        "pct": 0.15029874419
+                    }
                 },
                 "pagefaults": 589314
             },
@@ -243,14 +246,17 @@ An example event for `container` looks as following:
 | kubernetes.container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
 | kubernetes.container.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
+| kubernetes.container.memory.workingset.limit.pct | Working set memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.container.rootfs.available.bytes | Root filesystem total available in bytes | long | byte | gauge |
 | kubernetes.container.rootfs.capacity.bytes | Root filesystem total capacity in bytes | long | byte | gauge |
 | kubernetes.container.rootfs.inodes.used | Used inodes | long |  | gauge |
 | kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long | byte | gauge |
 | kubernetes.container.start_time | Start time | date |  |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
@@ -558,7 +564,10 @@ An example event for `pod` looks as following:
                 },
                 "page_faults": 27027,
                 "working_set": {
-                    "bytes": 96862208
+                    "bytes": 96862208,
+                    "limit": {
+                        "pct": 0.00976529512
+                    }
                 }
             },
             "ip": "172.20.0.2",
@@ -703,8 +712,10 @@ An example event for `pod` looks as following:
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
@@ -727,6 +738,7 @@ An example event for `pod` looks as following:
 | kubernetes.pod.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.pod.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
 | kubernetes.pod.memory.working_set.bytes | Total working set memory | long | percent | gauge |
+| kubernetes.pod.memory.working_set.limit.pct | Working set memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.network.rx.bytes | Received bytes | long | byte | counter |
 | kubernetes.pod.network.rx.errors | Rx errors | long |  | counter |
