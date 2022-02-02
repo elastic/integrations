@@ -23,11 +23,11 @@ pipeline {
   }
   stages {
     parallel {
-      stage('Daily integration builds with 7.17.0') {
+      stage('Daily integration builds with 7.17') {
         steps {
           build(
             job: env.INTEGRATION_JOB,
-            parameters: [stringParam(name: 'stackVersion', value: '7.17.0-SNAPSHOT')],
+            parameters: [stringParam(name: 'stackVersion', value: '7.17-SNAPSHOT')],
             quietPeriod: 0,
             wait: true,
             propagate: true,
