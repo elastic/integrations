@@ -430,7 +430,8 @@ processors:
         for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.mac != null && !addr.mac.isEmpty()) {
                 if (!ctx?.cisco?.secure_endpoint?.related?.mac.contains(addr.mac)) {
-                    ctx?.cisco?.secure_endpoint?.related?.mac.add(addr.mac);  
+                    def mac_addr = addr.mac.replace(":","-").toUpperCase();
+                    ctx?.cisco?.secure_endpoint?.related?.mac.add(mac_addr);
                 }
             }
         }
@@ -489,7 +490,6 @@ processors:
     field: destination.as.organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
-
 #############
 ## Cleanup ##
 #############
