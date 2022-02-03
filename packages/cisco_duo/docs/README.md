@@ -34,12 +34,11 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2021-07-20T11:41:31.000Z",
     "agent": {
-        "ephemeral_id": "5a98b1fa-c7e3-497c-a3e7-90bc9916e04c",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "d5c469ec-2802-48c4-9828-95a1a38a3d57",
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "cisco_duo": {
         "admin": {
@@ -55,28 +54,23 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "activation_begin",
         "agent_id_status": "verified",
-        "category": "iam",
-        "created": "2021-09-13T09:25:06.909Z",
+        "created": "2021-12-29T09:39:10.869Z",
         "dataset": "cisco_duo.admin",
-        "ingested": "2021-09-13T09:25:07Z",
+        "ingested": "2021-12-29T09:39:11Z",
         "kind": "event",
         "original": "{\"action\":\"activation_begin\",\"description\":\"Starting activation process\",\"isotimestamp\":\"2021-07-20T11: 41: 31+00: 00\",\"object\":null,\"timestamp\":1626781291,\"username\":\"narroway\"}",
         "outcome": "success",
-        "reason": "Starting activation process",
-        "type": "admin"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
+        "reason": "Starting activation process"
     },
     "input": {
         "type": "httpjson"
@@ -147,7 +141,7 @@ An example event for `admin` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -168,12 +162,11 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "d02e9104-099c-4604-bc2b-6b55f250636f",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "af742618-01e6-4406-b573-aab628bfa898",
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "cisco_duo": {
         "auth": {
@@ -218,27 +211,24 @@ An example event for `auth` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "authentication",
-        "created": "2021-09-13T09:25:47.982Z",
+        "created": "2021-12-29T09:39:46.431Z",
         "dataset": "cisco_duo.auth",
-        "ingested": "2021-09-13T09:25:51Z",
+        "ingested": "2021-12-29T09:39:47Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":[]},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
         "reason": "user_approved",
         "type": "info"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -252,22 +242,22 @@ An example event for `auth` looks as following:
     "source": {
         "address": "89.160.20.156",
         "as": {
-            "number": 52,
+            "number": 29518,
             "organization": {
-                "name": "University of California, Los Angeles"
+                "name": "Bredband2 AB"
             }
         },
         "geo": {
-            "city_name": "Los Angeles",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
             "location": {
-                "lat": 34.0648,
-                "lon": -118.4414
+                "lat": 58.4167,
+                "lon": 15.6167
             },
-            "region_iso_code": "US-CA",
-            "region_name": "California"
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
         },
         "ip": "89.160.20.156",
         "user": {
@@ -424,12 +414,11 @@ An example event for `offline_enrollment` looks as following:
 {
     "@timestamp": "2019-08-30T16:10:05.000Z",
     "agent": {
-        "ephemeral_id": "65efdcdc-75f1-428d-ab19-69424cedfbc8",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "3470fbe5-8d73-49db-8555-7e5f4cfd8504",
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "cisco_duo": {
         "offline_enrollment": {
@@ -451,22 +440,19 @@ An example event for `offline_enrollment` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-09-13T09:26:29.445Z",
+        "created": "2021-12-29T09:40:24.650Z",
         "dataset": "cisco_duo.offline_enrollment",
-        "ingested": "2021-09-13T09:26:32Z",
+        "ingested": "2021-12-29T09:40:25Z",
         "original": "{\"action\":\"o2fa_user_provisioned\",\"description\":\"{\\\"user_agent\\\": \\\"DuoCredProv/4.0.6.413 (Windows NT 6.3.9600; x64; Server)\\\", \\\"hostname\\\": \\\"WKSW10x64\\\", \\\"factor\\\": \\\"duo_otp\\\"}\",\"isotimestamp\":\"2019-08-30T16:10:05+00:00\",\"object\":\"Acme Laptop Windows Logon\",\"timestamp\":1567181405,\"username\":\"narroway\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -475,7 +461,10 @@ An example event for `offline_enrollment` looks as following:
         "preserve_original_event",
         "forwarded",
         "cisco_duo-offline_enrollment"
-    ]
+    ],
+    "user": {
+        "name": "narroway"
+    }
 }
 ```
 
@@ -540,14 +529,13 @@ An example event for `summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-13T09:27:11.594606745Z",
+    "@timestamp": "2021-12-29T09:41:01.807330132Z",
     "agent": {
-        "ephemeral_id": "c9bc1888-a4eb-4721-82db-8aeef95ea9a8",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "88177cd0-9798-45a3-86b1-48ab8de2fe35",
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "cisco_duo": {
         "summary": {
@@ -563,22 +551,19 @@ An example event for `summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-09-13T09:27:08.071Z",
+        "created": "2021-12-29T09:41:00.695Z",
         "dataset": "cisco_duo.summary",
-        "ingested": "2021-09-13T09:27:11Z",
+        "ingested": "2021-12-29T09:41:01Z",
         "original": "{\"response\":{\"admin_count\":3,\"integration_count\":9,\"telephony_credits_remaining\":960,\"user_count\":8},\"stat\":\"OK\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -651,12 +636,11 @@ An example event for `telephony` looks as following:
 {
     "@timestamp": "2020-03-20T15:38:12.000Z",
     "agent": {
-        "ephemeral_id": "90bc271b-a4ea-4729-98b0-b45bdc57323e",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "42a4e3b7-2d15-41a9-9b9c-2f2d1a4ae179",
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "cisco_duo": {
         "telephony": {
@@ -672,23 +656,20 @@ An example event for `telephony` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-09-13T09:27:54.916Z",
+        "created": "2021-12-29T09:41:39.239Z",
         "dataset": "cisco_duo.telephony",
-        "ingested": "2021-09-13T09:27:55Z",
+        "ingested": "2021-12-29T09:41:40Z",
         "kind": "event",
         "original": "{\"context\":\"authentication\",\"credits\":1,\"isotimestamp\":\"2020-03-20T15:38:12+00:00\",\"phone\":\"+121234512345\",\"timestamp\":1584718692,\"type\":\"sms\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"

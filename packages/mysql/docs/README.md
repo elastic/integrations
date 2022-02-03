@@ -164,7 +164,7 @@ The `slowlog` dataset collects the MySQL slow logs.
 | mysql.slowlog.tmp_table_sizes | Size of temporary tables created for this query. | long |
 | mysql.slowlog.tmp_tables | Number of temporary tables created for this query | long |
 | mysql.thread_id | The connection or thread ID for the query. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | user.name | Short name or login of the user. | keyword |
 
