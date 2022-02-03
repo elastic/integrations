@@ -33,25 +33,27 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-03-05T11:00:06.000Z",
+    "@timestamp": "2021-03-08T18:07:51.000Z",
     "agent": {
-        "ephemeral_id": "37bd1842-45c5-4713-b416-21c0d8acd175",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "0c6c824f-931a-418f-9535-22af6210c402",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
     },
     "cyberarkpas": {
         "audit": {
-            "action": "Auto Clear Users History start",
-            "desc": "Auto Clear Users History start",
-            "iso_timestamp": "2021-03-05T11:00:06Z",
-            "issuer": "Batch",
-            "message": "Auto Clear Users History start",
+            "action": "Full Gateway Connection",
+            "desc": "Full Gateway Connection",
+            "gateway_station": "10.0.1.20",
+            "iso_timestamp": "2021-03-08T18:07:51Z",
+            "issuer": "Administrator",
+            "message": "Full Gateway Connection",
             "rfc5424": true,
             "severity": "Info",
-            "station": "0.0.0.0",
-            "timestamp": "Mar 05 03:00:06"
+            "source_user": "PVWAGWUser",
+            "station": "127.0.0.1",
+            "timestamp": "Mar 08 10:07:51"
         }
     },
     "data_stream": {
@@ -59,23 +61,37 @@ An example event for `audit` looks as following:
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "address": "10.0.1.20",
+        "ip": "10.0.1.20",
+        "user": {
+            "name": "Administrator"
+        }
+    },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
     "event": {
-        "action": "auto clear users history start",
+        "action": "full gateway connection",
         "agent_id_status": "verified",
-        "code": "288",
+        "category": [
+            "network"
+        ],
+        "code": "19",
         "dataset": "cyberarkpas.audit",
-        "ingested": "2021-12-30T06:16:25Z",
+        "ingested": "2022-02-03T12:51:00Z",
         "kind": "event",
+        "outcome": "success",
         "severity": 2,
-        "timezone": "+00:00"
+        "timezone": "+00:00",
+        "type": [
+            "start"
+        ]
     },
     "host": {
         "name": "VAULT"
@@ -85,11 +101,14 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.22.0.7:34242"
+            "address": "172.19.0.7:35950"
         },
         "syslog": {
             "priority": 5
         }
+    },
+    "network": {
+        "direction": "internal"
     },
     "observer": {
         "hostname": "VAULT",
@@ -99,17 +118,28 @@ An example event for `audit` looks as following:
     },
     "related": {
         "ip": [
-            "0.0.0.0"
+            "127.0.0.1",
+            "10.0.1.20"
+        ],
+        "user": [
+            "PVWAGWUser",
+            "Administrator"
         ]
     },
     "source": {
-        "address": "0.0.0.0",
-        "ip": "0.0.0.0"
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1",
+        "user": {
+            "name": "PVWAGWUser"
+        }
     },
     "tags": [
         "cyberarkpas-audit",
         "forwarded"
-    ]
+    ],
+    "user": {
+        "name": "PVWAGWUser"
+    }
 }
 ```
 
