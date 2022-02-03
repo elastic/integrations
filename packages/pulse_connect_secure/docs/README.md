@@ -10,8 +10,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-10-19T09:10:35.000+02:00",
     "agent": {
-        "ephemeral_id": "f9066532-6e97-4b9a-ad56-fd78b57acb3f",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "48b94170-8de9-42a4-8608-50484a347a6a",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -47,7 +47,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -56,7 +56,7 @@ An example event for `log` looks as following:
         "category": "network",
         "created": "2021-10-19T09:10:35.000+02:00",
         "dataset": "pulse_connect_secure.log",
-        "ingested": "2022-01-02T09:45:00Z",
+        "ingested": "2022-02-03T09:39:02Z",
         "kind": "event",
         "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [89.160.20.156] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.\n",
         "outcome": "success",
@@ -70,7 +70,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:33839"
+            "address": "172.19.0.7:51695"
         }
     },
     "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
