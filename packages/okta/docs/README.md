@@ -14,12 +14,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "c8d18964-83d3-4be1-809c-201de8688e6b",
-        "hostname": "docker-fleet-agent",
-        "id": "62554406-4558-40ed-9cd2-c68d978882ff",
+        "ephemeral_id": "c8876910-3340-483c-b925-cde50a8e9810",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.13.0"
+        "version": "8.0.0-beta1"
     },
     "client": {
         "geo": {
@@ -43,23 +42,24 @@ An example event for `system` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "52c5ef7a-f604-488a-b39c-4ab431eb930e",
-        "snapshot": true,
-        "version": "7.13.0"
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "user.session.start",
+        "agent_id_status": "verified",
         "category": [
             "authentication",
             "session"
         ],
-        "created": "2021-05-31T10:31:04.833Z",
+        "created": "2022-01-02T03:56:11.567Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2021-05-31T10:31:05.861084700Z",
+        "ingested": "2022-01-02T03:56:12Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -67,9 +67,6 @@ An example event for `system` looks as following:
             "start",
             "user"
         ]
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -124,24 +121,6 @@ An example event for `system` looks as following:
         ]
     },
     "source": {
-        "as": {
-            "number": 7018,
-            "organization": {
-                "name": "AT\u0026T Services, Inc."
-            }
-        },
-        "geo": {
-            "city_name": "Dublin",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 37.7201,
-                "lon": -121.919
-            },
-            "region_iso_code": "US-CA",
-            "region_name": "California"
-        },
         "ip": "108.255.197.247",
         "user": {
             "full_name": "xxxxxx",
@@ -149,8 +128,9 @@ An example event for `system` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
-        "preserve_original_event"
+        "okta-system"
     ],
     "user": {
         "full_name": "xxxxxx"
@@ -178,7 +158,7 @@ An example event for `system` looks as following:
 | @timestamp | Event timestamp. | date |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.country_name | Country name. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
@@ -300,7 +280,7 @@ An example event for `system` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

@@ -18,74 +18,132 @@ An example event for `access` looks as following:
 
 ```json
 {
+    "@timestamp": "2020-02-07T11:48:51.000Z",
+    "agent": {
+        "ephemeral_id": "e54e6f78-d64d-4f55-ae90-25511c38de57",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "nginx_ingress_controller.access",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-01-12T03:28:00.188Z",
+        "dataset": "nginx_ingress_controller.access",
+        "ingested": "2022-01-12T03:28:06Z",
+        "kind": "event",
+        "outcome": "success",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "POST"
+        },
+        "response": {
+            "body": {
+                "bytes": 59
+            },
+            "status_code": 200
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/ingress.log"
+        },
+        "offset": 0
+    },
     "nginx_ingress_controller": {
         "access": {
             "http": {
                 "request": {
+                    "id": "529a007902362a5f51385a5fa7049884",
                     "length": 89,
-                    "time": 0.001,
-                    "id": "529a007902362a5f51385a5fa7049884"
+                    "time": 0.001
                 }
             },
             "remote_ip_list": [
                 "192.168.64.1"
             ],
             "upstream": {
-                "name": "default-web-8080",
                 "alternative_name": "",
+                "ip": "172.17.0.5",
+                "name": "default-web-8080",
                 "port": "8080",
                 "response": {
                     "length": 59,
                     "status_code": 200,
-                    "time": 0.0
-                },
-                "ip": "172.17.0.5"
+                    "time": 0
+                }
             }
         }
     },
-    "@timestamp": "2020-02-07T11:48:51.000Z",
     "related": {
         "ip": [
             "192.168.64.1"
         ]
     },
-    "http": {
-        "request": {
-            "method": "post"
-        },
-        "version": "1.1",
-        "response": {
-            "body": {
-                "bytes": 59
-            },
-            "status_code": 200
-        }
-    },
     "source": {
         "address": "192.168.64.1",
         "ip": "192.168.64.1"
     },
-    "event": {
-        "category": [
-            "web"
-        ],
-        "type": [
-            "info"
-        ],
-        "created": "2020-04-28T11:07:58.223Z",
-        "kind": "event",
-        "outcome": "success"
+    "tags": [
+        "nginx-ingress-controller-access"
+    ],
+    "url": {
+        "original": "/products"
     },
     "user_agent": {
-        "name": "curl",
-        "original": "curl/7.54.0",
         "device": {
             "name": "Other"
         },
+        "name": "curl",
+        "original": "curl/7.54.0",
         "version": "7.54.0"
-    },
-    "url": {
-        "original": "/products"
     }
 }
 ```
@@ -131,7 +189,7 @@ An example event for `access` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -182,82 +240,86 @@ An example event for `error` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-01-12T03:31:51.309672Z",
     "agent": {
-        "hostname": "953e412c8e77",
-        "name": "953e412c8e77",
-        "id": "134c7c6b-ea22-42a8-b11f-252178bc893e",
+        "ephemeral_id": "fb7ef32a-6061-4dfa-a2c0-d885b7470e0d",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "ephemeral_id": "6bbc060f-2aaf-4112-8f75-cd3e984677d1",
-        "version": "7.11.0"
+        "version": "8.0.0-beta1"
     },
-    "nginx_ingress_controller": {
-        "error": {
-            "thread_id": 7,
-            "source": {
-                "file": "client_config.go",
-                "line_number": 608
-            }
+    "data_stream": {
+        "dataset": "nginx_ingress_controller.error",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-01-12T03:32:09.037Z",
+        "dataset": "nginx_ingress_controller.error",
+        "ingested": "2022-01-12T03:32:10Z",
+        "kind": "event",
+        "timezone": "+00:00",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
         }
+    },
+    "input": {
+        "type": "log"
     },
     "log": {
         "file": {
             "path": "/tmp/service_logs/error.log"
         },
-        "offset": 361,
-        "level": "W"
-    },
-    "elastic_agent": {
-        "id": "f16cd630-3fbe-11eb-b685-fb7c02bf7a78",
-        "version": "7.11.0",
-        "snapshot": true
+        "level": "W",
+        "offset": 361
     },
     "message": "Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.",
-    "input": {
-        "type": "log"
+    "nginx_ingress_controller": {
+        "error": {
+            "source": {
+                "file": "client_config.go",
+                "line_number": 608
+            },
+            "thread_id": 8
+        }
     },
-    "@timestamp": "2020-12-16T16:53:33.833531Z",
-    "ecs": {
-        "version": "1.6.0"
-    },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "nginx_ingress_controller.error"
-    },
-    "host": {
-        "hostname": "953e412c8e77",
-        "os": {
-            "kernel": "4.9.184-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "172.28.0.6"
-        ],
-        "name": "953e412c8e77",
-        "id": "8f83e81de7426941b2a8cab44942c76a",
-        "mac": [
-            "02:42:ac:1c:00:06"
-        ],
-        "architecture": "x86_64"
-    },
-    "event": {
-        "ingested": "2020-12-16T16:53:57.900401700Z",
-        "timezone": "+00:00",
-        "created": "2020-12-16T16:53:56.860Z",
-        "kind": "event",
-        "category": [
-            "web"
-        ],
-        "type": [
-            "info"
-        ],
-        "dataset": "nginx_ingress_controller.error"
-    }
+    "tags": [
+        "nginx-ingress-controller-error"
+    ]
 }
 ```
 
