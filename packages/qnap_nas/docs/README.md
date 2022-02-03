@@ -12,14 +12,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-30T20:24:24.000Z",
+    "@timestamp": "2022-10-30T20:24:24.000Z",
     "agent": {
-        "ephemeral_id": "9d7ad172-8967-4608-9965-7e4f0f133cf8",
-        "hostname": "docker-fleet-agent",
-        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
+        "ephemeral_id": "b6db294f-f5fd-4570-9d9c-cd0a74001651",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "qnap_nas.log",
@@ -27,12 +26,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "create-directory",
@@ -40,9 +39,9 @@ An example event for `log` looks as following:
         "category": [
             "file"
         ],
-        "created": "2021-10-30T20:24:24.000Z",
+        "created": "2022-10-30T20:24:24.000Z",
         "dataset": "qnap_nas.log",
-        "ingested": "2021-12-08T14:48:32Z",
+        "ingested": "2022-01-02T09:51:24Z",
         "kind": "event",
         "provider": "conn-log",
         "timezone": "+00:00",
@@ -57,11 +56,11 @@ An example event for `log` looks as following:
         "name": "qnap-nas01"
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.176.7:60634"
+            "address": "172.18.0.7:46086"
         },
         "syslog": {
             "priority": 30
@@ -155,7 +154,7 @@ An example event for `log` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

@@ -55,10 +55,10 @@ An example event for `saml` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T06:10:36.000Z",
+    "@timestamp": "2022-02-02T12:27:23.000Z",
     "agent": {
-        "ephemeral_id": "02b79906-2f58-4cf0-ae81-0c06519f6abd",
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "ephemeral_id": "4ffa592e-b9c1-4a7e-8c91-78817747d073",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -72,7 +72,7 @@ An example event for `saml` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -83,10 +83,10 @@ An example event for `saml` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2021-12-31T06:10:36.406Z",
+        "created": "2022-02-03T12:27:23.007Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2021-12-31T06:10:37Z",
+        "ingested": "2022-02-03T12:27:24Z",
         "outcome": "failure",
         "provider": "saml",
         "type": [
@@ -266,10 +266,10 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T06:11:24.000Z",
+    "@timestamp": "2022-02-02T12:28:15.000Z",
     "agent": {
-        "ephemeral_id": "9f56622c-208a-4346-bed9-dcba68aff4bc",
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "ephemeral_id": "3242bd5f-5862-4205-97eb-6aaac7d3f3d5",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -283,7 +283,7 @@ An example event for `user_accounts` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -293,10 +293,10 @@ An example event for `user_accounts` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2021-12-31T06:11:24.645Z",
+        "created": "2022-02-03T12:28:15.402Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2021-12-31T06:11:25Z",
+        "ingested": "2022-02-03T12:28:16Z",
         "provider": "user_accounts",
         "type": [
             "change",
@@ -462,10 +462,10 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T06:09:44.000Z",
+    "@timestamp": "2022-02-02T12:26:31.000Z",
     "agent": {
-        "ephemeral_id": "3651c605-8068-4773-96b7-7e0f80b61eba",
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "ephemeral_id": "0b8db1d7-2f2e-4e9d-84d8-f3b4409101ef",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -479,7 +479,7 @@ An example event for `login` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -489,10 +489,10 @@ An example event for `login` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2021-12-31T06:09:44.606Z",
+        "created": "2022-02-03T12:26:31.037Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2021-12-31T06:09:45Z",
+        "ingested": "2022-02-03T12:26:32Z",
         "provider": "login",
         "type": [
             "user",
@@ -674,10 +674,10 @@ An example event for `admin` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T06:07:26.000Z",
+    "@timestamp": "2022-02-02T12:23:57.000Z",
     "agent": {
-        "ephemeral_id": "c08e45fa-a408-411f-99fd-3250dbb3e256",
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "ephemeral_id": "68cf8bd1-0ff1-4c77-a4e7-64ab24882a9c",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -691,7 +691,7 @@ An example event for `admin` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -702,10 +702,10 @@ An example event for `admin` looks as following:
             "iam",
             "configuration"
         ],
-        "created": "2021-12-31T06:07:26.651Z",
+        "created": "2022-02-03T12:23:57.797Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2021-12-31T06:07:27Z",
+        "ingested": "2022-02-03T12:23:58Z",
         "provider": "admin",
         "type": [
             "change"
@@ -717,7 +717,19 @@ An example event for `admin` looks as following:
         },
         "admin": {
             "application": {
-                "edition": "basic"
+                "edition": "basic",
+                "name": "drive"
+            },
+            "group": {
+                "email": "group@example.com"
+            },
+            "new_value": "new",
+            "old_value": "old",
+            "org_unit": {
+                "name": "org"
+            },
+            "setting": {
+                "name": "setting"
             }
         },
         "event": {
@@ -727,6 +739,10 @@ An example event for `admin` looks as following:
         "organization": {
             "domain": "elastic.com"
         }
+    },
+    "group": {
+        "domain": "example.com",
+        "name": "group"
     },
     "input": {
         "type": "httpjson"
@@ -764,7 +780,13 @@ An example event for `admin` looks as following:
     "user": {
         "domain": "bar.com",
         "id": "1",
-        "name": "foo"
+        "name": "foo",
+        "target": {
+            "group": {
+                "domain": "example.com",
+                "name": "group"
+            }
+        }
     }
 }
 ```
@@ -972,10 +994,10 @@ An example event for `drive` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T06:08:12.000Z",
+    "@timestamp": "2022-02-02T12:24:50.000Z",
     "agent": {
-        "ephemeral_id": "9aaca962-a550-4585-8531-349dcfc61a83",
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "ephemeral_id": "3160d231-025f-4e24-9581-72458c960fca",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -989,7 +1011,7 @@ An example event for `drive` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -999,10 +1021,10 @@ An example event for `drive` looks as following:
         "category": [
             "file"
         ],
-        "created": "2021-12-31T06:08:12.968Z",
+        "created": "2022-02-03T12:24:50.101Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2021-12-31T06:08:14Z",
+        "ingested": "2022-02-03T12:24:51Z",
         "provider": "drive",
         "type": [
             "change"
@@ -1218,10 +1240,10 @@ An example event for `groups` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T06:08:58.000Z",
+    "@timestamp": "2022-02-02T12:25:39.000Z",
     "agent": {
-        "ephemeral_id": "01ccf0fc-65bc-4ddb-88ce-b41a7567cf5b",
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "ephemeral_id": "a9599f5d-49a5-4339-9e5e-484f19370712",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -1235,7 +1257,7 @@ An example event for `groups` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "44fee708-bbda-4ff1-b9ec-1205bdf389f9",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -1245,10 +1267,10 @@ An example event for `groups` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2021-12-31T06:08:58.828Z",
+        "created": "2022-02-03T12:25:39.375Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2021-12-31T06:08:59Z",
+        "ingested": "2022-02-03T12:25:40Z",
         "provider": "groups",
         "type": [
             "group",

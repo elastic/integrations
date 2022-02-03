@@ -72,7 +72,7 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -99,14 +99,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-27T18:13:19.888Z",
+    "@timestamp": "2021-11-27T18:10:57.316Z",
     "agent": {
-        "ephemeral_id": "e1941192-7059-4772-9f71-653aed65d6dd",
-        "hostname": "docker-fleet-agent",
-        "id": "20fcdc33-b3b1-4e34-9205-89a344ebbdb0",
+        "ephemeral_id": "c1c6859f-88f5-4ae8-ad40-5c0c9fe933d1",
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "bitbucket": {
         "audit": {
@@ -126,12 +125,10 @@ An example event for `audit` looks as following:
             ],
             "method": "Browser",
             "type": {
-                "action": "Project deletion requested",
-                "actionI18nKey": "bitbucket.service.project.audit.action.projectdeletionrequested",
-                "area": "LOCAL_CONFIG_AND_ADMINISTRATION",
+                "action": "Project created",
+                "actionI18nKey": "bitbucket.service.project.audit.action.projectcreated",
                 "category": "Projects",
-                "categoryI18nKey": "bitbucket.service.audit.category.projects",
-                "level": "BASE"
+                "categoryI18nKey": "bitbucket.service.audit.category.projects"
             }
         }
     },
@@ -141,57 +138,30 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "20fcdc33-b3b1-4e34-9205-89a344ebbdb0",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
-        "action": "bitbucket.service.project.audit.action.projectdeletionrequested",
+        "action": "bitbucket.service.project.audit.action.projectcreated",
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
+        "created": "2021-12-24T00:39:23.076Z",
         "dataset": "atlassian_bitbucket.audit",
-        "ingested": "2021-12-08T15:18:06Z",
+        "ingested": "2021-12-24T00:39:24Z",
         "kind": "event",
-        "original": "{\"affectedObjects\":[{\"id\":\"3\",\"name\":\"AT\",\"type\":\"PROJECT\"}],\"auditType\":{\"action\":\"Project deletion requested\",\"actionI18nKey\":\"bitbucket.service.project.audit.action.projectdeletionrequested\",\"area\":\"LOCAL_CONFIG_AND_ADMINISTRATION\",\"category\":\"Projects\",\"categoryI18nKey\":\"bitbucket.service.audit.category.projects\",\"level\":\"BASE\"},\"author\":{\"id\":\"2\",\"name\":\"admin\",\"type\":\"NORMAL\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"target\",\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"value\":\"AT\"}],\"method\":\"Browser\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"source\":\"10.100.100.2\",\"system\":\"http://bitbucket.internal:7990\",\"timestamp\":{\"epochSecond\":1638036799,\"nano\":888000000},\"version\":\"1.0\"}",
+        "original": "{\"affectedObjects\":[{\"id\":\"3\",\"name\":\"AT\",\"type\":\"PROJECT\"}],\"author\":{\"avatarUri\":\"\",\"id\":\"2\",\"name\":\"admin\",\"type\":\"NORMAL\",\"uri\":\"http://bitbucket.internal:7990/users/admin\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"target\",\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"value\":\"AT\"}],\"method\":\"Browser\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"source\":\"10.100.100.2\",\"system\":\"http://bitbucket.internal:7990\",\"timestamp\":\"2021-11-27T18:10:57.316Z\",\"type\":{\"action\":\"Project created\",\"actionI18nKey\":\"bitbucket.service.project.audit.action.projectcreated\",\"category\":\"Projects\",\"categoryI18nKey\":\"bitbucket.service.audit.category.projects\"}}",
         "type": [
-            "deletion"
+            "creation"
         ]
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "83a5cd10d1960dd73f42bd2801d238c3",
-        "ip": [
-            "172.27.0.7"
-        ],
-        "mac": [
-            "02:42:ac:1b:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.4.0-90-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
-    },
     "input": {
-        "type": "log"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/test-audit.log"
-        },
-        "offset": 0
+        "type": "httpjson"
     },
     "related": {
         "hosts": [
@@ -213,6 +183,7 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "preserve_original_event",
+        "forwarded",
         "bitbucket-audit"
     ],
     "user": {

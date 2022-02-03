@@ -100,7 +100,7 @@ to your configuration XML file (ie standalone.xml) under the path below
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -128,77 +128,76 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "process": {
-        "thread": {
-            "name": "default task-2"
-        }
+    "@timestamp": "2021-10-22T21:01:42.667-05:00",
+    "agent": {
+        "ephemeral_id": "3fa6009c-adab-4e39-9c43-05f16ba9ef47",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
     },
-    "keycloak": {
-        "client": {
-            "id": "security-admin-console"
-        },
-        "realm": {
-            "id": "test"
-        },
-        "event_type": "login",
-        "login": {
-            "auth_method": "openid-connect",
-            "auth_type": "code",
-            "auth_session_parent_id": "bae6e56e-368f-4809-89f3-48cfb6279f5e",
-            "auth_session_tab_id": "Kz_ye2UvP6M",
-            "redirect_uri": "https://www.example.com/auth/admin/test/console/#/realms/test/events",
-            "type": "LOGIN",
-            "code_id": "bae6e56e-368f-4809-89f3-48cfb6279f5e"
-        }
+    "data_stream": {
+        "dataset": "keycloak.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "log": {
-        "level": "DEBUG",
-        "logger": "org.keycloak.events"
+    "ecs": {
+        "version": "8.0.0"
     },
-    "source": {
-        "address": "10.2.2.156",
-        "ip": "10.2.2.156"
-    },
-    "url": {
-        "path": "/auth/admin/test/console/",
-        "fragment": "/realms/test/events",
-        "original": "https://www.example.com/auth/admin/test/console/#/realms/test/events",
-        "scheme": "https",
-        "domain": "www.example.com"
-    },
-    "tags": [
-        "preserve_original_event"
-    ],
-    "@timestamp": "2021-10-22T22:11:31.257-05:00",
-    "related": {
-        "user": [
-            "ce637d23-b89c-4fca-9088-1aea1d053e19"
-        ],
-        "hosts": [
-            "www.example.com"
-        ],
-        "ip": [
-            "10.2.2.156"
-        ]
+    "elastic_agent": {
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
-        "ingested": "2021-10-27T01:40:29.824706616Z",
-        "original": "2021-10-22 22:11:31,257 DEBUG [org.keycloak.events] (default task-2) type=LOGIN, realmId=test, clientId=security-admin-console, userId=ce637d23-b89c-4fca-9088-1aea1d053e19, ipAddress=10.2.2.156, auth_method=openid-connect, auth_type=code, redirect_uri=https://www.example.com/auth/admin/test/console/#/realms/test/events, consent=no_consent_required, code_id=bae6e56e-368f-4809-89f3-48cfb6279f5e, username=admin, authSessionParentId=bae6e56e-368f-4809-89f3-48cfb6279f5e, authSessionTabId=Kz_ye2UvP6M",
-        "timezone": "America/Chicago",
-        "kind": "event",
-        "action": "LOGIN",
-        "category": [
-            "authentication"
-        ],
-        "type": [
-            "info",
-            "start",
-            "allowed"
-        ]
+        "agent_id_status": "verified",
+        "dataset": "keycloak.log",
+        "ingested": "2022-01-01T23:08:55Z",
+        "original": "2021-10-22 21:01:42,667 INFO  [org.jboss.resteasy.resteasy_jaxrs.i18n] (ServerService Thread Pool -- 64) RESTEASY002220: Adding singleton resource org.keycloak.services.resources.admin.AdminRoot from Application class org.keycloak.services.resources.KeycloakApplication",
+        "timezone": "-05:00"
     },
-    "user": {
-        "name": "admin",
-        "id": "ce637d23-b89c-4fca-9088-1aea1d053e19"
-    }
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.5"
+        ],
+        "mac": [
+            "02:42:ac:12:00:05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-43-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/test-log.log"
+        },
+        "level": "INFO",
+        "logger": "org.jboss.resteasy.resteasy_jaxrs.i18n",
+        "offset": 928
+    },
+    "message": "RESTEASY002220: Adding singleton resource org.keycloak.services.resources.admin.AdminRoot from Application class org.keycloak.services.resources.KeycloakApplication",
+    "process": {
+        "thread": {
+            "name": "ServerService Thread Pool -- 64"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "keycloak-log"
+    ]
 }
 ```
