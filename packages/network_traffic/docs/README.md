@@ -235,10 +235,10 @@ An example event for `amqp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:07:18.976Z",
+    "@timestamp": "2022-02-03T10:17:53.765Z",
     "agent": {
-        "ephemeral_id": "c9099998-bc58-4e3b-9161-e507bca9d52e",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "3fea1b50-9461-4f1e-b816-1531794e7487",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -265,10 +265,10 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -279,9 +279,9 @@ An example event for `amqp` looks as following:
             "network"
         ],
         "dataset": "network_traffic.amqp",
-        "ingested": "2022-01-02T02:07:20Z",
+        "ingested": "2022-02-03T10:17:54Z",
         "kind": "event",
-        "start": "2022-01-02T02:07:18.976Z",
+        "start": "2022-02-03T10:17:53.765Z",
         "type": [
             "connection",
             "protocol"
@@ -293,16 +293,16 @@ An example event for `amqp` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -505,10 +505,10 @@ An example event for `cassandra` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:12:30.650Z",
+    "@timestamp": "2022-02-03T10:22:59.282Z",
     "agent": {
-        "ephemeral_id": "9e8c9156-c62a-49e3-a96d-ff2e3118c08f",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "e84ef5c7-8b3d-453d-ab11-207d447b7a3e",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -559,10 +559,10 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -572,11 +572,11 @@ An example event for `cassandra` looks as following:
             "network"
         ],
         "dataset": "network_traffic.cassandra",
-        "duration": 159645982,
-        "end": "2022-01-02T02:12:30.810Z",
-        "ingested": "2022-01-02T02:12:31Z",
+        "duration": 160316277,
+        "end": "2022-02-03T10:22:59.442Z",
+        "ingested": "2022-02-03T10:23:00Z",
         "kind": "event",
-        "start": "2022-01-02T02:12:30.650Z",
+        "start": "2022-02-03T10:22:59.282Z",
         "type": [
             "connection",
             "protocol"
@@ -588,16 +588,16 @@ An example event for `cassandra` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -762,10 +762,10 @@ An example event for `dhcpv4` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:13:09.071Z",
+    "@timestamp": "2022-02-03T10:23:40.304Z",
     "agent": {
-        "ephemeral_id": "ae5eaa03-f92e-4bdc-a338-cd06207ddbfe",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "caf1f2fd-3292-4c79-9343-0f71397b586b",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -785,7 +785,7 @@ An example event for `dhcpv4` looks as following:
         "port": 67
     },
     "dhcpv4": {
-        "client_mac": "00:0b:82:01:fc:42",
+        "client_mac": "00-0B-82-01-FC-42",
         "flags": "unicast",
         "hardware_type": "Ethernet",
         "hops": 0,
@@ -804,10 +804,10 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -817,9 +817,9 @@ An example event for `dhcpv4` looks as following:
             "network"
         ],
         "dataset": "network_traffic.dhcpv4",
-        "ingested": "2022-01-02T02:13:10Z",
+        "ingested": "2022-02-03T10:23:41Z",
         "kind": "event",
-        "start": "2022-01-02T02:13:09.071Z",
+        "start": "2022-02-03T10:23:40.304Z",
         "type": [
             "connection",
             "protocol"
@@ -831,16 +831,16 @@ An example event for `dhcpv4` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -1009,10 +1009,10 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:18:08.795Z",
+    "@timestamp": "2022-02-03T10:28:49.401Z",
     "agent": {
-        "ephemeral_id": "2856bb82-2c3f-46c4-8444-aca26b3755d4",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "056ad386-26b5-4b78-9e2c-0102dd5c21f2",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -1063,10 +1063,10 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -1076,11 +1076,11 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "network_traffic.dns",
-        "duration": 53768127,
-        "end": "2022-01-02T02:18:08.849Z",
-        "ingested": "2022-01-02T02:18:09Z",
+        "duration": 58475961,
+        "end": "2022-02-03T10:28:49.459Z",
+        "ingested": "2022-02-03T10:28:50Z",
         "kind": "event",
-        "start": "2022-01-02T02:18:08.795Z",
+        "start": "2022-02-03T10:28:49.401Z",
         "type": [
             "connection",
             "protocol"
@@ -1092,16 +1092,16 @@ An example event for `dns` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -1259,10 +1259,10 @@ An example event for `http` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:24:01.767Z",
+    "@timestamp": "2022-02-03T10:35:14.623Z",
     "agent": {
-        "ephemeral_id": "9efa423c-5257-42e0-8100-30906d7cfefb",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "3be24dfb-d972-4f95-b7d8-df5077eb7d6d",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -1284,10 +1284,10 @@ An example event for `http` looks as following:
         "port": 8002
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -1297,11 +1297,11 @@ An example event for `http` looks as following:
             "network"
         ],
         "dataset": "network_traffic.http",
-        "duration": 17775918,
-        "end": "2022-01-02T02:24:01.784Z",
-        "ingested": "2022-01-02T02:24:02Z",
+        "duration": 5094152,
+        "end": "2022-02-03T10:35:14.628Z",
+        "ingested": "2022-02-03T10:35:15Z",
         "kind": "event",
-        "start": "2022-01-02T02:24:01.767Z",
+        "start": "2022-02-03T10:35:14.623Z",
         "type": [
             "connection",
             "protocol"
@@ -1313,16 +1313,16 @@ An example event for `http` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -1499,10 +1499,10 @@ An example event for `icmp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:27:02.537Z",
+    "@timestamp": "2022-02-03T10:38:25.426Z",
     "agent": {
-        "ephemeral_id": "a22979fd-526c-4673-a21b-a643ba1f74b4",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "ca426f1a-1da5-4ade-ba88-5203e420f5f0",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -1521,10 +1521,10 @@ An example event for `icmp` looks as following:
         "ip": "::2"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -1534,11 +1534,11 @@ An example event for `icmp` looks as following:
             "network"
         ],
         "dataset": "network_traffic.icmp",
-        "duration": 12976508,
-        "end": "2022-01-02T02:27:02.550Z",
-        "ingested": "2022-01-02T02:27:03Z",
+        "duration": 16850124,
+        "end": "2022-02-03T10:38:25.443Z",
+        "ingested": "2022-02-03T10:38:26Z",
         "kind": "event",
-        "start": "2022-01-02T02:27:02.537Z",
+        "start": "2022-02-03T10:38:25.426Z",
         "type": [
             "connection"
         ]
@@ -1549,16 +1549,16 @@ An example event for `icmp` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -1744,10 +1744,10 @@ An example event for `memcached` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:39:07.561Z",
+    "@timestamp": "2022-02-03T10:50:59.487Z",
     "agent": {
-        "ephemeral_id": "ebbb97ef-f9ca-4c42-9ec8-7c795e558fba",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "a0ad5187-6614-4509-8b8c-b91ce34bfe47",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -1768,10 +1768,10 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -1781,11 +1781,11 @@ An example event for `memcached` looks as following:
             "network"
         ],
         "dataset": "network_traffic.memcached",
-        "duration": 5140349,
-        "end": "2022-01-02T02:39:07.566Z",
-        "ingested": "2022-01-02T02:39:08Z",
+        "duration": 1110187,
+        "end": "2022-02-03T10:50:59.488Z",
+        "ingested": "2022-02-03T10:51:00Z",
         "kind": "event",
-        "start": "2022-01-02T02:39:07.561Z",
+        "start": "2022-02-03T10:50:59.487Z",
         "type": [
             "connection",
             "protocol"
@@ -1799,16 +1799,16 @@ An example event for `memcached` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -1971,10 +1971,10 @@ An example event for `mongodb` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:44:33.346Z",
+    "@timestamp": "2022-02-03T10:56:38.842Z",
     "agent": {
-        "ephemeral_id": "54dca19e-51ba-447e-9704-e9986f840433",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "fb38b51d-a04b-41b9-aeb2-ec9cf5773530",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -1995,10 +1995,10 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -2008,11 +2008,11 @@ An example event for `mongodb` looks as following:
             "network"
         ],
         "dataset": "network_traffic.mongodb",
-        "duration": 164628,
-        "end": "2022-01-02T02:44:33.347Z",
-        "ingested": "2022-01-02T02:44:34Z",
+        "duration": 144797,
+        "end": "2022-02-03T10:56:38.842Z",
+        "ingested": "2022-02-03T10:56:39Z",
         "kind": "event",
-        "start": "2022-01-02T02:44:33.346Z",
+        "start": "2022-02-03T10:56:38.842Z",
         "type": [
             "connection",
             "protocol"
@@ -2024,16 +2024,16 @@ An example event for `mongodb` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -2184,10 +2184,10 @@ An example event for `mysql` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:48:55.782Z",
+    "@timestamp": "2022-02-03T11:01:25.244Z",
     "agent": {
-        "ephemeral_id": "b257cd6e-4d92-4ad9-9671-66e8e4e78110",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "b93df5d3-4bf4-4623-a66d-853eede519a1",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -2208,10 +2208,10 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -2221,11 +2221,11 @@ An example event for `mysql` looks as following:
             "network"
         ],
         "dataset": "network_traffic.mysql",
-        "duration": 1122735,
-        "end": "2022-01-02T02:48:55.783Z",
-        "ingested": "2022-01-02T02:48:57Z",
+        "duration": 3588800,
+        "end": "2022-02-03T11:01:25.248Z",
+        "ingested": "2022-02-03T11:01:26Z",
         "kind": "event",
-        "start": "2022-01-02T02:48:55.782Z",
+        "start": "2022-02-03T11:01:25.244Z",
         "type": [
             "connection",
             "protocol"
@@ -2237,16 +2237,16 @@ An example event for `mysql` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -2405,10 +2405,10 @@ An example event for `nfs` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:51:52.663Z",
+    "@timestamp": "2022-02-03T11:04:32.060Z",
     "agent": {
-        "ephemeral_id": "e6861194-f10d-45c0-9469-da9132cd28be",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "62cab970-d183-4193-a863-2fae39244fe2",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -2430,10 +2430,10 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -2444,11 +2444,11 @@ An example event for `nfs` looks as following:
             "network"
         ],
         "dataset": "network_traffic.nfs",
-        "duration": 409387634,
-        "end": "2022-01-02T02:51:53.072Z",
-        "ingested": "2022-01-02T02:51:54Z",
+        "duration": 410457313,
+        "end": "2022-02-03T11:04:32.470Z",
+        "ingested": "2022-02-03T11:04:33Z",
         "kind": "event",
-        "start": "2022-01-02T02:51:52.663Z",
+        "start": "2022-02-03T11:04:32.060Z",
         "type": [
             "connection",
             "protocol"
@@ -2461,16 +2461,16 @@ An example event for `nfs` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -2629,10 +2629,10 @@ An example event for `pgsql` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:56:03.375Z",
+    "@timestamp": "2022-02-03T11:08:49.961Z",
     "agent": {
-        "ephemeral_id": "9caa0d1c-1926-419c-9bda-ba0de2202bcb",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "4b3cd166-a06e-462b-99f4-1fbbb19bd255",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -2653,10 +2653,10 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -2666,11 +2666,11 @@ An example event for `pgsql` looks as following:
             "network"
         ],
         "dataset": "network_traffic.pgsql",
-        "duration": 2359259,
-        "end": "2022-01-02T02:56:03.378Z",
-        "ingested": "2022-01-02T02:56:04Z",
+        "duration": 4178922,
+        "end": "2022-02-03T11:08:49.966Z",
+        "ingested": "2022-02-03T11:08:51Z",
         "kind": "event",
-        "start": "2022-01-02T02:56:03.375Z",
+        "start": "2022-02-03T11:08:49.961Z",
         "type": [
             "connection",
             "protocol"
@@ -2682,16 +2682,16 @@ An example event for `pgsql` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -2831,10 +2831,10 @@ An example event for `redis` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:57:11.060Z",
+    "@timestamp": "2022-02-03T11:09:58.274Z",
     "agent": {
-        "ephemeral_id": "dffc66fb-d36a-4b2b-a4d5-5828724c4602",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "9695e5d6-592c-43f6-ae77-e05b03258aac",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -2855,10 +2855,10 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -2869,11 +2869,11 @@ An example event for `redis` looks as following:
             "network"
         ],
         "dataset": "network_traffic.redis",
-        "duration": 3672556,
-        "end": "2022-01-02T02:57:11.063Z",
-        "ingested": "2022-01-02T02:57:12Z",
+        "duration": 3574366,
+        "end": "2022-02-03T11:09:58.278Z",
+        "ingested": "2022-02-03T11:09:59Z",
         "kind": "event",
-        "start": "2022-01-02T02:57:11.060Z",
+        "start": "2022-02-03T11:09:58.274Z",
         "type": [
             "connection",
             "protocol"
@@ -2885,16 +2885,16 @@ An example event for `redis` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -3102,10 +3102,10 @@ An example event for `sip` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:58:28.174Z",
+    "@timestamp": "2022-02-03T11:11:45.732Z",
     "agent": {
-        "ephemeral_id": "5afa1ebd-f739-46ad-9b81-cd259024b5b8",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "658bc9dd-443e-4d68-8e8c-9de104c699aa",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -3124,10 +3124,10 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -3140,12 +3140,12 @@ An example event for `sip` looks as following:
         ],
         "dataset": "network_traffic.sip",
         "duration": 0,
-        "end": "2022-01-02T02:58:28.174Z",
-        "ingested": "2022-01-02T02:58:29Z",
+        "end": "2022-02-03T11:11:45.732Z",
+        "ingested": "2022-02-03T11:11:46Z",
         "kind": "event",
         "original": "INVITE sip:test@10.0.2.15:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0\r\nFrom: \"DVI4/8000\" \u003csip:sipp@10.0.2.20:5060\u003e;tag=1\r\nTo: test \u003csip:test@10.0.2.15:5060\u003e\r\nCall-ID: 1-2187@10.0.2.20\r\nCSeq: 1 INVITE\r\nContact: sip:sipp@10.0.2.20:5060\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length:   123\r\n\r\nv=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n",
         "sequence": 1,
-        "start": "2022-01-02T02:58:28.174Z",
+        "start": "2022-02-03T11:11:45.732Z",
         "type": [
             "info"
         ]
@@ -3156,16 +3156,16 @@ An example event for `sip` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -3380,10 +3380,10 @@ An example event for `thrift` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T02:59:52.251Z",
+    "@timestamp": "2022-02-03T11:13:08.782Z",
     "agent": {
-        "ephemeral_id": "2beec1d6-beee-46a5-8994-3658c8c145a6",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "7125f842-f173-471c-9928-8613dd799610",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -3404,10 +3404,10 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -3417,11 +3417,11 @@ An example event for `thrift` looks as following:
             "network"
         ],
         "dataset": "network_traffic.thrift",
-        "duration": 2296504,
-        "end": "2022-01-02T02:59:52.253Z",
-        "ingested": "2022-01-02T02:59:53Z",
+        "duration": 2072145,
+        "end": "2022-02-03T11:13:08.784Z",
+        "ingested": "2022-02-03T11:13:09Z",
         "kind": "event",
-        "start": "2022-01-02T02:59:52.251Z",
+        "start": "2022-02-03T11:13:08.782Z",
         "type": [
             "connection",
             "protocol"
@@ -3433,16 +3433,16 @@ An example event for `thrift` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -3670,10 +3670,10 @@ An example event for `tls` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-02T03:00:30.218Z",
+    "@timestamp": "2022-02-03T11:13:45.753Z",
     "agent": {
-        "ephemeral_id": "ac890f6a-51fd-495d-b131-948f909b1ec6",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "02076ed0-f6b4-4cb8-90d1-a4806d0f940f",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
         "version": "8.0.0-beta1"
@@ -3693,10 +3693,10 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -3706,11 +3706,11 @@ An example event for `tls` looks as following:
             "network"
         ],
         "dataset": "network_traffic.tls",
-        "duration": 25167067,
-        "end": "2022-01-02T03:00:30.243Z",
-        "ingested": "2022-01-02T03:00:31Z",
+        "duration": 15193135,
+        "end": "2022-02-03T11:13:45.768Z",
+        "ingested": "2022-02-03T11:13:46Z",
         "kind": "event",
-        "start": "2022-01-02T03:00:30.218Z",
+        "start": "2022-02-03T11:13:45.753Z",
         "type": [
             "connection",
             "protocol"
@@ -3722,16 +3722,16 @@ An example event for `tls` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.11.0-43-generic",
+            "kernel": "5.13.0-27-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
