@@ -14,13 +14,30 @@ streams:
     title: Forwarded
     description: 'Collect ForwardedEvents channel logs'
     vars:
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: >-
+          Preserves a raw copy of the original XML event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
       - name: event_id
         type: text
         title: Event ID
         description: >-
           A list of included and excluded (blocked) event IDs. The value is a comma-separated list.  The accepted values are single event IDs to include (e.g. 4624), a range of event IDs to include (e.g. 4700-4800),  and single event IDs to exclude (e.g. -4735).  Limit 22 IDs.
-        required: true
+        required: false
         show_user: false
+      - name: ignore_older
+        type: text
+        title: Ignore events older than
+        default: 72h
+        required: false
+        show_user: false
+        description: >-
+          If this option is specified, events that are older than the specified amount of time are ignored. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
       - name: language
         type: text
         title: Language ID
@@ -36,14 +53,6 @@ streams:
         show_user: false
         default:
           - forwarded
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
       - name: processors
         type: yaml
         title: Processors
