@@ -16,8 +16,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-09-05T16:02:55.000-05:00",
     "agent": {
-        "ephemeral_id": "05221650-5fea-4793-82f4-dd4856c45170",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "d1ca036e-57c0-4c4a-9b92-ddc5f4cdb3a2",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -47,7 +47,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -58,7 +58,7 @@ An example event for `log` looks as following:
         ],
         "created": "2022-09-05T16:02:55.000-05:00",
         "dataset": "snort.log",
-        "ingested": "2022-01-02T10:16:14Z",
+        "ingested": "2022-02-03T09:26:00Z",
         "kind": "alert",
         "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -\u003e 175.16.199.1\n",
         "severity": 3,
@@ -69,7 +69,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:34477"
+            "address": "172.19.0.7:38583"
         }
     },
     "network": {
