@@ -14,75 +14,103 @@ An example event for `log` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-05T16:02:55.000-05:00",
+    "agent": {
+        "ephemeral_id": "d1ca036e-57c0-4c4a-9b92-ddc5f4cdb3a2",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "snort.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "destination": {
+        "address": "175.16.199.1",
         "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
             "location": {
-                "lon": -97.822,
-                "lat": 37.751
+                "lat": 43.88,
+                "lon": 125.3228
             },
-            "country_iso_code": "US"
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
         },
-        "as": {
-            "number": 3356,
-            "organization": {
-                "name": "Level 3 Parent, LLC"
-            }
-        },
-        "address": "4.2.2.3",
-        "port": 53,
-        "ip": "4.2.2.3"
+        "ip": "175.16.199.1"
     },
-    "rule": {
-        "description": "ET DNS DNS Query to a .tk domain - Likely Hostile",
-        "id": "2012811",
-        "category": "Potentially Bad Traffic",
-        "version": "2"
+    "ecs": {
+        "version": "8.0.0"
     },
-    "source": {
-        "port": 1029,
-        "address": "192.168.88.10",
-        "ip": "192.168.88.10"
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2022-09-05T16:02:55.000-05:00",
+        "dataset": "snort.log",
+        "ingested": "2022-02-03T09:26:00Z",
+        "kind": "alert",
+        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -\u003e 175.16.199.1\n",
+        "severity": 3,
+        "timezone": "-05:00"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.19.0.7:38583"
+        }
+    },
     "network": {
-        "community_id": "1:V4msnhdD0i+Grd4gC2ZiJJzsFr4=",
-        "transport": "udp",
-        "type": "ipv4",
-        "direction": "outbound"
+        "community_id": "1:AwywM3uuS+luH6U/hUKtj2x2LWU=",
+        "direction": "outbound",
+        "transport": "icmp",
+        "type": "ipv4"
     },
     "observer": {
-        "type": "ids",
+        "name": "dev",
         "product": "ids",
+        "type": "ids",
         "vendor": "snort"
     },
-    "@timestamp": "2021-05-30T19:09:28.472-05:00",
-    "ecs": {
-        "version": "1.12.0"
+    "process": {
+        "name": "snort"
     },
     "related": {
         "ip": [
-            "192.168.88.10",
-            "4.2.2.3"
+            "10.50.10.88",
+            "175.16.199.1"
         ]
     },
-    "event": {
-        "severity": 2,
-        "ingested": "2021-09-20T12:26:46.712455162Z",
-        "original": "05/30-19:09:28.472094  [**] [1:2012811:2] ET DNS DNS Query to a .tk domain - Likely Hostile [**] [Classification: Potentially Bad Traffic] [Priority: 2] {UDP} 192.168.88.10:1029 -\u003e 4.2.2.3:53",
-        "timezone": "America/Chicago",
-        "created": "2021-05-30T19:09:28.472-05:00",
-        "kind": "alert",
-        "category": [
-            "network"
-        ]
+    "rule": {
+        "category": "Misc activity",
+        "description": "Pinging...",
+        "id": "1000015",
+        "version": "0"
     },
     "snort": {
         "gid": 1
-    }
+    },
+    "source": {
+        "address": "10.50.10.88",
+        "ip": "10.50.10.88"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "snort.log"
+    ]
 }
 ```
 
@@ -111,7 +139,7 @@ An example event for `log` looks as following:
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -152,9 +180,9 @@ An example event for `log` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
