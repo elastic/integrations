@@ -185,7 +185,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.executable | Absolute path to the process executable. | keyword |
@@ -218,12 +218,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "87e99c9b-69a6-41a6-bf36-43d9b6a8a9ed",
-        "hostname": "docker-fleet-agent",
-        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
+        "ephemeral_id": "9060b4e5-b568-47b0-9a7b-62121df53ec9",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "crowdstrike": {
         "event": {
@@ -270,12 +269,12 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -283,7 +282,7 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2021-08-13T09:28:52Z",
+        "ingested": "2021-12-30T05:13:25Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
@@ -781,7 +780,7 @@ for more details.
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.address |  | keyword |
 | observer.geo.city_name | City name. | keyword |
 | observer.geo.continent_name | Name of the continent. | keyword |
@@ -819,7 +818,7 @@ for more details.
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.domain | Server domain. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | server.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
@@ -859,12 +858,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "243badcf-20b4-4df7-b99c-b2438cc324cf",
-        "hostname": "docker-fleet-agent",
-        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
+        "ephemeral_id": "33b3f217-19d7-4071-bb17-5dd3176d549d",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.0.0-beta1"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -890,12 +888,12 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "ea510c32-eacb-447e-96e5-3300ba696f8e",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -906,9 +904,9 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2021-08-13T09:29:34Z",
+        "ingested": "2021-12-30T05:14:09Z",
         "kind": "alert",
-        "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"208.226.182.36\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
+        "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
         "timezone": "+00:00",
         "type": [
@@ -923,9 +921,6 @@ An example event for `fdr` looks as following:
         "path": "\\Device\\HarddiskVolume3\\Users\\user11\\Downloads\\file.pptx",
         "type": "file"
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "log"
     },
@@ -933,21 +928,22 @@ An example event for `fdr` looks as following:
         "file": {
             "path": "/tmp/service_logs/fdr-sample.log"
         },
-        "offset": 95382
+        "offset": 95203
     },
     "observer": {
-        "address": "208.226.182.36",
+        "address": "67.43.156.14",
         "geo": {
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
             "location": {
-                "lat": 37.751,
-                "lon": -97.822
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
-        "ip": "208.226.182.36",
+        "ip": "67.43.156.14",
         "serial_number": "ffffffffac4148947ed68497e89f3308",
+        "type": "agent",
         "vendor": "crowdstrike",
         "version": "1007.3.0011603.1"
     },
@@ -965,11 +961,10 @@ An example event for `fdr` looks as following:
             "1763245019"
         ],
         "hosts": [
-            "208.226.182.36",
-            "docker-fleet-agent"
+            "67.43.156.14"
         ],
         "ip": [
-            "208.226.182.36"
+            "67.43.156.14"
         ]
     },
     "tags": [

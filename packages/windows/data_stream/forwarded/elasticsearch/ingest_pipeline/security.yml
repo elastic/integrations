@@ -1,9 +1,6 @@
 ---
 description: Pipeline for Windows Security events
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - convert:
       field: event.code
       type: string
@@ -3153,7 +3150,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
 
   - set:
       field: log.level
@@ -3168,12 +3165,6 @@ processors:
         - ISO8601
       ignore_failure: true
       if: ctx?.winlog?.time_created != null
-
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 
 on_failure:
   - set:
