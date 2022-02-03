@@ -38,8 +38,6 @@ These values are:
 | id                                  | event.id                       |
 | lastEventTime                       | event.end                      |
 | machineId                           | cloud.instance.id              |
-| relatedUser.userName                | host.user.name                 |
-| relatedUser.domainName              | host.user.domain               |
 | title                               | message                        |
 | severity                            | event.severity                 |
 
