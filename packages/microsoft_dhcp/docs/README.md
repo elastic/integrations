@@ -11,6 +11,9 @@ This integration has been made to support the DHCP log format from Windows Serve
 Ingest logs from Microsoft DHCP Server, by default logged with the filename format:
 `%windir%\System32\DHCP\DhcpSrvLog-*.log`
 
+Logs may also be ingested from Microsoft DHCPv6 Server, by default logged with the filename format:
+`%windir%\System32\DHCP\DhcpV6SrvLog-*.log`
+
 Relevant documentation for Microsoft DHCP can be found on [this]https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd183591(v=ws.10) location.
 
 An example event for `log` looks as following:
@@ -19,8 +22,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2001-01-01T01:01:01.000-05:00",
     "agent": {
-        "ephemeral_id": "7a21da26-721c-49ca-bd92-025708de74b8",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "71909507-d0ea-484b-a8e4-7a8317aae1a3",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0-beta1"
@@ -34,7 +37,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
         "version": "8.0.0-beta1"
     },
@@ -46,7 +49,7 @@ An example event for `log` looks as following:
         ],
         "code": "35",
         "dataset": "microsoft_dhcp.log",
-        "ingested": "2022-01-12T06:28:11Z",
+        "ingested": "2022-02-03T12:11:29Z",
         "kind": "event",
         "original": "35,01/01/01,01:01:01,DNS update request failed,192.168.2.1,host.test.com,000000000000,",
         "outcome": "failure",
@@ -59,7 +62,9 @@ An example event for `log` looks as following:
     "host": {
         "domain": "host.test.com",
         "ip": "192.168.2.1",
-        "mac": "00-00-00-00-00-00"
+        "mac": [
+            "00-00-00-00-00-00"
+        ]
     },
     "input": {
         "type": "log"
@@ -68,9 +73,18 @@ An example event for `log` looks as following:
         "file": {
             "path": "/tmp/service_logs/test-dhcp.log"
         },
-        "offset": 646
+        "offset": 2407
     },
     "message": "DNS update request failed",
+    "observer": {
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02:42:ac:13:00:06"
+        ]
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
@@ -106,13 +120,20 @@ An example event for `log` looks as following:
 | microsoft.dhcp.correlation_id | The NAP correlation ID related to the client/server transaction. | keyword |
 | microsoft.dhcp.dhc_id | The related DHCID (DHC DNS record). | keyword |
 | microsoft.dhcp.dns_error_code | DNS error code communicated to client. | keyword |
+| microsoft.dhcp.duid.hex | The related DHCP Unique Identifier (DUID) for the host (DHCPv6). | keyword |
+| microsoft.dhcp.duid.length | The length of the DUID field. | keyword |
+| microsoft.dhcp.error_code | DHCP server error code. | keyword |
 | microsoft.dhcp.probation_time | The probation time before lease ends on specific IP. | keyword |
 | microsoft.dhcp.relay_agent_info | Information about DHCP relay agent used for the DHCP request. | keyword |
 | microsoft.dhcp.result | The DHCP result type, for example "NoQuarantine", "Drop Packet" etc. | keyword |
+| microsoft.dhcp.subnet_prefix | The number of bits for the subnet prefix. | keyword |
 | microsoft.dhcp.transaction_id | The DHCP transaction ID. | keyword |
 | microsoft.dhcp.user.hex | Hex representation of the user. | keyword |
 | microsoft.dhcp.user.string | String representation of the user. | keyword |
 | microsoft.dhcp.vendor.hex | Hex representation of the vendor. | keyword |
 | microsoft.dhcp.vendor.string | String representation of the vendor. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
+| observer.ip | IP addresses of the observer. | ip |
+| observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |

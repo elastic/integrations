@@ -27,13 +27,129 @@ The `ingest-geoip` and `ingest-user_agent` Elasticsearch plugins are required to
 
 Uses the Office 365 Management Activity API to retrieve audit messages from Office 365 and Azure AD activity logs. These are the same logs that are available under Audit Log Search in the Security and Compliance Center.
 
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2020-02-07T16:43:53.000Z",
+    "agent": {
+        "ephemeral_id": "14ad310a-30bb-45d4-9dd4-20f22267fbd5",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "address": "213.97.47.133",
+        "ip": "213.97.47.133"
+    },
+    "data_stream": {
+        "dataset": "o365.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "PageViewed",
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "code": "SharePoint",
+        "dataset": "o365.audit",
+        "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
+        "ingested": "2022-01-02T03:51:15Z",
+        "kind": "event",
+        "original": "{\"ListItemUniqueId\": \"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\", \"ItemType\": \"Page\", \"Workload\": \"OneDrive\", \"OrganizationId\": \"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\", \"UserId\": \"asr@testsiem.onmicrosoft.com\", \"CreationTime\": \"2020-02-07T16:43:53\", \"Site\": \"d5180cfc-3479-44d6-b410-8c985ac894e3\", \"ClientIP\": \"213.97.47.133\", \"WebId\": \"8c5c94bb-8396-470c-87d7-8999f440cd30\", \"UserType\": 0, \"Version\": 1, \"EventSource\": \"SharePoint\", \"UserAgent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\", \"UserKey\": \"i:0h.f|membership|1003200096971f55@live.com\", \"CustomUniqueId\": true, \"Operation\": \"PageViewed\", \"ObjectId\": \"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\", \"Id\": \"99d005e6-a4c6-46fd-117c-08d7abeceab5\", \"CorrelationId\": \"622b339f-4000-a000-f25f-92b3478c7a25\", \"RecordType\": 4}",
+        "outcome": "success",
+        "provider": "OneDrive",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd",
+        "name": "testsiem.onmicrosoft.com"
+    },
+    "input": {
+        "type": "o365audit"
+    },
+    "network": {
+        "type": "ipv4"
+    },
+    "o365": {
+        "audit": {
+            "CorrelationId": "622b339f-4000-a000-f25f-92b3478c7a25",
+            "CreationTime": "2020-02-07T16:43:53",
+            "CustomUniqueId": true,
+            "EventSource": "SharePoint",
+            "ItemType": "Page",
+            "ListItemUniqueId": "59a8433d-9bb8-cfef-6edc-4c0fc8b86875",
+            "ObjectId": "https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx",
+            "RecordType": "4",
+            "Site": "d5180cfc-3479-44d6-b410-8c985ac894e3",
+            "UserId": "asr@testsiem.onmicrosoft.com",
+            "UserKey": "i:0h.f|membership|1003200096971f55@live.com",
+            "UserType": "0",
+            "Version": "1",
+            "WebId": "8c5c94bb-8396-470c-87d7-8999f440cd30"
+        }
+    },
+    "organization": {
+        "id": "b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd"
+    },
+    "related": {
+        "ip": [
+            "213.97.47.133"
+        ],
+        "user": [
+            "asr"
+        ]
+    },
+    "source": {
+        "ip": "213.97.47.133"
+    },
+    "tags": [
+        "forwarded",
+        "o365-audit",
+        "preserve_original_event"
+    ],
+    "user": {
+        "domain": "testsiem.onmicrosoft.com",
+        "email": "asr@testsiem.onmicrosoft.com",
+        "id": "asr@testsiem.onmicrosoft.com",
+        "name": "asr"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Firefox",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0",
+        "os": {
+            "full": "Mac OS X 10.14",
+            "name": "Mac OS X",
+            "version": "10.14"
+        },
+        "version": "72.0."
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -96,7 +212,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | o365.audit.Actor.ID |  | keyword |
 | o365.audit.Actor.Type |  | keyword |
 | o365.audit.ActorContextId |  | keyword |
@@ -204,7 +320,7 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 | rule.reference | Reference URL to additional information about the rule used to generate this event. The URL can point to the vendor's documentation about the rule. If that's not available, it can also be a link to a more general page describing this type of alert. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| server.domain | Server domain. | keyword |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
