@@ -12,99 +12,109 @@ An example event for `vpcflow` looks as following:
 
 ```json
 {
-    "log": {
-        "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
+    "@timestamp": "2019-06-14T03:50:10.845Z",
+    "agent": {
+        "ephemeral_id": "e58d02a0-e7a0-45c0-aba6-a8c983782744",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "gcp.vpcflow",
+        "namespace": "ep",
+        "type": "logs"
     },
     "destination": {
-        "address": "10.87.40.76",
-        "port": 33970,
-        "domain": "kibana",
-        "ip": "10.87.40.76"
-    },
-    "source": {
-        "geo": {
-            "continent_name": "America",
-            "country_name": "usa"
-        },
+        "address": "67.43.156.13",
         "as": {
-            "number": 15169
+            "number": 35908
         },
-        "address": "198.51.100.248",
-        "port": 9200,
-        "bytes": 173663,
-        "domain": "elasticsearch",
-        "ip": "198.51.100.248",
-        "packets": 68
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "port": 33478
     },
-    "network": {
-        "community_id": "1:e5cZeUPf9fWSqRY+SUSG302spGE=",
-        "bytes": 173663,
-        "name": "default",
-        "transport": "tcp",
-        "type": "ipv4",
-        "iana_number": "6",
-        "packets": 68,
-        "direction": "internal"
-    },
-    "cloud": {
-        "region": "us-east1",
-        "availability_zone": "us-east1-b",
-        "project": {
-            "id": "my-sample-project"
-        }
-    },
-    "@timestamp": "2019-06-14T03:50:10.845Z",
     "ecs": {
-        "version": "1.8.0"
+        "version": "8.0.0"
     },
-    "related": {
-        "ip": [
-            "198.51.100.248",
-            "10.87.40.76"
-        ]
+    "elastic_agent": {
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2021-12-31T03:12:25.823Z",
+        "dataset": "gcp.vpcflow",
+        "end": "2019-06-14T03:45:37.301953198Z",
+        "id": "ut8lbrffooxyw",
+        "ingested": "2021-12-31T03:12:26Z",
+        "kind": "event",
+        "start": "2019-06-14T03:45:37.186193305Z",
+        "type": "connection"
     },
     "gcp": {
-        "destination": {
+        "source": {
+            "instance": {
+                "project_id": "my-sample-project",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
             "vpc": {
                 "project_id": "my-sample-project",
                 "subnetwork_name": "default",
                 "vpc_name": "default"
-            },
-            "instance": {
-                "region": "us-east1",
-                "project_id": "my-sample-project",
-                "zone": "us-east1-b"
             }
         },
         "vpcflow": {
-            "reporter": "DEST",
+            "reporter": "SRC",
             "rtt": {
-                "ms": 1
-            }
-        },
-        "source": {
-            "vpc": {
-                "project_id": "my-sample-project",
-                "subnetwork_name": "default",
-                "vpc_name": "default"
-            },
-            "instance": {
-                "region": "us-east1",
-                "project_id": "my-sample-project",
-                "zone": "us-east1-b"
+                "ms": 36
             }
         }
     },
-    "event": {
-        "ingested": "2021-02-19T09:19:49.051077900Z",
-        "original": "{\"insertId\":\"ut8lbrffooxzb\",\"jsonPayload\":{\"bytes_sent\":\"173663\",\"connection\":{\"dest_ip\":\"10.87.40.76\",\"dest_port\":33970,\"protocol\":6,\"src_ip\":\"198.51.100.248\",\"src_port\":9200},\"dest_instance\":{\"project_id\":\"my-sample-project\",\"region\":\"us-east1\",\"vm_name\":\"kibana\",\"zone\":\"us-east1-b\"},\"dest_vpc\":{\"project_id\":\"my-sample-project\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"},\"end_time\":\"2019-06-14T03:49:51.821302149Z\",\"packets_sent\":\"68\",\"reporter\":\"DEST\",\"rtt_msec\":\"1\",\"src_instance\":{\"project_id\":\"my-sample-project\",\"region\":\"us-east1\",\"vm_name\":\"elasticsearch\",\"zone\":\"us-east1-b\"},\"src_location\":{\"asn\":15169,\"continent\":\"America\",\"country\":\"usa\"},\"src_vpc\":{\"project_id\":\"my-sample-project\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"},\"start_time\":\"2019-06-14T03:40:08.466657665Z\"},\"logName\":\"projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows\",\"receiveTimestamp\":\"2019-06-14T03:50:10.845445834Z\",\"resource\":{\"labels\":{\"location\":\"us-east1-b\",\"project_id\":\"my-sample-project\",\"subnetwork_id\":\"758019854043528829\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-06-14T03:50:10.845445834Z\"}",
-        "kind": "event",
-        "start": "2019-06-14T03:40:08.466657665Z",
-        "end": "2019-06-14T03:49:51.821302149Z",
-        "id": "ut8lbrffooxzb",
-        "category": "network",
-        "type": "connection"
-    }
+    "input": {
+        "type": "gcp-pubsub"
+    },
+    "log": {
+        "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
+    },
+    "network": {
+        "bytes": 1776,
+        "community_id": "1:Wa+aonxAQZ59AWtNdQD0CH6FnsM=",
+        "direction": "outbound",
+        "iana_number": "6",
+        "packets": 7,
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "10.87.40.76",
+            "67.43.156.13"
+        ]
+    },
+    "source": {
+        "address": "10.87.40.76",
+        "bytes": 1776,
+        "domain": "kibana",
+        "ip": "10.87.40.76",
+        "packets": 7,
+        "port": 5601
+    },
+    "tags": [
+        "forwarded",
+        "gcp-vpcflow"
+    ]
 }
 ```
 
@@ -133,7 +143,7 @@ An example event for `vpcflow` looks as following:
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -191,8 +201,8 @@ An example event for `vpcflow` looks as following:
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -202,7 +212,7 @@ An example event for `vpcflow` looks as following:
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

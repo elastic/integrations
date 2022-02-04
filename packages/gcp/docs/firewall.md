@@ -11,104 +11,122 @@ An example event for `firewall` looks as following:
 
 ```json
 {
+    "@timestamp": "2019-10-30T13:52:42.191Z",
+    "agent": {
+        "ephemeral_id": "4fed48b9-0848-4ceb-88b1-30fb7da99604",
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "cloud": {
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "test-beats"
+        },
+        "region": "us-east1"
+    },
+    "data_stream": {
+        "dataset": "gcp.firewall",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "10.42.0.2",
+        "domain": "test-windows",
+        "ip": "10.42.0.2",
+        "port": 3389
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "firewall-rule",
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2021-12-31T03:11:30.136Z",
+        "dataset": "gcp.firewall",
+        "id": "1f21ciqfpfssuo",
+        "ingested": "2021-12-31T03:11:31Z",
+        "kind": "event",
+        "type": "connection"
+    },
+    "gcp": {
+        "destination": {
+            "instance": {
+                "project_id": "test-beats",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
+            "vpc": {
+                "project_id": "test-beats",
+                "subnetwork_name": "windows-isolated",
+                "vpc_name": "windows-isolated"
+            }
+        },
+        "firewall": {
+            "rule_details": {
+                "action": "ALLOW",
+                "direction": "INGRESS",
+                "ip_port_info": [
+                    {
+                        "ip_protocol": "TCP",
+                        "port_range": [
+                            "3389"
+                        ]
+                    }
+                ],
+                "priority": 1000,
+                "source_range": [
+                    "0.0.0.0/0"
+                ],
+                "target_tag": [
+                    "allow-rdp"
+                ]
+            }
+        }
+    },
+    "input": {
+        "type": "gcp-pubsub"
+    },
     "log": {
         "logger": "projects/test-beats/logs/compute.googleapis.com%2Ffirewall"
     },
-    "destination": {
-        "geo": {
-            "continent_name": "North America",
-            "country_name": "United States",
-            "location": {
-                "lon": -97.822,
-                "lat": 37.751
-            },
-            "country_iso_code": "US"
-        },
-        "as": {
-            "number": 15169,
-            "organization": {
-                "name": "Google LLC"
-            }
-        },
-        "address": "8.8.8.8",
-        "port": 53,
-        "ip": "8.8.8.8"
-    },
-    "rule": {
-        "name": "network:default/firewall:adrian-test-1"
-    },
-    "source": {
-        "address": "10.128.0.16",
-        "port": 60094,
-        "domain": "adrian-test",
-        "ip": "10.128.0.16"
-    },
     "network": {
-        "name": "default",
-        "community_id": "1:iiDdIEXnxwSiz/hJbVnseQ4SZVE=",
-        "transport": "udp",
-        "type": "ipv4",
-        "iana_number": "17",
-        "direction": "outbound"
-    },
-    "cloud": {
-        "region": "us-central1",
-        "availability_zone": "us-central1-a",
-        "project": {
-            "id": "test-beats"
-        }
-    },
-    "@timestamp": "2019-11-12T12:35:17.214Z",
-    "ecs": {
-        "version": "1.8.0"
+        "community_id": "1:OdLB9eXsBDLz8m97ao4LepX6q+4=",
+        "direction": "inbound",
+        "iana_number": "6",
+        "name": "windows-isolated",
+        "transport": "tcp",
+        "type": "ipv4"
     },
     "related": {
         "ip": [
-            "10.128.0.16",
-            "8.8.8.8"
+            "192.168.2.126",
+            "10.42.0.2"
         ]
     },
-    "gcp": {
-        "firewall": {
-            "rule_details": {
-                "action": "DENY",
-                "target_tag": [
-                    "adrian-test"
-                ],
-                "priority": 1000,
-                "destination_range": [
-                    "8.8.8.0/24"
-                ],
-                "ip_port_info": [
-                    {
-                        "ip_protocol": "ALL"
-                    }
-                ],
-                "direction": "EGRESS"
-            }
-        },
-        "source": {
-            "vpc": {
-                "project_id": "test-beats",
-                "subnetwork_name": "default",
-                "vpc_name": "default"
-            },
-            "instance": {
-                "region": "us-central1",
-                "project_id": "test-beats",
-                "zone": "us-central1-a"
-            }
-        }
+    "rule": {
+        "name": "network:windows-isolated/firewall:windows-isolated-allow-rdp"
     },
-    "event": {
-        "ingested": "2021-02-19T09:19:48.040375200Z",
-        "original": "{\"insertId\":\"4zuj4nfn4llkb\",\"jsonPayload\":{\"connection\":{\"dest_ip\":\"8.8.8.8\",\"dest_port\":53,\"protocol\":17,\"src_ip\":\"10.128.0.16\",\"src_port\":60094},\"disposition\":\"DENIED\",\"instance\":{\"project_id\":\"test-beats\",\"region\":\"us-central1\",\"vm_name\":\"adrian-test\",\"zone\":\"us-central1-a\"},\"remote_location\":{\"continent\":\"America\",\"country\":\"usa\"},\"rule_details\":{\"action\":\"DENY\",\"destination_range\":[\"8.8.8.0/24\"],\"direction\":\"EGRESS\",\"ip_port_info\":[{\"ip_protocol\":\"ALL\"}],\"priority\":1000,\"reference\":\"network:default/firewall:adrian-test-1\",\"target_tag\":[\"adrian-test\"]},\"vpc\":{\"project_id\":\"test-beats\",\"subnetwork_name\":\"default\",\"vpc_name\":\"default\"}},\"logName\":\"projects/test-beats/logs/compute.googleapis.com%2Ffirewall\",\"receiveTimestamp\":\"2019-11-12T12:35:24.466374097Z\",\"resource\":{\"labels\":{\"location\":\"us-central1-a\",\"project_id\":\"test-beats\",\"subnetwork_id\":\"1266623735137648253\",\"subnetwork_name\":\"default\"},\"type\":\"gce_subnetwork\"},\"timestamp\":\"2019-11-12T12:35:17.214711274Z\"}",
-        "kind": "event",
-        "action": "firewall-rule",
-        "id": "4zuj4nfn4llkb",
-        "category": "network",
-        "type": "connection"
-    }
+    "source": {
+        "address": "192.168.2.126",
+        "geo": {
+            "continent_name": "Asia",
+            "country_name": "omn"
+        },
+        "ip": "192.168.2.126",
+        "port": 64853
+    },
+    "tags": [
+        "forwarded",
+        "gcp-firewall"
+    ]
 }
 ```
 
@@ -137,7 +155,7 @@ An example event for `firewall` looks as following:
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -202,8 +220,8 @@ An example event for `firewall` looks as following:
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -212,7 +230,7 @@ An example event for `firewall` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
