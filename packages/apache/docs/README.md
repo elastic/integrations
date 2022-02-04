@@ -384,3 +384,21 @@ An example event for `status` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
+
+## ML Modules
+
+These anomaly detection jobs are available in the Machine Learning app in Kibana
+when you have data that matches the query specified in the
+[manifest](https://github.com/elastic/integrations/blob/main/packages/apache/kibana/ml_module/apache-Logs-ml.json#L11).
+
+### Apache Access Logs
+
+Find unusual activity in HTTP access logs.
+
+| Job | Description |
+|---|---|
+| visitor_rate_apache | HTTP Access Logs: Detect unusual visitor rates | 
+| status_code_rate_apache | HTTP Access Logs: Detect unusual status code rates |
+| source_ip_url_count_apache | HTTP Access Logs: Detect unusual source IPs - high distinct count of URLs |
+| source_ip_request_rate_apache | HTTP Access Logs: Detect unusual source IPs - high request rates |
+| low_request_rate_apache | HTTP Access Logs: Detect low request rates |
