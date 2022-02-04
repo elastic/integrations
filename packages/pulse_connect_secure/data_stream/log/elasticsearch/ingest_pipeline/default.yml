@@ -2,9 +2,6 @@
 description: Pipeline for parsing Pulse Connect Secure logs
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -22,7 +19,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '%{SYSLOGTIMESTAMP} %{SYSLOGHOST:host.hostname} %{INT} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{IP:observer.ip} PulseSecure: - - - %{DATE2} - %{SYSLOGHOST:observer.name} - \[%{IPORHOST:client.address}\] %{USERNAME:user.name}?\(%{DATA:pulse_secure.realm}?\)\[%{DATA:pulse_secure.role}\] - %{GREEDYDATA:message}'
+        - '^(<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER}?|%{SYSLOGTIMESTAMP} %{SYSLOGHOST:host.hostname} %{INT}) %{TIMESTAMP_ISO8601:_tmp.timestamp} %{IP:observer.ip} PulseSecure: - - - %{DATE2} - %{SYSLOGHOST:observer.name} - \[%{IPORHOST:client.address}\] %{USERNAME:user.name}?\(%{DATA:pulse_secure.realm}?\)\[%{DATA:pulse_secure.role}\] - %{GREEDYDATA:message}'
       pattern_definitions:
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         DATE2: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
