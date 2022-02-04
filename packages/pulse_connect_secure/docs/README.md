@@ -10,29 +10,31 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-10-19T09:10:35.000+02:00",
     "agent": {
-        "ephemeral_id": "a7f77934-52a1-4d95-aa91-f23ab26db12a",
-        "hostname": "docker-fleet-agent",
-        "id": "8bf63e47-c038-4463-8608-aaaa12031474",
+        "ephemeral_id": "48b94170-8de9-42a4-8608-50484a347a6a",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "client": {
         "address": "89.160.20.156",
         "as": {
-            "number": 328,
+            "number": 29518,
             "organization": {
-                "name": "DoD Network Information Center"
+                "name": "Bredband2 AB"
             }
         },
         "geo": {
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
             "location": {
-                "lat": 37.751,
-                "lon": -97.822
-            }
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
         },
         "ip": "89.160.20.156"
     },
@@ -42,21 +44,21 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "8bf63e47-c038-4463-8608-aaaa12031474",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
         "created": "2021-10-19T09:10:35.000+02:00",
         "dataset": "pulse_connect_secure.log",
-        "ingested": "2021-12-08T13:55:56Z",
+        "ingested": "2022-02-03T09:39:02Z",
         "kind": "event",
-        "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [89.160.20.156] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
+        "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [89.160.20.156] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.\n",
         "outcome": "success",
         "timezone": "+02:00"
     },
@@ -64,11 +66,11 @@ An example event for `log` looks as following:
         "hostname": "pcs-node1"
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "172.31.0.7:53480"
+            "address": "172.19.0.7:51695"
         }
     },
     "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
@@ -89,19 +91,22 @@ An example event for `log` looks as following:
     "source": {
         "address": "89.160.20.156",
         "as": {
-            "number": 328,
+            "number": 29518,
             "organization": {
-                "name": "DoD Network Information Center"
+                "name": "Bredband2 AB"
             }
         },
         "geo": {
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
             "location": {
-                "lat": 37.751,
-                "lon": -97.822
-            }
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
         },
         "ip": "89.160.20.156"
     },
@@ -186,7 +191,7 @@ An example event for `log` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
