@@ -2,7 +2,7 @@
 
 VPC Flow Logs records a sample of network flows sent from and received by VM instances, including instances used as GKE nodes. 
 These logs can be used for network monitoring, forensics, real-time security analysis, and expense optimization.
-More information on the type of data included in the VPC Flow logs can be found in the [documentation](https://cloud.google.com/vpc/docs/using-flow-logs)
+More information on the type of data included in the VPC Flow logs can be found in the [documentation](https://cloud.google.com/vpc/docs/using-flow-logs).
 
 ## Logs
 

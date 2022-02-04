@@ -1,7 +1,7 @@
 # Cloud DNS
 
 Cloud DNS logging tracks queries to the authoritative name servers for the public DNS zones and for all DNS queries originating from the project's VPCs.
-More information on the type of data included in the DNS logs can be found in the [documentation](https://cloud.google.com/dns/docs/monitoring)
+More information on the type of data included in the DNS logs can be found in the [documentation](https://cloud.google.com/dns/docs/monitoring).
 
 ## Logs
 
