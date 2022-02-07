@@ -3,7 +3,7 @@ description: Pipeline for Zscaler user activity logs
 processors:
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - rename:
       field: message
       target_field: event.original
@@ -50,9 +50,13 @@ processors:
       field: json.ClientLongitude
       target_field: client.geo.location.lon
       ignore_missing: true
-  - rename: 
+  - convert: 
       field: json.ClientPublicIP
       target_field: client.ip
+      type: ip
+      ignore_failure: true
+  - remove:
+      field: json.ClientPublicIP
       ignore_missing: true
   - append:
       field: related.ip
@@ -159,9 +163,13 @@ processors:
       field: json.ServicePort
       target_field: zscaler_zpa.user_activity.service_port
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.ClientPrivateIP
       target_field: zscaler_zpa.user_activity.client_private_ip
+      type: ip
+      ignore_failure: true
+  - remove:
+      field: json.ClientPrivateIP
       ignore_missing: true
   - append:
       field: related.ip
@@ -177,15 +185,19 @@ processors:
       field: json.Connector
       target_field: zscaler_zpa.user_activity.connector.name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.ConnectorIP
       target_field: zscaler_zpa.user_activity.connector.ip
-      ignore_missing: true
+      type: ip
+      ignore_failure: true
   - append:
       field: related.ip
       value: "{{{zscaler_zpa.user_activity.connector.ip}}}" 
       if: ctx?.zscaler_zpa?.user_activity?.connector?.ip != null
       allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json.ConnectorIP
       ignore_failure: true
   - rename:
       field: json.ConnectorPort

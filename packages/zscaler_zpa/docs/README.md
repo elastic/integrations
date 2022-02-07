@@ -167,10 +167,10 @@ Sample Response:
 | tags | List of keywords used to tag each event. | keyword |
 | zscaler_zpa.app_connector_status.connector.group | The App Connector group name. | keyword |
 | zscaler_zpa.app_connector_status.connector.name | The App Connector name. | keyword |
-| zscaler_zpa.app_connector_status.connector_start_time | Time in seconds at which App Connector was started. | keyword |
-| zscaler_zpa.app_connector_status.connector_up_time | Time in seconds at which App Connector was started. | keyword |
-| zscaler_zpa.app_connector_status.host_start_time | Time in seconds at which host was started. | keyword |
-| zscaler_zpa.app_connector_status.host_up_time | Time in seconds at which host was started. | keyword |
+| zscaler_zpa.app_connector_status.connector_start_time | Time in seconds at which App Connector was started. | date |
+| zscaler_zpa.app_connector_status.connector_up_time | Time in seconds at which App Connector was started. | date |
+| zscaler_zpa.app_connector_status.host_start_time | Time in seconds at which host was started. | date |
+| zscaler_zpa.app_connector_status.host_up_time | Time in seconds at which host was started. | date |
 | zscaler_zpa.app_connector_status.interface.name | The name of the interface to default route. | keyword |
 | zscaler_zpa.app_connector_status.interface.received.bytes | The bytes received on the interface. | double |
 | zscaler_zpa.app_connector_status.interface.received.discards | The discards received on the interface. | double |
@@ -182,14 +182,14 @@ Sample Response:
 | zscaler_zpa.app_connector_status.interface.transmitted.packets | The packets transmitted on the interface. | double |
 | zscaler_zpa.app_connector_status.memory.utilization | The memory utilization in %. | double |
 | zscaler_zpa.app_connector_status.num_of_interfaces | The number of interfaces on the App Connector host. | double |
-| zscaler_zpa.app_connector_status.primary_dns_resolver | The IP address of the primary DNS resolver. | keyword |
-| zscaler_zpa.app_connector_status.private_ip | The private IP address of the App Connector. | keyword |
+| zscaler_zpa.app_connector_status.primary_dns_resolver | The IP address of the primary DNS resolver. | ip |
+| zscaler_zpa.app_connector_status.private_ip | The private IP address of the App Connector. | ip |
 | zscaler_zpa.app_connector_status.service.count | The number of services (combinations of domains/IP addresses and TCP/UDP ports) being monitored by the App Connector. | double |
 | zscaler_zpa.app_connector_status.session.id | The TLS session ID. | keyword |
 | zscaler_zpa.app_connector_status.session.status | The status of the session. | keyword |
 | zscaler_zpa.app_connector_status.session.type | The type of session. | keyword |
-| zscaler_zpa.app_connector_status.timestamp.authentication | Timestamp in microseconds when the App Connector was authenticated. | keyword |
-| zscaler_zpa.app_connector_status.timestamp.unauthentication | Timestamp in microseconds when the App Connector was unauthenticated. | keyword |
+| zscaler_zpa.app_connector_status.timestamp.authentication | Timestamp in microseconds when the App Connector was authenticated. | date |
+| zscaler_zpa.app_connector_status.timestamp.unauthentication | Timestamp in microseconds when the App Connector was unauthenticated. | date |
 | zscaler_zpa.app_connector_status.zen | The TLS session ID. | keyword |
 
 
@@ -199,9 +199,9 @@ An example event for `app_connector_status` looks as following:
 {
     "@timestamp": "2019-07-03T05:17:22.000Z",
     "agent": {
-        "ephemeral_id": "40815e9a-e38a-4282-abef-e328f66fcb71",
+        "ephemeral_id": "5879b806-6298-48ab-89a6-19ddcf612162",
         "hostname": "docker-fleet-agent",
-        "id": "dc9e0848-ed2f-4d6e-8544-593b37e7cfc3",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -217,10 +217,10 @@ An example event for `app_connector_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "dc9e0848-ed2f-4d6e-8544-593b37e7cfc3",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -228,7 +228,7 @@ An example event for `app_connector_status` looks as following:
         "agent_id_status": "verified",
         "category": "package",
         "dataset": "zscaler_zpa.app_connector_status",
-        "ingested": "2021-12-29T09:45:34Z",
+        "ingested": "2022-02-03T13:30:46Z",
         "kind": "event",
         "original": "{\"LogTimestamp\":\"Wed Jul 3 05:17:22 2019\",\"Customer\":\"Customer Name\",\"SessionID\":\"8A64Qwj9zCkfYDGJVoUZ\",\"SessionType\":\"ZPN_ASSISTANT_BROKER_CONTROL\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.20.3\",\"Platform\":\"el7\",\"ZEN\":\"US-NY-8179\",\"Connector\":\"Some App Connector\",\"ConnectorGroup\":\"Some App Connector Group\",\"PrivateIP\":\"10.0.0.4\",\"PublicIP\":\"0.0.0.0\",\"Latitude\":47,\"Longitude\":-122,\"CountryCode\":\"\",\"TimestampAuthentication\":\"2019-06-27T05:05:23.348Z\",\"TimestampUnAuthentication\":\"\",\"CPUUtilization\":1,\"MemUtilization\":20,\"ServiceCount\":2,\"InterfaceDefRoute\":\"eth0\",\"DefRouteGW\":\"10.0.0.1\",\"PrimaryDNSResolver\":\"168.63.129.16\",\"HostStartTime\":\"1513229995\",\"HostUpTime\":\"1513229995\",\"ConnectorUpTime\":\"1555920005\",\"ConnectorStartTime\":\"1555920005\",\"NumOfInterfaces\":2,\"BytesRxInterface\":319831966346,\"PacketsRxInterface\":1617569938,\"ErrorsRxInterface\":0,\"DiscardsRxInterface\":0,\"BytesTxInterface\":192958782635,\"PacketsTxInterface\":1797471190,\"ErrorsTxInterface\":0,\"DiscardsTxInterface\":0,\"TotalBytesRx\":10902554,\"TotalBytesTx\":48931771}",
         "type": "info"
@@ -251,7 +251,7 @@ An example event for `app_connector_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.112.6:36548"
+            "address": "172.21.0.7:33226"
         }
     },
     "observer": {
@@ -261,7 +261,9 @@ An example event for `app_connector_status` looks as following:
                 "lon": -122
             }
         },
-        "ip": "0.0.0.0",
+        "ip": [
+            "0.0.0.0"
+        ],
         "os": {
             "platform": "el7"
         },
@@ -289,10 +291,10 @@ An example event for `app_connector_status` looks as following:
                 "group": "Some App Connector Group",
                 "name": "Some App Connector"
             },
-            "connector_start_time": "1555920005",
-            "connector_up_time": "1555920005",
-            "host_start_time": "1513229995",
-            "host_up_time": "1513229995",
+            "connector_start_time": "2019-04-22T08:00:05.000Z",
+            "connector_up_time": "2019-04-22T08:00:05.000Z",
+            "host_start_time": "2017-12-14T05:39:55.000Z",
+            "host_up_time": "2017-12-14T05:39:55.000Z",
             "interface": {
                 "name": "eth0",
                 "received": {
@@ -379,7 +381,7 @@ An example event for `app_connector_status` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.geo.city_name | City name. | keyword |
 | observer.geo.country_name | Country name. | keyword |
 | observer.geo.location | Longitude and latitude. | geo_point |
@@ -415,9 +417,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-17T04:29:38.000Z",
     "agent": {
-        "ephemeral_id": "88cae1af-0b61-49f1-ad14-37967badfb69",
+        "ephemeral_id": "75bcfb32-c04c-4455-88ed-41a659043c80",
         "hostname": "docker-fleet-agent",
-        "id": "dc9e0848-ed2f-4d6e-8544-593b37e7cfc3",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -428,10 +430,10 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "dc9e0848-ed2f-4d6e-8544-593b37e7cfc3",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -443,7 +445,7 @@ An example event for `audit` looks as following:
         "created": "2021-11-17T04:29:38.000Z",
         "dataset": "zscaler_zpa.audit",
         "id": "11111111-1111-1111-1111-111111111111",
-        "ingested": "2021-12-29T09:46:45Z",
+        "ingested": "2022-02-03T13:32:04Z",
         "kind": "event",
         "type": [
             "creation"
@@ -454,7 +456,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.112.6:34942"
+            "address": "172.21.0.7:54030"
         }
     },
     "organization": {
@@ -548,7 +550,7 @@ An example event for `audit` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | input.type | Input type | keyword |
@@ -572,7 +574,7 @@ An example event for `audit` looks as following:
 | user_agent.os.name | Operating system name, without the version. | keyword |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
-| zscaler_zpa.browser_access.client_private_ip | The private IP address of the user's device. | keyword |
+| zscaler_zpa.browser_access.client_private_ip | The private IP address of the user's device. | ip |
 | zscaler_zpa.browser_access.connection.id | The application connection ID. | keyword |
 | zscaler_zpa.browser_access.connection.status | The status of the connection. | keyword |
 | zscaler_zpa.browser_access.cors_token | The token from the CORS request. | keyword |
@@ -602,9 +604,9 @@ An example event for `browser_access` looks as following:
 {
     "@timestamp": "2019-07-03T05:12:25.000Z",
     "agent": {
-        "ephemeral_id": "6d0684c0-773c-4c7e-ab16-4d02198b575d",
+        "ephemeral_id": "d709cdf2-185b-4967-9566-311aac744e3c",
         "hostname": "docker-fleet-agent",
-        "id": "dc9e0848-ed2f-4d6e-8544-593b37e7cfc3",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -619,10 +621,10 @@ An example event for `browser_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "dc9e0848-ed2f-4d6e-8544-593b37e7cfc3",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -633,7 +635,7 @@ An example event for `browser_access` looks as following:
             "session"
         ],
         "dataset": "zscaler_zpa.browser_access",
-        "ingested": "2021-12-29T09:48:02Z",
+        "ingested": "2022-02-03T13:33:22Z",
         "kind": "event",
         "type": "connection"
     },
@@ -656,7 +658,7 @@ An example event for `browser_access` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.112.6:51394"
+            "address": "172.21.0.7:41512"
         }
     },
     "organization": {
@@ -795,7 +797,7 @@ An example event for `browser_access` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | organization.name | Organization name. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -807,12 +809,12 @@ An example event for `browser_access` looks as following:
 | zscaler_zpa.user_activity.app_learn_time | Time in microseconds taken for App Connectors to learn about the requested application and report the learned information to the central authority. | long |
 | zscaler_zpa.user_activity.application | The application name. | keyword |
 | zscaler_zpa.user_activity.ca_processing_time | Time in microseconds taken for processing in the central authority. | long |
-| zscaler_zpa.user_activity.client_private_ip | The private IP address of the Zscaler Client Connector. | keyword |
+| zscaler_zpa.user_activity.client_private_ip | The private IP address of the Zscaler Client Connector. | ip |
 | zscaler_zpa.user_activity.client_to_client | The status of the client-to-client connection. | keyword |
 | zscaler_zpa.user_activity.connection.id | The application connection ID. | keyword |
 | zscaler_zpa.user_activity.connection.setup_time | Time taken by the App Connector to process a notification from the App Connector selection microservice and set up the connection to the application server. | long |
 | zscaler_zpa.user_activity.connection.status | The status of the connection. The expected values for this field are: [ Open, Close, Active ]. | keyword |
-| zscaler_zpa.user_activity.connector.ip | The source IP address of the App Connector. | keyword |
+| zscaler_zpa.user_activity.connector.ip | The source IP address of the App Connector. | ip |
 | zscaler_zpa.user_activity.connector.name | The App Connector name. | keyword |
 | zscaler_zpa.user_activity.connector.port | The source port of the App Connector. | integer |
 | zscaler_zpa.user_activity.connector_zen_setup_time | Time in microseconds taken for setting up connection between App Connector and ZPA Public Service Edge or ZPA Private Service Edge. | long |
@@ -857,9 +859,9 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2019-05-31T17:35:42.000Z",
     "agent": {
-        "ephemeral_id": "b3da8a75-5a5e-4dcb-a2a6-a1dbb7e43d92",
+        "ephemeral_id": "2686f611-4bf3-4df9-8934-843cbd32d161",
         "hostname": "docker-fleet-agent",
-        "id": "6a5e7888-8763-4a13-bf3d-e4c9a640963b",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -880,10 +882,10 @@ An example event for `user_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "6a5e7888-8763-4a13-bf3d-e4c9a640963b",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -891,7 +893,7 @@ An example event for `user_activity` looks as following:
         "agent_id_status": "verified",
         "category": "iam",
         "dataset": "zscaler_zpa.user_activity",
-        "ingested": "2021-12-30T09:45:16Z",
+        "ingested": "2022-02-03T13:34:37Z",
         "kind": "event",
         "type": [
             "info",
@@ -906,7 +908,7 @@ An example event for `user_activity` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.240.7:40304"
+            "address": "172.21.0.7:59296"
         }
     },
     "network": {
@@ -1077,7 +1079,7 @@ An example event for `user_activity` looks as following:
 | zscaler_zpa.user_status.idp | The name of the identity provider (IdP) as configured in the ZPA Admin Portal. | keyword |
 | zscaler_zpa.user_status.postures.hit | The posture profiles that the Zscaler Client Connector verified for this device. | keyword |
 | zscaler_zpa.user_status.postures.miss | The posture profiles that the Zscaler Client Connector failed to verified for this device. | keyword |
-| zscaler_zpa.user_status.private_ip | The private IP address of the Zscaler Client Connector. | keyword |
+| zscaler_zpa.user_status.private_ip | The private IP address of the Zscaler Client Connector. | ip |
 | zscaler_zpa.user_status.saml_attributes | The list of SAML attributes reported by the IdP. | keyword |
 | zscaler_zpa.user_status.session.id | The TLS session ID. | keyword |
 | zscaler_zpa.user_status.session.status | The status of the session. | keyword |
@@ -1097,9 +1099,9 @@ An example event for `user_status` looks as following:
 {
     "@timestamp": "2019-05-31T17:34:48.000Z",
     "agent": {
-        "ephemeral_id": "d9f31fd7-1a7a-45d6-b416-0c5fe1d7f91c",
+        "ephemeral_id": "24dbe515-d3ac-4cb8-aa21-eeee2c2f9204",
         "hostname": "docker-fleet-agent",
-        "id": "6a5e7888-8763-4a13-bf3d-e4c9a640963b",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -1120,10 +1122,10 @@ An example event for `user_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "6a5e7888-8763-4a13-bf3d-e4c9a640963b",
+        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -1131,7 +1133,7 @@ An example event for `user_status` looks as following:
         "agent_id_status": "verified",
         "category": "iam",
         "dataset": "zscaler_zpa.user_status",
-        "ingested": "2021-12-30T09:46:21Z",
+        "ingested": "2022-02-03T13:36:02Z",
         "kind": "state",
         "type": [
             "info",
@@ -1149,7 +1151,7 @@ An example event for `user_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.240.7:54624"
+            "address": "172.21.0.7:57146"
         }
     },
     "organization": {

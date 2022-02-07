@@ -3,7 +3,7 @@ description: Pipeline for Zscaler app connector status logs
 processors:
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - rename:
       field: message
       target_field: event.original
@@ -70,16 +70,20 @@ processors:
       field: json.InterfaceDefRoute
       target_field: zscaler_zpa.app_connector_status.interface.name
       ignore_missing: true
-  - rename: 
-      field: json.PublicIP
-      target_field: observer.ip
-      ignore_missing: true
+  - append: 
+      field: observer.ip
+      value: "{{{json.PublicIP}}}"
+      if: ctx?.json?.PublicIP != null
+      ignore_failure: true
   - append:
       field: related.ip
-      value: "{{{observer.ip}}}" 
-      if: ctx?.observer?.ip != null
+      value: "{{{json.PublicIP}}}" 
+      if: ctx?.json?.PublicIP != null
       allow_duplicates: false
       ignore_failure: true
+  - remove:
+      field: json.PublicIP
+      ignore_missing: true
   - rename: 
       field: json.Platform
       target_field: observer.os.platform
@@ -123,9 +127,13 @@ processors:
       field: json.ConnectorGroup
       target_field: zscaler_zpa.app_connector_status.connector.group
       ignore_missing: true
-  - rename: 
+  - convert: 
       field: json.PrivateIP
+      type: ip
       target_field: zscaler_zpa.app_connector_status.private_ip
+      ignore_failure: true
+  - remove: 
+      field: json.PrivateIP
       ignore_missing: true
   - append:
       field: related.ip
@@ -133,13 +141,23 @@ processors:
       if: ctx?.zscaler_zpa?.app_connector_status?.private_ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename: 
+  - date: 
       field: json.TimestampAuthentication
       target_field: zscaler_zpa.app_connector_status.timestamp.authentication
+      ignore_failure: true
+      formats: 
+        - ISO8601
+  - remove:
+      field: json.TimestampAuthentication
       ignore_missing: true
-  - rename: 
+  - date: 
       field: json.TimestampUnAuthentication
       target_field: zscaler_zpa.app_connector_status.timestamp.unauthentication
+      ignore_failure: true
+      formats: 
+        - ISO8601
+  - remove:
+      field: json.TimestampUnAuthentication
       ignore_missing: true
   - rename: 
       field: json.MemUtilization
@@ -159,21 +177,45 @@ processors:
       if: ctx?.zscaler_zpa?.app_connector_status?.primary_dns_resolver != null
       allow_duplicates: false
       ignore_failure: true
-  - rename: 
+  - date: 
       field: json.HostStartTime
       target_field: zscaler_zpa.app_connector_status.host_start_time
+      if: ctx?.json?.HostStartTime != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - remove:
+      field: json.HostStartTime
       ignore_missing: true
-  - rename: 
+  - date: 
       field: json.HostUpTime
       target_field: zscaler_zpa.app_connector_status.host_up_time
+      if: ctx?.json?.HostUpTime != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - remove:
+      field: json.HostUpTime
       ignore_missing: true
-  - rename: 
+  - date: 
       field: json.ConnectorStartTime
       target_field: zscaler_zpa.app_connector_status.connector_start_time
+      if: ctx?.json?.ConnectorStartTime != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - remove:
+      field: json.ConnectorStartTime
       ignore_missing: true
-  - rename: 
+  - date: 
       field: json.ConnectorUpTime
       target_field: zscaler_zpa.app_connector_status.connector_up_time
+      if: ctx?.json?.ConnectorUpTime != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - remove:
+      field: json.ConnectorUpTime
       ignore_missing: true
   - rename: 
       field: json.NumOfInterfaces

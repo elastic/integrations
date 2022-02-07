@@ -3,7 +3,7 @@ description: Pipeline for Zscaler user status logs
 processors:
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - rename:
       field: message
       target_field: event.original
@@ -110,23 +110,34 @@ processors:
       field: json.ZEN
       target_field: zscaler_zpa.user_status.zen.domain
       ignore_missing: true
-  - rename: 
+  - convert: 
       field: json.PrivateIP
       target_field: zscaler_zpa.user_status.private_ip
-      ignore_missing: true
+      type: ip
+      ignore_failure: true
   - append:
       field: related.ip
       value: "{{{zscaler_zpa.user_status.private_ip}}}" 
       if: ctx?.zscaler_zpa?.user_status?.private_ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename: 
+  - date: 
       field: json.TimestampAuthentication
       target_field: zscaler_zpa.user_status.timestamp.authentication
+      ignore_failure: true
+      formats: 
+        - ISO8601
+  - remove:
+      field: json.TimestampAuthentication
       ignore_missing: true
-  - rename: 
+  - date: 
       field: json.TimestampUnAuthentication
       target_field: zscaler_zpa.user_status.timestamp.unauthentication
+      ignore_failure: true
+      formats: 
+        - ISO8601
+  - remove:
+      field: json.TimestampUnAuthentication
       ignore_missing: true
   - rename: 
       field: json.TotalBytesRx
