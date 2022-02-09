@@ -28,35 +28,41 @@ file audit device provides the strongest delivery guarantees.
 
 - Create a directory for audit logs on each Vault server host.
 
-    mkdir /var/log/vault
+```
+mkdir /var/log/vault
+```
 
 - Enable the file audit device.
 
-    vault audit enable file file_path=/var/log/vault/audit.json
+```
+vault audit enable file file_path=/var/log/vault/audit.json
+```
 
 - Configure log rotation for the audit log. The exact steps may vary by OS.
 This example uses `logrotate` to call `systemctl reload` on the
 [Vault service](https://learn.hashicorp.com/tutorials/vault/deployment-guide#step-3-configure-systemd)
 which sends the process a SIGHUP signal. The SIGHUP signal causes Vault to start
 writing to a new log file.
-  
-    tee /etc/logrotate.d/vault <<'EOF'
-    /var/log/vault/audit.json {
-      rotate 7
-      daily
-      compress
-      delaycompress
-      missingok
-      notifempty
-      extension json
-      dateext
-      dateformat %Y-%m-%d.
-      postrotate
-          /bin/systemctl reload vault || true
-      endscript
-    }
-    EOF
-  
+
+```
+tee /etc/logrotate.d/vault <<'EOF'
+/var/log/vault/audit.json {
+    rotate 7
+    daily
+    compress
+    delaycompress
+    missingok
+    notifempty
+    extension json
+    dateext
+    dateformat %Y-%m-%d.
+    postrotate
+        /bin/systemctl reload vault || true
+    endscript
+}
+EOF
+```
+
 ### Socket audit device requirements
 
 To enable the socket audit device in Vault you should first enable this
@@ -64,12 +70,14 @@ integration because Vault will test that it can connect to the TCP socket.
 
 - Add this integration and enable audit log collection via TCP. If Vault will
 be connecting remotely set the listen address to 0.0.0.0.
-  
+
 - Configure the socket audit device to stream logs to this integration.
 Substitute in the IP address of the Elastic Agent to which you are sending the
 audit logs.
 
-    vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp
+```
+vault audit enable socket address=${ELASTIC_AGENT_IP}:9007 socket_type=tcp
+```
 
 An example event for `audit` looks as following:
 
