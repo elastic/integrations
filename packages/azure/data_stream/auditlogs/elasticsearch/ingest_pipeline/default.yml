@@ -100,6 +100,21 @@ processors:
       field: azure.auditlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
+  - remove:
+      description: Drop appId field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.initiated_by?.app?.appId == null
+      field: azure.auditlogs.properties.initiated_by.app.appId
+      ignore_missing: true
+  - remove:
+      description: Drop servicePrincipalName field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.initiated_by?.app?.servicePrincipalName == null
+      field: azure.auditlogs.properties.initiated_by.app.servicePrincipalName
+      ignore_missing: true
+  - remove:
+      description: Drop userAgent field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.userAgent == null
+      field: azure.auditlogs.properties.userAgent
+      ignore_missing: true
   - set:
       field: client.ip
       value: '{{source.ip}}'
