@@ -62,6 +62,7 @@ tee /etc/logrotate.d/vault <<'EOF'
 }
 EOF
 ```
+
 ### Socket audit device requirements
 
 To enable the socket audit device in Vault you should first enable this
