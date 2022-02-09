@@ -152,7 +152,7 @@ An example event for `elb` looks as following:
     },
     "@timestamp": "2018-07-02T22:23:00.186Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "http": {
         "request": {
