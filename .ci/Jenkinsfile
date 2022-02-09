@@ -100,7 +100,7 @@ pipeline {
                           archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
                           def r = sh(label: "(Workaround) Check line 47 error", script: "grep -q 'line 47: could not find expected' build/elastic-stack-dump/${it}/logs/elastic-agent.log", returnStatus: true)
                           if (r == 0) {
-                            sh(label: "(Workaround) Extract elastic-agent.yml file", script: "docker cp elastic-package-stack_elastic-agent_1:/usr/share/elastic-agent/state/elastic-agent.yml build/elastic-stack-dump/${it}/elastic-agent-policy/")
+                            sh(label: "(Workaround) Extract elastic-agent.yml file", script: "mkdir -p build/elastic-stack-dump/${it}/elastic-agent-policy/ && docker cp elastic-package-stack_elastic-agent_1:/usr/share/elastic-agent/state/elastic-agent.yml build/elastic-stack-dump/${it}/elastic-agent-policy/")
                             archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-policy", "build/elastic-stack-dump/${it}/elastic-agent-policy/elastic-agent.yml")
                           }
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
