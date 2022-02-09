@@ -132,7 +132,7 @@ An example event for `waf` looks as following:
         }
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "related": {
         "ip": [

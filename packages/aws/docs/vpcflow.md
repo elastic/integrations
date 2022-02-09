@@ -155,7 +155,7 @@ An example event for `vpcflow` looks as following:
     },
     "@timestamp": "2016-10-31T11:37:00.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "related": {
         "ip": [

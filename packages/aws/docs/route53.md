@@ -74,7 +74,7 @@ An example event for `route53_public` looks as following:
     },
     "@timestamp": "2017-12-13T08:16:05.744Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "related": {
         "hosts": [
@@ -270,7 +270,7 @@ An example event for `route53_resolver` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
         "id": "c00f804f-7a02-441b-88f4-aeb9da6410d9",

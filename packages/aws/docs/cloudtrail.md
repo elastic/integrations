@@ -153,7 +153,7 @@ An example event for `cloudtrail` looks as following:
     },
     "@timestamp": "2020-01-08T20:53:12.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "related": {
         "user": [

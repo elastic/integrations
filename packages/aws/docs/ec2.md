@@ -68,7 +68,7 @@ An example event for `ec2` looks as following:
     },
     "@timestamp": "2020-02-20T07:01:01.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "event": {
         "ingested": "2021-07-19T21:47:04.871450600Z",
@@ -183,7 +183,7 @@ An example event for `ec2` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
         "id": "243f8454-f7b2-4517-915e-d7b5044da34e",
