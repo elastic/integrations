@@ -98,7 +98,10 @@ pipeline {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
                           archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
                           archiveArtifactsSafe("insecure-logs/${it}/container-logs", "build/container-logs/*.log")
-                          sh(label: "(Workaround) Extract elastic-agent.yml file", script: "grep -q 'line 47: could not find expected' build/elastic-stack-dump/${it}/logs/elastic-agent.log && docker cp elastic-package-stack_elastic-agent_1:/usr/share/elastic-agent/state/elastic-agent.yml build/elastic-stack-dump/${it}/elastic-agent-policy/ || true")
+                          def r = sh(label: "(Workaround) Check line 47 error", script: "grep -q 'line 47: could not find expected' build/elastic-stack-dump/${it}/logs/elastic-agent.log", returnStatus: true)
+                          if (r == 0) {
+                            def r = sh(label: "(Workaround) Extract elastic-agent.yml file", script: "docker cp elastic-package-stack_elastic-agent_1:/usr/share/elastic-agent/state/elastic-agent.yml build/elastic-stack-dump/${it}/elastic-agent-policy/")
+                          }
                           archiveArtifactsSafe("insecure-logs/${it}/elastic-agent-policy", "build/elastic-stack-dump/${it}/elastic-agent-policy/elastic-agent.yml")
                           sh(label: "Take down the Elastic stack", script: 'build/elastic-package stack down -v')
                           stashCoverageReport()
