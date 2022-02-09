@@ -6,6 +6,8 @@ Requires a platinum license.
 ## Configuration
 
 To download the assets in the **Security** app, click **Settings** > **Install DGA Model and assets**.
+Ingest data with the installed ingest pipeline to enrich your indices with inference data and run the provided anomaly detection jobs.
+For more information about activating the detection rules, refer to the [rules documentation] (https://www.elastic.co/guide/en/security/current/detection-engine-overview.html).
 
 ## ML Modules
 
