@@ -427,6 +427,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.risk_level_aggregated | Risk level aggregated | keyword |
 | azure.signinlogs.properties.risk_level_during_signin | Risk level during signIn | keyword |
 | azure.signinlogs.properties.risk_state | Risk state | keyword |
+| azure.signinlogs.properties.service_principal_credential_key_id |  | keyword |
 | azure.signinlogs.properties.service_principal_id | The application identifier used for sign-in. This field is populated when you are signing in using an application. | keyword |
 | azure.signinlogs.properties.service_principal_name | The application name used for sign-in. This field is populated when you are signing in using an application. | keyword |
 | azure.signinlogs.properties.sso_extension_version |  | keyword |
