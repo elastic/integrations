@@ -98,14 +98,21 @@ for more details.
 
 ## AWS Permissions
 Specific AWS permissions are required for the IAM user to make specific AWS API calls.
-In order to enable AWS integration, please make sure these permissions are given:
+In order to enable AWS integration to collect metrics and logs from all supported service, please make sure these permissions are given:
 
 * ec2:DescribeInstances
 * ec2:DescribeRegions
 * cloudwatch:GetMetricData
 * cloudwatch:ListMetrics
-* tag:getResources
-* sns:ListTopics
-* sqs:ListQueues
-* sts:GetCallerIdentity
 * iam:ListAccountAliases
+* rds:DescribeDBInstances
+* rds:ListTagsForResource
+* s3:GetObject
+* sns:ListTopics
+* sqs:ChangeMessageVisibility
+* sqs:DeleteMessage
+* sqs:ListQueues
+* sqs:ReceiveMessage
+* sts:AssumeRole
+* sts:GetCallerIdentity
+* tag:GetResources
