@@ -519,14 +519,14 @@ An example event for `auditlogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.auditlogs.Level |  | float |
+| azure.auditlogs.Level | Value for level. | float |
 | azure.auditlogs.category | The category of the operation.  Currently, Audit is the only supported value. | keyword |
 | azure.auditlogs.identity | Identity | keyword |
 | azure.auditlogs.operation_name | The operation name | keyword |
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
-| azure.auditlogs.properties.authentication_protocol |  | keyword |
+| azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |
 | azure.auditlogs.properties.id | ID | keyword |
@@ -550,7 +550,6 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
 | azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
-| azure.auditlogs.properties.userAgent |  | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
@@ -796,7 +795,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | array |
 | azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | array |
 | azure.signinlogs.properties.authentication_processing_details | Additional authentication processing details, such as the agent name in case of PTA/PHS or Server/farm name in case of federated authentication. | flattened |
-| azure.signinlogs.properties.authentication_protocol |  | keyword |
+| azure.signinlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
 | azure.signinlogs.properties.authentication_requirement_policies | Set of CA policies that apply to this sign-in, each as CA: policy name, and/or MFA: Per-user | keyword |
 | azure.signinlogs.properties.autonomous_system_number | Autonomous system number. | long |
@@ -809,11 +808,11 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.device_detail.device_id | Device ID | keyword |
 | azure.signinlogs.properties.device_detail.display_name | Display name | keyword |
 | azure.signinlogs.properties.device_detail.operating_system | Operating system | keyword |
-| azure.signinlogs.properties.device_detail.trust_type | Trust type | keyword |
+| azure.signinlogs.properties.device_detail.trust_type | Trust type\ | keyword |
 | azure.signinlogs.properties.flagged_for_review |  | boolean |
 | azure.signinlogs.properties.home_tenant_id |  | keyword |
 | azure.signinlogs.properties.id | Unique ID representing the sign-in activity. | keyword |
-| azure.signinlogs.properties.incoming_token_type |  | keyword |
+| azure.signinlogs.properties.incoming_token_type | Incoming token type. | keyword |
 | azure.signinlogs.properties.is_interactive | Is interactive | boolean |
 | azure.signinlogs.properties.is_tenant_restricted |  | boolean |
 | azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | array |
@@ -828,14 +827,14 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.risk_level_aggregated | Risk level aggregated | keyword |
 | azure.signinlogs.properties.risk_level_during_signin | Risk level during signIn | keyword |
 | azure.signinlogs.properties.risk_state | Risk state | keyword |
-| azure.signinlogs.properties.service_principal_credential_key_id |  | keyword |
+| azure.signinlogs.properties.service_principal_credential_key_id | Key id of the service principal that initiated the sign-in. | keyword |
 | azure.signinlogs.properties.service_principal_id | The application identifier used for sign-in. This field is populated when you are signing in using an application. | keyword |
 | azure.signinlogs.properties.service_principal_name | The application name used for sign-in. This field is populated when you are signing in using an application. | keyword |
 | azure.signinlogs.properties.sso_extension_version |  | keyword |
 | azure.signinlogs.properties.status.error_code | Error code | long |
 | azure.signinlogs.properties.token_issuer_name | Token issuer name | keyword |
 | azure.signinlogs.properties.token_issuer_type | Token issuer type | keyword |
-| azure.signinlogs.properties.unique_token_identifier |  | keyword |
+| azure.signinlogs.properties.unique_token_identifier | Unique token identifier for the request. | keyword |
 | azure.signinlogs.properties.user_display_name | User display name | keyword |
 | azure.signinlogs.properties.user_id | User ID | keyword |
 | azure.signinlogs.properties.user_principal_name | User principal name | keyword |
