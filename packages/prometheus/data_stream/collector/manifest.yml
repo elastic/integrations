@@ -4,13 +4,6 @@ type: metrics
 streams:
   - input: prometheus/metrics
     vars:
-      - name: bearer_token_file
-        type: text
-        title: Bearer Token File
-        multi: false
-        required: false
-        show_user: true
-        default: /var/run/secrets/kubernetes.io/serviceaccount/token
       - name: hosts
         type: text
         title: Hosts
@@ -19,20 +12,6 @@ streams:
         show_user: true
         default:
           - localhost:9090
-      - name: metrics_filters.exclude
-        type: text
-        title: Metrics Filters Exclude
-        multi: true
-        required: false
-        show_user: true
-        default: []
-      - name: metrics_filters.include
-        type: text
-        title: Metrics Filters Include
-        multi: true
-        required: false
-        show_user: true
-        default: []
       - name: metrics_path
         type: text
         title: Metrics Path
@@ -40,13 +19,6 @@ streams:
         required: false
         show_user: true
         default: /metrics
-      - name: password
-        type: password
-        title: Password
-        multi: false
-        required: false
-        show_user: true
-        default: secret
       - name: period
         type: text
         title: Period
@@ -54,21 +26,6 @@ streams:
         required: true
         show_user: true
         default: 10s
-      - name: rate_counters
-        type: bool
-        title: Rate Counters
-        multi: false
-        required: true
-        show_user: true
-        default: true
-      - name: ssl.certificate_authorities
-        type: text
-        title: SSL Certificate Authorities
-        multi: true
-        required: false
-        show_user: true
-        default:
-          - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
       - name: use_types
         type: bool
         title: Use Types
@@ -76,13 +33,87 @@ streams:
         required: true
         show_user: true
         default: true
+      - name: rate_counters
+        type: bool
+        title: Rate Counters
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: bearer_token_file
+        type: text
+        title: Bearer Token File
+        multi: false
+        required: false
+        show_user: false
+        default: /var/run/secrets/kubernetes.io/serviceaccount/token
+      - name: ssl.certificate_authorities
+        type: text
+        title: SSL Certificate Authorities
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: false
+        default: []
       - name: username
         type: text
         title: Username
         multi: false
         required: false
-        show_user: true
+        show_user: false
         default: user
+      - name: password
+        type: password
+        title: Password
+        multi: false
+        required: false
+        show_user: false
+        default: secret
+      - name: connect_timeout
+        type: text
+        title: Total time limit for an HTTP connection to be completed (Default 2 seconds)
+        multi: false
+        required: false
+        show_user: false
+      - name: timeout
+        type: text
+        title: Total time limit for HTTP requests made by the module (Default 10 seconds)
+        multi: false
+        required: false
+        show_user: false
+      - name: headers
+        type: yaml
+        title: "Headers: a list of headers to use with the HTTP request"
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # headers:
+          #   Cookie: abcdef=123456
+          #   My-Custom-Header: my-custom-value
+      - name: query
+        type: yaml
+        title: "Query: an optional value to pass common query params in YAML"
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # query:
+          #   key: value
     title: Prometheus collector metrics
     enabled: true
     description: Collect Prometheus collector metrics
