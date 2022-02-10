@@ -2,9 +2,6 @@
 description: Pipeline for Office 365 Audit logs
 
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set: 
       field: ecs.version
       value: '8.0.0'
@@ -816,7 +813,7 @@ processors:
       patterns: 
         - '%{HOSTNAMEANDIP}'
       pattern_definitions:
-        HOSTNAMEANDIP: "^(%{NOTSPACE:server.domain}|%{HOSTNAME:server.domain}) \\(%{IP:server._address}\\)"
+        HOSTNAMEANDIP: "^(%{NOTSPACE:server.domain}|%{HOSTNAME:server.domain}) \\((%{IP:server._address}|%{NOTSPACE:server._address})\\)"
       if: 'ctx.server?._temp != null && !ctx.server?._temp.isEmpty()'
   - convert:
       field: client._address
@@ -832,14 +829,15 @@ processors:
       field: client._address
       target_field: client.address
       ignore_failure: true
-  - convert:
-      field: server._address
-      target_field: server.ip
-      type: ip
-      ignore_missing: true
   - rename:
       field: server._address
       target_field: server.address
+      ignore_failure: true
+  - convert:
+      field: server.address
+      target_field: server.ip
+      type: ip
+      ignore_missing: true
       ignore_failure: true
   - remove: 
       field:
