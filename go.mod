@@ -41,7 +41,7 @@ require (
 	github.com/elastic/go-sysinfo v1.7.1 // indirect
 	github.com/elastic/go-ucfg v0.8.4 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
-	github.com/elastic/package-spec v1.4.0 // indirect
+	github.com/elastic/package-spec v1.4.1 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
@@ -160,4 +160,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/elastic/elastic-package v0.36.0 => github.com/jsoriano/elastic-package v0.0.0-20220208130905-7470651f3b01
+replace github.com/elastic/elastic-package v0.36.0 => github.com/jsoriano/elastic-package v0.0.0-20220210105828-37d15cb3c3bb
