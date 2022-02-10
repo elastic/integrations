@@ -91,7 +91,7 @@ An example event for `firewall` looks as following:
     },
     "@timestamp": "2021-11-18T17:27:38.039Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "related": {
         "ip": [
@@ -282,7 +282,7 @@ An example event for `firewall` looks as following:
         "type": "aws"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "aws": {
         "networkfirewall": {
