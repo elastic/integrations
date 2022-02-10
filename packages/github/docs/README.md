@@ -10,7 +10,7 @@ The GitHub audit log records all events related to the GitHub organization. See 
 
 To use this integration, you must be an organization owner, and you must use an Personal Access Token with the admin:org scope.
 
-*This integration is not compatible with GitHub Enterprise server*
+*This integration is not compatible with GitHub Enterprise server.*
 
 **Exported fields**
 
