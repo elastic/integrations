@@ -4,9 +4,6 @@
 description: Pipeline for parsing junipersrx firewall logs
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -56,9 +53,6 @@ processors:
       - yyyy-MM-dd HH:mm:ss z
       - yyyy-MM-dd HH:mm:ss Z
       - ISO8601
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
 
 # Can possibly be omitted if there is a solution for the equal signs and the calculation of the start time.
 # -> juniper.srx.elapsed_time
@@ -229,6 +223,35 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "secintel" }}'
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '0') {
+            ctx.network.transport = 'hopopt';
+        } else if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '8') {
+            ctx.network.transport = 'egp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '47') {
+            ctx.network.transport = 'gre';
+        } else if (iana_number == '50') {
+            ctx.network.transport = 'esp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        } else if (iana_number == '112') {
+            ctx.network.transport = 'vrrp';
+        } else if (iana_number == '132') {
+            ctx.network.transport = 'sctp';
+        }
 
 #########################
 ## ECS Related Mapping ##
