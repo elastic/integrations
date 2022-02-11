@@ -28,3 +28,11 @@ This is the `VPC Flow` dataset.
 {{event "vpcflow"}}
 
 {{fields "vpcflow"}}
+
+### DNS
+
+This is the `DNS` dataset.
+
+{{event "dns"}}
+
+{{fields "dns"}}

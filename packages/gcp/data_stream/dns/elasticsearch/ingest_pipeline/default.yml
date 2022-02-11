@@ -1,0 +1,240 @@
+---
+description: Pipeline for Google Cloud DNS logs
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.kind
+      value: event
+  - date:
+      field: json.timestamp
+      timezone: UTC
+      formats:
+        - ISO8601
+  - rename:
+      field: json.logName
+      target_field: log.logger
+      ignore_missing: true
+  - set: 
+      field: event.id
+      copy_from: json.insertId
+      ignore_empty_value: true
+      ignore_failure: true
+  - convert: 
+      field: json.resource.labels.project_id
+      target_field: cloud.project.id
+      type: string
+      ignore_failure: true
+  - convert: 
+      field: json.resource.labels.location
+      target_field: cloud.region
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.jsonPayload.authAnswer
+      target_field: gcp.dns.auth_answer
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.destinationIP
+      target_field: gcp.dns.destination_ip
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: gcp.dns.destination_ip
+      ignore_failure: true
+  - convert:
+      field: gcp.dns.destination_ip
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+  - rename:
+      field: json.jsonPayload.egressError
+      target_field: gcp.dns.egress_error
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.protocol
+      target_field: gcp.dns.protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: gcp.dns.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.queryName
+      target_field: gcp.dns.query_name
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      copy_from: gcp.dns.query_name
+      ignore_failure: true
+  - gsub:
+      field: dns.question.name
+      pattern: "[.]$"
+      replacement: ""
+      ignore_failure: true
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.queryType
+      target_field: gcp.dns.query_type
+      ignore_missing: true
+  - set:
+      field: dns.question.type
+      copy_from: gcp.dns.query_type
+      ignore_failure: true
+  - rename:
+      field: json.jsonPayload.rdata
+      target_field: gcp.dns.rdata
+      ignore_missing: true
+  - script:
+      if: ctx?.gcp?.dns?.rdata != null
+      lang: painless
+      tag: Process DNS RData
+      description: This script processes the DNS RData into `dns.answers` and `dns.resolved_ip`.
+      source: |
+        def rdata = ctx.gcp.dns.rdata;
+
+        def dns_answers = [];
+        def dns_resolved_ip = [];
+
+        // Check for truncated answers.
+        def truncated = rdata.endsWith("...") ? 1 : 0;
+
+        // Process answers.
+        def rdata_answers = /\n/.split(rdata);
+
+        for (def i = 0; i < rdata_answers.length - truncated; i++) {
+            def answer_parts = /\t/.split(rdata_answers[i]);
+
+            // Assign answer parts.
+            def name = answer_parts[0];
+            def ttl = answer_parts[1];
+            def cls = answer_parts[2];
+            def type = answer_parts[3];
+            def data = answer_parts[4];
+
+            // Remove trailing fullstop.
+            if (name.endsWith(".")) {
+                name = name.substring(0, name.length() - 1);
+            }
+
+            if (data.endsWith(".")) {
+                data = data.substring(0, data.length() - 1);
+            }
+
+            // Uppercase type.
+            type = type.toUpperCase();
+
+            dns_answers.add([
+                "name": name,
+                "ttl": ttl,
+                "class": cls,
+                "type": type,
+                "data": data
+            ]);
+
+            if (type == "A" || type == "AAAA") {
+                dns_resolved_ip.add(data);
+            }
+        }
+
+        ctx.dns.answers = dns_answers;
+        ctx.dns.resolved_ip = dns_resolved_ip;
+  - rename:
+      field: json.jsonPayload.responseCode
+      target_field: gcp.dns.response_code
+      ignore_missing: true
+  - set:
+      field: dns.response_code
+      copy_from: gcp.dns.response_code
+      ignore_failure: true
+  - set: 
+      field: event.outcome
+      value: success
+      if: ctx?.gcp?.dns?.response_code != null && ctx?.gcp?.dns?.response_code == "NOERROR"
+  - set: 
+      field: event.outcome
+      value: failure
+      if: ctx?.gcp?.dns?.response_code != null && ctx?.gcp?.dns?.response_code != "NOERROR"
+  - rename:
+      field: json.jsonPayload.serverLatency
+      target_field: gcp.dns.server_latency
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.sourceIP
+      target_field: gcp.dns.source_ip
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: gcp.dns.source_ip
+      ignore_failure: true
+  - convert:
+      field: gcp.dns.source_ip
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+  - rename:
+      field: json.jsonPayload.sourceNetwork
+      target_field: gcp.dns.source_network
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.vmInstanceIdString
+      target_field: gcp.dns.vm_instance_id
+      ignore_missing: true
+  - set:
+      field: cloud.instance.id
+      copy_from: gcp.dns.vm_instance_id
+      ignore_failure: true
+  - rename:
+      field: json.jsonPayload.vmInstanceName
+      target_field: gcp.dns.vm_instance_name
+      ignore_missing: true
+  - set:
+      field: cloud.instance.name
+      copy_from: gcp.dns.vm_instance_name
+      ignore_failure: true
+  - gsub:
+      field: cloud.instance.name
+      pattern: "^.*[.]"
+      replacement: ""
+      ignore_failure: true
+  - rename:
+      field: json.jsonPayload.vmProjectId
+      target_field: gcp.dns.vm_project_id
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.vmZoneName
+      target_field: gcp.dns.vm_zone_name
+      ignore_missing: true
+  - set:
+      field: cloud.availability_zone
+      copy_from: gcp.dns.vm_zone_name
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
