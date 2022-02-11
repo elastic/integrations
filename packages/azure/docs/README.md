@@ -519,9 +519,9 @@ An example event for `auditlogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.auditlogs.Level | Value for level. | float |
 | azure.auditlogs.category | The category of the operation.  Currently, Audit is the only supported value. | keyword |
 | azure.auditlogs.identity | Identity | keyword |
+| azure.auditlogs.level | Value for level. | float |
 | azure.auditlogs.operation_name | The operation name | keyword |
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
