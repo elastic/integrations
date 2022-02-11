@@ -50,7 +50,7 @@ https://login.microsoftonline.de for azure USGovernmentCloud
 
 `Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `storage_account` should have a value of `300s` or multiple of `300s`for relevant results.
 
-`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format /subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}.
+`Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
   Should return a list of resources.
 
 `Resource Groups`:: (_[]string_) This option will return all storage accounts inside the resource group.
@@ -125,5 +125,4 @@ Authentication: we are handling authentication on our side (creating/renewing th
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | service.address | Service address | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-
 
