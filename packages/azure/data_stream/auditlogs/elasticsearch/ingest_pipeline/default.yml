@@ -102,13 +102,13 @@ processors:
       ignore_missing: true
   - remove:
       description: Drop appId field if value is null.
-      if: ctx?.azure?.auditlogs?.properties?.initiated_by?.app?.appId == null
-      field: azure.auditlogs.properties.initiated_by.app.appId
+      if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.app?.appId == null
+      field: azure.auditlogs.properties.initiatedBy.app.appId
       ignore_missing: true
   - remove:
       description: Drop servicePrincipalName field if value is null.
-      if: ctx?.azure?.auditlogs?.properties?.initiated_by?.app?.servicePrincipalName == null
-      field: azure.auditlogs.properties.initiated_by.app.servicePrincipalName
+      if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.app?.servicePrincipalName == null
+      field: azure.auditlogs.properties.initiatedBy.app.servicePrincipalName
       ignore_missing: true
   - remove:
       description: Drop userAgent field if value is null.
@@ -164,8 +164,12 @@ processors:
               String n = String.valueOf(j);
               ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n] = new HashMap();
               ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].display_name = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].displayName;
-              ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].new_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue;
-              ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].old_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].oldValue;
+              if (ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue != null) {
+                ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].new_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue;
+              }
+              if (ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].oldValue != null) {
+                ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].old_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].oldValue;
+              }
             }
           }
           ctx.azure.auditlogs.properties.remove('targetResources');
