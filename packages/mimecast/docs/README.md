@@ -106,7 +106,7 @@ An example event for `audit_events` looks as following:
 | client.as.asn | Client ASN number. | long |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
-| client.as.organization_name |  | keyword |
+| client.as.organization_name | Client Organization name. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
