@@ -2,6 +2,100 @@
 
 The Mimecast integration collects events from the Mimecast API.
 
+Full guide how to configure, deploy and use this integration find [here]()
+
+# Documenation
+
+## Introduction
+
+The purpose of this integration is to fetch logs from the Mimecast API periodically and ingest them into the Elastic in automated manner.
+
+The integration is made based on the specification defined by the Elastic team. Each Elastic Integration is an Elastic Package that defines how to observe a specific product with the Elastic Stack.
+
+An Elastic Package may define configuration for the Elastic Agent as well as assets for the Elastic Stack (such as Kibana dashboards and Elasticsearch index templates). It should also include documentation about the package. Finally, a package may also define tests to ensure that it is functioning as expected.
+Elastic Packages have a certain, well-defined structure. This structure is described by the Package Specification. The repository is also used for discussions about extending the specification (with proposals).
+
+More about Elastic package stack and general idea about making integration this way read [here](https://www.elastic.co/blog/elastic-agent-and-fleet-make-it-easier-to-integrate-your-systems-with-elastic).
+
+## Deployment and Configuration Guide
+
+### Prerequisites
+
+The integration package will be deployed and made available by Elastic on their cloud platform. To access it and use it accordingly, up and running Elastic stack along with the Elastic account will be needed to find, access, and deploy the package through Kibana.
+
+The access to Kibana is available on your instance of Elastic stack, through the specific port and an URL based on your configuration. Steps to deploy and configure the package are provided below.
+
+### Deployment and configuration 
+
+Deployment is straight-forward through Kibana. You have two steps to take in order to deploy. The first step is to add an agent, and the second step is to add and configure integration.
+
+To complete the first step, follow the instructions on this [link](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+To complete the second step, go to this [link](https://www.elastic.co/guide/en/fleet/7.15/integrations.htm#add-integration-under-integrations) and follow the instructions to Add integration to a policy.
+Step 3 is where you should add any configuration options that are required.
+Those parameters are authorization parameters against the Mimecast API (Application Key, Application ID, Access Key, and Secret Key), and they should be provided by a Mimecast representative for this integration.
+Similarly, tapping the Advanced options link expands the form, allowing you to choose the time interval between two API requests as well as the API URL as the API endpoint. A Mimecast representative should also be able to give you with this information. The default interval value is 5m, but you can modify it. If you do, be sure to provide the time measurement unit (m for minute, s for seconds) rather than just a number.
+
+Because parameters can differ, repeat the second step for each supported log you want to consume (A list of supported logs can be found in Log Types section below).
+Ingesting all logs is enabled by default, but you can disable it by moving the blue slider next to the log name.
+
+Once you save and confirm, ingesting logs will start automatically and you will be able to search for them.
+
+## User guide
+
+After you've finished setting and deploying integration, the elastic agent will begin ingesting data right away, and you'll be able to query it through Kibana. Instructions on how to do that can be found [here] (https://www.elastic.co/guide/en/beats/packetbeat/current/kibana-queries-filters.html).
+
+### Understanding Logs
+
+Here is the explanation of the typical log types we mentioned in the previous chapters, with relevant links toward the Mimecast documentation. 
+
+#### Log Types
+
+• Audit Events — these logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+
+• DLP Logs - these logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
+
+• TTP Attachment Protection Logs - these logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+
+• TTP Impersonation Protect Logs — these logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
+
+•	TTP URL Log - these logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
+
+•	Threat Intel Feed - these logs contain information about messages that return identified malware threats at a customer or regional grid level. There are two types of these logs - malware_grid (Regional) and malware_customer (Targeted) and we ingest them separately. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
+
+•	SIEM logs - these logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+
+## Dashboards
+
+Kibana provides the ability to make a visual representation of the ingested log data. Based on the Mimecast documentation for available log types, it is possible to identify the most important data from the logs and display them within the Kibana dashboards. 
+
+### Create and Edit Dashboard
+
+ELK provides the ability to make a visual representation of the ingested log data. Based on the Mimecast documentation for available log types, it is possible to identify the most important data from the logs and display them within the Kibana dashboards.
+
+For the reference on how to create or edit dashboard, please visit this [link](https://www.elastic.co/guide/en/kibana/current/dashboard.html). 
+
+### Export/Import Dashboard
+
+Kibana provides very useful feature – to export and import dashboards. Any search query, visualization and/or dashboard you can save for later use. And once you want to switch back to them you can find them in Saved Objects and opent them, delete them and export, import them from there. For dashboards, it can be useful to export/import them. To do that, follow these instructions:
+
+https://www.elastic.co/guide/en/kibana/7.9/managing-saved-objects.html
+
+This integration also has already exported a few dashboards made as an example for you and you can see them below.
+
+### Dashboard Examples
+
+We made a couple dashboards to show you how they can be used. Steps to find them:
+
+1. Go to Kibana
+2. Click on Dashboards
+3. Type "Mimecast" in Search Field
+
+or you can follow [this] instructions.
+
+There should be nine dashboards with the word [[Mimecast]] in the title.
+Dashboards like those are examples of dashboards. 
+
 ## Logs
 
 ### AUDIT EVENTS
@@ -12,14 +106,27 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-16T12:01:37.000Z",
-    "agent": {
-        "ephemeral_id": "57841034-22ed-4fcd-bcfd-0a9518249e2d",
-        "hostname": "docker-fleet-agent",
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.16.0"
+    "@timestamp": "2022-02-09T02:45:01.000Z",
+    "file": {
+        "extension": "zip",
+        "name": "Threat intel multiple feeds download  - malware_customer_csv_20220209024500934.zip"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "related": {
+        "ip": [
+            "8.8.8.8"
+        ],
+        "user": [
+            "johndoe",
+            "johndoe@example.com"
+        ]
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.audit_events"
     },
     "client": {
         "as": {
@@ -39,54 +146,23 @@ An example event for `audit_events` looks as following:
         },
         "ip": "8.8.8.8"
     },
-    "data_stream": {
-        "dataset": "mimecast.audit_events",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "1.12.0"
-    },
-    "elastic_agent": {
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
-        "snapshot": true,
-        "version": "7.16.0"
-    },
     "event": {
-        "action": "case-action",
         "agent_id_status": "verified",
-        "created": "2021-11-16T12:01:37.000Z",
-        "dataset": "mimecast.audit_events",
-        "id": "eNqrVipOTS4tSs1MUbJSskwzjDIMyDRKLinNSEl1c0pOqXLJyQlL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkrqOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAE_sLAI",
-        "ingested": "2021-11-24T15:39:11Z",
-        "original": "{\"auditType\":\"Case Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Viewed Case - Case: GDPR/CCPA, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSskwzjDIMyDRKLinNSEl1c0pOqXLJyQlL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkrqOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAE_sLAI\",\"user\":\"johndoe@example.com\"}"
+        "ingested": "2022-02-09T09:45:25Z",
+        "created": "2022-02-09T02:45:01.000Z",
+        "action": "threat-intel-feed-download",
+        "id": "eNqrVipOTS4tSs1MUbJSyvMxyknzzcqN0S9Nzs_PqCoNCTE2j3ILS_PXNg12dQt3j_QMr4oyi_SO0Xf1jswtM7TINncxTNTO97OsNPQqqAwNU9JRSixNySzJyU8HmWhsZGhobmJkYKKjlFxaXJKfm1qUnJ-SCrTK2cTM0dwUqLwstag4Mz9PycqwFgCY1Sx4",
+        "dataset": "mimecast.audit_events"
     },
-    "input": {
-        "type": "httpjson"
-    },
-    "mimecast": {
-        "application": "mimecast-case-review",
-        "category": "case_review_logs",
-        "eventInfo": "Viewed Case - Case: GDPR/CCPA, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review"
-    },
-    "related": {
-        "ip": [
-            "8.8.8.8"
-        ],
-        "user": [
-            "johndoe",
-            "johndoe@example.com"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "mimecast-audit-events"
-    ],
     "user": {
         "domain": "example.com",
-        "email": "johndoe@example.com",
-        "name": "johndoe"
+        "name": "johdoe",
+        "email": "johndoe@example.com"
+    },
+    "mimecast": {
+        "eventInfo": "Threat intel multiple feeds download  - malware_customer_csv_20220209024500934.zip, Date: 2022-02-09, Time: 02:45:01+0000, IP: 8.8.8.8, Application: Integrations",
+        "application": "Integrations",
+        "category": "reporting_logs"
     }
 }
 ```
@@ -177,14 +253,6 @@ An example event for `dlp` looks as following:
 ```json
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
-    "agent": {
-        "ephemeral_id": "1aef981f-3448-4d12-bd5a-723ac1cdcc81",
-        "hostname": "docker-fleet-agent",
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.16.0"
-    },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
         "namespace": "ep",
@@ -299,35 +367,37 @@ An example event for `siem` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-18T08:02:43.000Z",
+    "@timestamp": "2022-02-03T18:17:38.000Z",
     "ecs": {
         "version": "1.12.0"
     },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.siem_logs"
+    },
     "event": {
-        "reason": "Spm",
-        "action": "Hld",
-        "ingested": "2021-11-25T11:34:11.459620200Z",
-        "original": "{\"Act\":\"Hld\",\"AttCnt\":0,\"AttNames\":null,\"AttSize\":0,\"Content-Disposition\":\"attachment; filename=\\\"process_20211018093329655.json\\\"\",\"Hld\":\"Spm\",\"MsgId\":\"\\u003cINX.164dae0719be95da77068c7d264.3e915.e7719.c78c.17c926a3231ace@newsletter.77onlineshop.eu\\u003e\",\"MsgSize\":157436,\"Sender\":\"bounce_9244+cdaahhimyaaaaagaad5ekqaaaaaaaaeribenpq@newsletter.77onlineshop.eu\",\"Subject\":\"Hi Sandra! Neue Styles eingetroffen! – Finde deinen Lieblings-Look!\",\"aCode\":\"HhuwRf_AOcuJZINE2ZgcKw\",\"acc\":\"ABC123\",\"datetime\":\"2021-10-18T09:02:43+0100\"}",
-        "created": "2021-10-18T09:02:43+0100",
+        "agent_id_status": "verified",
+        "ingested": "2022-02-09T09:58:25Z",
+        "created": "2022-02-03T18:17:38+0000",
+        "action": "Acc",
+        "dataset": "mimecast.siem_logs",
         "outcome": "unknown"
     },
     "email": {
-        "message_id": "\u003cINX.164dae0719be95da77068c7d264.3e915.e7719.c78c.17c926a3231ace@newsletter.77onlineshop.eu\u003e",
-        "from": {
-            "address": "bounce_9244+cdaahhimyaaaaagaad5ekqaaaaaaaaeribenpq@newsletter.77onlineshop.eu"
-        },
         "attachments": {
             "file": {
                 "size": 0
             }
         },
-        "local_id": "HhuwRf_AOcuJZINE2ZgcKw",
-        "subject": "Hi Sandra! Neue Styles eingetroffen! – Finde deinen Lieblings-Look!",
-        "message_size": 157436
+        "local_id": "23e26c29-14fa-4a31-a6a1-474ba8fa7943",
+        "subject": "You've been sent a secure message: hello world",
+        "message_id": "\u003c151821003-1643912257257@uk-mta-93.uk.example.lan\u003e",
+        "from": {
+            "address": "johndoe@example.com"
+        },
+        "message_size": 27677
     },
-    "tags": [
-        "preserve_original_event"
-    ],
     "mimecast": {
         "acc": "ABC123",
         "log_type": "process",
@@ -441,6 +511,7 @@ An example event for `siem` looks as following:
 | mimecast.acc | The Mimecast account code for your account. | keyword |
 | mimecast.credentialTheft | The info about credential theft. | keyword |
 | mimecast.log_type | String to get type of SIEM log. | keyword |
+| mimecast.msgid | The internet message id of the email. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.domain | Source domain. | keyword |
@@ -461,54 +532,66 @@ An example event for `ttp_ip` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-15T17:10:46.000Z",
-    "ecs": {
-        "version": "1.12.0"
-    },
-    "related": {
-        "ip": "8.8.8.8"
-    },
     "rule": {
         "name": "IP - 1 hit (Tag email)"
     },
     "source": {
         "ip": "8.8.8.8"
     },
+    "tags": [
+        "forwarded",
+        "mimecast-ttp-ip"
+    ],
+    "input": {
+        "type": "httpjson"
+    },
+    "@timestamp": "2022-02-08T17:21:45.000Z",
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "related": {
+        "ip": [
+            "8.8.8.8"
+        ]
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.ttp_ip_logs"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "ingested": "2022-02-09T10:09:19Z",
+        "created": "2022-02-08T17:21:45+0000",
         "action": "none",
-        "ingested": "2021-11-19T14:42:59.823940200Z",
-        "original": "{\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjU1NjIw1FEqSy0qzszPU7ICskvywAoNDAyVagFirRIG\",\"senderAddress\":\"smtp@example.com\",\"recipientAddress\":\"johndoe@example.com\",\"subject\":\"Requested File\",\"definition\":\"IP - 1 hit (Tag email)\",\"hits\":1,\"identifiers\":[\"internal_user_name\"],\"action\":\"none\",\"taggedExternal\":false,\"taggedMalicious\":true,\"senderIpAddress\":\"8.8.8.8\",\"eventTime\":\"2021-10-15T17:10:46+0000\",\"impersonationResults\":[{\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe Jr \u003cjohndoejr@example.com\u003e\",\"stringSimilarToDomain\":\"John Doe Jr\",\"checkerResult\":\"hit\"}],\"messageId\":\"\u003cEE7E97EA-1926-4A90-9399-D049A98893F4@emailsec.ninja\u003e\"}",
-        "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjU1NjIw1FEqSy0qzszPU7ICskvywAoNDAyVagFirRIG",
-        "created": "2021-10-15T17:10:46+0000"
+        "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyNjAxtzQz0FEqSy0qzszPU7Iy1FEqyQMrNDAwVqoFAGPlEhM",
+        "dataset": "mimecast.ttp_ip_logs"
     },
     "email": {
+        "subject": "FW: Subject | Training",
         "from": {
-            "address": "smtp@example.com"
-        },
-        "message_id": "\u003cEE7E97EA-1926-4A90-9399-D049A98893F4@emailsec.ninja\u003e",
-        "to": {
             "address": "johndoe@example.com"
         },
-        "subject": "Requested File"
+        "message_id": "\u003cAS8P194MB1544675B724095ACB49F2338A82D9@AS8P194MB1544.EURP194.PROD.OUTLOOK.COM\u003e",
+        "to": {
+            "address": "janedoe@example.com"
+        }
     },
-    "tags": [
-        "preserve_original_event"
-    ],
     "mimecast": {
         "hits": 1,
+        "taggedMalicious": true,
+        "identifiers": [
+            "internal_user_name"
+        ],
         "impersonationResults": [
             {
                 "checkerResult": "hit",
+                "similarDomain": "John Doe \u003cjohndoe@example.com\u003e",
                 "impersonationDomainSource": "internal_user_name",
-                "stringSimilarToDomain": "John Doe Jr",
-                "similarDomain": "John Doe Jr \u003cjohndoejr@example.com\u003e"
+                "stringSimilarToDomain": "John Doe"
             }
         ],
-        "taggedMalicious": true,
-        "taggedExternal": false,
-        "identifiers": [
-            "internal_user_name"
-        ]
+        "taggedExternal": false
     }
 }
 ```
@@ -593,47 +676,50 @@ An example event for `ttp_ap` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-14T18:54:32.000Z",
+    "@timestamp": "2022-02-01T17:27:48.000Z",
     "ecs": {
         "version": "1.12.0"
     },
     "related": {
-        "hash": "eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3"
+        "hash": [
+            "eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3"
+        ]
     },
-    "rule": {
-        "name": "Inbound - Safe file with On-Demand Sandbox"
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.ttp_ap_logs"
     },
     "event": {
+        "agent_id_status": "verified",
+        "ingested": "2022-02-09T08:45:45Z",
+        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2022-02-01T17:27:48+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 32 sec\",\"fileHash\":\"eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3\",\"fileName\":\"numbers.pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003c20200806044148.F35F813B435@mail.example.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Important Updated Numbers from the Center for Disease Control\"}",
+        "created": "2022-02-01T17:27:48+0000",
         "action": "user_release_none",
-        "ingested": "2021-11-19T14:40:07.263592900Z",
-        "original": "{\"senderAddress\":\"\u003c\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"fileName\":\"numbers.pdf\",\"fileType\":\"application\\/pdf\",\"result\":\"safe\",\"actionTriggered\":\"user release, none\",\"date\":\"2021-10-14T18:54:32+0000\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 4 sec\",\"route\":\"inbound\",\"messageId\":\"\u003c20200806044148.F35F813B435@mail.brianjthronton.com\u003e\",\"subject\":\"Important Updated Numbers from the Center for Disease Control\",\"fileHash\":\"eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\"}",
-        "created": "2021-10-14T18:54:32+0000"
+        "dataset": "mimecast.ttp_ap_logs"
     },
     "email": {
+        "attachments": {
+            "file": {
+                "extension": "pdf",
+                "mime_type": "application/pdf",
+                "name": "numbers.pdf"
+            },
+            "hash": "eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3"
+        },
+        "subject": "Important Updated Numbers from the Center for Disease Control",
         "from": {
             "address": "\u003c\u003e"
         },
-        "message_id": "\u003c20200806044148.F35F813B435@mail.brianjthronton.com\u003e",
-        "attachments": {
-            "hash": "eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3",
-            "file": {
-                "name": "numbers.pdf",
-                "mime_type": "application/pdf",
-                "extension": "pdf"
-            }
-        },
+        "message_id": "\u003c20200806044148.F35F813B435@mail.example.com\u003e",
         "to": {
             "address": "johndoe@example.com"
         },
-        "subject": "Important Updated Numbers from the Center for Disease Control",
         "direction": "inbound"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
     "mimecast": {
         "result": "safe",
-        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 4 sec"
+        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 32 sec"
     }
 }
 ```
@@ -723,49 +809,59 @@ An example event for `ttp_url` looks as following:
         "ip": "8.8.8.8"
     },
     "url": {
-        "original": "https://click.emailinfo2.bestbuy.com/?qs=5c47c91aeb44fac857370c26ddf09c3f484431e1ccfa636fc64e26e40dd87efdb43d4deeeab8c2e727ebfa079e8cf1404c095c511152e4b09e7d00bf8377f32d"
+        "original": "https://link.buzzfeed.com/click/26642507.136718/aHR0cHM6Ly93d3cuYnV6emZlZWQuY29tL25lZ2VzdGlrYXVkby9zZXgtdG95cy10by1naWZ0LXlvdXJzZWxmLWZvci12YWxlbnRpbmVzLWRheS1hbmQtZmVlbD9vcmlnaW49c2hvcHBpbmdubA/5d81de1940f8667f86011339B2d1592db"
     },
     "tags": [
-        "preserve_original_event"
+        "forwarded",
+        "mimecast-ttp-url"
     ],
-    "@timestamp": "2021-10-16T14:45:34.000Z",
+    "input": {
+        "type": "httpjson"
+    },
+    "@timestamp": "2022-02-09T01:39:36.000Z",
     "ecs": {
         "version": "1.12.0"
     },
     "related": {
+        "ip": [
+            "8.8.8.8"
+        ],
         "user": [
             "johndoe",
             "johndoe@example.com"
-        ],
-        "ip": [
-            "8.8.8.8"
         ]
     },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.ttp_url_logs"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "ingested": "2022-02-09T10:13:06Z",
+        "created": "2022-02-09T01:39:36+0000",
         "action": "Continue",
-        "ingested": "2021-11-24T14:39:10.084705200Z",
-        "original": "{\"userEmailAddress\": \"johndoe@example.com\", \"fromUserEmailAddress\": \"bestbuyinfo@emailinfo.bestbuy.com\", \"url\": \"https://click.emailinfo2.bestbuy.com/?qs=5c47c91aeb44fac857370c26ddf09c3f484431e1ccfa636fc64e26e40dd87efdb43d4deeeab8c2e727ebfa079e8cf1404c095c511152e4b09e7d00bf8377f32d\", \"ttpDefinition\": \"Inbound URL 'Aggressive'\", \"subject\": \"Today only: Save $100 on Tineco Pure One S12 smart cordless stick vacuum, plus more.\", \"action\": \"allow\", \"adminOverride\": \"N/A\", \"userOverride\": \"None\", \"scanResult\": \"clean\", \"category\": \"Business\", \"sendingIp\": \"8.8.8.8\", \"userAwarenessAction\": \"Continue\", \"date\": \"2021-10-16T14:45:34+0000\", \"actions\": \"Allow\", \"route\": \"inbound\", \"creationMethod\": \"User Click\", \"emailPartsDescription\": [ \"Body\" ], \"messageId\": \"\u003c31b43097-94f9-4f64-8e37-8ad23650c692@ind1s01mta1292.xt.local\u003e\" }",
-        "created": "2021-10-16T14:45:34+0000"
+        "dataset": "mimecast.ttp_url_logs"
     },
     "user": {
+        "domain": "example.com",
         "name": "johndoe",
-        "email": "johndoe@example.com",
-        "domain": "example.com"
+        "email": "johndoe@example.com"
     },
     "email": {
-        "message_id": "\u003c31b43097-94f9-4f64-8e37-8ad23650c692@ind1s01mta1292.xt.local\u003e",
+        "subject": "\"Why don't I own that already?\"",
+        "message_id": "\u003c20220208203837.26642507.136718@example.com\u003e",
         "from": {
-            "address": "bestbuyinfo@emailinfo.bestbuy.com"
+            "address": "newsletter@buzzfeed.com"
         },
-        "subject": "Today only: Save $100 on Tineco Pure One S12 smart cordless stick vacuum, plus more.",
         "direction": "inbound"
     },
     "mimecast": {
         "userOverride": "None",
         "action": "allow",
         "adminOverride": "N/A",
+        "category": "Entertainment",
         "scanResult": "clean",
-        "category": "Business",
         "actions": "Allow",
         "creationMethod": "User Click",
         "emailPartsDescription": [
@@ -859,40 +955,45 @@ An example event for `threat_intel_malware_customer` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-29T15:07:26.653Z",
+    "@timestamp": "2022-02-02T16:07:13.213Z",
     "ecs": {
         "version": "1.12"
     },
     "related": {
-        "hash": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
+        "hash": [
+            "f074c46bb36cc48f36359d9847def630a4bd405d654e7db9b2b8ea1ce4e2528d"
+        ]
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.threat_intel_malware_customer"
     },
     "threat": {
         "indicator": {
-            "first_seen": "2021-10-29T15:07:26.653Z",
+            "first_seen": "2022-02-02T16:07:13.213Z",
             "file": {
                 "hash": {
-                    "sha256": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
+                    "sha256": "f074c46bb36cc48f36359d9847def630a4bd405d654e7db9b2b8ea1ce4e2528d"
                 }
             },
-            "modified_at": "2021-10-29T15:07:26.653Z",
+            "modified_at": "2022-02-02T16:07:13.213Z",
             "type": "file"
         }
     },
     "event": {
-        "ingested": "2021-11-17T13:42:34.324885300Z",
-        "original": "{ \"Content-Disposition\":\"attachment; filename=\\\"malware_customer_stix_20211028161801144.stix\\\"\",\"type\": \"indicator\", \"id\": \"indicator--18c62174-0d31-4653-afe6-d104c57b6b2c\", \"created\": \"2021-10-29T15:07:26.653Z\", \"modified\": \"2021-10-29T15:07:26.653Z\", \"labels\": [ \"malicious-activity\" ], \"pattern\": \"[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']\", \"valid_from\": \"2021-10-29T15:07:26.653Z\" }",
+        "agent_id_status": "verified",
+        "ingested": "2022-02-09T08:10:24Z",
+        "created": "2022-02-09T08:10:24.724Z",
+        "kind": "enrichment",
         "category": "threat",
         "type": "indicator",
-        "kind": "enrichment"
+        "dataset": "mimecast.threat_intel_malware_customer"
     },
-    "tags": [
-        "preserve_original_event",
-        "malicious-activity"
-    ],
     "mimecast": {
-        "pattern": "[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']",
         "log_type": "malware_customer",
-        "id": "indicator--18c62174-0d31-4653-afe6-d104c57b6b2c",
+        "pattern": "[file:hashes.'SHA-256' = 'f074c46bb36cc48f36359d9847def630a4bd405d654e7db9b2b8ea1ce4e2528d']",
+        "id": "indicator--17be7188-db80-4f6e-84cf-7fcb016f45de",
         "type": "indicator",
         "labels": [
             "malicious-activity"
@@ -977,39 +1078,46 @@ An example event for `threat_intel_malware_grid` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-29T15:07:26.653Z",
+    "@timestamp": "2022-02-02T08:29:59.677Z",
     "ecs": {
         "version": "1.12"
     },
     "related": {
-        "hash": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
+        "hash": [
+            "7120d1338e2fac743e50cbafc5f6de37c97890678f35e15a21cd17384f2f78d0"
+        ]
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "mimecast.threat_intel_malware_grid"
     },
     "threat": {
         "indicator": {
-            "first_seen": "2021-10-29T15:07:26.653Z",
+            "first_seen": "2022-02-02T08:29:59.677Z",
             "file": {
                 "hash": {
-                    "sha256": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
+                    "sha256": "7120d1338e2fac743e50cbafc5f6de37c97890678f35e15a21cd17384f2f78d0"
                 }
             },
-            "modified_at": "2021-10-29T15:07:26.653Z",
+            "modified_at": "2022-02-02T08:29:59.677Z",
             "type": "file"
         }
     },
     "event": {
-        "ingested": "2021-11-17T13:42:35.248902200Z",
-        "original": "{ \"Content-Disposition\":\"attachment; filename=\\\"malware_grid_stix_20211028161801144.stix\\\"\",\"type\": \"indicator\", \"id\": \"indicator--18c62174-0d31-4653-afe6-d104c57b6b2c\", \"created\": \"2021-10-29T15:07:26.653Z\", \"modified\": \"2021-10-29T15:07:26.653Z\", \"labels\": [ \"malicious-activity\" ], \"pattern\": \"[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']\", \"valid_from\": \"2021-10-29T15:07:26.653Z\" }",
+        "agent_id_status": "verified",
+        "ingested": "2022-02-09T08:41:44Z",
+        "original": "{\"Content-Disposition\":\"attachment; filename=\\\"malware_grid_stix_20220202083530775.stix\\\"\",\"created\":\"2022-02-02T08:29:59.677Z\",\"id\":\"indicator--12dbac84-90a0-4896-a6aa-96d1f7b723f1\",\"labels\":[\"malicious-activity\"],\"modified\":\"2022-02-02T08:29:59.677Z\",\"pattern\":\"[file:hashes.'SHA-256' = '7120d1338e2fac743e50cbafc5f6de37c97890678f35e15a21cd17384f2f78d0']\",\"type\":\"indicator\",\"valid_from\":\"2022-02-02T08:29:59.677Z\"}",
+        "created": "2022-02-09T08:41:43.956Z",
+        "kind": "enrichment",
         "category": "threat",
-        "kind": "enrichment"
+        "type": "indicator",
+        "dataset": "mimecast.threat_intel_malware_grid"
     },
-    "tags": [
-        "preserve_original_event",
-        "malicious-activity"
-    ],
     "mimecast": {
-        "pattern": "[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']",
         "log_type": "malware_grid",
-        "id": "indicator--18c62174-0d31-4653-afe6-d104c57b6b2c",
+        "pattern": "[file:hashes.'SHA-256' = '7120d1338e2fac743e50cbafc5f6de37c97890678f35e15a21cd17384f2f78d0']",
+        "id": "indicator--12dbac84-90a0-4896-a6aa-96d1f7b723f1",
         "type": "indicator",
         "labels": [
             "malicious-activity"
