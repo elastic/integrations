@@ -1,0 +1,41 @@
+title: User Status Logs
+type: logs
+streams:
+  - input: tcp
+    template_path: tcp.yml.hbs
+    title: Zscaler Private Access User Status Logs
+    description: Collect Zscaler Private Access User Status Logs using tcp input
+    vars:
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The TCP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9019
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - zscaler_zpa-user_status
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

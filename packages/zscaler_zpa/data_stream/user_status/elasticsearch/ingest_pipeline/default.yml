@@ -1,0 +1,239 @@
+---
+description: Pipeline for Zscaler user status logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - date:
+      field: json.LogTimestamp
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+  - remove: 
+      field: json.LogTimestamp
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: iam
+  - set:
+      field: event.kind
+      value: state
+  - append:
+      field: event.type
+      value: info
+  - append:
+      field: event.type
+      value: user
+  - rename: 
+      field: json.CountryCode
+      target_field: client.geo.country_iso_code
+      ignore_missing: true
+  - rename: 
+      field: json.Latitude
+      target_field: client.geo.location.lat
+      ignore_missing: true
+  - rename: 
+      field: json.Longitude
+      target_field: client.geo.location.lon
+      ignore_missing: true
+  - rename: 
+      field: json.PublicIP
+      target_field: client.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}" 
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename: 
+      field: json.Hostname
+      target_field: host.hostname
+      ignore_missing: true
+  - rename: 
+      field: json.Platform
+      target_field: host.os.platform
+      ignore_missing: true
+  - rename: 
+      field: json.Customer
+      target_field: organization.name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{{server.domain}}}" 
+      if: ctx?.server?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename: 
+      field: json.ZENCountryCode
+      target_field: server.geo.country_iso_code
+      ignore_missing: true
+  - rename: 
+      field: json.ZENLatitude
+      target_field: server.geo.location.lat
+      ignore_missing: true
+  - rename: 
+      field: json.ZENLongitude
+      target_field: server.geo.location.lon
+      ignore_missing: true
+  - rename: 
+      field: json.Username
+      target_field: user.name
+      ignore_missing: true
+  - rename: 
+      field: json.CertificateCN
+      target_field: x509.issuer.common_name
+      ignore_missing: true
+  - rename: 
+      field: json.SessionID
+      target_field: zscaler_zpa.user_status.session.id
+      ignore_missing: true
+  - rename: 
+      field: json.SessionStatus
+      target_field: zscaler_zpa.user_status.session.status
+      ignore_missing: true
+  - rename: 
+      field: json.Version
+      target_field: zscaler_zpa.user_status.version
+      ignore_missing: true
+  - rename: 
+      field: json.ZEN
+      target_field: zscaler_zpa.user_status.zen.domain
+      ignore_missing: true
+  - convert: 
+      field: json.PrivateIP
+      target_field: zscaler_zpa.user_status.private_ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{zscaler_zpa.user_status.private_ip}}}" 
+      if: ctx?.zscaler_zpa?.user_status?.private_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - date: 
+      field: json.TimestampAuthentication
+      target_field: zscaler_zpa.user_status.timestamp.authentication
+      ignore_failure: true
+      formats: 
+        - ISO8601
+  - remove:
+      field: json.TimestampAuthentication
+      ignore_missing: true
+  - date: 
+      field: json.TimestampUnAuthentication
+      target_field: zscaler_zpa.user_status.timestamp.unauthentication
+      ignore_failure: true
+      formats: 
+        - ISO8601
+  - remove:
+      field: json.TimestampUnAuthentication
+      ignore_missing: true
+  - rename: 
+      field: json.TotalBytesRx
+      target_field: zscaler_zpa.user_status.total.bytes_rx
+      ignore_missing: true
+  - rename: 
+      field: json.TotalBytesTx
+      target_field: zscaler_zpa.user_status.total.bytes_tx
+      ignore_missing: true
+  - rename: 
+      field: json.Idp
+      target_field: zscaler_zpa.user_status.idp
+      ignore_missing: true
+  - rename: 
+      field: json.ClientType
+      target_field: zscaler_zpa.user_status.client.type
+      ignore_missing: true
+  - rename: 
+      field: json.TrustedNetworks
+      target_field: zscaler_zpa.user_status.trusted_networks
+      ignore_missing: true
+  - rename: 
+      field: json.TrustedNetworksNames
+      target_field: zscaler_zpa.user_status.trusted_networks_names
+      ignore_missing: true
+  - script: 
+      source: |
+        ctx.zscaler_zpa.user_status.fqdn = new HashMap(); 
+        ctx.zscaler_zpa.user_status.fqdn.registered = (ctx.json.FQDNRegistered != "0");
+      if: ctx.json.FQDNRegistered != null
+      ignore_failure: true
+  - remove: 
+      field: json.FQDNRegistered
+      ignore_missing: true
+  - rename: 
+      field: json.FQDNRegisteredError
+      target_field: zscaler_zpa.user_status.fqdn.registered_error
+      ignore_missing: true
+  - split:
+      field: json.SAMLAttributes
+      target_field: zscaler_zpa.user_status.saml_attributes
+      separator: ','
+      ignore_failure: true
+  - remove: 
+      field: json.SAMLAttributes
+      ignore_failure: true
+  - split: 
+      field: json.PosturesHit
+      target_field: zscaler_zpa.user_status.postures.hit
+      separator: ','
+      ignore_failure: true
+  - remove: 
+      field: json.PosturesHit
+      ignore_failure: true
+  - split: 
+      field: json.PosturesMiss
+      target_field: zscaler_zpa.user_status.postures.miss
+      separator: ','
+      ignore_failure: true
+  - remove: 
+      field: json.PosturesMiss
+      ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zpa.user_status
+      lang: painless
+      if: ctx?.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zpa.user_status[m.getKey()] = m.getValue();
+        }
+  - remove: 
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"

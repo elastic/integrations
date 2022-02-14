@@ -1,0 +1,93 @@
+- name: zscaler_zpa.user_status
+  type: group
+  fields:
+    - name: client.type
+      type: keyword
+      description: |
+        The client type for the request (i.e., Zscaler Client Connector, ZPA LSS, or Web Browser).
+    - name: idp
+      type: keyword
+      description: |
+        The name of the identity provider (IdP) as configured in the ZPA Admin Portal.
+    - name: fqdn
+      type: group
+      fields:
+        - name: registered
+          type: boolean
+          description: |
+            The status of the hostname for the client-to-client connection. The expected values for this field are true or false.
+        - name: registered_error
+          type: keyword
+          description: |
+            The status of the registered hostname.
+    - name: postures
+      type: group
+      fields:
+        - name: hit
+          type: keyword
+          description: |
+            The posture profiles that the Zscaler Client Connector verified for this device.
+        - name: miss
+          type: keyword
+          description: |
+            The posture profiles that the Zscaler Client Connector failed to verified for this device.
+    - name: private_ip
+      type: ip
+      description: |
+        The private IP address of the Zscaler Client Connector.
+    - name: saml_attributes
+      type: keyword
+      description: |
+        The list of SAML attributes reported by the IdP.
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            The TLS session ID.
+        - name: status
+          type: keyword
+          description: |
+            The status of the session.
+    - name: timestamp
+      type: group
+      fields:
+        - name: authentication
+          type: date
+          description: |
+            Timestamp in microseconds when the Zscaler Client Connector was authenticated.
+        - name: unauthentication
+          type: date
+          description: |
+            Timestamp in microseconds when the Zscaler Client Connector was unauthenticated.
+    - name: total
+      type: group
+      fields:
+        - name: bytes_rx
+          type: long
+          description: |
+            The total bytes received.
+        - name: bytes_tx
+          type: long
+          description: |
+            The total bytes transmitted.
+    - name: trusted_networks
+      type: keyword
+      description: |
+        The unique IDs for the trusted networks that the Zscaler Client Connector has determined for this device.
+    - name: trusted_networks_names
+      type: keyword
+      description: |
+        The names for the trusted networks that the Zscaler Client Connector has determined for this device.
+    - name: version
+      type: keyword
+      description: |
+        The Zscaler Client Connector version.
+    - name: zen.domain
+      type: keyword
+      description: |-
+        The Public Service Edge (formerly Zscaler Enforcement Node or ZEN) or ZPA Private Service Edge that was selected for the connection
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
