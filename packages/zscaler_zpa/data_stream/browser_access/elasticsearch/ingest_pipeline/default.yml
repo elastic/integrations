@@ -42,6 +42,18 @@ processors:
       field: json.ClientPublicIp
       target_field: client.ip
       ignore_missing: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true   
   - append:
       field: related.ip
       value: "{{{client.ip}}}" 

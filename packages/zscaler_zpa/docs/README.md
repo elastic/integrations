@@ -22,7 +22,7 @@ This package has been tested against `Zscaler Private Access Client Connector ve
 
 ### App Connector Status Logs
 
-Default port: _9005_
+Default port: _9015_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-connector-status-log-fields
 
@@ -38,7 +38,7 @@ Sample Response:
 
 ### Audit Logs
 
-Default port: _9001_
+Default port: _9016_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-audit-log-fields
 
@@ -54,7 +54,7 @@ Sample Response:
 
 ### Browser Access Logs
 
-Default port: _9002_
+Default port: _9017_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-browser-access-log-fields
 
@@ -70,7 +70,7 @@ Sample Response:
 
 ### User Activity Logs
 
-Default port: _9003_
+Default port: _9018_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-user-activity-log-fields
 
@@ -88,7 +88,7 @@ Sample Response:
 
 ### User Status Logs
 
-Default port: _9004_
+Default port: _9019_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-user-status-log-fields
 
@@ -512,6 +512,13 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -604,14 +611,26 @@ An example event for `browser_access` looks as following:
 {
     "@timestamp": "2019-07-03T05:12:25.000Z",
     "agent": {
-        "ephemeral_id": "d709cdf2-185b-4967-9566-311aac744e3c",
+        "ephemeral_id": "10484a2f-b664-42ef-a849-7386c8257491",
         "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "acf7dca8-817d-4681-bad3-1cc9bfefc49c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
     },
     "client": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.144",
         "port": 60006
     },
@@ -624,7 +643,7 @@ An example event for `browser_access` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "acf7dca8-817d-4681-bad3-1cc9bfefc49c",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -635,7 +654,7 @@ An example event for `browser_access` looks as following:
             "session"
         ],
         "dataset": "zscaler_zpa.browser_access",
-        "ingested": "2022-02-03T13:33:22Z",
+        "ingested": "2022-02-14T07:28:10Z",
         "kind": "event",
         "type": "connection"
     },
@@ -658,7 +677,7 @@ An example event for `browser_access` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:41512"
+            "address": "172.26.0.7:47148"
         }
     },
     "organization": {

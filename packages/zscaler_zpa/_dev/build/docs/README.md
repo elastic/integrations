@@ -22,7 +22,7 @@ This package has been tested against `Zscaler Private Access Client Connector ve
 
 ### App Connector Status Logs
 
-Default port: _9005_
+Default port: _9015_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-connector-status-log-fields
 
@@ -38,7 +38,7 @@ Sample Response:
 
 ### Audit Logs
 
-Default port: _9001_
+Default port: _9016_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-audit-log-fields
 
@@ -54,7 +54,7 @@ Sample Response:
 
 ### Browser Access Logs
 
-Default port: _9002_
+Default port: _9017_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-browser-access-log-fields
 
@@ -70,7 +70,7 @@ Sample Response:
 
 ### User Activity Logs
 
-Default port: _9003_
+Default port: _9018_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-user-activity-log-fields
 
@@ -88,7 +88,7 @@ Sample Response:
 
 ### User Status Logs
 
-Default port: _9004_
+Default port: _9019_
 
 Vendor documentation: https://help.zscaler.com/zpa/about-user-status-log-fields
 
