@@ -22,7 +22,15 @@ processors:
       field: mimecast.eventTime
       timezone: UTC
       formats:
-        - yyyy-MM-dd'T'HH:mm:ssZ
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ssZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.Sz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss z"
 
   ###
 
@@ -93,7 +101,18 @@ processors:
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action=="logon-authentication-failed"'
+      if: 'ctx?.event?.action=="logon-authentication-failed" && (ctx?.mimecast?.email?.metadata != "")'
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      field: mimecast.eventInfo
+      separator: ","
+      target_field: mimecast.event_info_parts
+      if: 'ctx?.mimecast?.eventInfo != null && ctx?.event?.action=="logon-authentication-failed"'
+  - dissect:
+      field: mimecast.eventInfo
+      pattern: "%{mimecast.info}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}, %{?key}: %{event.reason}"
+      if: 'ctx?.event?.action=="logon-authentication-failed" && (ctx?.mimecast?.event_info_parts.length == 6)'
       ignore_missing: true
       ignore_failure: true
   - dissect:
@@ -152,6 +171,15 @@ processors:
         - yyyy-MM-dd HH:mm:ssZ
         - yyyy-MM-dd HH:mm:ss z
         - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssz
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.Sz
+        - yyyy-MM-dd'T'HH:mm:ss.SZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy-MM-dd'T'HH:mm:ss z
       if: 'ctx?.event?.created != null'
   - geoip:
       field: client.ip
@@ -221,6 +249,7 @@ processors:
         - mimecast.columns_exported
         - mimecast.as.asn
         - mimecast.organization_name
+        - mimecast.event_info_parts
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.
