@@ -783,15 +783,16 @@ processors:
         }
   - gsub:
       field: client._temp
-      pattern: "::ffff:"
-      replacement: ""
+      pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)'
+      replacement: '$1'
       ignore_missing: true
   - grok:
       field: client._temp
       patterns: 
         - '%{IPANDPORTBRACKETS}'
-        - '%{IPANDPORT}'
         - '^%{IP:client.address}$'
+        - '^\[%{IP:client.address}\]$'
+        - '%{IPANDPORT}'
         - '^%{NOTSPACE:client.domain}$'
         - '%{HOSTNAMEANDPORTBRACKETS}'
         - '%{HOSTNAMEANDPORT}'
