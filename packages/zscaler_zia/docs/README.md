@@ -22,7 +22,7 @@ This package has been tested against `Zscaler Internet Access version 6.1`
 
 ### Alerts
 
-Default port: _9006_
+Default port: _9010_
 
 Vendor documentation: https://help.zscaler.com/zia/about-alerts
 
@@ -38,7 +38,7 @@ Sample Response:
 
 ### DNS Log
 
-Default port: _9007_
+Default port: _9011_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-dns-logs
 
@@ -54,7 +54,7 @@ Sample Response:
 
 ### Firewall Log
 
-Default port: _9008_
+Default port: _9012_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs
 
@@ -70,7 +70,7 @@ Sample Response:
 
 ### Tunnel Log
 
-Default port: _9009_
+Default port: _9013_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-tunnel-logs
 
@@ -99,7 +99,7 @@ Sample Response:
 
 ### Web Log
 
-Default port: _9010_
+Default port: _9014_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
 
