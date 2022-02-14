@@ -46,7 +46,7 @@ This package has been tested against `Netskope version 91.1.0.605` and `Netskope
 
 ### Alerts
 
-Default port: _9006_
+Default port: _9020_
 
 Netskope Alert Mapping:
 ```json
@@ -1178,7 +1178,7 @@ netskope.alerts.quarantine.app.2,,String
 
 ### Events
 
-Default port: _9005_
+Default port: _9021_
 
 Netskope Event Mapping:
 ```json
@@ -2557,7 +2557,7 @@ An example event for `alerts` looks as following:
 | netskope.events.activity.type | Displayed when only admins can perform the activity in question. | keyword |
 | netskope.events.alarm.description | N/A | keyword |
 | netskope.events.alarm.name | N/A | keyword |
-| netskope.events.alert.is_present | Indicates whether alert is generated or not. Populated as yes for all alerts. | keyword |
+| netskope.events.alert.is_present | Indicates whether alert is generated or not. Populated as yes for all alerts. | boolean |
 | netskope.events.alert.name | Name of the alert. | keyword |
 | netskope.events.alert.type | Type of the alert. | keyword |
 | netskope.events.app.activity | N/A | keyword |

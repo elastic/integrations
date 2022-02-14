@@ -46,7 +46,7 @@ This package has been tested against `Netskope version 91.1.0.605` and `Netskope
 
 ### Alerts
 
-Default port: _9006_
+Default port: _9020_
 
 Netskope Alert Mapping:
 ```json
@@ -1178,7 +1178,7 @@ netskope.alerts.quarantine.app.2,,String
 
 ### Events
 
-Default port: _9005_
+Default port: _9021_
 
 Netskope Event Mapping:
 ```json
