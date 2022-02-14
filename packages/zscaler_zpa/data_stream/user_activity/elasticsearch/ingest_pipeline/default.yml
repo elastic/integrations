@@ -1,0 +1,444 @@
+---
+description: Pipeline for Zscaler user activity logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - date:
+      field: json.LogTimestamp
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+  - remove: 
+      field: json.LogTimestamp
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: iam
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - append:
+      field: event.type
+      value: user
+  - rename: 
+      field: json.Username
+      target_field: user.name
+      ignore_missing: true
+  - rename: 
+      field: json.ClientCountryCode
+      target_field: client.geo.country_iso_code
+      ignore_missing: true
+  - rename: 
+      field: json.ClientLatitude
+      target_field: client.geo.location.lat
+      ignore_missing: true
+  - rename:
+      field: json.ClientLongitude
+      target_field: client.geo.location.lon
+      ignore_missing: true
+  - convert: 
+      field: json.ClientPublicIP
+      target_field: client.ip
+      type: ip
+      ignore_failure: true
+  - remove:
+      field: json.ClientPublicIP
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}" 
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - set: 
+      field: host.domain
+      copy_from: json.Host
+      ignore_failure: true
+  - convert:
+      field: host.domain
+      target_field: host.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{host.domain}}}" 
+      if: ctx?.host?.ip == null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove: 
+      field: host.domain 
+      if: ctx?.host?.ip != null
+  - remove: 
+      field: json.Host
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{host.ip}}}" 
+      if: ctx?.host?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - script: 
+      lang: painless
+      if: ctx?.json?.IPProtocol != null && ctx?.json?.IPProtocol != ''
+      source: |
+        ctx.network = new HashMap();
+        ctx.network.type = (ctx.json.IPProtocol == 4 ? 'ipv4' : 'ipv6');
+  - remove: 
+      field: json.IPProtocol
+      ignore_failure: true
+  - rename: 
+      field: json.Customer
+      target_field: organization.name
+      ignore_missing: true
+  - rename: 
+      field: json.ServerIP
+      target_field: server.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{server.ip}}}" 
+      if: ctx?.server?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename: 
+      field: json.ServerPort
+      target_field: server.port
+      ignore_missing: true
+  - rename: 
+      field: json.ClientZEN
+      target_field: zscaler_zpa.user_activity.zen.client.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{{zscaler_zpa.user_activity.zen.client.domain}}}" 
+      if: ctx?.zscaler_zpa?.user_activity?.zen?.client?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename: 
+      field: json.ConnectorZEN
+      target_field: zscaler_zpa.user_activity.zen.connector.domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{{zscaler_zpa.user_activity.zen.connector.domain}}}" 
+      if: ctx?.zscaler_zpa?.user_activity?.zen?.connector?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.SessionID
+      target_field: zscaler_zpa.user_activity.session_id
+      ignore_missing: true
+  - rename:
+      field: json.ConnectionID
+      target_field: zscaler_zpa.user_activity.connection.id
+      ignore_missing: true
+  - rename:
+      field: json.InternalReason
+      target_field: zscaler_zpa.user_activity.internal_reason
+      ignore_missing: true
+  - rename:
+      field: json.ConnectionStatus
+      target_field: zscaler_zpa.user_activity.connection.status
+      ignore_missing: true
+  - rename:
+      field: json.DoubleEncryption
+      target_field: zscaler_zpa.user_activity.double_encryption
+      ignore_missing: true
+  - rename:
+      field: json.ServicePort
+      target_field: zscaler_zpa.user_activity.service_port
+      ignore_missing: true
+  - convert:
+      field: json.ClientPrivateIP
+      target_field: zscaler_zpa.user_activity.client_private_ip
+      type: ip
+      ignore_failure: true
+  - remove:
+      field: json.ClientPrivateIP
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{zscaler_zpa.user_activity.client_private_ip}}}" 
+      if: ctx?.zscaler_zpa?.user_activity?.client_private_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.Policy
+      target_field: zscaler_zpa.user_activity.policy.name
+      ignore_missing: true
+  - rename:
+      field: json.Connector
+      target_field: zscaler_zpa.user_activity.connector.name
+      ignore_missing: true
+  - convert:
+      field: json.ConnectorIP
+      target_field: zscaler_zpa.user_activity.connector.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{zscaler_zpa.user_activity.connector.ip}}}" 
+      if: ctx?.zscaler_zpa?.user_activity?.connector?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: json.ConnectorIP
+      ignore_failure: true
+  - rename:
+      field: json.ConnectorPort
+      target_field: zscaler_zpa.user_activity.connector.port
+      ignore_missing: true
+  - rename:
+      field: json.Application
+      target_field: zscaler_zpa.user_activity.application
+      ignore_missing: true
+  - rename:
+      field: json.AppGroup
+      target_field: zscaler_zpa.user_activity.app_group
+      ignore_missing: true
+  - rename:
+      field: json.Server
+      target_field: zscaler_zpa.user_activity.server
+      ignore_missing: true
+  - rename:
+      field: json.PolicyProcessingTime
+      target_field: zscaler_zpa.user_activity.policy.processing_time
+      ignore_missing: true
+  - rename:
+      field: json.CAProcessingTime
+      target_field: zscaler_zpa.user_activity.ca_processing_time
+      ignore_missing: true
+  - rename:
+      field: json.ConnectorZENSetupTime
+      target_field: zscaler_zpa.user_activity.connector_zen_setup_time
+      ignore_missing: true
+  - rename:
+      field: json.ConnectionSetupTime
+      target_field: zscaler_zpa.user_activity.connection.setup_time
+      ignore_missing: true
+  - rename:
+      field: json.ServerSetupTime
+      target_field: zscaler_zpa.user_activity.server_setup_time
+      ignore_missing: true
+  - rename:
+      field: json.AppLearnTime
+      target_field: zscaler_zpa.user_activity.app_learn_time
+      ignore_missing: true
+  - date:
+      field: json.TimestampConnectionStart
+      target_field: zscaler_zpa.user_activity.timestamp.connection.start
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampConnectionStart
+      ignore_failure: true
+  - date:
+      field: json.TimestampConnectionEnd
+      target_field: zscaler_zpa.user_activity.timestamp.connection.end
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampConnectionEnd
+      ignore_failure: true
+  - date:
+      field: json.TimestampCATx
+      target_field: zscaler_zpa.user_activity.timestamp.ca.tx
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampCATx
+      ignore_failure: true
+  - date:
+      field: json.TimestampCARx
+      target_field: zscaler_zpa.user_activity.timestamp.ca.rx
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampCARx
+      ignore_failure: true
+  - date:
+      field: json.TimestampAppLearnStart
+      target_field: zscaler_zpa.user_activity.timestamp.app_learn_start
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampAppLearnStart
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENFirstRxClient
+      target_field: zscaler_zpa.user_activity.timestamp.zen.client.rx.first
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENFirstRxClient
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENFirstTxClient
+      target_field: zscaler_zpa.user_activity.timestamp.zen.client.tx.first
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENFirstTxClient
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENLastRxClient
+      target_field: zscaler_zpa.user_activity.timestamp.zen.client.rx.last
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENLastRxClient
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENLastTxClient
+      target_field: zscaler_zpa.user_activity.timestamp.zen.client.tx.last
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENLastTxClient
+      ignore_failure: true
+  - date:
+      field: json.TimestampConnectorZENSetupComplete
+      target_field: zscaler_zpa.user_activity.timestamp.connector_zen.setup_complete
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampConnectorZENSetupComplete
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENFirstRxConnector
+      target_field: zscaler_zpa.user_activity.timestamp.zen.connector.rx.first
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENFirstRxConnector
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENFirstTxConnector
+      target_field: zscaler_zpa.user_activity.timestamp.zen.connector.tx.first
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENFirstTxConnector
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENLastRxConnector
+      target_field: zscaler_zpa.user_activity.timestamp.zen.connector.rx.last
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENLastRxConnector
+      ignore_failure: true
+  - date:
+      field: json.TimestampZENLastTxConnector
+      target_field: zscaler_zpa.user_activity.timestamp.zen.connector.tx.last
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove: 
+      field: json.TimestampZENLastTxConnector
+      ignore_failure: true
+  - rename:
+      field: json.ZENTotalBytesRxClient
+      target_field: zscaler_zpa.user_activity.zen.client.total.bytes_rx
+      ignore_missing: true
+  - rename:
+      field: json.ZENBytesRxClient
+      target_field: zscaler_zpa.user_activity.zen.client.bytes_rx
+      ignore_missing: true
+  - rename:
+      field: json.ZENTotalBytesTxClient
+      target_field: zscaler_zpa.user_activity.zen.client.total.bytes_tx
+      ignore_missing: true
+  - rename:
+      field: json.ZENBytesTxClient
+      target_field: zscaler_zpa.user_activity.zen.client.bytes_tx
+      ignore_missing: true
+  - rename:
+      field: json.ZENTotalBytesRxConnector
+      target_field: zscaler_zpa.user_activity.zen.connector.total.bytes_rx
+      ignore_missing: true
+  - rename:
+      field: json.ZENBytesRxConnector
+      target_field: zscaler_zpa.user_activity.zen.connector.bytes_rx
+      ignore_missing: true
+  - rename:
+      field: json.ZENTotalBytesTxConnector
+      target_field: zscaler_zpa.user_activity.zen.connector.total.bytes_tx
+      ignore_missing: true
+  - rename:
+      field: json.ZENBytesTxConnector
+      target_field: zscaler_zpa.user_activity.zen.connector.bytes_tx
+      ignore_missing: true
+  - rename:
+      field: json.ClientToClient
+      target_field: zscaler_zpa.user_activity.client_to_client
+      ignore_missing: true
+  - rename:
+      field: json.Idp
+      target_field: zscaler_zpa.user_activity.idp
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zpa.user_activity
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zpa.user_activity[m.getKey()] = m.getValue();
+        }
+  - remove: 
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"
