@@ -808,7 +808,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.device_detail.device_id | Device ID | keyword |
 | azure.signinlogs.properties.device_detail.display_name | Display name | keyword |
 | azure.signinlogs.properties.device_detail.operating_system | Operating system | keyword |
-| azure.signinlogs.properties.device_detail.trust_type | Trust type\ | keyword |
+| azure.signinlogs.properties.device_detail.trust_type | Trust type | keyword |
 | azure.signinlogs.properties.flagged_for_review |  | boolean |
 | azure.signinlogs.properties.home_tenant_id |  | keyword |
 | azure.signinlogs.properties.id | Unique ID representing the sign-in activity. | keyword |
