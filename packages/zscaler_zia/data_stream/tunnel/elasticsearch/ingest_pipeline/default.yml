@@ -1,0 +1,292 @@
+---
+description: Pipeline for Zscaler tunnel logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: resp
+  - rename:
+      field: resp.event
+      target_field: json
+  - remove: 
+      field: resp
+      ignore_missing: true
+  - date:
+      field: json.datetime
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+  - remove:
+      field: json.datetime
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: network
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - rename:
+      field: json.recordid
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.event
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.eventreason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: json.destinationip
+      target_field: destination.ip
+      ignore_missing: true
+  - append: 
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.destinationport
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - remove:
+      field: json.destinationport
+      ignore_missing: true
+  - rename:
+      field: json.sourceip
+      target_field: source.ip
+      ignore_missing: true
+  - append: 
+      field: related.ip
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.sourceport
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - remove:
+      field: json.sourceport
+      ignore_missing: true
+  - urldecode:
+      field: json.user
+      target_field: user.name
+      ignore_missing: true
+  - remove: 
+      field: json.user
+      ignore_missing: true
+  - append: 
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.rxbytes
+      target_field: destination.bytes
+      ignore_missing: true
+  - rename:
+      field: json.rxpackets
+      target_field: destination.packets
+      ignore_missing: true
+  - rename:
+      field: json.txbytes
+      target_field: source.bytes
+      ignore_missing: true
+  - rename:
+      field: json.txpackets
+      target_field: source.packets
+      ignore_missing: true
+  - rename:
+      field: json.Recordtype
+      target_field: zscaler_zia.tunnel.action.type
+      ignore_missing: true
+  - urldecode:
+      field: json.location
+      target_field: zscaler_zia.tunnel.location.name
+      ignore_missing: true
+  - remove: 
+      field: json.location
+      ignore_missing: true
+  - convert:
+      field: json.lifetime
+      target_field: zscaler_zia.tunnel.life.time
+      type: long
+      ignore_missing: true
+  - remove: 
+      field: json.lifetime
+      ignore_missing: true
+  - convert:
+      field: json.ikeversion
+      target_field: zscaler_zia.tunnel.ike.version
+      type: integer
+      ignore_missing: true
+  - remove: 
+      field: json.ikeversion
+      ignore_missing: true
+  - rename:
+      field: json.spi_in
+      target_field: zscaler_zia.tunnel.spi_in
+      ignore_missing: true
+  - rename:
+      field: json.spi_out
+      target_field: zscaler_zia.tunnel.spi_out
+      ignore_missing: true
+  - rename:
+      field: json.algo
+      target_field: zscaler_zia.tunnel.encryption.algorithm
+      ignore_missing: true
+  - rename:
+      field: json.authentication
+      target_field: zscaler_zia.tunnel.authentication.algorithm
+      ignore_missing: true
+  - rename:
+      field: json.authtype
+      target_field: zscaler_zia.tunnel.authentication.type
+      ignore_missing: true
+  - rename:
+      field: json.tunneltype
+      target_field: zscaler_zia.tunnel.type
+      ignore_missing: true
+  - rename:
+      field: json.vendorname
+      target_field: zscaler_zia.tunnel.vendor.name
+      ignore_missing: true
+  - convert:
+      field: json.sourceportstart
+      target_field: zscaler_zia.tunnel.source.start.port
+      type: long
+      ignore_missing: true
+  - remove: 
+      field: json.sourceportstart
+      ignore_missing: true
+  - convert:
+      field: json.destinationportstart
+      target_field: zscaler_zia.tunnel.destination.start.port
+      type: long
+      ignore_missing: true
+  - remove: 
+      field: json.destinationportstart
+      ignore_missing: true
+  - rename:
+      field: json.srcipstart
+      target_field: zscaler_zia.tunnel.source.start.ip
+      ignore_missing: true
+  - append: 
+      field: related.ip
+      value: "{{{zscaler_zia.tunnel.source.start.ip}}}"
+      if: ctx?.zscaler_zia?.tunnel?.source?.start?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.srcipend
+      target_field: zscaler_zia.tunnel.source.end.ip
+      ignore_missing: true
+  - append: 
+      field: related.ip
+      value: "{{{zscaler_zia.tunnel.source.end.ip}}}"
+      if: ctx?.zscaler_zia?.tunnel?.source?.end?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.destinationipstart
+      target_field: zscaler_zia.tunnel.destination.start.ip
+      ignore_missing: true
+  - append: 
+      field: related.ip
+      value: "{{{zscaler_zia.tunnel.destination.start.ip}}}"
+      if: ctx?.zscaler_zia?.tunnel?.destination?.start?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.destinationipend
+      target_field: zscaler_zia.tunnel.destination.end.ip
+      ignore_missing: true
+  - append: 
+      field: related.ip
+      value: "{{{zscaler_zia.tunnel.destination.end.ip}}}"
+      if: ctx?.zscaler_zia?.tunnel?.destination?.end?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.spi
+      target_field: zscaler_zia.tunnel.spi
+      ignore_missing: true
+  - rename:
+      field: json.protocol
+      target_field: zscaler_zia.tunnel.policy.protocol
+      ignore_missing: true
+  - rename:
+      field: json.tunnelprotocol
+      target_field: zscaler_zia.tunnel.protocol
+      ignore_missing: true
+  - rename:
+      field: json.policydirection
+      target_field: zscaler_zia.tunnel.policy.direction
+      ignore_missing: true
+  - convert:
+      field: json.lifebytes
+      target_field: zscaler_zia.tunnel.life.bytes
+      type: long
+      ignore_missing: true
+  - remove:
+      field: json.lifebytes
+      ignore_missing: true
+  - rename:
+      field: json.dpdrec
+      target_field: zscaler_zia.tunnel.dpd_packets
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zia.tunnel
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zia.tunnel[m.getKey()] = m.getValue();
+        }
+  - remove: 
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"
