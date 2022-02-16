@@ -119,6 +119,7 @@ An example event for `route53_public` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.edge_location | The edge location that served the request. Each edge location is identified by a three-letter code and an arbitrarily assigned number (for example, DFW3). The three-letter code typically corresponds with the International Air Transport Association (IATA) airport code for an airport near the edge location’s geographic location. | alias |
 | aws.route53.edge_location | The Route 53 edge location that responded to the query. Each edge location is identified by a three-letter code and an arbitrary number, for example, DFW3. The three-letter code typically corresponds with the International Air Transport Association airport code for an airport near the edge location. (These abbreviations might change in the future.) | keyword |
 | aws.route53.edns_client_subnet | A partial IP address for the client that the request originated from, if available from the DNS resolver. | keyword |
 | aws.route53.hosted_zone_id | The ID of the hosted zone that is associated with all the DNS queries in this log. | keyword |
