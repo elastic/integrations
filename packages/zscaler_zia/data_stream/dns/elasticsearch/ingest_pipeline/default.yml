@@ -1,0 +1,209 @@
+---
+description: Pipeline for Zscaler dns logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: resp
+  - rename:
+      field: resp.event
+      target_field: json
+  - remove: 
+      field: resp
+      ignore_missing: true
+  - date:
+      field: json.datetime
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+  - remove:
+      field: json.datetime
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: network
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - rename: 
+      field: json.clt_sip
+      target_field: client.ip
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}"
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename: 
+      field: json.dns_resp
+      target_field: dns.answers.name
+      ignore_missing: true
+  - rename: 
+      field: json.dns_req
+      target_field: dns.question.name
+      ignore_missing: true
+  - rename: 
+      field: json.dns_reqtype
+      target_field: dns.question.type
+      ignore_missing: true
+  - rename: 
+      field: json.srv_dip
+      target_field: server.ip
+      ignore_missing: true
+  - geoip:
+      field: server.ip
+      target_field: server.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      target_field: server.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{server.ip}}}"
+      if: ctx?.server?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert: 
+      field: json.srv_dport
+      target_field: server.port
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.srv_dport
+      ignore_missing: true
+  - urldecode: 
+      field: json.user
+      target_field: user.email
+      ignore_missing: true
+  - remove: 
+      field: json.user
+      ignore_missing: true
+  - rename: 
+      field: json.deviceowner
+      target_field: user.name
+      ignore_missing: true
+  - urldecode:
+      field: json.department
+      target_field: zscaler_zia.dns.department
+      ignore_missing: true
+  - remove: 
+      field: json.department
+      ignore_missing: true
+  - urldecode:
+      field: json.location
+      target_field: zscaler_zia.dns.location
+      ignore_missing: true
+  - remove: 
+      field: json.location
+      ignore_missing: true
+  - rename:
+      field: json.reqaction
+      target_field: zscaler_zia.dns.request.action
+      ignore_missing: true
+  - rename:
+      field: json.resaction
+      target_field: zscaler_zia.dns.response.action
+      ignore_missing: true
+  - urldecode:
+      field: json.reqrulelabel
+      target_field: zscaler_zia.dns.request.rule.label
+      ignore_missing: true
+  - remove: 
+      field: json.reqrulelabel
+      ignore_missing: true
+  - urldecode:
+      field: json.resrulelabel
+      target_field: zscaler_zia.dns.response.rule.label
+      ignore_missing: true
+  - remove: 
+      field: json.resrulelabel
+      ignore_missing: true
+  - convert:
+      field: json.durationms
+      target_field: zscaler_zia.dns.duration.milliseconds
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.durationms
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: zscaler_zia.dns.dom.category
+      ignore_missing: true
+  - rename:
+      field: json.devicehostname
+      target_field: zscaler_zia.dns.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{{zscaler_zia.dns.hostname}}}"
+      if: ctx?.zscaler_zia?.dns?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true 
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zia.dns
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zia.dns[m.getKey()] = m.getValue();
+        }
+  - remove: 
+      field: json
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"
