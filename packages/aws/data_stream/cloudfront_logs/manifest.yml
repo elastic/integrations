@@ -1,0 +1,70 @@
+title: AWS CloudFront logs
+type: logs
+streams:
+  - input: aws-s3
+    template_path: aws-s3.yml.hbs
+    title: AWS CloudFront logs
+    description: Collect AWS CloudFront logs using s3 input
+    vars:
+      - name: visibility_timeout
+        type: text
+        title: Visibility Timeout
+        multi: false
+        required: false
+        show_user: false
+        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.  The maximum is 12 hours.
+      - name: api_timeout
+        type: text
+        title: API Timeout
+        multi: false
+        required: false
+        show_user: false
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
+      - name: queue_url
+        type: text
+        title: Queue URL
+        multi: false
+        required: true
+        show_user: true
+        description: URL of the AWS SQS queue that messages will be received from.
+      - name: fips_enabled
+        type: bool
+        title: Enable S3 FIPS
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - aws-cloudfront
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: max_number_of_messages
+        type: integer
+        title: Maximum Concurrent SQS Messages
+        description: The maximum number of SQS messages that can be inflight at any time.
+        default: 5
+        required: false
+        show_user: false

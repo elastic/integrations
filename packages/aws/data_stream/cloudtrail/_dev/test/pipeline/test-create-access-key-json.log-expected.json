@@ -1,47 +1,10 @@
 {
     "expected": [
         {
-            "source": {
-                "address": "127.0.0.1",
-                "ip": "127.0.0.1"
-            },
-            "tags": [
-                "preserve_original_event"
-            ],
-            "cloud": {
-                "region": "us-east-1",
-                "account": {
-                    "id": "0123456789012"
-                }
-            },
             "@timestamp": "2020-01-08T20:43:06.000Z",
-            "ecs": {
-                "version": "8.0.0"
-            },
-            "related": {
-                "user": [
-                    "Alice",
-                    "Bob"
-                ]
-            },
-            "event": {
-                "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EXAMPLE_ID\",\"arn\":\"arn:aws:iam::0123456789012:user/Alice\",\"accountId\":\"0123456789012\",\"accessKeyId\":\"EXAMPLE_KEY\",\"userName\":\"Alice\",\"sessionContext\":{\"attributes\":{\"mfaAuthenticated\":\"true\",\"creationDate\":\"2020-01-08T15:12:16Z\"}},\"invokedBy\":\"signin.amazonaws.com\"},\"eventTime\":\"2020-01-08T20:43:06Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"CreateAccessKey\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"signin.amazonaws.com\",\"requestParameters\":{\"userName\":\"Bob\"},\"responseElements\":{\"accessKey\":{\"accessKeyId\":\"EXAMPLE_KEY_ID\",\"status\":\"Active\",\"userName\":\"Bob\",\"createDate\":\"Jan 8, 2020 8:43:06 PM\"}},\"requestID\":\"EXAMPLE-823a-48dc-8fa9-EXAMPLE\",\"eventID\":\"EXAMPLE-3cab-40f8-938b-EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"0123456789012\"}",
-                "provider": "iam.amazonaws.com",
-                "created": "2021-11-11T01:02:03.123456789Z",
-                "kind": "event",
-                "action": "CreateAccessKey",
-                "id": "EXAMPLE-3cab-40f8-938b-EXAMPLE",
-                "type": [
-                    "user",
-                    "change"
-                ],
-                "category": [
-                    "iam"
-                ],
-                "outcome": "success"
-            },
             "aws": {
                 "cloudtrail": {
+                    "event_type": "AwsApiCall",
                     "event_version": "1.05",
                     "flattened": {
                         "request_parameters": {
@@ -50,40 +13,77 @@
                         "response_elements": {
                             "accessKey": {
                                 "accessKeyId": "EXAMPLE_KEY_ID",
-                                "userName": "Bob",
+                                "createDate": "Jan 8, 2020 8:43:06 PM",
                                 "status": "Active",
-                                "createDate": "Jan 8, 2020 8:43:06 PM"
+                                "userName": "Bob"
                             }
                         }
                     },
-                    "event_type": "AwsApiCall",
-                    "user_identity": {
-                        "access_key_id": "EXAMPLE_KEY",
-                        "invoked_by": "signin.amazonaws.com",
-                        "session_context": {
-                            "mfa_authenticated": "true",
-                            "creation_date": "2020-01-08T15:12:16.000Z"
-                        },
-                        "type": "IAMUser",
-                        "arn": "arn:aws:iam::0123456789012:user/Alice"
-                    },
                     "recipient_account_id": "0123456789012",
                     "request_parameters": "{userName=Bob}",
-                    "response_elements": "{accessKey={accessKeyId=EXAMPLE_KEY_ID, userName=Bob, status=Active, createDate=Jan 8, 2020 8:43:06 PM}}"
+                    "response_elements": "{accessKey={accessKeyId=EXAMPLE_KEY_ID, userName=Bob, status=Active, createDate=Jan 8, 2020 8:43:06 PM}}",
+                    "user_identity": {
+                        "access_key_id": "EXAMPLE_KEY",
+                        "arn": "arn:aws:iam::0123456789012:user/Alice",
+                        "invoked_by": "signin.amazonaws.com",
+                        "session_context": {
+                            "creation_date": "2020-01-08T15:12:16.000Z",
+                            "mfa_authenticated": "true"
+                        },
+                        "type": "IAMUser"
+                    }
                 }
             },
+            "cloud": {
+                "account": {
+                    "id": "0123456789012"
+                },
+                "region": "us-east-1"
+            },
+            "ecs": {
+                "version": "8.0.0"
+            },
+            "event": {
+                "action": "CreateAccessKey",
+                "category": [
+                    "iam"
+                ],
+                "created": "2021-11-11T01:02:03.123456789Z",
+                "id": "EXAMPLE-3cab-40f8-938b-EXAMPLE",
+                "kind": "event",
+                "original": "{\"eventVersion\":\"1.05\",\"userIdentity\":{\"type\":\"IAMUser\",\"principalId\":\"EXAMPLE_ID\",\"arn\":\"arn:aws:iam::0123456789012:user/Alice\",\"accountId\":\"0123456789012\",\"accessKeyId\":\"EXAMPLE_KEY\",\"userName\":\"Alice\",\"sessionContext\":{\"attributes\":{\"mfaAuthenticated\":\"true\",\"creationDate\":\"2020-01-08T15:12:16Z\"}},\"invokedBy\":\"signin.amazonaws.com\"},\"eventTime\":\"2020-01-08T20:43:06Z\",\"eventSource\":\"iam.amazonaws.com\",\"eventName\":\"CreateAccessKey\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"127.0.0.1\",\"userAgent\":\"signin.amazonaws.com\",\"requestParameters\":{\"userName\":\"Bob\"},\"responseElements\":{\"accessKey\":{\"accessKeyId\":\"EXAMPLE_KEY_ID\",\"status\":\"Active\",\"userName\":\"Bob\",\"createDate\":\"Jan 8, 2020 8:43:06 PM\"}},\"requestID\":\"EXAMPLE-823a-48dc-8fa9-EXAMPLE\",\"eventID\":\"EXAMPLE-3cab-40f8-938b-EXAMPLE\",\"eventType\":\"AwsApiCall\",\"recipientAccountId\":\"0123456789012\"}",
+                "outcome": "success",
+                "provider": "iam.amazonaws.com",
+                "type": [
+                    "user",
+                    "change"
+                ]
+            },
+            "related": {
+                "user": [
+                    "Alice",
+                    "Bob"
+                ]
+            },
+            "source": {
+                "address": "127.0.0.1",
+                "ip": "127.0.0.1"
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
             "user": {
-                "name": "Alice",
                 "id": "EXAMPLE_ID",
+                "name": "Alice",
                 "target": {
                     "name": "Bob"
                 }
             },
             "user_agent": {
-                "name": "Other",
                 "device": {
                     "name": "Other"
                 },
+                "name": "Other",
                 "original": "signin.amazonaws.com"
             }
         }
