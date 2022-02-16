@@ -20,63 +20,65 @@ An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-15T15:33:50.768Z",
     "agent": {
-        "ephemeral_id": "46c22a6a-f8ff-4af7-81e9-7190c707dcc8",
         "hostname": "docker-fleet-agent",
-        "id": "338b8261-00cb-4693-91af-7f20b7c54df0",
         "name": "docker-fleet-agent",
+        "id": "fe616aca-63f2-4dfd-8a48-82c3f173c36f",
+        "ephemeral_id": "8a26946e-0961-4b81-b95a-42a562c407f8",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
-    "data_stream": {
-        "dataset": "hadoop.application_metrics",
-        "namespace": "ep",
-        "type": "logs"
+    "elastic_agent": {
+        "id": "fe616aca-63f2-4dfd-8a48-82c3f173c36f",
+        "version": "7.16.0",
+        "snapshot": false
     },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "hadoop-application_metrics"
+    ],
+    "input": {
+        "type": "httpjson"
+    },
+    "@timestamp": "2022-01-19T12:20:04.523Z",
     "ecs": {
         "version": "8.0.0"
     },
-    "elastic_agent": {
-        "id": "338b8261-00cb-4693-91af-7f20b7c54df0",
-        "snapshot": false,
-        "version": "7.17.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": "database",
-        "created": "2022-02-15T15:33:50.768Z",
-        "dataset": "hadoop.application_metrics",
-        "ingested": "2022-02-15T15:33:51Z",
-        "kind": "metric",
-        "type": "info"
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "hadoop.application_metrics"
     },
     "hadoop": {
         "metrics": {
             "application_metrics": {
-                "memory_seconds": 96558,
-                "progress": 100,
+                "running_containers": -1,
                 "resources_allocated": {
                     "mb": -1,
                     "vcores": -1
                 },
-                "running_containers": -1,
+                "memory_seconds": 118465,
+                "vcore_seconds": 82,
+                "progress": 100,
                 "time": {
-                    "elapsed": 32928,
-                    "finished": 1644939222829,
-                    "started": 1644939189901
-                },
-                "vcore_seconds": 54
+                    "elapsed": 22876,
+                    "started": 1642570914236,
+                    "finished": 1642570937112
+                }
             }
         }
     },
-    "input": {
-        "type": "httpjson"
-    },
-    "tags": [
-        "forwarded",
-        "hadoop-application_metrics"
-    ]
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2022-01-19T12:20:05Z",
+        "original": "{\"allocatedMB\":-1,\"allocatedVCores\":-1,\"amContainerLogs\":\"https://ip-10-0-13-217.demo.local:8090/node/containerlogs/container_1642069247440_0003_01_000001/root\",\"amHostHttpAddress\":\"ip-10-0-13-217.demo.local:8090\",\"amNodeLabelExpression\":\"\",\"amRPCAddress\":\"ip-10-0-13-217.demo.local:33369\",\"applicationTags\":\"\",\"applicationType\":\"MAPREDUCE\",\"clusterId\":1642123447440,\"clusterUsagePercentage\":0,\"diagnostics\":\"\",\"elapsedTime\":22876,\"finalStatus\":\"SUCCEEDED\",\"finishedTime\":1642570937112,\"id\":\"application_1642069247440_0003\",\"launchTime\":1642570914370,\"logAggregationStatus\":\"DISABLED\",\"masterNodeId\":\"ip-10-0-13-217.demo.local:37641\",\"memorySeconds\":118465,\"name\":\"QuasiMonteCarlo\",\"numAMContainerPreempted\":0,\"numNonAMContainerPreempted\":0,\"preemptedMemorySeconds\":0,\"preemptedResourceMB\":0,\"preemptedResourceSecondsMap\":{},\"preemptedResourceVCores\":0,\"preemptedVcoreSeconds\":0,\"priority\":0,\"progress\":100,\"queue\":\"default\",\"queueUsagePercentage\":0,\"reservedMB\":-1,\"reservedVCores\":-1,\"resourceSecondsMap\":{\"entry\":{\"key\":\"vcores\",\"value\":\"82\"}},\"runningContainers\":-1,\"startedTime\":1642570914236,\"state\":\"FINISHED\",\"timeouts\":{\"timeout\":[{\"expiryTime\":\"UNLIMITED\",\"remainingTimeInSeconds\":-1,\"type\":\"LIFETIME\"}]},\"trackingUI\":\"History\",\"trackingUrl\":\"https://10.0.13.216:9046/proxy/application_1642069247440_0003/\",\"unmanagedApplication\":false,\"user\":\"root\",\"vcoreSeconds\":82}",
+        "created": "2022-01-19T12:20:04.523Z",
+        "kind": "metric",
+        "type": "info",
+        "category": "database",
+        "dataset": "hadoop.application_metrics"
+    }
 }
 ```
 
@@ -115,85 +117,87 @@ An example event for `expanded_cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-15T15:36:22.922Z",
     "agent": {
-        "ephemeral_id": "55f07b0c-4801-47cf-8887-0c4ca78fe2f7",
         "hostname": "docker-fleet-agent",
-        "id": "338b8261-00cb-4693-91af-7f20b7c54df0",
         "name": "docker-fleet-agent",
+        "id": "fe616aca-63f2-4dfd-8a48-82c3f173c36f",
+        "ephemeral_id": "8a26946e-0961-4b81-b95a-42a562c407f8",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
-    "data_stream": {
-        "dataset": "hadoop.expanded_cluster_metrics",
-        "namespace": "ep",
-        "type": "logs"
+    "elastic_agent": {
+        "id": "fe616aca-63f2-4dfd-8a48-82c3f173c36f",
+        "version": "7.16.0",
+        "snapshot": false
     },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "hadoop-expanded_cluster_metrics"
+    ],
+    "input": {
+        "type": "httpjson"
+    },
+    "@timestamp": "2022-01-20T06:03:26.164Z",
     "ecs": {
         "version": "8.0.0"
     },
-    "elastic_agent": {
-        "id": "338b8261-00cb-4693-91af-7f20b7c54df0",
-        "snapshot": false,
-        "version": "7.17.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": "database",
-        "created": "2022-02-15T15:36:22.922Z",
-        "dataset": "hadoop.expanded_cluster_metrics",
-        "ingested": "2022-02-15T15:36:23Z",
-        "kind": "metric",
-        "type": "info"
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "hadoop.expanded_cluster_metrics"
     },
     "hadoop": {
         "metrics": {
             "expanded_cluster_metrics": {
-                "apps": {
-                    "completed": 0,
-                    "failed": 0,
-                    "killed": 0,
-                    "pending": 0,
-                    "running": 0,
-                    "submitted": 0
-                },
-                "containers": {
-                    "allocated": 0,
-                    "pending": 0,
-                    "reserved": 0
-                },
                 "memory": {
-                    "allocated": 0,
-                    "available": 0,
+                    "total": 6144,
                     "reserved": 0,
-                    "total": 0
+                    "available": 6144,
+                    "allocated": 0
                 },
                 "nodes": {
-                    "active": 0,
                     "decommissioned": 0,
-                    "decommissioning": 0,
-                    "lost": 0,
+                    "total": 2,
                     "rebooted": 0,
-                    "shutdown": 0,
-                    "total": 0,
-                    "unhealthy": 0
+                    "lost": 0,
+                    "unhealthy": 0,
+                    "active": 2,
+                    "decommissioning": 0,
+                    "shutdown": 0
+                },
+                "containers": {
+                    "reserved": 0,
+                    "pending": 0,
+                    "allocated": 0
                 },
                 "virtual_cores": {
-                    "allocated": 0,
-                    "available": 0,
+                    "total": 16,
                     "reserved": 0,
-                    "total": 0
+                    "available": 16,
+                    "allocated": 0
+                },
+                "apps": {
+                    "running": 0,
+                    "submitted": 0,
+                    "pending": 0,
+                    "completed": 0,
+                    "failed": 0,
+                    "killed": 0
                 }
             }
         }
     },
-    "input": {
-        "type": "httpjson"
-    },
-    "tags": [
-        "forwarded",
-        "hadoop-expanded_cluster_metrics"
-    ]
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2022-01-20T06:03:27Z",
+        "original": "{\"clusterMetrics\":{\"activeNodes\":2,\"allocatedMB\":0,\"allocatedVirtualCores\":0,\"appsCompleted\":0,\"appsFailed\":0,\"appsKilled\":0,\"appsPending\":0,\"appsRunning\":0,\"appsSubmitted\":0,\"availableMB\":6144,\"availableVirtualCores\":16,\"containersAllocated\":0,\"containersPending\":0,\"containersReserved\":0,\"crossPartitionMetricsAvailable\":true,\"decommissionedNodes\":0,\"decommissioningNodes\":0,\"lostNodes\":0,\"pendingMB\":0,\"pendingVirtualCores\":0,\"rebootedNodes\":0,\"reservedMB\":0,\"reservedVirtualCores\":0,\"rmSchedulerBusyPercent\":0,\"shutdownNodes\":0,\"totalAllocatedContainersAcrossPartition\":0,\"totalClusterResourcesAcrossPartition\":{\"memory\":6144,\"resourceInformations\":{\"resourceInformation\":[{\"attributes\":{},\"maximumAllocation\":9223372036854776000,\"minimumAllocation\":0,\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":6144},{\"attributes\":{},\"maximumAllocation\":9223372036854776000,\"minimumAllocation\":0,\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":16}]},\"vCores\":16},\"totalMB\":6144,\"totalNodes\":2,\"totalReservedResourcesAcrossPartition\":{\"memory\":0,\"resourceInformations\":{\"resourceInformation\":[{\"attributes\":{},\"maximumAllocation\":9223372036854776000,\"minimumAllocation\":0,\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":0},{\"attributes\":{},\"maximumAllocation\":9223372036854776000,\"minimumAllocation\":0,\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":0}]},\"vCores\":0},\"totalUsedResourcesAcrossPartition\":{\"memory\":0,\"resourceInformations\":{\"resourceInformation\":[{\"attributes\":{},\"maximumAllocation\":9223372036854776000,\"minimumAllocation\":0,\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":0},{\"attributes\":{},\"maximumAllocation\":9223372036854776000,\"minimumAllocation\":0,\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":0}]},\"vCores\":0},\"totalVirtualCores\":16,\"unhealthyNodes\":0,\"utilizedMBPercent\":61,\"utilizedVirtualCoresPercent\":0}}",
+        "created": "2022-01-20T06:03:26.164Z",
+        "kind": "metric",
+        "type": "info",
+        "category": "database",
+        "dataset": "hadoop.expanded_cluster_metrics"
+    }
 }
 ```
 
@@ -248,14 +252,14 @@ An example event for `jolokia` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-15T15:38:29.830Z",
+    "@timestamp": "2022-01-31T08:29:40.055Z",
     "agent": {
-        "ephemeral_id": "ab14fc01-1509-415a-bed4-88016465fef5",
+        "ephemeral_id": "d4bdb9d8-40bc-41af-acf6-c2e4a2b5fcf7",
         "hostname": "docker-fleet-agent",
-        "id": "338b8261-00cb-4693-91af-7f20b7c54df0",
+        "id": "608a37cd-3041-43ae-bbea-dae572a08af5",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "hadoop.jolokia_metrics",
@@ -266,53 +270,27 @@ An example event for `jolokia` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "338b8261-00cb-4693-91af-7f20b7c54df0",
+        "id": "608a37cd-3041-43ae-bbea-dae572a08af5",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "hadoop.jolokia_metrics",
-        "duration": 87828164,
-        "ingested": "2022-02-15T15:38:31Z",
+        "duration": 207052226,
+        "ingested": "2022-01-31T08:29:40Z",
         "kind": "metric",
         "module": "hadoop",
         "type": "info"
     },
     "hadoop": {
         "metrics": {
-            "namenode": {
-                "blocks": {
-                    "corrupt": 0,
-                    "total": 0
-                },
-                "capacity": {
-                    "remaining": 24162938880,
-                    "total": 59167412224,
-                    "used": 4096
-                },
-                "data_nodes": {
-                    "num_dead": 0,
-                    "num_decom_dead": 0,
-                    "num_decom_live": 0,
-                    "num_decommissioning": 0,
-                    "num_live": 1,
-                    "stale": 0
-                },
-                "estimated_capacity_lost_total": 0,
-                "files_total": 1,
-                "lock_queue_length": 0,
-                "missing_repl_one_blocks": 0,
-                "num_stale_storages": 0,
-                "pending_deletion_blocks": 0,
-                "replication_blocks": {
-                    "pending": 0,
-                    "scheduled": 0,
-                    "under": 0
-                },
-                "total_load": 0,
-                "volume_failures_total": 0
+            "datanode": {
+                "bytes": {
+                    "read": 0,
+                    "write": 0
+                }
             }
         }
     },
@@ -320,21 +298,22 @@ An example event for `jolokia` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "9972455ac4bc8598e38d5b9f9e68a73b",
         "ip": [
-            "172.26.0.6"
+            "192.168.160.4"
         ],
         "mac": [
-            "02:42:ac:1a:00:06"
+            "02:42:c0:a8:a0:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.53.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "3.10.0-1160.49.1.el7.x86_64",
+            "name": "CentOS Linux",
+            "platform": "centos",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "7 (Core)"
         }
     },
     "metricset": {
@@ -342,7 +321,7 @@ An example event for `jolokia` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://elastic-package-service_hadoop_1:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service_hadoop_1:7779/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "jolokia"
     }
 }
