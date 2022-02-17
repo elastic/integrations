@@ -1,0 +1,30 @@
+{
+    "description": "Defines findings transformation to view only the latest and greatest",
+    "dest": {
+        "index": ".suricate_findings"
+    },
+    "frequency": "5m",
+    "source": {
+        "index": "findings"
+    },
+    "latest": {
+        "sort": "@timestamp",
+        "unique_key": [
+            "resource.keyword",
+            "rule.keyword",
+            "agent.keyword"
+        ]
+    },
+    "retention_policy": {
+        "time": {
+            "field": "@timestamp",
+            "max_age": "1h"
+        }
+    },
+    "sync": {
+        "time": {
+            "field": "@timestamp",
+            "delay": "60s"
+        }
+    }
+}
