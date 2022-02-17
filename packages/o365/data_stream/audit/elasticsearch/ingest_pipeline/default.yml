@@ -3,9 +3,6 @@ description: Pipeline for Office 365 Audit logs
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set: 
       field: ecs.version
       value: '8.0.0'
   - set:
@@ -786,25 +783,29 @@ processors:
         }
   - gsub:
       field: client._temp
-      pattern: "::ffff:"
-      replacement: ""
+      pattern: '::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)'
+      replacement: '$1'
       ignore_missing: true
   - grok:
       field: client._temp
       patterns: 
         - '%{IPANDPORTBRACKETS}'
+        - '^%{IP:client.address}$'
+        - '^\[%{IP:client.address}\]$'
         - '%{IPANDPORT}'
-        - '%{IP:client._address}'
-        - '(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain})'
+        - '^%{NOTSPACE:client.domain}$'
         - '%{HOSTNAMEANDPORTBRACKETS}'
         - '%{HOSTNAMEANDPORT}'
-        - '%{HOSTNAMEANDIP}'
+        - '^\[%{HOSTNAMEANDIP}\]$'
+        - '^%{HOSTNAMEANDIP}$'
+        - '%{GREEDYDATA:client.address}'
       pattern_definitions:
-        IPANDPORTBRACKETS: "^\\[%{IP:client._address}\\]:%{POSINT:client._port}"
-        IPANDPORT: "^%{IP:client._address}:%{POSINT:client._port}"
-        HOSTNAMEANDPORTBRACKETS: "^\\[(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain})\\]:%{POSINT:client._port}"
-        HOSTNAMEANDPORT: "^(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain}):%{POSINT:client._port}"
-        HOSTNAMEANDIP: "^(%{NOTSPACE:client.domain}|%{HOSTNAME:client.domain}) \\(%{IP:client._address}\\)"
+        IPANDPORTBRACKETS: '^\[%{IP:client.address}\]:%{POSINT:client._port}'
+        IPANDPORT: '^%{IP:client.address}:%{POSINT:client._port}'
+        HOSTNAMEANDPORTBRACKETS: '^\[%{NOTSPACE:client.domain}\]:%{POSINT:client._port}'
+        HOSTNAMEANDPORT: '^%{NOTSPACE:client.domain}:%{POSINT:client._port}'
+        NOTCLOSINGPARENS: '[^)]*'
+        HOSTNAMEANDIP: '%{NOTSPACE:client.domain} \(%{NOTCLOSINGPARENS:client.address}\)'
       if: 'ctx.client?._temp != null && !ctx.client?._temp.isEmpty()'
   - gsub:
       field: server._temp
@@ -813,33 +814,29 @@ processors:
       ignore_missing: true
   - grok:
       field: server._temp
-      patterns: 
+      patterns:
+        - '^\[%{HOSTNAMEANDIP}\]$'
         - '%{HOSTNAMEANDIP}'
+        - '%{GREEDYDATA:server.address}'
       pattern_definitions:
-        HOSTNAMEANDIP: "^(%{NOTSPACE:server.domain}|%{HOSTNAME:server.domain}) \\(%{IP:server._address}\\)"
+        NOTCLOSINGPARENS: '[^)]*'
+        HOSTNAMEANDIP: '%{NOTSPACE:server.domain} \(%{NOTCLOSINGPARENS:server.address}\)'
       if: 'ctx.server?._temp != null && !ctx.server?._temp.isEmpty()'
+      ignore_failure: true
   - convert:
-      field: client._address
+      field: client.address
       target_field: client.ip
       type: ip
-      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: client._port
       target_field: client.port
       type: long
       ignore_missing: true
-  - rename:
-      field: client._address
-      target_field: client.address
-      ignore_failure: true
   - convert:
-      field: server._address
+      field: server.address
       target_field: server.ip
       type: ip
-      ignore_missing: true
-  - rename:
-      field: server._address
-      target_field: server.address
       ignore_failure: true
   - remove: 
       field:
