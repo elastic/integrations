@@ -67,7 +67,11 @@ processors:
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.filename}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "threat-intel-feed-download" || ctx?.event?.action == "existing-archive-task-changed" || ctx?.event?.action == "case-action" || ctx?.event?.action == "user-logged-on"  || ctx?.event?.action == "logon-requires-challenge"'
+      if: 'ctx?.event?.action == "threat-intel-feed-download" || ctx?.event?.action == "existing-archive-task-changed" || ctx?.event?.action == "case-action"'
+  - dissect:
+      field: mimecast.eventInfo
+      pattern: "%{mimecast.filename}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}, %{mimecast.method}"
+      if: 'ctx?.event?.action == "user-logged-on"  || ctx?.event?.action == "logon-requires-challenge"'  
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{event.type}, %{mimecast.search}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
@@ -129,7 +133,7 @@ processors:
       ignore_missing: true
   - rename:
       field: mimecast.event_info_parts.Method
-      target_field: mimecast.application_method
+      target_field: mimecast.method
       ignore_missing: true
   - rename:
       field: mimecast.event_info_parts.Reason
@@ -253,11 +257,9 @@ processors:
         - mimecast.provider
         - mimecast.filename
         - mimecast.criteria
-        - mimecast.aplication_method
         - mimecast.name.to
         - mimecast.name.from
         - mimecast.viewed
-        - mimecast.application_method
         - mimecast.timezone
         - mimecast.byuser
         - mimecast.export_type
