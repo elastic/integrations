@@ -96,6 +96,7 @@ For network load balancer, please follow [enable access log for network load bal
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.geo.city_name | City name. | keyword |
