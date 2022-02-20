@@ -3,7 +3,7 @@ interval: {{interval}}
 request.method: "GET"
 {{#if atlassian_cloud}}
 request.url: {{api_url}}/wiki/rest/api/audit
-{{#else}}
+{{else}}
 request.url: {{api_url}}/rest/auditing/1.0/events
 {{/if}}
 {{#if ssl}}
@@ -32,24 +32,32 @@ request.transforms:
   - set:
       target: url.params.startDate
       value: "[[.cursor.last_timestamp]]"
-      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).UnixMilli]]'
   - set:
       target: url.params.endDate
-      value: '[[now.Unix]]'
+      value: '[[now.UnixMilli]]'
   - set:
       target: url.params.start
       value: '0'
 response.split:
-  target: body.records
+  target: body.results
 response.pagination:
+  {{!-- - set:
+      target: url.params.endDate
+      value: "[[.last_response.url.params.endDate]]"
+      fail_on_template_error: true
+  - set:
+      target: url.params.startDate
+      value: "[[.last_response.url.params.startDate]]"
+      fail_on_template_error: true --}}
   - set:
       target: url.params.start
-      value: '[[ add .last_response.url.params.start url.params.limit ]]'
+      value: '[[ add (toInt .last_response.body.start) (toInt .last_response.body.limit) ]]'
       fail_on_template_error: true
 cursor:
   last_timestamp:
     value: "[[.first_event.creationDate]]"
-{{#else}}
+{{else}}
 {{#unless username}}
 {{#unless password}}
 {{#if token}}
