@@ -13,3 +13,5 @@ This integration has been tested against MySQL Enterprise 5.7.x and 8.0.x
 The `audit` dataset collects MySQL Enterprise Audit logs.
 
 {{fields "audit"}}
+
+{{event "audit"}}
