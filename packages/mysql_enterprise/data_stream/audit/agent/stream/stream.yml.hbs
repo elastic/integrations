@@ -1,0 +1,23 @@
+paths:
+{{#each paths}}
+- {{this}}
+{{/each}}
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+fields_under_root: true
+fields:
+  tz_offset: {{tz_offset}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+exclude_files: [".gz$"]
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
+- add_locale: ~
