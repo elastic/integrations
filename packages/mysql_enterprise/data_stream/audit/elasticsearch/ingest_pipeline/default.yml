@@ -4,8 +4,12 @@ processors:
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
-  - json:
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: mysqlenterprise.audit
   - remove:
       field: "@timestamp"
@@ -215,9 +219,10 @@ processors:
       formats:
         - yyyy-MM-dd HH:mm:ss
       if: ctx?.mysqlenterprise?.audit?.timestamp != null
-  - rename:
-      field: message
-      target_field: event.original
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
       ignore_missing: true
   - remove:
       field:
