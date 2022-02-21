@@ -10,6 +10,11 @@ request.proxy_url: {{proxy_url}}
 request.ssl: {{ssl}}
 {{/if}}
 request.transforms:
+  - delete:
+      target: header.User-Agent
+  - set:
+      target: header.User-Agent
+      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.sc; Build/1.1.0)"]]'
   - set: 
       target: body.query.tool
       value: 'sumip'
@@ -39,7 +44,7 @@ request.transforms:
       value: 0
   - set: 
       target: body.endOffset
-      value: 1000
+      value: {{batch_size}}
   - set: 
       target: body.type
       value: 'vuln'
@@ -55,7 +60,7 @@ response.pagination:
       fail_on_template_error: true
   - set: 
       target: body.endOffset
-      value: '[[add (toInt .last_response.body.response.endOffset) 1000]]'
+      value: '[[add (toInt .last_response.body.response.endOffset) {{batch_size}}]]'
       fail_on_template_error: true
 cursor:
   last_event_ts:
