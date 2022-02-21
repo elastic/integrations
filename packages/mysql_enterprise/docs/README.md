@@ -115,8 +115,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-10-19T19:21:33.000Z",
     "agent": {
-        "ephemeral_id": "02d2aaa8-fe53-4de9-a027-38596c8f412a",
-        "id": "211f04ce-d643-453a-b4cf-ce9e15ab260e",
+        "ephemeral_id": "c8e8843e-afaf-4325-ba23-c9a66f4cd342",
+        "id": "73759939-7e98-4a1c-b721-d98dae56f63a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -130,7 +130,7 @@ An example event for `audit` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "211f04ce-d643-453a-b4cf-ce9e15ab260e",
+        "id": "73759939-7e98-4a1c-b721-d98dae56f63a",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -141,9 +141,8 @@ An example event for `audit` looks as following:
             "database"
         ],
         "dataset": "mysql_enterprise.audit",
-        "ingested": "2022-02-21T11:53:56Z",
+        "ingested": "2022-02-21T19:13:24Z",
         "kind": "event",
-        "original": "{ \"timestamp\": \"2020-10-19 19:21:33\", \"id\": 0, \"class\": \"audit\", \"event\": \"startup\", \"connection_id\": 0, \"account\": { \"user\": \"skip-grants user\", \"host\": \"\" }, \"login\": { \"user\": \"\", \"os\": \"\", \"ip\": \"\", \"proxy\": \"\" }, \"startup_data\": { \"server_id\": 1, \"os_version\": \"x86_64-Linux\", \"mysql_version\": \"8.0.22-commercial\", \"args\": [\"/usr/local/mysql/bin/mysqld\", \"--loose-audit-log-format=JSON\", \"--log-error=log.err\", \"--pid-file=mysqld.pid\", \"--port=3306\" ] } },",
         "outcome": "unknown",
         "timezone": "+00:00"
     },
@@ -152,10 +151,10 @@ An example event for `audit` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.192.4"
+            "172.30.0.4"
         ],
         "mac": [
-            "02:42:c0:a8:c0:04"
+            "02:42:ac:1e:00:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
