@@ -34,6 +34,7 @@ processors:
       field: log.file.path
       patterns:
         - "%{BASE10NUM:process.pid}\\_%{BASE10NUM}\\.aud(\\.log)?$"
+      if: ctx.log?.file?.path != null
   # All field names are uppercase by default, converts them to lowercase
   - script:
       source: "ctx.oracle.database_audit = ctx.oracle.database_audit.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Map.Entry::getValue));"
