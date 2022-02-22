@@ -149,6 +149,7 @@ An example event for `audit_events` looks as following:
 | mimecast.email.address | Email address from event info. | keyword |
 | mimecast.email.metadata | The email meta data from audit info. | keyword |
 | mimecast.eventInfo | The detailed event information. | keyword |
+| mimecast.method | Method which triggers audit events. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
