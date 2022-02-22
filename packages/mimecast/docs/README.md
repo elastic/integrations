@@ -144,6 +144,7 @@ An example event for `audit_events` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| mimecast.2FA | Info about two-factor authentication. | keyword |
 | mimecast.application | The Mimecast unique id of the event. | keyword |
 | mimecast.category | The category of the event. | keyword |
 | mimecast.email.address | Email address from event info. | keyword |
@@ -428,7 +429,7 @@ An example event for `siem` looks as following:
 | mimecast.msgid | The internet message id of the email. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
@@ -577,7 +578,7 @@ An example event for `ttp_ip` looks as following:
 | mimecast.taggedMalicious | Whether the message was tagged as malicious. | boolean |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 
