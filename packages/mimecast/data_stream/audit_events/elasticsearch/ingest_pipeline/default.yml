@@ -66,14 +66,6 @@ processors:
   ### 
   - dissect:
       field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{event.type}, %{mimecast.search}, %{mimecast.rest_of_event_info}"
-      if: 'ctx?.event?.action == "remediation-incident-adjustment"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{mimecast.description}, %{mimecast.product}, %{mimecast.provider}, %{mimecast.rest_of_event_info}"
-      if: 'ctx?.event?.action == "connectors-management"'
-  - dissect:
-      field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
       if: 'ctx?.event?.action=="logon-authentication-failed"'
       ignore_missing: true
