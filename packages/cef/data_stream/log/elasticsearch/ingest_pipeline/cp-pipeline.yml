@@ -120,10 +120,10 @@ processors:
             to: vulnerability.id
 
           - name: Recipient
-            to: destination.user.email
+            to: email.to.address
 
           - name: Sender
-            to: source.user.email
+            to: email.from.address
 
           - name: deviceCustomFloatingPoint1
             labels:
@@ -284,6 +284,23 @@ processors:
 
   - remove:
       field: _tmp_copy
+
+  - set:
+      field: email.to.address
+      value: ["{{email.to.address}}"]
+      if: "ctx.email?.to?.address != null"
+  - set:
+      field: email.from.address
+      value: ["{{email.from.address}}"]
+      if: "ctx.email?.from?.address != null"
+  - set:
+      field: email.subject
+      copy_from: checkpoint.email_subject
+      if: "ctx.checkpoint?.email_subject != null"
+  - set:
+      field: email.message_id
+      copy_from: checkpoint.email_session_id
+      if: "ctx.checkpoint?.email_session_id != null"
 
   # event.duration is a string and contains seconds. Convert to long nanos.
   - script:

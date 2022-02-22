@@ -62,8 +62,8 @@ Check Point CEF extensions are mapped as follows:
 | requestCookies             | -                           | -                        | checkpoint.cookie              |
 | sourceNtDomain             | -                           | dns.question.name        | -                              |
 | Signature                  | -                           | vulnerability.id         | -                              |
-| Recipient                  | -                           | destination.user.email   | -                              |
-| Sender                     | -                           | source.user.email        | -                              |
+| Recipient                  | -                           | email.to.address         | -                              |
+| Sender                     | -                           | email.from.address       | -                              |
 | deviceCustomFloatingPoint1 | update version              | observer.version         | -                              |
 | deviceCustomIPv6Address2   | source ipv6 address         | source.ip                | -                              |
 | deviceCustomIPv6Address3   | destination ipv6 address    | destination.ip           | -                              |
@@ -80,7 +80,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceCustomString1        | dlp rule name               | rule.name                | -                              |
 | deviceCustomString1        | email id                    | -                        | checkpoint.email_id            |
 | deviceCustomString2        | category                    | -                        | checkpoint.category            |
-| deviceCustomString2        | email subject               | -                        | checkpoint.email_subject       |
+| deviceCustomString2        | email subject               | email.subject            | checkpoint.email_subject       |
 | deviceCustomString2        | sensor mode                 | -                        | checkpoint.sensor_mode         |
 | deviceCustomString2        | protection id               | -                        | checkpoint.protection_id       |
 | deviceCustomString2        | scan invoke type            | -                        | checkpoint.integrity_av_invoke_type |
@@ -108,7 +108,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceCustomString5        | matched category            | rule.category            | -                              |
 | deviceCustomString5        | vlan id                     | network.vlan.id          | -                              |
 | deviceCustomString5        | authentication method       | -                        | checkpoint.auth_method         |
-| deviceCustomString5        | email session id            | -                        | checkpoint.email_session_id    |
+| deviceCustomString5        | email session id            | email.message_id         | checkpoint.email_session_id    |
 | deviceCustomDate2          | subscription expiration     | -                        | checkpoint.subs_exp            |
 | deviceFlexNumber1          | confidence                  | -                        | checkpoint.confidence_level    |
 | deviceFlexNumber2          | performance impact          | -                        | checkpoint.performance_impact  |
@@ -160,7 +160,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "4ef3d20e-66f0-4723-b86d-512327135b90",
@@ -312,7 +312,6 @@ An example event for `log` looks as following:
 | checkpoint.email_recipients_num | Number of recipients. | long |
 | checkpoint.email_session_id | Internal email session ID. | keyword |
 | checkpoint.email_spool_id | Internal email spool ID. | keyword |
-| checkpoint.email_subject | Email subject. | keyword |
 | checkpoint.event_count | Number of events associated with the log. | long |
 | checkpoint.frequency | Scan frequency. | keyword |
 | checkpoint.icmp_code | ICMP code. | long |
@@ -376,6 +375,9 @@ An example event for `log` looks as following:
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.to.address | The email address of recipient | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
