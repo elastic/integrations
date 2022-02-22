@@ -84,7 +84,7 @@ An example event for `item_usages` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
@@ -222,7 +222,7 @@ An example event for `signin_attempts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
