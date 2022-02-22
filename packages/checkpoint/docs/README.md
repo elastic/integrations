@@ -36,7 +36,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
@@ -115,7 +115,6 @@ An example event for `firewall` looks as following:
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
 | checkpoint.authority_rdata | List of authoritative servers. | keyword |
 | checkpoint.authorization | Authorization HTTP header value. | keyword |
-| checkpoint.bcc | List of BCC addresses. | keyword |
 | checkpoint.blade_name | Blade name. | keyword |
 | checkpoint.broker_publisher | IP address of the broker publisher who shared the session information. | ip |
 | checkpoint.browse_time | Application session browse time. | keyword |
@@ -123,7 +122,6 @@ An example event for `firewall` looks as following:
 | checkpoint.calc_desc | Log description. | keyword |
 | checkpoint.capacity | Capacity of the ports. | integer |
 | checkpoint.capture_uuid | UUID generated for the capture. Used when enabling the capture when logging. | keyword |
-| checkpoint.cc | The Carbon Copy address of the email. | keyword |
 | checkpoint.certificate_resource | HTTPS resource Possible values: SNI or domain name (DN). | keyword |
 | checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
 | checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
@@ -153,7 +151,6 @@ An example event for `firewall` looks as following:
 | checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
 | checkpoint.db_ver | Database version | keyword |
 | checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
-| checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
 | checkpoint.destination_object | Matched object name on destination column. | keyword |
@@ -216,14 +213,11 @@ An example event for `firewall` looks as following:
 | checkpoint.email_control_analysis | Message classification, received from spam vendor engine. | keyword |
 | checkpoint.email_headers | String containing all the email headers. | keyword |
 | checkpoint.email_id | Email number in smtp connection. | keyword |
-| checkpoint.email_message_id | Email session id (uniqe ID of the mail). | keyword |
-| checkpoint.email_queue_id | Postfix email queue id. | keyword |
 | checkpoint.email_queue_name | Postfix email queue name. | keyword |
 | checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | integer |
 | checkpoint.email_session_id | Connection uuid. | keyword |
 | checkpoint.email_spam_category | Email categories. Possible values: spam/not spam/phishing. | keyword |
 | checkpoint.email_status | Describes the email's state. Possible options: delivered, deferred, skipped, bounced, hold, new, scan_started, scan_ended | keyword |
-| checkpoint.email_subject | Original email subject. | keyword |
 | checkpoint.emulated_on | Images the files were emulated on. | keyword |
 | checkpoint.encryption_failure | Message indicating why the encryption failed. | keyword |
 | checkpoint.end_time | TCP connection end time. | keyword |
@@ -318,8 +312,6 @@ An example event for `firewall` looks as following:
 | checkpoint.message_size | Mail/post size. | integer |
 | checkpoint.method | HTTP method. | keyword |
 | checkpoint.methods | IPSEc methods. | keyword |
-| checkpoint.mime_from | Sender's address. | keyword |
-| checkpoint.mime_to | List of receiver address. | keyword |
 | checkpoint.mirror_and_decrypt_type | Information about decrypt and forward. Possible values: Mirror only, Decrypt and mirror, Partial mirroring (HTTPS inspection Bypass). | keyword |
 | checkpoint.mitre_collection | The adversary is trying to collect data of interest to achieve his goal. | keyword |
 | checkpoint.mitre_command_and_control | The adversary is trying to communicate with compromised systems in order to control them. | keyword |
@@ -531,7 +523,6 @@ An example event for `firewall` looks as following:
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | destination.service.name | Name of the service data is collected from. | keyword |
-| destination.user.email | User email address. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
@@ -539,6 +530,14 @@ An example event for `firewall` looks as following:
 | dns.question.type | The type of record being queried. | keyword |
 | dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.bcc.address | The email address of BCC recipient | keyword |
+| email.cc.address | The email address of CC recipient | keyword |
+| email.delivery_timestamp | The date and time when the email message was received by the service or client. | date |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.local_id | Unique identifier given to the email by the source that created the event. Identifier is not persistent across hops. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.to.address | The email address of recipient | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -637,7 +636,6 @@ An example event for `firewall` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
-| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
