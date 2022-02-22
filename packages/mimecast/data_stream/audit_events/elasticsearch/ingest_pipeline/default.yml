@@ -70,10 +70,6 @@ processors:
       if: 'ctx?.event?.action == "remediation-incident-adjustment"'
   - dissect:
       field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{mimecast.type}, %{mimecast.rest_of_event_info}"
-      if: 'ctx?.event?.action == "review-set-action"'
-  - dissect:
-      field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{mimecast.description}, %{mimecast.product}, %{mimecast.provider}, %{mimecast.rest_of_event_info}"
       if: 'ctx?.event?.action == "connectors-management"'
   - dissect:
@@ -100,7 +96,6 @@ processors:
       value_split: ": "
       target_field: mimecast.event_info_parts
       ignore_failure: true
-#      if: 'ctx?.event?.action == "threat-intel-feed-download" || ctx?.event?.action == "existing-archive-task-changed" || ctx?.event?.action == "case-action" || ctx?.event?.action == "user-logged-on" || ctx?.event?.action == "logon-authentication-failed" || ctx?.event?.action == "archive-mailbox-restore" || ctx?.event?.action == "archive-mailbox-export-download" || ctx?.event?.action == "logon-requires-challenge" || ctx?.event?.action=="message-action" || ctx?.event?.action=="search-action" || ctx?.event?.action=="remediation-incident-adjustment" || ctx?.event?.action=="connectors-management" || ctx?.event?.action=="review-set-action"'
       ignore_missing: true
   - rename:
       field: mimecast.event_info_parts.Date
@@ -132,10 +127,6 @@ processors:
       ignore_missing: true
       if: 'ctx?.event?.action == "threat-intel-feed-download"'
   - rename: 
-      field: mimecast.event_info_parts.From
-      target_field: mimecast.from
-      ignore_missing: true
-  - rename: 
       field: mimecast.event_info_parts.Processed
       target_field: email.origination_timestamp
       ignore_missing: true
@@ -147,18 +138,14 @@ processors:
       field: mimecast.event_info_parts.2FA
       target_field: mimecast.2FA
       ignore_missing: true
-  - rename: 
-      field: mimecast.event_info_parts.To
-      target_field: mimecast.to
-      ignore_missing: true
   - dissect:
-       field: mimecast.from
+       field:  mimecast.event_info_parts.From
        pattern: "<%{mimecast.name.from}> %{email.from.address}"
        if: 'ctx?.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true
   - dissect:
-       field: mimecast.to
+       field: mimecast.event_info_parts.To
        pattern: "<%{mimecast.name.to}> %{email.to.address}"
        if: 'ctx?.event?.action=="message-action"'
        ignore_missing: true
