@@ -132,13 +132,13 @@ processors:
       ignore_missing: true
   - dissect:
        field:  mimecast.event_info_parts.From
-       pattern: "<%{mimecast.name.from}> %{email.from.address}"
+       pattern: "<%{?drop}> %{email.from.address}"
        if: 'ctx?.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true
   - dissect:
        field: mimecast.event_info_parts.To
-       pattern: "<%{mimecast.name.to}> %{email.to.address}"
+       pattern: "<%{?drop}> %{email.to.address}"
        if: 'ctx?.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true     
@@ -252,8 +252,6 @@ processors:
         - mimecast.provider
         - mimecast.filename
         - mimecast.criteria
-        - mimecast.name.to
-        - mimecast.name.from
         - mimecast.viewed
         - mimecast.timezone
         - mimecast.byuser
