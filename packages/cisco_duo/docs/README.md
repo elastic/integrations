@@ -54,7 +54,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
@@ -211,7 +211,7 @@ An example event for `auth` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
@@ -440,7 +440,7 @@ An example event for `offline_enrollment` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
@@ -551,7 +551,7 @@ An example event for `summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
@@ -656,7 +656,7 @@ An example event for `telephony` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
