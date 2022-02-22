@@ -3,17 +3,349 @@ description: Pipeline for Sonicwall-FW
 
 processors:
   # ECS event.ingested
+  - trim:
+      field: message
+  - set:
+      field: event.original
+      value: '{{message}}'
+  - set:
+      field: event.dataset
+      value: "Sonicwall-FW"
+  - set:
+      field: source.ip
+      value: "0.0.0.0"
+  - set:
+      field: event.module
+      value: "sonicwall"
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
       value: '8.0.0'
-  # User agent
-  - user_agent:
-      field: user_agent.original
+  - grok:
+      description: "Pull header information"
+      field: message
+      patterns:
+        - "%{IP:event.provider:ip}%{SPACE}id=%{NOTSPACE:observer.hostname} sn=%{DATA:observer.serial_number} time=.%{SONICWALL_TIME:_tmp.timestamp}. (?:fw=%{IP:observer.egress.ip})?(?: pri=%{NUMBER:event.severity:long})? %{GREEDYDATA:message}"
+        - "%{IP:event.provider:ip}%{SPACE}id=%{NOTSPACE:observer.hostname} sn=%{DATA:observer.serial_number} time=\\\"%{SONICWALL_TIME:_tmp.timestamp}\\\" (?:fw=%{IP:observer.egress.ip})?(?: pri=%{NUMBER:event.severity:long})? %{GREEDYDATA:message}"
       ignore_missing: true
-  # IP Geolocation Lookup
+      ignore_failure: false
+      pattern_definitions:
+        "SONICWALL_TIME" : "%{SONICWALL_TIME_WITH_TIMEZONE}?%{SONICWALL_TIME_NO_TIMEZONE}?"
+        "SONICWALL_TIME_WITH_TIMEZONE" : "%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME} UTC"
+        "SONICWALL_TIME_NO_TIMEZONE": "%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME}"
+      on_failure:
+        [
+          {
+            "append":
+              {
+                "field": "error.message",
+                "value": "{{ _ingest.on_failure_message }} grok failure on header",
+              },
+          },
+        ]
+  - date:
+      field: _tmp.timestamp
+      formats:
+        - "yyyy-MM-dd HH:mm:ss zzz"
+        - "yyyy-MM-dd HH:mm:ss"
+  - grok:
+      field: message
+      patterns:
+        - ' msg=\"%{DATA:_tmp.message.0}\"%{DATA} msg=\"%{DATA:_tmp.message.1}\"'
+        - ' msg=\"%{DATA:_tmp.message.0}\"'
+      
+  - set:
+      if: "ctx._tmp?.message?.0 == null"
+      field: _tmp.no_msg
+      value: true
+  - gsub:
+      field: message
+      pattern: "\\"
+      replacement: ""
+  - gsub:
+      field: message
+      pattern: "[ ][ ]"
+      replacement: " "
+  - grok:
+      field: message
+      patterns:
+        - "c=%{NUMBER:sonicwall.event.category_legacy:long}"
+      ignore_failure: true
+   - grok:
+      field: message
+      patterns:
+        - " gcat=%{NUMBER:sonicwall.event.group_category:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " m=%{NUMBER:sonicwall.event.message_id:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " srcMac=%{MAC:source.mac}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " src=%{IP:source.ip:ip}:(?:%{NUMBER:source.port:long})?:(?:X%{NUMBER:observer.ingress.interface_id:long})?"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " srcZone=%{NOTSPACE:source.zone}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " natSrc=%{IP:source.nat.ip}(?::%{NUMBER:source.nat.port:long})?"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " dst=%{IPV4:destination.ip:ip}:(?:%{NUMBER:destination.port:long})?:(?:X%{NUMBER:observer.egress.interface_id:long})?"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " dstZone=%{NOTSPACE:destination.zone}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " natDst=%{IP:destination.nat.ip}(?::%{NUMBER:destination.nat.port:long})?"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " usr=\"%{DATA:user.name}\""
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " proto=%{WORD:network.transport}(?:/%{WORD:network.protocol})?"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " type=%{NUMBER:sonicwall.event.icmp_type:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " icmpCode=%{NONNEGINT:sonicwall.event.icmp_code:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " sent=%{NUMBER:source.bytes:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " op=%{INT:sonicwall.http_op_code:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " rcvd=%{NUMBER:destination.bytes:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " spkt=%{NUMBER:destination.packets:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " rpkt=%{NUMBER:source.packets:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " cdur=%{NUMBER:event.duration:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " app=%{NONNEGINT:sonicwall.event.appplication_id_number:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " af_polid=%{SONICWALL_AF_POLID:sonicwall.application.filter_id}"
+      pattern_definitions:
+        - SONICWALL_AF_POLID: "%{NONNEGINT}, %{NONNEGINT}|%{NONNEGINT}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " appName='%{DATA:sonicwall.event.app_name}'"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " sid=%{NUMBER:sonicwall.event.sid_number:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - ' ipscat=(?:")?%{SONICWALL_IPSCAT:ips.category}(?:")?'
+      pattern_definitions:
+        - SONICWALL_IPSCAT: "N/A|%{DATA}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " op=%{NONNEGINT:sonicwall.event.request_method:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " ipspri=%{NUMBER:ips.severity:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - ' appcat="%{DATA:sonicwall.event.appcat}'
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " appid=%{NUMBER:sonicwall.event.app_id:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " catid=%{NUMBER:sonicwall.event.cat_id:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " n=%{NUMBER:event.sequence:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " dstname=%{URIHOST:sonicwall.destination_name}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " arg=%{NOTSPACE:sonicwall.event.arg}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " code=%{NUMBER:sonicwall.event.code:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - ' Category=\"%{DATA:sonicwall.event.category}\"'
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - ' note=\"%{DATA:sonicwall.event.note}\"'
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - ' fw_action=\"%{WORD:sonicwall.event.firewall_action}\"'
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - " dpi=%{NONNEGINT:sonicwall.event.dpi:long}"
+      ignore_failure: true
+  - grok:
+      field: message
+      patterns:
+        - ' rule=\"%{DATA:sonicwall.event.rule}\"'
+      ignore_failure: true
+  - set:
+      if: "ctx._tmp?.message?.0 != null"
+      field: message
+      value: "{{_tmp.message.1}}"
+  - set:
+      if: "ctx.sonicwall?.destination_name != null"
+      field: url.domain
+      value: "{{sonicwall.destination_name}}"
+  - set:
+      field: _source.ingest_time
+      value: "{{_ingest_timestamp}}
+  - script:
+      lang: painless
+      source: "if(ctx.containsKey('ingest_time') && ctx.containsKey('@timestamp')) { ctx['lag_in_seconds'] = ChronoUnit.MILLIS.between(ZonedDateTime.parse(ctx['@timestamp']), ZonedDateTime.parse(ctx['ingest_time']))/1000; } "
+  - script:
+      if: "ctx.event?.duration != null"
+      source: "ctx.event.duration = (ctx.event.duration*100000)"
+  - set:
+      if: "ctx.sonicwall?.event?.request_method != null"
+      field: "http.request.method"
+      value: ""
+  - script:
+      if: "ctx.sonicwall?.event?.request_method != null"
+      source: "if (ctx.sonicwall.event.request_method == 0){ctx.http.request.method = 'no operation'} else if (ctx.sonicwall.event.request_method == 1){ctx.http.request.method = 'GET'} else if (ctx.sonicwall.event.request_method == 2){ctx.http.request.method = 'POST'} else if (ctx.sonicwall.event.request_method == 3){ctx.http.request.method = 'HEAD'}"
+  - lowercase:
+      if: "crx.source?.mac != null"
+      field: source.mac
+  - set:
+      if: "ctx._tmp?.dhcp?.source?.hostname != null"
+      field: source.hostname
+      value: "{{_tmp.dhcp.source.hostname}}"
+  - set:
+      if: "ctx._tmp?.dhcp?.source?.domain != null"
+      field: source.domain
+      value: "{{_tmp.dhcp.source.domain}}"
+  - set:
+      if: "ctx._tmp?.dhcp?.event?.vendorclass_ascii != null"
+      field: source.vendorclass_ascii
+      value: "{{_tmp.dhcp.event.vendorclass_ascii}}"
+  - set:
+      if: "ctx.message.contains('Connection')"
+      field: event.type
+      value: "event"
+  - set:
+      if: "ctx.message == 'Connection Opened'"
+      field: event.action
+      value: "Connection Opened"
+  - set:
+      if: "ctx.message == 'Connection Closed'"
+      field: event.action
+      value: "Conenction Closed"
+  - set:
+      if: "ctx.message == 'Connection Opened' && ctx.destination?.as?.organization_name != null"
+      field: message
+      value: "{{message}} to {{destination.as.organization_name}}"
+  - set:
+      if: "ctx.message == 'Connection Closed' && ctx.destination?.as?.organization_name != null"
+      field: message
+      value: "{{message}} from {{destination.as.organization_name}}"
+  - set:
+      if: "ctx._tmp.no_msg == true"
+      field: message
+      value: "{{source.hostname}}-{{source.ip}} >> {{network.transport}}/{{network.protocol}} >> {{sonicwall.destination_name}}-{{destination.ip}}"
+  - set:
+      field: event.risk_score
+      value: "{{event.severity}}"
+  - convert:
+      if: "ctx.event?.risk_score != null"
+      field: event.risk_score
+      type: long
+  - set:
+      field: observer.ip
+      value: "{{event.provider}}"
+  - script:
+      if: "ctx.source?.bytes != null || ctx.destination?.bytes != null"
+      source: "if (ctx.source.bytes != null && ctx.destination.bytes != null){ctx.network.bytes = ctx.source.bytes+ctx.destination.bytes} else if (ctx.source.bytes != null && ctx.destination.bytes == null){ctx.network.bytes = ctx.source.bytes} else if (ctx.source.bytes == null && ctx.destination.bytes != null){ctx.network.bytes = ctx.destination.bytes}"
+  - script:
+      if: "ctx.source?.packets != null || ctx.destination?.packets != null"
+      source: "if (ctx.source.packets != null && ctx.destination.packets != null){ctx.network.packets = ctx.source.packets+ctx.destination.packets} else if (ctx.source.packets != null && ctx.destination.packets == null){ctx.network.packets = ctx.source.packets} else if (ctx.source.packets == null && ctx.destination.packets != null){ctx.network.packets = ctx.destination.packets}"
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -22,9 +354,9 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-
   # IP Autonomous System (AS) Lookup
   - geoip:
+      if: "ctx.source.ip != '0.0.0.0'"
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -33,6 +365,7 @@ processors:
           - organization_name
       ignore_missing: true
   - geoip:
+      if: "ctx.destination.ip != null"
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -56,16 +389,16 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  - remove:
+      if: "ctx.source.ip == '0.0.0.0'"
+      field: source.ip
+  - remove:
+      field: _tmp
   - append:
       field: related.hosts
       value: '{{host.name}}'
       allow_duplicates: false
       if: ctx.host?.name != null && ctx.host?.name != ''
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - append:
       field: error.message
