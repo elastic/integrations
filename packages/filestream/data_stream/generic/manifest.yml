@@ -1,0 +1,157 @@
+title: Custom Filestream Logs
+type: logs
+streams:
+  - input: http_endpoint
+    description: Collect JSON data from listening HTTP port with Elastic Agent.
+    title: Custom HTTP Endpoint Logs
+    template_path: http.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/*.log
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: http_endpoint.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: parsers
+        type: yaml
+        title: Parsers
+        description: |
+          This option expects a list of parsers that the log line has to go through. For more information see [Parsers](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#_parsers)
+        required: false
+        show_user: true
+        multi: false
+        default: |
+          #- ndjson:
+          #    keys_under_root: true
+          #    message_key: msg
+          #- multiline:
+          #    type: counter
+          #    lines_count: 3
+      - name: recursive_glob
+        type: bool
+        title: Recursive Glob
+        description: |
+          Enable expanding ** into recursive glob patterns. With this feature enabled, the rightmost ** in each path is expanded into a fixed number of glob patterns. For example: /foo/** expands to /foo, /foo/*, /foo/*/*, and so on. If enabled it expands a single ** into a 8-level deep * pattern.
+          This feature is enabled by default. Set prospector.scanner.recursive_glob to false to disable it.
+        required: false
+        show_user: false
+      - name: exclude_files
+        type: text
+        title: Exclude Files
+        description: |
+          A list of regular expressions to match the files that you want Elastic Agent to ignore. By default no files are excluded.
+        required: false
+        show_user: false
+        multi: true
+        default:
+          - '\.gz$'
+      - name: include_files
+        type: text
+        title: Include Files
+        description: |
+          A list of regular expressions to match the files that you want Elastic Agent to include. If a list of regexes is provided, only the files that are allowed by the patterns are harvested.
+        required: false
+        show_user: false
+        multi: true
+      - name: symlinks
+        type: bool
+        title: Enable symlinks
+        description: |
+          The symlinks option allows Elastic Agent to harvest symlinks in addition to regular files. When harvesting symlinks, Filebeat opens and reads the original file even though it reports the path of the symlink.
+          Because this option may lead to data loss, it is disabled by default.
+        required: false
+        show_user: false
+      - name: resend_on_touch
+        type: bool
+        title: Resend on touch
+        description: |
+          If this option is enabled a file is resent if its size has not changed but its modification time has changed to a later time than before. It is disabled by default to avoid accidentally resending files.
+        required: false
+        show_user: false
+      - name: check_interval
+        type: text
+        title: Check Interval
+        description: |
+          How often Elastic Agent checks for new files in the paths that are specified for harvesting. For example Specify 1s to scan the directory as frequently as possible without causing Filebeat to scan too frequently. We do not recommend to set this value <1s.
+        required: false
+        show_user: false
+      - name: ignore_older
+        type: text
+        title: Ignore Older
+        description: |
+          If this option is enabled, Elastic Agent ignores any files that were modified before the specified timespan. You can use time strings like 2h (2 hours) and 5m (5 minutes). The default is 0, which disables the setting.
+          You must set ignore_older to be greater than close.on_state_change.inactive.
+          For more information, please see the [Documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-ignore-older)
+        required: false
+        show_user: false
+      - name: ignore_inactive
+        type: text
+        title: Ignore Inactive
+        description: |
+          If this option is enabled, Elastic Agent ignores every file that has not been updated since the selected time. Possible options are since_first_start and since_last_start.
+        required: false
+        show_user: false
+      - name: close_on_state_changed_inactive
+        type: bool
+        title: Close on State Changed Inactive
+        description: |
+          When this option is enabled, Elastic Agent closes the file handle if a file has not been harvested for the specified duration. The counter for the defined period starts when the last log line was read by the harvester. It is not based on the modification time of the file. If the closed file changes again, a new harvester is started and the latest changes will be picked up after Check Interval has elapsed.
+        required: false
+        show_user: false
+      - name: close_on_state_changed_renamed
+        type: bool
+        title: Close on State Changed Renamed
+        description: |
+          Only use this option if you understand that data loss is a potential side effect.
+          When this option is enabled, Elastic Agent closes the file handler when a file is renamed. This happens, for example, when rotating files. By default, the harvester stays open and keeps reading the file because the file handler does not depend on the file name.
+        required: false
+        show_user: false
+      - name: close_on_state_changed_removed
+        type: bool
+        title: Close on State Changed Removed
+        description: |
+          When this option is enabled, Elastic Agent closes the harvester when a file is removed. Normally a file should only be removed after it’s inactive for the duration specified by close.on_state_change.inactive.
+        required: false
+        show_user: false
+      - name: close_reader_eof
+        type: bool
+        title: Close Reader EOF
+        description: |
+          Only use this option if you understand that data loss is a potential side effect.
+          When this option is enabled, Elastic Agent closes a file as soon as the end of a file is reached. This is useful when your files are only written once and not updated from time to time. For example, this happens when you are writing every single log event to a new file. This option is disabled by default.
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        default:
+          - forwarded
+        multi: true
+        show_user: true
