@@ -333,7 +333,7 @@ An example event for `siem` looks as following:
         "RcptActType": "Jnl",
         "RcptHdrType": "Unknown",
         "acc": "ABC123",
-        "log_type": ""
+        "log_type": "jrnl"
     },
     "tags": [
         "preserve_original_event",
