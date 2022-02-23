@@ -341,21 +341,18 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | docker.diskio.read.rate | Number of current reads per second | long |  | gauge |
 | docker.diskio.read.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.read.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
-| docker.diskio.reads | Number of current reads per second | scaled_float |  | gauge |
 | docker.diskio.summary.bytes | Bytes read and written during the life of the container | long | byte | counter |
 | docker.diskio.summary.ops | Number of I/O operations during the life of the container | long |  | counter |
 | docker.diskio.summary.queued | Total number of queued requests | long |  | counter |
 | docker.diskio.summary.rate | Number of current operations per second | long |  | gauge |
 | docker.diskio.summary.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.summary.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
-| docker.diskio.total | Number of reads and writes per second | scaled_float |  | gauge |
 | docker.diskio.write.bytes | Bytes written during the life of the container | long | byte | counter |
 | docker.diskio.write.ops | Number of writes during the life of the container | long |  | counter |
 | docker.diskio.write.queued | Total number of queued requests | long |  | counter |
 | docker.diskio.write.rate | Number of current writes per second | long |  | gauge |
 | docker.diskio.write.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
-| docker.diskio.writes | Number of current writes per second | scaled_float |  | gauge |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
@@ -398,7 +395,6 @@ An example event for `diskio` looks as following:
                 "service_time": 0,
                 "wait_time": 0
             },
-            "reads": 0,
             "summary": {
                 "bytes": 42414080,
                 "ops": 1824,
@@ -407,7 +403,6 @@ An example event for `diskio` looks as following:
                 "service_time": 0,
                 "wait_time": 0
             },
-            "total": 0,
             "write": {
                 "bytes": 4096,
                 "ops": 1,
@@ -415,8 +410,7 @@ An example event for `diskio` looks as following:
                 "rate": 0,
                 "service_time": 0,
                 "wait_time": 0
-            },
-            "writes": 0
+            }
         }
     },
     "event": {
@@ -930,19 +924,11 @@ The Docker `network` data stream collects network metrics.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | docker.container.labels.\* | Container labels | object |  |
-| docker.network.in.bytes | Total number of incoming bytes. | long | counter |
-| docker.network.in.dropped | Total number of dropped incoming packets. | scaled_float | counter |
-| docker.network.in.errors | Total errors on incoming packets. | long | counter |
-| docker.network.in.packets | Total number of incoming packets. | long | counter |
 | docker.network.inbound.bytes | Total number of incoming bytes. | long | counter |
 | docker.network.inbound.dropped | Total number of dropped incoming packets. | long | counter |
 | docker.network.inbound.errors | Total errors on incoming packets. | long | counter |
 | docker.network.inbound.packets | Total number of incoming packets. | long | counter |
 | docker.network.interface | Network interface name. | keyword |  |
-| docker.network.out.bytes | Total number of outgoing bytes. | long | counter |
-| docker.network.out.dropped | Total number of dropped outgoing packets. | scaled_float | counter |
-| docker.network.out.errors | Total errors on outgoing packets. | long | counter |
-| docker.network.out.packets | Total number of outgoing packets. | long | counter |
 | docker.network.outbound.bytes | Total number of outgoing bytes. | long | counter |
 | docker.network.outbound.dropped | Total number of dropped outgoing packets. | long | counter |
 | docker.network.outbound.errors | Total errors on outgoing packets. | long | counter |
@@ -1005,12 +991,6 @@ An example event for `network` looks as following:
             }
         },
         "network": {
-            "in": {
-                "bytes": 0,
-                "dropped": 0,
-                "errors": 0,
-                "packets": 0
-            },
             "inbound": {
                 "bytes": 23047,
                 "dropped": 0,
@@ -1018,12 +998,6 @@ An example event for `network` looks as following:
                 "packets": 241
             },
             "interface": "eth0",
-            "out": {
-                "bytes": 0,
-                "dropped": 0,
-                "errors": 0,
-                "packets": 0
-            },
             "outbound": {
                 "bytes": 0,
                 "dropped": 0,
