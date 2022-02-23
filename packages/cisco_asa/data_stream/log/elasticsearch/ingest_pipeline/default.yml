@@ -1,9 +1,6 @@
 ---
 description: "Pipeline for Cisco ASA logs"
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - rename:
       field: message
       target_field: event.original
@@ -323,6 +320,17 @@ processors:
       field: "message"
       description: "113019"
       pattern: "Group = %{source.user.group.name}, Username = %{source.user.name}, IP = %{destination.address}, Session disconnected. Session Type: %{_temp_.cisco.session_type}, Duration: %{_temp_.duration_hms}, Bytes xmt: %{source.bytes}, Bytes rcv: %{destination.bytes}, Reason: %{event.reason}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113040'"
+      field: "message"
+      description: "113040"
+      pattern: "Terminating the VPN connection attempt from %{source.user.group.name}. Reason: This connection is group locked to %{}."
+  - grok:
+      if: '["113029","113030","113031","113032","113033","113034","113035","113036","113038","113039"].contains(ctx._temp_.cisco.message_id)'
+      field: "message"
+      description: "113029, 113030, 113031, 113032, 113033, 113034, 113035, 113036, 113038, 113039"
+      patterns:
+      - "Group %{NOTSPACE:source.user.group.name} User %{USER:source.user.name} IP %{IP:source.address}"
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -758,6 +766,18 @@ processors:
       if: '["713905", "713904", "713906", "713902", "713901", "710005"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
       value: "failure"
+  - set:
+      if: '["113039"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.action"
+      value: "client-vpn-connected"
+  - set:
+      if: '["113029","113030","113031","113032","113033","113034","113035","113036","113037","113038"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.action"
+      value: "client-vpn-error"
+  - set:
+      if: '["113040"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.action"
+      value: "client-vpn-disconnected"
   - set:
       if: '["750002", "750003"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
@@ -1821,6 +1841,29 @@ processors:
             - info
             - creation
             - user
+        client-vpn-connected:
+          kind: event
+          category:
+            - network
+            - session
+          type:
+            - connection
+            - start
+        client-vpn-error:
+          kind: event
+          category:
+            - network
+          type:
+            - connection
+            - error
+            - denied
+        client-vpn-disconnected:
+          kind: event
+          category:
+            - network
+          type:
+            - connection
+            - end
       source: >-
         if (ctx?.event?.action == null || !params.containsKey(ctx.event.action)) {
           return;
