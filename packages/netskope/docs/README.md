@@ -9,7 +9,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Setup steps
 
-1. Enable the integration with the TCP input in Kibana.
+1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [_Log Shipper_](https://docs.netskope.com/en/log-shipper.html).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
 4. Configure input connectors:  
@@ -40,7 +40,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Compatibility
 
-This package has been tested against `Netskope version 91.1.0.605` and `Netskope Cloud Exchange version 3.1.5`
+This package has been tested against `Netskope version 91.1.0.605` and `Netskope Cloud Exchange version 3.1.5`.
 
 ## Documentation and configuration
 
@@ -2294,12 +2294,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "7eaf9eaa-6330-4daf-a0ea-30073ca1559f",
-        "hostname": "docker-fleet-agent",
-        "id": "65c2385f-ebd5-4749-a309-6aac085fb1a5",
+        "ephemeral_id": "c5c5b470-ab70-42a6-a8c5-4798a09637b6",
+        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
@@ -2326,14 +2325,14 @@ An example event for `alerts` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "65c2385f-ebd5-4749-a309-6aac085fb1a5",
+        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2022-02-02T08:40:10Z",
+        "ingested": "2022-02-23T07:49:31Z",
         "original": "{\"event\":{\"id\":\"f621f259f5fbde850ad5593a\"},\"netskope\":{\"alerts\":{\"insertion_epoch_timestamp\":1640277131,\"access_method\":\"API Connector\",\"acked\":\"false\",\"action\":\"block\",\"activity\":{\"name\":\"Login Successful\"},\"is_alert\":\"yes\",\"alert\":{\"name\":\"policy-alert\",\"type\":\"nspolicy\"},\"app\":{\"name\":\"SomeApp\",\"category\":\"Cloud Storage\"},\"category\":{\"name\":\"Cloud Storage\"},\"cci\":\"81\",\"ccl\":\"high\",\"count\":1,\"device\":{\"name\":\"Other\"},\"destination\":{\"geoip_src\":2},\"exposure\":\"organization_wide_link\",\"file\":{\"lang\":\"ENGLISH\"},\"instance\":{\"name\":\"example.com\",\"id\":\"example.com\"},\"modified\":{\"timestamp\":1613760236},\"object\":{\"name\":\"HjBuUvDLWgpudzQr\",\"id\":\"GxyjNjJxKg14W3Mb57aLY9_klcxToPEyqIoNAcF82rGg\",\"type\":\"File\"},\"organization\":{\"unit\":\"example.local\\\\\\\\/example\\\\\\\\/Active Users\"},\"other\":{\"categories\":\"null\"},\"owner\":\"foobar\",\"policy\":{\"name\":\"Some Policy\"},\"request\":{\"id\":\"9262245914980288500\"},\"scan\":{\"type\":\"Ongoing\"},\"shared\":{\"with\":\"none\"},\"site\":\"Example\",\"source\":{\"geoip_src\":2},\"suppression\":{\"key\":\"Tenant Migration across MPs\"},\"traffic\":{\"type\":\"CloudApp\"},\"type\":\"policy\",\"url\":\"http:\\\\\\\\/\\\\\\\\/www.example.com\\\\\\\\/open?id=WLb5Mc7aPGx914gEyYNjJxTo32yjF8xKAcqIoN_klrGg\"}},\"user_agent\":{\"name\":\"unknown\",\"os\":{\"name\":\"unknown\"}},\"destination\":{\"geo\":{\"country_iso_code\":\"NL\",\"location\":{\"lat\":52.3759,\"lon\":4.8975},\"city_name\":\"Amsterdam\",\"region_name\":\"North Holland\",\"postal_code\":\"1012\"},\"address\":\"81.2.69.143\",\"ip\":\"81.2.69.143\"},\"file\":{\"path\":\"\\\\\\\\/My Drive\\\\\\\\/Clickhouse\\\\\\\\/Tenant Migration across MPs\",\"size\":196869,\"mime_type\":{\"1\":\"application\\\\\\\\/vnd.apps.document\",\"2\":\"application\\\\\\\\/vnd.apps.document\"},\"hash\":{\"md5\":\"4bb5d9501bf7685ecaed55e3eda9ca01\"}},\"source\":{\"geo\":{\"country_iso_code\":\"NL\",\"location\":{\"lat\":52.3759,\"lon\":4.8975},\"city_name\":\"Amsterdam\",\"region_name\":\"North Holland\",\"postal_code\":\"1012\"},\"address\":\"81.2.69.143\",\"ip\":\"81.2.69.143\"},\"@timestamp\":\"2021-12-23T16:27:09.000Z\",\"user\":{\"email\":{\"1\":\"test@example.com\",\"2\":\"test@example.com\",\"3\":\"test@example.com\"},\"group\":{\"name\":\"null\"}}}"
     },
     "file": {
@@ -2351,7 +2350,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.144.4:38220"
+            "address": "172.18.0.5:34210"
         }
     },
     "netskope": {
@@ -2850,12 +2849,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "9e2bed74-deec-48f3-9749-011fa5457f76",
-        "hostname": "docker-fleet-agent",
-        "id": "65c2385f-ebd5-4749-a309-6aac085fb1a5",
+        "ephemeral_id": "a09270c0-b599-4e20-8ec2-b39d0a2f8511",
+        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
@@ -2866,14 +2864,14 @@ An example event for `events` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "65c2385f-ebd5-4749-a309-6aac085fb1a5",
+        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2022-02-02T08:41:38Z",
+        "ingested": "2022-02-23T07:51:42Z",
         "original": "{\"@timestamp\":\"2021-12-24T00:29:56.000Z\",\"event.id\":\"613ee55ec9d868fc47654a73\",\"netskope\":{\"events\":{\"event_type\":\"infrastructure\",\"severity\":{\"level\":\"high\"},\"alarm\":{\"name\":\"No_events_from_device\",\"description\":\"Events from device not received in the last 24 hours\"},\"device\":{\"name\":\"device-1\"},\"metric_value\":43831789,\"serial\":\"FFFFFFFFFFFFFFFF\",\"supporting_data\":\"abc\"}}}"
     },
     "event.id": "613ee55ec9d868fc47654a73",
@@ -2882,7 +2880,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.144.4:36802"
+            "address": "172.18.0.5:43942"
         }
     },
     "netskope": {

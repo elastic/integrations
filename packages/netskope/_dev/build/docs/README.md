@@ -9,7 +9,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Setup steps
 
-1. Enable the integration with the TCP input in Kibana.
+1. Configure this integration with the TCP input in Kibana.
 2. For all Netskope Cloud Exchange configurations refer to the [_Log Shipper_](https://docs.netskope.com/en/log-shipper.html).
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
 4. Configure input connectors:  
@@ -40,7 +40,7 @@ ECS fields where applicable and the remaining fields are written under
 
 ## Compatibility
 
-This package has been tested against `Netskope version 91.1.0.605` and `Netskope Cloud Exchange version 3.1.5`
+This package has been tested against `Netskope version 91.1.0.605` and `Netskope Cloud Exchange version 3.1.5`.
 
 ## Documentation and configuration
 
