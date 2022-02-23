@@ -395,7 +395,6 @@ An example event for `diskio` looks as following:
                 "service_time": 0,
                 "wait_time": 0
             },
-            "reads": 0,
             "summary": {
                 "bytes": 42414080,
                 "ops": 1824,
@@ -404,7 +403,6 @@ An example event for `diskio` looks as following:
                 "service_time": 0,
                 "wait_time": 0
             },
-            "total": 0,
             "write": {
                 "bytes": 4096,
                 "ops": 1,
@@ -412,8 +410,7 @@ An example event for `diskio` looks as following:
                 "rate": 0,
                 "service_time": 0,
                 "wait_time": 0
-            },
-            "writes": 0
+            }
         }
     },
     "event": {
@@ -994,12 +991,6 @@ An example event for `network` looks as following:
             }
         },
         "network": {
-            "in": {
-                "bytes": 0,
-                "dropped": 0,
-                "errors": 0,
-                "packets": 0
-            },
             "inbound": {
                 "bytes": 23047,
                 "dropped": 0,
@@ -1007,12 +998,6 @@ An example event for `network` looks as following:
                 "packets": 241
             },
             "interface": "eth0",
-            "out": {
-                "bytes": 0,
-                "dropped": 0,
-                "errors": 0,
-                "packets": 0
-            },
             "outbound": {
                 "bytes": 0,
                 "dropped": 0,
