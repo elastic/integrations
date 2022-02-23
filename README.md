@@ -1,4 +1,4 @@
-[![Build Status](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/main/badge/icon)](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/main/)
+[![Build Status](https://fleet-ci.elastic.co/job/ingest-manager/job/integrations/job/main/badge/icon)](https://fleet-ci.elastic.co/job/ingest-manager/job/integrations/job/main/)
 
 # Elastic Integrations
 
@@ -36,4 +36,4 @@ explore the builder tools.
 
 ## Test Coverage
 
-[![Test Coverage Report](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/main/cobertura/graph)](https://beats-ci.elastic.co/job/Ingest-manager/job/integrations/job/main/cobertura/)
+[![Test Coverage Report](https://fleet-ci.elastic.co/job/ingest-manager/job/integrations/job/main/cobertura/graph)](https://fleet-ci.elastic.co/job/Ingest-manager/job/integrations/job/main/cobertura/)
