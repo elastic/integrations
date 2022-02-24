@@ -1,7 +1,11 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
+{{#if atlassian_cloud}}
+request.url: {{api_url}}/wiki/rest/api/audit
+{{#else}}
 request.url: {{api_url}}/rest/auditing/1.0/events
+{{/if}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -21,6 +25,30 @@ auth.basic.password: {{password}}
 {{/unless}}
 
 request.transforms:
+  - set:
+      target: url.params.limit
+      value: {{ limit }}
+
+{{#if atlassian_cloud}}
+  - set:
+      target: url.params.startDate
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+  - set:
+      target: url.params.endDate
+      value: '[[now.Unix]]'
+response.split:
+  target: body.results
+response.pagination:
+  - set:
+      target: url.params.start
+      value: '[[ add .last_response.url.params.start url.params.limit ]]'
+      fail_on_template_error: true
+cursor:
+  last_timestamp:
+    value: "[[.first_event.creationDate]]"
+
+{{#else}}
 {{#unless username}}
 {{#unless password}}
 {{#if token}}
@@ -37,10 +65,6 @@ request.transforms:
   - set:
       target: url.params.to
       value: '[[formatDate now]]'
-  - set:
-      target: url.params.limit
-      value: {{ limit }}
-
 response.split:
   target: body.entities
 response.pagination:
@@ -48,11 +72,10 @@ response.pagination:
       target: url.value
       value: '[[ .last_response.body.pagingInfo.nextPageLink ]]'
       fail_on_template_error: true
-
 cursor:
   last_timestamp:
     value: "[[.first_event.timestamp]]"
-
+{{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -63,7 +86,13 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+{{#if atlassian_cloud}}
+- add_fields:
+    target: _config
+    fields:
+      atlassian_cloud: true
+{{/if}} 
+{{#if processors}}
 {{processors}}
 {{/if}} 

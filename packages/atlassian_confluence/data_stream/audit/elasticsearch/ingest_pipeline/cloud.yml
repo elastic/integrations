@@ -1,0 +1,36 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    field: _tmp.timestamp
+    copy_from: json.creationDate
+    if: ctx.json?.creationDate != null
+- rename:
+    field: json.remoteAddress
+    target_field: source.address
+    ignore_missing: true
+- rename:
+    field: json.author.accountId
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.author.displayName
+    target_field: user.full_name
+    ignore_missing: true
+- rename:
+    field: json.author.externalCollaborator
+    target_field: confluence.audit.external_collaborator
+    ignore_missing: true
+- rename:
+    field: json.category
+    target_field: confluence.audit.type.category
+    ignore_missing: true
+- rename:
+    field: json.summary
+    target_field: confluence.audit.type.action
+    ignore_missing: true
+
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}' 
