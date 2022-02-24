@@ -20,6 +20,9 @@ Generate API keys:
 - The Your API Key window appears, displaying the access key and secret key for the user.
 - Use the keys in the Tenable.sc Integration configuration parameters.
 
+**Note:**
+The default value is recommended value for batch size by tenable. It can be found under _Advanced Options_ and can be configured as per requirements. A very large value might not work as intended depending on the API and instance limitations.
+
 ## Logs
 
 ### Asset

@@ -35,6 +35,30 @@ processors:
       field: host.ip
       value: "{{{json.ip}}}"
       if: ctx?.json?.ip != null
+  - script: 
+      if: ctx.json.uniqueness != ""
+      lang: painless
+      source: >-
+        def keys = ctx.json.uniqueness.toString().splitOnToken(",");
+        ctx.tenable_sc = new HashMap();
+        ctx.tenable_sc.asset = new HashMap();
+        String uniqueKey = "";
+        if (keys.length > 0) {
+          for (int i = 0; i < keys.length; i++) {
+            if(keys[i] == "repositoryID") {
+              uniqueKey = uniqueKey + ctx.json.repository.id + (i == keys.length - 1 ? "" : "_");
+            } else {
+              uniqueKey = uniqueKey + ctx.json[keys[i]] + (i == keys.length - 1 ? "" : "_");
+            }
+          }
+        }
+        ctx.tenable_sc.asset.custom_hash = uniqueKey;
+  - fingerprint: 
+      fields:
+        - tenable_sc.asset.custom_hash
+      target_field: tenable_sc.asset.custom_hash
+      method: SHA-256
+      ignore_missing: true
   - rename: 
       field: json.ip
       target_field: tenable_sc.asset.ip
