@@ -1,0 +1,271 @@
+---
+description: Pipeline for Netskope alerts
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - json: 
+      field: message
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: netskope.alerts.policy.actions
+      ignore_failure: true
+  - append: 
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
+      ignore_failure: true
+  - append: 
+      field: related.ip
+      value: "{{{netskope.alerts.user.ip}}}"
+      if: ctx?.netskope?.alerts?.user?.ip != null
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{destination.domain}}}" 
+      if: ctx?.destination?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{destination.domain}}}" 
+      if: ctx?.netskope?.alerts?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{host.hostname}}}" 
+      if: ctx?.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      field: netskope.alerts.user.ip
+      target_field: netskope.alerts.user.geo
+      ignore_missing: true
+  - uri_parts:
+      field: netskope.alerts.url
+      target_field: netskope.alerts.url
+      keep_original: true
+      remove_if_successful: false
+      ignore_failure: true
+  - uri_parts:
+      field: netskope.alerts.web.url
+      target_field: netskope.alerts.web.url
+      keep_original: true
+      remove_if_successful: false
+      ignore_failure: true
+  - remove:
+      field: netskope.alerts.page.url
+      if: ctx?.netskope?.alerts?.page?.url == " "
+  - uri_parts:
+      field: netskope.alerts.page.url
+      target_field: netskope.alerts.page.url
+      keep_original: true
+      remove_if_successful: false
+      ignore_failure: true
+  - uri_parts:
+      field: netskope.alerts.login.url
+      target_field: netskope.alerts.login.url
+      keep_original: true
+      remove_if_successful: false
+      ignore_failure: true
+  - uri_parts:
+      field: netskope.alerts.referer
+      target_field: netskope.alerts.url
+      keep_original: true
+      remove_if_successful: false
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.managed.app
+      value: true
+      if: ctx?.netskope?.alerts?.managed?.app?.toString()?.toLowerCase() == "yes"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.managed.app
+      value: false
+      if: ctx?.netskope?.alerts?.managed?.app?.toString()?.toLowerCase() == "no"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.is_malicious
+      value: true
+      if: ctx?.netskope?.alerts?.is_malicious?.toString()?.toLowerCase() == "yes"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.is_malicious
+      value: false
+      if: ctx?.netskope?.alerts?.is_malicious?.toString()?.toLowerCase() == "no"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.aggregated.user
+      value: true
+      if: ctx?.netskope?.alerts?.aggregated?.user?.toString()?.toLowerCase() == "yes"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.aggregated.user
+      value: false
+      if: ctx?.netskope?.alerts?.aggregated?.user?.toString()?.toLowerCase() == "no"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.bypass.traffic
+      value: true
+      if: ctx?.netskope?.alerts?.bypass?.traffic?.toString()?.toLowerCase() == "yes"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.bypass.traffic
+      value: false
+      if: ctx?.netskope?.alerts?.bypass?.traffic?.toString()?.toLowerCase() == "no"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.is_user_generated
+      value: true
+      if: ctx?.netskope?.alerts?.is_user_generated?.toString()?.toLowerCase() == "yes"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.is_user_generated
+      value: false
+      if: ctx?.netskope?.alerts?.is_user_generated?.toString()?.toLowerCase() == "no"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.dlp.is_unique_count
+      value: true
+      if: ctx?.netskope?.alerts?.dlp?.is_unique_count?.toString()?.toLowerCase() == "true"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.dlp.is_unique_count
+      value: false
+      if: ctx?.netskope?.alerts?.dlp?.is_unique_count?.toString()?.toLowerCase() == "false"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.is_file_passwd_protected
+      value: true
+      if: ctx?.netskope?.alerts?.is_file_passwd_protected?.toString()?.toLowerCase() == "true"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.is_file_passwd_protected
+      value: false
+      if: ctx?.netskope?.alerts?.is_file_passwd_protected?.toString()?.toLowerCase() == "false"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.acked
+      value: true
+      if: ctx?.netskope?.alerts?.acked?.toString()?.toLowerCase() == "true"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.acked
+      value: false
+      if: ctx?.netskope?.alerts?.acked?.toString()?.toLowerCase() == "false"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.obfuscate
+      value: true
+      if: ctx?.netskope?.alerts?.obfuscate?.toString()?.toLowerCase() == "true"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.obfuscate
+      value: false
+      if: ctx?.netskope?.alerts?.obfuscate?.toString()?.toLowerCase() == "false"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.ml_detection
+      value: true
+      if: ctx?.netskope?.alerts?.ml_detection?.toString()?.toLowerCase() == "true"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.ml_detection
+      value: false
+      if: ctx?.netskope?.alerts?.ml_detection?.toString()?.toLowerCase() == "false"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.shared.is_shared
+      value: true
+      if: ctx?.netskope?.alerts?.shared?.is_shared?.toString()?.toLowerCase() == "true"
+      ignore_failure: true
+  - set: 
+      field: netskope.alerts.shared.is_shared
+      value: false
+      if: ctx?.netskope?.alerts?.shared?.is_shared?.toString()?.toLowerCase() == "false"
+      ignore_failure: true
+  - lowercase:
+      ignore_failure: true
+      field: network.protocol
+  - script:
+      if: ctx?.file?.mime_type != null
+      lang: painless
+      source: >-
+        def parts = ctx.file.mime_type;
+        if (parts != null && parts.size() > 0) {
+          List l = new ArrayList();
+          for (entry in parts.entrySet()) {
+            l.add(entry.getValue());
+          }
+          List setList = new ArrayList(new HashSet(l));
+          ctx.file.mime_type = setList;
+        }
+  - script:
+      if: ctx?.user?.email != null
+      lang: painless
+      source: >-
+        def parts = ctx.user.email;
+        if (parts != null && parts.size() > 0) {
+          List l = new ArrayList();
+          for (entry in parts.entrySet()) {
+            l.add(entry.getValue());
+          }
+          List setList = new ArrayList(new HashSet(l));
+          ctx.user.email = setList;
+        }
+  - script:
+      if: ctx?.netskope?.alerts?.quarantine?.app != null
+      lang: painless
+      source: >-
+        def parts = ctx.netskope.alerts.quarantine.app;
+        if (parts != null && parts.size() > 0) {
+          List l = new ArrayList();
+          for (entry in parts.entrySet()) {
+            l.add(entry.getValue());
+          }
+          List setList = new ArrayList(new HashSet(l));
+          ctx.netskope.alerts.quarantine.app = setList;
+        }
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "" || object == "null") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"
