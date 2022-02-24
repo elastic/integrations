@@ -2,7 +2,7 @@
 
 This integration is for different types of MySQL logs. Currently focusing on data from the MySQL Enterprise Audit Plugin in JSON format.
 
-To configure the the Enterprise Audit Plugin to output in JSON format please follow the directions in the https://dev.mysql.com/doc/refman/8.0/en/audit-log-file-formats.html[MySQL Documentation.]
+To configure the the Enterprise Audit Plugin to output in JSON format please follow the directions in the [MySQL Documentation](https://dev.mysql.com/doc/refman/8.0/en/audit-log-file-formats.html).
 
 ## Compatibility
 
@@ -115,8 +115,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-10-19T19:21:33.000Z",
     "agent": {
-        "ephemeral_id": "c8e8843e-afaf-4325-ba23-c9a66f4cd342",
-        "id": "73759939-7e98-4a1c-b721-d98dae56f63a",
+        "ephemeral_id": "d192381e-e559-464a-876d-058ff4104145",
+        "id": "1202ee7c-96a3-47b6-8ddf-4fd17e23f288",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -130,7 +130,7 @@ An example event for `audit` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "73759939-7e98-4a1c-b721-d98dae56f63a",
+        "id": "1202ee7c-96a3-47b6-8ddf-4fd17e23f288",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -141,7 +141,7 @@ An example event for `audit` looks as following:
             "database"
         ],
         "dataset": "mysql_enterprise.audit",
-        "ingested": "2022-02-21T19:13:24Z",
+        "ingested": "2022-02-24T08:19:02Z",
         "kind": "event",
         "outcome": "unknown",
         "timezone": "+00:00"
@@ -151,10 +151,10 @@ An example event for `audit` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.30.0.4"
+            "192.168.192.4"
         ],
         "mac": [
-            "02:42:ac:1e:00:04"
+            "02:42:c0:a8:c0:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
