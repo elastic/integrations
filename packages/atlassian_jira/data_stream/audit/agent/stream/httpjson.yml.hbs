@@ -94,16 +94,19 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-processors:
+
 {{#if atlassian_cloud}}
-- add_fields:
-    target: _config
-    fields:
-      atlassian_cloud: true
-{{/if}} 
+fields_under_root: true
+fields:
+  _config:
+    atlassian_cloud: true
+{{/if}}
+
 {{#if processors}}
+processors:
 {{processors}}
 {{/if}} 
