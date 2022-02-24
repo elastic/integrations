@@ -2,7 +2,7 @@
 
 This integration is for ingesting Audit Trail logs from Oracle Databases.
 
-The integration expects an *.aud audit file that is generated from Oracle Databases by default. If this has been disabled then please see the https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html#GUID-8D96829C-9151-4FA4-BED9-831D088F12FF[Oracle Database Audit Trail Documentation].
+The integration expects an *.aud audit file that is generated from Oracle Databases by default. If this has been disabled then please see the [Oracle Database Audit Trail Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html#GUID-8D96829C-9151-4FA4-BED9-831D088F12FF).
 
 ## Compatibility
 
@@ -96,3 +96,117 @@ The `database_audit` dataset collects Oracle Audit logs.
 | user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
 
+
+An example event for `database_audit` looks as following:
+
+```json
+{
+    "@timestamp": "2020-10-07T14:57:51.000Z",
+    "agent": {
+        "ephemeral_id": "db435ce0-1e23-4219-9a3c-d6b39c782060",
+        "id": "a87ab781-ff31-4a37-994f-b46dab72a453",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0"
+    },
+    "client": {
+        "user": {
+            "name": "oracle"
+        }
+    },
+    "data_stream": {
+        "dataset": "oracle.database_audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "a87ab781-ff31-4a37-994f-b46dab72a453",
+        "snapshot": false,
+        "version": "8.0.0"
+    },
+    "event": {
+        "action": "database_audit",
+        "agent_id_status": "verified",
+        "category": "database",
+        "dataset": "oracle.database_audit",
+        "ingested": "2022-02-24T08:12:33Z",
+        "kind": "event",
+        "outcome": "success",
+        "timezone": "-04:00",
+        "type": "access"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.128.4"
+        ],
+        "mac": [
+            "02:42:c0:a8:80:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.60.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/ORCLCDB_ora_13765_20201007105751904399925443.aud.log"
+        },
+        "flags": [
+            "multiline"
+        ],
+        "offset": 882
+    },
+    "oracle": {
+        "database_audit": {
+            "action": "CONNECT",
+            "action_number": "100",
+            "client": {
+                "terminal": "pts/0"
+            },
+            "length": 253,
+            "session_id": "4294967295",
+            "status": "0"
+        }
+    },
+    "process": {
+        "pid": 13765
+    },
+    "related": {
+        "hosts": [
+            "testlab.local"
+        ],
+        "user": [
+            "/",
+            "oracle"
+        ]
+    },
+    "server": {
+        "address": "testlab.local",
+        "domain": "testlab.local",
+        "user": {
+            "name": "/"
+        }
+    },
+    "tags": [
+        "oracle-database_audit"
+    ],
+    "user": {
+        "roles": "SYSDBA"
+    }
+}
+```
