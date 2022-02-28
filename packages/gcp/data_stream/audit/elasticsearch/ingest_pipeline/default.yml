@@ -97,6 +97,13 @@ processors:
       field: json.protoPayload.requestMetadata.callerIp
       target_field: gcp.audit.request_metadata.caller_ip
       ignore_missing: true
+  - convert:
+      type: ip
+      field: gcp.audit.request_metadata.caller_ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: gcp.audit.request_metadata.caller_ip
   - set:
       field: source.ip
       value: "{{gcp.audit.request_metadata.caller_ip}}"
@@ -255,6 +262,34 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - script:
+      description: Drops null/empty/invalid values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            def m = ((Map) o);
+            def it = m.entrySet().iterator();
+            while (it.hasNext()) {
+              def e = ((Map.Entry) it.next());
+              def key = ((String) e.getKey());
+              def value = e.getValue();
+              Pattern onlyDotsRegex = /^\.+$/;
+              if (onlyDotsRegex.matcher(key).matches() || drop(value)) {
+                it.remove();
+              }
+            }
+            return (m.size() == 0);
+          } else if (o instanceof List) {
+            def l = ((List) o);
+            l.removeIf(v -> drop(v));
+            return (l.length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
 on_failure:
   - set:
       field: error.message
