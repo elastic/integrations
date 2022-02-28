@@ -2,15 +2,11 @@
 description: Pipeline for Sonicwall-FW
 
 processors:
-  # ECS event.ingested
   - trim:
       field: message
   - set:
       field: event.original
       value: '{{message}}'
-  - set:
-      field: event.dataset
-      value: "Sonicwall-FW"
   - set:
       field: source.ip
       value: "0.0.0.0"
@@ -32,9 +28,9 @@ processors:
       ignore_missing: true
       ignore_failure: false
       pattern_definitions:
-        "SONICWALL_TIME" : "%{SONICWALL_TIME_WITH_TIMEZONE}?%{SONICWALL_TIME_NO_TIMEZONE}?"
-        "SONICWALL_TIME_WITH_TIMEZONE" : "%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME} UTC"
-        "SONICWALL_TIME_NO_TIMEZONE": "%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME}"
+        SONICWALL_TIME: '%{SONICWALL_TIME_WITH_TIMEZONE}?%{SONICWALL_TIME_NO_TIMEZONE}?'
+        SONICWALL_TIME_WITH_TIMEZONE: '%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME} UTC'
+        SONICWALL_TIME_NO_TIMEZONE: '%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME}'
       on_failure:
         [
           {
@@ -62,18 +58,18 @@ processors:
       value: true
   - gsub:
       field: message
-      pattern: "\\"
-      replacement: ""
+      pattern: '\\'
+      replacement: ''
   - gsub:
       field: message
-      pattern: "[ ][ ]"
-      replacement: " "
+      pattern: '[ ][ ]'
+      replacement: ' '
   - grok:
       field: message
       patterns:
-        - "c=%{NUMBER:sonicwall.event.category_legacy:long}"
+        - 'c=%{NUMBER:sonicwall.event.category_legacy:long}'
       ignore_failure: true
-   - grok:
+  - grok:
       field: message
       patterns:
         - " gcat=%{NUMBER:sonicwall.event.group_category:long}"
@@ -171,14 +167,14 @@ processors:
   - grok:
       field: message
       patterns:
-        - " app=%{NONNEGINT:sonicwall.event.appplication_id_number:long}"
+        - " app=%{NONNEGINT:sonicwall.event.application_id_number:long}"
       ignore_failure: true
   - grok:
       field: message
       patterns:
         - " af_polid=%{SONICWALL_AF_POLID:sonicwall.application.filter_id}"
       pattern_definitions:
-        - SONICWALL_AF_POLID: "%{NONNEGINT}, %{NONNEGINT}|%{NONNEGINT}"
+        SONICWALL_AF_POLID: '%{NONNEGINT}, %{NONNEGINT}|%{NONNEGINT}'
       ignore_failure: true
   - grok:
       field: message
@@ -195,7 +191,7 @@ processors:
       patterns:
         - ' ipscat=(?:")?%{SONICWALL_IPSCAT:ips.category}(?:")?'
       pattern_definitions:
-        - SONICWALL_IPSCAT: "N/A|%{DATA}"
+        SONICWALL_IPSCAT: 'N/A|%{DATA}'
       ignore_failure: true
   - grok:
       field: message
@@ -277,10 +273,11 @@ processors:
       value: "{{sonicwall.destination_name}}"
   - set:
       field: _source.ingest_time
-      value: "{{_ingest_timestamp}}
+      value: "{{_ingest_timestamp}}"
   - script:
       lang: painless
       source: "if(ctx.containsKey('ingest_time') && ctx.containsKey('@timestamp')) { ctx['lag_in_seconds'] = ChronoUnit.MILLIS.between(ZonedDateTime.parse(ctx['@timestamp']), ZonedDateTime.parse(ctx['ingest_time']))/1000; } "
+      ignore_failure: true
   - script:
       if: "ctx.event?.duration != null"
       source: "ctx.event.duration = (ctx.event.duration*100000)"
@@ -292,7 +289,7 @@ processors:
       if: "ctx.sonicwall?.event?.request_method != null"
       source: "if (ctx.sonicwall.event.request_method == 0){ctx.http.request.method = 'no operation'} else if (ctx.sonicwall.event.request_method == 1){ctx.http.request.method = 'GET'} else if (ctx.sonicwall.event.request_method == 2){ctx.http.request.method = 'POST'} else if (ctx.sonicwall.event.request_method == 3){ctx.http.request.method = 'HEAD'}"
   - lowercase:
-      if: "crx.source?.mac != null"
+      if: "ctx.source?.mac != null"
       field: source.mac
   - set:
       if: "ctx._tmp?.dhcp?.source?.hostname != null"
@@ -347,16 +344,13 @@ processors:
       if: "ctx.source?.packets != null || ctx.destination?.packets != null"
       source: "if (ctx.source.packets != null && ctx.destination.packets != null){ctx.network.packets = ctx.source.packets+ctx.destination.packets} else if (ctx.source.packets != null && ctx.destination.packets == null){ctx.network.packets = ctx.source.packets} else if (ctx.source.packets == null && ctx.destination.packets != null){ctx.network.packets = ctx.destination.packets}"
   - geoip:
+      if: "ctx.source.ip != '0.0.0.0'"
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      ignore_failure: true
   - geoip:
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
-  # IP Autonomous System (AS) Lookup
-  - geoip:
-      if: "ctx.source.ip != '0.0.0.0'"
+      if: "ctx.source?.ip != '0.0.0.0'"
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -364,8 +358,9 @@ processors:
           - asn
           - organization_name
       ignore_missing: true
+      ignore_failure: true
   - geoip:
-      if: "ctx.destination.ip != null"
+      if: "ctx.destination?.ip != null"
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -377,6 +372,7 @@ processors:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
@@ -395,10 +391,10 @@ processors:
   - remove:
       field: _tmp
   - append:
+      if: ctx.host?.name != null && ctx.host?.name != ''
       field: related.hosts
       value: '{{host.name}}'
       allow_duplicates: false
-      if: ctx.host?.name != null && ctx.host?.name != ''
 on_failure:
   - append:
       field: error.message
