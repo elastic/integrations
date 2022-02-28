@@ -89,10 +89,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.server?.bytes != null"
-- rename:
-    field: sophos.xg.to_email_address
-    target_field: destination.user.email
-    ignore_missing: true
 
 ###############################
 ## ECS Client/Source Mapping ##
@@ -139,13 +135,30 @@ processors:
     ignore_missing: true
     if: "ctx.client?.bytes != null"
 - rename:
-    field: sophos.xg.from_email_address
-    target_field: source.user.email
-    ignore_missing: true
-- rename:
      field: sophos.xg.src_domainname
      target_field: source.domain
      ignore_missing: true
+
+#######################
+## ECS Email Mapping ##
+#######################
+- rename:
+    field: sophos.xg.from_email_address
+    target_field: email.from.address
+    ignore_missing: true
+- rename:
+    field: sophos.xg.to_email_address
+    target_field: email.to.address
+    ignore_missing: true
+- rename:
+    field: sophos.xg.email_subject
+    target_field: email.subject
+    ignore_missing: true
+- rename:
+    field: sophos.xg.subject
+    target_field: email.subject
+    ignore_missing: true
+    if: "ctx.email?.subject == null"
 
 #############################
 ## ECS Network/Geo Mapping ##

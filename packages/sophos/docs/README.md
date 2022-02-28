@@ -852,7 +852,7 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
@@ -976,6 +976,9 @@ An example event for `xg` looks as following:
 | destination.port | Port of the destination. | long |
 | destination.user.email | User email address. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -1122,7 +1125,6 @@ An example event for `xg` looks as following:
 | sophos.xg.dstzone | Name of destination zone | keyword |
 | sophos.xg.dstzonetype | Type of destination zone, e.g., WAN | keyword |
 | sophos.xg.duration | Durability of traffic (seconds) | long |
-| sophos.xg.email_subject | Email Subject | keyword |
 | sophos.xg.ep_uuid | Endpoint UUID | keyword |
 | sophos.xg.ether_type | ethernet frame type | keyword |
 | sophos.xg.eventid | ATP Evenet ID | keyword |
@@ -1138,7 +1140,6 @@ An example event for `xg` looks as following:
 | sophos.xg.filepath | Path of the file containing virus | keyword |
 | sophos.xg.filesize | Size of the file that contained virus | integer |
 | sophos.xg.free | free | integer |
-| sophos.xg.from_email_address | Sender email address | keyword |
 | sophos.xg.ftpcommand | FTP command used when virus was found | keyword |
 | sophos.xg.fw_rule_id | Firewall Rule ID which is applied on the traffic | integer |
 | sophos.xg.hb_health | Heartbeat status | keyword |
@@ -1215,14 +1216,12 @@ An example event for `xg` looks as following:
 | sophos.xg.starttime | Starttime | date |
 | sophos.xg.status | Ultimate status of traffic – Allowed or Denied | keyword |
 | sophos.xg.status_code | Status code | keyword |
-| sophos.xg.subject | Email subject | keyword |
 | sophos.xg.syslog_server_name | Syslog server name | keyword |
 | sophos.xg.system_cpu | system | float |
 | sophos.xg.target | Platform of the traffic. | keyword |
 | sophos.xg.threatname | ATP threatname | keyword |
 | sophos.xg.timestamp | timestamp | date |
 | sophos.xg.timezone | Time (hh:mm:ss) when the event occurred | keyword |
-| sophos.xg.to_email_address | Receipeint email address | keyword |
 | sophos.xg.total_memory | Total Memory | integer |
 | sophos.xg.trans_dst_ip | Translated destination IP address for outgoing traffic | ip |
 | sophos.xg.trans_dst_port | Translated destination port for outgoing traffic | integer |
