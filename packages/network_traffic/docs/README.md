@@ -3615,11 +3615,16 @@ Fields published for TLS packets.
 | tls.detailed.client_hello.extensions.server_name_indication | List of hostnames | keyword |
 | tls.detailed.client_hello.extensions.session_ticket | Length of the session ticket, if provided, or an empty string to advertise support for tickets. | keyword |
 | tls.detailed.client_hello.extensions.signature_algorithms | List of signature algorithms that may be use in digital signatures. | keyword |
+| tls.detailed.client_hello.extensions.status_request.request_extensions | The number of certificate extensions for the request. | short |
+| tls.detailed.client_hello.extensions.status_request.responder_id_list_length | The length of the list of trusted responders. | short |
+| tls.detailed.client_hello.extensions.status_request.type | The type of the status request. Always "ocsp" if present. | keyword |
 | tls.detailed.client_hello.extensions.supported_groups | List of Elliptic Curve Cryptography (ECC) curve groups supported by the client. | keyword |
 | tls.detailed.client_hello.extensions.supported_versions | List of TLS versions that the client is willing to use. | keyword |
+| tls.detailed.client_hello.random | Random data used by the TLS protocol to generate the encryption key. | keyword |
 | tls.detailed.client_hello.session_id | Unique number to identify the session for the corresponding connection with the client. | keyword |
 | tls.detailed.client_hello.supported_compression_methods | The list of compression methods the client supports. See https://www.iana.org/assignments/comp-meth-ids/comp-meth-ids.xhtml | keyword |
 | tls.detailed.client_hello.version | The version of the TLS protocol by which the client wishes to communicate during this session. | keyword |
+| tls.detailed.ocsp_response | The result of an OCSP request. | keyword |
 | tls.detailed.resumption_method | If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension. | keyword |
 | tls.detailed.server_certificate.alternative_names | Subject Alternative Names for this certificate. | keyword |
 | tls.detailed.server_certificate.issuer.common_name | Name or host name identified by the certificate. | keyword |
@@ -3651,7 +3656,9 @@ Fields published for TLS packets.
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
 | tls.detailed.server_hello.extensions.ec_points_formats | List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse. | keyword |
 | tls.detailed.server_hello.extensions.session_ticket | Used to announce that a session ticket will be provided by the server. Always an empty string. | keyword |
+| tls.detailed.server_hello.extensions.status_request.response | Whether a certificate status request response was made. | boolean |
 | tls.detailed.server_hello.extensions.supported_versions | Negotiated TLS version to be used. | keyword |
+| tls.detailed.server_hello.random | Random data used by the TLS protocol to generate the encryption key. | keyword |
 | tls.detailed.server_hello.selected_compression_method | The compression method selected by the server from the list provided in the client hello. | keyword |
 | tls.detailed.server_hello.session_id | Unique number to identify the session for the corresponding connection with the client. | keyword |
 | tls.detailed.server_hello.version | The version of the TLS protocol that is used for this session. It is the highest version supported by the server not exceeding the version requested in the client hello. | keyword |

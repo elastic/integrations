@@ -3,9 +3,6 @@ description: Pipeline for AWS VPC Flow Logs
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -156,14 +153,35 @@ processors:
       field: network.type
       value: ipv6
       if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
-  - set:
-      field: network.transport
-      value: tcp
-      if: ctx.network?.iana_number == "6"
-  - set:
-      field: network.transport
-      value: udp
-      if: ctx.network?.iana_number == "17"
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '0') {
+            ctx.network.transport = 'hopopt';
+        } else if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '8') {
+            ctx.network.transport = 'egp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '47') {
+            ctx.network.transport = 'gre';
+        } else if (iana_number == '50') {
+            ctx.network.transport = 'esp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        } else if (iana_number == '112') {
+            ctx.network.transport = 'vrrp';
+        } else if (iana_number == '132') {
+            ctx.network.transport = 'sctp';
+        }
   - community_id:
       target_field: network.community_id
       ignore_failure: true

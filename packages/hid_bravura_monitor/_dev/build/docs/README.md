@@ -139,7 +139,7 @@ are also supported here. For example, you can use wildcards to fetch all files
 from a predefined level of subdirectories: `/path/to/log/*/*.log`. This
 fetches all `.log` files from the subfolders of `/path/to/log`. It does not
 fetch log files from the `/path/to/log` folder itself. If this setting is left
-empty, {beatname_uc} will choose log paths based on your operating system.
+empty, the integration will choose log paths based on your operating system.
 
 ## Logs
 
