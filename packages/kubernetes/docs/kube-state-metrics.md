@@ -201,8 +201,10 @@ An example event for `state_container` looks as following:
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
 | kubernetes.container.status.reason | Waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or termination (Completed, ContainerCannotRun, Error, OOMKilled) reason. | keyword |  |  |
 | kubernetes.container.status.restarts | Container restarts count | integer |  | counter |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
@@ -762,9 +764,10 @@ An example event for `state_job` looks as following:
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
 | kubernetes.job.completions.desired | The configured completion count for the job (Spec) | long | gauge |
-| kubernetes.job.name | The name of the job resource | keyword |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |
 | kubernetes.job.owner.is_controller | Owner is controller ("true", "false", or `"\<none\>"`) | keyword |  |
 | kubernetes.job.owner.kind | The kind of resource that owns this job (eg. "CronJob") | keyword |  |
 | kubernetes.job.owner.name | The name of the resource that owns this job | keyword |  |

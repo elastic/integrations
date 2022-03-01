@@ -1,0 +1,28 @@
+paths:
+{{#each paths}}
+- {{this}}
+{{/each}}
+parsers:
+- multiline:
+    type: pattern
+    pattern: '^[A-Za-z]{3}\s+[A-Za-z]{3}\s+[0-9]{1,2}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\s[0-9]{4}\s\S[0-9]{2}:[0-9]{2}'
+    negate: true
+    match: after
+    timeout: 10
+exclude_lines: ['^Audit file']
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+exclude_files: [".gz$"]
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}
+- add_locale: ~
