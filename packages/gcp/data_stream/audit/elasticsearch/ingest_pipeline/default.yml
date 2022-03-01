@@ -93,17 +93,18 @@ processors:
       field: json.protoPayload.request.resourceName
       target_field: gcp.audit.request.resource_name
       ignore_missing: true
+  - convert:
+      type: ip
+      field: json.protoPayload.requestMetadata.callerIp
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.protoPayload.requestMetadata.callerIp
+            target_field: gcp.audit.request_metadata.raw.caller_ip
   - rename:
       field: json.protoPayload.requestMetadata.callerIp
       target_field: gcp.audit.request_metadata.caller_ip
       ignore_missing: true
-  - convert:
-      type: ip
-      field: gcp.audit.request_metadata.caller_ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: gcp.audit.request_metadata.caller_ip
   - set:
       field: source.ip
       value: "{{gcp.audit.request_metadata.caller_ip}}"
@@ -207,15 +208,15 @@ processors:
       field: orchestrator.type
       value: kubernetes
       if: ctx.json?.resource?.type == 'k8s_cluster'
-  - rename:
-      field: json.resource.labels.cluster_name
-      target_field: orchestrator.cluster.name
-      ignore_missing: true
+  - set:
+      field: orchestrator.cluster.name
+      copy_from: json.resource.labels.cluster_name
+      ignore_empty_value: true
       if: ctx.json?.resource?.type == 'k8s_cluster'
-  - rename:
-      field: json.protoPayload.resourceName
-      target_field: orchestrator.resource.type_temp
-      ignore_missing: true
+  - set:
+      field: orchestrator.resource.type_temp
+      copy_from: json.protoPayload.resourceName
+      ignore_empty_value: true
       if: ctx.json?.resource?.type == 'k8s_cluster'
   - grok:
       field: orchestrator.resource.type_temp
@@ -263,7 +264,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-      description: Drops null/empty/invalid values recursively
+      description: Drops null and empty values and dotted keys recursively
       lang: painless
       source: |
         boolean drop(Object o) {
