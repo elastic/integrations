@@ -127,9 +127,9 @@ An example event for `eventhub` looks as following:
 | azure-eventhub.consumer_group | consumer group | keyword |
 | azure-eventhub.enqueued_time | The enqueued time. | keyword |
 | azure-eventhub.eventhub | Event hub name. | keyword |
-| azure-eventhub.offset | Offset | keyword |
+| azure-eventhub.offset | Offset | long |
 | azure-eventhub.partition_id | Partition ID | keyword |
-| azure-eventhub.sequence_number | Sequence number | keyword |
+| azure-eventhub.sequence_number | Sequence number | long |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
