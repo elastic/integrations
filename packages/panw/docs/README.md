@@ -132,10 +132,15 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.action | Action taken for the session. | keyword |
 | panw.panos.action_flags | 32-bit field that provides details on session, details about specific values is found in the Palo Alto Traffic Field documentation. | keyword |
 | panw.panos.action_source | Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session. | keyword |
+| panw.panos.attempted_gateways | The fields that are collected for each gateway connection attempt with the gateway name, SSL response time, and priority | keyword |
+| panw.panos.auth_method | A string showing the authentication type. | keyword |
+| panw.panos.client_ver | The client’s GlobalProtect app version. | keyword |
+| panw.panos.connect_method | A string showing the how the GlobalProtect app connects to Gateway. | keyword |
 | panw.panos.content_version | Applications and Threats version on your firewall when the log was generated. | keyword |
 | panw.panos.datasource | Source from which mapping information is collected. | keyword |
 | panw.panos.datasourcename | User-ID source that sends the IP (Port)-User Mapping. | keyword |
 | panw.panos.datasourcetype | Mechanism used to identify the IP/User mappings within a data source. | keyword |
+| panw.panos.description | Additional information for any event that has occurred. | keyword |
 | panw.panos.destination.interface | Destination interface for this session. | keyword |
 | panw.panos.destination.nat.ip | Post-NAT destination IP. | ip |
 | panw.panos.destination.nat.port | Post-NAT destination port. | long |
@@ -146,6 +151,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.device_group_hierarchy3 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.device_group_hierarchy4 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.endreason | The reason a session terminated. | keyword |
+| panw.panos.error_code | An integer associated with any errors that occurred. | integer |
 | panw.panos.factorcompletiontime | Time the authentication was completed. | date |
 | panw.panos.factorno | Indicates the use of primary authentication (1) or additional factors (2, 3). | integer |
 | panw.panos.factortype | Vendor used to authenticate a user when Multi Factor authentication is present. | keyword |
@@ -163,6 +169,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.parent_session.id | ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only. | keyword |
 | panw.panos.parent_session.start_time | Date that the parent tunnel session began. | date |
 | panw.panos.payload_protocol_id | ID of the protocol for the payload in the data portion of the data chunk. | keyword |
+| panw.panos.priority | The priority order of the gateway that is based on highest (1), high (2), medium (3), low (4), or lowest (5) to which the GlobalProtect app can connect. | keyword |
 | panw.panos.related_vsys | Virtual System associated with the session. | keyword |
 | panw.panos.repeat_count | Number of sessions with same Source IP, Destination IP, Application, and Subtype seen within 5 seconds. | long |
 | panw.panos.ruleset | Name of the rule that matched this session. | keyword |
@@ -170,6 +177,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.scp.chunks | Sum of SCTP chunks sent and received for an association. | long |
 | panw.panos.scp.chunks_received | Number of SCTP chunks received for an association. | long |
 | panw.panos.scp.chunks_sent | Number of SCTP chunks sent for an association. | long |
+| panw.panos.selection_type | The connection method that is selected to connect to the gateway. | keyword |
 | panw.panos.sequence_number | Log entry identifier that is incremented sequentially. Unique for each log type. | long |
 | panw.panos.serial_number | The serial number of the user’s machine or device. | keyword |
 | panw.panos.source.interface | Source interface for this session. | keyword |
@@ -177,6 +185,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.source.nat.port | Post-NAT source port. | long |
 | panw.panos.source.zone | Source zone for this session. | keyword |
 | panw.panos.source_vm_uuid | Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
+| panw.panos.stage | A string showing the stage of the connection. | keyword |
 | panw.panos.sub_type | Specifies the sub type of the log. | keyword |
 | panw.panos.threat.id | Palo Alto Networks identifier for the threat. | keyword |
 | panw.panos.threat.name | Palo Alto Networks name for the threat. | keyword |

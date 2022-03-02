@@ -22,8 +22,9 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^%{DATA},%{PANW_DATE:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD},%{PANW_DATE:_temp_.generated_time},%{GREEDYDATA:message}$"
+        - "^%{DATA},%{TIMESTAMP:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
       pattern_definitions:
+        TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
         FIELD: "[^,]*"
 
@@ -43,6 +44,10 @@ processors:
   - pipeline:
       if: ctx?.panw?.panos?.type == "USERID"
       name: '{{ IngestPipeline "userid" }}'
+## GLOBAL PROTECT
+  - pipeline:
+      if: ctx?.panw?.panos?.type == "GLOBALPROTECT"
+      name: '{{ IngestPipeline "globalprotect" }}'
 
   - set:
       field: event.timezone
@@ -55,6 +60,7 @@ processors:
       field: "_temp_.generated_time"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
       timezone: "{{ event.timezone }}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
@@ -65,6 +71,7 @@ processors:
       target_field: "event.created"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
       timezone: "{{ event.timezone }}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
@@ -76,6 +83,7 @@ processors:
       timezone: "{{ event.timezone }}"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # Time the parent_session of the tunnel started, (traffic only).
@@ -86,6 +94,7 @@ processors:
       timezone: "{{ event.timezone }}"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # convert integer fields as the output of the CSV processor is always a string.
