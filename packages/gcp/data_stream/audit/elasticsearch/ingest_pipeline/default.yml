@@ -93,6 +93,14 @@ processors:
       field: json.protoPayload.request.resourceName
       target_field: gcp.audit.request.resource_name
       ignore_missing: true
+  - convert:
+      type: ip
+      field: json.protoPayload.requestMetadata.callerIp
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: json.protoPayload.requestMetadata.callerIp
+            target_field: gcp.audit.request_metadata.raw.caller_ip
   - rename:
       field: json.protoPayload.requestMetadata.callerIp
       target_field: gcp.audit.request_metadata.caller_ip
@@ -200,15 +208,15 @@ processors:
       field: orchestrator.type
       value: kubernetes
       if: ctx.json?.resource?.type == 'k8s_cluster'
-  - rename:
-      field: json.resource.labels.cluster_name
-      target_field: orchestrator.cluster.name
-      ignore_missing: true
+  - set:
+      field: orchestrator.cluster.name
+      copy_from: json.resource.labels.cluster_name
+      ignore_empty_value: true
       if: ctx.json?.resource?.type == 'k8s_cluster'
-  - rename:
-      field: json.protoPayload.resourceName
-      target_field: orchestrator.resource.type_temp
-      ignore_missing: true
+  - set:
+      field: orchestrator.resource.type_temp
+      copy_from: json.protoPayload.resourceName
+      ignore_empty_value: true
       if: ctx.json?.resource?.type == 'k8s_cluster'
   - grok:
       field: orchestrator.resource.type_temp
@@ -255,6 +263,34 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - script:
+      description: Drops null and empty values and dotted keys recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            def m = ((Map) o);
+            def it = m.entrySet().iterator();
+            while (it.hasNext()) {
+              def e = ((Map.Entry) it.next());
+              def key = ((String) e.getKey());
+              def value = e.getValue();
+              Pattern onlyDotsRegex = /^\.+$/;
+              if (onlyDotsRegex.matcher(key).matches() || drop(value)) {
+                it.remove();
+              }
+            }
+            return (m.size() == 0);
+          } else if (o instanceof List) {
+            def l = ((List) o);
+            l.removeIf(v -> drop(v));
+            return (l.length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
 on_failure:
   - set:
       field: error.message
