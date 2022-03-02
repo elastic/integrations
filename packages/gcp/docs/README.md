@@ -174,6 +174,7 @@ An example event for `audit` looks as following:
 | gcp.audit.request.resource_name | Name of the request resource. | keyword |
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
+| gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
 | gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response.details.group | The name of the group. | keyword |
