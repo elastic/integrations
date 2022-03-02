@@ -133,6 +133,9 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.action_flags | 32-bit field that provides details on session, details about specific values is found in the Palo Alto Traffic Field documentation. | keyword |
 | panw.panos.action_source | Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session. | keyword |
 | panw.panos.content_version | Applications and Threats version on your firewall when the log was generated. | keyword |
+| panw.panos.datasource | Source from which mapping information is collected. | keyword |
+| panw.panos.datasourcename | User-ID source that sends the IP (Port)-User Mapping. | keyword |
+| panw.panos.datasourcetype | Mechanism used to identify the IP/User mappings within a data source. | keyword |
 | panw.panos.destination.interface | Destination interface for this session. | keyword |
 | panw.panos.destination.nat.ip | Post-NAT destination IP. | ip |
 | panw.panos.destination.nat.port | Post-NAT destination port. | long |
@@ -143,6 +146,9 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.device_group_hierarchy3 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.device_group_hierarchy4 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.endreason | The reason a session terminated. | keyword |
+| panw.panos.factorcompletiontime | Time the authentication was completed. | date |
+| panw.panos.factorno | Indicates the use of primary authentication (1) or additional factors (2, 3). | integer |
+| panw.panos.factortype | Vendor used to authenticate a user when Multi Factor authentication is present. | keyword |
 | panw.panos.file.hash | Binary hash for a threat file sent to be analyzed by the WildFire service. | keyword |
 | panw.panos.flow_id | Internal numeric identifier for each session. | keyword |
 | panw.panos.http_content_type | Content type of the HTTP response data | keyword |
@@ -176,8 +182,10 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.threat.name | Palo Alto Networks name for the threat. | keyword |
 | panw.panos.threat.resource | URL or file name for a threat. | keyword |
 | panw.panos.threat_category | Describes threat categories used to classify different types of threat signatures. | keyword |
+| panw.panos.timeout | Timeout after which the IP/User Mappings are cleared. | integer |
 | panw.panos.tunnel_type | Type of tunnel, such as GRE or IPSec. | keyword |
 | panw.panos.type | Specifies the type of the log. | keyword |
+| panw.panos.ugflags | Displays whether the user group that was found during user group mapping. Supported values are: User Group Found—Indicates whether the user could be mapped to a group. Duplicate User—Indicates whether duplicate users were found in a user group. Displays N/A if no user group is found. | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
 | panw.panos.url_idx | When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session. | keyword |
 | panw.panos.virtual_sys | Virtual System associated with the HIP match log. | keyword |
