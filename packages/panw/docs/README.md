@@ -150,6 +150,8 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.imei | International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment. | keyword |
 | panw.panos.imsi | International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system | keyword |
 | panw.panos.log_profile | Log Forwarding Profile that was applied to the session. | keyword |
+| panw.panos.matchname | Name of the HIP object or profile. | keyword |
+| panw.panos.matchtype | Whether the document represents a HIP object or a HIP profile. | keyword |
 | panw.panos.network.nat.community_id | Community ID flow-hash for the NAT 5-tuple. | keyword |
 | panw.panos.network.pcap_id | Packet capture ID for a threat. | keyword |
 | panw.panos.parent_session.id | ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only. | keyword |
@@ -163,6 +165,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.scp.chunks_received | Number of SCTP chunks received for an association. | long |
 | panw.panos.scp.chunks_sent | Number of SCTP chunks sent for an association. | long |
 | panw.panos.sequence_number | Log entry identifier that is incremented sequentially. Unique for each log type. | long |
+| panw.panos.serial_number | The serial number of the user’s machine or device. | keyword |
 | panw.panos.source.interface | Source interface for this session. | keyword |
 | panw.panos.source.nat.ip | Post-NAT source IP. | ip |
 | panw.panos.source.nat.port | Post-NAT source port. | long |
@@ -177,6 +180,8 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.type | Specifies the type of the log. | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
 | panw.panos.url_idx | When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session. | keyword |
+| panw.panos.virtual_sys | Virtual System associated with the HIP match log. | keyword |
+| panw.panos.vsys_id | A unique identifier for a virtual system on a Palo Alto Networks firewall. | keyword |
 | panw.panos.vsys_name | The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems. | keyword |
 | panw.panos.wildfire.name | Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis. | keyword |
 | panw.panos.wildfire.report_id | Identifies the analysis request on the WildFire cloud or the WildFire appliance. | keyword |
@@ -210,6 +215,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.email | User email address. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | syslog.facility | Syslog numeric facility of the event. | long |

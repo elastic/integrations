@@ -35,6 +35,10 @@ processors:
   - pipeline:
       if: ctx?.panw?.panos?.type == "THREAT"
       name: '{{ IngestPipeline "threat" }}'
+## HIPMATCH
+  - pipeline:
+      if: 'ctx?.panw?.panos?.type == "HIPMATCH" || ctx?.panw?.panos?.type == "HIP-MATCH"'
+      name: '{{ IngestPipeline "hipmatch" }}'
 
   - set:
       field: event.timezone
@@ -528,6 +532,11 @@ processors:
       field: related.hosts
       value: "{{observer.hostname}}"
       if: "ctx?.observer?.hostname != null && ctx.observer?.hostname != ''"
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{host.name}}"
+      if: "ctx?.host?.name != null && ctx.host?.name != ''"
       allow_duplicates: false
 # Remove temporary fields.
   - remove:
