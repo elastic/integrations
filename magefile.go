@@ -170,6 +170,9 @@ func readGithubOwners() (githubOwners, error) {
 		// It is ok to overwrite because latter lines have precedence in these files.
 		codeowners[path] = owners
 	}
+	if err := scanner.Err(); err != nil {
+		return nil, errors.Wrapf(err, "scanner error")
+	}
 
 	return codeowners, nil
 }
