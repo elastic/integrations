@@ -63,6 +63,16 @@ processors:
       timezone: "{{ event.timezone }}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+        - iam
+
 on_failure:
   - append:
       field: error.message

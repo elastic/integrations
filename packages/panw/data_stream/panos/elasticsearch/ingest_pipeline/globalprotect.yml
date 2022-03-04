@@ -68,6 +68,15 @@ processors:
       value: 'ipv6'
       if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(":")'
 
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
 on_failure:
   - append:
       field: error.message
