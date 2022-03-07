@@ -4,7 +4,7 @@ description: Pipeline for parsing Suricata EVE logs
 processors:
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: '8.0.0'
   - set:
       field: event.original
       copy_from: message
@@ -15,7 +15,7 @@ processors:
       ignore_missing: true
   - set:
       field: event.created
-      copy_from: "@timestamp"
+      copy_from: '@timestamp'
       override: false
       ignore_failure: true
   - json:
@@ -33,13 +33,13 @@ processors:
   # Format source.mac address.
   - gsub:
       field: source.mac
-      pattern: "[-:.]"
-      replacement: ""
+      pattern: '[-:.]'
+      replacement: ''
       ignore_missing: true
   - gsub:
       field: source.mac
-      pattern: "(..)(?!$)"
-      replacement: "$1-"
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
       ignore_missing: true
   - uppercase:
       field: source.mac
@@ -48,13 +48,13 @@ processors:
   # Format destination.mac address.
   - gsub:
       field: destination.mac
-      pattern: "[-:.]"
-      replacement: ""
+      pattern: '[-:.]'
+      replacement: ''
       ignore_missing: true
   - gsub:
       field: destination.mac
-      pattern: "(..)(?!$)"
-      replacement: "$1-"
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
       ignore_missing: true
   - uppercase:
       field: destination.mac
@@ -97,7 +97,7 @@ processors:
       type: string
       ignore_missing: true
   - date:
-      field: "@timestamp"
+      field: '@timestamp'
       target_field: event.created
       formats:
         - ISO8601
@@ -282,7 +282,7 @@ processors:
       ignore_missing: true
   - append:
       if: ctx.suricata?.eve?.http?.hostname != null
-      value: "{{{suricata.eve.http.hostname}}}"
+      value: '{{{suricata.eve.http.hostname}}}'
       field: destination.domain
       allow_duplicates: false
   - remove:
@@ -312,9 +312,9 @@ processors:
         - '%{PATH:url.path}(?:\?%{QUERY:url.query})?(?:#%{ANY:url.fragment})?'
       ignore_missing: true
       pattern_definitions:
-        PATH: "[^?#]*"
-        QUERY: "[^#]*"
-        ANY: ".*"
+        PATH: '[^?#]*'
+        QUERY: '[^#]*'
+        ANY: '.*'
   - rename:
       field: suricata.eve.http.url
       target_field: url.original
@@ -360,7 +360,7 @@ processors:
   - set:
       field: suricata.eve.alert.action
       value: denied
-      if: "ctx?.suricata?.eve?.alert?.action == 'blocked'"
+      if:  "ctx?.suricata?.eve?.alert?.action == 'blocked'"
   - append:
       field: event.type
       value: "{{{suricata.eve.alert.action}}}"
@@ -618,18 +618,18 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: "{{{url.domain}}}"
+      value: '{{{url.domain}}}'
       if: ctx.url?.domain != null && ctx.url?.domain != ''
       allow_duplicates: false
   - append:
       if: ctx?.source?.ip != null
       field: related.ip
-      value: "{{{source.ip}}}"
+      value: '{{{source.ip}}}'
       allow_duplicates: false
   - append:
       if: ctx?.destination?.ip != null
       field: related.ip
-      value: "{{{destination.ip}}}"
+      value: '{{{destination.ip}}}'
       allow_duplicates: false
   - remove:
       field: suricata.eve.alert.metadata
@@ -657,4 +657,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{ _ingest.on_failure_message }}'
