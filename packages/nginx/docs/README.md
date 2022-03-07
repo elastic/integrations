@@ -519,3 +519,22 @@ An example event for `stubstatus` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
+
+## ML Modules
+
+These anomaly detection jobs are available in the Machine Learning app in Kibana
+when you have data that matches the query specified in the
+[manifest](https://github.com/elastic/integrations/blob/main/packages/nginx/kibana/ml_module/nginx-Logs-ml.json).
+
+### Nginx access logs
+
+Find unusual activity in HTTP access logs.
+
+| Job | Description |
+|---|---|
+| visitor_rate_nginx | HTTP Access Logs: Detect unusual visitor rates |
+| status_code_rate_nginx | HTTP Access Logs: Detect unusual status code rates |
+| source_ip_url_count_nginx | HTTP Access Logs: Detect unusual source IPs - high distinct count of URLs |
+| source_ip_request_rate_nginx | HTTP Access Logs: Detect unusual source IPs - high request rates |
+| low_request_rate_nginx | HTTP Access Logs: Detect low request rates |
+

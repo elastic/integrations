@@ -14,6 +14,15 @@ ECS fields where applicable and the remaining fields are written under
 that is running this integration. See [_Setup Log Receiver_](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
 3. *Please make sure to use the given response formats.*
 
+## ZPA Log Receiver Setup
+
+For detailed docs on setting up the ZPA log receiver, refer to the Zscaler documentation at
+- [About the Log Streaming Service](https://help.zscaler.com/zpa/about-log-streaming-service)
+- [Configuring a Log Receiver](https://help.zscaler.com/zpa/configuring-log-receiver)
+
+**Domain or IP**: Use the IP address/hostname of the Elastic Agent  
+**TCP port**: Use the listening port of the Elastic Agent
+
 ## Compatibility
 
 This package has been tested against `Zscaler Private Access Client Connector version 3.7.1.44`
