@@ -14,6 +14,10 @@ processors:
       field: observer.type
       value: firewall
 
+# Set timezone, default to local.
+  - set:
+      field: event.timezone
+      value: "+0000"
   - set:
       field: event.timezone
       value: "{{_conf.tz_offset}}"
@@ -66,7 +70,7 @@ processors:
 
 # event.created is the time the event was received at the management plane.
   - date:
-      if: "ctx?.event?.timezone != null && ctx?.event?.created != null "
+      if: "ctx?.event?.timezone != null && ctx?.event?.created != null"
       field: "event.created"
       target_field: "event.created"
       formats:
