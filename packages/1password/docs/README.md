@@ -33,6 +33,7 @@ Uses the 1Password Events API to retrieve information about sign-in attempts. Ev
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -72,11 +73,12 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "d9fee5da-3464-4c10-be77-8b3d8c516927",
-        "id": "7496c28e-cc7a-4c29-b164-a66d371a2fd0",
+        "ephemeral_id": "6f09b5bf-af2e-43e6-80ac-0c8e871ed0f2",
+        "hostname": "docker-fleet-agent",
+        "id": "38557dfa-555c-4cf0-9f45-99c98ad2acae",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -87,18 +89,18 @@ An example event for `item_usages` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7496c28e-cc7a-4c29-b164-a66d371a2fd0",
+        "id": "38557dfa-555c-4cf0-9f45-99c98ad2acae",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "file"
         ],
-        "created": "2022-01-31T06:38:04.886Z",
+        "created": "2022-03-07T00:48:14.042Z",
         "dataset": "1password.item_usages",
-        "ingested": "2022-01-31T06:38:05Z",
+        "ingested": "2022-03-07T00:48:15Z",
         "kind": "event",
         "type": [
             "access"
@@ -168,6 +170,7 @@ Uses the 1Password Events API to retrieve information about items in shared vaul
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -209,11 +212,12 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "2fa681ed-07d3-4839-8652-903f45f958f6",
-        "id": "7496c28e-cc7a-4c29-b164-a66d371a2fd0",
+        "ephemeral_id": "e20acbbb-ab81-4b58-bb49-8520639d96dd",
+        "hostname": "docker-fleet-agent",
+        "id": "38557dfa-555c-4cf0-9f45-99c98ad2acae",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -224,9 +228,9 @@ An example event for `signin_attempts` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7496c28e-cc7a-4c29-b164-a66d371a2fd0",
+        "id": "38557dfa-555c-4cf0-9f45-99c98ad2acae",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "action": "success",
@@ -234,9 +238,9 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-01-31T06:38:41.081Z",
+        "created": "2022-03-07T00:48:50.546Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2022-01-31T06:38:42Z",
+        "ingested": "2022-03-07T00:48:51Z",
         "kind": "event",
         "outcome": "success",
         "type": [
