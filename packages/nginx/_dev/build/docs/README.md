@@ -59,3 +59,22 @@ It's highly recommended to replace `127.0.0.1` with your server’s IP address a
 {{event "stubstatus"}}
 
 {{fields "stubstatus"}}
+
+## ML Modules
+
+These anomaly detection jobs are available in the Machine Learning app in Kibana
+when you have data that matches the query specified in the
+[manifest](https://github.com/elastic/integrations/blob/main/packages/nginx/kibana/ml_module/nginx-Logs-ml.json).
+
+### Nginx access logs
+
+Find unusual activity in HTTP access logs.
+
+| Job | Description |
+|---|---|
+| visitor_rate_nginx | HTTP Access Logs: Detect unusual visitor rates |
+| status_code_rate_nginx | HTTP Access Logs: Detect unusual status code rates |
+| source_ip_url_count_nginx | HTTP Access Logs: Detect unusual source IPs - high distinct count of URLs |
+| source_ip_request_rate_nginx | HTTP Access Logs: Detect unusual source IPs - high request rates |
+| low_request_rate_nginx | HTTP Access Logs: Detect low request rates |
+
