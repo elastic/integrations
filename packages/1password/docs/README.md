@@ -75,7 +75,7 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "d7dd6e8b-60d8-466d-8c26-5a6578b26882",
+        "ephemeral_id": "6a1b2121-406e-47fc-8ab0-3ab3b521f341",
         "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -100,9 +100,9 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-03-03T21:22:55.410Z",
+        "created": "2022-03-03T21:25:49.160Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2022-03-03T21:22:58Z",
+        "ingested": "2022-03-03T21:25:52Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -214,7 +214,7 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "b68a1ae7-f6b6-4cc1-b61c-ee950297e625",
+        "ephemeral_id": "cbcdd98f-456d-47bb-9f43-cf589ccd810d",
         "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -239,9 +239,9 @@ An example event for `item_usages` looks as following:
         "category": [
             "file"
         ],
-        "created": "2022-03-03T21:22:15.400Z",
+        "created": "2022-03-03T21:25:12.198Z",
         "dataset": "1password.item_usages",
-        "ingested": "2022-03-03T21:22:16Z",
+        "ingested": "2022-03-03T21:25:13Z",
         "kind": "event",
         "type": [
             "access"
