@@ -75,11 +75,11 @@ An example event for `signin_attempts` looks as following:
 {
     "@timestamp": "2021-08-11T14:28:03.000Z",
     "agent": {
-        "ephemeral_id": "62178cbe-1897-48de-b439-417b38bac0cb",
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "ephemeral_id": "d7dd6e8b-60d8-466d-8c26-5a6578b26882",
+        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "1password.signin_attempts",
@@ -90,9 +90,9 @@ An example event for `signin_attempts` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "action": "success",
@@ -100,9 +100,9 @@ An example event for `signin_attempts` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2021-12-24T00:23:56.674Z",
+        "created": "2022-03-03T21:22:55.410Z",
         "dataset": "1password.signin_attempts",
-        "ingested": "2021-12-24T00:23:57Z",
+        "ingested": "2022-03-03T21:22:58Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -172,6 +172,7 @@ Uses the 1Password Events API to retrieve information about items in shared vaul
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
@@ -213,11 +214,11 @@ An example event for `item_usages` looks as following:
 {
     "@timestamp": "2021-08-30T18:57:42.484Z",
     "agent": {
-        "ephemeral_id": "d02e8bec-48d2-46c8-bd33-5982bd82059f",
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "ephemeral_id": "b68a1ae7-f6b6-4cc1-b61c-ee950297e625",
+        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "1password.item_usages",
@@ -228,18 +229,19 @@ An example event for `item_usages` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "id": "8652330e-4de6-4596-a16f-4463a6c56e9e",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
+        "action": "reveal",
         "agent_id_status": "verified",
         "category": [
             "file"
         ],
-        "created": "2021-12-24T00:23:21.039Z",
+        "created": "2022-03-03T21:22:15.400Z",
         "dataset": "1password.item_usages",
-        "ingested": "2021-12-24T00:23:22Z",
+        "ingested": "2022-03-03T21:22:16Z",
         "kind": "event",
         "type": [
             "access"
