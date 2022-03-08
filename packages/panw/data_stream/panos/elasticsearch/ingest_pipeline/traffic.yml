@@ -141,10 +141,18 @@ processors:
 
 # event.start is the time the session started.
   - date:
+      if: "ctx?.event?.timezone == null && ctx?.event?.start != null"
+      field: "event.start"
+      target_field: "event.start"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
       if: "ctx?.event?.timezone != null && ctx?.event?.start != null"
       field: "event.start"
       target_field: "event.start"
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
         - "strict_date_optional_time_nanos"
@@ -152,10 +160,18 @@ processors:
 
 # Time the parent_session of the tunnel started.
   - date:
+      if: "ctx?.event?.timezone == null && ctx?.panw?.panos?.parent_session?.start_time != null"
+      field: "panw.panos.parent_session.start_time"
+      target_field: "panw.panos.parent_session.start_time"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
       if: "ctx?.event?.timezone != null && ctx?.panw?.panos?.parent_session?.start_time != null"
       field: "panw.panos.parent_session.start_time"
       target_field: "panw.panos.parent_session.start_time"
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
         - "strict_date_optional_time_nanos"

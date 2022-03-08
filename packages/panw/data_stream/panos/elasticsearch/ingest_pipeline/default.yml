@@ -14,13 +14,9 @@ processors:
       field: observer.type
       value: firewall
 
-# Set timezone, default to local.
   - set:
       field: event.timezone
-      value: "+0000"
-  - set:
-      field: event.timezone
-      value: "{{_conf.tz_offset}}"
+      value: "{{{_conf.tz_offset}}}"
       if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
 
 # Collects the first few parts of the message to be used for conditional parsing later
@@ -60,15 +56,30 @@ processors:
 
 # Set @timestamp to the time when the entry was generated at the data plane.
   - date:
+      if: "ctx?.event?.timezone == null"
+      field: "_temp_.generated_time"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
       if: "ctx?.event?.timezone != null"
       field: "_temp_.generated_time"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
         - "strict_date_optional_time_nanos"
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # event.created is the time the event was received at the management plane.
+  - date:
+      if: "ctx?.event?.timezone == null && ctx?.event?.created != null"
+      field: "event.created"
+      target_field: "event.created"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
       if: "ctx?.event?.timezone != null && ctx?.event?.created != null"
       field: "event.created"
@@ -76,7 +87,7 @@ processors:
       formats:
         - "yyyy/MM/dd HH:mm:ss"
         - "strict_date_optional_time_nanos"
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # convert integer fields as the output of the CSV processor is always a string.
