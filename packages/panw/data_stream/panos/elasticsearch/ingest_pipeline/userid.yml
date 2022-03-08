@@ -1,0 +1,83 @@
+---
+description: Pipeline for PanOS User ID Logs
+processors:
+  - csv:
+      field: message
+      target_fields:
+        - panw.panos.virtual_sys
+        - source.ip
+        - _temp_.srcuser
+        - panw.panos.datasourcename
+        - event.code
+        - panw.panos.repeat_count
+        - panw.panos.timeout
+        - source.port
+        - destination.port
+        - panw.panos.datasource
+        - panw.panos.datasourcetype
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - observer.hostname
+        - panw.panos.vsys_id
+        - panw.panos.factortype
+        - panw.panos.factorcompletiontime
+        - panw.panos.factorno
+        - panw.panos.ugflags
+        - source.user.name
+
+  - grok:
+      field: _temp_.srcuser
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
+        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
+        - '%{USERNAME:source.user.name}'
+      if: ctx?._temp_?.srcuser != null
+  - set:
+      field: network.type
+      value: 'ipv4'
+      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(".")'
+  - set:
+      field: network.type
+      value: 'ipv6'
+      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(":")'
+  - date:
+      if: "ctx?.panw?.panos?.factorcompletiontime != null && ctx.event.timezone == null"
+      field: "panw.panos.factorcompletiontime"
+      target_field: "panw.panos.factorcompletiontime"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
+      if: "ctx?.panw?.panos?.factorcompletiontime != null && ctx.event.timezone != null"
+      field: "panw.panos.factorcompletiontime"
+      target_field: "panw.panos.factorcompletiontime"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+      timezone: "{{{ event.timezone }}}"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+        - iam
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in User ID pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

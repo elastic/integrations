@@ -1,0 +1,69 @@
+---
+description: Pipeline for PanOS HIP Match Logs
+processors:
+  - csv:
+      field: message
+      target_fields:
+        - _temp_.srcuser
+        - panw.panos.virtual_sys
+        - host.name
+        - host.os.full
+        - source.ip
+        - panw.panos.matchname
+        - panw.panos.repeat_count
+        - panw.panos.matchtype
+        - _temp_.future_use3
+        - _temp_.future_use4
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - observer.hostname
+        - panw.panos.vsys_id
+        - _temp_.source_ipv6
+        - host.id
+        - panw.panos.serial_number
+        - host.mac
+
+  - grok:
+      field: _temp_.srcuser
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
+        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
+        - '%{USERNAME:source.user.name}'
+      if: ctx?._temp_?.srcuser != null
+  - set:
+      field: source.ip
+      value: "{{_temp_.source_ipv6}}"
+      if: ctx?._temp_?.source_ipv6 != null && ctx?._temp_?.source_ipv6 != "" && ctx?._temp_?.source_ipv6 != "0.0.0.0"
+  - set:
+      field: network.type
+      value: 'ipv4'
+      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(".")'
+  - set:
+      field: network.type
+      value: 'ipv6'
+      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(":")'
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in HIP Match pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

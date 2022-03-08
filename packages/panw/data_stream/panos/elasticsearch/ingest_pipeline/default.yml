@@ -2,9 +2,6 @@
 description: "Pipeline for Palo Alto Networks PAN-OS Logs"
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - set:
@@ -17,6 +14,11 @@ processors:
       field: observer.type
       value: firewall
 
+  - set:
+      field: event.timezone
+      value: "{{{_conf.tz_offset}}}"
+      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+
 # Collects the first few parts of the message to be used for conditional parsing later
   - rename:
       field: message
@@ -25,186 +27,67 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^%{DATA},%{PANW_DATE:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD},%{PANW_DATE:_temp_.generated_time},%{GREEDYDATA:message}$"
+        - "^%{DATA},%{TIMESTAMP:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
       pattern_definitions:
+        TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
         FIELD: "[^,]*"
-  - csv:
-      field: message
-      if: ctx?.panw?.panos?.type == 'TRAFFIC'
-      target_fields:
-        - source.ip
-        - destination.ip
-        - source.nat.ip
-        - destination.nat.ip
-        - panw.panos.ruleset
-        - source.user.name
-        - destination.user.name
-        - network.application
-        - panw.panos.related_vsys
-        - observer.ingress.zone
-        - observer.egress.zone
-        - observer.ingress.interface.name
-        - observer.egress.interface.name
-        - panw.panos.log_profile
-        - _temp_.future_use1
-        - panw.panos.flow_id
-        - panw.panos.repeat_count
-        - source.port
-        - destination.port
-        - source.nat.port
-        - destination.nat.port
-        - _temp_.labels
-        - network.transport
-        - panw.panos.action
-        - network.bytes
-        - source.bytes
-        - destination.bytes
-        - network.packets
-        - event.start
-        - event.duration
-        - panw.panos.url.category
-        - _temp_.future_use2
-        - panw.panos.sequence_number
-        - panw.panos.action_flags
-        - _temp_.srcloc
-        - _temp_.dstloc
-        - _temp_.future_use3
-        - source.packets
-        - destination.packets
-        - panw.panos.endreason
-        - panw.panos.device_group_hierarchy1
-        - panw.panos.device_group_hierarchy2
-        - panw.panos.device_group_hierarchy3
-        - panw.panos.device_group_hierarchy4
-        - panw.panos.vsys_name
-        - observer.hostname
-        - panw.panos.action_source
-        - panw.panos.source_vm_uuid
-        - panw.panos.destination_vm_uuid
-        - panw.panos.imsi
-        - panw.panos.imei
-        - panw.panos.parent_session.id
-        - panw.panos.parent_session.start_time
-        - panw.panos.tunnel_type
-        - panw.panos.scp.assoc_id
-        - panw.panos.scp.chunks
-        - panw.panos.scp.chunks_sent
-        - panw.panos.scp.chunks_received
-  - csv:
-      field: message
-      if: ctx?.panw?.panos?.type == 'THREAT'
-      target_fields:
-        - source.ip
-        - destination.ip
-        - source.nat.ip
-        - destination.nat.ip
-        - panw.panos.ruleset
-        - source.user.name
-        - destination.user.name
-        - network.application
-        - panw.panos.related_vsys
-        - observer.ingress.zone
-        - observer.egress.zone
-        - observer.ingress.interface.name
-        - observer.egress.interface.name
-        - panw.panos.log_profile
-        - _temp_.future_use1
-        - panw.panos.flow_id
-        - panw.panos.repeat_count
-        - source.port
-        - destination.port
-        - source.nat.port
-        - destination.nat.port
-        - _temp_.labels
-        - network.transport
-        - panw.panos.action
-        - url.original
-        - panw.panos.threat.name
-        - panw.panos.url.category
-        - log.level
-        - _temp_.direction
-        - panw.panos.sequence_number
-        - panw.panos.action_flags
-        - _temp_.srcloc
-        - _temp_.dstloc
-        - _temp_.future_use2
-        - panw.panos.http_content_type
-        - panw.panos.network.pcap_id
-        - panw.panos.file.hash
-        - panw.panos.wildfire.name
-        - panw.panos.url_idx
-        - user_agent.original
-        - file.type
-        - network.forwarded_ip
-        - http.request.referer
-        - source.user.email
-        - panw.panos.subject
-        - destination.user.email
-        - panw.panos.wildfire.report_id
-        - panw.panos.device_group_hierarchy1
-        - panw.panos.device_group_hierarchy2
-        - panw.panos.device_group_hierarchy3
-        - panw.panos.device_group_hierarchy4
-        - panw.panos.vsys_name
-        - observer.hostname
-        - _temp_.future_use3
-        - panw.panos.source_vm_uuid
-        - panw.panos.destination_vm_uuid
-        - http.request.method
-        - panw.panos.imsi
-        - panw.panos.imei
-        - panw.panos.parent_session.id
-        - panw.panos.parent_session.start_time
-        - panw.panos.tunnel_type
-        - panw.panos.threat_category
-        - panw.panos.content_version
-        - panw.panos.scp.assoc_id
-        - panw.panos.payload_protocol_id
-        - panw.panos.http_headers
 
-  - set:
-      field: event.timezone
-      value: "{{_conf.tz_offset}}"
-      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+## TRAFFIC
+  - pipeline:
+      if: ctx?.panw?.panos?.type == "TRAFFIC"
+      name: '{{ IngestPipeline "traffic" }}'
+## THREAT
+  - pipeline:
+      if: ctx?.panw?.panos?.type == "THREAT"
+      name: '{{ IngestPipeline "threat" }}'
+## HIPMATCH
+  - pipeline:
+      if: 'ctx?.panw?.panos?.type == "HIPMATCH" || ctx?.panw?.panos?.type == "HIP-MATCH"'
+      name: '{{ IngestPipeline "hipmatch" }}'
+## USER ID
+  - pipeline:
+      if: ctx?.panw?.panos?.type == "USERID"
+      name: '{{ IngestPipeline "userid" }}'
+## GLOBAL PROTECT
+  - pipeline:
+      if: ctx?.panw?.panos?.type == "GLOBALPROTECT"
+      name: '{{ IngestPipeline "globalprotect" }}'
 
 # Set @timestamp to the time when the entry was generated at the data plane.
+  - date:
+      if: "ctx?.event?.timezone == null"
+      field: "_temp_.generated_time"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
       if: "ctx?.event?.timezone != null"
       field: "_temp_.generated_time"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
-      timezone: "{{ event.timezone }}"
+        - "strict_date_optional_time_nanos"
+      timezone: "{{{ event.timezone }}}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # event.created is the time the event was received at the management plane.
   - date:
-      if: "ctx?.event?.timezone != null && ctx?.event?.created != null "
+      if: "ctx?.event?.timezone == null && ctx?.event?.created != null"
       field: "event.created"
       target_field: "event.created"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
-      timezone: "{{ event.timezone }}"
+        - "strict_date_optional_time_nanos"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
-
-# event.start (traffic only) is the time the session started.
   - date:
-      if: "ctx?.event?.timezone != null && ctx?.event?.start != null"
-      field: "event.start"
-      target_field: "event.start"
-      timezone: "{{ event.timezone }}"
+      if: "ctx?.event?.timezone != null && ctx?.event?.created != null"
+      field: "event.created"
+      target_field: "event.created"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
-
-# Time the parent_session of the tunnel started, (traffic only).
-  - date:
-      if: "ctx?.event?.timezone != null && ctx?.panw?.panos?.parent_session?.start_time != null"
-      field: "panw.panos.parent_session.start_time"
-      target_field: "panw.panos.parent_session.start_time"
-      timezone: "{{ event.timezone }}"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      timezone: "{{{ event.timezone }}}"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 # convert integer fields as the output of the CSV processor is always a string.
@@ -332,113 +215,7 @@ processors:
           ctx.event['end'] = ZonedDateTime.parse(start).plusNanos(nanos);
         }
 
-# Set network.direction using src/dst zone (traffic logs).
-  - set:
-      field: network.direction
-      value: inbound
-      if: >
-        ctx?.panw?.panos?.type == "TRAFFIC" &&
-        ctx?._temp_?.external_zones != null &&
-        ctx?._temp_?.internal_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
-        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
-  - set:
-      field: network.direction
-      value: outbound
-      if: >
-        ctx?.panw?.panos?.type == "TRAFFIC" &&
-        ctx?._temp_?.external_zones != null &&
-        ctx?._temp_?.internal_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
-        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
-  - set:
-      field: network.direction
-      value: internal
-      if: >
-        ctx?.panw?.panos?.type == "TRAFFIC" &&
-        ctx?._temp_?.internal_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
-        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
-  - set:
-      field: network.direction
-      value: external
-      if: >
-        ctx?.panw?.panos?.type == "TRAFFIC" &&
-        ctx?._temp_?.external_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
-        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
-  - set:
-      field: network.direction
-      value: unknown
-      if: >
-        ctx?.panw?.panos?.type == "TRAFFIC" &&
-        ctx?._temp_?.external_zones != null &&
-        ctx?._temp_?.internal_zones != null &&
-        (
-          (
-            !ctx._temp_.external_zones.contains(ctx?.observer?.egress?.zone) &&
-            !ctx._temp_.internal_zones.contains(ctx?.observer?.egress?.zone)
-          ) ||
-          (
-            !ctx._temp_.external_zones.contains(ctx?.observer?.ingress?.zone) &&
-            !ctx._temp_.internal_zones.contains(ctx?.observer?.ingress?.zone)
-          )
-        )
-
-# Set network.direction from threat direction (Threat logs).
-  - set:
-      field: network.direction
-      value: inbound
-      if: 'ctx?.panw?.panos?.type == "THREAT" && (ctx?._temp_?.direction == "0" || ctx?._temp_?.direction == "client-to-server")'
-  - set:
-      field: network.direction
-      value: outbound
-      if: 'ctx?.panw?.panos?.type == "THREAT" && (ctx?._temp_?.direction == "1" || ctx?._temp_?.direction == "server-to-client")'
-  - set:
-      field: network.direction
-      value: unknown
-      if: 'ctx?.panw?.panos?.type == "THREAT" && ctx?.network?.direction == null'
-
-# Set network.type for TRAFFIC.
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ctx?.labels?.ipv6_session == null'
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: 'ctx?.panw?.panos?.type == "TRAFFIC" && ctx?.labels?.ipv6_session != null'
-
-# Set event.category depending on log type.
-  - set:
-      field: event.kind
-      value: event
-      if: 'ctx?.panw?.panos?.type == "TRAFFIC"'
-  - append:
-      field: event.category
-      value:
-        - network_traffic
-        - network
-      if: 'ctx?.panw?.panos?.type == "TRAFFIC"'
-  - set:
-      field: event.kind
-      value: alert
-      if: 'ctx?.panw?.panos?.type == "THREAT"'
-  - append:
-      field: event.category
-      value:
-        - security_threat
-        - intrusion_detection
-        - network
-      if: 'ctx?.panw?.panos?.type == "THREAT"'
+# Set event.category.
   - append:
       field: event.type
       value: allowed
@@ -761,6 +538,11 @@ processors:
       field: related.hosts
       value: "{{observer.hostname}}"
       if: "ctx?.observer?.hostname != null && ctx.observer?.hostname != ''"
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: "{{host.name}}"
+      if: "ctx?.host?.name != null && ctx.host?.name != ''"
       allow_duplicates: false
 # Remove temporary fields.
   - remove:

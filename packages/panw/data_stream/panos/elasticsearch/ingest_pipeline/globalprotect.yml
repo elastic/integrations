@@ -1,0 +1,87 @@
+---
+description: Pipeline for PanOS Global Protect Logs
+processors:
+  - csv:
+      field: message
+      target_fields:
+        - panw.panos.virtual_sys
+        - event.code
+        - panw.panos.stage
+        - panw.panos.auth_method
+        - panw.panos.tunnel_type
+        - _temp_.srcuser
+        - _temp_.srcloc
+        - host.name
+        - source.nat.ip
+        - _temp_.public_ipv6
+        - source.ip
+        - _temp_.private_ipv6
+        - host.id
+        - panw.panos.serial_number
+        - panw.panos.client_ver
+        - host.os.family
+        - host.os.full
+        - panw.panos.repeat_count
+        - event.reason
+        - panw.panos.error_message
+        - panw.panos.description
+        - event.outcome
+        - observer.geo.name
+        - event.duration
+        - panw.panos.connect_method
+        - panw.panos.error_code
+        - observer.hostname
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.selection_type
+        - panw.panos.response_time
+        - panw.panos.priority
+        - panw.panos.attempted_gateways
+        - panw.panos.gateway
+
+  - set:
+      field: source.ip
+      value: "{{_temp_.private_ipv6}}"
+      if: (ctx.source?.ip == null || ctx.source?.ip == "0.0.0.0") && ctx._temp_?.private_ipv6 != null && ctx._temp_?.private_ipv6 != "0.0.0.0"
+  - set:
+      field: host.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+  - set:
+      field: source.nat.ip
+      value: "{{_temp_.public_ipv6}}"
+      if: (ctx.source?.nat?.ip == null || ctx.source?.nat?.ip == "0.0.0.0") && ctx._temp_?.public_ipv6 != null && ctx._temp_?.public_ipv6 != "0.0.0.0"
+  - grok:
+      field: _temp_.srcuser
+      ignore_missing: true
+      patterns:
+        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
+        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
+        - '%{USERNAME:source.user.name}'
+      if: ctx?._temp_?.srcuser != null
+  - set:
+      field: network.type
+      value: 'ipv4'
+      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(".")'
+  - set:
+      field: network.type
+      value: 'ipv6'
+      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(":")'
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Global Protect pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}
