@@ -22,9 +22,9 @@ Uses the 1Password Events API to retrieve information about sign-in attempts. Ev
 
 *Exported fields*
 
-{{fields "item_usages"}}
+{{fields "signin_attempts"}}
 
-{{event "item_usages"}}
+{{event "signin_attempts"}}
 
 ### Item Usages
 
@@ -32,6 +32,6 @@ Uses the 1Password Events API to retrieve information about items in shared vaul
 
 *Exported fields*
 
-{{fields "signin_attempts"}}
+{{fields "item_usages"}}
 
-{{event "signin_attempts"}}
+{{event "item_usages"}}
