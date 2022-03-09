@@ -26,15 +26,18 @@ request.transforms:
       target: header.Accept
       value: application/taxii+json;version=2.1
   - set:
-      target: header.Range
-      value: items 0-10000
-  - set:
       target: url.params.match[type]
       value: indicator
   - set:
       target: url.params.added_after
       value: '[[.cursor.timestamp]]'
       default: '[[ formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z" ]]'
+
+response.pagination:
+  - set:
+      target: url.params.added_after
+      value: '[[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]]'
+      fail_on_template_error: true
 
 response.split:
   target: body.objects

@@ -20,6 +20,10 @@ processors:
   - json:
       field: event.original
       target_field: cybersixgill
+  - remove:
+      field:
+        - cybersixgill.extensions
+      ignore_missing: true
   - drop:
       if: ctx?.cybersixgill?.type != "indicator"
   - fingerprint:
@@ -141,8 +145,9 @@ processors:
       field: threat.indicator.reference
       value: "https://portal.cybersixgill.com/#/search?q=_id:{{cybersixgill.sixgill_postid}}"
       if: ctx.cybersixgill?.sixgill_postid != null
-  - rename:
+  - convert:
       field: cybersixgill.sixgill_confidence
+      type: integer
       target_field: threat.indicator.confidence
       ignore_missing: true
   - script:
@@ -250,7 +255,7 @@ processors:
         - cybersixgill.pattern_type
         - cybersixgill.external_references
         - cybersixgill.confidence
-        - cybersixgill.confidence
+        - cybersixgill.sixgill_confidence
         - cybersixgill.id
         - cybersixgill.indicator_types
         - cybersixgill.pattern
@@ -258,7 +263,6 @@ processors:
         - cybersixgill.sixgill_post_virustotallink
         - cybersixgill.type
       ignore_missing: true
-      ignore_failure: true
 on_failure:
   - set:
       field: error.message
