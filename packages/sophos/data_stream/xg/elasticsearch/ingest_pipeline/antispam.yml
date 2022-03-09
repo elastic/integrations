@@ -142,14 +142,14 @@ processors:
 #######################
 ## ECS Email Mapping ##
 #######################
-- rename:
-    field: sophos.xg.from_email_address
-    target_field: email.from.address
-    ignore_missing: true
-- rename:
-    field: sophos.xg.to_email_address
-    target_field: email.to.address
-    ignore_missing: true
+- append:
+    field: email.from.address
+    value: "{{sophos.xg.from_email_address}}"
+    if: "ctx.sophos?.xg?.from_email_address != null"
+- append:
+    field: email.to.address
+    value: "{{sophos.xg.to_email_address}}"
+    if: "ctx.sophos?.xg?.to_email_address != null"
 - rename:
     field: sophos.xg.email_subject
     target_field: email.subject
@@ -247,6 +247,8 @@ processors:
     - sophos.xg.recv_bytes
     - sophos.xg.src_port
     - sophos.xg.sent_bytes
+    - sophos.xg.from_email_address
+    - sophos.xg.to_email_address
     ignore_missing: true
 on_failure:
 - set:
