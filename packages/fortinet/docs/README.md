@@ -55,7 +55,7 @@ An example event for `firewall` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "1.9.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
@@ -204,7 +204,6 @@ An example event for `firewall` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
-| destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -212,11 +211,16 @@ An example event for `firewall` looks as following:
 | dns.question.type | The type of record being queried. | keyword |
 | dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.cc.address | The email address of CC recipient | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.sender.address | Per RFC 5322, specifies the address responsible for the actual transmission of the message. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.to.address | The email address of recipient | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -282,7 +286,6 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.carrier_ep | The FortiOS Carrier end-point identification | keyword |
 | fortinet.firewall.cat | DNS category ID | integer |
 | fortinet.firewall.category | Authentication category | keyword |
-| fortinet.firewall.cc | CC Email Address | keyword |
 | fortinet.firewall.cdrcontent | Cdrcontent | keyword |
 | fortinet.firewall.centralnatid | Central NAT ID | integer |
 | fortinet.firewall.cert | Certificate | keyword |
@@ -401,7 +404,6 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.fqdn | FQDN | keyword |
 | fortinet.firewall.frametype | Wireless frametype | keyword |
 | fortinet.firewall.freediskstorage | Free disk integer | integer |
-| fortinet.firewall.from | From email address | keyword |
 | fortinet.firewall.from_vcluster | Source virtual cluster number | integer |
 | fortinet.firewall.fsaverdict | FSA verdict | keyword |
 | fortinet.firewall.fwserver_name | Web proxy server name | keyword |
@@ -593,7 +595,6 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.state | Admin login state | keyword |
 | fortinet.firewall.status | Status | keyword |
 | fortinet.firewall.stitch | Automation stitch triggered | keyword |
-| fortinet.firewall.subject | Email subject | keyword |
 | fortinet.firewall.submodule | Configuration Sub-Module Name | keyword |
 | fortinet.firewall.subservice | AV subservice | keyword |
 | fortinet.firewall.subtype | Log subtype | keyword |
@@ -605,7 +606,6 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.tamac | the MAC address of Transmitter, if none, then Receiver | keyword |
 | fortinet.firewall.threattype | WIDS threat type | keyword |
 | fortinet.firewall.time | Time of the event | keyword |
-| fortinet.firewall.to | Email to field | keyword |
 | fortinet.firewall.to_vcluster | destination virtual cluster number | integer |
 | fortinet.firewall.total | Total memory | integer |
 | fortinet.firewall.totalsession | Total Number of Sessions | integer |
@@ -725,7 +725,6 @@ An example event for `firewall` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
-| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -769,7 +768,7 @@ An example event for `clientendpoint` looks as following:
         "port": 3994
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
@@ -1726,7 +1725,7 @@ An example event for `fortimail` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
@@ -2648,7 +2647,7 @@ An example event for `fortimanager` looks as following:
         "port": 6125
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
