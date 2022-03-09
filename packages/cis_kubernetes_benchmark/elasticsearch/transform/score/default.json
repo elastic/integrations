@@ -1,0 +1,90 @@
+{
+    "source": {
+        "index": [
+            "cloud_security_posture-findings_latest"
+        ]
+    },
+    "pivot": {
+        "group_by": {
+            "rule.benchmark.name": {
+                "terms": {
+                    "field": "rule.benchmark.name.keyword"
+                }
+            },
+            "agent.id": {
+                "terms": {
+                    "field": "agent.id.keyword"
+                }
+            },
+            "@timestamp": {
+                "date_histogram": {
+                    "field": "@timestamp",
+                    "calendar_interval": "1m"
+                }
+            }
+        },
+        "aggregations": {
+            "total_findings": {
+                "value_count": {
+                    "field": "result.evaluation.keyword"
+                }
+            },
+            "passed": {
+                "filter": {
+                    "term": {
+                        "result.evaluation.keyword": "passed"
+                    }
+                },
+                "aggs": {
+                    "passed_counter": {
+                        "value_count": {
+                            "field": "result.evaluation.keyword"
+                        }
+                    }
+                }
+            },
+            "failed": {
+                "filter": {
+                    "term": {
+                        "result.evaluation.keyword": "failed"
+                    }
+                },
+                "aggs": {
+                    "failed_counter": {
+                        "value_count": {
+                            "field": "result.evaluation.keyword"
+                        }
+                    }
+                }
+            },
+            "score": {
+                "bucket_script": {
+                    "buckets_path": {
+                        "passed": "passed\u003epassed_counter",
+                        "total": "total_findings"
+                    },
+                    "script": "params.passed / params.total"
+                }
+            }
+        }
+    },
+    "frequency": "1m",
+    "dest": {
+        "index": "cloud_security_posture-benchmark_scores"
+    },
+    "sync": {
+        "time": {
+            "field": "@timestamp",
+            "delay": "60s"
+        }
+    },
+    "retention_policy": {
+        "time": {
+            "field": "event.ingested",
+            "max_age": "30d"
+        }
+    },
+    "settings": {
+        "max_page_search_size": 500
+    }
+}
