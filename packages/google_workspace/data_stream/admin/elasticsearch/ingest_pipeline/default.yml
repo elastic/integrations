@@ -51,10 +51,11 @@ processors:
       field: json.actor.profileId
       target_field: source.user.id
       ignore_missing: true
-  - rename: 
+  - convert:
       field: json.ipAddress
       target_field: source.ip
-      ignore_missing: true
+      type: ip
+      ignore_failure: true
   - rename: 
       field: json.kind
       target_field: google_workspace.kind
@@ -352,10 +353,24 @@ processors:
       field: google_workspace.admin.EMAIL_LOG_SEARCH_SENDER
       target_field: google_workspace.admin.email.log_search_filter.sender.value
       ignore_missing: true
+  - convert:
+      field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_RECIPIENT_IP
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_RECIPIENT_IP
   - rename:
       field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_RECIPIENT_IP
       target_field: google_workspace.admin.email.log_search_filter.recipient.ip
       ignore_missing: true
+  - convert:
+      field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_SENDER_IP
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_SENDER_IP
   - rename:
       field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_SENDER_IP
       target_field: google_workspace.admin.email.log_search_filter.sender.ip
