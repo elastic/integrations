@@ -1,6 +1,6 @@
 name: crowdstrike
 title: CrowdStrike
-version: "1.4.1"
+version: "1.5.0"
 description: Collect logs from Crowdstrike with Elastic Agent.
 type: integration
 format_version: 1.0.0
@@ -28,15 +28,49 @@ screenshots:
     size: 1535x626
     type: image/png
 policy_templates:
-  - name: crowdstrike
-    title: CrowdStrike
-    description: Collect logs from CrowdStrike Falcon and FDR
+  - name: crowdstrike_fdr
+    title: CrowdStrike Falcon Data Replicator
+    description: Collect and parse FDR logs from CrowdStrike with Elastic Agent.
+    data_streams:
+      - fdr
+    inputs:
+      - type: aws-s3
+        title: Collect FDR logs
+        description: Collect FDR logs from AWS S3.
+        input_group: logs
+    icons:
+      - src: /img/logo-integrations-crowdstrike.svg
+        title: CrowdStrike
+        size: 216x216
+        type: image/svg+xml
+    screenshots:
+      - src: /img/fdr-overview.png
+        title: CrowdStrike FDR Overview
+        size: 1535x626
+        type: image/png
+  - name: crowdstrike_falcon_siem_connector
+    title: CrowdStrike Falcon SIEM Connector
+    description: Collect and parse Falcon SIEM Connector logs from CrowdStrike with Elastic Agent.
+    data_streams:
+      - falcon
     inputs:
       - type: logfile
-        title: "Collect CrowdStrike Falcon and FDR logs (input: logfile)"
-        description: "Collecting logs from CrowdStrike Falcon and FDR (input: logfile)"
-      - type: aws-s3
-        title: "Collect CrowdStrike Falcon Data Replicator logs (input: aws-s3)"
-        description: "Collecting logs from CrowdStrike Falcon Data Replicator (input: aws-s3)"
+        title: Collect Falcon SIEM Connector logs
+        description: Collect Falcon SIEM Connector logs from file.
+        input_group: logs
+    icons:
+      - src: /img/logo-integrations-crowdstrike.svg
+        title: CrowdStrike
+        size: 216x216
+        type: image/svg+xml
+    screenshots:
+      - src: /img/siem-alerts-cs.jpg
+        title: CrowdStrike SIEM Alerts
+        size: 3360x1776
+        type: image/jpg
+      - src: /img/siem-events-cs.jpg
+        title: CrowdStrike SIEM Events
+        size: 3360x1776
+        type: image/jpg
 owner:
   github: elastic/security-external-integrations
