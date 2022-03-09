@@ -62,6 +62,10 @@ processors:
       field: fortinet.firewall.recipient
       target_field: email.to.address
       ignore_missing: true
+  - append:
+      field: email.to.address
+      value: "{{fortinet.firewall.recipient}}"
+      if: "ctx?.fortinet?.firewall?.recipient != null"
   - rename:
       field: fortinet.firewall.group
       target_field: source.user.group.name
@@ -118,10 +122,14 @@ processors:
       target_field: source.user.name
       ignore_missing: true
       if: "ctx.source?.user?.name == null"
-  - rename:
-      field: fortinet.firewall.sender
-      target_field: email.sender.address
-      ignore_missing: true
+  - append:
+      field: email.sender.address
+      value: "{{fortinet.firewall.sender}}"
+      if: "ctx?.fortinet?.firewall?.sender != null"
+  - append:
+      field: email.from.address
+      value: "{{fortinet.firewall.from}}"
+      if: "ctx?.fortinet?.firewall?.from != null"
   - rename:
       field: fortinet.firewall.from
       target_field: email.from.address
@@ -365,6 +373,9 @@ processors:
         - fortinet.firewall.filesize
         - fortinet.firewall.dir
         - fortinet.firewall.direction
+        - fortinet.firewall.from
+        - fortinet.firewall.sender
+        - fortinet.firewall.to
       ignore_missing: true
 on_failure:
   - set:

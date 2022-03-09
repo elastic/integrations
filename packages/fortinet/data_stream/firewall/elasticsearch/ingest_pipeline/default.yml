@@ -131,10 +131,10 @@ processors:
       field: fortinet.firewall.level
       target_field: log.level
       ignore_missing: true
-  - rename:
-      field: fortinet.firewall.cc
-      target_field: email.cc.address
-      ignore_missing: true
+  - append:
+      field: email.cc.address
+      value: "{{fortinet.firewall.cc}}"
+      if: "ctx.fortinet?.cc?.address != null"
   - rename:
       field: fortinet.firewall.subject
       target_field: email.subject
@@ -420,6 +420,10 @@ processors:
             }
           }
         }
+  - remove:
+      field:
+        - fortinet.firewall.cc
+      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
