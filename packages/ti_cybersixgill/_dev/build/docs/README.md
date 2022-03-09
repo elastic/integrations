@@ -1,6 +1,6 @@
 # Cybersixgill Darkfeed TAXII Integration
 
-This integration collect with the commercial [Cybersixgill Darkfeed](https://www.cybersixgill.com/products/darkfeed/) TAXII server.
+This integration connects with the commercial [Cybersixgill Darkfeed](https://www.cybersixgill.com/products/darkfeed/) TAXII server.
 
 ## Logs
 
