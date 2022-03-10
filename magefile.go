@@ -7,6 +7,7 @@
 package main
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 
@@ -92,11 +93,16 @@ func goImports() error {
 
 func goTest() error {
 	args := []string{"test"}
+	stdout := io.Discard
+	stderr := io.Discard
 	if mg.Verbose() {
 		args = append(args, "-v")
+		stdout = os.Stdout
+		stderr = os.Stderr
 	}
 	args = append(args, "./dev/...")
-	return sh.RunV("go", args...)
+	_, err := sh.Exec(nil, stdout, stderr, "go", args...)
+	return err
 }
 
 func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
