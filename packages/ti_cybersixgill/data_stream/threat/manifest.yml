@@ -1,56 +1,62 @@
 type: logs
-title: Cybersixgill webhook logs
+title: Cybersixgill Darkfeed Logs
 streams:
-  - input: http_endpoint
+  - input: httpjson
     vars:
-      - name: listen_address
-        type: text
-        title: Listen Address
-        description: Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
-        multi: false
-        required: true
-        show_user: true
-        default: localhost
-      - name: listen_port
-        type: integer
-        title: Listen Port
-        multi: false
-        required: true
-        show_user: true
-        default: 8181
-      - name: url
-        type: text
-        title: Webhook path
-        description: URL path where the webhook will accept requests.
-        multi: false
-        required: true
-        show_user: true
-        default: /cybersixgill
       - name: username
         type: text
-        title: Basic Auth Username
-        description: Username to use, this will enable basic authentication on the HTTP listening port
+        title: Cybersixgill Darkfeed Client ID
         multi: false
-        required: false
+        required: true
         show_user: true
       - name: password
-        type: text
-        title: Basic Auth Password
-        description: Password to use, this will enable basic authentication on the HTTP listening port
+        type: password
+        title: Cybersixgill Darkfeed Client Secret
         multi: false
-        required: false
+        required: true
         show_user: true
-      - name: ssl
-        type: yaml
-        title: TLS
-        description: Options for enabling TLS for the listening webhook endpoint. You must either provide a valid TLS certificate or use a reverse proxy in front of the integration. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+      - name: url
+        type: text
+        title: Cybersixgill Darkfeed URL
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.cybersixgill.com/taxii/sixgill-taxii/collections/102/objects
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
         multi: false
         required: false
         show_user: false
-        default: |
-          enabled: false
-          certificate: "/etc/pki/client/cert.pem"
-          key: "/etc/pki/client/cert.key"
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 10m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: false
+        default: 2160h
+        description: How far back to look for indicators the first time the agent is started.
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
       - name: tags
         type: text
         title: Tags
@@ -58,8 +64,8 @@ streams:
         required: true
         show_user: false
         default:
-          - cybersixgill-threat
           - forwarded
+          - ti_cybersixgill
       - name: preserve_original_event
         required: true
         show_user: true
@@ -77,6 +83,6 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-    template_path: http_endpoint.yml.hbs
-    title: Cybersixgill webhook logs
-    description: Collect Cybersixgill logs via Webhook
+    template_path: httpjson.yml.hbs
+    title: Cybersixgill Darkfeed Logs
+    description: Collect Cybersixgill Darkfeed Logs
