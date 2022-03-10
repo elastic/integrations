@@ -1,0 +1,55 @@
+---
+description: Pipeline for parsing Apache Spark metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: jolokia
+      target_field: apache_spark
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: apache_spark
+  - script:
+      lang: painless
+      description: This script will add the name of application under key 'application_source.name'
+      if: ctx?.apache_spark?.metrics?.mbean?.contains("name=application") == true
+      source: >-
+        def bean_name = ctx.apache_spark.metrics.mbean.toString().splitOnToken(".");
+        def app_name = "";
+        if (bean_name[0].contains("name=application") == true) {
+            app_name = bean_name[1] + "." + bean_name[2];
+        }
+        ctx.apache_spark.metrics.application_source.name = app_name;
+  - script:
+      lang: painless
+      description: This script will add the name of application under key 'driver/executor.application.name' and executor id under 'apache_spark.metrics.executor.id'
+      if: ctx?.apache_spark?.metrics?.mbean?.contains("name=worker.") == false &&
+          ctx?.apache_spark?.metrics?.mbean?.contains("name=worker.") == false &&
+          ctx?.apache_spark?.metrics?.mbean?.contains("name=application.") == false 
+      source: >-
+        def bean_name = ctx.apache_spark.metrics.mbean.toString().splitOnToken("=")[1];
+        def app_name = bean_name.splitOnToken(".")[0];
+        def executor_id = bean_name.splitOnToken(".")[1];
+        if (executor_id == "driver") {
+          ctx.apache_spark.metrics.driver.application = new HashMap();
+          ctx.apache_spark.metrics.driver.application.name = app_name;
+        } else {
+          ctx.apache_spark.metrics.executor.application = new HashMap();
+          ctx.apache_spark.metrics.executor.application.name = app_name;
+          ctx.apache_spark.metrics.executor.id = executor_id;
+        }
+  - remove:
+      field: apache_spark.metrics.mbean
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
