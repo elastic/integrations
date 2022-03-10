@@ -18,12 +18,12 @@ func TestCheckManifest(t *testing.T) {
 		valid          bool
 	}{
 		{
-			codeownersPath: "testdata/CODEOWNERS",
+			codeownersPath: "testdata/CODEOWNERS-valid",
 			manifestPath:   "testdata/devexp/manifest.yml",
 			valid:          true,
 		},
 		{
-			codeownersPath: "testdata/CODEOWNERS",
+			codeownersPath: "testdata/CODEOWNERS-valid",
 			manifestPath:   "testdata/noowner/manifest.yml",
 			valid:          false,
 		},
@@ -75,7 +75,7 @@ func TestReadGithubOwners(t *testing.T) {
 		valid          bool
 	}{
 		{
-			codeownersPath: "testdata/CODEOWNERS",
+			codeownersPath: "testdata/CODEOWNERS-valid",
 			valid:          true,
 		},
 		{
