@@ -138,7 +138,7 @@ streams:
         title: Custom request cursor
         description: |
           A cursor is used to keep state between each API request, and can be set to for example the value of something in the response body.
-          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#cursor)
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#cursor).
         show_user: true
         multi: false
         required: false
@@ -154,47 +154,152 @@ streams:
         show_user: false
         default: |
           #verification_mode: none
-      - name: request_custom
+      - name: request_encode_as
+        type: text
+        title: Request Encode As
+        description: ContentType used for encoding the request body. If set it will force the encoding in the specified format regardless of the Content-Type header value.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_timeout
+        type: text
+        title: Request Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_proxy_url
+        type: text
+        title: Request Proxy
+        description: This specifies proxy configuration in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_retry_max_attempts
+        type: text
+        title: Request Retry Max Attempts
+        description: The maximum number of retries for the HTTP client. Default is "5".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_retry_wait_min
+        type: text
+        title: Request Retry Wait Min
+        description: The minimum time to wait before a retry is attempted. Default is "1s".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_retry_wait_max
+        type: text
+        title: Request Retry Wait Max
+        description: The maximum time to wait before a retry is attempted. Default is "60s".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_redirect_forward_headers
+        type: bool
+        title: Request Redirect Forward Headers
+        description: When set to true request headers are forwarded in case of a redirect. Default is "false".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_redirect_headers_ban_list
+        type: text
+        title: Request Redirect Headers Ban List
+        description: When Redirect Forward Headers is set to true, all headers except the ones defined in this list will be forwarded. All headers are forwarded by default.
+        show_user: false
+        multi: true
+        required: false
+      - name: request_redirect_max_redirects
+        type: text
+        title: Request Redirect Max Redirects
+        description: The maximum number of redirects to follow for a request. Default is "10".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_rate_limit_limit
+        type: text
+        title: Request Rate Limit
+        description: The value of the response that specifies the total limit. It is defined with a Go template value.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_rate_limit_reset
+        type: text
+        title: Request Rate Limit Reset
+        description: The value of the response that specifies the epoch time when the rate limit will reset. It is defined with a Go template value.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_rate_limit_remaining
+        type: text
+        title: Request Rate Limit Remaining
+        description: The value of the response that specifies the remaining quota of the rate limit. It is defined with a Go template value.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_provider
+        type: text
+        title: Oauth2 Provider
+        description: Used to configure supported oauth2 providers. Each supported provider will require specific settings. It is not set by default. Supported providers are "azure" and "google".
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_scopes
         type: yaml
-        title: Request Custom settings
-        description: Optional Requests settings, comment out the ones to override, more information found in the httpjson [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_url)
+        title: Oauth2 Scopes
+        description: A list of scopes that will be requested during the oauth2 flow. It is optional for all providers.
+        show_user: false
+        multi: true
+        required: false
+      - name: oauth_google_credentials_file
+        type: text
+        title: Oauth2 Google Credentials File
+        description: The full path to the credentials file for Google.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_google_credentials_json
+        type: text
+        title: Oauth2 Google Credentials JSON
+        description: Your Google credentials information as raw JSON.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_google_jwt_file
+        type: text
+        title: Oauth2 Google JWT File
+        description: Full path to the JWT Account Key file for Google.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_azure_tenant_id
+        type: text
+        title: Oauth2 Azure Tenant ID
+        description: Optional setting used for authentication when using Azure provider. Since it is used in the process to generate the token_url, it can’t be used in combination with it.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_azure_resource
+        type: text
+        title: Oauth2 Azure Resource
+        description: Optional setting for the accessed WebAPI resource when using azure provider.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_endpoint_params
+        type: yaml
+        title: Oauth2 Endpoint Params
+        description: Set of values that will be sent on each request to the token_url. Each param key can have multiple values. Can be set for all providers except google.
         show_user: false
         multi: false
         required: false
         default: |
-          #encode_as: application/json
-          #timeout: 30s
-          #proxy_url: http[s]://<user>:<password>@<server name/ip>:<port>
-          #retry.max_attempts: 5
-          #retry.wait_min: 1s
-          #retry.wait_max: 60s
-          #redirect.forward_headers: false
-          #redirect.headers_ban_list: []
-          #redirect.max_redirects: 10
-          #rate_limit.limit: '[[ .last_response.header.Get "X-RateLimit-Limit" ]]'
-          #rate_limit.reset: '[[ .last_response.header.Get "X-RateLimit-Reset" ]]'
-          #rate_limit.remaining: '[[ .last_response.header.Get "X-RateLimit-Remaining" ]]'
-      - name: oauth_custom
-        type: yaml
-        title: Oauth2 Custom settings
-        description: Optional Oauth2 settings, comment out the ones to override, more information found in the httpjson [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_auth_oauth2_enabled)
-        show_user: false
-        multi: false
-        required: false
-        default: |
-          #provider: default
-          #scopes: []
-          #google.credentials_file: /path/to/file
-          #google.credentials_json: '{\"example\":\"credentials\"}'
-          #google.jwt_file: /path/to/jwt
-          #azure.tenant_id: ID
-          #azure.resource: https://api.windows.com/
-          #endpoint_params:
-          #  Param1:
+          #Param1:
           #  - ValueA
           #  - ValueB
-          #  Param2:
-          #    - Value
+          #Param2:
+          #  - Value
       - name: response_decode_as
         type: text
         title: Response decode settings
