@@ -131,3 +131,7 @@ Fields published for TLS packets.
 {{fields "tls"}}
 
 {{event "tls"}}
+
+## Licensing for Windows Systems
+
+The Network Packet Capture Integration incorporates a bundled Npcap installation on Windows hosts. This installation is provided under license from Insecure.Com LLC ("The Nmap Project"). The license text is available [here](https://github.com/elastic/beats/blob/main/x-pack/packetbeat/LICENSE-Npcap.txt).
