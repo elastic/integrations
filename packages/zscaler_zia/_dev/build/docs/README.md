@@ -117,8 +117,10 @@ Sample Response:
 
 ### Web Log
 
-Default port: _9014_
+Default port: _9014_  
+Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
 
+![Escape feed setup image](../../../img/escape_feed.png?raw=true)  
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
 
 Zscaler response format:  
