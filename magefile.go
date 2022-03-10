@@ -29,6 +29,7 @@ func Check() error {
 	mg.Deps(build)
 	mg.Deps(format)
 	mg.Deps(modTidy)
+	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
 	return nil
 }
@@ -87,6 +88,15 @@ func goImports() error {
 		goFiles...,
 	)
 	return sh.RunV("goimports", args...)
+}
+
+func goTest() error {
+	args := []string{"test"}
+	if mg.Verbose() {
+		args = append(args, "-v")
+	}
+	args = append(args, "./dev/...")
+	return sh.RunV("go", args...)
 }
 
 func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
