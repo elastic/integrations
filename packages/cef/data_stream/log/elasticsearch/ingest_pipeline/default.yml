@@ -3,11 +3,13 @@ description: Pipeline for CEF logs. CEF decoding happens in the Agent. This perf
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{{_ingest.timestamp}}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
+
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
 
   # IP Geolocation Lookup
   - geoip:
