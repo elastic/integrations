@@ -3877,4 +3877,4 @@ An example event for `tls` looks as following:
 
 ## Licensing for Windows Systems
 
-The Network Packet Capture Integration incorporates a bundled Npcap installation on Windows hosts. This installation is provided under license from Insecure.Com LLC ("The Nmap Project"). The license text is available [here](https://github.com/elastic/beats/blob/main/x-pack/packetbeat/LICENSE-Npcap.txt).
+The Network Packet Capture Integration incorporates a bundled Npcap installation on Windows hosts. The installation is provided under an [OEM license](https://npcap.com/oem/redist.html) from Insecure.Com LLC ("The Nmap Project").
