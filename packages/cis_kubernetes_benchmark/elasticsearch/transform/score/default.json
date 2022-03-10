@@ -1,8 +1,27 @@
 {
+    "description": "Calculate latest findings score",
     "source": {
-        "index": [
-            "cloud_security_posture-findings_latest"
-        ]
+        "index": "cloud_security_posture-findings_latest"
+    },
+    "dest": {
+        "index": "cloud_security_posture-benchmark_scores"
+    },
+    "frequency": "30s",
+    "sync": {
+        "time": {
+            "field": "event.ingested",
+            "delay": "60s"
+        }
+    },
+    "retention_policy": {
+        "time": {
+            "field": "@timestamp",
+            "max_age": "30d"
+        }
+    },
+    "settings": {
+        "align_checkpoints": false,
+        "max_page_search_size": 500
     },
     "pivot": {
         "group_by": {
@@ -67,26 +86,6 @@
                 }
             }
         }
-    },
-    "frequency": "1m",
-    "dest": {
-        "index": "cloud_security_posture-benchmark_scores"
-    },
-    "sync": {
-        "time": {
-            "field": "@timestamp",
-            "delay": "4s"
-        }
-    },
-    "retention_policy": {
-        "time": {
-            "field": "event.ingested",
-            "max_age": "30d"
-        }
-    },
-    "settings": {
-        "align_checkpoints": false,
-        "max_page_search_size": 500
     },
     "_meta": {
         "managed": true

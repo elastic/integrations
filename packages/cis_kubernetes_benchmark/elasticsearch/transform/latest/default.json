@@ -1,34 +1,33 @@
 {
-  "description": "Defines findings transformation to view only the latest and greatest",
-  "source": {
-    "index": "logs-cis_kubernetes_benchmark.findings-*"
-  },
-  "dest": {
-    "index": "cloud_security_posture-findings_latest"
-  },
-  "frequency": "10s",
-
-  "latest": {
-    "sort": "@timestamp",
-    "unique_key": [
-      "resource_id.keyword",
-      "rule.name.keyword",
-      "agent.id.keyword"
-    ]
-  },
-  "retention_policy": {
-    "time": {
-      "field": "@timestamp",
-      "max_age": "3d"
+    "description": "Defines findings transformation to view only the latest finding per resource",
+    "source": {
+        "index": "logs-cis_kubernetes_benchmark.findings*"
+    },
+    "dest": {
+        "index": "cloud_security_posture-findings_latest"
+    },
+    "frequency": "10s",
+    "sync": {
+        "time": {
+            "field": "event.ingested",
+            "delay": "60s"
+        }
+    },
+    "retention_policy": {
+        "time": {
+            "field": "@timestamp",
+            "max_age": "3d"
+        }
+    },
+    "latest": {
+        "sort": "@timestamp",
+        "unique_key": [
+            "resource_id.keyword",
+            "rule.name.keyword",
+            "agent.id.keyword"
+        ]
+    },
+    "_meta": {
+        "managed": true
     }
-  },
-  "sync": {
-    "time": {
-      "field": "@timestamp",
-      "delay": "60s"
-    }
-  },
-  "_meta": {
-    "managed": true
-  }
 }
