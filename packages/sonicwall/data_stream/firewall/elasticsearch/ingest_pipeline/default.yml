@@ -1,406 +1,489 @@
----
-description: Pipeline for Sonicwall-FW
-
 processors:
   - trim:
       field: message
-  - set:
-      field: event.original
-      value: '{{message}}'
-  - set:
-      field: source.ip
-      value: "0.0.0.0"
+  - rename:
+      field: message
+      target_field: event.original
   - set:
       field: event.module
-      value: "sonicwall"
+      value: sonicwall
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: 8.0.0
   - grok:
-      description: "Pull header information"
-      field: message
+      field: event.original
       patterns:
-        - "%{IP:event.provider:ip}%{SPACE}id=%{NOTSPACE:observer.hostname} sn=%{DATA:observer.serial_number} time=.%{SONICWALL_TIME:_tmp.timestamp}. (?:fw=%{IP:observer.egress.ip})?(?: pri=%{NUMBER:event.severity:long})? %{GREEDYDATA:message}"
-        - "%{IP:event.provider:ip}%{SPACE}id=%{NOTSPACE:observer.hostname} sn=%{DATA:observer.serial_number} time=\\\"%{SONICWALL_TIME:_tmp.timestamp}\\\" (?:fw=%{IP:observer.egress.ip})?(?: pri=%{NUMBER:event.severity:long})? %{GREEDYDATA:message}"
-      ignore_missing: true
-      ignore_failure: false
+        - '^%{IP:event.provider:IP} +%{GREEDYDATA:message}$'
+        - >-
+          ^%{DATA}%{TIMESTAMP:event.provided} %{IP:event.provider:IP}
+          %{GREEDYDATA:message}$
       pattern_definitions:
-        SONICWALL_TIME: '%{SONICWALL_TIME_WITH_TIMEZONE}?%{SONICWALL_TIME_NO_TIMEZONE}?'
-        SONICWALL_TIME_WITH_TIMEZONE: '%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME} UTC'
-        SONICWALL_TIME_NO_TIMEZONE: '%{YEAR}-%{NONNEGINT}-%{NONNEGINT} %{TIME}'
-      on_failure:
-        [
-          {
-            "append":
-              {
-                "field": "error.message",
-                "value": "{{ _ingest.on_failure_message }} grok failure on header",
-              },
-          },
-        ]
-  - date:
-      field: _tmp.timestamp
-      formats:
-        - "yyyy-MM-dd HH:mm:ss zzz"
-        - "yyyy-MM-dd HH:mm:ss"
-  - grok:
-      field: message
-      patterns:
-        - ' msg=\"%{DATA:_tmp.message.0}\"%{DATA} msg=\"%{DATA:_tmp.message.1}\"'
-        - ' msg=\"%{DATA:_tmp.message.0}\"'
-      
-  - set:
-      if: "ctx._tmp?.message?.0 == null"
-      field: _tmp.no_msg
-      value: true
-  - gsub:
-      field: message
-      pattern: '\\'
-      replacement: ''
-  - gsub:
-      field: message
-      pattern: '[ ][ ]'
-      replacement: ' '
-  - grok:
-      field: message
-      patterns:
-        - 'c=%{NUMBER:sonicwall.event.category_legacy:long}'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " gcat=%{NUMBER:sonicwall.event.group_category:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " m=%{NUMBER:sonicwall.event.message_id:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " srcMac=%{MAC:source.mac}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " src=%{IP:source.ip:ip}:(?:%{NUMBER:source.port:long})?:(?:X%{NUMBER:observer.ingress.interface_id:long})?"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " srcZone=%{NOTSPACE:source.zone}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " natSrc=%{IP:source.nat.ip}(?::%{NUMBER:source.nat.port:long})?"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " dst=%{IPV4:destination.ip:ip}:(?:%{NUMBER:destination.port:long})?:(?:X%{NUMBER:observer.egress.interface_id:long})?"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " dstZone=%{NOTSPACE:destination.zone}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " natDst=%{IP:destination.nat.ip}(?::%{NUMBER:destination.nat.port:long})?"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " usr=\"%{DATA:user.name}\""
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " proto=%{WORD:network.transport}(?:/%{WORD:network.protocol})?"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " type=%{NUMBER:sonicwall.event.icmp_type:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " icmpCode=%{NONNEGINT:sonicwall.event.icmp_code:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " sent=%{NUMBER:source.bytes:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " op=%{INT:sonicwall.http_op_code:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " rcvd=%{NUMBER:destination.bytes:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " spkt=%{NUMBER:destination.packets:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " rpkt=%{NUMBER:source.packets:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " cdur=%{NUMBER:event.duration:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " app=%{NONNEGINT:sonicwall.event.application_id_number:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " af_polid=%{SONICWALL_AF_POLID:sonicwall.application.filter_id}"
-      pattern_definitions:
-        SONICWALL_AF_POLID: '%{NONNEGINT}, %{NONNEGINT}|%{NONNEGINT}'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " appName='%{DATA:sonicwall.event.app_name}'"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " sid=%{NUMBER:sonicwall.event.sid_number:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - ' ipscat=(?:")?%{SONICWALL_IPSCAT:ips.category}(?:")?'
-      pattern_definitions:
-        SONICWALL_IPSCAT: 'N/A|%{DATA}'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " op=%{NONNEGINT:sonicwall.event.request_method:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " ipspri=%{NUMBER:ips.severity:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - ' appcat="%{DATA:sonicwall.event.appcat}'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " appid=%{NUMBER:sonicwall.event.app_id:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " catid=%{NUMBER:sonicwall.event.cat_id:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " n=%{NUMBER:event.sequence:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " dstname=%{URIHOST:sonicwall.destination_name}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " arg=%{NOTSPACE:sonicwall.event.arg}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " code=%{NUMBER:sonicwall.event.code:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - ' Category=\"%{DATA:sonicwall.event.category}\"'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - ' note=\"%{DATA:sonicwall.event.note}\"'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - ' fw_action=\"%{WORD:sonicwall.event.firewall_action}\"'
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - " dpi=%{NONNEGINT:sonicwall.event.dpi:long}"
-      ignore_failure: true
-  - grok:
-      field: message
-      patterns:
-        - ' rule=\"%{DATA:sonicwall.event.rule}\"'
-      ignore_failure: true
-  - set:
-      if: "ctx._tmp?.message?.0 != null"
-      field: message
-      value: "{{_tmp.message.1}}"
-  - set:
-      if: "ctx.sonicwall?.destination_name != null"
-      field: url.domain
-      value: "{{sonicwall.destination_name}}"
-  - set:
-      field: _source.ingest_time
-      value: "{{_ingest_timestamp}}"
-  - script:
-      lang: painless
-      source: "if(ctx.containsKey('ingest_time') && ctx.containsKey('@timestamp')) { ctx['lag_in_seconds'] = ChronoUnit.MILLIS.between(ZonedDateTime.parse(ctx['@timestamp']), ZonedDateTime.parse(ctx['ingest_time']))/1000; } "
-      ignore_failure: true
-  - script:
-      if: "ctx.event?.duration != null"
-      source: "ctx.event.duration = (ctx.event.duration*100000)"
-  - set:
-      if: "ctx.sonicwall?.event?.request_method != null"
-      field: "http.request.method"
-      value: ""
-  - script:
-      if: "ctx.sonicwall?.event?.request_method != null"
-      source: "if (ctx.sonicwall.event.request_method == 0){ctx.http.request.method = 'no operation'} else if (ctx.sonicwall.event.request_method == 1){ctx.http.request.method = 'GET'} else if (ctx.sonicwall.event.request_method == 2){ctx.http.request.method = 'POST'} else if (ctx.sonicwall.event.request_method == 3){ctx.http.request.method = 'HEAD'}"
-  - lowercase:
-      if: "ctx.source?.mac != null"
-      field: source.mac
-  - set:
-      if: "ctx._tmp?.dhcp?.source?.hostname != null"
-      field: source.hostname
-      value: "{{_tmp.dhcp.source.hostname}}"
-  - set:
-      if: "ctx._tmp?.dhcp?.source?.domain != null"
-      field: source.domain
-      value: "{{_tmp.dhcp.source.domain}}"
-  - set:
-      if: "ctx._tmp?.dhcp?.event?.vendorclass_ascii != null"
-      field: source.vendorclass_ascii
-      value: "{{_tmp.dhcp.event.vendorclass_ascii}}"
-  - set:
-      if: "ctx.message.contains('Connection')"
-      field: event.type
-      value: "event"
-  - set:
-      if: "ctx.message == 'Connection Opened'"
-      field: event.action
-      value: "Connection Opened"
-  - set:
-      if: "ctx.message == 'Connection Closed'"
-      field: event.action
-      value: "Conenction Closed"
-  - set:
-      if: "ctx.message == 'Connection Opened' && ctx.destination?.as?.organization_name != null"
-      field: message
-      value: "{{message}} to {{destination.as.organization_name}}"
-  - set:
-      if: "ctx.message == 'Connection Closed' && ctx.destination?.as?.organization_name != null"
-      field: message
-      value: "{{message}} from {{destination.as.organization_name}}"
-  - set:
-      if: "ctx._tmp.no_msg == true"
-      field: message
-      value: "{{source.hostname}}-{{source.ip}} >> {{network.transport}}/{{network.protocol}} >> {{sonicwall.destination_name}}-{{destination.ip}}"
-  - set:
-      field: event.risk_score
-      value: "{{event.severity}}"
-  - convert:
-      if: "ctx.event?.risk_score != null"
-      field: event.risk_score
-      type: long
+        TIMESTAMP: '%{MONTH} +%{MONTHDAY} %{TIME}'
   - set:
       field: observer.ip
-      value: "{{event.provider}}"
+      value: '{{event.provider}}'
+  - kv:
+      field: message
+      field_split: ' (?=[a-zA-Z0-9_]+=)'
+      value_split: =
+      prefix: sonicwall.
+      ignore_missing: true
+      trim_value: '"'
+  - remove:
+      field: message
+  - date:
+      field: sonicwall.time
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss zzz'
+        - 'yyyy-MM-dd HH:mm:ss'
+  - remove:
+      field: sonicwall.time
+  - rename:
+      field: sonicwall.fw
+      target_field: observer.egress.ip
+  - convert:
+      field: observer.egress.ip
+      type: IP
+  - rename:
+      field: sonicwall.id
+      target_field: observer.hostname
+  - rename:
+      field: sonicwall.sn
+      target_field: observer.serial_number
+  - rename:
+      field: sonicwall.pri
+      target_field: event.severity
+  - convert:
+      field: event.severity
+      type: long
+  - set:
+      field: event.risk_score
+      value: '{{event.severity}}'
+  - convert:
+      field: event.risk_score
+      type: long
+  - rename:
+      if: ctx.sonicwall?.msg != null
+      field: sonicwall.msg
+      target_field: message
+  - rename:
+      if: ctx.sonicwall?.c != null
+      field: sonicwall.c
+      target_field: sonicwall.event.category
+  - convert:
+      if: ctx.sonicwall?.event?.category != null
+      field: sonicwall.event.category
+      type: long
+  - rename:
+      if: ctx.sonicwall?.gcat != null
+      field: sonicwall.gcat
+      target_field: sonicwall.event.group_category
+  - convert:
+      if: ctx.sonicwall?.event?.group_category != null
+      field: sonicwall.event.group_category
+      type: long
+  - rename:
+      if: ctx.sonicwall?.m != null
+      field: sonicwall.m
+      target_field: sonicwall.event.message_id
+  - convert:
+      if: ctx.sonicwall?.event?.message_id != null
+      field: sonicwall.event.message_id
+      type: long
+  - rename:
+      if: ctx.sonicwall?.srcMac != null
+      field: sonicwall.srcMac
+      target_field: source.mac
+  - lowercase:
+      if: ctx.source?.mac != null
+      field: source.mac
+  - dissect:
+      if: ctx.sonicwall?.src != null
+      field: sonicwall.src
+      pattern: '%{source.ip}:%{source.port}:%{observer.ingress.interface.name}'
+      ignore_failure: true
+  - dissect:
+      if: ctx.source?.ip == null && ctx.sonicwall?.src != null
+      field: sonicwall.src
+      pattern: '%{source.ip}:%{source.port}'
+      ignore_failure: true
+  - remove:
+      if: ctx.sonicwall?.src != null
+      field: sonicwall.src
+  - convert:
+      if: ctx.source?.ip != null
+      field: source.ip
+      type: IP
+  - convert:
+      if: ctx.source?.port != null
+      field: source.port
+      type: long
+  - rename:
+      if: ctx.sonicwall?.srcZone != null
+      field: sonicwall.srcZone
+      target_field: observer.ingress.zone
+  - dissect:
+      if: ctx.sonicwall?.natSrc != null
+      field: sonicwall.natSrc
+      pattern: '%{source.nat.ip}:%{source.nat.port}'
+  - remove:
+      if: ctx.sonicwall?.natSrc != null
+      field: sonicwall.natSrc
+  - convert:
+      if: ctx.source?.nat?.ip != null
+      field: source.nat.ip
+      type: IP
+  - rename:
+      if: ctx.sonicwall?.dstMac != null
+      field: sonicwall.dstMac
+      target_field: destination.mac
+  - lowercase:
+      if: ctx.destination?.mac != null
+      field: destination.mac
+  - convert:
+      if: ctx.source?.nat?.port != null
+      field: source.nat.port
+      type: long
+  - dissect:
+      if: ctx.sonicwall?.dst != null
+      field: sonicwall.dst
+      pattern: '%{destination.ip}:%{destination.port}:%{observer.egress.interface.name}'
+      ignore_failure: true
+  - dissect:
+      if: ctx.destination?.ip == null && ctx.sonicwall?.dst != null
+      field: sonicwall.dst
+      pattern: '%{destination.ip}:%{destination.port}'
+  - remove:
+      if: ctx.sonicwall?.dst != null
+      field: sonicwall.dst
+  - convert:
+      if: ctx.destination?.ip != null
+      field: destination.ip
+      type: IP
+  - convert:
+      if: ctx.destination?.port != null
+      field: destination.port
+      type: long
+  - rename:
+      if: ctx.sonicwall?.dstZone != null
+      field: sonicwall.dstZone
+      target_field: observer.egress.zone
+  - dissect:
+      if: ctx.sonicwall?.natDst != null
+      field: sonicwall.natDst
+      pattern: '%{destination.nat.ip}:%{destination.nat.port}'
+  - remove:
+      if: ctx.sonicwall?.natDst != null
+      field: sonicwall.natDst
+  - convert:
+      if: ctx.destination?.nat?.ip != null
+      field: destination.nat.ip
+      type: IP
+  - convert:
+      if: ctx.destination?.nat?.port != null
+      field: destination.nat.port
+      type: long
+  - rename:
+      if: ctx.sonicwall?.usr != null
+      field: sonicwall.usr
+      target_field: user.name
+  - dissect:
+      if: ctx.sonicwall?.proto != null
+      field: sonicwall.proto
+      pattern: '%{network.transport}/%{network.protocol}'
+  - remove:
+      if: ctx.sonicwall?.proto != null
+      field: sonicwall.proto
+  - rename:
+      if: ctx.sonicwall?.type != null
+      field: sonicwall.type
+      target_field: sonicwall.event.icmp_type
+  - convert:
+      if: ctx.sonicwall?.event.icmp_type != null
+      field: sonicwall.event.icmp_type
+      type: long
+  - rename:
+      if: ctx.sonicwall?.icmpCode != null
+      field: sonicwall.icmpCode
+      target_field: sonicwall.event.icmp_code
+  - convert:
+      if: ctx.sonicwall?.event.icmp_code != null
+      field: sonicwall.event.icmp_code
+      type: long
+  - rename:
+      if: ctx.sonicwall?.sent != null
+      field: sonicwall.sent
+      target_field: source.bytes
+  - convert:
+      if: ctx.source?.bytes != null
+      field: source.bytes
+      type: long
+  - rename:
+      if: ctx.sonicwall?.op != null
+      field: sonicwall.op
+      target_field: sonicwall.event.http_op_code
+  - convert:
+      if: ctx.sonicwall?.event?.http_op_code != null
+      field: sonicwall.event.http_op_code
+      type: long
+  - rename:
+      if: ctx.sonicwall?.rcvd != null
+      field: sonicwall.rcvd
+      target_field: destination.bytes
+  - convert:
+      if: ctx.destination?.bytes != null
+      field: destination.bytes
+      type: long
+  - rename:
+      if: ctx.sonicwall?.spkt != null
+      field: sonicwall.spkt
+      target_field: source.packets
+  - convert:
+      if: ctx.source?.packets != null
+      field: source.packets
+      type: long
+  - rename:
+      if: ctx.sonicwall?.rpkt != null
+      field: sonicwall.rpkt
+      target_field: destination.packets
+  - convert:
+      if: ctx.destination?.packets != null
+      field: destination.packets
+      type: long
+  - rename:
+      if: ctx.sonicwall?.cdur != null
+      field: sonicwall.cdur
+      target_field: event.duration
+  - convert:
+      if: ctx.event?.duration != null
+      field: event.duration
+      type: long
   - script:
-      if: "ctx.source?.bytes != null || ctx.destination?.bytes != null"
-      source: "if (ctx.source.bytes != null && ctx.destination.bytes != null){ctx.network.bytes = ctx.source.bytes+ctx.destination.bytes} else if (ctx.source.bytes != null && ctx.destination.bytes == null){ctx.network.bytes = ctx.source.bytes} else if (ctx.source.bytes == null && ctx.destination.bytes != null){ctx.network.bytes = ctx.destination.bytes}"
+      if: ctx.event?.duration != null
+      source: ctx.event.duration = (ctx.event.duration*100000)
+  - rename:
+      if: ctx.sonicwall?.app != null
+      field: sonicwall.app
+      target_field: sonicwall.event.application_id_number
+  - convert:
+      if: ctx.sonicwall?.event?.application_id_number != null
+      field: sonicwall.event.application_id_number
+      type: long
+  - rename:
+      if: ctx.sonicwall?.af_polid != null
+      field: sonicwall.af_polid
+      target_field: sonicwall.application.filter.filter_id
+  - rename:
+      if: ctx.sonicwall?.appName != null
+      field: sonicwall.appName
+      target_field: sonicwall.event.app_name
+  - rename:
+      if: ctx.sonicwall?.sid != null
+      field: sonicwall.sid
+      target_field: sonicwall.event.sid_number
+  - convert:
+      if: ctx.sonicwall?.event?.sid_number != null
+      field: sonicwall.event.sid_number
+      type: long
+  - rename:
+      if: ctx.sonicwall?.ipscat != null
+      field: sonicwall.ipscat
+      target_field: ips.category
+  - rename:
+      if: ctx.sonicwall?.ipspri != null
+      field: sonicwall.ipspri
+      target_field: ips.severity
+  - trim:
+      if: ctx.ips?.severity != null
+      field: ips.severity
+  - convert:
+      if: ctx.ips?.severity != null
+      field: ips.severity
+      type: long
+  - rename:
+      if: ctx.sonicwall?.appcat != null
+      field: sonicwall.appcat
+      target_field: sonicwall.event.appcat
+  - rename:
+      if: ctx.sonicwall?.appid != null
+      field: sonicwall.appid
+      target_field: sonicwall.event.application_id
+  - convert:
+      if: ctx.sonicwall?.event?.application_id != null
+      field: sonicwall.event.application_id
+      type: long
+  - rename:
+      if: ctx.sonicwall?.catid != null
+      field: sonicwall.catid
+      target_field: sonicwall.event.category_id
+  - convert:
+      if: ctx.sonicwall?.event?.category_id != null
+      field: sonicwall.event.category_id
+      type: long
+  - rename:
+      if: ctx.sonicwall?.n != null
+      field: sonicwall.n
+      target_field: event.sequence
+  - convert:
+      if: ctx.event?.sequence != null
+      field: event.sequence
+      type: long
+  - rename:
+      if: ctx.sonicwall?.dstname != null
+      field: sonicwall.dstname
+      target_field: sonicwall.destination.name
+  - rename:
+      if: ctx.sonicwall?.arg != null
+      field: sonicwall.arg
+      target_field: sonicwall.event.url_path
+  - rename:
+      if: ctx.sonicwall?.code != null
+      field: sonicwall.code
+      target_field: sonicwall.event.code
+  - convert:
+      if: ctx.sonicwall?.event?.code != null
+      field: sonicwall.event.code
+      type: long
+  - rename:
+      if: ctx.sonicwall?.Category != null
+      field: sonicwall.Category
+      target_field: sonicwall.event.blocking_category
+  - rename:
+      if: ctx.sonicwall?.note != null
+      field: sonicwall.note
+      target_field: sonicwall.event.note
+  - rename:
+      if: ctx.sonicwall?.fw_action != null
+      field: sonicwall.fw_action
+      target_field: sonicwall.event.firewall_action
+  - rename:
+      if: ctx.sonicwall?.n != null
+      field: sonicwall.n
+      target_field: event.sequence
+  - rename:
+      if: ctx.sonicwall?.dpi != null
+      field: sonicwall.dpi
+      target_field: sonicwall.event.dpi
+  - convert:
+      if: ctx.sonicwall?.event?.dpi != null
+      field: sonicwall.event.dpi
+      type: long
+  - rename:
+      if: ctx.sonicwall?.rule != null
+      field: sonicwall.rule
+      target_field: sonicwall.event.rule
+  - rename:
+      if: ctx.sonicwall?.vpnpolicy != null
+      field: sonicwall.vpnpolicy
+      target_field: source.vpn_policy
+  - set:
+      field: _source.ingest_time
+      value: '{{_ingest.timestamp}}'
   - script:
-      if: "ctx.source?.packets != null || ctx.destination?.packets != null"
-      source: "if (ctx.source.packets != null && ctx.destination.packets != null){ctx.network.packets = ctx.source.packets+ctx.destination.packets} else if (ctx.source.packets != null && ctx.destination.packets == null){ctx.network.packets = ctx.source.packets} else if (ctx.source.packets == null && ctx.destination.packets != null){ctx.network.packets = ctx.destination.packets}"
+      source: >-
+        if(ctx.containsKey('ingest_time') && ctx.containsKey('@timestamp')) {
+        ctx['ingest_lag_in_seconds'] =
+        ChronoUnit.MILLIS.between(ZonedDateTime.parse(ctx['@timestamp']),
+        ZonedDateTime.parse(ctx['ingest_time']))/1000}
+  - set:
+      if: ctx.sonicwall?.event?.http_op_code != null
+      field: http.request.method
+      value: ''
+  - script:
+      if: ctx.sonicwall?.event?.http_op_code != null
+      source: >-
+        if (ctx.sonicwall.http_op_code == 0){ctx.http.request.method = 'no
+        operation'} else if (ctx.sonicwall.event.http_op_code ==
+        1){ctx.http.request.method = 'GET'} else if
+        (ctx.sonicwall.event.http_op_code == 2){ctx.http.http_op_code = 'POST'}
+        else if (ctx.sonicwall.event.http_op_code == 3){ctx.http.request.method
+        = 'HEAD'}
+  - set:
+      if: ctx.message.contains('Connection')
+      field: event.type
+      value: event
+  - set:
+      if: ctx.message == 'Connection Opened'
+      field: event.action
+      value: connection opened
+  - set:
+      if: ctx.message == 'Connection Closed'
+      field: event.action
+      value: connection closed
   - geoip:
-      if: "ctx.source.ip != '0.0.0.0'"
+      if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
-      ignore_missing: true
-      ignore_failure: true
   - geoip:
-      if: "ctx.source?.ip != '0.0.0.0'"
+      if: ctx.source?.ip != null
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
       properties:
-          - asn
-          - organization_name
-      ignore_missing: true
-      ignore_failure: true
+        - asn
+        - organization_name
+  - rename:
+      if: ctx.source?.as?.asn != null
+      field: source.as.asn
+      target_field: source.as.number
+  - rename:
+      if: ctx.source?.as?.organization_name != null
+      field: source.as.organization_name
+      target_field: source.as.organization.name
   - geoip:
-      if: "ctx.destination?.ip != null"
+      if: ctx.destination?.ip != null
       field: destination.ip
       target_field: destination.geo
-      ignore_missing: true
   - geoip:
-      if: "ctx.destination?.ip != null"
+      if: ctx.destination?.ip != null
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
       properties:
-          - asn
-          - organization_name
-      ignore_missing: true
+        - asn
+        - organization_name
   - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - rename:
+      if: ctx.destination?.as?.asn != null
       field: destination.as.asn
       target_field: destination.as.number
-      ignore_missing: true
   - rename:
+      if: ctx.destination?.as?.organization_name != null
       field: destination.as.organization_name
       target_field: destination.as.organization.name
-      ignore_missing: true
-  - remove:
-      if: "ctx.source.ip == '0.0.0.0'"
-      field: source.ip
-  - remove:
-      field: _tmp
-  - append:
-      if: ctx.host?.name != null && ctx.host?.name != ''
-      field: related.hosts
-      value: '{{host.name}}'
-      allow_duplicates: false
+  - set:
+      if: >-
+        ctx.message == 'Connection Opened' &&
+        ctx.destination?.as?.organization_name != null
+      field: message
+      value: '{{message}} to {{destination.as.organization_name}}'
+  - set:
+      if: >-
+        ctx.message == 'Connection Closed' &&
+        ctx.destination?.as?.organization_name != null
+      field: message
+      value: '{{message}} from {{destination.as.organization_name}}'
+  - script:
+      if: ctx.source?.bytes != null || ctx.destination?.bytes != null
+      source: >-
+        if (ctx.source.bytes != null && ctx.destination.bytes !=
+        null){ctx.network.bytes = ctx.source.bytes+ctx.destination.bytes} else
+        if (ctx.source.bytes != null && ctx.destination.bytes ==
+        null){ctx.network.bytes = ctx.source.bytes} else if (ctx.source.bytes ==
+        null && ctx.destination.bytes != null){ctx.network.bytes =
+        ctx.destination.bytes}
+  - script:
+      if: ctx.source?.packets != null || ctx.destination?.packets != null
+      source: >-
+        if (ctx.source.packets != null && ctx.destination.packets !=
+        null){ctx.network.packets = ctx.source.packets+ctx.destination.packets}
+        else if (ctx.source.packets != null && ctx.destination.packets ==
+        null){ctx.network.packets = ctx.source.packets} else if
+        (ctx.source.packets == null && ctx.destination.packets !=
+        null){ctx.network.packets = ctx.destination.packets}
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: '{{ _ingest.on_failure_message }}'

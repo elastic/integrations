@@ -1,8 +1,13 @@
+- name: ingest_lag_in_seconds
+  type: long
 - name: sonicwall
   type: group
   fields:
-    - name: destination_name
-      type: keyword
+    - name: destination
+      type: group
+      fields:
+        - name: name
+          type: keyword
     - name: application
       type: group
       fields:
@@ -11,6 +16,10 @@
     - name: event
       type: group
       fields:
+        - name: blocking_category
+          type: keyword
+        - name: url_path
+          type: keyword
         - name: app_id
           type: keyword
         - name: app_name
@@ -24,7 +33,7 @@
         - name: cat_id
           type: keyword
         - name: category
-          type: keyword
+          type: long
         - name: category_legacy
           type: long
         - name: code
@@ -50,14 +59,11 @@
         - name: session
           type: keyword
         - name: sid_number
-          type: keyword
+          type: long
         - name: user
           type: keyword
-    - name: pipeline
-      type: group
-      fields:
-        - name: version
-          type: keyword
+    - name: vpnpolicy
+      type: keyword
 - name: ips
   type: group
   fields:
@@ -78,7 +84,8 @@
       fields:
         - name: msg
           type: keyword
-          description: This key is used to capture the raw message that comes into the Log Decoder
+          description: >-
+            This key is used to capture the raw message that comes into the Log Decoder
         - name: messageid
           type: keyword
         - name: event_desc
@@ -88,16 +95,19 @@
           description: This key captures the contents of instant messages
         - name: time
           type: date
-          description: This is the time at which a session hits a NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness.
+          description: >-
+            This is the time at which a session hits a NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness.
         - name: level
           type: long
           description: Deprecated key defined only in table map.
         - name: msg_id
           type: keyword
-          description: This is the Message ID1 value that identifies the exact log parser definition which parses a particular log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the Message ID1 value that identifies the exact log parser definition which parses a particular log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: msg_vid
           type: keyword
-          description: This is the Message ID2 value that identifies the exact log parser definition which parses a particular log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the Message ID2 value that identifies the exact log parser definition which parses a particular log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: data
           type: keyword
           description: Deprecated key defined only in table map.
@@ -136,79 +146,102 @@
           description: Deprecated key defined only in table map.
         - name: feed_desc
           type: keyword
-          description: This is used to capture the description of the feed. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is used to capture the description of the feed. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: feed_name
           type: keyword
-          description: This is used to capture the name of the feed. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is used to capture the name of the feed. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: cid
           type: keyword
-          description: This is the unique identifier used to identify a NetWitness Concentrator. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the unique identifier used to identify a NetWitness Concentrator. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_class
           type: keyword
-          description: This is the Classification of the Log Event Source under a predefined fixed set of Event Source Classifications. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the Classification of the Log Event Source under a predefined fixed set of Event Source Classifications. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_group
           type: keyword
-          description: This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_host
           type: keyword
-          description: This is the Hostname of the log Event Source sending the logs to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the Hostname of the log Event Source sending the logs to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_ip
           type: ip
-          description: This is the IPv4 address of the Log Event Source sending the logs to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the IPv4 address of the Log Event Source sending the logs to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_ipv6
           type: ip
-          description: This is the IPv6 address of the Log Event Source sending the logs to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the IPv6 address of the Log Event Source sending the logs to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_type
           type: keyword
-          description: This is the name of the log parser which parsed a given session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the name of the log parser which parsed a given session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: device_type_id
           type: long
           description: Deprecated key defined only in table map.
         - name: did
           type: keyword
-          description: This is the unique identifier used to identify a NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the unique identifier used to identify a NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: entropy_req
           type: long
-          description: This key is only used by the Entropy Parser, the Meta Type can be either UInt16 or Float32 based on the configuration
+          description: >-
+            This key is only used by the Entropy Parser, the Meta Type can be either UInt16 or Float32 based on the configuration
         - name: entropy_res
           type: long
-          description: This key is only used by the Entropy Parser, the Meta Type can be either UInt16 or Float32 based on the configuration
+          description: >-
+            This key is only used by the Entropy Parser, the Meta Type can be either UInt16 or Float32 based on the configuration
         - name: event_name
           type: keyword
           description: Deprecated key defined only in table map.
         - name: feed_category
           type: keyword
-          description: This is used to capture the category of the feed. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is used to capture the category of the feed. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: forward_ip
           type: ip
-          description: This key should be used to capture the IPV4 address of a relay system which forwarded the events from the original system to NetWitness.
+          description: >-
+            This key should be used to capture the IPV4 address of a relay system which forwarded the events from the original system to NetWitness.
         - name: forward_ipv6
           type: ip
-          description: This key is used to capture the IPV6 address of a relay system which forwarded the events from the original system to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This key is used to capture the IPV6 address of a relay system which forwarded the events from the original system to NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: header_id
           type: keyword
-          description: This is the Header ID value that identifies the exact log parser header definition that parses a particular log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the Header ID value that identifies the exact log parser header definition that parses a particular log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: lc_cid
           type: keyword
-          description: This is a unique Identifier of a Log Collector. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is a unique Identifier of a Log Collector. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: lc_ctime
           type: date
-          description: This is the time at which a log is collected in a NetWitness Log Collector. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the time at which a log is collected in a NetWitness Log Collector. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: mcb_req
           type: long
-          description: This key is only used by the Entropy Parser, the most common byte request is simply which byte for each side (0 thru 255) was seen the most
+          description: >-
+            This key is only used by the Entropy Parser, the most common byte request is simply which byte for each side (0 thru 255) was seen the most
         - name: mcb_res
           type: long
-          description: This key is only used by the Entropy Parser, the most common byte response is simply which byte for each side (0 thru 255) was seen the most
+          description: >-
+            This key is only used by the Entropy Parser, the most common byte response is simply which byte for each side (0 thru 255) was seen the most
         - name: mcbc_req
           type: long
-          description: This key is only used by the Entropy Parser, the most common byte count is the number of times the most common byte (above) was seen in the session streams
+          description: >-
+            This key is only used by the Entropy Parser, the most common byte count is the number of times the most common byte (above) was seen in the session streams
         - name: mcbc_res
           type: long
-          description: This key is only used by the Entropy Parser, the most common byte count is the number of times the most common byte (above) was seen in the session streams
+          description: >-
+            This key is only used by the Entropy Parser, the most common byte count is the number of times the most common byte (above) was seen in the session streams
         - name: medium
           type: long
-          description: "This key is used to identify if it’s a log/packet session or Layer 2 Encapsulation Type. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness. 32 = log, 33 = correlation session, &lt; 32 is packet session"
+          description: >-
+            This key is used to identify if it’s a log/packet session or Layer 2 Encapsulation Type. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness. 32 = log, 33 = correlation session, &lt; 32 is packet session
         - name: node_name
           type: keyword
           description: Deprecated key defined only in table map.
@@ -217,65 +250,82 @@
           description: This key denotes that event is endpoint related
         - name: parse_error
           type: keyword
-          description: This is a special key that stores any Meta key validation error found while parsing a log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is a special key that stores any Meta key validation error found while parsing a log session. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: payload_req
           type: long
-          description: This key is only used by the Entropy Parser, the payload size metrics are the payload sizes of each session side at the time of parsing. However, in order to keep
+          description: >-
+            This key is only used by the Entropy Parser, the payload size metrics are the payload sizes of each session side at the time of parsing. However, in order to keep
         - name: payload_res
           type: long
-          description: This key is only used by the Entropy Parser, the payload size metrics are the payload sizes of each session side at the time of parsing. However, in order to keep
+          description: >-
+            This key is only used by the Entropy Parser, the payload size metrics are the payload sizes of each session side at the time of parsing. However, in order to keep
         - name: process_vid_dst
           type: keyword
-          description: Endpoint generates and uses a unique virtual ID to identify any similar group of process. This ID represents the target process.
+          description: >-
+            Endpoint generates and uses a unique virtual ID to identify any similar group of process. This ID represents the target process.
         - name: process_vid_src
           type: keyword
-          description: Endpoint generates and uses a unique virtual ID to identify any similar group of process. This ID represents the source process.
+          description: >-
+            Endpoint generates and uses a unique virtual ID to identify any similar group of process. This ID represents the source process.
         - name: rid
           type: long
-          description: This is a special ID of the Remote Session created by NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is a special ID of the Remote Session created by NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: session_split
           type: keyword
-          description: This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: site
           type: keyword
           description: Deprecated key defined only in table map.
         - name: size
           type: long
-          description: This is the size of the session as seen by the NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the size of the session as seen by the NetWitness Decoder. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: sourcefile
           type: keyword
-          description: This is the name of the log file or PCAPs that can be imported into NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This is the name of the log file or PCAPs that can be imported into NetWitness. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: ubc_req
           type: long
-          description: This key is only used by the Entropy Parser, Unique byte count is the number of unique bytes seen in each stream. 256 would mean all byte values of 0 thru 255 were seen at least once
+          description: >-
+            This key is only used by the Entropy Parser, Unique byte count is the number of unique bytes seen in each stream. 256 would mean all byte values of 0 thru 255 were seen at least once
         - name: ubc_res
           type: long
-          description: This key is only used by the Entropy Parser, Unique byte count is the number of unique bytes seen in each stream. 256 would mean all byte values of 0 thru 255 were seen at least once
+          description: >-
+            This key is only used by the Entropy Parser, Unique byte count is the number of unique bytes seen in each stream. 256 would mean all byte values of 0 thru 255 were seen at least once
         - name: word
           type: keyword
-          description: This is used by the Word Parsing technology to capture the first 5 character of every word in an unparsed log
+          description: >-
+            This is used by the Word Parsing technology to capture the first 5 character of every word in an unparsed log
     - name: time
       type: group
       fields:
         - name: event_time
           type: date
-          description: This key is used to capture the time mentioned in a raw session that represents the actual time an event occured in a standard normalized form
+          description: >-
+            This key is used to capture the time mentioned in a raw session that represents the actual time an event occured in a standard normalized form
         - name: duration_time
           type: double
-          description: This key is used to capture the normalized duration/lifetime in seconds.
+          description: >-
+            This key is used to capture the normalized duration/lifetime in seconds.
         - name: event_time_str
           type: keyword
-          description: This key is used to capture the incomplete time mentioned in a session as a string
+          description: >-
+            This key is used to capture the incomplete time mentioned in a session as a string
         - name: starttime
           type: date
-          description: This key is used to capture the Start time mentioned in a session in a standard form
+          description: >-
+            This key is used to capture the Start time mentioned in a session in a standard form
         - name: month
           type: keyword
         - name: day
           type: keyword
         - name: endtime
           type: date
-          description: This key is used to capture the End time mentioned in a session in a standard form
+          description: >-
+            This key is used to capture the End time mentioned in a session in a standard form
         - name: timezone
           type: keyword
           description: This key is used to capture the timezone of the Event Time
@@ -288,18 +338,20 @@
           type: keyword
         - name: recorded_time
           type: date
-          description: The event time as recorded by the system the event is collected from. The usage scenario is a multi-tier application where the management layer of the system records it's own timestamp at the time of collection from its child nodes. Must be in timestamp format.
+          description: >-
+            The event time as recorded by the system the event is collected from. The usage scenario is a multi-tier application where the management layer of the system records it's own timestamp at the time of collection from its child nodes. Must be in timestamp format.
         - name: datetime
           type: keyword
         - name: effective_time
           type: date
-          description: This key is the effective time referenced by an individual event in a Standard Timestamp format
+          description: >-
+            This key is the effective time referenced by an individual event in a Standard Timestamp format
         - name: expire_time
           type: date
           description: This key is the timestamp that explicitly refers to an expiration.
         - name: process_time
           type: keyword
-          description: Deprecated, use duration.time
+          description: 'Deprecated, use duration.time'
         - name: hour
           type: keyword
         - name: min
@@ -331,7 +383,8 @@
           type: keyword
         - name: expire_time_str
           type: keyword
-          description: This key is used to capture incomplete timestamp that explicitly refers to an expiration.
+          description: >-
+            This key is used to capture incomplete timestamp that explicitly refers to an expiration.
         - name: stamp
           type: date
           description: Deprecated key defined only in table map.
@@ -342,28 +395,33 @@
           type: keyword
         - name: result
           type: keyword
-          description: This key is used to capture the outcome/result string value of an action in a session.
+          description: >-
+            This key is used to capture the outcome/result string value of an action in a session.
         - name: severity
           type: keyword
           description: This key is used to capture the severity given the session
         - name: event_type
           type: keyword
-          description: This key captures the event category type as specified by the event source.
+          description: >-
+            This key captures the event category type as specified by the event source.
         - name: reference_id
           type: keyword
           description: This key is used to capture an event id from the session directly
         - name: version
           type: keyword
-          description: This key captures Version of the application or OS which is generating the event.
+          description: >-
+            This key captures Version of the application or OS which is generating the event.
         - name: disposition
           type: keyword
           description: This key captures the The end state of an action.
         - name: result_code
           type: keyword
-          description: This key is used to capture the outcome/result numeric value of an action in a session
+          description: >-
+            This key is used to capture the outcome/result numeric value of an action in a session
         - name: category
           type: keyword
-          description: This key is used to capture the category of an event given by the vendor in the session
+          description: >-
+            This key is used to capture the category of an event given by the vendor in the session
         - name: obj_name
           type: keyword
           description: This is used to capture name of object
@@ -372,7 +430,7 @@
           description: This is used to capture type of object
         - name: event_source
           type: keyword
-          description: "This key captures Source of the event that’s not a hostname"
+          description: This key captures Source of the event that’s not a hostname
         - name: log_session_id
           type: keyword
           description: This key is used to capture a sessionid from the session directly
@@ -387,52 +445,64 @@
           description: This key captures the Rule Name
         - name: context
           type: keyword
-          description: This key captures Information which adds additional context to the event.
+          description: >-
+            This key captures Information which adds additional context to the event.
         - name: change_new
           type: keyword
-          description: "This key is used to capture the new values of the attribute that’s changing in a session"
+          description: >-
+            This key is used to capture the new values of the attribute that’s changing in a session
         - name: space
           type: keyword
         - name: client
           type: keyword
-          description: This key is used to capture only the name of the client application requesting resources of the server. See the user.agent meta key for capture of the specific user agent identifier or browser identification string.
+          description: >-
+            This key is used to capture only the name of the client application requesting resources of the server. See the user.agent meta key for capture of the specific user agent identifier or browser identification string.
         - name: msgIdPart1
           type: keyword
         - name: msgIdPart2
           type: keyword
         - name: change_old
           type: keyword
-          description: "This key is used to capture the old value of the attribute that’s changing in a session"
+          description: >-
+            This key is used to capture the old value of the attribute that’s changing in a session
         - name: operation_id
           type: keyword
-          description: An alert number or operation number. The values should be unique and non-repeating.
+          description: >-
+            An alert number or operation number. The values should be unique and non-repeating.
         - name: event_state
           type: keyword
-          description: This key captures the current state of the object/item referenced within the event. Describing an on-going event.
+          description: >-
+            This key captures the current state of the object/item referenced within the event. Describing an on-going event.
         - name: group_object
           type: keyword
           description: This key captures a collection/grouping of entities. Specific usage
         - name: node
           type: keyword
-          description: Common use case is the node name within a cluster. The cluster name is reflected by the host name.
+          description: >-
+            Common use case is the node name within a cluster. The cluster name is reflected by the host name.
         - name: rule
           type: keyword
           description: This key captures the Rule number
         - name: device_name
           type: keyword
-          description: 'This is used to capture name of the Device associated with the node Like: a physical disk, printer, etc'
+          description: >-
+            This is used to capture name of the Device associated with the node Like: a physical disk, printer, etc
         - name: param
           type: keyword
-          description: This key is the parameters passed as part of a command or application, etc.
+          description: >-
+            This key is the parameters passed as part of a command or application, etc.
         - name: change_attrib
           type: keyword
-          description: "This key is used to capture the name of the attribute that’s changing in a session"
+          description: >-
+            This key is used to capture the name of the attribute that’s changing in a session
         - name: event_computer
           type: keyword
-          description: This key is a windows only concept, where this key is used to capture fully qualified domain name in a windows log.
+          description: >-
+            This key is a windows only concept, where this key is used to capture fully qualified domain name in a windows log.
         - name: reference_id1
           type: keyword
-          description: This key is for Linked ID to be used as an addition to "reference.id"
+          description: >-
+            This key is for Linked ID to be used as an addition to "reference.id"
         - name: event_log
           type: keyword
           description: This key captures the Name of the event log
@@ -452,10 +522,12 @@
           description: This key is the Serial number associated with a physical asset.
         - name: checksum
           type: keyword
-          description: This key is used to capture the checksum or hash of the entity such as a file or process. Checksum should be used over checksum.src or checksum.dst when it is unclear whether the entity is a source or target of an action.
+          description: >-
+            This key is used to capture the checksum or hash of the entity such as a file or process. Checksum should be used over checksum.src or checksum.dst when it is unclear whether the entity is a source or target of an action.
         - name: event_user
           type: keyword
-          description: This key is a windows only concept, where this key is used to capture combination of domain name and username in a windows log.
+          description: >-
+            This key is a windows only concept, where this key is used to capture combination of domain name and username in a windows log.
         - name: virusname
           type: keyword
           description: This key captures the name of the virus
@@ -467,7 +539,8 @@
           description: This key captures Group ID Number (related to the group name)
         - name: policy_id
           type: keyword
-          description: This key is used to capture the Policy ID only, this should be a numeric value, use policy.name otherwise
+          description: >-
+            This key is used to capture the Policy ID only, this should be a numeric value, use policy.name otherwise
         - name: vsys
           type: keyword
           description: This key captures Virtual System Name
@@ -476,16 +549,19 @@
           description: This key captures the Connection ID
         - name: reference_id2
           type: keyword
-          description: This key is for the 2nd Linked ID. Can be either linked to "reference.id" or "reference.id1" value but should not be used unless the other two variables are in play.
+          description: >-
+            This key is for the 2nd Linked ID. Can be either linked to "reference.id" or "reference.id1" value but should not be used unless the other two variables are in play.
         - name: sensor
           type: keyword
-          description: This key captures Name of the sensor. Typically used in IDS/IPS based devices
+          description: >-
+            This key captures Name of the sensor. Typically used in IDS/IPS based devices
         - name: sig_id
           type: long
           description: This key captures IDS/IPS Int Signature ID
         - name: port_name
           type: keyword
-          description: 'This key is used for Physical or logical port connection but does NOT include a network port. (Example: Printer port name).'
+          description: >-
+            This key is used for Physical or logical port connection but does NOT include a network port. (Example: Printer port name).
         - name: rule_group
           type: keyword
           description: This key captures the Rule group name
@@ -497,7 +573,8 @@
           description: This key captures the Value of the trigger or threshold condition.
         - name: log_session_id1
           type: keyword
-          description: This key is used to capture a Linked (Related) Session ID from the session directly
+          description: >-
+            This key is used to capture a Linked (Related) Session ID from the session directly
         - name: comp_version
           type: keyword
           description: This key captures the Version level of a sub-component of a product.
@@ -506,7 +583,8 @@
           description: This key captures Version level of a signature or database content.
         - name: hardware_id
           type: keyword
-          description: This key is used to capture unique identifier for a device or system (NOT a Mac address)
+          description: >-
+            This key is used to capture unique identifier for a device or system (NOT a Mac address)
         - name: risk
           type: keyword
           description: This key captures the non-numeric risk value
@@ -524,7 +602,8 @@
           description: This key is the Unique Identifier for a rule.
         - name: trigger_desc
           type: keyword
-          description: This key captures the Description of the trigger or threshold condition.
+          description: >-
+            This key captures the Description of the trigger or threshold condition.
         - name: inout
           type: keyword
         - name: p_msgid
@@ -540,21 +619,25 @@
           type: keyword
         - name: listnum
           type: keyword
-          description: This key is used to capture listname or listnumber, primarily for collecting access-list
+          description: >-
+            This key is used to capture listname or listnumber, primarily for collecting access-list
         - name: ntype
           type: keyword
         - name: observed_val
           type: keyword
-          description: This key captures the Value observed (from the perspective of the device generating the log).
+          description: >-
+            This key captures the Value observed (from the perspective of the device generating the log).
         - name: policy_value
           type: keyword
-          description: This key captures the contents of the policy. This contains details about the policy
+          description: >-
+            This key captures the contents of the policy. This contains details about the policy
         - name: pool_name
           type: keyword
           description: This key captures the name of a resource pool
         - name: rule_template
           type: keyword
-          description: A default set of parameters which are overlayed onto a rule (or rulename) which efffectively constitutes a template
+          description: >-
+            A default set of parameters which are overlayed onto a rule (or rulename) which efffectively constitutes a template
         - name: count
           type: keyword
         - name: number
@@ -571,7 +654,8 @@
           description: This key captures File Identification number
         - name: expected_val
           type: keyword
-          description: This key captures the Value expected (from the perspective of the device generating the log).
+          description: >-
+            This key captures the Value expected (from the perspective of the device generating the log).
         - name: job_num
           type: keyword
           description: This key captures the Job Number
@@ -602,13 +686,16 @@
           type: keyword
         - name: cpu
           type: long
-          description: This key is the CPU time used in the execution of the event being recorded.
+          description: >-
+            This key is the CPU time used in the execution of the event being recorded.
         - name: event_desc
           type: keyword
-          description: This key is used to capture a description of an event available directly or inferred
+          description: >-
+            This key is used to capture a description of an event available directly or inferred
         - name: sig_id1
           type: long
-          description: This key captures IDS/IPS Int Signature ID. This must be linked to the sig.id
+          description: >-
+            This key captures IDS/IPS Int Signature ID. This must be linked to the sig.id
         - name: im_buddyid
           type: keyword
         - name: im_client
@@ -621,12 +708,14 @@
           type: keyword
         - name: context_subject
           type: keyword
-          description: This key is to be used in an audit context where the subject is the object being identified
+          description: >-
+            This key is to be used in an audit context where the subject is the object being identified
         - name: context_target
           type: keyword
         - name: cve
           type: keyword
-          description: This key captures CVE (Common Vulnerabilities and Exposures) - an identifier for known information security vulnerabilities.
+          description: >-
+            This key captures CVE (Common Vulnerabilities and Exposures) - an identifier for known information security vulnerabilities.
         - name: fcatnum
           type: keyword
           description: This key captures Filter Category Number. Legacy Usage
@@ -635,10 +724,11 @@
           description: This key is used to capture library information in mainframe devices
         - name: parent_node
           type: keyword
-          description: This key captures the Parent Node Name. Must be related to node variable.
+          description: >-
+            This key captures the Parent Node Name. Must be related to node variable.
         - name: risk_info
           type: keyword
-          description: Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)
+          description: 'Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)'
         - name: tcp_flags
           type: long
           description: This key is captures the TCP flags set in any packet of session
@@ -677,13 +767,15 @@
           type: keyword
         - name: alert_id
           type: keyword
-          description: Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)
+          description: 'Deprecated, New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)'
         - name: checksum_dst
           type: keyword
-          description: This key is used to capture the checksum or hash of the the target entity such as a process or file.
+          description: >-
+            This key is used to capture the checksum or hash of the the target entity such as a process or file.
         - name: checksum_src
           type: keyword
-          description: This key is used to capture the checksum or hash of the source entity such as a file or process.
+          description: >-
+            This key is used to capture the checksum or hash of the source entity such as a file or process.
         - name: fresult
           type: long
           description: This key captures the Filter Result
@@ -695,10 +787,12 @@
           description: This key is used to capture source payload
         - name: pool_id
           type: keyword
-          description: This key captures the identifier (typically numeric field) of a resource pool
+          description: >-
+            This key captures the identifier (typically numeric field) of a resource pool
         - name: process_id_val
           type: keyword
-          description: This key is a failure key for Process ID when it is not an integer value
+          description: >-
+            This key is a failure key for Process ID when it is not an integer value
         - name: risk_num_comm
           type: double
           description: This key captures Risk Number Community
@@ -713,10 +807,10 @@
           description: This key captures Risk Number Static
         - name: risk_suspicious
           type: keyword
-          description: Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)
+          description: 'Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)'
         - name: risk_warning
           type: keyword
-          description: Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)
+          description: 'Deprecated, use New Hunting Model (inv.*, ioc, boc, eoc, analysis.*)'
         - name: snmp_oid
           type: keyword
           description: SNMP Object Identifier
@@ -1183,19 +1277,22 @@
           description: This is used to capture the results of regex match
         - name: language
           type: keyword
-          description: This is used to capture list of languages the client support and what it prefers
+          description: >-
+            This is used to capture list of languages the client support and what it prefers
         - name: lifetime
           type: long
           description: This key is used to capture the session lifetime in seconds.
         - name: link
           type: keyword
-          description: This key is used to link the sessions together. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
+          description: >-
+            This key is used to link the sessions together. This key should never be used to parse Meta data from a session (Logs/Packets) Directly, this is a Reserved key in NetWitness
         - name: match
           type: keyword
           description: This key is for regex match name from search.ini
         - name: param_dst
           type: keyword
-          description: This key captures the command line/launch argument of the target process or file
+          description: >-
+            This key captures the command line/launch argument of the target process or file
         - name: param_src
           type: keyword
           description: This key captures source parameter
@@ -1222,13 +1319,15 @@
           description: This key is used to capture the database server instance name
         - name: database
           type: keyword
-          description: This key is used to capture the name of a database or an instance as seen in a session
+          description: >-
+            This key is used to capture the name of a database or an instance as seen in a session
         - name: transact_id
           type: keyword
           description: This key captures the SQL transantion ID of the current session
         - name: permissions
           type: keyword
-          description: This key captures permission or privilege level assigned to a resource.
+          description: >-
+            This key captures permission or privilege level assigned to a resource.
         - name: table_name
           type: keyword
           description: This key is used to capture the table name
@@ -1237,7 +1336,8 @@
           description: This key is used to capture the unique identifier for a database
         - name: db_pid
           type: long
-          description: This key captures the process id of a connection with database server
+          description: >-
+            This key captures the process id of a connection with database server
         - name: lread
           type: long
           description: This key is used for the number of logical reads
@@ -1252,42 +1352,46 @@
       fields:
         - name: alias_host
           type: keyword
-          description: This key should be used when the source or destination context of a hostname is not clear.Also it captures the Device Hostname. Any Hostname that isnt ad.computer.
+          description: >-
+            This key should be used when the source or destination context of a hostname is not clear.Also it captures the Device Hostname. Any Hostname that isnt ad.computer.
         - name: domain
           type: keyword
         - name: host_dst
           type: keyword
-          description: "This key should only be used when it’s a Destination Hostname"
+          description: This key should only be used when it’s a Destination Hostname
         - name: network_service
           type: keyword
           description: This is used to capture layer 7 protocols/service names
         - name: interface
           type: keyword
-          description: This key should be used when the source or destination context of an interface is not clear
+          description: >-
+            This key should be used when the source or destination context of an interface is not clear
         - name: network_port
           type: long
-          description: 'Deprecated, use port. NOTE: There is a type discrepancy as currently used, TM: Int32, INDEX: UInt64 (why neither chose the correct UInt16?!)'
+          description: >-
+            Deprecated, use port. NOTE: There is a type discrepancy as currently used, TM: Int32, INDEX: UInt64 (why neither chose the correct UInt16?!)
         - name: eth_host
           type: keyword
-          description: Deprecated, use alias.mac
+          description: 'Deprecated, use alias.mac'
         - name: sinterface
           type: keyword
-          description: "This key should only be used when it’s a Source Interface"
+          description: This key should only be used when it’s a Source Interface
         - name: dinterface
           type: keyword
-          description: "This key should only be used when it’s a Destination Interface"
+          description: This key should only be used when it’s a Destination Interface
         - name: vlan
           type: long
           description: This key should only be used to capture the ID of the Virtual LAN
         - name: zone_src
           type: keyword
-          description: "This key should only be used when it’s a Source Zone."
+          description: This key should only be used when it’s a Source Zone.
         - name: zone
           type: keyword
-          description: This key should be used when the source or destination context of a Zone is not clear
+          description: >-
+            This key should be used when the source or destination context of a Zone is not clear
         - name: zone_dst
           type: keyword
-          description: "This key should only be used when it’s a Destination Zone."
+          description: This key should only be used when it’s a Destination Zone.
         - name: gateway
           type: keyword
           description: This key is used to capture the IP Address of the gateway
@@ -1308,13 +1412,15 @@
           description: This key is used for Destionation Device network mask
         - name: port
           type: long
-          description: This key should only be used to capture a Network Port when the directionality is not clear
+          description: >-
+            This key should only be used to capture a Network Port when the directionality is not clear
         - name: smask
           type: keyword
           description: This key is used for capturing source Network Mask
         - name: netname
           type: keyword
-          description: This key is used to capture the network name associated with an IP range. This is configured by the end user.
+          description: >-
+            This key is used to capture the network name associated with an IP range. This is configured by the end user.
         - name: paddr
           type: ip
           description: Deprecated
@@ -1344,13 +1450,15 @@
           type: keyword
         - name: ad_computer_dst
           type: keyword
-          description: Deprecated, use host.dst
+          description: 'Deprecated, use host.dst'
         - name: eth_type
           type: long
-          description: This key is used to capture Ethernet Type, Used for Layer 3 Protocols Only
+          description: >-
+            This key is used to capture Ethernet Type, Used for Layer 3 Protocols Only
         - name: ip_proto
           type: long
-          description: This key should be used to capture the Protocol number, all the protocol nubers are converted into string in UI
+          description: >-
+            This key should be used to capture the Protocol number, all the protocol nubers are converted into string in UI
         - name: dns_cname_record
           type: keyword
         - name: dns_id
@@ -1369,10 +1477,12 @@
           type: keyword
         - name: host_orig
           type: keyword
-          description: This is used to capture the original hostname in case of a Forwarding Agent or a Proxy in between.
+          description: >-
+            This is used to capture the original hostname in case of a Forwarding Agent or a Proxy in between.
         - name: rpayload
           type: keyword
-          description: This key is used to capture the total number of payload bytes seen in the retransmitted packets.
+          description: >-
+            This key is used to capture the total number of payload bytes seen in the retransmitted packets.
         - name: vlan_name
           type: keyword
           description: This key should only be used to capture the name of the Virtual LAN
@@ -1381,34 +1491,39 @@
       fields:
         - name: ec_activity
           type: keyword
-          description: This key captures the particular event activity(Ex:Logoff)
+          description: 'This key captures the particular event activity(Ex:Logoff)'
         - name: ec_theme
           type: keyword
-          description: This key captures the Theme of a particular Event(Ex:Authentication)
+          description: 'This key captures the Theme of a particular Event(Ex:Authentication)'
         - name: ec_subject
           type: keyword
-          description: This key captures the Subject of a particular Event(Ex:User)
+          description: 'This key captures the Subject of a particular Event(Ex:User)'
         - name: ec_outcome
           type: keyword
-          description: This key captures the outcome of a particular Event(Ex:Success)
+          description: 'This key captures the outcome of a particular Event(Ex:Success)'
         - name: event_cat
           type: long
           description: This key captures the Event category number
         - name: event_cat_name
           type: keyword
-          description: This key captures the event category name corresponding to the event cat code
+          description: >-
+            This key captures the event category name corresponding to the event cat code
         - name: event_vcat
           type: keyword
-          description: This is a vendor supplied category. This should be used in situations where the vendor has adopted their own event_category taxonomy.
+          description: >-
+            This is a vendor supplied category. This should be used in situations where the vendor has adopted their own event_category taxonomy.
         - name: analysis_file
           type: keyword
-          description: This is used to capture all indicators used in a File Analysis. This key should be used to capture an analysis of a file
+          description: >-
+            This is used to capture all indicators used in a File Analysis. This key should be used to capture an analysis of a file
         - name: analysis_service
           type: keyword
-          description: This is used to capture all indicators used in a Service Analysis. This key should be used to capture an analysis of a service
+          description: >-
+            This is used to capture all indicators used in a Service Analysis. This key should be used to capture an analysis of a service
         - name: analysis_session
           type: keyword
-          description: This is used to capture all indicators used for a Session Analysis. This key should be used to capture an analysis of a session
+          description: >-
+            This is used to capture all indicators used for a Session Analysis. This key should be used to capture an analysis of a session
         - name: boc
           type: keyword
           description: This is used to capture behaviour of compromise
@@ -1429,43 +1544,55 @@
       fields:
         - name: dclass_c1
           type: long
-          description: This is a generic counter key that should be used with the label dclass.c1.str only
+          description: >-
+            This is a generic counter key that should be used with the label dclass.c1.str only
         - name: dclass_c2
           type: long
-          description: This is a generic counter key that should be used with the label dclass.c2.str only
+          description: >-
+            This is a generic counter key that should be used with the label dclass.c2.str only
         - name: event_counter
           type: long
           description: This is used to capture the number of times an event repeated
         - name: dclass_r1
           type: keyword
-          description: This is a generic ratio key that should be used with the label dclass.r1.str only
+          description: >-
+            This is a generic ratio key that should be used with the label dclass.r1.str only
         - name: dclass_c3
           type: long
-          description: This is a generic counter key that should be used with the label dclass.c3.str only
+          description: >-
+            This is a generic counter key that should be used with the label dclass.c3.str only
         - name: dclass_c1_str
           type: keyword
-          description: This is a generic counter string key that should be used with the label dclass.c1 only
+          description: >-
+            This is a generic counter string key that should be used with the label dclass.c1 only
         - name: dclass_c2_str
           type: keyword
-          description: This is a generic counter string key that should be used with the label dclass.c2 only
+          description: >-
+            This is a generic counter string key that should be used with the label dclass.c2 only
         - name: dclass_r1_str
           type: keyword
-          description: This is a generic ratio string key that should be used with the label dclass.r1 only
+          description: >-
+            This is a generic ratio string key that should be used with the label dclass.r1 only
         - name: dclass_r2
           type: keyword
-          description: This is a generic ratio key that should be used with the label dclass.r2.str only
+          description: >-
+            This is a generic ratio key that should be used with the label dclass.r2.str only
         - name: dclass_c3_str
           type: keyword
-          description: This is a generic counter string key that should be used with the label dclass.c3 only
+          description: >-
+            This is a generic counter string key that should be used with the label dclass.c3 only
         - name: dclass_r3
           type: keyword
-          description: This is a generic ratio key that should be used with the label dclass.r3.str only
+          description: >-
+            This is a generic ratio key that should be used with the label dclass.r3.str only
         - name: dclass_r2_str
           type: keyword
-          description: This is a generic ratio string key that should be used with the label dclass.r2 only
+          description: >-
+            This is a generic ratio string key that should be used with the label dclass.r2 only
         - name: dclass_r3_str
           type: keyword
-          description: This is a generic ratio string key that should be used with the label dclass.r3 only
+          description: >-
+            This is a generic ratio string key that should be used with the label dclass.r3 only
     - name: identity
       type: group
       fields:
@@ -1486,7 +1613,8 @@
           description: This key is used to capture the user profile
         - name: accesses
           type: keyword
-          description: This key is used to capture actual privileges used in accessing an object
+          description: >-
+            This key is used to capture actual privileges used in accessing an object
         - name: realm
           type: keyword
           description: Radius realm or similar grouping of accounts
@@ -1495,19 +1623,23 @@
           description: This key captures Destination User Session ID
         - name: dn_src
           type: keyword
-          description: An X.500 (LDAP) Distinguished name that is used in a context that indicates a Source dn
+          description: >-
+            An X.500 (LDAP) Distinguished name that is used in a context that indicates a Source dn
         - name: org
           type: keyword
           description: This key captures the User organization
         - name: dn_dst
           type: keyword
-          description: An X.500 (LDAP) Distinguished name that used in a context that indicates a Destination dn
+          description: >-
+            An X.500 (LDAP) Distinguished name that used in a context that indicates a Destination dn
         - name: firstname
           type: keyword
-          description: This key is for First Names only, this is used for Healthcare predominantly to capture Patients information
+          description: >-
+            This key is for First Names only, this is used for Healthcare predominantly to capture Patients information
         - name: lastname
           type: keyword
-          description: This key is for Last Names only, this is used for Healthcare predominantly to capture Patients information
+          description: >-
+            This key is for Last Names only, this is used for Healthcare predominantly to capture Patients information
         - name: user_dept
           type: keyword
           description: User's Department Names only
@@ -1516,25 +1648,31 @@
           description: This key captures Source User Session ID
         - name: federated_sp
           type: keyword
-          description: This key is the Federated Service Provider. This is the application requesting authentication.
+          description: >-
+            This key is the Federated Service Provider. This is the application requesting authentication.
         - name: federated_idp
           type: keyword
-          description: This key is the federated Identity Provider. This is the server providing the authentication.
+          description: >-
+            This key is the federated Identity Provider. This is the server providing the authentication.
         - name: logon_type_desc
           type: keyword
-          description: This key is used to capture the textual description of an integer logon type as stored in the meta key 'logon.type'.
+          description: >-
+            This key is used to capture the textual description of an integer logon type as stored in the meta key 'logon.type'.
         - name: middlename
           type: keyword
-          description: This key is for Middle Names only, this is used for Healthcare predominantly to capture Patients information
+          description: >-
+            This key is for Middle Names only, this is used for Healthcare predominantly to capture Patients information
         - name: password
           type: keyword
-          description: This key is for Passwords seen in any session, plain text or encrypted
+          description: >-
+            This key is for Passwords seen in any session, plain text or encrypted
         - name: host_role
           type: keyword
           description: This key should only be used to capture the role of a Host Machine
         - name: ldap
           type: keyword
-          description: "This key is for Uninterpreted LDAP values. Ldap Values that don’t have a clear query or response context"
+          description: >-
+            This key is for Uninterpreted LDAP values. Ldap Values that don’t have a clear query or response context
         - name: ldap_query
           type: keyword
           description: This key is the Search criteria from an LDAP search
@@ -1543,25 +1681,30 @@
           description: This key is to capture Results from an LDAP search
         - name: owner
           type: keyword
-          description: This is used to capture username the process or service is running as, the author of the task
+          description: >-
+            This is used to capture username the process or service is running as, the author of the task
         - name: service_account
           type: keyword
-          description: This key is a windows specific key, used for capturing name of the account a service (referenced in the event) is running under. Legacy Usage
+          description: >-
+            This key is a windows specific key, used for capturing name of the account a service (referenced in the event) is running under. Legacy Usage
     - name: email
       type: group
       fields:
         - name: email_dst
           type: keyword
-          description: This key is used to capture the Destination email address only, when the destination context is not clear use email
+          description: >-
+            This key is used to capture the Destination email address only, when the destination context is not clear use email
         - name: email_src
           type: keyword
-          description: This key is used to capture the source email address only, when the source context is not clear use email
+          description: >-
+            This key is used to capture the source email address only, when the source context is not clear use email
         - name: subject
           type: keyword
           description: This key is used to capture the subject string from an Email only.
         - name: email
           type: keyword
-          description: This key is used to capture a generic email address where the source or destination context is not clear
+          description: >-
+            This key is used to capture a generic email address where the source or destination context is not clear
         - name: trans_from
           type: keyword
           description: Deprecated key defined only in table map.
@@ -1573,7 +1716,7 @@
       fields:
         - name: privilege
           type: keyword
-          description: Deprecated, use permissions
+          description: 'Deprecated, use permissions'
         - name: attachment
           type: keyword
           description: This key captures the attachment file name
@@ -1587,15 +1730,18 @@
           description: This is used to capture name of the file targeted by the action
         - name: filename_src
           type: keyword
-          description: This is used to capture name of the parent filename, the file which performed the action
+          description: >-
+            This is used to capture name of the parent filename, the file which performed the action
         - name: filename_tmp
           type: keyword
         - name: directory_dst
           type: keyword
-          description: <span>This key is used to capture the directory of the target process or file</span>
+          description: >-
+            <span>This key is used to capture the directory of the target process or file</span>
         - name: directory_src
           type: keyword
-          description: This key is used to capture the directory of the source process or file
+          description: >-
+            This key is used to capture the directory of the source process or file
         - name: file_entropy
           type: double
           description: This is used to capture entropy vale of a file
@@ -1660,10 +1806,12 @@
       fields:
         - name: threat_category
           type: keyword
-          description: This key captures Threat Name/Threat Category/Categorization of alert
+          description: >-
+            This key captures Threat Name/Threat Category/Categorization of alert
         - name: threat_desc
           type: keyword
-          description: This key is used to capture the threat description from the session directly or inferred
+          description: >-
+            This key is used to capture the threat description from the session directly or inferred
         - name: alert
           type: keyword
           description: This key is used to capture name of the alert
@@ -1675,7 +1823,8 @@
       fields:
         - name: crypto
           type: keyword
-          description: This key is used to capture the Encryption Type or Encryption Key only
+          description: >-
+            This key is used to capture the Encryption Type or Encryption Key only
         - name: cipher_src
           type: keyword
           description: This key is for Source (Client) Cipher
@@ -1696,7 +1845,7 @@
           description: This key captures the Encryption scheme used
         - name: peer_id
           type: keyword
-          description: "This key is for Encryption peer’s identity"
+          description: This key is for Encryption peer’s identity
         - name: sig_type
           type: keyword
           description: This key captures the Signature Type
@@ -1716,17 +1865,17 @@
           description: This key captures Destination (Server) Cipher Size
         - name: ssl_ver_src
           type: keyword
-          description: Deprecated, use version
+          description: 'Deprecated, use version'
         - name: d_certauth
           type: keyword
         - name: s_certauth
           type: keyword
         - name: ike_cookie1
           type: keyword
-          description: "ID of the negotiation — sent for ISAKMP Phase One"
+          description: ID of the negotiation — sent for ISAKMP Phase One
         - name: ike_cookie2
           type: keyword
-          description: "ID of the negotiation — sent for ISAKMP Phase Two"
+          description: ID of the negotiation — sent for ISAKMP Phase Two
         - name: cert_checksum
           type: keyword
         - name: cert_host_cat
@@ -1740,7 +1889,7 @@
           description: This key captures Certificate validation status
         - name: ssl_ver_dst
           type: keyword
-          description: Deprecated, use version
+          description: 'Deprecated, use version'
         - name: cert_keysize
           type: keyword
         - name: cert_username
@@ -1775,7 +1924,8 @@
       fields:
         - name: disk_volume
           type: keyword
-          description: A unique name assigned to logical units (volumes) within a physical disk
+          description: >-
+            A unique name assigned to logical units (volumes) within a physical disk
         - name: lun
           type: keyword
           description: Logical Unit Number.This key is a very useful concept in Storage.
@@ -1787,31 +1937,37 @@
       fields:
         - name: org_dst
           type: keyword
-          description: This is used to capture the destination organization based on the GEOPIP Maxmind database.
+          description: >-
+            This is used to capture the destination organization based on the GEOPIP Maxmind database.
         - name: org_src
           type: keyword
-          description: This is used to capture the source organization based on the GEOPIP Maxmind database.
+          description: >-
+            This is used to capture the source organization based on the GEOPIP Maxmind database.
     - name: healthcare
       type: group
       fields:
         - name: patient_fname
           type: keyword
-          description: This key is for First Names only, this is used for Healthcare predominantly to capture Patients information
+          description: >-
+            This key is for First Names only, this is used for Healthcare predominantly to capture Patients information
         - name: patient_id
           type: keyword
           description: This key captures the unique ID for a patient
         - name: patient_lname
           type: keyword
-          description: This key is for Last Names only, this is used for Healthcare predominantly to capture Patients information
+          description: >-
+            This key is for Last Names only, this is used for Healthcare predominantly to capture Patients information
         - name: patient_mname
           type: keyword
-          description: This key is for Middle Names only, this is used for Healthcare predominantly to capture Patients information
+          description: >-
+            This key is for Middle Names only, this is used for Healthcare predominantly to capture Patients information
     - name: endpoint
       type: group
       fields:
         - name: host_state
           type: keyword
-          description: This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on
+          description: >-
+            This key is used to capture the current state of the machine, such as <strong>blacklisted</strong>, <strong>infected</strong>, <strong>firewall disabled</strong> and so on
         - name: registry_key
           type: keyword
           description: This key captures the path to the registry key
@@ -1829,6 +1985,8 @@
   fields:
     - name: zone
       type: keyword
+    - name: vpn_policy
+      type: keyword
 - name: destination
   type: group
   fields:
@@ -1840,18 +1998,12 @@
     - name: egress
       type: group
       fields:
-        - name: interface_id
-          type: long
         - name: ip
           type: ip
     - name: ingress
       type: group
       fields:
-        - name: interface_id
-          type: long
         - name: ip
           type: ip
-    - name: hostname
-      type: keyword
 - name: ingest_time
   type: date
