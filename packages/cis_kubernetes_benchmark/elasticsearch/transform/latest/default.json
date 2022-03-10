@@ -1,30 +1,34 @@
 {
-    "description": "Defines findings transformation to view only the latest and greatest",
-    "dest": {
-        "index": "cloud_security_posture-findings_latest"
-    },
-    "frequency": "30s",
-    "source": {
-        "index": "logs-cis_kubernetes_benchmark.findings-*"
-    },
-    "latest": {
-        "sort": "@timestamp",
-        "unique_key": [
-            "resource_id.keyword",
-            "rule.name.keyword",
-            "agent.id.keyword"
-        ]
-    },
-    "retention_policy": {
-        "time": {
-            "field": "@timestamp",
-            "max_age": "3d"
-        }
-    },
-    "sync": {
-        "time": {
-            "field": "@timestamp",
-            "delay": "60s"
-        }
+  "description": "Defines findings transformation to view only the latest and greatest",
+  "source": {
+    "index": "logs-cis_kubernetes_benchmark.findings-*"
+  },
+  "dest": {
+    "index": "cloud_security_posture-findings_latest"
+  },
+  "frequency": "10s",
+
+  "latest": {
+    "sort": "@timestamp",
+    "unique_key": [
+      "resource_id.keyword",
+      "rule.name.keyword",
+      "agent.id.keyword"
+    ]
+  },
+  "retention_policy": {
+    "time": {
+      "field": "@timestamp",
+      "max_age": "3d"
     }
+  },
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "_meta": {
+    "managed": true
+  }
 }
