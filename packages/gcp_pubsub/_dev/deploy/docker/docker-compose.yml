@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  gcppubsub-emulator:
+    image: google/cloud-sdk:emulators
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8681
+    ports:
+      - "8681/tcp"
+  gcppubsub-generic:
+    image: docker.elastic.co/observability/stream:v0.6.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=generic
+      - /sample_logs/testdata.log
+    depends_on:
+      - gcppubsub-emulator

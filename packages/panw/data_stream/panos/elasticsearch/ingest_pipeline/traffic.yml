@@ -1,0 +1,187 @@
+---
+description: Pipeline for PanOS Traffic Logs
+processors:
+  - csv:
+      field: message
+      target_fields:
+        - source.ip
+        - destination.ip
+        - source.nat.ip
+        - destination.nat.ip
+        - panw.panos.ruleset
+        - source.user.name
+        - destination.user.name
+        - network.application
+        - panw.panos.related_vsys
+        - observer.ingress.zone
+        - observer.egress.zone
+        - observer.ingress.interface.name
+        - observer.egress.interface.name
+        - panw.panos.log_profile
+        - _temp_.future_use1
+        - panw.panos.flow_id
+        - panw.panos.repeat_count
+        - source.port
+        - destination.port
+        - source.nat.port
+        - destination.nat.port
+        - _temp_.labels
+        - network.transport
+        - panw.panos.action
+        - network.bytes
+        - source.bytes
+        - destination.bytes
+        - network.packets
+        - event.start
+        - event.duration
+        - panw.panos.url.category
+        - _temp_.future_use2
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - _temp_.srcloc
+        - _temp_.dstloc
+        - _temp_.future_use3
+        - source.packets
+        - destination.packets
+        - panw.panos.endreason
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - observer.hostname
+        - panw.panos.action_source
+        - panw.panos.source_vm_uuid
+        - panw.panos.destination_vm_uuid
+        - panw.panos.imsi
+        - panw.panos.imei
+        - panw.panos.parent_session.id
+        - panw.panos.parent_session.start_time
+        - panw.panos.tunnel_type
+        - panw.panos.scp.assoc_id
+        - panw.panos.scp.chunks
+        - panw.panos.scp.chunks_sent
+        - panw.panos.scp.chunks_received
+
+# Set network.direction using src/dst zone (traffic logs).
+  - set:
+      field: network.direction
+      value: inbound
+      if: >
+        ctx?._temp_?.external_zones != null &&
+        ctx?._temp_?.internal_zones != null &&
+        ctx?.observer?.ingress?.zone != null &&
+        ctx?.observer?.egress?.zone != null &&
+        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
+        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
+  - set:
+      field: network.direction
+      value: outbound
+      if: >
+        ctx?._temp_?.external_zones != null &&
+        ctx?._temp_?.internal_zones != null &&
+        ctx?.observer?.ingress?.zone != null &&
+        ctx?.observer?.egress?.zone != null &&
+        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
+  - set:
+      field: network.direction
+      value: internal
+      if: >
+        ctx?._temp_?.internal_zones != null &&
+        ctx?.observer?.ingress?.zone != null &&
+        ctx?.observer?.egress?.zone != null &&
+        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
+        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
+  - set:
+      field: network.direction
+      value: external
+      if: >
+        ctx?._temp_?.external_zones != null &&
+        ctx?.observer?.ingress?.zone != null &&
+        ctx?.observer?.egress?.zone != null &&
+        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
+  - set:
+      field: network.direction
+      value: unknown
+      if: >
+        ctx?._temp_?.external_zones != null &&
+        ctx?._temp_?.internal_zones != null &&
+        (
+          (
+            !ctx._temp_.external_zones.contains(ctx?.observer?.egress?.zone) &&
+            !ctx._temp_.internal_zones.contains(ctx?.observer?.egress?.zone)
+          ) ||
+          (
+            !ctx._temp_.external_zones.contains(ctx?.observer?.ingress?.zone) &&
+            !ctx._temp_.internal_zones.contains(ctx?.observer?.ingress?.zone)
+          )
+        )
+
+# Set network.type.
+  - set:
+      field: network.type
+      value: 'ipv4'
+      if: ctx?.labels?.ipv6_session == null
+  - set:
+      field: network.type
+      value: 'ipv6'
+      if: ctx?.labels?.ipv6_session != null
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network_traffic
+        - network
+
+# event.start is the time the session started.
+  - date:
+      if: "ctx?.event?.timezone == null && ctx?.event?.start != null"
+      field: "event.start"
+      target_field: "event.start"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
+      if: "ctx?.event?.timezone != null && ctx?.event?.start != null"
+      field: "event.start"
+      target_field: "event.start"
+      timezone: "{{{ event.timezone }}}"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+
+# Time the parent_session of the tunnel started.
+  - date:
+      if: "ctx?.event?.timezone == null && ctx?.panw?.panos?.parent_session?.start_time != null"
+      field: "panw.panos.parent_session.start_time"
+      target_field: "panw.panos.parent_session.start_time"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
+      if: "ctx?.event?.timezone != null && ctx?.panw?.panos?.parent_session?.start_time != null"
+      field: "panw.panos.parent_session.start_time"
+      target_field: "panw.panos.parent_session.start_time"
+      timezone: "{{{ event.timezone }}}"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Traffic pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}
