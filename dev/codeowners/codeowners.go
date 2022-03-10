@@ -20,8 +20,8 @@ const (
 	codeownersPath = ".github/CODEOWNERS"
 )
 
-func CheckPackageOwners() error {
-	codeowners, err := readGithubOwners()
+func Check() error {
+	codeowners, err := readGithubOwners(codeownersPath)
 	if err != nil {
 		return err
 	}
@@ -42,16 +42,22 @@ func CheckPackageOwners() error {
 	})
 }
 
-type githubOwners map[string][]string
+type githubOwners struct {
+	owners map[string][]string
+	path   string
+}
 
-func readGithubOwners() (githubOwners, error) {
+func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 	f, err := os.Open(codeownersPath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open %q", codeownersPath)
 	}
 	defer f.Close()
 
-	codeowners := make(githubOwners)
+	codeowners := githubOwners{
+		owners: make(map[string][]string),
+		path:   codeownersPath,
+	}
 
 	scanner := bufio.NewScanner(f)
 	lineNumber := 0
@@ -68,20 +74,20 @@ func readGithubOwners() (githubOwners, error) {
 		path, owners := fields[0], fields[1:]
 
 		// It is ok to overwrite because latter lines have precedence in these files.
-		codeowners[path] = owners
+		codeowners.owners[path] = owners
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, errors.Wrapf(err, "scanner error")
 	}
 
-	return codeowners, nil
+	return &codeowners, nil
 }
 
-func (codeowners githubOwners) checkManifest(path string) error {
+func (codeowners *githubOwners) checkManifest(path string) error {
 	pkgDir := filepath.Dir(path)
-	owners, found := codeowners["/"+pkgDir]
+	owners, found := codeowners.owners["/"+pkgDir]
 	if !found {
-		return errors.Errorf("there is no owner for %q in %q", pkgDir, codeownersPath)
+		return errors.Errorf("there is no owner for %q in %q", pkgDir, codeowners.path)
 	}
 
 	content, err := ioutil.ReadFile(path)
@@ -111,7 +117,7 @@ func (codeowners githubOwners) checkManifest(path string) error {
 		}
 	}
 	if !found {
-		return errors.Errorf("owner %q defined in %q is not in %q", manifest.Owner.Github, path, codeownersPath)
+		return errors.Errorf("owner %q defined in %q is not in %q", manifest.Owner.Github, path, codeowners.path)
 	}
 	return nil
 }

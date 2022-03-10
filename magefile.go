@@ -29,7 +29,7 @@ func Check() error {
 	mg.Deps(build)
 	mg.Deps(format)
 	mg.Deps(modTidy)
-	mg.Deps(codeowners.CheckPackageOwners)
+	mg.Deps(codeowners.Check)
 	return nil
 }
 
