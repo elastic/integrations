@@ -1,5 +1,7 @@
+# EQL expression evaluated by Elastic Agent to limit input to Linux.
+condition: ${host.platform} == 'linux'
 
-type: auditd
+type: audit/auditd
 include_raw_message: true
 {{#if multicast}}
 socket_type: multicast
@@ -9,10 +11,6 @@ socket_type: unicast
 resolve_ids: {{resolve_ids}}
 failure_mode: {{failure_mode}}
 audit_rules: {{audit_rules}}
-audit_rule_files:
-{{#each audit_rule_files as |path i|}}
- - {{path}}
-{{/each}}
 backlog_limit: {{backlog_limit}}
 rate_limit: {{rate_limit}}
 include_warnings: {{include_warnings}}
