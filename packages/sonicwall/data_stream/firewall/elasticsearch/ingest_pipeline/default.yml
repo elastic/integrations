@@ -11,6 +11,9 @@ processors:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      field: event.dataset
+      value: sonicwall.firewall
+  - set:
       field: ecs.version
       value: 8.0.0
   - grok:
@@ -106,13 +109,16 @@ processors:
       pattern: '%{source.ip}:%{source.port}:%{observer.ingress.interface.name}'
       ignore_failure: true
   - dissect:
-      if: ctx.source?.ip == null && ctx.sonicwall?.src != null
+      if: (ctx.source?.ip == null || ctx.source?.port == null) && ctx.sonicwall?.src != null
       field: sonicwall.src
       pattern: '%{source.ip}:%{source.port}'
       ignore_failure: true
   - remove:
       if: ctx.sonicwall?.src != null
       field: sonicwall.src
+  - remove:
+      if: ctx.source?.port == ''
+      field: source.port
   - convert:
       if: ctx.source?.ip != null
       field: source.ip
@@ -159,6 +165,9 @@ processors:
   - remove:
       if: ctx.sonicwall?.dst != null
       field: sonicwall.dst
+  - remove:
+      if: ctx.destination?.port == ''
+      field: destination.port
   - convert:
       if: ctx.destination?.ip != null
       field: destination.ip
@@ -194,6 +203,11 @@ processors:
       if: ctx.sonicwall?.proto != null
       field: sonicwall.proto
       pattern: '%{network.transport}/%{network.protocol}'
+      ignore_failure: true
+  - rename:
+      if: ctx.network?.transport == null && ctx.network?.protocol == null && ctx.sonicwall?.proto != null
+      field: sonicwall.proto
+      target_field: network.protocol
   - remove:
       if: ctx.sonicwall?.proto != null
       field: sonicwall.proto
@@ -275,7 +289,7 @@ processors:
   - rename:
       if: ctx.sonicwall?.af_polid != null
       field: sonicwall.af_polid
-      target_field: sonicwall.application.filter.filter_id
+      target_field: sonicwall.application.filter_id
   - rename:
       if: ctx.sonicwall?.appName != null
       field: sonicwall.appName
@@ -310,10 +324,10 @@ processors:
   - rename:
       if: ctx.sonicwall?.appid != null
       field: sonicwall.appid
-      target_field: sonicwall.event.application_id
+      target_field: sonicwall.application.application_id
   - convert:
-      if: ctx.sonicwall?.event?.application_id != null
-      field: sonicwall.event.application_id
+      if: ctx.sonicwall?.application?.application_id != null
+      field: sonicwall.application.application_id
       type: long
   - rename:
       if: ctx.sonicwall?.catid != null
@@ -402,15 +416,15 @@ processors:
         else if (ctx.sonicwall.event.http_op_code == 3){ctx.http.request.method
         = 'HEAD'}
   - set:
-      if: ctx.message.contains('Connection')
+      if: ctx.message != null && ctx.message.contains('Connection')
       field: event.type
       value: event
   - set:
-      if: ctx.message == 'Connection Opened'
+      if: ctx.message != null && ctx.message == 'Connection Opened'
       field: event.action
       value: connection opened
   - set:
-      if: ctx.message == 'Connection Closed'
+      if: ctx.message != null && ctx.message == 'Connection Closed'
       field: event.action
       value: connection closed
   - geoip:
