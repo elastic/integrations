@@ -1,0 +1,41 @@
+version: '2'
+services:
+  apache_spark:
+    hostname: apachesparkmaster
+    build:
+      context: ./Dockerfiles
+      dockerfile: Dockerfile-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MASTER_OPTS="-javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-master.properties"
+    ports:
+      - 7777
+      - 7778
+      - 8088
+      - 7077
+    volumes:
+      - ./jolokia-configs/master:/spark/conf/:rw
+  apache_spark-worker-1:
+    hostname: apachesparkworker
+    build:
+      context: ./Dockerfiles
+      dockerfile: Dockerfile-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=512M
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_WORKER_OPTS="-javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-worker.properties"
+    ports:
+      - 7778
+      - 8089
+    volumes:
+      - ./jolokia-configs/worker:/spark/conf/:rw
