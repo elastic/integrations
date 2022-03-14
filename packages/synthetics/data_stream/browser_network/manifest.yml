@@ -1,0 +1,22 @@
+type: synthetics
+title: synthetic monitor check
+release: beta
+dataset: browser.network
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: false
+    settings:
+      index:
+        codec: best_compression
+        sort.field:
+          - "url.full.keyword"
+          - "http.request.url.keyword"
+          - "http.response.headers.etag"
+          - "monitor.id"
+streams:
+  - input: synthetics/browser
+    title: Synthetics monitors network information
+    description: Store network information for synthetic monitors
+    template_path: browser.network.yml.hbs
+    enabled: true

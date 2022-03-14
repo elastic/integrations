@@ -1,0 +1,434 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '8.0.0'
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- set:
+    field: _tmp.timestamp
+    copy_from: json.timestamp
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
+- set:
+    field: _tmp.timestamp
+    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
+    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
+- date:
+    field: _tmp.timestamp
+    formats:
+    - UNIX
+    - ISO8601
+    target_field: "@timestamp"
+- rename:
+    field: json.source
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.author.id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.author.name
+    target_field: user.full_name
+    ignore_missing: true
+- grok:
+    field: json.author.uri
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx?.json?.author?.uri != ""
+    patterns:
+      - '\?username=%{USER:user.name}$'
+- rename:
+    field: json.auditType
+    target_field: confluence.audit.type
+    ignore_missing: true
+- rename:
+    field: json.type
+    target_field: confluence.audit.type
+    ignore_missing: true
+- rename:
+    field: json.method
+    target_field: confluence.audit.method
+    ignore_missing: true
+- rename:
+    field: json.system
+    target_field: service.address
+    ignore_missing: true
+- uri_parts:
+    field: service.address
+    target_field: _tmp.service
+    ignore_failure: true
+    if: ctx.service?.address != null
+- rename:
+    field: json.extraAttributes
+    target_field: confluence.audit.extra_attributes
+    ignore_missing: true
+- rename:
+    field: json.changedValues
+    target_field: confluence.audit.changed_values
+    ignore_missing: true
+- rename:
+    field: json.affectedObjects
+    target_field: confluence.audit.affected_objects
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: confluence.audit.type.actionI18nKey
+    ignore_empty_value: true
+- script:
+    lang: painless
+    description: Add ECS categorization
+    params:
+      audit.logging.summary.global.permission.added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
+      audit.logging.summary.space.permission.added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
+      audit.logging.summary.user.created:
+        category:
+          - iam
+        type:
+          - user
+          - creation
+      audit.logging.summary.user.renamed:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      audit.logging.summary.user.updated:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      audit.logging.summary.user.deleted:
+        category:
+          - iam
+        type:
+          - user
+          - deletion
+      audit.logging.summary.group.membership.added:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      audit.logging.summary.group.membership.removed:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      audit.logging.summary.group.created:
+        category:
+          - iam
+        type:
+          - group
+          - creation
+      audit.logging.summary.group.deleted:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
+      atlassian.audit.event.action.audit.config.updated:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
+      audit.logging.summary.global.settings.edited:
+        category:
+          - configuration
+        type:
+          - admin
+          - change
+      personal.access.tokens.audit.log.summary.token.created:
+        category:
+          - iam
+        type:
+          - admin
+          - creation
+      personal.access.tokens.audit.log.summary.token.deleted:
+        category:
+          - iam
+        type:
+          - admin
+          - deletion
+      audit.logging.summary.login.success:
+        category:
+          - authentication
+        type:
+          - start
+        outcome: success
+      audit.logging.summary.user.logout:
+        category:
+          - authentication
+        type:
+          - end
+      audit.logging.summary.login.failed:
+        category:
+          - authentication
+        type:
+          - info
+        outcome: failure
+      audit.logging.summary.user.password.changed:
+        category:
+          - iam
+        type:
+          - user
+          - change
+        outcome: success
+      audit.logging.summary.sudo.auth.successful:
+        category:
+          - authentication
+        type:
+          - admin
+          - start
+      audit.logging.summary.sudo.logout:
+        category:
+          - authentication
+        type:
+          - admin
+          - end
+      audit.logging.summary.space.created:
+        category:
+          - configuration
+        type:
+          - creation
+      audit.logging.summary.page.created:
+        category:
+          - configuration
+        type:
+          - creation
+      audit.logging.summary.page.deleted:
+        category:
+          - configuration
+        type:
+          - deletion
+      audit.logging.summary.space.removed:
+        category:
+          - configuration
+        type:
+          - deletion
+      audit.logging.summary.space.config.updated:
+        category:
+          - configuration
+        type:
+          - change
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.type = 'info';
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
+- script:
+    lang: painless
+    description: Add ECS User fields
+    if: "['audit.logging.category.user.management','audit.logging.category.auth'].contains(ctx.confluence?.audit?.type?.categoryI18nKey)"
+    source: >-
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (ctx.group == null) {
+        Map map = new HashMap();
+        ctx.put("group", map);
+      }
+      if (ctx.user == null) {
+        Map map = new HashMap();
+        ctx.put("user", map);
+      }
+      if (ctx.user?.target == null) {
+        Map map = new HashMap();
+        ctx.user.put("target", map);
+      }
+      if (ctx.user?.changes == null) {
+        Map map = new HashMap();
+        ctx.user.put("changes", map);
+      }
+      if (ctx.user?.target?.group == null) {
+        Map map = new HashMap();
+        ctx.user.target.put("group", map);
+      }
+      if(ctx.confluence?.audit?.affected_objects != null) {
+        for (def j = 0; j < ctx.confluence?.audit?.affected_objects.length; j++) {
+          if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
+            if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted'].contains(ctx.event.action)) {
+              ctx.group.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.group.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            }
+            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed'].contains(ctx.event.action)) {
+              ctx.user.target.group.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.target.group.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            }
+          }
+          if(ctx.confluence?.audit?.affected_objects[j]?.type == 'User') {
+            if(['audit.logging.summary.user.created', 'audit.logging.summary.user.deleted', 'audit.logging.summary.user.password.changed','audit.logging.summary.user.updated'].contains(ctx.event.action)) {
+              ctx.user.target.put("full_name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.target.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+              if(ctx.confluence?.audit?.affected_objects[j]?.uri != null) {
+                def m = /\?username=([a-zA-Z0-9._-]+)$/.matcher(ctx.confluence?.audit?.affected_objects[j]?.uri);
+                if (m.find()) {
+                  ctx.user.target.put("name", m.group(1));
+                }
+              }
+            }
+            if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed'].contains(ctx.event.action)) {
+              ctx.user.target.put("name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.target.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+            }
+            if(['audit.logging.summary.login.success', 'audit.logging.summary.login.failed'].contains(ctx.event.action)) {
+              ctx.user.put("full_name", ctx.confluence?.audit?.affected_objects[j]?.name);
+              ctx.user.put("id", ctx.confluence?.audit?.affected_objects[j]?.id);
+              if(ctx.confluence?.audit?.affected_objects[j]?.uri != null) {
+                def m = /\?username=([a-zA-Z0-9._-]+)$/.matcher(ctx.confluence?.audit?.affected_objects[j]?.uri);
+                if (m.find()) {
+                  ctx.user.put("name", m.group(1));
+                }
+              }
+            }
+          }
+        }
+      }
+      if(ctx.confluence?.audit?.changed_values != null) {
+        for (def j = 0; j < ctx.confluence?.audit?.changed_values.length; j++) {
+          if(['audit.logging.summary.user.renamed'].contains(ctx.event.action)) {
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'audit.logging.changed.value.username') {
+              ctx.user.changes.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
+              ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.from);
+            }
+          }
+          if(['audit.logging.summary.user.created','audit.logging.summary.user.updated'].contains(ctx.event.action)) {
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Username') {
+              ctx.user.changes.put("name", ctx.confluence?.audit?.changed_values[j]?.to);
+              if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("name", ctx.confluence?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Email') {
+              ctx.user.changes.put("email", ctx.confluence?.audit?.changed_values[j]?.to);
+              if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("email", ctx.confluence?.audit?.changed_values[j]?.from);
+              }
+            }
+            if(ctx.confluence?.audit?.changed_values[j]?.i18nKey == 'Display name') {
+              ctx.user.changes.put("full_name", ctx.confluence?.audit?.changed_values[j]?.to);
+              if(ctx.confluence?.audit?.changed_values[j]?.from != null) {
+                ctx.user.target.put("full_name", ctx.confluence?.audit?.changed_values[j]?.from);
+              }
+            }
+          }
+        }
+      }
+- append:
+    field: related.user
+    value: '{{user.name}}'
+    allow_duplicates: false
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{user.target.name}}'
+    allow_duplicates: false
+    if: ctx.user?.target?.name != null
+- append:
+    field: related.user
+    value: '{{user.changes.name}}'
+    allow_duplicates: false
+    if: ctx.user?.changes?.name != null
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- append:
+    field: related.hosts
+    value: '{{_tmp.service.domain}}'
+    allow_duplicates: false
+    if: ctx._tmp?.service?.domain != null
+- remove:
+    field:
+      - json
+      - _tmp
+    ignore_missing: true   
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}' 

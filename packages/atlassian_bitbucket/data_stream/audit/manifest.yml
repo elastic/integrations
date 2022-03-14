@@ -1,0 +1,142 @@
+title: Bitbucket Audit Logs
+type: logs
+streams:
+  - input: logfile
+    title: Bitbucket audit logs
+    description: Collect Bitbucket audit logs
+    template_path: stream.yml.hbs
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/atlassian/application-data/bitbucket/log/audit/*.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - bitbucket-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+  - input: httpjson
+    title: Bitbucket audit logs via Bitbucket audit API
+    description: Collect Bitbucket audit logs via Bitbucket audit API
+    enabled: false
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: api_url
+        type: text
+        title: API URL
+        description: The API URL without the path.
+        multi: false
+        required: true
+        show_user: true
+      - name: username
+        type: text
+        title: Bitbucket Username
+        description: JIRA Username. Needs to be used with a Password. Do not fill if you are using a personal access token.
+        multi: false
+        required: false
+        show_user: true
+      - name: password
+        type: password
+        title: Bitbucket Password
+        description: JIRA Password. Needs to be used with a Username. Do not fill if you are using a personal access token.
+        multi: false
+        required: false
+        show_user: true
+      - name: token
+        type: password
+        title: Personal Access Token
+        description: The Personal Access Token. If set, Username and Password will be ignored.
+        required: false
+        multi: false
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: limit
+        type: integer
+        title: Limit
+        description: Number of events to fetch on each request
+        show_user: false
+        required: true
+        default: 1000
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: false
+        description: Initial interval for the first API call.  Defaults to 24 hours.
+        default: 24h
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - bitbucket-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details."

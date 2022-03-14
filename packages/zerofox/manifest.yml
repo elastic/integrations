@@ -1,0 +1,67 @@
+name: zerofox
+title: ZeroFox
+version: 1.2.0
+release: ga
+description: Collect data from ZeroFox Cloud Platform with Elastic Agent.
+type: integration
+format_version: 1.0.0
+license: basic
+icons:
+  - src: /img/logo.svg
+    title: logo ZeroFox
+    size: 32x32
+    type: image/svg+xml
+categories:
+  - cloud
+  - security
+conditions:
+  kibana.version: ^7.14 || ^8.0.0
+policy_templates:
+  - name: zerofox
+    title: ZeroFox Alerts
+    description: Collect alert from the ZeroFox API
+    inputs:
+      - type: httpjson
+        vars:
+          - name: http_client_timeout
+            type: text
+            title: Http Client Timeout
+            description: Duration of the time limit on HTTP requests.
+            multi: false
+            required: true
+            show_user: true
+            default: 60s
+          - name: url
+            type: text
+            title: ZeroFox API URL
+            multi: false
+            required: true
+            show_user: true
+            default: https://api.zerofox.com/1.0/alerts/
+          - name: zerofox_api_token
+            type: password
+            title: ZeroFox API Token
+            description: zerofox api token
+            multi: false
+            required: true
+            show_user: true
+          - name: initial_interval
+            type: text
+            title: Initial Interval
+            description: How far back to pull the initial alerts
+            multi: false
+            required: true
+            show_user: true
+            default: 720h
+          - name: interval
+            type: text
+            title: Periodic Polling Interval
+            description: How often to poll the ZeroFox API for new alerts
+            multi: false
+            required: true
+            show_user: true
+            default: 10m
+        title: "Collect alert logs (input: httpjson)"
+        description: "Collecting alert logs (input: httpjson)"
+owner:
+  github: elastic/security-external-integrations

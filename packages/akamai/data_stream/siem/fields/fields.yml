@@ -1,0 +1,110 @@
+- name: akamai.siem
+  type: group
+  release: beta
+  default_field: false
+  description: >
+    Fields for Akamai SIEM Logs
+
+  fields:
+    - name: response.headers
+      type: flattened
+      description: >
+        HTTP response headers
+
+    - name: request.headers
+      type: flattened
+      description: >
+        HTTP Request headers
+
+    - name: rules
+      type: nested
+      description: >
+        Rules triggered by this request
+
+    - name: config_id
+      type: keyword
+      description: >
+        ID of the Security Configuration applied to the request.
+
+    - name: policy_id
+      type: keyword
+      description: >
+        ID of the Firewall policy applied to the request.
+
+    - name: slow_post_action
+      type: keyword
+      description: >
+        Action taken if a Slow POST attack is detected: W for Warn or A for deny (abort).
+
+    - name: slow_post_rate
+      type: long
+      description: >
+        Recorded rate of a detected Slow POST attack.
+
+    - name: client_reputation
+      type: keyword
+      description: >
+        Client IP scores for Client Reputation.	
+
+    - name: bot.score
+      type: long
+      description: >
+        Score assigned to the request by Botman Manager.
+
+    - name: bot.response_segment
+      type: long
+      description: >
+        Numeric response segment indicator. Segments are used to group and categorize bot scores.
+
+    - name: client_data.app_bundle_id
+      type: keyword
+      description: >
+        Unique identifier of the app bundle. An app bundle contains both the software itself and the accompanying configuration information.
+
+    - name: client_data.app_version
+      type: keyword
+      description: >
+        Version number of the app.
+
+    - name: client_data.telemetry_type
+      type: long
+      description: >
+        Specifies the telemetry type in use.
+
+    - name: client_data.sdk_version
+      type: keyword
+      description: >
+        SDK version
+
+    - name: user_risk.uuid
+      type: keyword
+      description: >
+        Unique identifier of the user whose risk data is being provided.
+
+    - name: user_risk.status
+      type: long
+      description: "Status code indicating any errors that might have occurred when calculating the risk score. \n"
+    - name: user_risk.score
+      type: long
+      description: >
+        Calculated risk scores. Scores range from 0 (no risk) to 100 (the highest possible risk).
+
+    - name: user_risk.risk
+      type: flattened
+      description: >
+        Indicators that increased the calculated risk score. For example, the value udfp represents the risk of the device fingerprint based on the user's behavioral profile.
+
+    - name: user_risk.trust
+      type: flattened
+      description: >
+        Indicators that were trusted. For example, the value ugp indicates that the user’s country or area is trusted.
+
+    - name: user_risk.general
+      type: flattened
+      description: >
+        Indicators of general behavior observed for relevant attributes. For example, duc_1h represents the number of users recorded on a specific device in the past hour.
+
+    - name: user_risk.allow
+      type: long
+      description: >-
+        Indicates whether the user is on the allow list. A 0 indicates that the user was not on the list; a 1 indicates that the user was on the list.

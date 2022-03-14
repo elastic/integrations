@@ -249,7 +249,7 @@ An example event for `proxy` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -272,13 +272,13 @@ An example event for `proxy` looks as following:
 | kubernetes.proxy.host | Request host | keyword |  |  |
 | kubernetes.proxy.http.request.count | Request count | long |  | counter |
 | kubernetes.proxy.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.proxy.http.request.duration.us.percentile.* | Request duration microseconds percentiles | object |  |  |
+| kubernetes.proxy.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
 | kubernetes.proxy.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
 | kubernetes.proxy.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.proxy.http.request.size.bytes.percentile.* | Request size percentiles | object |  |  |
+| kubernetes.proxy.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
 | kubernetes.proxy.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
 | kubernetes.proxy.http.response.size.bytes.count | Response count | long |  | counter |
-| kubernetes.proxy.http.response.size.bytes.percentile.* | Response size percentiles | object |  |  |
+| kubernetes.proxy.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
 | kubernetes.proxy.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.proxy.method | HTTP method | keyword |  |  |
 | kubernetes.proxy.process.cpu.sec | CPU seconds | double |  | counter |
@@ -286,11 +286,13 @@ An example event for `proxy` looks as following:
 | kubernetes.proxy.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |
 | kubernetes.proxy.process.memory.virtual.bytes | Bytes in virtual memory | long | byte | gauge |
 | kubernetes.proxy.process.started.sec | Seconds since the process started | double |  | gauge |
-| kubernetes.proxy.sync.networkprogramming.duration.us.bucket.* | Network programming duration, histogram buckets | object |  |  |
+| kubernetes.proxy.sync.networkprogramming.duration.us.bucket.\* | Network programming duration, histogram buckets | object |  |  |
 | kubernetes.proxy.sync.networkprogramming.duration.us.count | Network programming duration, number of operations | long |  | counter |
 | kubernetes.proxy.sync.networkprogramming.duration.us.sum | Network programming duration, sum in microseconds | long |  | counter |
-| kubernetes.proxy.sync.rules.duration.us.bucket.* | SyncProxyRules duration, histogram buckets | object |  |  |
+| kubernetes.proxy.sync.rules.duration.us.bucket.\* | SyncProxyRules duration, histogram buckets | object |  |  |
 | kubernetes.proxy.sync.rules.duration.us.count | SyncProxyRules duration, number of operations | long |  | counter |
 | kubernetes.proxy.sync.rules.duration.us.sum | SyncProxyRules duration, sum of durations in microseconds | long |  | counter |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |

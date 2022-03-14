@@ -1,0 +1,83 @@
+config_version: 2
+interval: {{interval}}
+request.method: POST
+request.url: {{url}}/rest/analysis
+request.timeout: 60s
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - delete:
+      target: header.User-Agent
+  - set:
+      # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
+      # NOTE: The "Build" version must be kept in sync with this package's version.
+      target: header.User-Agent
+      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.sc; Build/1.1.0)"]]'
+  - set: 
+      target: body.query.tool
+      value: 'sumip'
+  - append:
+      target: body.query.filters
+      value: |-
+        {
+            "filterName":"lastSeen",
+            "operator":"=",
+            "value": "[[.cursor.last_event_ts]]-[[(now).Unix]]"
+        }
+      default: |-
+        {
+            "filterName":"lastSeen",
+            "operator":"=",
+            "value": "[[(now (parseDuration "-{{initial_interval}}")).Unix]]-[[(now).Unix]]"
+        }
+      value_type: json
+  - set: 
+      target: body.query.type
+      value: 'vuln'
+  - set: 
+      target: body.sourceType
+      value: 'cumulative'
+  - set: 
+      target: body.startOffset
+      value: 0
+  - set: 
+      target: body.endOffset
+      value: {{batch_size}}
+  - set: 
+      target: body.type
+      value: 'vuln'
+  - set:
+      target: header.x-apikey
+      value: 'accesskey={{access_key}}; secretkey={{secret_key}}'
+response.split:
+  target: body.response.results
+response.pagination: 
+  - set:
+      target: body.startOffset
+      value: '[[toInt .last_response.body.response.endOffset]]'
+      fail_on_template_error: true
+  - set: 
+      target: body.endOffset
+      value: '[[add (toInt .last_response.body.response.endOffset) {{batch_size}}]]'
+      fail_on_template_error: true
+cursor:
+  last_event_ts:
+    value: '[[if (ge (toInt .last_response.body.response.endOffset) (toInt .last_response.body.response.totalRecords))]][[toInt .last_response.body.timestamp]][[end]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

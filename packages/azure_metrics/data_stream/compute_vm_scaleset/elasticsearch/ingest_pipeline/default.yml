@@ -1,0 +1,14 @@
+---
+description: Pipeline for parsing azure compute_vm metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - rename:
+      field: azure.monitor
+      target_field: azure.compute_vm_scaleset
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

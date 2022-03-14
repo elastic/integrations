@@ -1,0 +1,71 @@
+title: "Hashicorp Vault Metrics"
+type: metrics
+streams:
+  - input: prometheus/metrics
+    template_path: metrics.yml.hbs
+    title: Vault metrics (prometheus)
+    description: Collect prometheus metrics from Vault.
+    vars:
+      - name: period
+        type: text
+        title: Period
+        default: 30s
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - http://localhost:8200
+        description: Vault addresses to monitor. `/v1/sys/metrics?format=prometheus` is automatically appended.
+      - name: vault_token
+        type: text
+        title: Vault Token
+        multi: false
+        required: true
+        show_user: true
+        description: A Vault token with read access to the /sys/metrics API.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/metricbeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |-
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    -----END CERTIFICATE-----
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
+      dynamic_templates:
+        - all_values:
+            path_match: "*.value"
+            mapping:
+              type: double
+        - all_counters:
+            path_match: "*.counter"
+            mapping:
+              type: double
+        - all_rates:
+            path_match: "*.rate"
+            mapping:
+              type: double
+        - all_histograms:
+            path_match: "*.histogram"
+            mapping:
+              type: histogram

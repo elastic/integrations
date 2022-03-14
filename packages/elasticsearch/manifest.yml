@@ -1,0 +1,52 @@
+name: elasticsearch
+title: Elasticsearch
+version: 0.2.0
+release: experimental
+description: Elasticsearch Integration
+type: integration
+icons:
+  - src: /img/logo_elasticsearch.svg
+    title: logo elasticsearch
+    size: 32x32
+    type: image/svg+xml
+format_version: 1.0.0
+license: basic
+categories: ["elastic_stack", "datastore"]
+conditions:
+  kibana.version: ^7.15.0
+policy_templates:
+  - name: elasticsearch
+    title: Elasticsearch logs and metrics
+    description: Collect logs and metrics from Elasticsearch instances
+    inputs:
+      - type: logfile
+        title: Collect Elasticsearch logs
+        description: 'Collecting audit, deprecation, gc, server and slowlog logs from Elasticsearch instances (input: logfile)'
+      - type: elasticsearch/metrics
+        title: Collect Elasticsearch metrics
+        description: Collect Elasticsearch metrics about indices, CCR, cluster stats, machine learning or node statistics
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:9200
+          - name: username
+            type: text
+            title: Username
+            description: Use when connecting to elasticsearch
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            description: Use when connecting to elasticsearch
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/integrations

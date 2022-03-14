@@ -1,0 +1,1294 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  ## Message decoding.
+  - rename:
+      tag: message-to-original
+      field: message
+      target_field: event.original
+  - json:
+      tag: json-decoding
+      description: Decodes original JSON into `crowdstrike` field.
+      field: event.original
+      target_field: crowdstrike
+  - date:
+      tag: date-timestamp
+      description: Parse timestamp from event.
+      field: crowdstrike.timestamp
+      target_field: event.created
+      formats:
+        - UNIX_MS
+      ignore_failure: true
+  - date:
+      tag: date-event-created
+      description: Parse timestamp from event.
+      field: crowdstrike.CreationTimeStamp
+      target_field: event.created
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: ctx?.event?.created == null
+  - set:
+      tag: set-timestamp
+      field: "@timestamp"
+      copy_from: event.created
+      if: ctx?.event?.created != null && (ctx?.crowdstrike?.ContextTimeStamp == null || ctx?.crowdstrike?.ContextTimeStamp == "")
+  - date:
+      tag: date-context-timestamp
+      field: crowdstrike.ContextTimeStamp
+      formats:
+        - UNIX
+      ignore_failure: true
+  - rename:
+      tag: rename-message
+      field: crowdstrike.message
+      target_field: message
+      ignore_missing: true
+
+  ## ECS fields.
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+
+  ## Categorization.
+  - script:
+      tag: script-categorize-events
+      description: Categorize events.
+      lang: painless
+      source: |-
+        def c = [
+          "AcUninstallConfirmation":["category":["package"],"type":["deletion"],"kind":"state","outcome":"success"],
+          "AcUnloadConfirmation":["category":["package"],"type":["deletion"],"kind":"state","outcome":"success"],
+          "AgentConnect":["category":["network","session"],"type":["connection","info"],"kind":"event","outcome":"success"],
+          "AgentOnline":["category":["configuration","package","host"],"type":["change","installation","start"],"kind":"state","outcome":"success"],
+          "AmsiRegistrationStatus":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "AsepFileChange":["category":["file"],"type":["creation","change"],"kind":"event","outcome":"success"],
+          "AsepKeyUpdate":["category":["registry"],"type":["change"],"kind":"event","outcome":"success"],
+          "AsepValueUpdate":["category":["registry"],"type":["change"],"kind":"event","outcome":"success"],
+          "AssociateIndicator":["category":["malware"],"type":["info"],"kind":"alert","outcome":"unknown"],
+          "AssociateTreeIdWithRoot":["category":["malware"],"type":["info"],"kind":"alert","outcome":"success"],          
+          "BITSJobCreated":["category":["network","file"],"type":["connection","creation"],"kind":"event","outcome":"success"],
+          "BZip2FileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "BehaviorWhitelisted":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "BrowserInjectedThread":["category":["process"],"type":["access","change"],"kind":"event","outcome":"success"],
+          "CloudAssociateTreeIdWithRoot":["category":["malware"],"type":["deletion"],"kind":"alert","outcome":"success"],
+          "CommandHistory":["category":["process"],"type":["end","info"],"kind":"event","outcome":"success"],
+          "ConfigStateUpdate":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "CrashNotification":["category":["host"],"type":["info"],"kind":"event","outcome":"failure"],
+          "CreateProcessArgs":["category":["process"],"type":["start"],"kind":"state","outcome":"success"],
+          "CreateService":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
+          "CreateThreadNoStartImage":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
+          "CreateThreadReflectiveDll":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
+          "CriticalEnvironmentVariableChanged":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
+          "CriticalFileAccessed":["category":["file"],"type":["access"],"kind":"alert","outcome":"success"],
+          "CriticalFileModified":["category":["file"],"type":["change"],"kind":"alert","outcome":"success"],
+          "CurrentSystemTags":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "CustomIOABasicProcessDetectionInfoEvent":["category":["malware"],"type":["info"],"kind":"alert","outcome":"unknown"],
+          "DCSyncAttempted":["category":["configuration","iam"],"type":["access"],"kind":"event","outcome":"unknown"],
+          "DcOffline":["category":["iam"],"type":["info"],"kind":"event","outcome":"success"],
+          "DcOnline":["category":["iam"],"type":["info"],"kind":"event","outcome":"success"],
+          "DcStatus":["category":["iam"],"type":["info"],"kind":"state","outcome":"success"],
+          "DetectAnalysis":["category":["malware"],"type":["info"],"kind":"alert","outcome":"success"],
+          "DetectionExcluded":["category":["configuration","malware"],"type":["change","info"],"kind":"alert","outcome":"success"],
+          "DirectoryCreate":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "DllInjection":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
+          "DmpFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "DnsRequest":["category":["network"],"type":["protocol"],"kind":"event","outcome":"success"],
+          "DocumentProgramInjectedThread":["category":["process"],"type":["access","change"],"kind":"event","outcome":"success"],
+          "DriverLoad":["category":["driver"],"type":["start"],"kind":"event","outcome":"success"],
+          "DwgFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "EarlyExploitPivotDetect":["category":["malware"],"type":["info"],"kind":"event","outcome":"unknown"],
+          "EndOfProcess":["category":["process"],"type":["end"],"kind":"event","outcome":"success"],
+          "ErrorEvent":["category":["package"],"type":["info"],"kind":"alert","outcome":"failure"],
+          "EtwErrorEvent":["category":["package","host"],"type":["info"],"kind":"event","outcome":"failure"],
+          "ExecutableDeleted":["category":["file"],"type":["deletion"],"kind":"event","outcome":"success"],
+          "FalconHostRegTamperingInfo":["category":["registry"],"type":["change"],"kind":"alert","outcome":"unknown"],
+          "FalconServiceStatus":["category":["package"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "FileCreateInfo":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "FileDeleteInfo":["category":["file"],"type":["deletion"],"kind":"event","outcome":"success"],
+          "FileDetectInfo":["category":["file"],"type":["info"],"kind":"alert","outcome":"unknown"],
+          "FileInfo":["category":["file"],"type":["info"],"kind":"event","outcome":"unknown"],
+          "FileOpenInfo":["category":["file"],"type":["access"],"kind":"event","outcome":"success"],
+          "FileRenameInfo":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
+          "FileSystemOperationBlocked":["category":["file"],"type":["change","deletion"],"kind":"event","outcome":"failure"],
+          "FileSystemOperationDetectInfo":["category":["file"],"type":["change","deletion"],"kind":"alert","outcome":"unknown"],
+          "FileTimestampsModified":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallChangeOption":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallDeleteRule":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallDeleteRuleIP4":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallDeleteRuleIP6":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallDisabled":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallEnabled":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallSetRule":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallSetRuleIP4":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirewallSetRuleIP6":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "FirmwareAnalysisErrorEvent":["category":["host"],"type":["info"],"kind":"state","outcome":"failure"],
+          "FirmwareAnalysisHardwareData":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "FirmwareAnalysisStatus":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "FlashThreadCreateProcess":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
+          "FsPostOpenSnapshotFile":["category":["file"],"type":["access"],"kind":"event","outcome":"success"],
+          "FsVolumeMounted":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
+          "FsVolumeUnmounted":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],	
+          "HostInfo":["category":["host"],"type":["info"],"kind":"event","outcome":"success"],
+          "HostedServiceStarted":["category":["package"],"type":["start"],"kind":"event","outcome":"success"],
+          "HostedServiceStopped":["category":["package"],"type":["end"],"kind":"event","outcome":"success"],
+          "HostnameChanged":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
+          "HttpRequestDetect":["category":["network","session"],"type":["connection","start"],"kind":"event","outcome":"success"],
+          "HttpVisibilityStatus":["category":["session"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "IOServiceRegister":["category":["package"],"type":["change"],"kind":"event","outcome":"success"],
+          "ImageHash":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
+          "InjectedThread":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
+          "InjectedThreadFromUnsignedModule":["category":["process"],"type":["change"],"kind":"alert","outcome":"success"],
+          "InstallBundleDownloadComplete":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "InstallServiceDownloadComplete":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "InstalledApplication":["category":["package"],"type":["installation"],"kind":"event","outcome":"success"],
+          "InstalledUpdates":["category":["host","package"],"type":["change","installation"],"kind":"event","outcome":"success"],
+          "InstanceMetadata":["category":["host"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "IoSessionConnected":["category":["session"],"type":["start"],"kind":"event","outcome":"success"],
+          "IoSessionLoggedOn":["category":["session"],"type":["end"],"kind":"event","outcome":"success"],
+          "JarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "JavaClassFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "JavaInjectedThread":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
+          "KernelModeLoadImage":["category":["driver"],"type":["start"],"kind":"event","outcome":"success"],
+          "KextLoad":["category":["driver"],"type":["start"],"kind":"event","outcome":"success"],
+          "KextUnload":["category":["driver"],"type":["end"],"kind":"event","outcome":"success"],
+          "LFODownloadConfirmation":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "LfoUploadDataComplete":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
+          "LfoUploadDataFailed":["category":["file"],"type":["change"],"kind":"event","outcome":"failure"],
+          "LfoUploadDataUnneeded":["category":["file"],"type":["change"],"kind":"event","outcome":"failure"],			
+          "LocalIpAddressIP4":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
+          "LocalIpAddressIP6":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
+          "LocalIpAddressRemovedIP4":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
+          "LocalIpAddressRemovedIP6":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
+          "LsassHandleFromUnsignedModule":["category":["process"],"type":["change"],"kind":"alert","outcome":"unknown"],
+          "MachOFileWritten":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
+          "ManifestDownloadComplete":["category":["configuration","file"],"type":["change","creation"],"kind":"event","outcome":"success"],
+          "ModifyServiceBinary":["category":["file"],"type":["change"],"kind":"alert","outcome":"unknown"],
+          "ModuleBlockedEvent":["category":["process","malware"],"type":["info","denied"],"kind":"alert","outcome":"success"],
+          "ModuleBlockedEventWithPatternId":["category":["process","malware"],"type":["info"],"kind":"event","outcome":"unknown"],
+          "ModuleDetectInfo":["category":["process","malware"],"type":["info"],"kind":"event","outcome":"unknown"],
+          "NeighborListIP4":["category":["host","network"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "NeighborListIP6":["category":["host","network"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "NetShareAdd":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
+          "NetShareDelete":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
+          "NetShareSecurityModify":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "NetworkCloseIP4":["category":["network"],"type":["end","connection"],"kind":"event","outcome":"unknown"],
+          "NetworkCloseIP6":["category":["network"],"type":["end","connection"],"kind":"event","outcome":"unknown"],
+          "NetworkConnectIP4":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"unknown"],
+          "NetworkConnectIP6":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"unknown"],
+          "NetworkListenIP4":["category":["network"],"type":["start"],"kind":"event","outcome":"success"],
+          "NetworkListenIP6":["category":["network"],"type":["start"],"kind":"event","outcome":"success"],
+          "NetworkReceiveAcceptIP4":["category":["network"],"type":["allowed","access","connection"],"kind":"event","outcome":"unknown"],
+          "NetworkReceiveAcceptIP6":["category":["network"],"type":["allowed","access","connection"],"kind":"event","outcome":"unknown"],
+          "NewExecutableRenamed":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
+          "NewExecutableWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "NewScriptWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "OciContainerTelemetry":["category":["host"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "OleFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "OoxmlFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "OsVersionInfo":["category":["host"],"type":["info"],"kind":"event","outcome":"success"],			
+          "PackedExecutableWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "PdfFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "PeFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "PeVersionInfo":["category":["file"],"type":["info"],"kind":"event","outcome":"success"],
+          "PrivilegedProcessHandleFromUnsignedModule":["category":["process"],"type":["access"],"kind":"alert","outcome":"success"],
+          "ProcessBlocked":["category":["process"],"type":["access"],"kind":"alert","outcome":"failure"],
+          "ProcessExecOnPackedExecutable":["category":["process","file"],"type":["access"],"kind":"alert","outcome":"success"],
+          "ProcessExecOnSMBFile":["category":["process","file","network"],"type":["access"],"kind":"alert","outcome":"success"],
+          "ProcessHandleOpDetectInfo":["category":["process","malware"],"type":["info"],"kind":"alert","outcome":"success"],
+          "ProcessInjection":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
+          "ProcessRollup2":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
+          "ProcessRollup2Stats":["category":["process"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "ProcessSelfDeleted":["category":["process"],"type":["end"],"kind":"event","outcome":"success"],
+          "PromiscuousBindIP4":["category":["host"],"type":["change"],"kind":"state","outcome":"success"],
+          "PtyCreated":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "QuarantineActionResult":["category":["file"],"type":["info"],"kind":"alert","outcome":"unknown"],
+          "QuarantinedFile":["category":["file"],"type":["change"],"kind":"alert","outcome":"unknown"],
+          "QuarantinedFileState":["category":["file"],"type":["info"],"kind":"alert","outcome":"unknown"],
+          "QueueApcEtw":["category":["file"],"type":["creation"],"kind":"alert","outcome":"success"],
+          "RansomwareCreateFile":["category":["file"],"type":["creation"],"kind":"alert","outcome":"success"],
+          "RansomwareFileAccessPattern":["category":["file"],"type":["access"],"kind":"alert","outcome":"success"],
+          "RansomwareOpenFile":["category":["file"],"type":["access"],"kind":"alert","outcome":"success"],
+          "RarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "RawBindIP4":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"success"],
+          "RawBindIP6":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"success"],
+          "ReflectiveDllOpenProcess":["category":["process"],"type":["access"],"kind":"alert","outcome":"success"],
+          "RegGenericValueUpdate":["category":["registry"],"type":["change"],"kind":"event","outcome":"success"],
+          "RegSystemConfigValueUpdate":["category":["registry","host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "RegisterRawInputDevicesEtw":["category":["host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "RegistryOperationDetectInfo":["category":["malware","registry"],"type":["info"],"kind":"alert","outcome":"success"],
+          "RemoteBruteForceDetectInfo":["category":["malware","authentication"],"type":["info"],"kind":"alert","outcome":"success"],	
+          "RemovableDiskModuleLoadAttempt":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
+          "RemovableMediaVolumeMounted":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
+          "RtfFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "SAMHashDumpFromUnsignedModule":["category":["registry","file"],"type":["access","creation"],"kind":"alert","outcome":"success"],
+          "ScheduledTaskDeleted":["category":["configuration"],"type":["deletion"],"kind":"event","outcome":"success"],
+          "ScheduledTaskModified":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "ScheduledTaskRegistered":["category":["configuration"],"type":["creation"],"kind":"event","outcome":"success"],
+          "ScreenshotTakenEtw":["category":["process"],"type":["access"],"kind":"event","outcome":"success"],
+          "ScriptControlBlocked":["category":["malware","file"],"type":["info"],"kind":"alert","outcome":"success"],
+          "ScriptControlDetectInfo":["category":["malware","file"],"type":["info"],"kind":"alert","outcome":"success"],
+          "ScriptControlErrorEvent":["category":["malware","file"],"type":["info"],"kind":"alert","outcome":"failure"],
+          "ScriptControlScanInfo":["category":["malware","file"],"type":["info"],"kind":"state","outcome":"success"],
+          "ScriptControlScanTelemetry":["category":["malware","file"],"type":["info"],"kind":"state","outcome":"success"],
+          "SensitiveWmiQuery":["category":["malware","process"],"type":["info"],"kind":"alert","outcome":"success"],
+          "SensorHeartbeat":["category":["package"],"type":["info"],"kind":"event","outcome":"success"],
+          "ServiceStarted":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
+          "SetWinEventHookEtw":["category":["host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "SevenZipFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "SignInfoError":["category":["file"],"type":["info"],"kind":"state","outcome":"failure"],
+          "SignInfoWithCertAndContext":["category":["file"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "SignInfoWithContext":["category":["file"],"type":["info"],"kind":"state","outcome":"unknown"],
+          "SmbClientNamedPipeConnectEtw":["category":["network"],"type":["connection"],"kind":"event","outcome":"success"],
+          "SmbClientShareClosedEtw":["category":["network"],"type":["connection","end"],"kind":"event","outcome":"success"],
+          "SmbClientShareOpenedEtw":["category":["network"],"type":["connection","start"],"kind":"event","outcome":"success"],
+          "SmbServerShareOpenedEtw":["category":["network"],"type":["connection","start"],"kind":"event","outcome":"success"],
+          "SmbServerV1AuditEtw":["category":["network"],"type":["connection"],"kind":"state","outcome":"unknown"],
+          "SnapshotVolumeMounted":["category":["host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "SuspiciousCreateSymbolicLink":["category":["malware","file"],"type":["creation","info"],"kind":"alert","outcome":"success"],
+          "SuspiciousDnsRequest":["category":["network"],"type":["start","protocol"],"kind":"alert","outcome":"success"],
+          "SuspiciousEseFileWritten":["category":["malware","file"],"type":["creation","info"],"kind":"alert","outcome":"success"],
+          "SuspiciousRegAsepUpdate":["category":["malware","registry","configuration"],"type":["change","info"],"kind":"alert","outcome":"success"],
+          "SuspiciousUserRemoteAPCAttempt":["category":["malware","process"],"type":["info"],"kind":"alert","outcome":"success"],
+          "SyntheticProcessRollup2":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
+          "SystemCapacity":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "TarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "TelemetryCounters2":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "TelemetryNetworkConnections":["category":["network"],"type":["connection"],"kind":"state","outcome":"success"],
+          "TelemetryStats":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
+          "TerminateProcess":["category":["process"],"type":["end"],"kind":"event","outcome":"success"],
+          "TokenImpersonated":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
+          "UACCOMElevation":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
+          "UACExeElevation":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
+          "UACMSIElevation":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
+          "UmppaErrorEvent":["category":["package"],"type":["info"],"kind":"event","outcome":"failure"],
+          "UnsignedModuleLoad":["category":["process"],"type":["change"],"kind":"alert","outcome":"success"],
+          "UpdateManifestDownloadComplete":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "UserAccountAddedToGroup":["category":["configuration","iam"],"type":["change","group"],"kind":"event","outcome":"success"],
+          "UserAccountCreated":["category":["configuration","iam"],"type":["creation"],"kind":"event","outcome":"success"],
+          "UserAccountDeleted":["category":["configuration","iam"],"type":["deletion"],"kind":"event","outcome":"success"],
+          "UserExceptionDEP":["category":["process","malware"],"type":["info"],"kind":"alert","outcome":"success"],
+          "UserFontLoad":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "UserIdentity":["category":["authentication","iam"],"type":["info","user"],"kind":"event","outcome":"success"],
+          "UserLogoff":["category":["authentication"],"type":["end"],"kind":"event","outcome":"success"],
+          "UserLogon":["category":["authentication"],"type":["start"],"kind":"event","outcome":"success"],
+          "UserLogonFailed":["category":["authentication"],"type":["start"],"kind":"event","outcome":"failure"],
+          "UserLogonFailed2":["category":["authentication"],"type":["start"],"kind":"event","outcome":"failure"],
+          "VolumeSnapshotCreated":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "VolumeSnapshotDeleted":["category":["file"],"type":["deletion"],"kind":"event","outcome":"success"],
+          "WfpFilterTamperingFilterAdded":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "WfpFilterTamperingFilterDeleted":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "WmiCreateProcess":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
+          "WmiFilterConsumerBindingEtw":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "WmiProviderRegistrationEtw":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
+          "WroteExeAndGeneratedServiceEvent":["category":["process"],"type":["access"],"kind":"alert","outcome":"success"],
+          "XarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
+          "ZipFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"]
+        ];
+
+        def v = c.get(ctx?.crowdstrike?.event_simpleName);
+        if (v != null) {
+          for (def entry : v.entrySet()) {
+            ctx.event[entry.getKey().toString()] = entry.getValue();
+          }
+        }
+
+  ## Event fields.
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - rename:
+      field: crowdstrike.id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event_simpleName
+      target_field: event.action
+      ignore_missing: true
+
+## Prepare data.
+  - script:
+      description: Convert all count fields to number.
+      lang: painless
+      source: |-
+        for (entry in ctx.crowdstrike.entrySet()) {
+          def key = entry.getKey().toString();
+          if (key.contains("Count") || key.contains("Port")) {
+            try {
+              ctx.crowdstrike[key] = Long.parseLong(entry.getValue().toString());
+            } catch (Exception e) {
+            }
+          }
+        }
+  - script:
+      description: Remove all 0's hashes.
+      lang: painless
+      params:
+        MD5HashData: md5
+        SHA1HashData: sha1
+        SHA256HashData: sha256
+      source: |-
+        def hashIsEmpty(String hash) {
+          if (hash == null || hash == "") {
+            return true;
+          }
+          
+          Pattern emptyHashRegex = /^0*$/;
+          def matcher = emptyHashRegex.matcher(hash);
+          
+          return matcher.matches(); 
+        }
+
+        def hashes = new HashMap();
+        def related = [
+          "hash": new ArrayList()
+        ];
+        for (entry in params.entrySet()) {
+          def key = entry.getKey().toString();
+          def value = ctx.crowdstrike[key];
+          ctx.crowdstrike.remove(key);
+          if (hashIsEmpty(value)) {
+            continue;
+          }
+
+          hashes[entry.getValue().toString()] = value;
+          related.hash.add(value);
+        }
+
+        ctx._temp = new HashMap();
+        ctx._temp.hashes = hashes;
+        if (related.hash.length > 0) {
+          ctx.related = related;
+        }
+  
+  ## Observer fields.
+  - rename:
+      field: crowdstrike.aid
+      target_field: observer.serial_number
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: crowdstrike.aip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.aip
+      target_field: observer.ip
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: observer.address
+      copy_from: observer.ip
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.AgentVersion
+      target_field: observer.version
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.ConfigBuild
+      target_field: observer.version
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: observer.vendor
+      value: crowdstrike
+  - set:
+      field: observer.type
+      value: agent
+  - append:
+      field: related.ip
+      value: "{{observer.ip}}"
+      allow_duplicates: false
+      if: ctx?.observer?.ip != null && ctx.observer.ip != ""
+  - append:
+      field: related.hosts
+      value: "{{observer.ip}}"
+      allow_duplicates: false
+      if: ctx?.observer?.ip != null && ctx.observer.ip != ""
+  
+  ## Host fields.
+  - rename:
+      field: crowdstrike.ComputerName
+      target_field: host.hostname
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.name
+      copy_from: host.hostname
+      ignore_empty_value: true
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{host.name}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - rename:
+      field: crowdstrike.City
+      target_field: host.geo.city_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Continent
+      target_field: host.geo.continent_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Country
+      target_field: host.geo.country_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Timezone
+      target_field: host.geo.timezone
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.MachineDomain
+      target_field: host.domain
+      ignore_missing: true
+      ignore_failure: true
+
+  ## IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  
+  ## IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  ## OS fields.
+  - set:
+      field: os.type
+      value: linux
+      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Lin"
+  - set:
+      field: os.type
+      value: macos
+      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Mac"
+  - set:
+      field: os.type
+      value: windows
+      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Win"
+  - rename:
+      field: crowdstrike.OSVersionString
+      target_field: os.version
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Version
+      target_field: os.version
+      ignore_missing: true
+      ignore_failure: true
+
+  ## Process fields.
+  - rename:
+      field: crowdstrike.CommandLine
+      target_field: process.command_line
+      ignore_missing: true
+  - script:
+      description: Implements Windows-like SplitCommandLine
+      lang: painless
+      if: ctx?.process?.command_line != null && ctx.process.command_line != "" && ctx?.os?.type != null
+      source: |-
+        // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
+        def appendBSBytes(StringBuilder b, int n) {
+            for (; n > 0; n--) {
+                b.append('\\');
+            }
+            return b;
+        }
+
+        // readNextArg splits command line string cmd into next
+        // argument and command line remainder.
+        def readNextArg(String cmd) {
+            def b = new StringBuilder();
+            boolean inquote;
+            int nslash;
+            for (; cmd.length() > 0; cmd = cmd.substring(1)) {
+                def c = cmd.charAt(0);
+                if (c == (char)' ' || c == (char)0x09) {
+                    if (!inquote) {
+                        return [
+                            "arg":  appendBSBytes(b, nslash).toString(),
+                            "rest": cmd.substring(1)
+                        ];
+                    }
+                } else if (c == (char)'"') {
+                    b = appendBSBytes(b, nslash/2);
+                    if (nslash%2 == 0) {
+                        // use "Prior to 2008" rule from
+                        // http://daviddeley.com/autohotkey/parameters/parameters.htm
+                        // section 5.2 to deal with double double quotes
+                        if (inquote && cmd.length() > 1 && cmd.charAt(1) == (char)'"') {
+                            b.append(c);
+                            cmd = cmd.substring(1);
+                        }
+                        inquote = !inquote;
+                    } else {
+                        b.append(c);
+                    }
+                    nslash = 0;
+                    continue;
+                } else if (c == (char)'\\') {
+                    nslash++;
+                    continue;
+                }
+                b = appendBSBytes(b, nslash);
+                nslash = 0;
+                b.append(c);
+            }
+            return [
+                "arg":  appendBSBytes(b, nslash).toString(), 
+                "rest": ''
+            ];
+        }
+
+        // commandLineToArgv splits a command line into individual argument
+        // strings, following the Windows conventions documented
+        // at http://daviddeley.com/autohotkey/parameters/parameters.htm#WINARGV
+        // Original implementation found at: https://github.com/golang/go/commit/39c8d2b7faed06b0e91a1ad7906231f53aab45d1
+        def commandLineToArgv(String cmd) {
+            def args = new ArrayList();
+            while (cmd.length() > 0) {
+                if (cmd.charAt(0) == (char)' ' || cmd.charAt(0) == (char)0x09) {
+                    cmd = cmd.substring(1);
+                    continue;
+                }
+                def next = readNextArg(cmd);
+                cmd = next.rest;
+                args.add(next.arg);
+            }
+            return args;
+        }
+
+        ctx.process.args = commandLineToArgv(ctx.process.command_line);
+        ctx.process.args_count = ctx.process.args.length;
+ 
+  - rename:
+      field: crowdstrike.ImageFileName
+      target_field: process.executable
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.ExitCode
+      type: long
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.ExitCode
+      target_field: process.exit_code
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Calculate process.uptime
+      source: |-
+        def d1 = Float.parseFloat(ctx?.crowdstrike?.ProcessStartTime);
+        def d2 = Float.parseFloat(ctx?.crowdstrike?.ProcessEndTime);
+        if (ctx?.process == null) {
+          ctx.process = [];
+        }
+        ctx.process.uptime = (long) ((d2-d1)/1000);
+      if: ctx?.crowdstrike?.ProcessStartTime != null && ctx?.crowdstrike?.ProcessStartTime != "" && ctx?.crowdstrike?.ProcessEndTime != null && ctx?.crowdstrike?.ProcessEndTime != ""
+  - date:
+      field: crowdstrike.ProcessStartTime
+      target_field: crowdstrike.ProcessStartTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.ProcessStartTime != null && ctx?.crowdstrike?.ProcessStartTime != ""
+  - rename:
+      field: crowdstrike.ProcessStartTime
+      target_field: process.start
+      ignore_missing: true
+      if: ctx?.crowdstrike?.ProcessStartTime != ""
+  - date:
+      field: crowdstrike.ProcessEndTime
+      target_field: crowdstrike.ProcessEndTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.ProcessEndTime != null && ctx?.crowdstrike?.ProcessEndTime != ""
+  - rename:
+      field: crowdstrike.ProcessEndTime
+      target_field: process.end
+      ignore_missing: true
+      if: ctx?.crowdstrike?.ProcessEndTime != ""
+  - convert:
+      field: crowdstrike.RawProcessId
+      type: long
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.RawProcessId
+      target_field: process.pid
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.TargetProcessId
+      target_field: process.entity_id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.ParentProcessId
+      target_field: process.parent.entity_id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.ParentBaseFileName
+      target_field: process.parent.name
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.ProcessGroupId
+      type: long
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.ProcessGroupId
+      target_field: process.pgid
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.ContextProcessId
+      target_field: process.entity_id
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.process?.entity_id == null
+  - convert:
+      field: crowdstrike.ContextThreadId
+      type: long
+      ignore_missing: true
+      if: ctx?.process?.thread?.id == null
+  - rename:
+      field: crowdstrike.ContextThreadId
+      target_field: process.thread.id
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.process?.thread?.id == null
+  - convert:
+      field: crowdstrike.EtwRawProcessId
+      type: long
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.EtwRawProcessId
+      target_field: process.pid
+      ignore_missing: true
+      if: ctx?.process?.pid == null
+  - convert:
+      field: crowdstrike.EtwRawThreadId
+      type: long
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.EtwRawThreadId
+      target_field: process.thread.id
+      ignore_missing: true
+      if: ctx?.process?.thread?.id == null
+  - rename:
+      field: crowdstrike.ServiceDisplayName
+      target_field: process.title
+      ignore_missing: true
+  - rename:
+      field: _temp.hashes
+      target_field: process.hash
+      if: ctx?.event?.action != null && (ctx.event.action.contains("Process") || ctx.event.action.contains("Service")) && ctx?._temp?.hashes != null && ctx?._temp?.hashes.size() > 0
+
+  ## User fields.
+  - rename:
+      field: crowdstrike.UID
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.GID
+      target_field: user.group.id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.UserSid
+      target_field: user.id
+      ignore_missing: true
+      if: ctx?.user?.id == null || ctx.user.id == ""
+  - append:
+      field: user.roles
+      value: admin
+      if: ctx?.crowdstrike?.UserIsAdmin == "1"
+  - rename:
+      field: crowdstrike.UserName
+      target_field: user.name
+      ignore_missing: true
+  - split:
+      field: crowdstrike.UserPrincipal
+      target_field: "_temp.user_parts"
+      separator: '@'
+      if: ctx?.crowdstrike?.UserPrincipal != null
+  - rename:
+      field: crowdstrike.UserPrincipal
+      target_field: user.email
+      ignore_missing: true
+  - set:
+      field: user.domain
+      value: "{{_temp.user_parts.1}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - set:
+      field: user.full_name
+      value: "{{_temp.user_parts.0}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx?.user?.name != null
+  - append:
+      field: related.user
+      value: "{{user.full_name}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx?.user?.full_name != null
+
+  ## Networking fields.
+  - convert:
+      field: crowdstrike.LocalAddressIP4
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.LocalAddressIP4
+      target_field: source.ip
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: source.ip
+      ignore_empty_value: true
+  - convert:
+      field: crowdstrike.LocalAddressIP6
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.LocalAddressIP6
+      target_field: source.ip
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: source.ip
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.LocalPort
+      target_field: source.port
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.RemoteAddressIP4
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.RemoteAddressIP4
+      target_field: destination.ip
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: destination.ip
+      ignore_empty_value: true
+  - convert:
+      field: crowdstrike.RemoteAddressIP6
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.RemoteAddressIP6
+      target_field: destination.ip
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: destination.ip
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.RemotePort
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.Protocol
+      target_field: network.iana_number
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '0') {
+            ctx.network.transport = 'hopopt';
+        } else if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '8') {
+            ctx.network.transport = 'egp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '47') {
+            ctx.network.transport = 'gre';
+        } else if (iana_number == '50') {
+            ctx.network.transport = 'esp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        } else if (iana_number == '112') {
+            ctx.network.transport = 'vrrp';
+        } else if (iana_number == '132') {
+            ctx.network.transport = 'sctp';
+        }
+  - set:
+      field: network.direction
+      value: outbound
+      if: ctx?.crowdstrike?.ConnectionDirection == "0"
+  - set:
+      field: network.direction
+      value: inbound
+      if: ctx?.crowdstrike?.ConnectionDirection == "1"
+  - set:
+      field: network.direction
+      value: unknown
+      if: ctx?.network?.direction == null && ctx?.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
+  - community_id:
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx?.source?.ip != null && ctx.source.ip != ""
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx?.destination?.ip != null && ctx.destination.ip != ""
+  - append:
+      field: related.hosts
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx?.source?.ip != null && ctx.source.ip != ""
+  - append:
+      field: related.hosts
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx?.destination?.ip != null && ctx.destination.ip != ""
+  - rename:
+      field: crowdstrike.PhysicalAddress
+      target_field: source.mac
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.DownloadServer
+      target_field: server.address
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.DownloadPath
+      target_field: url.path
+      ignore_missing: true
+
+  ## URL fields.
+  - set:
+      field: url.path
+      value: "/{{url.path}}"
+      if: ctx.url?.path != null && !ctx.url.path.startsWith("/")
+  - registered_domain:
+      field: server.address
+      target_field: server
+      ignore_missing: true
+  - set:
+      field: url.scheme
+      value: https
+      if: ctx?.crowdstrike?.DownloadPort == 443
+  - set:
+      field: url.scheme
+      value: http
+      if: ctx?.crowdstrike?.DownloadPort != 443
+  - set:
+      field: url.full
+      value: "{{url.scheme}}://{{server.address}}{{url.path}}"
+      if: ctx?.url?.scheme != null && ctx?.server?.address != null && ctx?.url?.path != null
+  - uri_parts:
+      field: url.full
+      ignore_failure: true
+      if: ctx.url?.full != null
+  - registered_domain:
+      field: url.domain
+      target_field: url
+      ignore_missing: true
+      ignore_failure: true
+      
+  ## IP Geolocation Lookup
+  - geoip:
+      field: observer.ip
+      target_field: observer.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  
+  ## IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  ## DNS fields.
+  - set:
+      field: dns.type
+      value: query
+      if: ctx?.event?.action == "DnsRequest"
+  - registered_domain:
+      field: crowdstrike.DomainName
+      target_field: dns.question
+      ignore_missing: true
+      if: ctx?.event?.action == "DnsRequest"
+  - rename:
+      field: dns.question.domain
+      target_field: dns.question.name
+      ignore_missing: true
+      if: ctx?.event?.action == "DnsRequest"
+  - script:
+      description: Map decimal DNS request type to its name.
+      lang: painless
+      source: |-
+        def conversions = ["1": "A", "2": "NS", "5": "CNAME", "6": "SOA", "12": "PTR",
+        "13": "HINFO", "15": "MX", "16": "TXT", "17": "RP",
+        "18": "AFSDB", "24": "SIG", "25": "KEY", "28": "AAAA", "29": "LOC",
+        "33": "SRV", "35": "NAPTR", "36": "KX", "37": "CERT", "39": "DNAME",
+        "42": "APL", "43": "DS", "44": "SSHFP", "45": "IPSECKEY",
+        "46": "RRSIG", "47": "NSEC", "48": "DNSKEY", "49": "DHCID", "50": "NSEC3",
+        "51": "NSEC3PARAM", "52": "TLSA", "53": "SMIMEA", "55": "HIP", "59": "CDS",
+        "60": "CDNSKEY", "61": "OPENPGPKEY", "62": "CSYNC", "63": "ZONEMD",
+        "64": "SVCB", "65": "HTTPS", "108": "EUI48", "109": "EUI64", "249": "TKEY",
+        "250": "TSIG", "256": "URI", "257": "CAA", "32768": "TA", "32769": "DLV"];
+        def t = conversions[ctx.crowdstrike.RequestType];
+        if (t != null) {
+          if (ctx.dns?.question == null) {
+            ctx.dns.question = new HashMap();
+          }
+          ctx.dns.question.type = t;
+          ctx.crowdstrike.remove("RequestType");
+        }
+      if: ctx?.event?.action == "DnsRequest" && ctx?.crowdstrike?.RequestType != null && ctx.crowdstrike.RequestType != ""
+
+  ## File fields.
+  - convert:
+      field: crowdstrike.Size
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.Size
+      target_field: file.size
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.FileIdentifier
+      target_field: file.inode
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SourceFileName
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.TargetFileName
+      target_field: file.path
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: crowdstrike.DiskParentDeviceInstanceId
+      target_field: file.device
+      ignore_missing: true
+  - set:
+      field: file.type
+      value: file
+      if: ctx.file?.path != null && !ctx.event.action.contains("Directory")
+  - set:
+      field: file.type
+      value: dir
+      if: ctx.file?.path != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
+  - script:
+      description: Adds file information.
+      lang: painless
+      if: ctx?.file?.path != null && ctx.file.path.length() > 1
+      source: |-
+        def removeSuffix(String s, String suffix) {
+          if (s != null && suffix != null && s.endsWith(suffix)) {
+            return s.substring(0, s.length() - suffix.length());
+          }
+          return s;
+        }
+
+        def path = removeSuffix(ctx.file.path, "/");
+        path = removeSuffix(path, "\\");
+        def idx = path.lastIndexOf("\\");
+        if (idx == -1) {
+          idx = path.lastIndexOf("/");
+        }
+        if (idx > -1) {
+            if (ctx?.file == null) {
+                ctx.file = new HashMap();
+            }
+            ctx.file.name = path.substring(idx+1);
+            ctx.file.directory = path.substring(0, idx);
+
+            def extIdx = ctx.file.name.lastIndexOf(".");
+            if (extIdx > -1 && ctx.file.type == "file") {
+                ctx.file.extension = ctx.file.name.substring(extIdx+1);
+            }
+        }
+        if (path.charAt(1) == ":") {
+          ctx.file.drive_letter = path.charAt(0).toUpperCase();
+        }
+  - rename:
+      field: _temp.hashes
+      target_field: file.hash
+      if: ctx?.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx?._temp?.hashes != null && ctx?._temp?.hashes.size() > 0
+
+  ## Crowdstrike fields.
+  - split:
+      field: crowdstrike.FalconGroupingTags
+      separator: ",\\s?"
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      field: crowdstrike.SensorGroupingTags
+      separator: ",\\s?"
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      field: crowdstrike.Tags
+      separator: ",\\s?"
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      field: crowdstrike.CallStackModuleNames
+      separator: "\\|"
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: crowdstrike.UserTime
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.KernelTime
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.CycleTime
+      type: long
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: "{{crowdstrike.ConfigStateHash}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx?.crowdstrike?.ConfigStateHash != null && ctx.crowdstrike.ConfigStateHash != ""
+  - trim:
+      field: crowdstrike.BootArgs
+      ignore_missing: true
+  - split:
+      field: crowdstrike.BootArgs
+      separator: '\s+'
+      ignore_missing: true
+  - date:
+      field: crowdstrike.LogonTime
+      target_field: crowdstrike.LogonTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.LogonTime != null && ctx?.crowdstrike?.LogonTime != ""
+  - date:
+      field: crowdstrike.LogoffTime
+      target_field: crowdstrike.LogoffTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.LogoffTime != null && ctx?.crowdstrike?.LogoffTime != ""
+  - date:
+      field: crowdstrike.ConnectTime
+      target_field: crowdstrike.ConnectTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.ConnectTime != null && ctx?.crowdstrike?.ConnectTime != ""
+  - date:
+      field: crowdstrike.PreviousConnectTime
+      target_field: crowdstrike.PreviousConnectTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.PreviousConnectTime != null && ctx?.crowdstrike?.PreviousConnectTime != ""
+  - date:
+      field: crowdstrike.AgentLocalTime
+      target_field: crowdstrike.AgentLocalTime
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.AgentLocalTime != null && ctx?.crowdstrike?.AgentLocalTime != ""
+  - date:
+      field: crowdstrike.FirstSeen
+      target_field: crowdstrike.FirstSeen
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.FirstSeen != null && ctx?.crowdstrike?.FirstSeen != ""
+  - date:
+      field: crowdstrike.Time
+      target_field: crowdstrike.Time
+      formats:
+        - UNIX
+      if: ctx?.crowdstrike?.Time != null && ctx?.crowdstrike?.Time != ""
+  - convert:
+      field: crowdstrike.AgentTimeOffset
+      target_field: crowdstrike.AgentTimeOffset
+      type: float
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.Timeout
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.PhysicalAddressLength
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.InterfaceIndex
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.NetLuidIndex
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.AttemptNumber
+      type: long
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.SystemTableIndex
+      type: long
+      ignore_missing: true
+  - split:
+      field: crowdstrike.NeighborList
+      separator: '\|'
+      ignore_missing: true
+  - split:
+      field: crowdstrike.ConfigStateData
+      separator: '\|'
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{crowdstrike.LogonServer}}"
+      allow_duplicates: false
+      if: ctx?.crowdstrike?.LogonServer != null
+  - append:
+      field: related.hosts
+      value: "{{crowdstrike.ClientComputerName}}"
+      allow_duplicates: false
+      if: ctx?.crowdstrike?.ClientComputerName != null
+
+  ## Cleanup.
+  - remove:
+      field: crowdstrike.event_platform
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.os?.type != null
+  - remove:
+      field:
+        - _temp
+        - crowdstrike.timestamp
+        - crowdstrike._time
+        - crowdstrike.ContextTimeStamp
+        - crowdstrike.CreationTimeStamp
+        - crowdstrike.DomainName
+        - crowdstrike.ConnectionDirection
+        - crowdstrike.UserIsAdmin
+        - crowdstrike.TargetDirectoryName
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || v == '-' || v == 'none' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}"

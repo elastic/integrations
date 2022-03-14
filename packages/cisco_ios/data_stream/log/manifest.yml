@@ -1,0 +1,102 @@
+title: Cisco IOS logs
+type: logs
+streams:
+  - input: udp
+    title: Cisco IOS logs
+    description: Collect Cisco IOS logs
+    template_path: udp.yml.hbs
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - cisco-ios
+          - forwarded
+      - name: syslog_host
+        type: text
+        title: Host to listen on
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Syslog Port
+        multi: false
+        required: true
+        show_user: true
+        default: 9002
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: true
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+  - input: logfile
+    enabled: false
+    title: Cisco IOS logs
+    description: Collect Cisco IOS logs from file
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/cisco-ios.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - cisco-ios
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: true
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

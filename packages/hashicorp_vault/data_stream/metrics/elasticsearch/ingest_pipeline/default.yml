@@ -1,0 +1,36 @@
+---
+description: Pipeline for processing Hashicorp Vault metrics.
+processors:
+  - remove:
+      field:
+        - event.dataset
+        - event.module
+        - metricset.name
+        - service.address
+        - service.type
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - set:
+      field: service.type
+      value: hashicorp_vault
+  - set:
+      field: event.kind
+      value: metric
+  - rename:
+      field: prometheus.labels
+      target_field: labels
+      ignore_missing: true
+  - set:
+      field: labels.job
+      value: hashicorp_vault
+      override: true
+  - rename:
+      field: prometheus
+      target_field: hashicorp_vault.metrics
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

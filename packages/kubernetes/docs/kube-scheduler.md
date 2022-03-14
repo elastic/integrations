@@ -112,7 +112,7 @@ An example event for `scheduler` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version | keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
@@ -129,11 +129,11 @@ An example event for `scheduler` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.* | Kubernetes annotations map | object |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.labels.* | Kubernetes labels map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
@@ -147,13 +147,13 @@ An example event for `scheduler` looks as following:
 | kubernetes.scheduler.host | Request host | keyword |  |  |
 | kubernetes.scheduler.http.request.count | Request count | long |  | counter |
 | kubernetes.scheduler.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.scheduler.http.request.duration.us.percentile.* | Request duration microseconds percentiles | object |  |  |
+| kubernetes.scheduler.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
 | kubernetes.scheduler.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
 | kubernetes.scheduler.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.scheduler.http.request.size.bytes.percentile.* | Request size percentiles | object |  |  |
+| kubernetes.scheduler.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
 | kubernetes.scheduler.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
 | kubernetes.scheduler.http.response.size.bytes.count | Response count | long |  | counter |
-| kubernetes.scheduler.http.response.size.bytes.percentile.* | Response size percentiles | object |  |  |
+| kubernetes.scheduler.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
 | kubernetes.scheduler.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.scheduler.leader.is_master | Whether the node is master | boolean |  |  |
 | kubernetes.scheduler.method | HTTP method | keyword |  |  |
@@ -166,16 +166,18 @@ An example event for `scheduler` looks as following:
 | kubernetes.scheduler.process.started.sec | Seconds since the process started | double |  | gauge |
 | kubernetes.scheduler.result | Schedule attempt result | keyword |  |  |
 | kubernetes.scheduler.scheduling.duration.seconds.count | Scheduling count | long |  | counter |
-| kubernetes.scheduler.scheduling.duration.seconds.percentile.* | Scheduling duration percentiles | object |  |  |
+| kubernetes.scheduler.scheduling.duration.seconds.percentile.\* | Scheduling duration percentiles | object |  |  |
 | kubernetes.scheduler.scheduling.duration.seconds.sum | Scheduling duration cumulative sum | double |  | counter |
-| kubernetes.scheduler.scheduling.e2e.duration.us.bucket.* | End to end scheduling duration microseconds | object |  |  |
+| kubernetes.scheduler.scheduling.e2e.duration.us.bucket.\* | End to end scheduling duration microseconds | object |  |  |
 | kubernetes.scheduler.scheduling.e2e.duration.us.count | End to end scheduling count | long | micros | counter |
 | kubernetes.scheduler.scheduling.e2e.duration.us.sum | End to end scheduling duration microseconds sum | long | micros | counter |
 | kubernetes.scheduler.scheduling.pod.attempts.count | Pod attempts count | long |  | counter |
-| kubernetes.scheduler.scheduling.pod.preemption.victims.bucket.* | Pod preemption victims | long |  |  |
+| kubernetes.scheduler.scheduling.pod.preemption.victims.bucket.\* | Pod preemption victims | long |  |  |
 | kubernetes.scheduler.scheduling.pod.preemption.victims.count | Pod preemption victims count | long |  | counter |
 | kubernetes.scheduler.scheduling.pod.preemption.victims.sum | Pod preemption victims sum | long |  | counter |
-| kubernetes.selectors.* | Kubernetes Service selectors map | object |  |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
 | kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| service.address | Service address | keyword |  |  |
-| service.type | Service type | keyword |  |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |

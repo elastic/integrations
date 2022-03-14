@@ -1,0 +1,13 @@
+version: '2.3'
+services:
+  activemq-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/opt/apache-activemq-*/data/
+    command: /bin/sh -c "cp /sample_logs/* /opt/apache-activemq-*/data/"
+  activemq:
+    build: .
+    ports:
+      - 8161
+      - 61613

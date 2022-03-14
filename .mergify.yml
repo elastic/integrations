@@ -1,11 +1,16 @@
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=integrations/pr-merge
+
 pull_request_rules:
   - name: automatic merge of bot 🤖
     conditions:
       - check-success=integrations/pr-merge
       - check-success=CLA
-      - base=master
+      - base=main
       - author~=^dependabot(|-preview)\[bot\]$
     actions:
-      merge:
+      queue:
         method: squash
-        strict: smart+fasttrack
+        name: default

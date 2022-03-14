@@ -1,4 +1,4 @@
-# Network Traffic Integration
+# Network Packet Capture Integration
 
 This integration sniffs network packets on a host and dissects
 known protocols.
@@ -14,7 +14,7 @@ host.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -38,16 +38,16 @@ host.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -68,13 +68,13 @@ host.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -83,7 +83,7 @@ host.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -91,7 +91,7 @@ host.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
@@ -148,7 +148,7 @@ Fields published for AMQP packets.
 | amqp.type | Message type name. | keyword |
 | amqp.user-id | Creating user id. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -172,16 +172,16 @@ Fields published for AMQP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -202,13 +202,13 @@ Fields published for AMQP packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -217,7 +217,7 @@ Fields published for AMQP packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -225,11 +225,117 @@ Fields published for AMQP packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `amqp` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:17:53.765Z",
+    "agent": {
+        "ephemeral_id": "3fea1b50-9461-4f1e-b816-1531794e7487",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "amqp": {
+        "durable": true,
+        "exchange": "titres",
+        "exchange-type": "fanout",
+        "no-wait": true,
+        "passive": false
+    },
+    "client": {
+        "bytes": 33,
+        "ip": "127.0.0.1",
+        "port": 34445
+    },
+    "data_stream": {
+        "dataset": "network_traffic.amqp",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "127.0.0.1",
+        "port": 5672
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "amqp.exchange.declare",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.amqp",
+        "ingested": "2022-02-03T10:17:54Z",
+        "kind": "event",
+        "start": "2022-02-03T10:17:53.765Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "exchange.declare",
+    "network": {
+        "bytes": 33,
+        "community_id": "1:ocT5O96pI2Ji2EIPYIEymNmQXrE=",
+        "direction": "ingress",
+        "protocol": "amqp",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "server": {
+        "ip": "127.0.0.1",
+        "port": 5672
+    },
+    "source": {
+        "bytes": 33,
+        "ip": "127.0.0.1",
+        "port": 34445
+    },
+    "status": "OK",
+    "type": "amqp"
+}
+```
 
 ### Cassandra
 
@@ -312,7 +418,7 @@ Fields published for Apache Cassandra packets.
 | cassandra.response.supported | Indicates which startup options are supported by the server. This message comes as a response to an OPTIONS message. | flattened |
 | cassandra.response.warnings | The text of the warnings, only occur when Warning flag was set. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -336,16 +442,16 @@ Fields published for Apache Cassandra packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -366,13 +472,13 @@ Fields published for Apache Cassandra packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -381,7 +487,7 @@ Fields published for Apache Cassandra packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -389,11 +495,142 @@ Fields published for Apache Cassandra packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `cassandra` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:22:59.282Z",
+    "agent": {
+        "ephemeral_id": "e84ef5c7-8b3d-453d-ab11-207d447b7a3e",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "cassandra": {
+        "request": {
+            "headers": {
+                "flags": "Default",
+                "length": 51,
+                "op": "QUERY",
+                "stream": 92,
+                "version": "4"
+            },
+            "query": "CREATE INDEX ON users (lname);"
+        },
+        "response": {
+            "headers": {
+                "flags": "Default",
+                "length": 39,
+                "op": "RESULT",
+                "stream": 92,
+                "version": "4"
+            },
+            "result": {
+                "schema_change": {
+                    "change": "UPDATED",
+                    "keyspace": "mykeyspace",
+                    "object": "users",
+                    "target": "TABLE"
+                },
+                "type": "schemaChanged"
+            }
+        }
+    },
+    "client": {
+        "bytes": 60,
+        "ip": "127.0.0.1",
+        "port": 52749
+    },
+    "data_stream": {
+        "dataset": "network_traffic.cassandra",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 48,
+        "ip": "127.0.0.1",
+        "port": 9042
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.cassandra",
+        "duration": 160316277,
+        "end": "2022-02-03T10:22:59.442Z",
+        "ingested": "2022-02-03T10:23:00Z",
+        "kind": "event",
+        "start": "2022-02-03T10:22:59.282Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "network": {
+        "bytes": 108,
+        "community_id": "1:bCORHZnGIk6GWYaE3Kn0DOpQCKE=",
+        "direction": "ingress",
+        "protocol": "cassandra",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "server": {
+        "bytes": 48,
+        "ip": "127.0.0.1",
+        "port": 9042
+    },
+    "source": {
+        "bytes": 60,
+        "ip": "127.0.0.1",
+        "port": 52749
+    },
+    "status": "OK",
+    "type": "cassandra"
+}
+```
 
 ### DHCP
 
@@ -405,7 +642,7 @@ Fields published for DHCPv4 packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -429,7 +666,7 @@ Fields published for DHCPv4 packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | dhcpv4.assigned_ip | The IP address that the DHCP server is assigning to the client. This field is also known as "your" IP address. | ip |
 | dhcpv4.client_ip | The current IP address of the client. | ip |
@@ -464,14 +701,14 @@ Fields published for DHCPv4 packets.
 | dhcpv4.server_ip | The IP address of the DHCP server that the client should use for the next step in the bootstrap process. | ip |
 | dhcpv4.server_name | The name of the server sending the message. Optional. Used in DHCPOFFER or DHCPACK messages. | keyword |
 | dhcpv4.transaction_id | Transaction ID, a random number chosen by the client, used by the client and server to associate messages and responses between a client and a server. | keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -492,13 +729,13 @@ Fields published for DHCPv4 packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -507,7 +744,7 @@ Fields published for DHCPv4 packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -515,11 +752,128 @@ Fields published for DHCPv4 packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `dhcpv4` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:23:40.304Z",
+    "agent": {
+        "ephemeral_id": "caf1f2fd-3292-4c79-9343-0f71397b586b",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 272,
+        "ip": "0.0.0.0",
+        "port": 68
+    },
+    "data_stream": {
+        "dataset": "network_traffic.dhcpv4",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "255.255.255.255",
+        "port": 67
+    },
+    "dhcpv4": {
+        "client_mac": "00-0B-82-01-FC-42",
+        "flags": "unicast",
+        "hardware_type": "Ethernet",
+        "hops": 0,
+        "op_code": "bootrequest",
+        "option": {
+            "message_type": "discover",
+            "parameter_request_list": [
+                "Subnet Mask",
+                "Router",
+                "Domain Name Server",
+                "NTP Servers"
+            ],
+            "requested_ip_address": "0.0.0.0"
+        },
+        "seconds": 0,
+        "transaction_id": "0x00003d1d"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.dhcpv4",
+        "ingested": "2022-02-03T10:23:41Z",
+        "kind": "event",
+        "start": "2022-02-03T10:23:40.304Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "network": {
+        "bytes": 272,
+        "community_id": "1:t9O1j0qj71O4wJM7gnaHtgmfev8=",
+        "direction": "unknown",
+        "protocol": "dhcpv4",
+        "transport": "udp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "0.0.0.0",
+            "255.255.255.255"
+        ]
+    },
+    "server": {
+        "ip": "255.255.255.255",
+        "port": 67
+    },
+    "source": {
+        "bytes": 272,
+        "ip": "0.0.0.0",
+        "port": 68
+    },
+    "status": "OK",
+    "type": "dhcpv4"
+}
+```
 
 ### DNS
 
@@ -531,7 +885,7 @@ Fields published for DNS packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -555,7 +909,7 @@ Fields published for DNS packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | dns.additionals | An array containing a dictionary for each additional section from the answer. | object |
 | dns.additionals.class | The class of DNS data contained in this resource record. | keyword |
@@ -564,7 +918,7 @@ Fields published for DNS packets.
 | dns.additionals.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.additionals.type | The type of data contained in this resource record. | keyword |
 | dns.additionals_count | The number of resource records contained in the `dns.additionals` field. The `dns.additionals` field may or may not be included depending on the configuration of Packetbeat. | long |
-| dns.answers | Array of DNS answers. | object |
+| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
 | dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
 | dns.authorities | An array containing a dictionary for each authority section from the answer. | object |
 | dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
@@ -577,31 +931,31 @@ Fields published for DNS packets.
 | dns.flags.recursion_available | A DNS flag specifying whether recursive query support is available in the name server. | boolean |
 | dns.flags.recursion_desired | A DNS flag specifying that the client directs the server to pursue a query recursively. Recursive query support is optional. | boolean |
 | dns.flags.truncated_response | A DNS flag specifying that only the first 512 bytes of the reply were returned. | boolean |
-| dns.header_flags | Array of DNS header flags. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
-| dns.op_code | The DNS operation code that specifies the kind of query in the message. | keyword |
+| dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.opt.do | If set, the transaction uses DNSSEC. | boolean |
 | dns.opt.ext_rcode | Extended response code field. | keyword |
 | dns.opt.udp_size | Requestor's UDP payload size (in bytes). | long |
 | dns.opt.version | The EDNS version. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.etld_plus_one | The effective top-level domain (eTLD) plus one more label. For example, the eTLD+1 for "foo.bar.golang.org." is "golang.org.". The data for determining the eTLD comes from an embedded copy of the data from http://publicsuffix.org. | keyword |
-| dns.question.name | The name being queried. | keyword |
-| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. | keyword |
-| dns.question.subdomain | The subdomain of the domain. | keyword |
-| dns.question.top_level_domain | The effective top level domain (com, org, net, co.uk). | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
-| dns.resolved_ip | Array containing all IPs seen in answers.data | ip |
+| dns.resolved_ip | Array containing all IPs seen in `answers.data`. The `answers` array can be difficult to use, because of the variety of data formats it can contain. Extracting all IP addresses seen in there to `dns.resolved_ip` makes it possible to index them as IP addresses, and makes them easier to visualize and query for. | ip |
 | dns.response_code | The DNS response code. | keyword |
-| dns.type | The type of DNS event captured, query or answer. | keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -622,13 +976,13 @@ Fields published for DNS packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -637,7 +991,7 @@ Fields published for DNS packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -645,11 +999,146 @@ Fields published for DNS packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `dns` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:28:49.401Z",
+    "agent": {
+        "ephemeral_id": "056ad386-26b5-4b78-9e2c-0102dd5c21f2",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 36,
+        "ip": "192.168.238.68",
+        "port": 65020
+    },
+    "data_stream": {
+        "dataset": "network_traffic.dns",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 121,
+        "ip": "8.8.8.8",
+        "port": 53
+    },
+    "dns": {
+        "additionals_count": 0,
+        "answers_count": 0,
+        "authorities_count": 1,
+        "flags": {
+            "authentic_data": false,
+            "authoritative": false,
+            "checking_disabled": false,
+            "recursion_available": true,
+            "recursion_desired": true,
+            "truncated_response": false
+        },
+        "header_flags": [
+            "RD",
+            "RA"
+        ],
+        "id": 681,
+        "op_code": "QUERY",
+        "question": {
+            "class": "IN",
+            "etld_plus_one": "elastic.co",
+            "name": "nothing.elastic.co",
+            "registered_domain": "elastic.co",
+            "subdomain": "nothing",
+            "top_level_domain": "co",
+            "type": "A"
+        },
+        "response_code": "NXDOMAIN",
+        "type": "answer"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.dns",
+        "duration": 58475961,
+        "end": "2022-02-03T10:28:49.459Z",
+        "ingested": "2022-02-03T10:28:50Z",
+        "kind": "event",
+        "start": "2022-02-03T10:28:49.401Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "QUERY",
+    "network": {
+        "bytes": 157,
+        "community_id": "1:qYA6Pi3oK/YLNdQXD2WrnEBi118=",
+        "direction": "unknown",
+        "protocol": "dns",
+        "transport": "udp",
+        "type": "ipv4"
+    },
+    "query": "class IN, type A, nothing.elastic.co",
+    "related": {
+        "ip": [
+            "192.168.238.68",
+            "8.8.8.8"
+        ]
+    },
+    "resource": "nothing.elastic.co",
+    "server": {
+        "bytes": 121,
+        "ip": "8.8.8.8",
+        "port": 53
+    },
+    "source": {
+        "bytes": 36,
+        "ip": "192.168.238.68",
+        "port": 65020
+    },
+    "status": "Error",
+    "type": "dns"
+}
+```
 
 ### HTTP
 
@@ -661,7 +1150,7 @@ Fields published for HTTP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -685,17 +1174,17 @@ Fields published for HTTP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
-| destination.ip | IP address of the destination. | ip |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -718,7 +1207,7 @@ Fields published for HTTP packets.
 | http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
 | http.request.headers | A map containing the captured header fields from the request. Which headers to capture is configurable. If headers with the same header name are present in the message, they will be separated by commas. | flattened |
-| http.request.method | HTTP request method. | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
@@ -727,24 +1216,24 @@ Fields published for HTTP packets.
 | http.response.status_phrase | The HTTP status phrase. | keyword |
 | http.version | HTTP version. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
-| related.hosts | All the host identifiers seen on your event. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.domain | Server domain. | keyword |
-| server.ip | IP address of the server. | ip |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -752,19 +1241,159 @@ Fields published for HTTP packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
-| url.domain | Domain of the url. | keyword |
-| url.extension | File extension from the request url, excluding the leading dot. | keyword |
-| url.full | Full unparsed URL. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
-| url.query | Query string of the request. | keyword |
-| url.scheme | Scheme of the url. | keyword |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 
+
+An example event for `http` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:35:14.623Z",
+    "agent": {
+        "ephemeral_id": "3be24dfb-d972-4f95-b7d8-df5077eb7d6d",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 898,
+        "ip": "127.0.0.1",
+        "port": 34415
+    },
+    "data_stream": {
+        "dataset": "network_traffic.http",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 29988,
+        "domain": "packetbeat.com",
+        "ip": "127.0.0.1",
+        "port": 8002
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.http",
+        "duration": 5094152,
+        "end": "2022-02-03T10:35:14.628Z",
+        "ingested": "2022-02-03T10:35:15Z",
+        "kind": "event",
+        "start": "2022-02-03T10:35:14.623Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "http": {
+        "request": {
+            "bytes": 898,
+            "headers": {
+                "content-length": 0
+            },
+            "method": "get"
+        },
+        "response": {
+            "body": {
+                "bytes": 29799
+            },
+            "bytes": 29988,
+            "headers": {
+                "content-length": 29799,
+                "content-type": "text/html; charset=utf-8"
+            },
+            "status_code": 200,
+            "status_phrase": "ok"
+        },
+        "version": "1.0"
+    },
+    "method": "get",
+    "network": {
+        "bytes": 30886,
+        "community_id": "1:B8HpOYF92shZPFve4jVgE8GksBc=",
+        "direction": "ingress",
+        "protocol": "http",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "query": "GET /",
+    "related": {
+        "hosts": [
+            "packetbeat.com"
+        ],
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "server": {
+        "bytes": 29988,
+        "domain": "packetbeat.com",
+        "ip": "127.0.0.1",
+        "port": 8002
+    },
+    "source": {
+        "bytes": 898,
+        "ip": "127.0.0.1",
+        "port": 34415
+    },
+    "status": "OK",
+    "type": "http",
+    "url": {
+        "domain": "packetbeat.com",
+        "full": "http://packetbeat.com:8002/",
+        "path": "/",
+        "port": 8002,
+        "scheme": "http"
+    },
+    "user_agent": {
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.65 Safari/537.36"
+    }
+}
+```
 
 ### ICMP
 
@@ -776,7 +1405,7 @@ Fields published for ICMP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -800,16 +1429,16 @@ Fields published for ICMP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -837,13 +1466,13 @@ Fields published for ICMP packets.
 | icmp.response.type | The response type. | long |
 | icmp.version | The version of the ICMP protocol. | long |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -852,7 +1481,7 @@ Fields published for ICMP packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -860,11 +1489,121 @@ Fields published for ICMP packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `icmp` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:38:25.426Z",
+    "agent": {
+        "ephemeral_id": "ca426f1a-1da5-4ade-ba88-5203e420f5f0",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 4,
+        "ip": "::1"
+    },
+    "data_stream": {
+        "dataset": "network_traffic.icmp",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 4,
+        "ip": "::2"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.icmp",
+        "duration": 16850124,
+        "end": "2022-02-03T10:38:25.443Z",
+        "ingested": "2022-02-03T10:38:26Z",
+        "kind": "event",
+        "start": "2022-02-03T10:38:25.426Z",
+        "type": [
+            "connection"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "icmp": {
+        "request": {
+            "code": 0,
+            "message": "EchoRequest(0)",
+            "type": 128
+        },
+        "response": {
+            "code": 0,
+            "message": "EchoReply(0)",
+            "type": 129
+        },
+        "version": 6
+    },
+    "network": {
+        "bytes": 8,
+        "community_id": "1:9UpHcZHFAOl8WqZVOs5YRQ5wDGE=",
+        "direction": "egress",
+        "transport": "ipv6-icmp",
+        "type": "ipv6"
+    },
+    "path": "::2",
+    "related": {
+        "ip": [
+            "::1",
+            "::2"
+        ]
+    },
+    "server": {
+        "bytes": 4,
+        "ip": "::2"
+    },
+    "source": {
+        "bytes": 4,
+        "ip": "::1"
+    },
+    "status": "OK",
+    "type": "icmp"
+}
+```
 
 ### Memcached
 
@@ -876,7 +1615,7 @@ Fields published for Memcached packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -900,16 +1639,16 @@ Fields published for Memcached packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -937,7 +1676,7 @@ Fields published for Memcached packets.
 | memcache.request.count_values | The number of values found in the memcache request message. If the command does not send any data, this field is missing. | long |
 | memcache.request.delta | The counter increment/decrement delta value. | long |
 | memcache.request.dest_class | The destination class id in 'slab reassign' command. | long |
-| memcache.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is <30 days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
+| memcache.request.exptime | The data expiry time in seconds sent with the memcache command (if present). If the value is `\< 30` days, the expiry time is relative to "now", or else it is an absolute Unix time in seconds (32-bit). | long |
 | memcache.request.flags | The memcache command flags sent in the request (if present). | long |
 | memcache.request.initial | The counter increment/decrement initial value parameter (binary protocol only). | long |
 | memcache.request.keys | The list of keys sent in the store or load commands. | array |
@@ -972,13 +1711,13 @@ Fields published for Memcached packets.
 | memcache.response.values | The list of base64 encoded values sent with the response (if present). | array |
 | memcache.response.version | The returned memcache version string. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -987,7 +1726,7 @@ Fields published for Memcached packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -995,11 +1734,134 @@ Fields published for Memcached packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `memcached` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:50:59.487Z",
+    "agent": {
+        "ephemeral_id": "a0ad5187-6614-4509-8b8c-b91ce34bfe47",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 8,
+        "ip": "192.168.188.37",
+        "port": 55319
+    },
+    "data_stream": {
+        "dataset": "network_traffic.memcached",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 20,
+        "ip": "192.168.188.38",
+        "port": 11211
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.memcached",
+        "duration": 1110187,
+        "end": "2022-02-03T10:50:59.488Z",
+        "ingested": "2022-02-03T10:51:00Z",
+        "kind": "event",
+        "start": "2022-02-03T10:50:59.487Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "event.action": "memcache.store",
+    "event.outcome": "success",
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "memcache": {
+        "protocol_type": "text",
+        "request": {
+            "bytes": 3,
+            "command": "set",
+            "count_values": 1,
+            "exptime": 0,
+            "flags": 0,
+            "keys": [
+                "key"
+            ],
+            "noreply": false,
+            "type": "Store"
+        },
+        "response": {
+            "command": "STORED",
+            "type": "Success"
+        }
+    },
+    "network": {
+        "bytes": 28,
+        "community_id": "1:9A/ijCzCSldlhnwuPZ8ZbFV9a0s=",
+        "direction": "unknown",
+        "protocol": "memcache",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "192.168.188.37",
+            "192.168.188.38"
+        ]
+    },
+    "server": {
+        "bytes": 20,
+        "ip": "192.168.188.38",
+        "port": 11211
+    },
+    "source": {
+        "bytes": 8,
+        "ip": "192.168.188.37",
+        "port": 55319
+    },
+    "status": "OK",
+    "type": "memcache"
+}
+```
 
 ### MongoDB
 
@@ -1011,7 +1873,7 @@ Fields published for MongoDB packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1035,16 +1897,16 @@ Fields published for MongoDB packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1076,13 +1938,13 @@ Fields published for MongoDB packets.
 | mongodb.selector | A BSON document that specifies the query for selecting the document to update or delete. | keyword |
 | mongodb.startingFrom | Where in the cursor this reply is starting. | keyword |
 | mongodb.update | A BSON document that specifies the update to be performed. For information on specifying updates, see the Update Operations documentation from the MongoDB Manual. | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -1091,7 +1953,7 @@ Fields published for MongoDB packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1099,11 +1961,124 @@ Fields published for MongoDB packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `mongodb` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T10:56:38.842Z",
+    "agent": {
+        "ephemeral_id": "fb38b51d-a04b-41b9-aeb2-ec9cf5773530",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 62,
+        "ip": "172.17.42.1",
+        "port": 56341
+    },
+    "data_stream": {
+        "dataset": "network_traffic.mongodb",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 194,
+        "ip": "172.17.0.7",
+        "port": 27017
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.mongodb",
+        "duration": 144797,
+        "end": "2022-02-03T10:56:38.842Z",
+        "ingested": "2022-02-03T10:56:39Z",
+        "kind": "event",
+        "start": "2022-02-03T10:56:38.842Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "isMaster",
+    "mongodb": {
+        "cursorId": 0,
+        "fullCollectionName": "admin.$cmd",
+        "numberReturned": 1,
+        "numberToReturn": 4294967295,
+        "numberToSkip": 0,
+        "startingFrom": 0
+    },
+    "network": {
+        "bytes": 256,
+        "community_id": "1:M+LyW/kccP1eUdEy2yv8apn11ec=",
+        "direction": "unknown",
+        "protocol": "mongodb",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "query": "admin.$cmd.isMaster()",
+    "related": {
+        "ip": [
+            "172.17.42.1",
+            "172.17.0.7"
+        ]
+    },
+    "resource": "admin.$cmd",
+    "server": {
+        "bytes": 194,
+        "ip": "172.17.0.7",
+        "port": 27017
+    },
+    "source": {
+        "bytes": 62,
+        "ip": "172.17.42.1",
+        "port": 56341
+    },
+    "status": "OK",
+    "type": "mongodb"
+}
+```
 
 ### MySQL
 
@@ -1115,7 +2090,7 @@ Fields published for MySQL packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1139,16 +2114,16 @@ Fields published for MySQL packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1176,13 +2151,13 @@ Fields published for MySQL packets.
 | mysql.num_fields | If the SELECT query is successful, this field is set to the number of fields returned. | long |
 | mysql.num_rows | If the SELECT query is successful, this field is set to the number of rows returned. | long |
 | mysql.query | The row mysql query as read from the transaction's request. | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -1191,7 +2166,7 @@ Fields published for MySQL packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1199,11 +2174,122 @@ Fields published for MySQL packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `mysql` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:01:25.244Z",
+    "agent": {
+        "ephemeral_id": "b93df5d3-4bf4-4623-a66d-853eede519a1",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 28,
+        "ip": "192.168.33.1",
+        "port": 60137
+    },
+    "data_stream": {
+        "dataset": "network_traffic.mysql",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 102441,
+        "ip": "192.168.33.14",
+        "port": 3306
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.mysql",
+        "duration": 3588800,
+        "end": "2022-02-03T11:01:25.248Z",
+        "ingested": "2022-02-03T11:01:26Z",
+        "kind": "event",
+        "start": "2022-02-03T11:01:25.244Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "SELECT",
+    "mysql": {
+        "affected_rows": 0,
+        "insert_id": 0,
+        "num_fields": 1,
+        "num_rows": 400
+    },
+    "network": {
+        "bytes": 102469,
+        "community_id": "1:9KUFobbPouJ9e7hGr0khrShJ1Rs=",
+        "direction": "unknown",
+        "protocol": "mysql",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "path": "test.test_long",
+    "query": "select * from test_long",
+    "related": {
+        "ip": [
+            "192.168.33.1",
+            "192.168.33.14"
+        ]
+    },
+    "server": {
+        "bytes": 102441,
+        "ip": "192.168.33.14",
+        "port": 3306
+    },
+    "source": {
+        "bytes": 28,
+        "ip": "192.168.33.1",
+        "port": 60137
+    },
+    "status": "OK",
+    "type": "mysql"
+}
+```
 
 ### NFS
 
@@ -1215,8 +2301,8 @@ Fields published for NFS packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.domain | Client domain. | keyword |
-| client.ip | IP address of the client. | ip |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1240,16 +2326,16 @@ Fields published for NFS packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1271,13 +2357,13 @@ Fields published for NFS packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | nfs.minor_version | NFS protocol minor version number. | long |
 | nfs.opcode | NFS operation name, or main operation name, in case of COMPOUND calls. | keyword |
 | nfs.status | NFS operation reply status. | keyword |
@@ -1299,7 +2385,7 @@ Fields published for NFS packets.
 | rpc.status | RPC message reply status. | keyword |
 | rpc.xid | RPC message transaction identifier. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1307,13 +2393,139 @@ Fields published for NFS packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
-| source.ip | IP address of the source. | ip |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 
+
+An example event for `nfs` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:04:32.060Z",
+    "agent": {
+        "ephemeral_id": "62cab970-d183-4193-a863-2fae39244fe2",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 116,
+        "domain": "ani",
+        "ip": "127.0.0.1",
+        "port": 839
+    },
+    "data_stream": {
+        "dataset": "network_traffic.nfs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 32,
+        "ip": "127.0.0.1",
+        "port": 2049
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "nfs.LOOKUP",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.nfs",
+        "duration": 410457313,
+        "end": "2022-02-03T11:04:32.470Z",
+        "ingested": "2022-02-03T11:04:33Z",
+        "kind": "event",
+        "start": "2022-02-03T11:04:32.060Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "group.id": 0,
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "host.hostname": "ani",
+    "network": {
+        "bytes": 148,
+        "community_id": "1:K6/2XnLPJVyyA+yaYhZUWMBb0mw=",
+        "direction": "ingress",
+        "protocol": "nfsv3",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "nfs": {
+        "opcode": "LOOKUP",
+        "status": "NFSERR_NOENT",
+        "version": 3
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "rpc": {
+        "auth_flavor": "unix",
+        "cred": {
+            "gid": 0,
+            "gids": [
+                0
+            ],
+            "machinename": "ani",
+            "stamp": 4639510,
+            "uid": 0
+        },
+        "status": "success",
+        "xid": "a19a75d0"
+    },
+    "server": {
+        "bytes": 32,
+        "ip": "127.0.0.1",
+        "port": 2049
+    },
+    "source": {
+        "bytes": 116,
+        "domain": "ani",
+        "ip": "127.0.0.1",
+        "port": 839
+    },
+    "status": "OK",
+    "type": "nfs",
+    "user.id": 0
+}
+```
 
 ### PostgreSQL
 
@@ -1325,7 +2537,7 @@ Fields published for PostgreSQL packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1349,16 +2561,16 @@ Fields published for PostgreSQL packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1379,13 +2591,13 @@ Fields published for PostgreSQL packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | pgsql.error_code | The PostgreSQL error code. | keyword |
@@ -1399,7 +2611,7 @@ Fields published for PostgreSQL packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1407,11 +2619,118 @@ Fields published for PostgreSQL packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `pgsql` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:08:49.961Z",
+    "agent": {
+        "ephemeral_id": "4b3cd166-a06e-462b-99f4-1fbbb19bd255",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 34,
+        "ip": "127.0.0.1",
+        "port": 34936
+    },
+    "data_stream": {
+        "dataset": "network_traffic.pgsql",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 3186,
+        "ip": "127.0.0.1",
+        "port": 5432
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.pgsql",
+        "duration": 4178922,
+        "end": "2022-02-03T11:08:49.966Z",
+        "ingested": "2022-02-03T11:08:51Z",
+        "kind": "event",
+        "start": "2022-02-03T11:08:49.961Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "SELECT",
+    "network": {
+        "bytes": 3220,
+        "community_id": "1:WUuTzESSpZnUwZ2tuZKZtNOdHSU=",
+        "direction": "ingress",
+        "protocol": "pgsql",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "pgsql": {
+        "num_fields": 3,
+        "num_rows": 15
+    },
+    "query": "select * from long_response",
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "server": {
+        "bytes": 3186,
+        "ip": "127.0.0.1",
+        "port": 5432
+    },
+    "source": {
+        "bytes": 34,
+        "ip": "127.0.0.1",
+        "port": 34936
+    },
+    "status": "OK",
+    "type": "pgsql"
+}
+```
 
 ### Redis
 
@@ -1423,7 +2742,7 @@ Fields published for Redis packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1447,16 +2766,16 @@ Fields published for Redis packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1477,13 +2796,13 @@ Fields published for Redis packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -1494,7 +2813,7 @@ Fields published for Redis packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1502,11 +2821,119 @@ Fields published for Redis packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `redis` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:09:58.274Z",
+    "agent": {
+        "ephemeral_id": "9695e5d6-592c-43f6-ae77-e05b03258aac",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 31,
+        "ip": "127.0.0.1",
+        "port": 32810
+    },
+    "data_stream": {
+        "dataset": "network_traffic.redis",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 5,
+        "ip": "127.0.0.1",
+        "port": 6380
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "redis.set",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.redis",
+        "duration": 3574366,
+        "end": "2022-02-03T11:09:58.278Z",
+        "ingested": "2022-02-03T11:09:59Z",
+        "kind": "event",
+        "start": "2022-02-03T11:09:58.274Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "SET",
+    "network": {
+        "bytes": 36,
+        "community_id": "1:GuHlyWpX6bKkMXy19YkvZSNPTS4=",
+        "direction": "ingress",
+        "protocol": "redis",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "query": "set key3 me",
+    "redis": {
+        "return_value": "OK"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "resource": "key3",
+    "server": {
+        "bytes": 5,
+        "ip": "127.0.0.1",
+        "port": 6380
+    },
+    "source": {
+        "bytes": 31,
+        "ip": "127.0.0.1",
+        "port": 32810
+    },
+    "status": "OK",
+    "type": "redis"
+}
+```
 
 ### SIP
 
@@ -1518,7 +2945,7 @@ Fields published for SIP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1542,16 +2969,16 @@ Fields published for SIP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1572,26 +2999,26 @@ Fields published for SIP packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.application | Application level protocol name. | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.iana_number | IANA Protocol Number. | keyword |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
-| related.hosts | All the host identifiers seen on your event. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1664,12 +3091,193 @@ Fields published for SIP packets.
 | sip.version | SIP protocol version. | keyword |
 | sip.via.original | The original Via value. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
+
+An example event for `sip` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:11:45.732Z",
+    "agent": {
+        "ephemeral_id": "658bc9dd-443e-4d68-8e8c-9de104c699aa",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "ip": "10.0.2.20",
+        "port": 5060
+    },
+    "data_stream": {
+        "dataset": "network_traffic.sip",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": "10.0.2.15",
+        "port": 5060
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "sip-invite",
+        "agent_id_status": "verified",
+        "category": [
+            "network",
+            "protocol"
+        ],
+        "dataset": "network_traffic.sip",
+        "duration": 0,
+        "end": "2022-02-03T11:11:45.732Z",
+        "ingested": "2022-02-03T11:11:46Z",
+        "kind": "event",
+        "original": "INVITE sip:test@10.0.2.15:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0\r\nFrom: \"DVI4/8000\" \u003csip:sipp@10.0.2.20:5060\u003e;tag=1\r\nTo: test \u003csip:test@10.0.2.15:5060\u003e\r\nCall-ID: 1-2187@10.0.2.20\r\nCSeq: 1 INVITE\r\nContact: sip:sipp@10.0.2.20:5060\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length:   123\r\n\r\nv=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n",
+        "sequence": 1,
+        "start": "2022-02-03T11:11:45.732Z",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "network": {
+        "application": "sip",
+        "community_id": "1:xDRQZvk3ErEhBDslXv1c6EKI804=",
+        "direction": "unknown",
+        "iana_number": "17",
+        "protocol": "sip",
+        "transport": "udp",
+        "type": "ipv4"
+    },
+    "related": {
+        "hosts": [
+            "10.0.2.15",
+            "10.0.2.20"
+        ],
+        "ip": [
+            "10.0.2.20",
+            "10.0.2.15"
+        ],
+        "user": [
+            "test",
+            "sipp"
+        ]
+    },
+    "server": {
+        "ip": "10.0.2.15",
+        "port": 5060
+    },
+    "sip": {
+        "call_id": "1-2187@10.0.2.20",
+        "contact": {
+            "display_info": "test",
+            "uri": {
+                "host": "10.0.2.15",
+                "original": "sip:test@10.0.2.15:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "test"
+            }
+        },
+        "content_length": 123,
+        "content_type": "application/sdp",
+        "cseq": {
+            "code": 1,
+            "method": "INVITE"
+        },
+        "from": {
+            "display_info": "DVI4/8000",
+            "tag": "1",
+            "uri": {
+                "host": "10.0.2.20",
+                "original": "sip:sipp@10.0.2.20:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "sipp"
+            }
+        },
+        "max_forwards": 70,
+        "method": "INVITE",
+        "sdp": {
+            "body": {
+                "original": "v=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n"
+            },
+            "connection": {
+                "address": "10.0.2.20",
+                "info": "IN IP4 10.0.2.20"
+            },
+            "owner": {
+                "ip": "10.0.2.20",
+                "session_id": "42",
+                "version": "42"
+            },
+            "version": "0"
+        },
+        "to": {
+            "display_info": "test",
+            "uri": {
+                "host": "10.0.2.15",
+                "original": "sip:test@10.0.2.15:5060",
+                "port": 5060,
+                "scheme": "sip",
+                "username": "test"
+            }
+        },
+        "type": "request",
+        "uri": {
+            "host": "10.0.2.15",
+            "original": "sip:test@10.0.2.15:5060",
+            "port": 5060,
+            "scheme": "sip",
+            "username": "test"
+        },
+        "version": "2.0",
+        "via": {
+            "original": [
+                "SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0"
+            ]
+        }
+    },
+    "source": {
+        "ip": "10.0.2.20",
+        "port": 5060
+    },
+    "status": "OK",
+    "type": "sip"
+}
+```
 
 ### Thrift
 
@@ -1681,7 +3289,7 @@ Fields published for Thrift packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1705,16 +3313,16 @@ Fields published for Thrift packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.ip | IP address of the destination. | ip |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1735,13 +3343,13 @@ Fields published for Thrift packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -1750,7 +3358,7 @@ Fields published for Thrift packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1758,7 +3366,7 @@ Fields published for Thrift packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | thrift.exceptions | If the call resulted in exceptions, this field contains the exceptions in a human readable format. | keyword |
@@ -1767,6 +3375,114 @@ Fields published for Thrift packets.
 | thrift.service | The name of the Thrift-RPC service as defined in the IDL files. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `thrift` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:13:08.782Z",
+    "agent": {
+        "ephemeral_id": "7125f842-f173-471c-9928-8613dd799610",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "bytes": 17,
+        "ip": "127.0.0.1",
+        "port": 53325
+    },
+    "data_stream": {
+        "dataset": "network_traffic.thrift",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 17,
+        "ip": "127.0.0.1",
+        "port": 9090
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.thrift",
+        "duration": 2072145,
+        "end": "2022-02-03T11:13:08.784Z",
+        "ingested": "2022-02-03T11:13:09Z",
+        "kind": "event",
+        "start": "2022-02-03T11:13:08.782Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "method": "ping",
+    "network": {
+        "bytes": 34,
+        "community_id": "1:LU1IalFNQg4jjwnsGXIVXAH93+E=",
+        "direction": "ingress",
+        "protocol": "thrift",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "path": "",
+    "query": "ping()",
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "server": {
+        "bytes": 17,
+        "ip": "127.0.0.1",
+        "port": 9090
+    },
+    "source": {
+        "bytes": 17,
+        "ip": "127.0.0.1",
+        "port": 53325
+    },
+    "status": "OK",
+    "thrift": {
+        "params": "()",
+        "return_value": ""
+    },
+    "type": "thrift"
+}
+```
 
 ### TLS
 
@@ -1778,7 +3494,7 @@ Fields published for TLS packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
 | client.process.executable | Absolute path to the client process executable. | keyword |
@@ -1802,17 +3518,17 @@ Fields published for TLS packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
-| destination.ip | IP address of the destination. | ip |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version this event conforms to. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.dataset | Name of the dataset. | keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
 | flow.id | Internal flow ID based on connection meta data and address. | keyword |
 | flow.vlan | VLAN identifier from the 802.1q frame. In case of a multi-tagged frame this field will be an array with the outer tag's VLAN identifier listed first. | long |
@@ -1833,13 +3549,13 @@ Fields published for TLS packets.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | method | The command/verb/method of the transaction. For HTTP, this is the method name (GET, POST, PUT, and so on), for SQL this is the verb (SELECT, UPDATE, DELETE, and so on). | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.protocol | L7 Network protocol name. | keyword |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
@@ -1848,8 +3564,8 @@ Fields published for TLS packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.domain | Server domain. | keyword |
-| server.ip | IP address of the server. | ip |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
 | server.process.executable | Absolute path to the server process executable. | keyword |
@@ -1857,12 +3573,12 @@ Fields published for TLS packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.ip | IP address of the source. | ip |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
-| tls.client.server_name | Hostname the client is trying to connect to. Also called the SNI. | keyword |
+| tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
 | tls.client.supported_ciphers | Array of ciphers offered by the client during the client hello. | keyword |
 | tls.client.x509.issuer.province | Province or region within country. | keyword |
 | tls.client.x509.subject.province | Province or region within country. | keyword |
@@ -1899,11 +3615,16 @@ Fields published for TLS packets.
 | tls.detailed.client_hello.extensions.server_name_indication | List of hostnames | keyword |
 | tls.detailed.client_hello.extensions.session_ticket | Length of the session ticket, if provided, or an empty string to advertise support for tickets. | keyword |
 | tls.detailed.client_hello.extensions.signature_algorithms | List of signature algorithms that may be use in digital signatures. | keyword |
+| tls.detailed.client_hello.extensions.status_request.request_extensions | The number of certificate extensions for the request. | short |
+| tls.detailed.client_hello.extensions.status_request.responder_id_list_length | The length of the list of trusted responders. | short |
+| tls.detailed.client_hello.extensions.status_request.type | The type of the status request. Always "ocsp" if present. | keyword |
 | tls.detailed.client_hello.extensions.supported_groups | List of Elliptic Curve Cryptography (ECC) curve groups supported by the client. | keyword |
 | tls.detailed.client_hello.extensions.supported_versions | List of TLS versions that the client is willing to use. | keyword |
+| tls.detailed.client_hello.random | Random data used by the TLS protocol to generate the encryption key. | keyword |
 | tls.detailed.client_hello.session_id | Unique number to identify the session for the corresponding connection with the client. | keyword |
 | tls.detailed.client_hello.supported_compression_methods | The list of compression methods the client supports. See https://www.iana.org/assignments/comp-meth-ids/comp-meth-ids.xhtml | keyword |
 | tls.detailed.client_hello.version | The version of the TLS protocol by which the client wishes to communicate during this session. | keyword |
+| tls.detailed.ocsp_response | The result of an OCSP request. | keyword |
 | tls.detailed.resumption_method | If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension. | keyword |
 | tls.detailed.server_certificate.alternative_names | Subject Alternative Names for this certificate. | keyword |
 | tls.detailed.server_certificate.issuer.common_name | Name or host name identified by the certificate. | keyword |
@@ -1930,12 +3651,14 @@ Fields published for TLS packets.
 | tls.detailed.server_certificate.subject.state_or_province | Province or region within country. | keyword |
 | tls.detailed.server_certificate.version | X509 format version. | long |
 | tls.detailed.server_certificate.version_number | Version of x509 format. | keyword |
-| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | keyword |
+| tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | array |
 | tls.detailed.server_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
 | tls.detailed.server_hello.extensions.ec_points_formats | List of Elliptic Curve (EC) point formats. Indicates the set of point formats that the server can parse. | keyword |
 | tls.detailed.server_hello.extensions.session_ticket | Used to announce that a session ticket will be provided by the server. Always an empty string. | keyword |
+| tls.detailed.server_hello.extensions.status_request.response | Whether a certificate status request response was made. | boolean |
 | tls.detailed.server_hello.extensions.supported_versions | Negotiated TLS version to be used. | keyword |
+| tls.detailed.server_hello.random | Random data used by the TLS protocol to generate the encryption key. | keyword |
 | tls.detailed.server_hello.selected_compression_method | The compression method selected by the server from the list provided in the client hello. | keyword |
 | tls.detailed.server_hello.session_id | Unique number to identify the session for the corresponding connection with the client. | keyword |
 | tls.detailed.server_hello.version | The version of the TLS protocol that is used for this session. It is the highest version supported by the server not exceeding the version requested in the client hello. | keyword |
@@ -1949,3 +3672,209 @@ Fields published for TLS packets.
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 
+
+An example event for `tls` looks as following:
+
+```json
+{
+    "@timestamp": "2022-02-03T11:13:45.753Z",
+    "agent": {
+        "ephemeral_id": "02076ed0-f6b4-4cb8-90d1-a4806d0f940f",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "packetbeat",
+        "version": "8.0.0-beta1"
+    },
+    "client": {
+        "ip": "192.168.1.36",
+        "port": 60946
+    },
+    "data_stream": {
+        "dataset": "network_traffic.tls",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "domain": "play.google.com",
+        "ip": "216.58.201.174",
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "network_traffic.tls",
+        "duration": 15193135,
+        "end": "2022-02-03T11:13:45.768Z",
+        "ingested": "2022-02-03T11:13:46Z",
+        "kind": "event",
+        "start": "2022-02-03T11:13:45.753Z",
+        "type": [
+            "connection",
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.19.0.6"
+        ],
+        "mac": [
+            "02-42-AC-13-00-06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.13.0-27-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "network": {
+        "community_id": "1:hfsK5r0tJm7av4j7BtSxA6oH9xA=",
+        "direction": "unknown",
+        "protocol": "tls",
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "related": {
+        "ip": [
+            "192.168.1.36",
+            "216.58.201.174"
+        ]
+    },
+    "server": {
+        "domain": "play.google.com",
+        "ip": "216.58.201.174",
+        "port": 443
+    },
+    "source": {
+        "ip": "192.168.1.36",
+        "port": 60946
+    },
+    "status": "OK",
+    "tls": {
+        "cipher": "TLS_AES_128_GCM_SHA256",
+        "client": {
+            "ja3": "d470a3fa301d80227bc5650c75567d25",
+            "server_name": "play.google.com",
+            "supported_ciphers": [
+                "TLS_AES_128_GCM_SHA256",
+                "TLS_CHACHA20_POLY1305_SHA256",
+                "TLS_AES_256_GCM_SHA384",
+                "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+                "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+                "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+                "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+                "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+                "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+                "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+                "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+                "TLS_RSA_WITH_AES_128_CBC_SHA",
+                "TLS_RSA_WITH_AES_256_CBC_SHA",
+                "TLS_RSA_WITH_3DES_EDE_CBC_SHA"
+            ]
+        },
+        "detailed": {
+            "client_certificate_requested": false,
+            "client_hello": {
+                "extensions": {
+                    "_unparsed_": [
+                        "23",
+                        "renegotiation_info",
+                        "status_request",
+                        "51",
+                        "45",
+                        "28",
+                        "41"
+                    ],
+                    "application_layer_protocol_negotiation": [
+                        "h2",
+                        "http/1.1"
+                    ],
+                    "ec_points_formats": [
+                        "uncompressed"
+                    ],
+                    "server_name_indication": [
+                        "play.google.com"
+                    ],
+                    "signature_algorithms": [
+                        "ecdsa_secp256r1_sha256",
+                        "ecdsa_secp384r1_sha384",
+                        "ecdsa_secp521r1_sha512",
+                        "rsa_pss_sha256",
+                        "rsa_pss_sha384",
+                        "rsa_pss_sha512",
+                        "rsa_pkcs1_sha256",
+                        "rsa_pkcs1_sha384",
+                        "rsa_pkcs1_sha512",
+                        "ecdsa_sha1",
+                        "rsa_pkcs1_sha1"
+                    ],
+                    "supported_groups": [
+                        "x25519",
+                        "secp256r1",
+                        "secp384r1",
+                        "secp521r1",
+                        "ffdhe2048",
+                        "ffdhe3072"
+                    ],
+                    "supported_versions": [
+                        "TLS 1.3",
+                        "TLS 1.2",
+                        "TLS 1.1",
+                        "TLS 1.0"
+                    ]
+                },
+                "session_id": "5d2b9f80d34143b5764ba6b23e1d4f9d1f172148b6fd83c81f42663459eaf6f6",
+                "supported_compression_methods": [
+                    "NULL"
+                ],
+                "version": "3.3"
+            },
+            "resumption_method": "id",
+            "server_hello": {
+                "extensions": {
+                    "_unparsed_": [
+                        "41",
+                        "51"
+                    ],
+                    "supported_versions": "TLS 1.3"
+                },
+                "selected_compression_method": "NULL",
+                "session_id": "5d2b9f80d34143b5764ba6b23e1d4f9d1f172148b6fd83c81f42663459eaf6f6",
+                "version": "3.3"
+            },
+            "version": "TLS 1.3"
+        },
+        "established": true,
+        "resumed": true,
+        "version": "1.3",
+        "version_protocol": "tls"
+    },
+    "type": "tls"
+}
+```
+
+## Licensing for Windows Systems
+
+The Network Packet Capture Integration incorporates a bundled Npcap installation on Windows hosts. The installation is provided under an [OEM license](https://npcap.com/oem/redist.html) from Insecure.Com LLC ("The Nmap Project").

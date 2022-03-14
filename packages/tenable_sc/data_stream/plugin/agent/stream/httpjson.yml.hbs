@@ -1,0 +1,75 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{url}}/rest/plugin
+request.timeout: 60s
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - delete:
+      target: header.User-Agent
+  - set:
+      # Follow Tenable's format: https://developer.tenable.com/docs/user-agent-header
+      # NOTE: The "Build" version must be kept in sync with this package's version.
+      target: header.User-Agent
+      value: '[[userAgent "Integration/1.0 (Elastic; Tenable.sc; Build/1.1.0)"]]'
+  - set: 
+      target: url.params.fields
+      value: id,name,description,family,type,copyright,version,sourceFile,dependencies,requiredPorts,requiredUDPPorts,cpe,srcPort,dstPort,protocol,riskFactor,solution,seeAlso,synopsis,checkType,exploitEase,exploitAvailable,exploitFrameworks,cvssVector,cvssVectorBF,baseScore,temporalScore,cvssV3Vector,cvssV3VectorBF,cvssV3BaseScore,cvssV3TemporalScore,vprScore,vprContext,stigSeverity,pluginPubDate,pluginModDate,patchPubDate,patchModDate,vulnPubDate,modifiedTime,md5,xrefs
+  - set:
+      target: header.x-apikey
+      value: 'accesskey={{access_key}}; secretkey={{secret_key}}'
+  - set:
+      target: url.params.filterField
+      value: pluginModDate
+  - set:
+      target: url.params.value
+      value: '[[.cursor.last_event_ts]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+  - set:
+      target: url.params.op
+      value: gt
+  - set:
+      target: url.params.sortField
+      value: modifiedTime
+  - set:
+      target: url.params.sortDirection
+      value: ASC
+  - set: 
+      target: url.params.startOffset
+      value: 0
+  - set: 
+      target: url.params.endOffset
+      value: {{batch_size}}
+response.pagination: 
+  - set:
+      target: url.params.startOffset
+      value: '[[toInt (.last_response.url.params.Get "endOffset")]]'
+      fail_on_template_error: true
+  - set: 
+      target: url.params.endOffset
+      value: '[[add (toInt (.last_response.url.params.Get "endOffset")) {{batch_size}}]]'
+      fail_on_template_error: true
+response.split:
+  target: body.response
+cursor:
+  last_event_ts:
+    value: '[[if (lt (len .last_response.body.response) {{batch_size}})]][[.last_event.pluginModDate]][[end]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

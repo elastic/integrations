@@ -1,0 +1,451 @@
+---
+description: Pipeline for processing Mattermost audit logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: "8.0.0"
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- date:
+    field: json.timestamp
+    formats:
+    - yyyy-MM-dd HH:mm:ss.SSS 'Z'
+    timezone: UTC
+    target_field: "@timestamp"
+- rename:
+    field: json.event
+    target_field: event.action
+    ignore_missing: true
+- rename:
+    field: json.err
+    target_field: error.code
+    ignore_missing: true
+- rename:
+    field: json.errors
+    target_field: mattermost.audit.error.message
+    ignore_missing: true
+    if: ctx.json?.errors != "[]"
+- gsub:
+    field: mattermost.audit.error.message
+    pattern: "(\\[|\\])"
+    replacement: ""
+    ignore_missing: true
+- split:
+    field: mattermost.audit.error.message
+    separator: ",\\s+"
+    ignore_missing: true
+    ignore_failure: true
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.json?.status == "success"
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.json?.status == "fail" || ctx.mattermost?.audit?.error?.message != null
+- set:
+    field: event.outcome
+    value: unknown
+    if: ctx.event?.outcome == null
+- rename:
+    field: json.user_id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.user_id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.login_id
+    target_field: user.id
+    ignore_missing: true
+    if: ctx.user?.id == null
+- rename:
+    field: json.ip_address
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- user_agent:
+    field: json.client
+    target_field: user_agent
+    ignore_missing: true
+- rename:
+    field: json.api_path
+    target_field: mattermost.audit.api_path
+    ignore_missing: true
+- uri_parts:
+    field: mattermost.audit.api_path
+    ignore_failure: true
+- rename:
+    field: json.session_id
+    target_field: mattermost.audit.session.id
+    ignore_missing: true
+- rename:
+    field: json.device_id
+    target_field: mattermost.audit.device.id
+    ignore_missing: true
+- rename:
+    field: json.cluster_id
+    target_field: mattermost.audit.cluster.id
+    ignore_missing: true
+- rename:
+    field: json.user.id
+    target_field: user.target.id
+    ignore_missing: true
+- rename:
+    field: json.user.name
+    target_field: user.target.name
+    ignore_missing: true
+- rename:
+    field: json.user.roles
+    target_field: user.target.roles
+    ignore_missing: true
+- split:
+    field: user.target.roles
+    separator: \s+
+    ignore_missing: true
+- rename:
+    field: json.remove_user_id
+    target_field: user.target.id
+    ignore_missing: true
+- gsub:
+    field: json.user_ids
+    pattern: "(\\[|\\])"
+    replacement: ""
+    ignore_missing: true
+- split:
+    field: json.user_ids
+    separator: \s+
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.user_ids
+    target_field: user.target.id
+    ignore_missing: true
+- rename:
+    field: json.team
+    target_field: mattermost.audit.team
+    ignore_missing: true
+- rename:
+    field: json.code
+    target_field: http.response.status_code
+    ignore_missing: true
+- rename:
+    field: json.post
+    target_field: mattermost.audit.post
+    ignore_missing: true
+- rename:
+    field: mattermost.audit.post.channel_id
+    target_field: mattermost.audit.post.channel.id
+    ignore_missing: true
+- rename:
+    field: json.patch
+    target_field: mattermost.audit.patch
+    ignore_missing: true
+- rename:
+    field: json.patched
+    target_field: mattermost.audit.patch
+    ignore_missing: true
+- rename:
+    field: json.channel
+    target_field: mattermost.audit.channel
+    ignore_missing: true
+- rename:
+    field: json.channeld
+    target_field: mattermost.audit.channel
+    ignore_missing: true
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+      login:
+        category:
+          - authentication
+          - session
+        type:
+          - start
+      Logout:
+        category:
+          - authentication
+          - session
+        type:
+          - end
+      revokeAllSessionsForUser:
+        category:
+          - session
+        type:
+          - end
+      getConfig:
+        category:
+          - configuration
+        type:
+          - admin
+          - info
+      updateConfig:
+        category:
+          - configuration
+        type:
+          - change
+      updatePassword:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      updatePreferences:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      updateUserActive:
+        category:
+          - iam
+        type:
+          - admin
+          - user
+          - change
+      patchUser:
+        category:
+          - iam
+        type:
+          - user
+          - change
+      createPost:
+        category:
+          - configuration
+        type:
+          - creation
+      createChannel:
+        category:
+          - configuration
+        type:
+          - creation
+      patchChannel:
+        category:
+          - configuration
+        type:
+          - change
+      deleteChannel:
+        category:
+          - configuration
+        type:
+          - deletion
+      convertChannelToPrivate:
+        category:
+          - configuration
+        type:
+          - change
+      restoreChannel:
+        category:
+          - configuration
+        type:
+          - change
+      removeChannelMember:
+        category:
+          - configuration
+        type:
+          - change
+      createTeam:
+        category:
+          - iam
+        type:
+          - group
+          - creation
+      patchTeam:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      deleteTeam:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
+      addTeamMembers:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      removeTeamMember:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.category = ['configuration'];
+      ctx.event.type = ['info'];
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
+- script:
+    lang: painless
+    description: Add ECS User fields
+    if: "ctx.event?.category.contains('iam')"
+    source: >-
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (ctx.group == null) {
+        Map map = new HashMap();
+        ctx.put("group", map);
+      }
+      if (ctx.user == null) {
+        Map map = new HashMap();
+        ctx.put("user", map);
+      }
+      if (ctx.user?.target == null) {
+        Map map = new HashMap();
+        ctx.user.put("target", map);
+      }
+      if (ctx.user?.changes == null) {
+        Map map = new HashMap();
+        ctx.user.put("changes", map);
+      }
+      if (ctx.user?.target?.group == null) {
+        Map map = new HashMap();
+        ctx.user.target.put("group", map);
+      }
+      if(['patchUser'].contains(ctx.event.action)) {
+        if(ctx.user?.target?.name != ctx.mattermost?.audit?.patch?.name) {
+          ctx.user.changes.put("name", ctx.mattermost?.audit?.patch?.name);
+        }
+      }
+      if(['createTeam','patchTeam','deleteTeam'].contains(ctx.event.action)) {
+        ctx.group.put("name", ctx.mattermost?.audit?.team?.name);
+        ctx.group.put("id", ctx.mattermost?.audit?.team?.id);
+      }
+      if(['addTeamMembers','removeTeamMember'].contains(ctx.event.action)) {
+        ctx.user.target.group.put("name", ctx.mattermost?.audit?.team?.name);
+        ctx.user.target.group.put("id", ctx.mattermost?.audit?.team?.id);
+      }
+- append:
+    field: related.user
+    value: '{{user.name}}'
+    allow_duplicates: false
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{user.changes.name}}'
+    allow_duplicates: false
+    if: ctx.user?.changes?.name != null
+- append:
+    field: related.user
+    value: '{{user.id}}'
+    allow_duplicates: false
+    if: ctx.user?.id != null
+- append:
+    field: related.user
+    value: '{{user.target.id}}'
+    allow_duplicates: false
+    if: ctx.user?.target?.id != null && ctx.user.target.id instanceof String
+- foreach:
+    field: user.target.id
+    processor:
+      append:
+        field: related.user
+        value: '{{_ingest._value}}'
+        allow_duplicates: false
+    ignore_missing: true
+    if: ctx.user?.target?.id != null && ctx.user.target.id instanceof List
+- append:
+    field: related.ip
+    value: '{{source.ip}}'
+    allow_duplicates: false
+    if: ctx.source?.ip != null
+- append:
+    field: mattermost.audit.related.channel
+    value: '{{mattermost.audit.post.channel.id}}'
+    allow_duplicates: false
+    if: ctx.mattermost?.audit?.post?.channel?.id != null
+- append:
+    field: mattermost.audit.related.channel
+    value: '{{mattermost.audit.channel.id}}'
+    allow_duplicates: false
+    if: ctx.mattermost?.audit?.channel?.id != null
+- append:
+    field: mattermost.audit.related.team
+    value: '{{mattermost.audit.team.id}}'
+    allow_duplicates: false
+    if: ctx.mattermost?.audit?.team?.id != null
+- remove:
+    field:
+      - json
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

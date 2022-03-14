@@ -1,0 +1,145 @@
+config_version: 2
+data_stream:
+  dataset: {{data_stream.dataset}}
+interval: {{request_interval}}
+{{#unless oauth_id}}
+{{#if username}}
+auth.basic.user: {{username}}
+{{/if}}
+{{#if password}}
+auth.basic.password: {{password}}
+{{/if}}
+{{/unless}}
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+{{#if oauth_id}}
+{{#if oauth_id}}
+auth.oauth2.client.id: {{oauth_id}}
+{{/if}}
+{{#if oauth_secret}}
+auth.oauth2.client.secret: {{oauth_secret}}
+{{/if}}
+{{#if oauth_token_url}}
+auth.oauth2.token_url: {{oauth_token_url}}
+{{/if}}
+{{#if oauth_provider}}
+auth.oauth2.provider: {{oauth_provider}}
+{{/if}}
+{{#if oauth_scopes}}
+auth.oauth2.scopes:
+{{#each oauth_scopes as |scope i|}}
+  - {{scope}}
+{{/each}}
+{{/if}}
+{{#if oauth_google_credentials_file}}
+auth.oauth2.google.credentials_file: {{oauth_google_credentials_file}}
+{{/if}}
+{{#if oauth_google_credentials_json}}
+auth.oauth2.google.credentials_json: '{{oauth_google_credentials_json}}'
+{{/if}}
+{{#if oauth_google_jwt_file}}
+auth.oauth2.google.jwt_file: {{oauth_google_jwt_file}}
+{{/if}}
+{{#if oauth_azure_tenant_id}}
+auth.oauth2.azure.tenant_id: {{oauth_azure_tenant_id}}
+{{/if}}
+{{#if oauth_azure_resource}}
+auth.oauth2.azure.resource: {{oauth_azure_resource}}
+{{/if}}
+{{#if oauth_endpoint_params}}
+auth.oauth2.azure.resource: 
+  {{oauth_endpoint_params}}
+{{/if}}
+{{/if}}
+
+request.url: {{request_url}}
+request.method: {{request_method}}
+{{#if request_body}}
+request.body: 
+  {{request_body}}
+{{/if}}
+{{#if request_transforms}}
+request.transforms:
+  {{request_transforms}}
+{{/if}}
+{{#if request_ssl}}
+request.ssl: 
+  {{request_ssl}}
+{{/if}}
+{{#if request_encode_as}}
+request.encode_as: {{request_encode_as}}
+{{/if}}
+{{#if request_timeout}}
+request.timeout: {{request_timeout}}
+{{/if}}
+{{#if request_proxy_url}}
+request.proxy_url: {{request_proxy_url}}
+{{/if}}
+{{#if request_retry_max_attempts}}
+request.retry.max_attempts: {{request_retry_max_attempts}}
+{{/if}}
+{{#if request_retry_wait_min}}
+request.retry.wait_min: {{request_retry_wait_min}}
+{{/if}}
+{{#if request_retry_wait_max}}
+request.retry.wait_max: {{request_retry_wait_max}}
+{{/if}}
+{{#if request_redirect_forward_headers}}
+request.redirect.forward_headers: {{request_redirect_forward_headers}}
+{{/if}}
+{{#if request_redirect_headers_ban_list}}
+request.redirect.headers_ban_list:
+{{#each request_redirect_headers_ban_list as |item i|}}
+  - {{item}}
+{{/each}}
+{{/if}}
+{{#if request_redirect_max_redirects}}
+request.redirect.max_redirects: {{request_redirect_max_redirects}}
+{{/if}}
+{{#if request_rate_limit_limit}}
+request.rate_limit.limit: {{request_rate_limit_limit}}
+{{/if}}
+{{#if request_rate_limit_reset}}
+request.rate_limit.reset: {{request_rate_limit_reset}}
+{{/if}}
+{{#if request_rate_limit_remaining}}
+request.rate_limit.remaining: {{request_rate_limit_remaining}}
+{{/if}}
+
+{{#if response_transforms}}
+response.transforms: 
+  {{response_transforms}}
+{{/if}}
+{{#if response_split}}
+response.split: 
+  {{response_split}}
+{{/if}}
+{{#if response_pagination}}
+response.pagination: {{response_pagination}}
+{{/if}}
+{{#if response_decode_as}}
+response.decode_as: {{response_decode_as}}
+{{/if}}
+{{#if response_request_body_on_pagination}}
+response.request_body_on_pagination: {{response_request_body_on_pagination}}
+{{/if}}
+
+{{#if cursor}}
+cursor:
+  {{cursor}}
+{{/if}}
+
+{{#if tags}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

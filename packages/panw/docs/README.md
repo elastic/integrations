@@ -1,6 +1,6 @@
 # Palo Alto Network Integration
 
-This integration is for Palo Alto Networks PAN-OS firewall monitoring logs received over Syslog or read from a file. It currently supports messages of Traffic and Threat types.
+This integration is for Palo Alto Networks PAN-OS firewall monitoring logs received over Syslog or read from a file. It currently supports messages of [GlobalProtect](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/globalprotect-log-fields.html), [HIP Match](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/hip-match-log-fields.html), [Threat](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields.html), [Traffic](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields.html) and [User-ID](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields.html) types.
 
 ## Compatibility
 
@@ -18,9 +18,9 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client. | ip |
-| client.nat.ip | Client NAT ip address | ip |
-| client.nat.port | Client NAT port | long |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
+| client.nat.port | Translated port of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | long |
 | client.packets | Packets sent from the client to the server. | long |
 | client.port | Port of the client. | long |
 | client.user.name | Short name or login of the user. | keyword |
@@ -40,8 +40,8 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.address | Destination network address. | keyword |
-| destination.as.number | Unique number allocated to the autonomous system. | long |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
@@ -49,32 +49,31 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.name | User-defined description of a location. | keyword |
+| destination.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
-| destination.ip | IP address of the destination. | ip |
-| destination.nat.ip | Destination NAT ip | ip |
-| destination.nat.port | Destination NAT Port | long |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
+| destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| error.message | Error message. | text |
-| event.action | The action captured by the event. | keyword |
-| event.category | Event category. The second categorization field in the hierarchy. | keyword |
-| event.created | Time when the event was first read by an agent or by your pipeline. | date |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. | long |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
-| event.kind | The kind of the event. The highest categorization field in the hierarchy. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.outcome | The outcome of the event. The lowest level categorization field in the hierarchy. | keyword |
-| event.severity | Numeric severity of the event. | long |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
-| event.timezone | Event time zone. | keyword |
-| event.type | Event type. The third categorization field in the hierarchy. | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.type | File type (file, dir, or symlink). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -95,7 +94,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | hostname | Name of host parsed from syslog message. | keyword |
 | http.request.referer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels | Custom key/value pairs. | object |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | labels.captive_portal |  | boolean |
 | labels.container_page |  | boolean |
 | labels.http_proxy |  | boolean |
@@ -109,32 +108,39 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | labels.x_forwarded_for |  | boolean |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
-| log.level | Log level of the log event. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.original | Original log message with light interpretation only (encoding, newlines). | keyword |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| message | Log message optimized for viewing in a log viewer. | text |
-| network.application | Application level protocol name. | keyword |
-| network.bytes | Total bytes transferred in both directions. | long |
-| network.community_id | A hash of source and destination IPs and ports. | keyword |
-| network.direction | Direction of the network traffic. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.packets | Total packets transferred in both directions. | long |
-| network.transport | Protocol Name corresponding to the field `iana_number`. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc | keyword |
-| observer.egress.interface.name | Interface name | keyword |
-| observer.egress.zone | Observer Egress zone | keyword |
+| network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| observer.egress.interface.name | Interface name as reported by the system. | keyword |
+| observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.hostname | Hostname of the observer. | keyword |
-| observer.ingress.interface.name | Interface name | keyword |
-| observer.ingress.zone | Observer ingress zone | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
+| observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.serial_number | Observer serial number. | keyword |
-| observer.type | The type of the observer the data is coming from. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | panw.panos.action | Action taken for the session. | keyword |
 | panw.panos.action_flags | 32-bit field that provides details on session, details about specific values is found in the Palo Alto Traffic Field documentation. | keyword |
 | panw.panos.action_source | Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session. | keyword |
+| panw.panos.attempted_gateways | The fields that are collected for each gateway connection attempt with the gateway name, SSL response time, and priority | keyword |
+| panw.panos.auth_method | A string showing the authentication type. | keyword |
+| panw.panos.client_ver | The client’s GlobalProtect app version. | keyword |
+| panw.panos.connect_method | A string showing the how the GlobalProtect app connects to Gateway. | keyword |
 | panw.panos.content_version | Applications and Threats version on your firewall when the log was generated. | keyword |
+| panw.panos.datasource | Source from which mapping information is collected. | keyword |
+| panw.panos.datasourcename | User-ID source that sends the IP (Port)-User Mapping. | keyword |
+| panw.panos.datasourcetype | Mechanism used to identify the IP/User mappings within a data source. | keyword |
+| panw.panos.description | Additional information for any event that has occurred. | keyword |
 | panw.panos.destination.interface | Destination interface for this session. | keyword |
 | panw.panos.destination.nat.ip | Post-NAT destination IP. | ip |
 | panw.panos.destination.nat.port | Post-NAT destination port. | long |
@@ -145,6 +151,10 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.device_group_hierarchy3 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.device_group_hierarchy4 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.endreason | The reason a session terminated. | keyword |
+| panw.panos.error_code | An integer associated with any errors that occurred. | integer |
+| panw.panos.factorcompletiontime | Time the authentication was completed. | date |
+| panw.panos.factorno | Indicates the use of primary authentication (1) or additional factors (2, 3). | integer |
+| panw.panos.factortype | Vendor used to authenticate a user when Multi Factor authentication is present. | keyword |
 | panw.panos.file.hash | Binary hash for a threat file sent to be analyzed by the WildFire service. | keyword |
 | panw.panos.flow_id | Internal numeric identifier for each session. | keyword |
 | panw.panos.http_content_type | Content type of the HTTP response data | keyword |
@@ -152,11 +162,14 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.imei | International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment. | keyword |
 | panw.panos.imsi | International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system | keyword |
 | panw.panos.log_profile | Log Forwarding Profile that was applied to the session. | keyword |
+| panw.panos.matchname | Name of the HIP object or profile. | keyword |
+| panw.panos.matchtype | Whether the document represents a HIP object or a HIP profile. | keyword |
 | panw.panos.network.nat.community_id | Community ID flow-hash for the NAT 5-tuple. | keyword |
 | panw.panos.network.pcap_id | Packet capture ID for a threat. | keyword |
 | panw.panos.parent_session.id | ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only. | keyword |
 | panw.panos.parent_session.start_time | Date that the parent tunnel session began. | date |
 | panw.panos.payload_protocol_id | ID of the protocol for the payload in the data portion of the data chunk. | keyword |
+| panw.panos.priority | The priority order of the gateway that is based on highest (1), high (2), medium (3), low (4), or lowest (5) to which the GlobalProtect app can connect. | keyword |
 | panw.panos.related_vsys | Virtual System associated with the session. | keyword |
 | panw.panos.repeat_count | Number of sessions with same Source IP, Destination IP, Application, and Subtype seen within 5 seconds. | long |
 | panw.panos.ruleset | Name of the rule that matched this session. | keyword |
@@ -164,39 +177,46 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.scp.chunks | Sum of SCTP chunks sent and received for an association. | long |
 | panw.panos.scp.chunks_received | Number of SCTP chunks received for an association. | long |
 | panw.panos.scp.chunks_sent | Number of SCTP chunks sent for an association. | long |
+| panw.panos.selection_type | The connection method that is selected to connect to the gateway. | keyword |
 | panw.panos.sequence_number | Log entry identifier that is incremented sequentially. Unique for each log type. | long |
+| panw.panos.serial_number | The serial number of the user’s machine or device. | keyword |
 | panw.panos.source.interface | Source interface for this session. | keyword |
 | panw.panos.source.nat.ip | Post-NAT source IP. | ip |
 | panw.panos.source.nat.port | Post-NAT source port. | long |
 | panw.panos.source.zone | Source zone for this session. | keyword |
 | panw.panos.source_vm_uuid | Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
+| panw.panos.stage | A string showing the stage of the connection. | keyword |
 | panw.panos.sub_type | Specifies the sub type of the log. | keyword |
 | panw.panos.threat.id | Palo Alto Networks identifier for the threat. | keyword |
 | panw.panos.threat.name | Palo Alto Networks name for the threat. | keyword |
 | panw.panos.threat.resource | URL or file name for a threat. | keyword |
 | panw.panos.threat_category | Describes threat categories used to classify different types of threat signatures. | keyword |
+| panw.panos.timeout | Timeout after which the IP/User Mappings are cleared. | integer |
 | panw.panos.tunnel_type | Type of tunnel, such as GRE or IPSec. | keyword |
 | panw.panos.type | Specifies the type of the log. | keyword |
+| panw.panos.ugflags | Displays whether the user group that was found during user group mapping. Supported values are: User Group Found—Indicates whether the user could be mapped to a group. Duplicate User—Indicates whether duplicate users were found in a user group. Displays N/A if no user group is found. | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
 | panw.panos.url_idx | When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session. | keyword |
+| panw.panos.virtual_sys | Virtual System associated with the HIP match log. | keyword |
+| panw.panos.vsys_id | A unique identifier for a virtual system on a Palo Alto Networks firewall. | keyword |
 | panw.panos.vsys_name | The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems. | keyword |
 | panw.panos.wildfire.name | Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis. | keyword |
 | panw.panos.wildfire.report_id | Identifies the analysis request on the WildFire cloud or the WildFire appliance. | keyword |
 | panw.panos.wildfire_name | Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis. | keyword |
-| related.hash | All the hashes seen on your event. | keyword |
-| related.hosts | All the host identifiers seen on your event. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names seen on your event. | keyword |
-| rule.name | Rule name | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server. | ip |
-| server.nat.ip | Server NAT ip | ip |
-| server.nat.port | Server NAT port | long |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
+| server.nat.port | Translated port of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | long |
 | server.packets | Packets sent from the server to the client. | long |
 | server.port | Port of the server. | long |
 | server.user.name | Short name or login of the user. | keyword |
-| source.address | Source network address. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. | long |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
@@ -204,14 +224,15 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location. | keyword |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source. | ip |
-| source.nat.ip | Source NAT ip | ip |
-| source.nat.port | Source NAT port | long |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
+| source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.email | User email address. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | syslog.facility | Syslog numeric facility of the event. | long |
@@ -219,6 +240,6 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | syslog.priority | Syslog priority of the event. | long |
 | syslog.severity_label | Syslog text-based severity of the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| url.original | Unmodified original url as seen in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | user_agent.original | Unparsed user_agent string. | keyword |
 

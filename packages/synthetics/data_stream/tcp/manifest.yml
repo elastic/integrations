@@ -2,6 +2,16 @@ type: synthetics
 title: synthetic monitor check
 release: experimental
 dataset: tcp
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: false
+    settings:
+      index:
+        codec: best_compression
+        sort.field:
+          - "monitor.id"
+          - "url.full.keyword"
 streams:
   - input: synthetics/tcp
     title: Synthetic monitor check
@@ -9,6 +19,19 @@ streams:
     template_path: tcp.yml.hbs
     enabled: false
     vars:
+      - name: __ui
+        type: yaml
+        title: metadata about the package
+        multi: false
+        required: false
+        show_user: false
+      - name: enabled
+        type: bool
+        title: Whether the monitor is enabled
+        multi: false
+        required: true
+        show_user: true
+        default: true
       - name: type
         type: text
         title: Monitor type
@@ -28,6 +51,7 @@ streams:
         multi: false
         required: true
         show_user: true
+        default: "\"@every 3m\""
       - name: hosts
         type: text
         title: Host

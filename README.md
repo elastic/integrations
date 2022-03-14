@@ -1,4 +1,4 @@
-[![Build Status](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/badge/icon)](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/master/)
+[![Build Status](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/main/badge/icon)](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/main/)
 
 # Elastic Integrations
 
@@ -33,3 +33,7 @@ explore the builder tools.
 
 ### Elastic Agent
 * [Repository](https://github.com/elastic/beats/tree/master/x-pack/elastic-agent)
+
+## Test Coverage
+
+[![Test Coverage Report](https://beats-ci.elastic.co/job/ingest-manager/job/integrations/job/main/cobertura/graph)](https://beats-ci.elastic.co/job/Ingest-manager/job/integrations/job/main/cobertura/)

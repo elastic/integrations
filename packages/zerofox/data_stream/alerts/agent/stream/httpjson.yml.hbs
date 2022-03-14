@@ -1,0 +1,48 @@
+config_version: "2"
+interval: {{interval}}
+request.method: "GET"
+
+{{#if url}}
+request.url: {{url}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: "Token {{zerofox_api_token}}"
+  - set:
+      target: url.params.min_timestamp
+      value: "[[.cursor.last_execution_datetime]]"
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+response.split:
+  target: body.alerts
+response.pagination:
+  - set:
+      target: url.value
+      value: "[[.last_response.body.next]]"
+      fail_on_template_error: true
+
+cursor:
+  last_execution_datetime:
+    value: "[[formatDate now]]"
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors.length}}
+processors:
+  {{processors}}
+{{/if}}

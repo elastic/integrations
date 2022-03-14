@@ -2,11 +2,8 @@
 description: Pipeline for parsing azure platform logs.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: "1.10.0"
+      value: '8.0.0'
   - rename:
       field: azure
       target_field: azure-eventhub
@@ -23,6 +20,33 @@ processors:
   - json:
       field: event.original
       target_field: azure.platformlogs
+      on_failure:
+        - grok:
+            field: event.original
+            patterns:
+              - "resourceId\": ?\"%{DATA:azure.platformlogs.resourceId}\""
+            ignore_failure: true
+            ignore_missing: true
+        - grok:
+            field: event.original
+            patterns:
+              - "category\": ?\"%{DATA:azure.platformlogs.category}\""
+            ignore_failure: true
+            ignore_missing: true
+        - grok:
+            field: event.original
+            patterns:
+              - "time\": ?\"%{DATA:azure.platformlogs.time}\""
+            ignore_failure: true
+            ignore_missing: true
+        - set:
+            field: error.message
+            value: 'Received invalid json from the Azure Cloud platform. Unable to parse the source log message'
+            ignore_failure: true
+        - append:
+            field: tags
+            value: ["preserve_original_event"]
+            ignore_failure: true
   - date:
       field: azure.platformlogs.time
       target_field: '@timestamp'
@@ -172,7 +196,6 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      ignore_failure: true
       params:
         "write":
           type:
@@ -190,7 +213,11 @@ processors:
         if (ctx?.azure?.platformlogs?.category == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.azure.platformlogs.category.toLowerCase()));
+        def category = ctx.azure.platformlogs.category.toLowerCase();
+        if (params.get(category) == null) {
+          return;
+        }
+        def hm = new HashMap(params.get(category));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - geoip:
       field: source.ip
@@ -222,7 +249,11 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - pipeline:
+      if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
+      name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'
 on_failure:
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: |-
+      Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"

@@ -1,0 +1,62 @@
+format_version: 1.0.0
+name: snyk
+title: "Snyk"
+version: 1.1.0
+license: basic
+description: "Collect logs from Snyk API with Elastic Agent."
+type: integration
+categories:
+  - security
+release: ga
+conditions:
+  kibana.version: "^7.16.0 || ^8.0.0"
+icons:
+  - src: /img/snyk-logo.svg
+    title: Snyk logo
+    size: 382x625
+    type: image/svg+xml
+policy_templates:
+  - name: snyk
+    title: Snyk Events
+    description: Collect data from Snyk API
+    inputs:
+      - type: httpjson
+        title: Collect data from Snyk API
+        description: Collect Audit and Vulnerabilty data from the Snyk API
+        vars:
+          - name: url
+            type: text
+            title: Base URL of Snyk API Server
+            multi: false
+            show_user: false
+            required: true
+            default: https://snyk.io/api/v1
+            description: The base URL as found [here](https://snyk.docs.apiary.io/#introduction/api-url).  No trailing /.
+          - name: api_token
+            type: password
+            title: Snyk API Token
+            multi: false
+            show_user: true
+            required: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-external-integrations

@@ -1,0 +1,26 @@
+type: metrics
+title: Azure Application Insights
+dataset: azure.app_insights
+streams:
+  - input: azure/metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 300s
+      - name: metrics
+        type: yaml
+        title: Metrics
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - id: ["requests/count", "requests/failed"]
+            segment: ["request/urlHost", "request/name"]
+            aggregation: ["sum"]
+            interval: "P5M"
+    title: Azure Application Insights
+    description: Azure Application Insights

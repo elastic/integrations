@@ -6,7 +6,7 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
 
-The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions >= 9.
+The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
 
 ## Logs
 
@@ -63,12 +63,12 @@ persistent connections, so enable with care.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.id | Unique identifier for the error. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` < `event.created` < `event.ingested`. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | Event kind (e.g. event) | keyword |
 | event.module | Event module | constant_keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
@@ -90,7 +90,7 @@ persistent connections, so enable with care.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | postgresql.log.application_name | Name of the application of this event. It is defined by the client. | keyword |
 | postgresql.log.backend_type | Type of backend of this event. Possible types are autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, startup, walreceiver, walsender and walwriter. In addition, background workers registered by extensions may have additional types. | keyword |
 | postgresql.log.client_addr | Host where the connection originated from. | keyword |
@@ -104,7 +104,7 @@ persistent connections, so enable with care.
 | postgresql.log.internal_query_pos | Character count of the internal query (if any). | long |
 | postgresql.log.location | Location of the error in the PostgreSQL source code (if log_error_verbosity is set to verbose). | keyword |
 | postgresql.log.query | Query statement. In the case of CSV parse, look at command_tag to get more context. | keyword |
-| postgresql.log.query_name | Name given to a query when using extended query protocol. If it is "<unnamed>", or not present, this field is ignored. | keyword |
+| postgresql.log.query_name | Name given to a query when using extended query protocol. If it is `"\<unnamed\>"`, or not present, this field is ignored. | keyword |
 | postgresql.log.query_pos | Character count of the error position (if any). | long |
 | postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
 | postgresql.log.session_id | PostgreSQL session. | keyword |
@@ -115,7 +115,7 @@ persistent connections, so enable with care.
 | postgresql.log.transaction_id | The id of current transaction. | long |
 | postgresql.log.virtual_transaction_id | Backend local transaction id. | keyword |
 | process.pid | Process id. | long |
-| related.user | All the user names seen on your event. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
@@ -130,38 +130,79 @@ An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:37:42.425Z",
     "agent": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
+        "ephemeral_id": "095c21dc-35b1-42c4-88f3-56972ef6626a",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.activity",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "postgresql.activity",
-        "duration": 115000,
+        "duration": 4068224,
+        "ingested": "2022-01-12T03:37:43Z",
         "module": "postgresql"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "name": "activity"
+        "name": "activity",
+        "period": 10000
     },
     "postgresql": {
         "activity": {
             "application_name": "",
-            "backend_start": "2019-03-05T08:38:21.348Z",
+            "backend_start": "2022-01-12T03:37:42.427Z",
             "client": {
-                "address": "172.26.0.1",
+                "address": "172.18.0.4",
                 "hostname": "",
-                "port": 41582
+                "port": 32884
             },
             "database": {
                 "name": "postgres",
                 "oid": 12379
             },
-            "pid": 347,
+            "pid": 111,
             "query": "SELECT * FROM pg_stat_activity",
-            "query_start": "2019-03-05T08:38:21.352Z",
+            "query_start": "2022-01-12T03:37:42.428Z",
             "state": "active",
-            "state_change": "2019-03-05T08:38:21.352Z",
-            "transaction_start": "2019-03-05T08:38:21.352Z",
+            "state_change": "2022-01-12T03:37:42.428Z",
+            "transaction_start": "2022-01-12T03:37:42.428Z",
             "user": {
                 "id": 10,
                 "name": "postgres"
@@ -170,7 +211,7 @@ An example event for `activity` looks as following:
         }
     },
     "service": {
-        "address": "172.26.0.2:5432",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -198,7 +239,7 @@ An example event for `activity` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
@@ -228,13 +269,13 @@ An example event for `activity` looks as following:
 | postgresql.activity.pid | Process ID of this backend. | long |
 | postgresql.activity.query | Text of this backend's most recent query. If state is active this field shows the currently executing query. In all other states, it shows the last query that was executed. | keyword |
 | postgresql.activity.query_start | Time when the currently active query was started, or if state is not active, when the last query was started. | date |
-| postgresql.activity.state | Current overall state of this backend. Possible values are:    * active: The backend is executing a query.   * idle: The backend is waiting for a new client command.   * idle in transaction: The backend is in a transaction, but is not     currently executing a query.   * idle in transaction (aborted): This state is similar to idle in     transaction, except one of the statements in the transaction caused     an error.   * fastpath function call: The backend is executing a fast-path function.   * disabled: This state is reported if track_activities is disabled in this backend. | keyword |
+| postgresql.activity.state | Current overall state of this backend. Possible values are:    \* active: The backend is executing a query.   \* idle: The backend is waiting for a new client command.   \* idle in transaction: The backend is in a transaction, but is not     currently executing a query.   \* idle in transaction (aborted): This state is similar to idle in     transaction, except one of the statements in the transaction caused     an error.   \* fastpath function call: The backend is executing a fast-path function.   \* disabled: This state is reported if track_activities is disabled in this backend. | keyword |
 | postgresql.activity.state_change | Time when the state was last changed. | date |
 | postgresql.activity.transaction_start | Time when this process' current transaction was started. | date |
 | postgresql.activity.user.id | OID of the user logged into this backend. | long |
 | postgresql.activity.user.name | Name of the user logged into this backend. | keyword |
 | postgresql.activity.waiting | True if this backend is currently waiting on a lock. | boolean |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
@@ -246,23 +287,64 @@ An example event for `bgwriter` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:38:29.389Z",
     "agent": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
+        "ephemeral_id": "24686799-f7eb-4c30-b72d-8936c5c0546a",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.bgwriter",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "postgresql.bgwriter",
-        "duration": 115000,
+        "duration": 16119001,
+        "ingested": "2022-01-12T03:38:30Z",
         "module": "postgresql"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "name": "bgwriter"
+        "name": "bgwriter",
+        "period": 10000
     },
     "postgresql": {
         "bgwriter": {
             "buffers": {
-                "allocated": 143,
+                "allocated": 187,
                 "backend": 0,
                 "backend_fsync": 0,
                 "checkpoints": 0,
@@ -271,7 +353,7 @@ An example event for `bgwriter` looks as following:
             },
             "checkpoints": {
                 "requested": 0,
-                "scheduled": 1,
+                "scheduled": 0,
                 "times": {
                     "sync": {
                         "ms": 0
@@ -281,11 +363,11 @@ An example event for `bgwriter` looks as following:
                     }
                 }
             },
-            "stats_reset": "2019-03-05T08:32:30.028Z"
+            "stats_reset": "2022-01-12T03:38:06.524Z"
         }
     },
     "service": {
-        "address": "172.26.0.2:5432",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -313,7 +395,7 @@ An example event for `bgwriter` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
@@ -344,7 +426,7 @@ An example event for `bgwriter` looks as following:
 | postgresql.bgwriter.checkpoints.times.sync.ms | Total amount of time that has been spent in the portion of checkpoint processing where files are synchronized to disk, in milliseconds. | float |
 | postgresql.bgwriter.checkpoints.times.write.ms | Total amount of time that has been spent in the portion of checkpoint processing where files are written to disk, in milliseconds. | float |
 | postgresql.bgwriter.stats_reset | Time at which these statistics were last reset. | date |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
@@ -356,12 +438,59 @@ An example event for `database` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:39:15.742Z",
+    "agent": {
+        "ephemeral_id": "ee7be3cd-b6c4-4228-84e5-1c5b44ddfee2",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.database",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "postgresql.database",
+        "duration": 31647610,
+        "ingested": "2022-01-12T03:39:16Z",
+        "module": "postgresql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "host": "postgresql:5432",
-        "module": "postgresql",
         "name": "database",
-        "rtt": 115
+        "period": 10000
     },
     "postgresql": {
         "database": {
@@ -398,6 +527,10 @@ An example event for `database` looks as following:
                 "rollback": 0
             }
         }
+    },
+    "service": {
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
+        "type": "postgresql"
     }
 }
 ```
@@ -424,7 +557,7 @@ An example event for `database` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -462,7 +595,7 @@ An example event for `database` looks as following:
 | postgresql.database.temporary.files | Number of temporary files created by queries in this database. All temporary files are counted, regardless of why the temporary file was created (e.g., sorting or hashing), and regardless of the log_temp_files setting. | long |
 | postgresql.database.transactions.commit | Number of transactions in this database that have been committed. | long |
 | postgresql.database.transactions.rollback | Number of transactions in this database that have been rolled back. | long |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
@@ -474,18 +607,59 @@ An example event for `statement` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:40:04.168Z",
     "agent": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
+        "ephemeral_id": "9ffa86f7-ad81-4b53-84c2-9d263b6b9522",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.statement",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "postgresql.statement",
-        "duration": 115000,
+        "duration": 3146548,
+        "ingested": "2022-01-12T03:40:05Z",
         "module": "postgresql"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "name": "statement"
+        "name": "statement",
+        "period": 10000
     },
     "postgresql": {
         "statement": {
@@ -493,8 +667,8 @@ An example event for `statement` looks as following:
                 "oid": 12379
             },
             "query": {
-                "calls": 2,
-                "id": 159291067,
+                "calls": 1,
+                "id": 1592910677,
                 "memory": {
                     "local": {
                         "dirtied": 0,
@@ -513,23 +687,23 @@ An example event for `statement` looks as following:
                         "written": 0
                     }
                 },
-                "rows": 3,
+                "rows": 1,
                 "text": "SELECT * FROM pg_stat_statements",
                 "time": {
                     "max": {
-                        "ms": 0.388
+                        "ms": 0.10900000000000001
                     },
                     "mean": {
-                        "ms": 0.235
+                        "ms": 0.10900000000000001
                     },
                     "min": {
-                        "ms": 0.082
+                        "ms": 0.10900000000000001
                     },
                     "stddev": {
-                        "ms": 0.153
+                        "ms": 0
                     },
                     "total": {
-                        "ms": 0.47000000000000003
+                        "ms": 0.10900000000000001
                     }
                 }
             },
@@ -539,7 +713,7 @@ An example event for `statement` looks as following:
         }
     },
     "service": {
-        "address": "172.26.0.2:5432",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -567,7 +741,7 @@ An example event for `statement` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | text |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
@@ -608,6 +782,6 @@ An example event for `statement` looks as following:
 | postgresql.statement.query.time.stddev.ms | Population standard deviation of time spent running query, in milliseconds. | long |
 | postgresql.statement.query.time.total.ms | Total number of milliseconds spent running query. | float |
 | postgresql.statement.user.id | OID of the user logged into the backend that ran the query. | long |
-| service.address | Service address | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

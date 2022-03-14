@@ -5,7 +5,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: 1.10.0
+      value: '8.0.0'
   - rename:
       field: winlog.level
       target_field: log.level
@@ -27,9 +27,6 @@ processors:
       ignore_failure: true
       if: ctx?.winlog?.event_data?.UtcTime != null
 
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: event.kind
       value: event
@@ -146,8 +143,16 @@ processors:
             - process
           type:
             - change
-      if: ctx?.event?.code != null
+        "26":
+          category:
+            - file
+          type:
+            - deletion
+      tag: Add ECS categorization fields
       source: |-
+        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+          return;
+        }
         def hm = new HashMap(params[ctx.event.code]);
         hm.forEach((k, v) -> ctx.event[k] = v);
   - convert:
@@ -234,7 +239,7 @@ processors:
       target_field: process.hash
       if: |-
         ctx?._temp?.hashes != null &&
-        ["1", "23", "24", "25"].contains(ctx.event.code)
+        ["1", "23", "24", "25", "26"].contains(ctx.event.code)
   - rename:
       field: process.hash.imphash
       target_field: process.pe.imphash
@@ -1246,4 +1251,5 @@ processors:
 on_failure:
   - set:
       field: "error.message"
-      value: "{{ _ingest.on_failure_message }}"
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"

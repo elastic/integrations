@@ -1,0 +1,475 @@
+---
+description: Pipeline for parsing cloudflare http logs
+processors:
+# Event Time Fields
+- convert:
+    field: json.EdgeStartTimestamp
+    type: string
+- convert:
+    field: json.EdgeEndTimestamp
+    type: string
+- gsub:
+    field: json.EdgeStartTimestamp
+    pattern: "\\d{6}$"
+    replacement: ""
+    if: "ctx?.json?.EdgeStartTimestamp != null && (ctx?.json?.EdgeStartTimestamp).length() > 18"
+- gsub:
+    field: json.EdgeEndTimestamp
+    pattern: "\\d{6}$"
+    replacement: ""
+    if: "ctx?.json?.EdgeEndTimestamp != null && (ctx?.json?.EdgeEndTimestamp).length() > 18"
+- date:
+    field: json.EdgeStartTimestamp
+    formats:
+    - ISO8601
+    - uuuu-MM-dd'T'HH:mm:ssX
+    - uuuu-MM-dd'T'HH:mm:ss.SSSX
+    - yyyy-MM-dd'T'HH:mm:ssZ
+    - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    - UNIX_MS
+    timezone: UTC
+    target_field: "@timestamp"
+- date:
+    field: json.EdgeStartTimestamp
+    formats:
+    - uuuu-MM-dd'T'HH:mm:ssX
+    - uuuu-MM-dd'T'HH:mm:ss.SSSX
+    - yyyy-MM-dd'T'HH:mm:ssZ
+    - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    - UNIX_MS
+    timezone: UTC
+    target_field: "event.start"
+- date:
+    field: json.EdgeEndTimestamp
+    formats:
+    - uuuu-MM-dd'T'HH:mm:ssX
+    - uuuu-MM-dd'T'HH:mm:ss.SSSX
+    - yyyy-MM-dd'T'HH:mm:ssZ
+    - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    - UNIX_MS
+    timezone: UTC
+    target_field: "event.end"
+- script:
+    lang: painless
+    if: ctx?.event?.start != null && ctx?.event?.end != null
+    source: >-
+      ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+      ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+      ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+# TLS Fields
+- rename:
+    field: json.ClientSSLProtocol
+    target_field: cloudflare.client.ssl.protocol
+    ignore_missing: true
+    if: ctx?.json?.ClientSSLProtocol.toLowerCase() != 'none'
+- rename:
+    field: json.ClientSSLCipher
+    target_field: tls.cipher
+    ignore_missing: true
+    if: ctx?.json?.ClientSSLCipher.toLowerCase() != 'none'
+- dissect:
+    field: cloudflare.client.ssl.protocol
+    pattern: "%{tls.version_protocol}v%{tls.version}"
+    ignore_failure: true
+    ignore_missing: true
+- lowercase:
+    field: tls.version_protocol
+    ignore_missing: true
+# URL Fields
+- uri_parts:
+    field: json.ClientRequestURI
+    ignore_failure: true
+    if: ctx?.json?.ClientRequestURI != null
+- set:
+    field: url.domain
+    copy_from: json.ClientRequestHost
+    ignore_empty_value: true
+    if: ctx?.url?.domain == null
+- set:
+    field: url.path
+    copy_from: json.ClientRequestPath
+    ignore_empty_value: true
+    if: ctx?.url?.path == null
+- set:
+    field: url.scheme
+    copy_from: json.ClientRequestScheme
+    ignore_empty_value: true
+    if: ctx?.url?.scheme == null
+- set:
+    field: url.scheme
+    value: https
+    ignore_empty_value: true
+    if: ctx?.url?.scheme == null && ctx?.cloudflare?.client?.ssl?.protocol != null
+- set:
+    field: url.scheme
+    value: http
+    ignore_empty_value: true
+    if: ctx?.url?.scheme == null
+- script:
+    lang: painless
+    description: This script builds the `url.full` field out of the available `url.*` parts.
+    source: |
+        def full = "";
+        if(ctx.url.scheme != null && ctx.url.scheme != "") {
+            full += ctx.url.scheme+"://";
+        }
+        if(ctx.url.domain != null && ctx.url.domain != "") {
+            full += ctx.url.domain;
+        }
+        if(ctx.url.path != null && ctx.url.path != "") {
+            full += ctx.url.path;
+        }
+        if(ctx.url.query != null && ctx.url.query != "") {
+            full += "?"+ctx.url.query;
+        }
+        if(full != "") {
+            ctx.url.full = full
+        }
+# User Agent Fields
+- user_agent:
+    field: json.ClientRequestUserAgent
+    target_field: user_agent
+    ignore_missing: true
+# Observer Fields
+- rename:
+    field: json.EdgeServerIP
+    target_field: observer.ip
+    ignore_missing: true
+    if: ctx?.json?.EdgeServerIP != ''
+- geoip:
+    field: observer.ip
+    target_field: observer.geo
+    ignore_missing: true
+# Cloudflare Cache Fields
+- rename:
+    field: json.CacheCacheStatus
+    target_field: cloudflare.cache.status
+    ignore_missing: true
+- rename:
+    field: json.CacheTieredFill
+    target_field: cloudflare.cache.tiered_fill
+    ignore_missing: true
+- convert:
+    field: json.CacheResponseBytes
+    target_field: cloudflare.cache.bytes
+    type: long
+    ignore_missing: true
+    if: ctx?.json?.CacheResponseBytes != 0
+- convert:
+    field: json.CacheResponseStatus
+    target_field: cloudflare.cache.status_code
+    type: long
+    ignore_missing: true
+    if: ctx?.json?.CacheResponseStatus != 0
+# Cloudflare Edge Fields
+- rename:
+    field: json.EdgeColoCode
+    target_field: cloudflare.edge.colo.code
+    ignore_missing: true
+- rename:
+    field: json.EdgeColoID
+    target_field: cloudflare.edge.colo.id
+    ignore_missing: true
+- rename:
+    field: json.EdgePathingOp
+    target_field: cloudflare.edge.pathing.op
+    ignore_missing: true
+- rename:
+    field: json.EdgePathingSrc
+    target_field: cloudflare.edge.pathing.src
+    ignore_missing: true
+- rename:
+    field: json.EdgePathingStatus
+    target_field: cloudflare.edge.pathing.status
+    ignore_missing: true
+- rename:
+    field: json.EdgeRateLimitAction
+    target_field: cloudflare.edge.rate_limit.action
+    ignore_missing: true
+- rename:
+    field: json.EdgeRateLimitID
+    target_field: cloudflare.edge.rate_limit.id
+    ignore_missing: true
+- rename:
+    field: json.EdgeRequestHost
+    target_field: cloudflare.edge.request.host
+    ignore_missing: true
+- convert:
+    field: json.EdgeResponseBytes
+    target_field: cloudflare.edge.response.bytes
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.EdgeResponseStatus
+    target_field: cloudflare.edge.response.status_code
+    ignore_missing: true
+- rename:
+    field: json.EdgeResponseCompressionRatio
+    target_field: cloudflare.edge.response.compression_ratio
+    ignore_missing: true
+- rename:
+    field: json.EdgeResponseContentType
+    target_field: cloudflare.edge.response.content_type
+    ignore_missing: true
+- convert:
+    field: json.EdgeResponseBodyBytes
+    target_field: cloudflare.edge.response.body.bytes
+    type: long
+    ignore_missing: true
+# Cloudflare Firewall Fields
+- rename:
+    field: json.FirewallMatchesActions
+    target_field: cloudflare.firewall.actions
+    ignore_missing: true
+- rename:
+    field: json.FirewallMatchesSources
+    target_field: cloudflare.firewall.sources
+    ignore_missing: true
+- rename:
+    field: json.FirewallMatchesRuleIDs
+    target_field: cloudflare.firewall.rule_ids
+    ignore_missing: true
+# Cloudflare WAF Fields
+- rename:
+    field: json.WAFAction
+    target_field: cloudflare.waf.action
+    ignore_missing: true
+- rename:
+    field: json.WAFFlags
+    target_field: cloudflare.waf.flags
+    ignore_missing: true
+- rename:
+    field: json.WAFMatchedVar
+    target_field: cloudflare.waf.matched_var
+    ignore_missing: true
+- rename:
+    field: json.WAFProfile
+    target_field: cloudflare.waf.profile
+    ignore_missing: true
+- rename:
+    field: json.WAFRuleID
+    target_field: cloudflare.waf.rule.id
+    ignore_missing: true
+- rename:
+    field: json.WAFRuleMessage
+    target_field: cloudflare.waf.rule.message
+    ignore_missing: true
+# CLoudflare Worker Fields
+- convert:
+    field: json.WorkerCPUTime
+    target_field: cloudflare.worker.cpu_time
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.WorkerStatus
+    target_field: cloudflare.worker.status
+    ignore_missing: true
+- rename:
+    field: json.WorkerSubrequest
+    target_field: cloudflare.worker.subrequest
+    ignore_missing: true
+- convert:
+    field: json.WorkerSubrequestCount
+    target_field: cloudflare.worker.subrequest_count
+    type: long
+    ignore_missing: true
+# Cloudflare Origin Fields
+- rename:
+    field: json.OriginResponseBytes
+    target_field: cloudflare.origin.response.bytes
+    ignore_missing: true
+- date:
+    field: json.OriginResponseHTTPExpires
+    formats:
+    - EEE, dd MMM yyyy HH:mm:ss z
+    timezone: UTC
+    target_field: cloudflare.origin.response.expires
+    if: ctx?.json?.OriginResponseHTTPExpires != null
+    ignore_failure: true
+- date:
+    field: json.OriginResponseHTTPLastModified
+    formats:
+    - EEE, dd MMM yyyy HH:mm:ss z
+    timezone: UTC
+    target_field: cloudflare.origin.response.last_modified
+    if: ctx?.json?.OriginResponseHTTPLastModified != null
+    ignore_failure: true
+- rename:
+    field: json.OriginResponseStatus
+    target_field: cloudflare.origin.response.status_code
+    ignore_missing: true
+- convert:
+    field: json.OriginResponseTime
+    target_field: cloudflare.origin.response.time
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.OriginSSLProtocol
+    target_field: cloudflare.origin.ssl.protocol
+    ignore_missing: true
+# Cloudflare RayID Fields
+- rename:
+    field: json.ParentRayID
+    target_field: cloudflare.parent.ray_id
+    ignore_missing: true
+- rename:
+    field: json.RayID
+    target_field: cloudflare.ray_id
+    ignore_missing: true
+# Cloudflare Other Fields
+- rename:
+    field: json.ZoneID
+    target_field: cloudflare.zone.id
+    ignore_missing: true
+- rename:
+    field: json.ZoneName
+    target_field: cloudflare.zone.name
+    ignore_missing: true
+- rename:
+    field: json.SecurityLevel
+    target_field: cloudflare.security_level
+    ignore_missing: true
+- rename:
+    field: json.ClientDeviceType
+    target_field: cloudflare.device_type
+    ignore_missing: true
+# HTTP Fields
+- dissect:
+    field: json.ClientRequestProtocol
+    pattern: "%{network.protocol}/%{http.version}"
+    ignore_failure: true
+- set:
+    field: http.response.bytes
+    copy_from: cloudflare.edge.response.bytes
+    ignore_empty_value: true
+- set:
+    field: http.response.body.bytes
+    copy_from: cloudflare.edge.response.body.bytes
+    ignore_empty_value: true
+- convert:
+    field: json.ClientRequestBytes
+    target_field: http.request.bytes
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.ClientRequestMethod
+    target_field: http.request.method
+    ignore_missing: true
+- rename:
+    field: json.ClientRequestReferer
+    target_field: http.request.referrer
+    ignore_missing: true
+- set:
+    field: http.response.status_code
+    copy_from: cloudflare.edge.response.status_code
+    ignore_empty_value: true
+- set:
+    field: http.response.status_code
+    copy_from: cloudflare.origin.response.status_code
+    ignore_empty_value: true
+    if: ctx?.http?.response?.status_code == null && ctx?.cloudflare?.origin?.response?.status_code != 0
+# Source Fields
+- rename:
+    field: json.ClientIP
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- rename:
+    field: json.ClientCountry
+    target_field: source.geo.country_iso_code
+    ignore_missing: true
+    if: ctx?.source?.geo?.country_iso_code == null
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: json.ClientASN
+    target_field: source.as.number
+    ignore_missing: true
+    if: ctx?.source?.as?.number == null
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- set:
+    field: source.bytes
+    copy_from: http.request.bytes
+    ignore_empty_value: true
+- convert:
+    field: json.ClientSrcPort
+    target_field: source.port
+    type: long
+    ignore_missing: true
+# Client Fields
+- set:
+    field: client
+    copy_from: source
+- rename:
+    field: json.ClientIPClass
+    target_field: cloudflare.client.ip_class
+    ignore_missing: true
+# Destination Fields
+- rename:
+    field: json.OriginIP
+    target_field: destination.address
+    ignore_missing: true
+- convert:
+    field: destination.address
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- set:
+    field: destination.bytes
+    copy_from: cloudflare.edge.response.bytes
+    ignore_empty_value: true
+# Server Fields
+- set:
+    field: server
+    copy_from: destination
+- set:
+    field: event.category
+    value: network
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.type
+    value: denied
+    allow_duplicates: false
+    if: ctx?.cloudflare?.firewall?.actions.contains('block')
+# Network Fields
+- lowercase:
+    field: network.protocol
+    ignore_missing: true
+- set:
+    field: network.transport
+    value: tcp
+    if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
+- script:
+    lang: painless
+    source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+    if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
+    ignore_failure: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

@@ -26,12 +26,11 @@ An example event for `result` looks as following:
 {
     "@timestamp": "2018-01-08T14:51:55.000Z",
     "agent": {
-        "ephemeral_id": "52c6e71e-baf4-4213-a267-13392719380c",
-        "hostname": "docker-fleet-agent",
-        "id": "3f497f07-16ca-4367-b8a8-12fa87e169c4",
+        "ephemeral_id": "b33539a4-b177-41fd-9c97-5664d8bd5120",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "osquery.result",
@@ -39,19 +38,19 @@ An example event for `result` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "315bb3a9-e66e-4b71-a016-1a59eccd75f8",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "added",
-        "agent_id_status": "agent_id_mismatch",
-        "created": "2021-06-17T09:28:55.203Z",
+        "agent_id_status": "verified",
+        "created": "2022-01-02T05:31:42.889Z",
         "dataset": "osquery.result",
-        "ingested": "2021-06-17T09:28:56.245919600Z",
+        "ingested": "2022-01-02T05:31:43Z",
         "kind": "event",
         "type": "info"
     },
@@ -61,16 +60,16 @@ An example event for `result` looks as following:
         "hostname": "ubuntu-xenial",
         "id": "72E1287B-D1BC-4FC6-B9D8-64F4352776A9",
         "ip": [
-            "192.168.48.7"
+            "172.18.0.5"
         ],
         "mac": [
-            "02:42:c0:a8:30:07"
+            "02:42:ac:12:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.10.25-linuxkit",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",
@@ -153,12 +152,12 @@ An example event for `result` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. | date |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
-| file.accessed | Last time the file was accessed. | date |
-| file.created | File creation time. | date |
+| file.accessed | Last time the file was accessed. Note that not all filesystems keep track of access time. | date |
+| file.created | File creation time. Note that not all filesystems store the creation time. | date |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.gid | Primary group ID (GID) of the file. | keyword |
 | file.inode | Inode representing the file in the filesystem. | keyword |
@@ -166,7 +165,7 @@ An example event for `result` looks as following:
 | file.mtime | Last time the file content was modified. | date |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.size | File size in bytes. | long |
+| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -186,10 +185,9 @@ An example event for `result` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. | keyword |
-| log.level | Original log level of the log event. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
-| log.original | This is the original log message and contains the full log message before splitting it up in multiple parts. | keyword |
 | osquery.result.action |  | keyword |
 | osquery.result.calendar_time | String representation of the collection time, as formatted by osquery. | keyword |
 | osquery.result.columns.active |  | keyword |
@@ -363,11 +361,11 @@ An example event for `result` looks as following:
 | osquery.result.host_identifier | The identifier for the host on which the osquery agent is running. Normally the hostname. | keyword |
 | osquery.result.name | The name of the query that generated this event. | keyword |
 | osquery.result.unix_time | Unix timestamp of the event, in seconds since the epoch. Used for computing the `@timestamp` column. | keyword |
-| process.name | Process name. | keyword |
-| related.hosts |  | keyword |
-| related.user |  | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
-| url.full |  | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | user.name | Short name or login of the user. | keyword |
 

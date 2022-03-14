@@ -1,0 +1,333 @@
+title: Custom HTTPJSON Input
+type: logs
+streams:
+  - input: httpjson
+    description: Collect custom data from REST API's
+    template_path: httpjson.yml.hbs
+    title: Custom HTTPJSON Input
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: httpjson.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: request_url
+        type: text
+        title: Request URL
+        description: i.e. scheme://host:port/path
+        show_user: true
+        required: true
+        default: https://server.example.com:8089/api
+      - name: request_interval
+        type: text
+        title: Request Interval
+        description: How often the API is polled, supports seconds, minutes and hours.
+        show_user: true
+        required: true
+        default: 1m
+      - name: request_method
+        type: text
+        title: Request HTTP Method
+        description: Supports either GET or POST
+        show_user: true
+        required: true
+        default: GET
+      - name: username
+        type: text
+        title: Basic Auth Username
+        show_user: true
+        required: false
+        description: The username to be used with Basic Auth headers
+      - name: password
+        type: password
+        title: Basic Auth Password
+        show_user: true
+        required: false
+        description: The password to be used with Basic Auth headers
+      - name: oauth_id
+        type: text
+        title: Oauth2 Client ID
+        description: Client ID used for Oauth2 authentication
+        show_user: true
+        required: false
+      - name: oauth_secret
+        type: password
+        title: Oauth2 Client Secret
+        description: Client secret used for Oauth2 authentication
+        show_user: true
+        required: false
+      - name: oauth_token_url
+        type: text
+        title: Oauth2 Token URL
+        description: The URL endpoint that will be used to generate the tokens during the oauth2 flow. It is required if no oauth_custom variable is set or provider is not specified in oauth_custom variable.
+        show_user: true
+        required: false
+      - name: request_body
+        type: yaml
+        title: Request Body
+        description: An optional HTTP body if the request method is POST. All available options can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_body)
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #query:
+          #  bool:
+          #    filter:
+          #      term:
+          #        type: authentication
+      - name: request_transforms
+        type: yaml
+        title: Request Transforms
+        description: Optional transformations to perform on the request before it is sent. All available options can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#request-transforms).
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #- set:
+          #    target: body.from
+          #    value: '[[now (parseDuration "-1h")]]'
+          #- set:
+          #    target: url.params.limit
+          #    value: 10
+      - name: response_transforms
+        type: yaml
+        title: Response Transforms
+        description: Optional transformations to perform on the response before it is sent to Elasticsearch. All available options can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#response-transforms).
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #- delete:
+          #    target: body.very_confidential
+      - name: response_split
+        type: yaml
+        title: Response Split
+        description: Optional transformations to perform on the response to split the response into separate documents before it is sent to Elasticsearch. All available options can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#response-split).
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #target: body.data
+          #keep_parent: true
+      - name: response_pagination
+        type: yaml
+        title: Response Pagination
+        description: Optional settings if pagination is required to retrieve all results. All available options can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#response-pagination).
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #- set:
+          #    target: url.value
+          #    value: http://localhost:9200/_search/scroll
+          #- set:
+          #    target: url.params.scroll_id
+          #    value: '[[.last_response.body._scroll_id]]'
+      - name: cursor
+        type: yaml
+        title: Custom request cursor
+        description: |
+          A cursor is used to keep state between each API request, and can be set to for example the value of something in the response body.
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#cursor).
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #last_requested_at:
+          #  value: '[[now]]'
+      - name: request_ssl
+        type: yaml
+        title: Request SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #verification_mode: none
+      - name: request_encode_as
+        type: text
+        title: Request Encode As
+        description: ContentType used for encoding the request body. If set it will force the encoding in the specified format regardless of the Content-Type header value.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_timeout
+        type: text
+        title: Request Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_proxy_url
+        type: text
+        title: Request Proxy
+        description: This specifies proxy configuration in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_retry_max_attempts
+        type: text
+        title: Request Retry Max Attempts
+        description: The maximum number of retries for the HTTP client. Default is "5".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_retry_wait_min
+        type: text
+        title: Request Retry Wait Min
+        description: The minimum time to wait before a retry is attempted. Default is "1s".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_retry_wait_max
+        type: text
+        title: Request Retry Wait Max
+        description: The maximum time to wait before a retry is attempted. Default is "60s".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_redirect_forward_headers
+        type: bool
+        title: Request Redirect Forward Headers
+        description: When set to true request headers are forwarded in case of a redirect. Default is "false".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_redirect_headers_ban_list
+        type: text
+        title: Request Redirect Headers Ban List
+        description: When Redirect Forward Headers is set to true, all headers except the ones defined in this list will be forwarded. All headers are forwarded by default.
+        show_user: false
+        multi: true
+        required: false
+      - name: request_redirect_max_redirects
+        type: text
+        title: Request Redirect Max Redirects
+        description: The maximum number of redirects to follow for a request. Default is "10".
+        show_user: false
+        multi: false
+        required: false
+      - name: request_rate_limit_limit
+        type: text
+        title: Request Rate Limit
+        description: The value of the response that specifies the total limit. It is defined with a Go template value.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_rate_limit_reset
+        type: text
+        title: Request Rate Limit Reset
+        description: The value of the response that specifies the epoch time when the rate limit will reset. It is defined with a Go template value.
+        show_user: false
+        multi: false
+        required: false
+      - name: request_rate_limit_remaining
+        type: text
+        title: Request Rate Limit Remaining
+        description: The value of the response that specifies the remaining quota of the rate limit. It is defined with a Go template value.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_provider
+        type: text
+        title: Oauth2 Provider
+        description: Used to configure supported oauth2 providers. Each supported provider will require specific settings. It is not set by default. Supported providers are "azure" and "google".
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_scopes
+        type: yaml
+        title: Oauth2 Scopes
+        description: A list of scopes that will be requested during the oauth2 flow. It is optional for all providers.
+        show_user: false
+        multi: true
+        required: false
+      - name: oauth_google_credentials_file
+        type: text
+        title: Oauth2 Google Credentials File
+        description: The full path to the credentials file for Google.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_google_credentials_json
+        type: text
+        title: Oauth2 Google Credentials JSON
+        description: Your Google credentials information as raw JSON.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_google_jwt_file
+        type: text
+        title: Oauth2 Google JWT File
+        description: Full path to the JWT Account Key file for Google.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_azure_tenant_id
+        type: text
+        title: Oauth2 Azure Tenant ID
+        description: Optional setting used for authentication when using Azure provider. Since it is used in the process to generate the token_url, it can’t be used in combination with it.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_azure_resource
+        type: text
+        title: Oauth2 Azure Resource
+        description: Optional setting for the accessed WebAPI resource when using azure provider.
+        show_user: false
+        multi: false
+        required: false
+      - name: oauth_endpoint_params
+        type: yaml
+        title: Oauth2 Endpoint Params
+        description: Set of values that will be sent on each request to the token_url. Each param key can have multiple values. Can be set for all providers except google.
+        show_user: false
+        multi: false
+        required: false
+        default: |
+          #Param1:
+          #  - ValueA
+          #  - ValueB
+          #Param2:
+          #  - Value
+      - name: response_decode_as
+        type: text
+        title: Response decode settings
+        description: |
+          ContentType used for decoding the response body. Supported values: application/json, application/x-ndjson. By default it will use what is in the response Content-Type header.
+        show_user: false
+        required: false
+      - name: response_request_body_on_pagination
+        type: bool
+        title: Include request body on Pagination
+        description: |
+          If set to true, the values in request.body are sent with pagination requests.
+        show_user: false
+        multi: false
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded

@@ -1,0 +1,198 @@
+---
+description: Pipeline for parsing zerofox alerts
+processors:
+  ## Ingestion date and ECS version.
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+
+  ## Event JSON decoding.
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: zerofox
+  - json:
+      field: zerofox.metadata
+      ignore_failure: true
+
+  ## Parse event dates.
+  - date:
+      field: zerofox.content_created_at
+      target_field: event.created
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx?.zerofox?.content_created_at != null && ctx.zerofox.content_created_at != ""
+  - remove:
+      field: zerofox.content_created_at
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.event?.created != null
+  - date:
+      field: zerofox.timestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx?.zerofox?.timestamp != null && ctx.zerofox.timestamp != ""
+
+  ## Event categorization.
+  - convert:
+      field: zerofox.id
+      target_field: event.id
+      type: string
+      ignore_failure: true
+      if: ctx?.zerofox?.id != null && ctx.zerofox.id != ""
+  - set:
+      field: event.kind
+      value: alert
+  - convert:
+      field: zerofox.severity
+      target_field: event.severity
+      type: long
+      ignore_missing: true
+  - rename:
+      field: zerofox.offending_content_url
+      target_field: event.url
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.offending_content_url != null && ctx.zerofox.offending_content_url != ""
+
+  ## Rule fields.
+  - convert:
+      field: zerofox.rule_id
+      target_field: rule.id
+      type: string
+      ignore_failure: true
+      if: ctx?.zerofox?.rule_id != null && ctx.zerofox.rule_id != ""
+  - rename:
+      field: zerofox.rule_name
+      target_field: rule.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.rule_name != null && ctx.zerofox.rule_name != ""
+  - convert:
+      field: zerofox.rule_group_id
+      target_field: rule.ruleset
+      type: string
+      ignore_failure: true
+      if: ctx?.zerofox?.rule_group_id != null && ctx.zerofox.rule_group_id != ""
+  - rename:
+      field: zerofox.alert_type
+      target_field: rule.category
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.alert_type != null && ctx.zerofox.alert_type != ""
+
+  ## User fields.
+  - rename:
+      field: zerofox.assignee
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.assignee != null && ctx.zerofox.assignee != ""
+  - append:
+      field: user.roles
+      value: assignee
+      allow_duplicates: false
+      if: ctx?.zerofox?.assignee != null && ctx.zerofox.assignee != ""
+
+  ## Network fields.
+  - rename:
+      field: zerofox.network
+      target_field: network.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.zerofox?.network != null && ctx.zerofox.network != ""
+
+  ## Type conversions.
+  - convert:
+      field: zerofox.entity.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: zerofox.entity.entity_group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: zerofox.entity_term.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: zerofox.perpetrator.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - date:
+      field: zerofox.last_modified
+      target_field: zerofox.last_modified
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx?.zerofox?.last_modified != null && ctx.zerofox.last_modified != ""
+  - date:
+      field: zerofox.perpetrator.timestamp
+      target_field: zerofox.perpetrator.timestamp
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx?.zerofox?.perpetrator?.timestamp != null && ctx.zerofox.perpetrator.timestamp != ""
+  - foreach:
+      field: zerofox.entity.labels
+      processor:
+        convert:
+          field: _ingest._value.id
+          type: string
+      if: ctx?.zerofox?.entity?.labels != null && ctx.zerofox.entity.labels.size() > 0 
+
+  ## Cleanup.
+  - remove:
+      field:
+        - _temp
+        - zerofox.id
+        - zerofox.severity
+        - zerofox.entered_by
+        - zerofox.asset
+        - zerofox.rule_id
+        - zerofox.rule_group_id
+        - zerofox.asset_term
+        - zerofox.business_network
+        - zerofox.entity_email_receiver_id
+        - zerofox.timestamp
+        - zerofox.logs
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Remove all empty values from zerofox.perpetrator.
+      lang: painless
+      if: ctx?.zerofox?.perpetrator != null
+      source: ctx.zerofox.perpetrator?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
+  - script:
+      description: Remove all empty values from zerofox.metadata.
+      lang: painless
+      if: ctx?.zerofox?.metadata != null
+      source: ctx?.zerofox?.metadata?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
+  - script:
+      description: Remove all empty values from zerofox.
+      lang: painless
+      if: ctx?.zerofox != null
+      source: ctx?.zerofox?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
+

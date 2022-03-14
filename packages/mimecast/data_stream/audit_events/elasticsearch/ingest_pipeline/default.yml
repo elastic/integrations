@@ -1,0 +1,286 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  #  # Generic event/ecs fields we always want to populate
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      description: Parse 'message' JSON contents into a 'mimecast' object.
+      field: event.original
+      target_field: mimecast
+  - drop:
+      if: ctx?.mimecast?.eventTime == null
+  - date:
+      description: Use 'mimecast.eventTime' as the '@timestamp'
+      field: mimecast.eventTime
+      timezone: UTC
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ssZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.Sz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss z"
+
+  ###
+
+  # Convert 'mimecast.auditType' to a bone-cased event action.
+  # ie: User Log On -> user-log-on
+  - lowercase:
+      field: mimecast.auditType
+      ignore_missing: true
+  - gsub:
+      field: mimecast.auditType
+      pattern: " "
+      replacement: "-"
+      ignore_missing: true
+  - rename:
+      field: mimecast.auditType
+      target_field: event.action
+      ignore_missing: true
+  ###
+
+  # User fields
+  - rename:
+      field: mimecast.user
+      target_field: user.email
+      ignore_missing: true
+  - rename:
+      field: mimecast.id
+      target_field: event.id
+      ignore_missing: true
+  ###
+  # Here we want to add as much categorization information as possible
+  # We can do this by parsing mimecast.eventInfo differently based on
+  # what event.action is, etc.
+  ### 
+  - dissect:
+      field: mimecast.eventInfo
+      pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
+      if: 'ctx?.event?.action=="logon-authentication-failed"'
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      field: mimecast.eventInfo
+      pattern: "%{mimecast.info}, %{mimecast.rest_of_event_info}"
+      if: 'ctx.mimecast?.info == null'
+      ignore_missing: true
+      ignore_failure: true
+  - dissect:
+       field: mimecast.eventInfo
+       pattern: "%{?drop->} - %{mimecast.info}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
+       if: 'ctx?.event?.action=="folder-log-entry" || ctx?.event?.action=="custom-report-definition-created" || ctx?.event?.action=="mimecast-support-login"'
+       ignore_missing: true
+       ignore_failure: true
+  - kv:
+      field: mimecast.rest_of_event_info
+      field_split: ", "
+      value_split: ": "
+      target_field: mimecast.event_info_parts
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Date
+      target_field: mimecast.date
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Time
+      target_field: mimecast.time
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.IP
+      target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Application
+      target_field: mimecast.application
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Method
+      target_field: mimecast.method
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename: 
+      field: mimecast.info
+      target_field: mimecast.filename
+      ignore_missing: true
+      if: 'ctx?.event?.action == "threat-intel-feed-download"'
+  - rename: 
+      field: mimecast.event_info_parts.Processed
+      target_field: email.origination_timestamp
+      ignore_missing: true
+  - rename: 
+      field: mimecast.event_info_parts.Subject
+      target_field: email.subject
+      ignore_missing: true
+  - rename: 
+      field: mimecast.event_info_parts.2FA
+      target_field: mimecast.2FA
+      ignore_missing: true
+  - dissect:
+       field:  mimecast.event_info_parts.From
+       pattern: "<%{?drop}> %{email.from.address}"
+       if: 'ctx?.event?.action=="message-action"'
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: mimecast.event_info_parts.To
+       pattern: "<%{?drop}> %{email.to.address}"
+       if: 'ctx?.event?.action=="message-action"'
+       ignore_missing: true
+       ignore_failure: true     
+  - dissect:
+      field: mimecast.eventInfo
+      pattern: "[%{?key} : %{mimecast.export_type},%{?key} :%{mimecast.export_name},%{?key} :%{user.email},%{?key} :%{mimecast.weekday} %{mimecast.month} %{mimecast.monthday} %{mimecast.time} %{mimecast.timezone} %{mimecast.year},%{?key} :%{client.ip},%{?key} :%{mimecast.columns_exported},%{?key} : %{file.name},%{?key}: %{file.size},%{?key} : %{file.extension}], %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
+      if: 'ctx?.event?.action=="page-data-exports"'
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+  - split:
+      field: user.email
+      separator: "@"
+      target_field: user.parts
+      if: 'ctx?.user?.email != null'
+  - set:
+      field: user.name
+      copy_from: user.parts.0
+      if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
+  - set:
+      field: user.domain
+      copy_from: user.parts.1
+      if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
+  - rename: 
+      field: mimecast.filename
+      target_field: file.name
+      ignore_missing: true
+      if: 'ctx?.mimecast?.filename != null && ctx?.event?.action == "threat-intel-feed-download"'
+  - split:
+      field: file.name
+      separator: "\\."
+      target_field: file.parts
+      if: 'ctx?.file?.name != null && ctx?.event?.action == "threat-intel-feed-download"'
+  - script:
+      lang: painless
+      source: | 
+        ctx.file.extension = ctx.file.parts[ctx.file.parts.length-1];
+      if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
+  - set:
+      field: event.created
+      value: "{{mimecast.date}} {{mimecast.time}}"
+      if: 'ctx?.mimecast?.date != null && ctx?.mimecast?.time != null'
+  - date:
+      field: event.created
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd HH:mm:ssZ
+        - yyyy-MM-dd HH:mm:ss z
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssz
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.Sz
+        - yyyy-MM-dd'T'HH:mm:ss.SZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy-MM-dd'T'HH:mm:ss z
+      if: 'ctx?.event?.created != null'
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{client.ip}}"
+      allow_duplicates: false
+      if: 'ctx?.client?.ip !=null'
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: 'ctx?.user?.name !=null'
+  - append:
+      field: related.user
+      value: "{{user.email}}"
+      allow_duplicates: false
+      if: ctx?.user?.email != null
+  # Cleanup
+  - remove:
+      description: Cleanup of repeated/unwanted/temporary fields.
+      field: 
+        - mimecast.eventTime
+        - user.parts
+        - mimecast.date
+        - mimecast.time
+        - file.parts
+        - mimecast.info
+        - mimecast.type
+        - mimecast.search
+        - mimecast.description
+        - mimecast.product
+        - mimecast.provider
+        - mimecast.filename
+        - mimecast.criteria
+        - mimecast.viewed
+        - mimecast.timezone
+        - mimecast.byuser
+        - mimecast.export_type
+        - mimecast.export_name
+        - mimecast.weekday
+        - mimecast.month
+        - mimecast.monthday
+        - mimecast.year
+        - mimecast.columns_exported
+        - mimecast.as.asn
+        - mimecast.organization_name
+        - mimecast.event_info_parts
+        - mimecast.rest_of_event_info
+
+      ignore_missing: true
+  - remove:
+      description: Remove 'event.original' if 'preserve_original_event' is not set.
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+  - remove:
+      description: Remove 'source.ip' if 'auditType' is not set.
+      field: source.ip
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+    
+      
+  ###
+
+# Error handling
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

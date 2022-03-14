@@ -1,0 +1,67 @@
+type: logs
+title: Cloudflare Logpull
+streams:
+  - input: httpjson
+    vars:
+      - name: auth_email
+        type: text
+        title: Auth Email
+        description: The Auth Email. Needs to be used with an Auth Key. Do not fill if you are using an Auth Token.
+        multi: false
+        required: false
+        show_user: true
+      - name: auth_key
+        type: password
+        title: Auth Key
+        description: The Auth Key. Needs to be used with an Auth Email. Do not fill if you are using an Auth Token.
+        multi: false
+        required: false
+        show_user: true
+      - name: auth_token
+        type: password
+        title: Auth token
+        description: The auth token. If set, Auth Email and Auth Key will be ignored.
+        required: false
+        multi: false
+        show_user: true
+      - name: zone_id
+        type: text
+        title: Zone ID
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 1s and 1h.
+        default: 5m
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - cloudflare-logpull
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+    template_path: httpjson.yml.hbs
+    title: Cloudflare logs
+    description: Collect Cloudflare logs via the Logpull API

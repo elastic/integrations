@@ -14,6 +14,155 @@ The `info` and `stat` datasets were tested with tested with HAProxy versions fro
 
 The `log` dataset collects the HAProxy application logs.
 
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2018-07-30T09:03:52.726Z",
+    "agent": {
+        "ephemeral_id": "7eccbe53-c1e3-424d-8a1b-c290b8c2ca88",
+        "id": "25ee0259-10b8-4a16-9f80-d18ce8ad6442",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "haproxy.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "25ee0259-10b8-4a16-9f80-d18ce8ad6442",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "haproxy.log",
+        "duration": 2000000,
+        "ingested": "2022-01-11T00:35:53Z",
+        "kind": "event",
+        "outcome": "success",
+        "timezone": "+00:00"
+    },
+    "haproxy": {
+        "backend_name": "docs_microservice",
+        "backend_queue": 0,
+        "bytes_read": 168,
+        "connection_wait_time_ms": 1,
+        "connections": {
+            "active": 6,
+            "backend": 0,
+            "frontend": 6,
+            "retries": 0,
+            "server": 0
+        },
+        "frontend_name": "incoming~",
+        "http": {
+            "request": {
+                "captured_cookie": "-",
+                "captured_headers": [
+                    "docs.example.internal"
+                ],
+                "raw_request_line": "GET /component---src-pages-index-js-4b15624544f97cf0bb8f.js HTTP/1.1",
+                "time_wait_ms": 0,
+                "time_wait_without_data_ms": 0
+            },
+            "response": {
+                "captured_cookie": "-",
+                "captured_headers": []
+            }
+        },
+        "server_name": "docs",
+        "server_queue": 0,
+        "termination_state": "----",
+        "total_waiting_time_ms": 0
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-43-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "bytes": 168,
+            "status_code": 304
+        },
+        "version": "1.1"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/haproxy.log"
+        },
+        "offset": 0
+    },
+    "process": {
+        "name": "haproxy",
+        "pid": 32450
+    },
+    "related": {
+        "ip": [
+            "67.43.156.13"
+        ]
+    },
+    "source": {
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "port": 38862
+    },
+    "tags": [
+        "haproxy-log"
+    ],
+    "temp": {},
+    "url": {
+        "extension": "js",
+        "original": "/component---src-pages-index-js-4b15624544f97cf0bb8f.js",
+        "path": "/component---src-pages-index-js-4b15624544f97cf0bb8f.js"
+    }
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -35,10 +184,10 @@ The `log` dataset collects the HAProxy application logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.address | Hostname or IP address of the destination. | keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
-| ecs.version | ECS version | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | haproxy.backend_name | Name of the backend (or listener) which was selected to manage the connection to the server. | keyword |
@@ -86,22 +235,23 @@ The `log` dataset collects the HAProxy application logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.body.content | The full HTTP request body. | keyword |
+| http.request.body.content | The full HTTP request body. | wildcard |
 | http.request.bytes | Total size in bytes of the request (body and headers). | long |
-| http.request.method | HTTP request method. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
-| http.response.body.content | The full HTTP response body. | keyword |
+| http.response.body.content | The full HTTP response body. | wildcard |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from. | keyword |
-| log.offset | Offset of the entry in the log file. | long |
+| input.type | Input type | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset | long |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.pid | Process id. | long |
 | related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -112,19 +262,19 @@ The `log` dataset collects the HAProxy application logs.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". | keyword |
-| url.extension | The field contains the file extension from the original request url, excluding the leading dot. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | keyword |
-| url.original | Unmodified original url as seen in the event source. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
-| url.query | The query field describes the query string of the request, such as "q=elasticsearch". | keyword |
-| url.registered_domain | The highest registered url domain, stripped of the subdomain. | keyword |
-| url.scheme | Scheme of the request, such as "https". | keyword |
-| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain. | keyword |
-| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". | keyword |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | url.username | Username of the request. | keyword |
 
 
@@ -348,9 +498,10 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |
 | process.pid | Process id. | long |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### stat
@@ -482,15 +633,15 @@ The fields reported are:
 | haproxy.stat.agent.fall | Fall value of agent. | integer |
 | haproxy.stat.agent.health | Health parameter of agent. Between 0 and `agent.rise`+`agent.fall`-1. | integer |
 | haproxy.stat.agent.rise | Rise value of agent. | integer |
-| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -> unknown   INI     -> initializing   SOCKERR -> socket error   L4OK    -> check passed on layer 4, no upper layers enabled   L4TOUT  -> layer 1-4 timeout   L4CON   -> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -> agent reported "up"   L7STS   -> agent reported "fail", "stop" or "down" | keyword |
+| haproxy.stat.agent.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L7OK    -\> agent reported "up"   L7STS   -\> agent reported "fail", "stop" or "down" | keyword |
 | haproxy.stat.check.agent.last |  | integer |
 | haproxy.stat.check.code | Layer 5-7 code, if available. | long |
-| haproxy.stat.check.down | Number of UP->DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
+| haproxy.stat.check.down | Number of UP-\>DOWN transitions. For backends, this value is the number of transitions to the whole backend being down, rather than the sum of the transitions for each server. | long |
 | haproxy.stat.check.duration | Time in ms that it took to finish the last health check. | long |
 | haproxy.stat.check.failed | Number of checks that failed while the server was up. | long |
 | haproxy.stat.check.health.fail | Number of failed checks. | long |
 | haproxy.stat.check.health.last | The result of the last health check. | keyword |
-| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -> unknown   INI     -> initializing   SOCKERR -> socket error   L4OK    -> check passed on layer 4, no upper layers testing enabled   L4TOUT  -> layer 1-4 timeout   L4CON   -> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -> check passed on layer 6   L6TOUT  -> layer 6 (SSL) timeout   L6RSP   -> layer 6 invalid response - protocol error   L7OK    -> check passed on layer 7   L7OKC   -> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -> layer 7 (HTTP/SMTP) timeout   L7RSP   -> layer 7 invalid response - protocol error   L7STS   -> layer 7 response error, for example HTTP 5xx | keyword |
+| haproxy.stat.check.status | Status of the last health check. One of:    UNK     -\> unknown   INI     -\> initializing   SOCKERR -\> socket error   L4OK    -\> check passed on layer 4, no upper layers testing enabled   L4TOUT  -\> layer 1-4 timeout   L4CON   -\> layer 1-4 connection problem, for example             "Connection refused" (tcp rst) or "No route to host" (icmp)   L6OK    -\> check passed on layer 6   L6TOUT  -\> layer 6 (SSL) timeout   L6RSP   -\> layer 6 invalid response - protocol error   L7OK    -\> check passed on layer 7   L7OKC   -\> check conditionally passed on layer 7, for example 404 with             disable-on-404   L7TOUT  -\> layer 7 (HTTP/SMTP) timeout   L7RSP   -\> layer 7 invalid response - protocol error   L7STS   -\> layer 7 response error, for example HTTP 5xx | keyword |
 | haproxy.stat.client.aborted | Number of data transfers aborted by the client. | integer |
 | haproxy.stat.component_type | Component type (0=frontend, 1=backend, 2=server, or 3=socket/listener). | integer |
 | haproxy.stat.compressor.bypassed.bytes | Number of bytes that bypassed the HTTP compressor (CPU/BW limit). | long |
@@ -512,7 +663,7 @@ The fields reported are:
 | haproxy.stat.downtime | Total downtime (in seconds). For backends, this value is the downtime for the whole backend, not the sum of the downtime for the servers. | long |
 | haproxy.stat.header.rewrite.failed.total | Number of failed header rewrite warnings. | long |
 | haproxy.stat.in.bytes | Bytes in. | long |
-| haproxy.stat.last_change | Number of seconds since the last UP->DOWN or DOWN->UP transition. | integer |
+| haproxy.stat.last_change | Number of seconds since the last UP-\>DOWN or DOWN-\>UP transition. | integer |
 | haproxy.stat.load_balancing_algorithm | Load balancing algorithm. | keyword |
 | haproxy.stat.out.bytes | Bytes out. | long |
 | haproxy.stat.proxy.id | Unique proxy ID. | integer |
@@ -521,10 +672,10 @@ The fields reported are:
 | haproxy.stat.queue.limit | Configured queue limit (maxqueue) for the server, or nothing if the value of maxqueue is 0 (meaning no limit). | integer |
 | haproxy.stat.queue.time.avg | The average queue time in ms over the last 1024 requests. | integer |
 | haproxy.stat.request.connection.errors | Number of requests that encountered an error trying to connect to a server. For backends, this field reports the sum of the stat for all backend servers, plus any connection errors not associated with a particular server (such as the backend having no active servers). | long |
-| haproxy.stat.request.denied | Requests denied because of security concerns.    * For TCP this is because of a matched tcp-request content rule.   * For HTTP this is because of a matched http-request or tarpit rule. | long |
+| haproxy.stat.request.denied | Requests denied because of security concerns.    \* For TCP this is because of a matched tcp-request content rule.   \* For HTTP this is because of a matched http-request or tarpit rule. | long |
 | haproxy.stat.request.denied_by_connection_rules | Requests denied because of TCP request connection rules. | long |
 | haproxy.stat.request.denied_by_session_rules | Requests denied because of TCP request session rules. | long |
-| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    * early termination from the client, before the request has been sent   * read error from the client   * client timeout   * client closed connection   * various bad requests from the client.   * request was tarpitted. | long |
+| haproxy.stat.request.errors | Request errors. Some of the possible causes are:    \* early termination from the client, before the request has been sent   \* read error from the client   \* client timeout   \* client closed connection   \* various bad requests from the client.   \* request was tarpitted. | long |
 | haproxy.stat.request.intercepted | Number of intercepted requests. | long |
 | haproxy.stat.request.queued.current | Current queued requests. For backends, this field reports the number of requests queued without a server assigned. | long |
 | haproxy.stat.request.queued.max | Maximum value of queued.current. | long |
@@ -533,7 +684,7 @@ The fields reported are:
 | haproxy.stat.request.redispatched | Number of times a request was redispatched to another server. For servers, this field reports the number of times the server was switched away from. | long |
 | haproxy.stat.request.total | Total number of HTTP requests received. | long |
 | haproxy.stat.response.denied | Responses denied because of security concerns. For HTTP this is because of a matched http-request rule, or "option checkcache". | integer |
-| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: * write errors on the client socket (won't be counted for the server stat) * failure applying filters to the response | long |
+| haproxy.stat.response.errors | Number of response errors. This value includes the number of data transfers aborted by the server (haproxy.stat.server.aborted). Some other errors are: \* write errors on the client socket (won't be counted for the server stat) \* failure applying filters to the response | long |
 | haproxy.stat.response.http.1xx | HTTP responses with 1xx code. | long |
 | haproxy.stat.response.http.2xx | HTTP responses with 2xx code. | long |
 | haproxy.stat.response.http.3xx | HTTP responses with 3xx code. | long |
@@ -575,7 +726,8 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |
 | process.pid | Process id. | long |
-| service.address | Service address | keyword |
-| service.type | Service type | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

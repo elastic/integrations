@@ -1,18 +1,24 @@
 name: Windows PowerShell
 condition: ${host.platform} == 'windows'
-event_id: 400, 403, 600, 800
+{{#if event_id}}
+event_id: {{event_id}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
+{{#if language}}
+language: {{language}}
+{{/if}}
 {{#if tags.length}}
 tags:
-{{else if preserve_original_event}}
-tags:
-{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{/if}}
 {{#if preserve_original_event}}
-  - preserve_original_event
+include_xml: true
 {{/if}}
 {{#if processors.length}}
 processors:
-  {{processors}}
+{{processors}}
 {{/if}}

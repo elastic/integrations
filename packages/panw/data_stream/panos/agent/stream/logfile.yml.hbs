@@ -10,12 +10,13 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
-{{#contains tags "forwarded"}}
+{{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 fields_under_root: true
 fields:
   _conf:
+    tz_offset: {{tz_offset}}
   {{#if internal_zones.length}}
     internal_zones:
       {{#each internal_zones as |zone i|}}
@@ -28,7 +29,8 @@ fields:
       - {{zone}}
       {{/each}}
   {{/if}}
-{{#if processors}}
 processors:
+- add_locale: ~
+{{#if processors}}
 {{processors}}
 {{/if}}

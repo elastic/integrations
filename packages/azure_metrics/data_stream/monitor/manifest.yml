@@ -1,0 +1,26 @@
+type: metrics
+title: Monitor
+dataset: azure.monitor
+streams:
+  - input: azure/metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 300s
+      - name: resources
+        type: yaml
+        title: Resources
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - resource_query: "resourceType eq 'Microsoft.DocumentDb/databaseAccounts'"
+            metrics:
+            - name: ["DataUsage", "DocumentCount", "DocumentQuota"]
+              namespace: "Microsoft.DocumentDb/databaseAccounts"
+    title: Monitor
+    description: Collect Monitor metrics

@@ -29,9 +29,10 @@ setup already.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| error.message | Error message. | text |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -49,8 +50,37 @@ setup already.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 
+
+An example event for `cloudwatch` looks as following:
+
+```json
+{
+    "@timestamp": "2020-02-20T07:02:37.000Z",
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "aws.cloudwatch_logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "event": {
+        "ingested": "2021-07-19T21:47:04.696803300Z",
+        "original": "2020-02-20T07:02:37.000Z Feb 20 07:02:37 ip-172-31-81-156 ec2net: [get_meta] Trying to get http://169.254.169.254/latest/meta-data/network/interfaces/macs/12:e2:a9:95:8b:97/local-ipv4s"
+    },
+    "aws": {
+        "cloudwatch": {
+            "message": "ip-172-31-81-156 ec2net: [get_meta] Trying to get http://169.254.169.254/latest/meta-data/network/interfaces/macs/12:e2:a9:95:8b:97/local-ipv4s"
+        }
+    },
+    "tags": [
+        "preserve_original_event"
+    ]
+}
+```
 
 ## Metrics
 
@@ -117,11 +147,12 @@ An example event for `cloudwatch` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.*.metrics.*.* | Metrics that returned from Cloudwatch API query. | object |
+| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
-| aws.dimensions.* | Metric dimensions. | object |
+| aws.dimensions.\* | Metric dimensions. | object |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
-| aws.tags.* | Tag key value pairs from aws resources. | object |
+| aws.tags.\* | Tag key value pairs from aws resources. | object |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -139,8 +170,9 @@ An example event for `cloudwatch` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. | keyword |
-| error.message | Error message. | text |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -159,4 +191,4 @@ An example event for `cloudwatch` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.type | Service type | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |

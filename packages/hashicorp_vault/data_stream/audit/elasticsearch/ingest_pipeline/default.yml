@@ -1,0 +1,181 @@
+---
+description: Pipeline for processing Hashicorp Vault audit logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      ignore_failure: true
+  - json:
+      field: event.original
+      target_field: hashicorp_vault.audit
+      ignore_failure: true
+
+  #
+  # @timestamp
+  #
+  - date:
+      field: hashicorp_vault.audit.time
+      formats:
+        - ISO8601
+  - remove:
+      field:
+        - hashicorp_vault.audit.time
+      ignore_missing: true
+
+  #
+  # event categorization.
+  #
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: authentication
+  # Request operation can be: create, delete, list, read, update.
+  - append:
+      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'create'
+      field: event.type
+      value: creation
+  - append:
+      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'delete'
+      field: event.type
+      value: deletion
+  - append:
+      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'update'
+      field: event.type
+      value: change
+  - append:
+      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'read' || ctx?.hashicorp_vault?.audit?.request?.operation == 'list'
+      field: event.type
+      value: access
+  - append:
+      if: ctx?.hashicorp_vault?.audit?.error != null
+      field: event.type
+      value: error
+  - append:
+      if: ctx?.hashicorp_vault?.audit?.error != null && ctx.hashicorp_vault.audit.error.contains("denied")
+      field: event.type
+      value: denied
+  - set:
+      field: event.action
+      copy_from: hashicorp_vault.audit.request.operation
+
+  #
+  # event.outcome
+  #
+  - set:
+      if: ctx?.hashicorp_vault?.audit?.error == null
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx?.hashicorp_vault?.audit?.error != null
+      field: event.outcome
+      value: failure
+
+  - set:
+      field: event.id
+      copy_from: hashicorp_vault.audit.request.id
+      ignore_failure: true
+  - set:
+      field: message
+      copy_from: hashicorp_vault.audit.error
+      ignore_failure: true
+  - convert:
+      field: hashicorp_vault.audit.request.remote_address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+
+  # OIDC auth metadata.
+  - set:
+      field: user.email
+      copy_from: hashicorp_vault.audit.auth.metadata.email
+      ignore_failure: true
+  - set:
+      field: user.id
+      copy_from: hashicorp_vault.audit.auth.metadata.account_id
+      ignore_failure: true
+
+  # Nomad auth metadata. (Recognize it by the presence of all four fields.)
+  - set:
+      if: >
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Namespace != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Task != null
+      field: nomad.allocation.id
+      copy_from: hashicorp_vault.audit.auth.metadata.AllocationID
+      ignore_failure: true
+  - set:
+      if: >
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Namespace != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Task != null
+      field: nomad.namespace
+      copy_from: hashicorp_vault.audit.auth.metadata.Namespace
+      ignore_failure: true
+  - set:
+      if: >
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Namespace != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Task != null
+      field: nomad.node.id
+      copy_from: hashicorp_vault.audit.auth.metadata.NodeID
+      ignore_failure: true
+  - set:
+      if: >
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.AllocationID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.NodeID != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Namespace != null &&
+        ctx?.hashicorp_vault?.audit?.auth?.metadata?.Task != null
+      field: nomad.task.name
+      copy_from: hashicorp_vault.audit.auth.metadata.Task
+      ignore_failure: true
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx?.source?.ip != null
+
+  #
+  # event.original - keep or drop
+  #
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

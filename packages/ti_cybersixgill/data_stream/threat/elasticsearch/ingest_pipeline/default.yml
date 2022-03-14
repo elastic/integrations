@@ -1,0 +1,269 @@
+---
+description: Initial pipeline for parsing Cybersixgill webhooks
+processors:
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: threat
+  - set:
+      field: event.type
+      value: indicator
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: cybersixgill
+  - remove:
+      field:
+        - cybersixgill.extensions
+      ignore_missing: true
+  - drop:
+      if: ctx?.cybersixgill?.type != "indicator"
+  - fingerprint:
+      fields:
+        - cybersixgill.id
+      target_field: "_id"
+      ignore_missing: true
+  #####################
+  # Threat ECS Fields #
+  #####################
+  ## File indicator operations
+  - date:
+      field: cybersixgill.created
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ssZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.Sz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+      if: "ctx.cybersixgill?.created != null"
+  - date:
+      field: cybersixgill.modified
+      target_field: threat.indicator.last_seen
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ssZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.Sz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+      if: "ctx.cybersixgill?.modified != null"
+  - date:
+      field: cybersixgill.valid_from
+      target_field: threat.indicator.first_seen
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ssZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.Sz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+      if: "ctx.cybersixgill?.valid_from != null"
+  - grok:
+      field: cybersixgill.pattern
+      patterns:
+        - "^\\[%{MD5}\\]"
+        - "^\\[%{MD5} OR %{SHA1}\\]"
+        - "^\\[%{MD5} OR %{SHA1} OR %{SHA256}\\]"
+        - "^\\[%{SHA1}\\]"
+        - "^\\[%{SHA1} OR %{SHA256}\\]"
+        - "^\\[%{SHA256}\\]"
+        - "^\\[%{DATA:threat.indicator.type}:value%{SPACE}=%{SPACE}'%{DATA:_temp_.threatvalue}'\\]"
+      pattern_definitions:
+        MD5: "%{DATA:threat.indicator.type}:hashes.MD5%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.md5}'"
+        SHA1: "%{DATA:threat.indicator.type}:hashes.'SHA-1'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha1}'"
+        SHA256: "%{DATA:threat.indicator.type}:hashes.'SHA-256'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha256}'"
+      if: ctx.cybersixgill?.pattern != null
+  - rename:
+      field: _temp_.threatvalue
+      target_field: threat.indicator.ip
+      ignore_missing: true
+      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
+  - uri_parts:
+      field: _temp_.threatvalue
+      target_field: threat.indicator.url
+      keep_original: true
+      remove_if_successful: true
+      if: ctx.threat?.indicator?.type == 'url'
+  - rename:
+      field: _temp_.threatvalue
+      target_field: threat.indicator.email.address
+      ignore_missing: true
+      if: ctx.threat?.indicator?.type == 'email-addr'
+  - rename:
+      field: _temp_.threatvalue
+      target_field: threat.indicator.url.domain
+      ignore_missing: true
+      if: ctx.threat?.indicator?.type == 'domain-name'
+  - set:
+      field: threat.indicator.type
+      value: unknown
+      if: ctx.threat?.indicator?.type == null
+  - rename:
+      field: cybersixgill.labels
+      target_field: _temp_.tags
+      ignore_missing: true
+  - rename:
+      field: cybersixgill.sixgill_severity
+      target_field: event.severity
+      ignore_missing: true
+  - rename:
+      field: cybersixgill.description
+      target_field: threat.indicator.description
+      ignore_missing: true
+  - rename:
+      field: cybersixgill.sixgill_feedname
+      target_field: cybersixgill.feedname
+      ignore_missing: true
+  - rename:
+      field: cybersixgill.sixgill_source
+      target_field: threat.indicator.provider
+      ignore_missing: true
+  - rename:
+      field: cybersixgill.sixgill_posttitle
+      target_field: cybersixgill.title
+      ignore_missing: true
+  - rename:
+      field: cybersixgill.sixgill_actor
+      target_field: cybersixgill.actor
+      ignore_missing: true
+  - set:
+      field: threat.indicator.reference
+      value: "https://portal.cybersixgill.com/#/search?q=_id:{{cybersixgill.sixgill_postid}}"
+      if: ctx.cybersixgill?.sixgill_postid != null
+  - convert:
+      field: cybersixgill.sixgill_confidence
+      type: integer
+      target_field: threat.indicator.confidence
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.cybersixgill?.external_references != null
+      description: >
+        Adds MITRE and VirusTotal fields
+      source: >
+        def refs = ctx.cybersixgill.external_references;
+        ctx.cybersixgill.mitre = new HashMap();
+        ctx.cybersixgill.virustotal = new HashMap();
+        ctx.threat.tactic = new HashMap();
+        for (def ref : refs) {
+          if (ref?.description != null) {
+            ctx.cybersixgill.mitre.description = ref.description;
+          }
+          if (ref?.mitre_attack_tactic != null) {
+            ctx.threat.tactic.name = ref.mitre_attack_tactic;
+          }
+          if (ref?.mitre_attack_tactic_id != null) {
+            ctx.threat.tactic.id = ref.mitre_attack_tactic_id;
+          }
+          if (ref?.mitre_attack_tactic_url != null) {
+            ctx.threat.tactic.reference = ref.mitre_attack_tactic_url;
+          }
+          if (ref?.positive_rate != null) {
+            ctx.cybersixgill.virustotal.pr = ref.positive_rate;
+          }
+          if (ref?.url != null) {
+            ctx.cybersixgill.virustotal.url = ref.url;
+          }    
+        }
+  - foreach:
+      field: _temp_.tags
+      processor:
+        append:
+          field: tags
+          value: "{{_ingest._value}}"
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp_?.tags != null
+  - script:
+      lang: painless
+      if: ctx.threat?.indicator?.confidence != null
+      description: >
+        Normalize confidence level.
+      source: >
+        def value = ctx.threat.indicator.confidence;
+        if (value <= 0.0 || value > 100.0) {
+          ctx.threat.indicator.confidence = "None";
+          return;
+        }
+        if (value >= 1.0 && value <= 29.0) {
+          ctx.threat.indicator.confidence = "Low";
+          return;
+        }
+        if (value >= 30.0 && value <= 69.0) {
+          ctx.threat.indicator.confidence = "Med";
+          return;
+        }
+        if (value >= 70 && value <= 100) {
+          ctx.threat.indicator.confidence = "High";
+          return;
+        }
+  - script:
+      lang: painless
+      if: ctx?.threatintel != null
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+        map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _temp_
+        - cybersixgill.sixgill_postid
+        - cybersixgill.extensions
+        - cybersixgill.spec_version
+        - cybersixgill.valid_from
+        - cybersixgill.created
+        - cybersixgill.modified
+        - cybersixgill.lang
+        - cybersixgill.name
+        - cybersixgill.pattern_type
+        - cybersixgill.external_references
+        - cybersixgill.confidence
+        - cybersixgill.sixgill_confidence
+        - cybersixgill.id
+        - cybersixgill.indicator_types
+        - cybersixgill.pattern
+        - cybersixgill.sixgill_feedid
+        - cybersixgill.sixgill_post_virustotallink
+        - cybersixgill.type
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

@@ -1,0 +1,148 @@
+title: Cisco Umbrella logs
+release: experimental
+type: logs
+streams:
+  - input: aws-s3
+    enabled: false
+    title: Cisco Umbrella logs
+    description: Collect Cisco Umbrella logs
+    template_path: aws-s3.yml.hbs
+    vars:
+      - name: queue_url
+        type: text
+        title: Queue URL
+        multi: false
+        required: false
+        show_user: true
+        description: URL of the AWS SQS queue that messages will be received from. For Cisco Managed S3 buckets or S3 without SQS, use Bucket ARN.
+      - name: bucket_arn
+        type: text
+        title: Bucket ARN
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Required for Cisco Managed S3. If the S3 bucket does not use SQS, this is the address for the S3 bucket, one example is `arn:aws:s3:::cisco-managed-eu-central-1` For a list of Cisco Managed buckets, please see https://docs.umbrella.com/mssp-deployment/docs/enable-logging-to-a-cisco-managed-s3-bucket.
+      - name: region
+        type: text
+        title: Bucket Region
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Required for Cisco Managed S3. The region the bucket is located in.
+      - name: bucket_list_prefix
+        type: text
+        title: Bucket List Prefix
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Required for Cisco Managed S3. This sets the root folder of the S3 bucket that should be monitored, found in the S3 Web UI. Example value: `1235_654vcasd23431e5dd6f7fsad457sdf1fd5`. Forward slash at the end required for Cisco Managed S3.
+      - name: number_of_workers
+        type: text
+        title: Number of Workers
+        multi: false
+        required: false
+        show_user: true
+        default: 1
+        description: Required for Cisco Managed S3. Number of workers that will process the S3 objects listed. Minimum is 1.
+      - name: bucket_list_interval
+        type: text
+        title: Bucket List Interval
+        multi: false
+        required: false
+        show_user: true
+        description: Time interval for polling listing of the S3 bucket. Defaults to 120s.
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        multi: false
+        required: false
+        show_user: false
+        description: Directory of the shared credentials file.
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        multi: false
+        required: false
+        show_user: false
+      - name: access_key_id
+        type: text
+        title: Access Key ID
+        multi: false
+        required: false
+        show_user: true
+      - name: secret_access_key
+        type: text
+        title: Secret Access Key
+        multi: false
+        required: false
+        show_user: true
+      - name: session_token
+        type: text
+        title: Session Token
+        multi: false
+        required: false
+        show_user: true
+      - name: role_arn
+        type: text
+        title: Role ARN
+        multi: false
+        required: false
+        show_user: false
+      - name: endpoint
+        type: text
+        title: Endpoint
+        multi: false
+        required: false
+        show_user: false
+        default: "amazonaws.com"
+        description: URL of the entry point for an AWS web service.
+      - name: visibility_timeout
+        type: text
+        title: Visibility Timeout
+        multi: false
+        required: false
+        show_user: false
+        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.  The maximum is 12 hours.
+      - name: api_timeout
+        type: text
+        title: API Timeout
+        multi: false
+        required: false
+        show_user: false
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
+      - name: fips_enabled
+        type: bool
+        title: Enable S3 FIPS
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - cisco-umbrella
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

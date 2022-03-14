@@ -1,0 +1,86 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  # Generic event/ecs fields we always want to populated
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      description: Parse 'message' JSON contents into a 'mimecast' object.
+      field: event.original
+      target_field: mimecast
+  - drop:
+      if: ctx?.mimecast?.eventTime == null
+  - date:
+      description: Use 'mimecast.eventTime' as the '@timestamp'
+      field: mimecast.eventTime
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ssZ
+  ###
+  - rename:
+      field: mimecast.senderIpAddress
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: mimecast.senderAddress
+      target_field: email.from.address
+      ignore_missing: true
+  - rename:
+      field: mimecast.subject
+      target_field: email.subject
+      ignore_missing: true
+  - rename:
+      field: mimecast.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: mimecast.definition
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: mimecast.id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: mimecast.recipientAddress
+      target_field: email.to.address
+      ignore_missing: true
+  - rename:
+      field: mimecast.messageId
+      target_field: email.message_id
+      ignore_missing: true
+  - rename:
+      field: mimecast.similarDomain
+      target_field: source.domain
+      ignore_missing: true
+  - set:
+      field: event.created
+      value: "{{mimecast.eventTime}}"
+      if: 'ctx?.mimecast?.eventTime != null'
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: 'ctx?.source?.ip != null'
+
+  ### Cleanup
+  - remove:
+      description: Cleanup of repeated/unwanted/temporary fields.
+      field: 
+        - mimecast.eventTime
+      ignore_missing: true
+  - remove:
+      description: Remove 'event.original' if 'preserve_original_event' is not set.
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      
+# Error handling
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

@@ -4,11 +4,9 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: 8.0.0
 on_failure:
   - set:
       field: "error.message"

@@ -1,0 +1,426 @@
+---
+description: Pipeline for parsing Akamai logs
+processors:
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- set:
+    field: ecs.version
+    value: '8.0.0'
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- drop:
+    if: 'ctx?.json?.offset != null'
+- set:
+    field: observer.vendor
+    value: akamai
+- set:
+    field: observer.type
+    value: proxy
+- date:
+    field: json.httpMessage.start
+    formats:
+    - UNIX
+    timezone: UTC
+    target_field: "@timestamp"
+- set:
+    field: "event.start" 
+    copy_from: "@timestamp"
+- rename:
+    field: json.httpMessage.status
+    target_field: http.response.status_code
+    ignore_missing: true
+- convert:
+    field: http.response.status_code
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.httpMessage.bytes
+    target_field: http.response.bytes
+    ignore_missing: true
+- convert:
+    field: http.response.bytes
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.httpMessage.requestId
+    target_field: http.request.id
+    ignore_missing: true
+- set:
+    field: event.id
+    copy_from: http.request.id
+    ignore_empty_value: true
+- fingerprint:
+    fields: 
+        - http.request.id
+    target_field: "_id"
+    ignore_missing: true
+- rename:
+    field: json.httpMessage.method
+    target_field: http.request.method
+    ignore_missing: true
+- rename:
+    field: json.httpMessage.host
+    target_field: url.domain
+    ignore_missing: true
+- urldecode:
+    field: json.httpMessage.path
+    target_field: url.path
+    ignore_missing: true
+- urldecode:
+    field: json.httpMessage.query
+    target_field: url.query
+    ignore_missing: true
+- rename:
+    field: json.httpMessage.port
+    target_field: url.port
+    ignore_missing: true
+- convert:
+    field: url.port
+    type: long
+    ignore_missing: true
+- urldecode:
+    field: json.httpMessage.responseHeaders
+    target_field: _tmp.response.headers
+    ignore_missing: true
+- kv:
+    field: _tmp.response.headers
+    target_field: akamai.siem.response.headers
+    field_split: '\r\n'
+    value_split: ': '
+    ignore_missing: true
+- urldecode:
+    field: json.httpMessage.requestHeaders
+    target_field: _tmp.request.headers
+    ignore_missing: true
+- kv:
+    field: _tmp.request.headers
+    target_field: akamai.siem.request.headers
+    field_split: '\r\n'
+    value_split: ': '
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script builds the `url.full` field out of the available `url.*` parts.
+    source: |
+        def full = "";
+        if(ctx.url.scheme != null && ctx.url.scheme != "") {
+            full += ctx.url.scheme+"://";
+        }
+        if(ctx.url.domain != null && ctx.url.domain != "") {
+            full += ctx.url.domain;
+        }
+        if(ctx.json.httpMessage.path != null && ctx.json.httpMessage.path != "") {
+            full += ctx.json.httpMessage.path;
+        }
+        if(ctx.json.httpMessage.query != null && ctx.json.httpMessage.query != "") {
+            full += "?"+ctx.json.httpMessage.query;
+        }
+        if(full != "") {
+            ctx.url.full = full
+        }
+- dissect:
+    field: json.httpMessage.protocol
+    pattern: "%{network.protocol}/%{http.version}"
+    ignore_failure: true
+- lowercase:
+    field: network.protocol
+    ignore_missing: true
+- set:
+    field: network.transport
+    value: tcp
+    if: ctx?.network?.protocol != null && ctx?.network?.protocol == 'http'
+- dissect:
+    field: json.httpMessage.tls
+    pattern: "%{tls.version_protocol}v%{tls.version}"
+    ignore_failure: true
+    ignore_missing: true
+- lowercase:
+    field: tls.version_protocol
+    ignore_missing: true
+- rename:
+    field: json.attackData.clientIP
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- rename:
+    field: json.geo.country
+    target_field: source.geo.country_iso_code
+    ignore_missing: true
+    if: ctx?.source?.geo?.country_iso_code == null
+- set:
+    field: source.geo.region_iso_code 
+    value: "{{json.geo.country}}-{{json.geo.regionCode}}"
+    ignore_empty_value: true
+    if: ctx?.source?.geo?.region_iso_code == null
+- rename:
+    field: json.geo.city
+    target_field: source.geo.city_name
+    ignore_missing: true
+    if: ctx?.source?.geo?.city_name == null
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- convert:
+    field: json.geo.asn
+    target_field: source.as.number
+    type: long
+    ignore_missing: true
+    if: ctx?.source?.as?.number == null
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+## Attack Data
+- urldecode:
+    field: json.attackData.ruleActions
+    target_field: json.attackData.ruleActions
+    ignore_missing: true
+- split:
+    field: json.attackData.ruleActions
+    target_field: json.attackData.ruleActions
+    separator: ';'
+    preserve_trailing: true
+- urldecode:
+    field: json.attackData.ruleData
+    target_field: json.attackData.ruleData
+    ignore_missing: true
+- split:
+    field: json.attackData.ruleData
+    target_field: json.attackData.ruleData
+    separator: ';'
+    preserve_trailing: true
+- urldecode:
+    field: json.attackData.ruleMessages
+    target_field: json.attackData.ruleMessages
+    ignore_missing: true
+- split:
+    field: json.attackData.ruleMessages
+    target_field: json.attackData.ruleMessages
+    separator: ';'
+    preserve_trailing: true
+- urldecode:
+    field: json.attackData.ruleSelectors
+    target_field: json.attackData.ruleSelectors
+    ignore_missing: true
+- split:
+    field: json.attackData.ruleSelectors
+    target_field: json.attackData.ruleSelectors
+    separator: ';'
+    preserve_trailing: true
+- urldecode:
+    field: json.attackData.ruleTags
+    target_field: json.attackData.ruleTags
+    ignore_missing: true
+- split:
+    field: json.attackData.ruleTags
+    target_field: json.attackData.ruleTags
+    separator: ';'
+    preserve_trailing: true
+- urldecode:
+    field: json.attackData.ruleVersions
+    target_field: json.attackData.ruleVersions
+    ignore_missing: true
+- split:
+    field: json.attackData.ruleVersions
+    target_field: json.attackData.ruleVersions
+    separator: ';'
+    preserve_trailing: true
+- urldecode:
+    field: json.attackData.rules
+    target_field: json.attackData.rules
+    ignore_missing: true
+- split:
+    field: json.attackData.rules
+    target_field: json.attackData.rules
+    separator: ';'
+    preserve_trailing: true
+- script:
+    lang: painless
+    description: Base64 Decode the json.attackData.rule* fields
+    source: |
+        ArrayList items = new ArrayList(["rules", "ruleActions", "ruleData", "ruleMessages", "ruleTags", "ruleSelectors", "ruleVersions"]);
+        ArrayList rules_array = new ArrayList();
+        for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
+            HashMap map = new HashMap();
+            for (def j = 0; j < items.length; j++) {
+                String key = items[j];
+                if (i < ctx.json.attackData[key].length ) {
+                    String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
+                    map.put(key, value);
+                }
+            }
+            rules_array.add(map);
+        }
+        ctx.akamai.siem.rules = rules_array;
+- rename:
+    field: json.attackData.configId
+    target_field: akamai.siem.config_id
+    ignore_missing: true
+- rename:
+    field: json.attackData.policyId
+    target_field: akamai.siem.policy_id
+    ignore_missing: true
+- rename:
+    field: json.attackData.policyId
+    target_field: akamai.siem.policy_id
+    ignore_missing: true
+- rename:
+    field: json.attackData.slowPostAction
+    target_field: akamai.siem.slow_post_action
+    ignore_missing: true
+- convert:
+    field: json.attackData.slowPostRate
+    target_field: akamai.siem.slow_post_rate
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.attackData.clientReputation
+    target_field: akamai.siem.client_reputation
+    ignore_missing: true
+- rename:
+    field: json.attackData.clientReputation
+    target_field: akamai.siem.client_reputation
+    ignore_missing: true
+## Bot Data
+- convert:
+    field: json.botData.botScore
+    target_field: akamai.siem.bot.score
+    type: long
+    ignore_missing: true
+- convert:
+    field: json.botData.responseSegment
+    target_field: akamai.siem.bot.response_segment
+    type: long
+    ignore_missing: true
+## Client Data
+- rename:
+    field: json.clientData.appBundleId
+    target_field: akamai.siem.client_data.app_bundle_id
+    ignore_missing: true
+- rename:
+    field: json.clientData.appVersion
+    target_field: akamai.siem.client_data.app_version
+    ignore_missing: true
+- convert:
+    field: json.clientData.telemetryType	
+    target_field: akamai.siem.client_data.telemetry_type
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.clientData.sdkVersion	
+    target_field: akamai.siem.client_data.sdk_version
+    ignore_missing: true
+## User Risk Data
+- rename:
+    field: json.userRiskData.uuid
+    target_field: akamai.siem.user_risk.uuid
+    ignore_missing: true
+- convert:
+    field: json.userRiskData.status	
+    target_field: akamai.siem.user_risk.status
+    type: long
+    ignore_missing: true
+- convert:
+    field: json.userRiskData.score	
+    target_field: akamai.siem.user_risk.score
+    type: long
+    ignore_missing: true
+- convert:
+    field: json.userRiskData.allow	
+    target_field: akamai.siem.user_risk.allow
+    type: long
+    ignore_missing: true
+- kv:
+    field: json.userRiskData.risk
+    target_field: akamai.siem.user_risk.risk
+    field_split: '\|'
+    value_split: ':'
+    ignore_missing: true
+- kv:
+    field: json.userRiskData.trust
+    target_field: akamai.siem.user_risk.trust
+    field_split: '\|'
+    value_split: ':'
+    ignore_missing: true
+- kv:
+    field: json.userRiskData.general
+    target_field: akamai.siem.user_risk.general
+    field_split: '\|'
+    value_split: ':'
+    ignore_missing: true
+##
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    allow_duplicates: false
+- set:
+    field: client
+    copy_from: source
+- set:
+    field: event.category
+    value: network
+- set:
+    field: event.kind
+    value: event
+- remove:
+    field:
+      - json
+      - _tmp
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

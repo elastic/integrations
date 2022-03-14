@@ -1,0 +1,449 @@
+---
+description: Pipeline for Palo Alto XDR API.
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - set:
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      value: malware
+  - append:
+      field: event.type
+      value: info
+  - rename:
+      field: message
+      target_field: event.original
+  - json:
+      field: event.original
+      target_field: panw_cortex.xdr
+  - fingerprint:
+      fields:
+        - panw_cortex.xdr.events.event_timestamp
+        - panw_cortex.xdr.events.event_id
+        - panw_cortex.xdr.events.event_type
+        - panw_cortex.xdr.alert_id
+      target_field: "_id"
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - date:
+      field: panw_cortex.xdr.events.event_timestamp
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.events?.event_timestamp != null
+  - date:
+      field: panw_cortex.xdr.detection_timestamp
+      target_field: event.created
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.detection_timestamp != null
+  - date:
+      field: panw_cortex.xdr.end_match_attempt_ts
+      target_field: panw_cortex.xdr.end_match_attempt_ts
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.end_match_attempt_ts != null
+  - date:
+      field: panw_cortex.xdr.local_insert_ts
+      target_field: panw_cortex.xdr.local_insert_ts
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.local_insert_ts != null
+  - rename:
+      field: panw_cortex.xdr.name
+      target_field: message
+      ignore_missing: true
+  - set:
+      field: event.severity
+      value: 0
+      if: ctx.panw_cortex?.xdr?.severity == "unknown"
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.panw_cortex?.xdr?.severity == "informational"
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.panw_cortex?.xdr?.severity == "low"
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.panw_cortex?.xdr?.severity == "medium"
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.panw_cortex?.xdr?.severity == "high"
+  - rename:
+      field: panw_cortex.xdr.external_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.description
+      target_field: event.reason
+      ignore_missing: true
+      if: "ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex.xdr.description instanceof String"
+  - rename:
+      field: panw_cortex.xdr.description
+      target_field: panw_cortex.xdr.bioc_description
+      ignore_missing: true
+      if: "ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex?.xdr?.description instanceof List"
+  - set:
+      field: event.reason
+      value: Bioc Event
+      if: "ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null"
+  - rename:
+      field: panw_cortex.xdr.agent_device_domain
+      target_field: host.domain
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.agent_fqdn
+      target_field: host.hostname
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.host_name
+      target_field: host.hostname
+      ignore_missing: true
+      if: ctx.host?.hostname == null
+  - set:
+      field: host.name
+      copy_from: host.hostname
+      if: ctx.host?.hostname != null
+  - rename:
+      field: panw_cortex.xdr.agent_os_type
+      target_field: host.os.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.agent_os_sub_type
+      target_field: host.os.version
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.mac_addresses
+      target_field: host.mac
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.host_ip
+      target_field: host.ip
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.endpoint_id
+      target_field: host.id
+      ignore_missing: true
+  - split:
+      field: panw_cortex.xdr.mac
+      target_field: host.mac
+      separator: ","
+      ignore_missing: true
+      if: ctx.host?.mac == null
+  - remove:
+      field:
+        - panw_cortex.xdr.mac
+      ignore_missing: true
+      if: ctx.host?.mac != null
+  - rename:
+      field: panw_cortex.xdr.events.dns_query_name
+      target_field: dns.question.name
+      ignore_missing: true
+  #The Action actor is an an activity that took place and was recorded by the agent.
+  - convert:
+      field: panw_cortex.xdr.events.action_remote_ip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: panw_cortex.xdr.events.action_remote_port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: panw_cortex.xdr.events.action_local_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: panw_cortex.xdr.events.action_local_port
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_process_image_sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_process_image_command_line
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_process_image_name
+      target_field: process.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_process_signature_vendor
+      target_field: process.code_signature.subject_name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_process_signature_status
+      target_field: process.code_signature.status
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_process_instance_id
+      target_field: process.entity_id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_command_line
+      target_field: process.command_line
+      ignore_missing: true
+      if: ctx.process?.command_line == null
+  - rename:
+      field: panw_cortex.xdr.events.action_file_path
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_file_name
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_file_md5
+      target_field: file.hash.md5
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_file_sha256
+      target_field: file.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_registry_key_name
+      target_field: registry.key
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_registry_value_name
+      target_field: registry.value
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_registry_full_key
+      target_field: registry.path
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.action_registry_data
+      target_field: registry.data.strings
+      ignore_missing: true
+  #The Actor actor is the process that performed the action.
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_os_pid
+      target_field: process.pid
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_instance_id
+      target_field: process.entity_id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_image_path
+      target_field: process.executable
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_command_line
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_image_name
+      target_field: process.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_signature_vendor
+      target_field: process.code_signature.subject_name
+      ignore_missing: true
+      if: ctx.process?.code_signature?.subject_name == null
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_image_sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_process_image_md5
+      target_field: process.hash.md5
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.actor_thread_thread_id
+      target_field: process.thread.id
+      ignore_missing: true
+  #The Causality actor—also referred to as the causality group owner (CGO)—is the parent process in the execution chain that the Cortex XDR agent identified as being responsible for initiating the process tree.
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_image_name
+      target_field: process.parent.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_image_path
+      target_field: process.parent.executable
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_image_md5
+      target_field: process.parent.hash.md5
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_image_sha256
+      target_field: process.parent.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_causality_id
+      target_field: process.parent.entity_id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_signature_vendor
+      target_field: process.parent.code_signature.subject_name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_signature_status
+      target_field: process.parent.code_signature.status
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_command_line
+      target_field: process.parent.command_line
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.causality_actor_process_execution_time
+      target_field: process.parent.uptime
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.user_name
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.fw_rule
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.fw_rule_id
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.fw_interface_from
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.fw_interface_to
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+  - rename:
+      field: panw_cortex.xdr.events.fw_serial_number
+      target_field: observer.serial_number
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: "{{{process.parent.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.process?.parent?.hash?.md5 != null
+  - append:
+      field: related.hash
+      value: "{{{process.parent.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.process?.parent?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      value: "{{{process.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.process?.hash?.md5 != null
+  - append:
+      field: related.hash
+      value: "{{{process.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.process?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      value: "{{{file.hash.sha256}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - append:
+      field: related.hash
+      value: "{{{file.hash.md5}}}"
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - remove:
+      field:
+        - panw_cortex.xdr.host_name
+        - panw_cortex.xdr.detection_timestamp
+        - panw_cortex.xdr.events.event_timestamp
+        - panw_cortex.xdr.severity
+        - panw_cortex.xdr.events.action_remote_ip
+        - panw_cortex.xdr.events.action_remote_port
+        - panw_cortex.xdr.events.action_local_ip
+        - panw_cortex.xdr.events.action_local_port
+        - panw_cortex.xdr.events.action_country
+        - panw_cortex.xdr.bioc_indicator
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
