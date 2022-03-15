@@ -38,10 +38,10 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-08T18:53:24.902Z",
+    "@timestamp": "2022-03-11T17:17:25.327Z",
     "agent": {
-        "ephemeral_id": "bd5de870-bea9-40df-a174-bd4e3d74e364",
-        "id": "1ddd3f94-eb84-4462-a716-d2fcc245020d",
+        "ephemeral_id": "fb10de86-f84d-463c-b16f-da890ed3751f",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -55,32 +55,29 @@ An example event for `info` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "1ddd3f94-eb84-4462-a716-d2fcc245020d",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-08T18:53:24.902Z",
+        "created": "2022-03-11T17:17:25.327Z",
         "dataset": "spring_boot_endpoints.info",
-        "ingested": "2022-03-08T18:53:25Z",
+        "ingested": "2022-03-11T17:17:28Z",
         "kind": "metric",
         "module": "spring_boot_endpoints",
         "type": "info"
-    },
-    "input": {
-        "type": "httpjson"
     },
     "spring_boot_endpoints": {
         "info": {
             "description": "Spring Boot Actuator Demo Project",
             "encoding": "UTF-8",
             "java": {
-                "version": "1.8.0_322"
+                "version": "11.0.14.1"
             },
             "name": "actuator-demo",
-            "version": "0.0.1-SNAPSHOT"
+            "version": "0.0.1-Release"
         }
     },
     "tags": [
@@ -121,10 +118,10 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:18:05.230Z",
+    "@timestamp": "2022-03-11T17:14:12.995Z",
     "agent": {
-        "ephemeral_id": "73f113f0-1bf6-4671-859e-e9c0c7d493dd",
-        "id": "a30920de-36d1-4ff0-b91b-d8141cb653d2",
+        "ephemeral_id": "df64d3c7-0424-41ec-afa0-d6ff97e3becb",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -138,16 +135,16 @@ An example event for `audit_events` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a30920de-36d1-4ff0-b91b-d8141cb653d2",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-09T07:18:05.230Z",
+        "created": "2022-03-11T17:14:12.995Z",
         "dataset": "spring_boot_endpoints.audit_events",
-        "ingested": "2022-03-09T07:18:08Z",
+        "ingested": "2022-03-11T17:14:16Z",
         "kind": "metric",
         "module": "spring_boot_endpoints",
         "type": "info"
@@ -157,24 +154,21 @@ An example event for `audit_events` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.18.0.5"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.53.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
             "version": "20.04.3 LTS (Focal Fossa)"
         }
-    },
-    "input": {
-        "type": "httpjson"
     },
     "spring_boot_endpoints": {
         "auditevents": {
@@ -216,10 +210,10 @@ An example event for `http_trace` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-08T18:58:21.601Z",
+    "@timestamp": "2022-03-11T17:15:36.535Z",
     "agent": {
-        "ephemeral_id": "9d2d299f-edf8-48dd-963b-c8c567539724",
-        "id": "1ddd3f94-eb84-4462-a716-d2fcc245020d",
+        "ephemeral_id": "42502fc6-6422-4681-b345-bcb23e118b8b",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -233,16 +227,16 @@ An example event for `http_trace` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "1ddd3f94-eb84-4462-a716-d2fcc245020d",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-08T18:58:21.601Z",
+        "created": "2022-03-11T17:15:36.535Z",
         "dataset": "spring_boot_endpoints.http_trace",
-        "ingested": "2022-03-08T18:58:22Z",
+        "ingested": "2022-03-11T17:15:40Z",
         "kind": "metric",
         "module": "spring_boot_endpoints",
         "type": "info"
@@ -252,16 +246,16 @@ An example event for `http_trace` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.5"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:05"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.53.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -276,15 +270,12 @@ An example event for `http_trace` looks as following:
             "status_code": 200
         }
     },
-    "input": {
-        "type": "httpjson"
-    },
     "spring_boot_endpoints": {
         "http_trace": {
             "request": {
-                "uri": "http://springbootendpoints:8090/actuator/httptrace"
+                "uri": "http://springbootendpoints:8090/actuator/info"
             },
-            "time_taken": 530
+            "time_taken": 6
         }
     },
     "tags": [
@@ -328,10 +319,10 @@ An example event for `jolokia` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-08T18:50:54.538Z",
+    "@timestamp": "2022-03-11T17:18:42.725Z",
     "agent": {
-        "ephemeral_id": "74c83635-f611-4df9-8f34-1abf62f4ccc3",
-        "id": "1ddd3f94-eb84-4462-a716-d2fcc245020d",
+        "ephemeral_id": "acb75b76-d8eb-4a98-b9a3-f1ed1aae5718",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -345,7 +336,7 @@ An example event for `jolokia` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "1ddd3f94-eb84-4462-a716-d2fcc245020d",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -353,8 +344,8 @@ An example event for `jolokia` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot_endpoints.jolokia",
-        "duration": 6033688436,
-        "ingested": "2022-03-08T18:51:01Z",
+        "duration": 1982715215,
+        "ingested": "2022-03-11T17:18:46Z",
         "kind": "metric",
         "module": "spring_boot_endpoints",
         "type": "info"
@@ -364,16 +355,16 @@ An example event for `jolokia` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.5"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:05"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.53.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -387,7 +378,7 @@ An example event for `jolokia` looks as following:
     },
     "os": {
         "name": "Linux",
-        "version": "3.10.0-1160.45.1.el7.x86_64"
+        "version": "3.10.0-1160.53.1.el7.x86_64"
     },
     "service": {
         "address": "http://springbootendpoints:8090/actuator/jolokia",
@@ -397,24 +388,24 @@ An example event for `jolokia` looks as following:
         "jolokia": {
             "operating_system": {
                 "arch": "amd64",
-                "available_processors": 8,
-                "committed_virtual_memory_size": 4819927040,
+                "available_processors": 12,
+                "committed_virtual_memory_size": 5994717184,
                 "free": {
-                    "physical_memory_size": 1308979200,
-                    "swap_space_size": 4124831744
+                    "physical_memory_size": 375517184,
+                    "swap_space_size": 4150784000
                 },
                 "max_file_descriptor_count": 1048576,
-                "open_file_descriptor_count": 25,
+                "open_file_descriptor_count": 20,
                 "process": {
-                    "cpu_load": 0.08692131191793764,
-                    "cpu_time": 99670000000
+                    "cpu_load": 0.03172285638439076,
+                    "cpu_time": 39070000000
                 },
                 "system": {
-                    "cpu_load": 0.34970981239033605,
-                    "load_average": 10.62548828125
+                    "cpu_load": 0.5644326476443264,
+                    "load_average": 19.14501953125
                 },
                 "total": {
-                    "physical_memory_size": 12409643008,
+                    "physical_memory_size": 16637480960,
                     "swap_space_size": 4160745472
                 }
             }
@@ -713,10 +704,10 @@ An example event for `prometheus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:22:59.887Z",
+    "@timestamp": "2022-03-11T17:20:34.592Z",
     "agent": {
-        "ephemeral_id": "c800b0e1-fec1-4a2f-84eb-038eb65020f0",
-        "id": "a30920de-36d1-4ff0-b91b-d8141cb653d2",
+        "ephemeral_id": "f095a38b-59b8-4a32-aa97-85ed7918668d",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -730,15 +721,15 @@ An example event for `prometheus` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a30920de-36d1-4ff0-b91b-d8141cb653d2",
+        "id": "1dcabcec-49f1-496c-8869-5280a60e6451",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spring_boot_endpoints.prometheus",
-        "duration": 591048735,
-        "ingested": "2022-03-09T07:23:03Z",
+        "duration": 149531418,
+        "ingested": "2022-03-11T17:20:38Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -747,16 +738,16 @@ An example event for `prometheus` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.18.0.5"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.53.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -772,15 +763,12 @@ An example event for `prometheus` looks as following:
     "spring_boot_endpoints": {
         "prometheus": {
             "labels": {
-                "area": "heap",
-                "id": "PS Eden Space",
                 "instance": "springbootendpoints:8090",
-                "job": "prometheus"
+                "job": "prometheus",
+                "state": "waiting"
             },
             "metrics": {
-                "jvm_memory_committed_bytes": 305135616,
-                "jvm_memory_max_bytes": 1005584384,
-                "jvm_memory_used_bytes": 108853824
+                "jvm_threads_states_threads": 11
             }
         }
     }
