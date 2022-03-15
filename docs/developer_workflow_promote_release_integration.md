@@ -10,8 +10,8 @@
 ## Steps
 
 1. Please review this PR on your own and if the CI is happy, merge it. Your PR will be made against a base branch that corresponds to the stage that you will be pushing this package into for testing/deployment (e.g. "snapshot", "staging", etc). This will be referred to in the following steps as your "target stage".
-2. Release changes to the stage using [1-click Jenkins form](https://beats-ci.elastic.co/job/Ingest-manager/job/release-distribution/build?delay=0sec) (need to be signed in). Note: running this will push all changes that have been merged to the target stage branch, so if your PR merged a while ago, it may already be available in the target stage.
-3. Test your package update - point a running Kibana at your target stage's package registry URL using [the Fleet Kibana settings](https://www.elastic.co/guide/en/kibana/master/fleet-settings-kb.html#fleet-data-visualizer-settings)
+2. Release changes to the stage using [1-click Jenkins form](https://beats-ci.elastic.co/job/Ingest-manager/job/release-distribution/build?delay=0sec) (need to be signed in). Remember to wait until the build has finished before triggering a release. Note: triggering a release will push all changes that have been merged to the target stage branch.
+3. Test your package update - point a running Kibana at your target stage's [package registry URL](https://github.com/elastic/package-registry#docker) using [the Fleet Kibana settings](https://www.elastic.co/guide/en/kibana/master/fleet-settings-kb.html#fleet-data-visualizer-settings)
 4. Once happy with the changes in your target stage, promote your package to the next stage using [the elastic-package tool](https://github.com/elastic/elastic-package).
 
     ```bash
