@@ -1,14 +1,12 @@
-# Cybersixgill Webhook Integration
+# Cybersixgill Darkfeed TAXII Integration
 
-This integration creates an HTTP listener that accepts incoming HTTP requests from Cybersixgill integration script which retrieves indicators from [Cybersixgill Darkfeed](https://www.cybersixgill.com/products/darkfeed/).
+This integration connects with the commercial [Cybersixgill Darkfeed](https://www.cybersixgill.com/products/darkfeed/) TAXII server.
 
 ## Logs
 
 ### Threat
 
-The Cybersixgill integration works together with a python script provided by Cybersixgill which usually runs on the same host as the Elastic Agent, polling the Cybersixgill API using a scheduler like systemd, cron, or Windows Task Scheduler; then it forwards the results to Elastic Agent over HTTP(s) on the same host.
-
-All relevant documentation on how to install and configure the Python script is provided in its README.(https://github.com/elastic/filebeat-cybersixgill-integration#readme).
+The Cybersixgill Darkfeed integration collects threat intelligence from the Darkfeed TAXII service available using the credentials provided from Cybersixgill.
 
 **Exported fields**
 
@@ -84,6 +82,7 @@ All relevant documentation on how to install and configure the Python script is 
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
@@ -97,25 +96,24 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-03T02:14:51.617Z",
+    "@timestamp": "2021-12-07T13:58:01.596Z",
     "agent": {
-        "ephemeral_id": "2c8413ec-6eec-496b-9449-34f8b1559a78",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "e87401bd-e81b-4923-993f-0b478f4af398",
+        "id": "6fb8f383-d278-4b88-ae27-8b0e4175833d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "cybersixgill": {
-        "actor": "IfOnlyYouKnew",
-        "feedname": "darkweb_vt_links",
+        "actor": "vaedzy",
+        "feedname": "dark_web_hashes",
         "mitre": {
             "description": "Mitre attack tactics and technique reference"
         },
-        "title": "OpenCore [1.0.0] C# Source",
-        "valid_from": "2021-06-06T06:39:31Z",
+        "title": "[病毒样本] #Trickbot (2021-12-07)",
         "virustotal": {
-            "pr": "none",
-            "url": "https://virustotal.com/#/file/1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd"
+            "pr": "medium",
+            "url": "https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d"
         }
     },
     "data_stream": {
@@ -127,61 +125,50 @@ An example event for `threat` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "6fb8f383-d278-4b88-ae27-8b0e4175833d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
+        "created": "2022-03-09T07:54:03.602Z",
         "dataset": "ti_cybersixgill.threat",
-        "ingested": "2022-01-03T02:14:52Z",
+        "ingested": "2022-03-09T07:54:04Z",
         "kind": "enrichment",
-        "original": "{\"cybersixgill\":{\"actor\":\"IfOnlyYouKnew\",\"feedname\":\"darkweb_vt_links\",\"mitre\":{\"description\":\"Mitre attack tactics and technique reference\"},\"title\":\"OpenCore [1.0.0] C# Source\",\"valid_from\":\"2021-06-06T06:39:31Z\",\"virustotal\":{\"pr\":\"none\",\"url\":\"https://virustotal.com/#/file/1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd\"}},\"event\":{\"severity\":70},\"tags\":[\"malicious-activity\",\"malware\",\"malicious\",\"Test capabilities\",\"Test signature detection for file upload/email filters\"],\"threat\":{\"indicator\":{\"confidence\":80,\"description\":\"Virustotal link that appeared on a dark web site, generally to show malware that is undetected\",\"file\":{\"hash\":{\"md5\":\"6279649f4e3a8e9f907080c154c34605\",\"sha1\":\"bd4e4bd96222c1570a99b8016eb0b59ca5c33100\",\"sha256\":\"1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd\"}},\"first_seen\":\"2021-06-07T00:40:52.134Z\",\"last_seen\":\"2021-06-07T00:40:52.134Z\",\"provider\":\"forum_mpgh\",\"reference\":\"https://portal.cybersixgill.com/#/search?q=_id:58f8623e1f18f5c5accf617ad282837dd469bd29\",\"type\":\"file\",\"url\":{\"full\":\"https://rapidgator.net/file/71827fac0618ea3b1192bb51d5cbff45/101.Woodworking.Tips.Complete.Book.A.Collection.Of.Easy.To.Follow.Projects.And.Plans.2021.pdf\"}},\"tactic\":{\"id\":\"TA0025\",\"name\":\"Test capabilities\",\"reference\":\"https://attack.mitre.org/tactics/TA0025/\"}}}",
+        "original": "{\"confidence\":70,\"created\":\"2021-12-07T13:58:01.596Z\",\"description\":\"Hash attributed to malware that was discovered in the dark and deep web\",\"extensions\":{\"extension-definition--3de9ff00-174d-4d41-87c9-05a27a7e117c\":{\"extension_type\":\"toplevel-property-extension\"}},\"external_references\":[{\"positive_rate\":\"medium\",\"source_name\":\"VirusTotal\",\"url\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\"},{\"description\":\"Mitre attack tactics and technique reference\",\"mitre_attack_tactic\":\"Build Capabilities\",\"mitre_attack_tactic_id\":\"TA0024\",\"mitre_attack_tactic_url\":\"https://attack.mitre.org/tactics/TA0024/\",\"source_name\":\"mitre-attack\"}],\"id\":\"indicator--302dab0f-64dc-42f5-b99e-702b28c1aaa9\",\"indicator_types\":[\"malicious-activity\"],\"lang\":\"en\",\"modified\":\"2021-12-07T13:58:01.596Z\",\"name\":\"4d0f21919d623bd1631ee15ca7429f28;5ce39ef0700b64bd0c71b55caf64ae45d8400965;7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"pattern\":\"[file:hashes.MD5 = '4d0f21919d623bd1631ee15ca7429f28' OR file:hashes.'SHA-1' = '5ce39ef0700b64bd0c71b55caf64ae45d8400965' OR file:hashes.'SHA-256' = '7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d']\",\"pattern_type\":\"stix\",\"sixgill_actor\":\"vaedzy\",\"sixgill_confidence\":70,\"sixgill_feedid\":\"darkfeed_012\",\"sixgill_feedname\":\"dark_web_hashes\",\"sixgill_post_virustotallink\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"sixgill_postid\":\"c0c9a0085fb5281cfb40a0ddb62e1d2c6a53eb7a\",\"sixgill_posttitle\":\"[病毒样本] #Trickbot (2021-12-07)\",\"sixgill_severity\":70,\"sixgill_source\":\"forum_kafan\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2021-12-07T02:55:17Z\"}",
         "severity": 70,
         "type": "indicator"
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "httpjson"
     },
     "tags": [
         "preserve_original_event",
-        "cybersixgill-threat",
         "forwarded",
-        "malicious-activity",
-        "malware",
-        "malicious",
-        "Test capabilities",
-        "Test signature detection for file upload/email filters"
+        "ti_cybersixgill"
     ],
     "threat": {
         "indicator": {
             "confidence": "High",
-            "description": "Virustotal link that appeared on a dark web site, generally to show malware that is undetected",
+            "description": "Hash attributed to malware that was discovered in the dark and deep web",
             "file": {
                 "hash": {
-                    "md5": "6279649f4e3a8e9f907080c154c34605",
-                    "sha1": "bd4e4bd96222c1570a99b8016eb0b59ca5c33100",
-                    "sha256": "1e8034a0109c9d2be96954fe4c503db6a01be1ffbc80c3dadeb2127fad6036bd"
+                    "md5": "4d0f21919d623bd1631ee15ca7429f28",
+                    "sha1": "5ce39ef0700b64bd0c71b55caf64ae45d8400965",
+                    "sha256": "7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d"
                 }
             },
-            "first_seen": "2021-06-07T00:40:52.134Z",
-            "last_seen": "2021-06-07T00:40:52.134Z",
-            "provider": "forum_mpgh",
-            "reference": "https://portal.cybersixgill.com/#/search?q=_id:58f8623e1f18f5c5accf617ad282837dd469bd29",
-            "type": "file",
-            "url": {
-                "domain": "rapidgator.net",
-                "extension": "pdf",
-                "original": "https://rapidgator.net/file/71827fac0618ea3b1192bb51d5cbff45/101.Woodworking.Tips.Complete.Book.A.Collection.Of.Easy.To.Follow.Projects.And.Plans.2021.pdf",
-                "path": "/file/71827fac0618ea3b1192bb51d5cbff45/101.Woodworking.Tips.Complete.Book.A.Collection.Of.Easy.To.Follow.Projects.And.Plans.2021.pdf",
-                "scheme": "https"
-            }
+            "first_seen": "2021-12-07T02:55:17.000Z",
+            "last_seen": "2021-12-07T13:58:01.596Z",
+            "provider": "forum_kafan",
+            "reference": "https://portal.cybersixgill.com/#/search?q=_id:c0c9a0085fb5281cfb40a0ddb62e1d2c6a53eb7a",
+            "type": "file"
         },
         "tactic": {
-            "id": "TA0025",
-            "name": "Test capabilities",
-            "reference": "https://attack.mitre.org/tactics/TA0025/"
+            "id": "TA0024",
+            "name": "Build Capabilities",
+            "reference": "https://attack.mitre.org/tactics/TA0024/"
         }
     }
 }
