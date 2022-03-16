@@ -1,7 +1,7 @@
 # LotL Attack Detection 
 
 The ProblemChild package contains the [ProblemChild model and associated assets](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks), which are used to detect living off the land (LotL) activity.
-This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding.
+This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
@@ -23,7 +23,7 @@ In Machine Learning > Anomaly Detection, when you create a job, you should see a
 
 ### (Optional) Enable Security Rules
 
-In order to maximize the benefit of the LotL Detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the [documentation] (https://www.elastic.co/guide/en/security/current/detection-engine-overview.html for more information on importing and enabling the rules.
+In order to maximize the benefit of the LotL Detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the [documentation] (https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 Note that there are search rules as well as ML job rules.
 
