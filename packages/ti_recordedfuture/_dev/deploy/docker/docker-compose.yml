@@ -1,0 +1,32 @@
+version: '2.3'
+services:
+  recordedfuture-api-http:
+    image: docker.elastic.co/observability/stream:v0.6.1
+    ports:
+      - 8080
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/config-api.yml
+  recordedfuture-csv-download-http:
+    image: docker.elastic.co/observability/stream:v0.6.1
+    ports:
+      - 8080
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/files/config-csv-download.yml
+  recordedfuture-csv-file:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
