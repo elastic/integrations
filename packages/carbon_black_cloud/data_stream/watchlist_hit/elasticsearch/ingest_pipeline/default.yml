@@ -171,6 +171,15 @@ processors:
       field: json.org_key
       target_field: carbon_black_cloud.watchlist_hit.organization_key
       ignore_missing: true
+  - foreach:
+      field: json.parent_publisher
+      processor:
+        split:
+          field: _ingest._value.state
+          separator: " \\| "
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.parent_publisher
       target_field: carbon_black_cloud.watchlist_hit.process.parent.publisher
@@ -183,6 +192,15 @@ processors:
       field: json.parent_username
       target_field: carbon_black_cloud.watchlist_hit.process.parent.username
       ignore_missing: true
+  - foreach:
+      field: json.process_publisher
+      processor:
+        split:
+          field: _ingest._value.state
+          separator: " \\| "
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.process_publisher
       target_field: carbon_black_cloud.watchlist_hit.process.publisher

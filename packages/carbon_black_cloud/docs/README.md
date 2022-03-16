@@ -50,12 +50,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "e0dcebbb-cc55-4bc5-9a5c-12c243ba1bea",
-        "hostname": "docker-fleet-agent",
-        "id": "9b6604a7-01ab-449c-b244-d144c23d5240",
+        "ephemeral_id": "73949384-44ec-4f97-ad25-de968d945811",
+        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "carbon_black_cloud": {
         "audit": {
@@ -78,16 +77,16 @@ An example event for `audit` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9b6604a7-01ab-449c-b244-d144c23d5240",
+        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-02T12:54:35.840Z",
+        "created": "2022-03-14T03:11:56.654Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2022-03-02T12:54:39Z",
+        "ingested": "2022-03-14T03:12:00Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
@@ -177,16 +176,15 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-11-17T22:05:13.000Z",
     "agent": {
-        "ephemeral_id": "a978798e-7435-4f1e-83ac-0d1e97142386",
-        "hostname": "docker-fleet-agent",
-        "id": "9b6604a7-01ab-449c-b244-d144c23d5240",
+        "ephemeral_id": "92676668-001f-447e-8be8-9dbe63976939",
+        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "carbon_black_cloud": {
         "alert": {
-            "category": "WARNING",
+            "category": "warning",
             "device": {
                 "external_ip": "81.2.69.143",
                 "internal_ip": "81.2.69.144",
@@ -230,17 +228,17 @@ An example event for `alert` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9b6604a7-01ab-449c-b244-d144c23d5240",
+        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-02T12:51:13.182Z",
+        "created": "2022-03-14T03:02:17.500Z",
         "dataset": "carbon_black_cloud.alert",
         "end": "2020-11-17T22:02:16Z",
         "id": "test1",
-        "ingested": "2022-03-02T12:51:16Z",
+        "ingested": "2022-03-14T03:02:21Z",
         "kind": "alert",
         "original": "{\"alert_url\":\"https://defense-eap01.conferdeploy.net/alerts?orgId=1889976\",\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_external_ip\":\"81.2.69.143\",\"device_id\":2,\"device_internal_ip\":\"81.2.69.144\",\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
         "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
@@ -454,7 +452,13 @@ An example event for `endpoint_event` looks as following:
                 "publisher": [
                     {
                         "name": "Microsoft Windows",
-                        "state": "FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                        "state": [
+                            "FILE_SIGNATURE_STATE_SIGNED",
+                            "FILE_SIGNATURE_STATE_VERIFIED",
+                            "FILE_SIGNATURE_STATE_TRUSTED",
+                            "FILE_SIGNATURE_STATE_OS",
+                            "FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                        ]
                     }
                 ],
                 "reputation": "REP_RESOLVING",
@@ -702,7 +706,13 @@ An example event for `watchlist_hit` looks as following:
                     "publisher": [
                         {
                             "name": "Microsoft Windows",
-                            "state": "FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                            "state": [
+                                "FILE_SIGNATURE_STATE_SIGNED",
+                                "FILE_SIGNATURE_STATE_VERIFIED",
+                                "FILE_SIGNATURE_STATE_TRUSTED",
+                                "FILE_SIGNATURE_STATE_OS",
+                                "FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                            ]
                         }
                     ],
                     "reputation": "REP_WHITE",
@@ -711,7 +721,13 @@ An example event for `watchlist_hit` looks as following:
                 "publisher": [
                     {
                         "name": "Microsoft Windows",
-                        "state": "FILE_SIGNATURE_STATE_SIGNED | FILE_SIGNATURE_STATE_VERIFIED | FILE_SIGNATURE_STATE_TRUSTED | FILE_SIGNATURE_STATE_OS | FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                        "state": [
+                            "FILE_SIGNATURE_STATE_SIGNED",
+                            "FILE_SIGNATURE_STATE_VERIFIED",
+                            "FILE_SIGNATURE_STATE_TRUSTED",
+                            "FILE_SIGNATURE_STATE_OS",
+                            "FILE_SIGNATURE_STATE_CATALOG_SIGNED"
+                        ]
                     }
                 ],
                 "reputation": "REP_WHITE",
@@ -862,14 +878,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-02T12:52:10.791Z",
+    "@timestamp": "2022-03-14T03:03:50.821Z",
     "agent": {
-        "ephemeral_id": "68461ccd-b33f-4b4c-b149-453b640fd44e",
-        "hostname": "docker-fleet-agent",
-        "id": "9b6604a7-01ab-449c-b244-d144c23d5240",
+        "ephemeral_id": "5b904d08-1219-455c-94e3-b498d7fcd50b",
+        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -893,15 +908,15 @@ An example event for `asset_vulnerability_summary` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9b6604a7-01ab-449c-b244-d144c23d5240",
+        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-02T12:52:10.791Z",
+        "created": "2022-03-14T03:03:50.821Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2022-03-02T12:52:14Z",
+        "ingested": "2022-03-14T03:03:54Z",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64 ビット\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
     "host": {
