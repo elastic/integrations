@@ -9,12 +9,7 @@ variable "project_id" {
 
 variable "collection_name" {
   type    = string
-  default = "collection1"
-}
-
-variable "document_id" {
-  type    = string
-  default = "document1"
+  default = "elastic-collection1"
 }
 
 variable "zone" {
@@ -33,6 +28,6 @@ provider "google" {
 resource "google_firestore_document" "mydoc" {
   project     = var.project_id
   collection  = var.collection_name
-  document_id = var.document_id
+  document_id = "elastic-document-${var.TEST_RUN_ID}"
   fields      = "{\"something\":{\"mapValue\":{\"fields\":{\"akey\":{\"stringValue\":\"avalue\"}}}}}"
 }
