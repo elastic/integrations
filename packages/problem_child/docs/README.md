@@ -7,23 +7,23 @@ This package requires a Platinum subscription. Please ensure that you have a Tri
 
 To download the assets, click **Settings** > **Install LotL Attack Detection assets**.
 
-Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs to detect LotL attacks. For more detailed information refer to the [ProblemChild blog] (https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks)
+Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs to detect LotL attacks. For more detailed information refer to the [ProblemChild blog](https://www.elastic.co/blog/problemchild-generate-alerts-to-detect-living-off-the-land-attacks)
 
 ### (Required) Set up the ingest pipeline
 
 Once you’ve installed the package you can ingest your data using the ingest pipeline. This will enrich your incoming data with its predictions from the machine learning model.
 
-This pipeline is designed to work with [Winglogbeat data] (https://www.elastic.co/downloads/beats/winlogbeat).
+This pipeline is designed to work with [Winglogbeat data](https://www.elastic.co/downloads/beats/winlogbeat).
 
 ### (Optional) Add preconfigured anomaly detection jobs
 
 Create a data view for the indices that are enriched by the pipeline.
 
-In Machine Learning > Anomaly Detection, when you create a job, you should see an option to `Use preconfigured jobs` with a card for LotL Attacks. Select that option. Once you select the card you will see several pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. Note these jobs are only useful for indices that have been enriched by the ingest pipeline.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for LotL Attacks. When you select the card, you will see several pre-configured anomaly detection jobs that you can enable depending on what makes the most sense for your environment. Note these jobs are only useful for indices that have been enriched by the ingest pipeline.
 
-### (Optional) Enable Security Rules
+### (Optional) Enable Security rules
 
-In order to maximize the benefit of the LotL Detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the [documentation] (https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+In order to maximize the benefit of the LotL Detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 Note that there are search rules as well as ML job rules.
 
