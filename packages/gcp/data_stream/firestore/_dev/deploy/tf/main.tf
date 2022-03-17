@@ -4,6 +4,7 @@ variable "TEST_RUN_ID" {
 
 variable "project_id" {
   type    = string
+  default = "elastic-obs-integrations-dev"
 }
 
 variable "collection_name" {
