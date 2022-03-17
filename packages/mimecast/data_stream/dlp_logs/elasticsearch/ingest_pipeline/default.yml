@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populated
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -25,16 +25,24 @@ processors:
 
   # Convert 'mimecast.auditType' to a bone-cased event action.
   # ie: User Log On -> user-log-on
-  - rename:
-      field: mimecast.senderAddress
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.senderAddress !=null'
-  - rename:
-      field: mimecast.recipientAddress
-      target_field: email.to.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.recipientAddress !=null'
+#   - rename:
+#       field: mimecast.senderAddress
+#       target_field: email.from.address
+#       ignore_missing: true
+#       if: 'ctx?.mimecast?.senderAddress !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.senderAddress}}}"
+      if: "ctx?.mimecast?.senderAddress != null"
+#   - rename:
+#       field: mimecast.recipientAddress
+#       target_field: email.to.address
+#       ignore_missing: true
+#       if: 'ctx?.mimecast?.recipientAddress !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipientAddress}}}"
+      if: "ctx?.mimecast?.recipientAddress != null"
   - rename:
       field: mimecast.action
       target_field: event.action
