@@ -1,0 +1,251 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts: {{hosts}}
+http_method: "GET"
+path: {{path}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+jmx.mappings:
+  - mbean: 'java.lang:type=OperatingSystem'
+    attributes:
+    - attr: SystemLoadAverage
+      field: operating_system.system.load_average
+    - attr: SystemCpuLoad
+      field: operating_system.system.cpu_load
+    - attr: ProcessCpuLoad
+      field: operating_system.process.cpu_load
+    - attr: ProcessCpuTime
+      field: operating_system.process.cpu_time
+    - attr: FreePhysicalMemorySize
+      field: operating_system.free.physical_memory_size
+    - attr: FreeSwapSpaceSize
+      field: operating_system.free.swap_space_size
+    - attr: TotalPhysicalMemorySize
+      field: operating_system.total.physical_memory_size
+    - attr: TotalSwapSpaceSize
+      field: operating_system.total.swap_space_size
+    - attr: MaxFileDescriptorCount
+      field: operating_system.max_file_descriptor_count
+    - attr: OpenFileDescriptorCount
+      field: operating_system.open_file_descriptor_count
+    - attr: CommittedVirtualMemorySize
+      field: operating_system.committed_virtual_memory_size
+    - attr: Name
+      field: operating_system.name
+    - attr: Arch
+      field: operating_system.arch
+    - attr: AvailableProcessors
+      field: operating_system.available_processors
+    - attr: Version
+      field: operating_system.version
+  - mbean: 'java.lang:type=Threading'
+    attributes:
+    - attr: ThreadAllocatedMemorySupported
+      field: threading.thread.allocated_memory_supported
+    - attr: ThreadContentionMonitoringEnabled
+      field: threading.thread.contention_monitoring_enabled
+    - attr: ThreadAllocatedMemoryEnabled
+      field: threading.thread.allocated_memory_enabled
+    - attr: ThreadCpuTimeSupported
+      field: threading.thread.cpu_time_supported
+    - attr: ThreadContentionMonitoringSupported
+      field: threading.thread.contention_monitoring_supported
+    - attr: ThreadCount
+      field: threading.thread.count
+    - attr: ThreadCpuTimeEnabled
+      field: threading.thread.cpu_time_enabled
+    - attr: CurrentThreadAllocatedBytes
+      field: threading.current_thread.allocated_bytes
+    - attr: CurrentThreadCpuTime
+      field: threading.current_thread.cpu_time
+    - attr: CurrentThreadUserTime
+      field: threading.current_thread.user_time
+    - attr: CurrentThreadCpuTimeSupported
+      field: threading.current_thread.cpu_time_supported
+    - attr: TotalStartedThreadCount
+      field: threading.total_started_thread_count
+    - attr: ObjectMonitorUsageSupported
+      field: threading.object_monitor_usage_supported
+    - attr: SynchronizerUsageSupported
+      field: threading.synchronizer_usage_supported
+    - attr: PeakThreadCount
+      field: threading.peak_thread_count
+    - attr: DaemonThreadCount
+      field: threading.daemon_thread_count
+  - mbean: 'java.nio:name=direct,type=BufferPool'
+    attributes:
+    - attr: TotalCapacity
+      field: buffer_pool.direct.total_capacity
+    - attr: MemoryUsed
+      field: buffer_pool.direct.memory_used
+    - attr: Count
+      field: buffer_pool.direct.count    
+  - mbean: 'java.nio:name=mapped,type=BufferPool'
+    attributes:
+    - attr: TotalCapacity
+      field: buffer_pool.mapped.total_capacity
+    - attr: MemoryUsed
+      field: buffer_pool.mapped.memory_used
+    - attr: Count
+      field: buffer_pool.mapped.count
+  - mbean: 'jolokia:type=Config'
+    attributes:
+    - attr: HistorySize
+      field: config.history.size
+    - attr: HistoryMaxEntries
+      field: config.history.max_entries
+    - attr: MaxDebugEntries
+      field: config.max_debug_entries
+    - attr: Debug
+      field: config.debug
+  - mbean: 'java.lang:type=Memory'
+    attributes:
+    - attr: HeapMemoryUsage
+      field: memory.heap_memory_usage
+    - attr: NonHeapMemoryUsage
+      field: memory.non_heap_memory_usage
+    - attr: ObjectPendingFinalizationCount
+      field: memory.object_pending_finalization_count
+    - attr: Verbose
+      field: memory.verbose
+  - mbean: 'java.lang:type=OperatingSystem'
+    attributes:
+    - attr: SystemLoadAverage
+      field: operating_system.system.load_average
+    - attr: SystemCpuLoad
+      field: operating_system.system.cpu_load
+    - attr: ProcessCpuLoad
+      field: operating_system.process.cpu_load
+    - attr: ProcessCpuTime
+      field: operating_system.process.cpu_time
+    - attr: FreePhysicalMemorySize
+      field: operating_system.free.physical_memory_size
+    - attr: FreeSwapSpaceSize
+      field: operating_system.free.swap_space_size
+    - attr: TotalPhysicalMemorySize
+      field: operating_system.total.physical_memory_size
+    - attr: TotalSwapSpaceSize
+      field: operating_system.total.swap_space_size
+    - attr: MaxFileDescriptorCount
+      field: operating_system.max_file_descriptor_count
+    - attr: OpenFileDescriptorCount
+      field: operating_system.open_file_descriptor_count
+    - attr: CommittedVirtualMemorySize
+      field: operating_system.committed_virtual_memory_size
+    - attr: Name
+      field: operating_system.name
+    - attr: Arch
+      field: operating_system.arch
+    - attr: AvailableProcessors
+      field: operating_system.available_processors
+    - attr: Version
+      field: operating_system.version
+  - mbean: 'java.lang:name=CodeCacheManager,type=MemoryManager'
+    attributes:      
+    - attr: Valid
+      field: memory_manager.code_cache_manager.valid
+    - attr: Name
+      field: memory_manager.code_cache_manager.name
+  - mbean: 'java.lang:type=ClassLoading'
+    attributes:
+    - attr: LoadedClassCount
+      field: class_loading.loaded_class_count
+    - attr: UnloadedClassCount
+      field: class_loading.unloaded_class_count
+    - attr: TotalLoadedClassCount
+      field: class_loading.total_loaded_class_count
+    - attr: Verbose
+      field: class_loading.verbose
+  - mbean: 'java.lang:type=Compilation'
+    attributes:
+    - attr: CompilationTimeMonitoringSupported
+      field: compilation.compilation_time_monitoring_supported
+    - attr: TotalCompilationTime
+      field: compilation.total_compilation_time
+    - attr: Name
+      field: compilation.name
+  - mbean: 'java.lang:name=Metaspace Manager,type=MemoryManager'
+    attributes:
+    - attr: Valid
+      field: memory_manager.metaspace_manager.valid
+    - attr: Name
+      field: memory_manager.metaspace_manager.name    
+  - mbean: 'java.lang:name=PS MarkSweep,type=GarbageCollector'
+    attributes:
+    - attr: LastGcInfo
+      field: garbage_collector.last_gc_info    
+    - attr: CollectionTime
+      field: garbage_collector.collection.time
+    - attr: CollectionCount
+      field: garbage_collector.collection.count
+    - attr: Valid
+      field: garbage_collector.valid
+    - attr: Name
+      field: garbage_collector.name
+  - mbean: 'java.lang:type=Runtime'
+    attributes:
+    - attr: SpecVendor
+      field: runtime.spec.vendor
+    - attr: SpecName
+      field: runtime.spec.name
+    - attr: SpecVersion
+      field: runtime.spec.version
+    - attr: VmName
+      field: runtime.vm.name
+    - attr: VmVendor
+      field: runtime.vm.vendor
+    - attr: VmVersion
+      field: runtime.vm.version
+    - attr: BootClassPath
+      field: runtime.boot_class.path
+    - attr: BootClassPathSupported
+      field: runtime.boot_class.path_supported
+    - attr: Name
+      field: runtime.name
+    - attr: StartTime
+      field: runtime.start_time
+    - attr: Uptime
+      field: runtime.uptime
+    - attr: LibraryPath
+      field: runtime.library_path
+    - attr: ClassPath
+      field: runtime.class_path
+    - attr: ManagementSpecVersion
+      field: runtime.management_spec_version
+    - attr: SystemProperties
+      field: runtime.system_properties
+  - mbean: 'java.lang:name=PS Old Gen,type=MemoryPool'
+    attributes:
+    - attr: Usage
+      field: memory_pool.usage
+    - attr: UsageThresholdCount
+      field: memory_pool.usage_threshold.count
+    - attr: UsageThresholdSupported
+      field: memory_pool.usage_threshold.supported
+    - attr: UsageThreshold
+      field: memory_pool.usage_threshold.threshold
+    - attr: UsageThresholdExceeded
+      field: memory_pool.usage_threshold.exceeded
+    - attr: PeakUsage
+      field: memory_pool.peak_usage
+    - attr: CollectionUsage
+      field: memory_pool.collection_usage
+    - attr: CollectionUsageThresholdCount
+      field: memory_pool.collection_usage_threshold.count
+    - attr: CollectionUsageThreshold
+      field: memory_pool.collection_usage_threshold.threshold
+    - attr: CollectionUsageThresholdSupported
+      field: memory_pool.collection_usage_threshold.supported
+    - attr: CollectionUsageThresholdExceeded
+      field: memory_pool.collection_usage_threshold.exceeded
+    - attr: Name
+      field: memory_pool.name
+    - attr: Type
+      field: memory_pool.type
+    - attr: Valid
+      field: memory_pool.valid
+      
