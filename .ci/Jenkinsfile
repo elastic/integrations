@@ -18,6 +18,8 @@ pipeline {
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
+    ELASTIC_PACKAGE_GCP_SECRET = 'secret/observability-team/ci/service-account/elastic-package-gcp'
+    ELASTIC_OBSERVABILITY_PROJECT_ID = 'elastic-observability'
   }
   options {
     timeout(time: 2, unit: 'HOURS')
@@ -257,6 +259,11 @@ def withCloudTestEnv(Closure body) {
     [var: "AWS_ACCESS_KEY_ID", password: aws.access_key],
     [var: "AWS_SECRET_ACCESS_KEY", password: aws.secret_key],
   ])
+  // GCP
+  withGCPEnv(secret: env.ELASTIC_PACKAGE_GCP_SECRET) {
+    maskedVars.add([var: 'GOOGLE_CREDENTIALS', password: readFile(file: env.GOOGLE_APPLICATION_CREDENTIALS)]);
+    maskedVars.add([var: 'GCP_PROJECT_ID', password: env.ELASTIC_OBSERVABILITY_PROJECT_ID])
+  }
   withEnvMask(vars: maskedVars) {
     body()
   }
