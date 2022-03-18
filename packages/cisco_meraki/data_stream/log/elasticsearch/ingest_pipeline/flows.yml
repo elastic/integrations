@@ -1,0 +1,44 @@
+---
+description: Pipeline for Cisco Meraki flows message type
+processors:
+- dissect:
+    description: Determine if the token is src= or operation
+    field: event.original
+    pattern: "%{} %{} %{} %{} %{_temp.token} %{}"
+- dissect:
+    description: Case for src= follows flows keyword
+    field: event.original
+    pattern: "%{} flows %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{}"
+    if: ctx._temp.token.startsWith("src=") == true
+- dissect:
+    description: Case for firewall action prepends src=
+    field: event.original
+    pattern: "%{} flows %{cisco_meraki.mx.flows.op} %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport}"
+    if: ctx._temp.token.startsWith("src=") == false
+- rename:
+    field: src
+    target_field: source.ip
+- rename:
+    field: dst
+    target_field: destination.ip
+- rename:
+    field: protocol
+    target_field: network.protocol
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    if: ctx?.sport != "0"
+    ignore_failure: true
+- convert:
+    field: dport
+    target_field: destination.port
+    type: long
+    if: ctx?.dport != "0"
+    ignore_failure: true
+- gsub:
+    field: mac
+    target_field: source.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx._temp.token.startsWith("src=") == false
