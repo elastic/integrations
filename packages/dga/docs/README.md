@@ -1,11 +1,11 @@
 # ML Domain Generated Algorithm detection model
 
-The DGA model package stores the Domain Generated Algorithm detection [model and associated assets](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html).
+The DGA model package stores the Domain Generated Algorithm detection model and associated assets.
 This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
-To download the assets, click **Settings** > **Install LotL Attack Detection assets**.
+To download the assets, click **Settings** > **Install DGA assets**.
 
 Follow these instructions to ingest data with the ingest pipeline and enrich your indices with inference data. Then use these detection rules and anomaly detection jobs for Domain Generated Algorithm detection. For more detailed information refer to the [DGA blog](https://www.elastic.co/blog/supervised-and-unsupervised-machine-learning-for-dga-detection)
 
