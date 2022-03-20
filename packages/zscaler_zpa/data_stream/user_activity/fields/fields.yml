@@ -1,0 +1,244 @@
+- name: zscaler_zpa.user_activity
+  type: group
+  fields:
+    - name: app_group
+      type: keyword
+      description: |
+        The application group name.
+    - name: app_learn_time
+      type: long
+      description: |
+        Time in microseconds taken for App Connectors to learn about the requested application and report the learned information to the central authority.
+    - name: application
+      type: keyword
+      description: |
+        The application name.
+    - name: ca_processing_time
+      type: long
+      description: |
+        Time in microseconds taken for processing in the central authority.
+    - name: client_to_client
+      type: keyword
+      description: |
+        The status of the client-to-client connection.
+    - name: client_private_ip
+      type: ip
+      description: |
+        The private IP address of the Zscaler Client Connector.
+    - name: connection
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            The application connection ID.
+        - name: setup_time
+          type: long
+          description: |
+            Time taken by the App Connector to process a notification from the App Connector selection microservice and set up the connection to the application server.
+        - name: status
+          type: keyword
+          description: |
+            The status of the connection. The expected values for this field are: [ Open, Close, Active ].
+    - name: connector
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: |
+            The source IP address of the App Connector.
+        - name: name
+          type: keyword
+          description: |
+            The App Connector name.
+        - name: port
+          type: integer
+          description: |
+            The source port of the App Connector.
+    - name: connector_zen_setup_time
+      type: long
+      description: |
+        Time in microseconds taken for setting up connection between App Connector and ZPA Public Service Edge or ZPA Private Service Edge.
+    - name: double_encryption
+      type: integer
+      description: |
+        The double encryption status.
+    - name: idp
+      type: keyword
+      description: |
+        The name of the identity provider (IdP) as configured in the ZPA Admin Portal.
+    - name: internal_reason
+      type: keyword
+      description: |
+        The internal reason for the status of the transaction.
+    - name: policy
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            The access policy or timeout policy rule name.
+        - name: processing_time
+          type: long
+          description: |
+            Time in microseconds taken for processing the access policy associated with the application.
+    - name: server
+      type: keyword
+      description: |
+        The server ID name. The server ID must be set to zero if dynamic server discovery is enabled.
+    - name: server_setup_time
+      type: long
+      description: |
+        Time in microseconds taken for setting up connection at server.
+    - name: service_port
+      type: integer
+      description: |
+        The destination port of the server.
+    - name: session_id
+      type: keyword
+      description: |
+        The TLS session ID.
+    - name: timestamp
+      type: group
+      fields:
+        - name: app_learn_start
+          type: keyword
+          description: |
+            Time in microseconds taken for App Connectors to learn about the requested application and report the learned information to the central authority.
+        - name: ca
+          type: group
+          fields:
+            - name: rx
+              type: date
+              description: |
+                Timestamp in microseconds when the central authority received request from ZPA Public Service Edge or ZPA Private Service Edge.
+            - name: tx
+              type: date
+              description: |
+                Timestamp in microseconds when the central authority sent request to ZPA Public Service Edge or ZPA Private Service Edge.
+        - name: connection
+          type: group
+          fields:
+            - name: end
+              type: date
+              description: |
+                Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge terminated the connection.
+            - name: start
+              type: date
+              description: |
+                Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge received the initial request from Zscaler Client Connector to start the connection.
+        - name: connector_zen.setup_complete
+          type: date
+          description: |
+            Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge received request from App Connector to set up data connection. The request from the App Connector is triggered by the initial request for a specific application from the Zscaler Client Connector.
+        - name: zen
+          type: group
+          fields:
+            - name: client
+              type: group
+              fields:
+                - name: rx
+                  type: group
+                  fields:
+                    - name: first
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge received the first byte from the Zscaler Client Connector.
+                    - name: last
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge received the last byte from the Zscaler Client Connector.
+                - name: tx
+                  type: group
+                  fields:
+                    - name: first
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge sent the first byte to the Zscaler Client Connector.
+                    - name: last
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge sent the last byte to the Zscaler Client Connector.
+            - name: connector
+              type: group
+              fields:
+                - name: rx
+                  type: group
+                  fields:
+                    - name: first
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge received the first byte from the App Connector.
+                    - name: last
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge received the last byte from the App Connector.
+                - name: tx
+                  type: group
+                  fields:
+                    - name: first
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge sent the first byte to the App Connector.
+                    - name: last
+                      type: date
+                      description: |
+                        Timestamp in microseconds when the ZPA Public Service Edge or ZPA Private Service Edge sent the last byte to the App Connector.
+    - name: zen
+      type: group
+      fields:
+        - name: client
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: |
+                The ZPA Public Service Edge (formerly Zscaler Enforcement Node or ZEN) or ZPA Private Service Edge that received the request from the Zscaler Client Connector.
+            - name: bytes_rx
+              type: long
+              description: |
+                The additional bytes received from the Zscaler Client Connector since the last transaction log.
+            - name: bytes_tx
+              type: long
+              description: |
+                The additional bytes transmitted to the Zscaler Client Connector since the last transaction log.
+            - name: total
+              type: group
+              fields:
+                - name: bytes_rx
+                  type: long
+                  description: |
+                    The total bytes received from the Zscaler Client Connector by the ZPA Public Service Edge or ZPA Private Service Edge.
+                - name: bytes_tx
+                  type: long
+                  description: |
+                    The total bytes transmitted to the Zscaler Client Connector from the ZPA Public Service Edge or ZPA Private Service Edge.
+        - name: connector
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: |
+                The ZPA Public Service Edge or ZPA Private Service Edge that sent the request from the App Connector.
+            - name: bytes_rx
+              type: long
+              description: |
+                The additional bytes received from the App Connector since the last transaction log.
+            - name: bytes_tx
+              type: long
+              description: |
+                The additional bytes transmitted by the App Connector since the last transaction log.
+            - name: total
+              type: group
+              fields:
+                - name: bytes_rx
+                  type: long
+                  description: |
+                    The total bytes received from the App Connector by the ZPA Public Service Edge or ZPA Private Service Edge.
+                - name: bytes_tx
+                  type: long
+                  description: |-
+                    The total bytes transmitted to the App Connector from the ZPA Public Service Edge or ZPA Private Service Edge.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
