@@ -11,6 +11,95 @@ with other versions of Suricata.
 
 ## EVE
 
+An example event for `eve` looks as following:
+
+```json
+{
+    "@timestamp": "2018-07-05T19:01:09.820Z",
+    "agent": {
+        "ephemeral_id": "5087d9af-5bd8-452b-90e2-96bb9c5e4770",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "suricata.eve",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "192.168.253.112",
+        "port": 22
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2022-01-03T01:09:30.084Z",
+        "dataset": "suricata.eve",
+        "ingested": "2022-01-03T01:09:31Z",
+        "kind": "event",
+        "type": [
+            "protocol"
+        ]
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/eve-small.ndjson"
+        },
+        "offset": 0
+    },
+    "network": {
+        "protocol": "ssh",
+        "transport": "tcp"
+    },
+    "related": {
+        "ip": [
+            "192.168.86.85"
+        ]
+    },
+    "source": {
+        "address": "192.168.86.85",
+        "ip": "192.168.86.85",
+        "port": 55406
+    },
+    "suricata": {
+        "eve": {
+            "event_type": "ssh",
+            "flow_id": "298824096901438",
+            "in_iface": "en0",
+            "ssh": {
+                "client": {
+                    "proto_version": "2.0",
+                    "software_version": "OpenSSH_7.6"
+                },
+                "server": {
+                    "proto_version": "2.0",
+                    "software_version": "libssh_0.7.0"
+                }
+            }
+        }
+    },
+    "tags": [
+        "forwarded",
+        "suricata-eve"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -36,7 +125,7 @@ with other versions of Suricata.
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -96,7 +185,7 @@ with other versions of Suricata.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -107,8 +196,8 @@ with other versions of Suricata.
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |

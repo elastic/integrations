@@ -1,0 +1,289 @@
+---
+description: Pipeline for AWS Route53 Resolver Logs
+
+processors:
+- set:
+    field: ecs.version
+    value: '8.0.0'
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: json
+- set:
+    field: cloud.provider
+    value: aws
+- rename:
+    field: json.account_id
+    target_field: cloud.account.id
+    ignore_missing: true
+- date:
+    field: json.query_timestamp
+    target_field: '@timestamp'
+    ignore_failure: true
+    formats:
+    - ISO8601
+- rename:
+    field: json.region
+    target_field: cloud.region
+    ignore_missing: true
+- rename:
+    field: json.vpc_id
+    target_field: aws.vpc_id
+    ignore_missing: true
+- rename:
+    field: json.srcids.instance
+    target_field: aws.instance_id
+    ignore_missing: true
+- set:
+    field: cloud.instance.id
+    copy_from: aws.instance_id
+    ignore_empty_value: true
+- gsub:
+    field: json.query_name
+    pattern: \.$
+    replacement: ""
+    ignore_missing: true
+- registered_domain:
+    field: json.query_name
+    target_field: dns.question
+    ignore_missing: true
+    if: '!ctx.json?.query_name.endsWith("in-addr.arpa") && !ctx.json?.query_name.endsWith("ip6.arpa")'
+- rename:
+    field: dns.question.domain
+    target_field: dns.question.name
+    ignore_missing: true
+- rename:
+    field: json.query_name
+    target_field: dns.question.name
+    ignore_missing: true
+    if: ctx.dns?.question?.name == null
+- rename:
+    field: json.query_class
+    target_field: dns.question.class
+    ignore_missing: true
+- rename:
+    field: json.query_type
+    target_field: dns.question.type
+    ignore_missing: true
+- rename:
+    field: json.rcode
+    target_field: dns.response_code
+    ignore_missing: true
+- rename:
+    field: json.answers
+    target_field: dns.answers
+    ignore_missing: true
+- script:
+    lang: painless
+    ignore_failure: true
+    if: ctx.dns?.answers != null && ctx.dns?.answers instanceof List
+    source: >-
+      List answers = new ArrayList();
+      for (answer in ctx.dns.answers) {
+        Map new_answer = new HashMap();
+        if(answer?.Class != null) {
+          new_answer.put("class", answer?.Class);
+        }
+        if(answer?.Type != null) {
+          new_answer.put("type", answer?.Type);
+        }
+        if(answer?.Rdata != null) {
+          new_answer.put("data", answer?.Rdata);
+          if (new_answer?.data != null && new_answer.data.length() > 0 && new_answer.data.substring(new_answer.data.length() - 1) == '.') {
+              new_answer.data = new_answer.data.substring(0, new_answer.data.length() - 1);
+          }
+          if (new_answer?.type != null && new_answer.type == 'CNAME') {
+            new_answer.put("name", new_answer?.data);
+          }
+        }
+        answers.add(new_answer);
+        if(ctx.related == null) {
+          ctx.put('related', new HashMap());
+        }
+        if(ctx.related?.ip == null) {
+          ctx.related.put('ip',new ArrayList());
+        }
+        if(ctx.related?.hosts == null) {
+          ctx.related.put('hosts',new ArrayList());
+        }
+        if(['A','AAAA'].contains(new_answer.type)) {
+          ctx.related.ip.add(new_answer.data);
+        }
+        if(['CNAME', 'PTR'].contains(new_answer.type)) {
+          ctx.related.hosts.add(new_answer.data);
+        }
+      }
+      ctx.dns.answers = answers;
+- rename:
+    field: json.transport
+    target_field: network.transport
+    ignore_missing: true
+- lowercase:
+    field: network.transport
+    ignore_missing: true
+- set:
+    field: network.iana_number
+    value: '6'
+    if: ctx.network?.transport == "tcp"
+- set:
+    field: network.iana_number
+    value: '17'
+    if: ctx.network?.transport == "udp"
+- set:
+    field: network.protocol
+    value: dns
+- convert:
+    field: json.srcport
+    target_field: source.port
+    type: long
+    ignore_missing: true
+- rename:
+    field: json.srcaddr
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+# IP Geolocation Lookup
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- set:
+    field: network.type
+    value: ipv4
+    if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
+- set:
+    field: network.type
+    value: ipv6
+    if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
+- rename:
+    field: json.firewall_rule_action
+    target_field: aws.route53.firewall.action
+    ignore_missing: true
+- rename:
+    field: json.firewall_rule_group_id
+    target_field: aws.route53.firewall.rule_group.id
+    ignore_missing: true
+- rename:
+    field: json.firewall_domain_list_id
+    target_field: aws.route53.firewall.domain_list.id
+    ignore_missing: true
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value: network
+- append:
+    field: event.type
+    value: protocol
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.dns?.response_code == "NOERROR"
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.dns?.response_code != "NOERROR"
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    if: ctx.source?.ip != null
+- script:
+    lang: painless
+    ignore_failure: true
+    if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == "PTR"
+    source: >-
+      String ip;
+      if(ctx.dns?.question?.name.contains(".in-addr.arpa")) {
+        List reverse_ip = Arrays.asList(ctx.dns?.question?.name.replace(".in-addr.arpa", "").splitOnToken("."));
+        List ip_arr = new ArrayList();
+        for (int i = reverse_ip.length; i > 0 ; i--) {
+            ip_arr.add(reverse_ip[i-1]);
+        }
+        ip = String.join(".",ip_arr);
+      } else if (ctx.dns?.question?.name.contains(".ip6.arpa")) {
+        List reverse_ip = Arrays.asList(ctx.dns?.question?.name.replace(".ip6.arpa", "").splitOnToken("."));
+        List ip_arr = new ArrayList();
+        int j = 1;
+        for (int i = reverse_ip.length; i > 0 ; i--) {
+            ip_arr.add(reverse_ip[i-1]);
+            if(j % 4 == 0 && i != 1) {
+              j = 0;
+              ip_arr.add(":");
+            }
+            j++;
+        }
+        ip = String.join("",ip_arr);    
+      }    
+      if(ctx.related?.ip == null) {
+        ctx.related.put('ip',new ArrayList());
+      }
+      if(ip != null && !ctx.related?.ip.contains(ip)) {
+        ctx.related.ip.add(ip);
+      }   
+- append:
+    field: related.hosts
+    value: "{{dns.question.name}}"
+    if: ctx.dns?.question?.name != null && ctx.dns?.question?.type != "PTR"
+- remove:
+    field:
+    - json
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+on_failure:
+- set:
+    field: 'error.message'
+    value: '{{ _ingest.on_failure_message }}'
