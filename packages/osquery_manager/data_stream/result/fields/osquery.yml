@@ -98,6 +98,7 @@
         ntfs_journal_events.action - Change action (Write, Delete, etc)
         scheduled_tasks.action - Actions executed by the scheduled task
         socket_events.action - The socket action (bind, listen, close)
+        windows_firewall_rules.action - Action for the rule or default setting
         yara_events.action - Change action (UPDATE, REMOVE, etc)
       type: keyword
       ignore_above: 1024
@@ -289,7 +290,7 @@
           type: long
           default_field: false
     - name: antispyware
-      description: windows_security_center.antispyware - The health of the monitored Antispyware solution (see windows_security_products)
+      description: windows_security_center.antispyware - Deprecated (always 'Good').
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -308,6 +309,15 @@
           default_field: false
     - name: api_version
       description: docker_version.api_version - API version
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: app_name
+      description: windows_firewall_rules.app_name - Friendly name of the application to which the rule applies
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -608,7 +618,7 @@
           norms: false
           default_field: false
     - name: average_memory
-      description: osquery_schedule.average_memory - Average private memory left after executing
+      description: osquery_schedule.average_memory - Average of the bytes of resident memory left allocated after collecting results
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2568,7 +2578,7 @@
         crashes.datetime - Date/Time at which the crash occurred
         powershell_events.datetime - System time at which the Powershell script event occurred
         syslog_events.datetime - Time known to syslog
-        time.datetime - Current date and time (ISO format) in the system
+        time.datetime - Current date and time (ISO format) in UTC
         windows_crashes.datetime - Timestamp (log format) of the crash
         windows_eventlog.datetime - System time at which the event occurred
         windows_events.datetime - System time at which the event occurred
@@ -2580,7 +2590,7 @@
           norms: false
           default_field: false
     - name: day
-      description: time.day - Current day in the system
+      description: time.day - Current day in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -2916,6 +2926,15 @@
           default_field: false
     - name: dhcp_server
       description: interface_details.dhcp_server - IP address of the dynamic host configuration protocol (DHCP) server.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: direction
+      description: windows_firewall_rules.direction - Direction of traffic for which the rule applies
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3357,6 +3376,7 @@
         screenlock.enabled - 1 If a password is required after sleep or the screensaver begins; else 0
         sip_config.enabled - 1 if this configuration is enabled, otherwise 0
         tpm_info.enabled - TPM is enabled
+        windows_firewall_rules.enabled - 1 if the rule is enabled
         yum_sources.enabled - Whether the repository is used
       type: keyword
       ignore_above: 1024
@@ -4348,6 +4368,15 @@
           type: text
           norms: false
           default_field: false
+    - name: grouping
+      description: windows_firewall_rules.grouping - Group to which an individual rule belongs
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: groupname
       description: |-
         groups.groupname - Canonical local group name
@@ -4671,7 +4700,7 @@
     - name: hour
       description: |-
         crontab.hour - The hour of the day for the job
-        time.hour - Current hour in the system
+        time.hour - Current hour in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4739,6 +4768,15 @@
         - name: number
           type: long
           default_field: false
+    - name: icmp_types_codes
+      description: windows_firewall_rules.icmp_types_codes - ICMP types and codes for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: icon_mode
       description: quicklook_cache.icon_mode - Thumbnail icon mode
       type: keyword
@@ -4760,6 +4798,7 @@
       description: |-
         disk_info.id - The unique identifier of the drive on the system.
         dns_resolvers.id - Address type index or order
+        docker_container_envs.id - Container ID
         docker_container_fs_changes.id - Container ID
         docker_container_labels.id - Container ID
         docker_container_mounts.id - Container ID
@@ -5393,7 +5432,7 @@
           type: long
           default_field: false
     - name: iso_8601
-      description: time.iso_8601 - Current time (ISO format) in the system
+      description: time.iso_8601 - Current time (ISO format) in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5524,6 +5563,7 @@
         authorized_keys.key - parsed authorized keys line
         azure_instance_tags.key - The tag key
         chrome_extensions.key - The extension key, from the manifest file
+        docker_container_envs.key - Environment variable name
         docker_container_labels.key - Label key
         docker_image_labels.key - Label key
         docker_network_labels.key - Label key
@@ -5731,6 +5771,14 @@
           type: text
           norms: false
           default_field: false
+    - name: last_memory
+      description: osquery_schedule.last_memory - Resident memory in bytes left allocated after collecting results of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: last_opened_time
       description: |-
         apps.last_opened_time - The time that the app was last used
@@ -5765,6 +5813,14 @@
         - name: number
           type: long
           default_field: false
+    - name: last_system_time
+      description: osquery_schedule.last_system_time - System time in milliseconds of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: last_unloaded
       description: kernel_panics.last_unloaded - Last unloaded module before panic
       type: keyword
@@ -5782,6 +5838,22 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: last_user_time
+      description: osquery_schedule.last_user_time - User time in milliseconds of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: last_wall_time_ms
+      description: osquery_schedule.last_wall_time_ms - Wall time in milliseconds of the latest execution
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: launch_type
       description: xprotect_entries.launch_type - Launch services content type
@@ -5880,6 +5952,15 @@
           type: text
           norms: false
           default_field: false
+    - name: local_addresses
+      description: windows_firewall_rules.local_addresses - Local addresses for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: local_hostname
       description: |-
         ec2_instance_metadata.local_hostname - Private IPv4 DNS hostname of the first interface of this instance
@@ -5920,16 +6001,17 @@
         - name: number
           type: long
           default_field: false
-    - name: local_time
-      description: time.local_time - Current local UNIX time in the system
+    - name: local_ports
+      description: windows_firewall_rules.local_ports - Local ports for the rule
       type: keyword
       ignore_above: 1024
       multi_fields:
-        - name: number
-          type: long
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: local_timezone
-      description: time.local_timezone - Current local timezone in the system
+      description: time.local_timezone - Current local timezone in of the system
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6806,7 +6888,7 @@
           default_field: false
     - name: minutes
       description: |-
-        time.minutes - Current minutes in the system
+        time.minutes - Current minutes in UTC
         uptime.minutes - Minutes of uptime
       type: keyword
       ignore_above: 1024
@@ -6829,6 +6911,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: mirrorlist
+      description: yum_sources.mirrorlist - Mirrorlist URL
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: mnt_namespace
       description: |-
@@ -6950,7 +7041,7 @@
     - name: month
       description: |-
         crontab.month - The month of the year for the job
-        time.month - Current month in the system
+        time.month - Current month in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7021,7 +7112,7 @@
           type: long
           default_field: false
     - name: name
-      description: "acpi_tables.name - ACPI table name\nad_config.name - The OS X-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\nelf_sections.name - Section name\nelf_segments.name - Segment type/name\nelf_symbols.name - Symbol name\netc_protocols.name - Protocol name\netc_services.name - Service name\nexample.name - Description for name column\nfan_speed_sensors.name - Fan name\nfbsd_kmods.name - Module name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npkg_packages.name - Package name\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
+      description: "acpi_tables.name - ACPI table name\nad_config.name - The OS X-specific configuration name\napparmor_events.name - Process name\napparmor_profiles.name - Policy name.\napps.name - Name of the Name.app folder\napt_sources.name - Repository name\natom_packages.name - Package display name\nautoexec.name - Name of the program\nazure_instance_metadata.name - Name of the VM\nblock_devices.name - Block device name\nbrowser_plugins.name - Plugin display name\nchocolatey_packages.name - Package display name\nchrome_extensions.name - Extension display name\ncups_destinations.name - Name of the printer\ndeb_packages.name - Package name\ndisk_encryption.name - Disk name\ndisk_events.name - Disk event name\ndisk_info.name - The label of the disk object.\ndns_cache.name - DNS record name\ndocker_container_mounts.name - Optional mount name\ndocker_container_networks.name - Network name\ndocker_container_processes.name - The process path or shorthand argv[0]\ndocker_container_stats.name - Container name\ndocker_containers.name - Container name\ndocker_info.name - Name of the docker host\ndocker_networks.name - Network name\ndocker_volume_labels.name - Volume name\ndocker_volumes.name - Volume name\nelf_sections.name - Section name\nelf_segments.name - Segment type/name\nelf_symbols.name - Symbol name\netc_protocols.name - Protocol name\netc_services.name - Service name\nexample.name - Description for name column\nfan_speed_sensors.name - Fan name\nfbsd_kmods.name - Module name\nfirefox_addons.name - Addon display name\nhomebrew_packages.name - Package name\nie_extensions.name - Extension display name\niokit_devicetree.name - Device node name\niokit_registry.name - Default name of the node\nkernel_extensions.name - Extension label\nkernel_modules.name - Module name\nkernel_panics.name - Process name corresponding to crashed thread\nlaunchd.name - File name of plist (used by launchd)\nlxd_certificates.name - Name of the certificate\nlxd_instance_config.name - Instance name\nlxd_instance_devices.name - Instance name\nlxd_instances.name - Instance name\nlxd_networks.name - Name of the network\nlxd_storage_pools.name - Name of the storage pool\nmanaged_policies.name - Policy key name\nmd_personalities.name - Name of personality supported by kernel\nmemory_map.name - Region name\nnpm_packages.name - Package display name\nntdomains.name - The label by which the object is known.\nnvram.name - Variable name\nos_version.name - Distribution or product name\nosquery_events.name - Event publisher or subscriber name\nosquery_extensions.name - Extension's name\nosquery_flags.name - Flag name\nosquery_packs.name - The given name for this query pack\nosquery_registry.name - Name of the plugin item\nosquery_schedule.name - The given name for this query\npackage_install_history.name - Package display name\nphysical_disk_performance.name - Name of the physical disk\npipes.name - Name of the pipe\npkg_packages.name - Package name\npower_sensors.name - Name of power source\nprocesses.name - The process path or shorthand argv[0]\nprograms.name - Commonly used product name.\npython_packages.name - Package display name\nregistry.name - Name of the registry value entry\nrpm_packages.name - RPM package name\nsafari_extensions.name - Extension display name\nscheduled_tasks.name - Name of the scheduled task\nservices.name - Service name\nshared_folders.name - The shared name of the folder as it appears to other users\nshared_resources.name - Alias given to a path set up as a share on a computer system running Windows.\nstartup_items.name - Name of startup item\nsystem_controls.name - Full sysctl MIB name\ntemperature_sensors.name - Name of temperature source\nwindows_firewall_rules.name - Friendly name of the rule\nwindows_optional_features.name - Name of the feature\nwindows_security_products.name - Name of product\nwmi_bios_info.name - Name of the Bios setting\nwmi_cli_event_consumers.name - Unique name of a consumer.\nwmi_event_filters.name - Unique identifier of an event filter.\nwmi_script_event_consumers.name - Unique identifier for the event consumer. \nxprotect_entries.name - Description of XProtected malware\nxprotect_reports.name - Description of XProtected malware\nycloud_instance_metadata.name - Name of the VM\nyum_sources.name - Repository name"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -7585,7 +7676,7 @@
           norms: false
           default_field: false
     - name: output_size
-      description: osquery_schedule.output_size - Total number of bytes generated by the query
+      description: osquery_schedule.output_size - Cumulative total number of bytes generated by the resultant rows of the query
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8930,6 +9021,14 @@
           type: text
           norms: false
           default_field: false
+    - name: profile_domain
+      description: windows_firewall_rules.profile_domain - 1 if the rule profile type is domain
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: profile_path
       description: |-
         chrome_extension_content_scripts.profile_path - The profile path
@@ -8941,6 +9040,22 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: profile_private
+      description: windows_firewall_rules.profile_private - 1 if the rule profile type is private
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: profile_public
+      description: windows_firewall_rules.profile_public - 1 if the rule profile type is public
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: program
       description: launchd.program - Path to target program
@@ -9011,6 +9126,7 @@
         process_open_sockets.protocol - Transport protocol (TCP/UDP)
         socket_events.protocol - The network protocol ID
         usb_devices.protocol - USB Device protocol
+        windows_firewall_rules.protocol - IP protocol of the rule
       type: keyword
       ignore_above: 1024
     - name: provider
@@ -9418,6 +9534,15 @@
           type: text
           norms: false
           default_field: false
+    - name: remote_addresses
+      description: windows_firewall_rules.remote_addresses - Remote addresses for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: remote_apple_events
       description: sharing_preferences.remote_apple_events - 1 If remote apple events are enabled else 0
       type: keyword
@@ -9452,6 +9577,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: remote_ports
+      description: windows_firewall_rules.remote_ports - Remote ports for the rule
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: removable
       description: usb_devices.removable - 1 If USB device is removable else 0
@@ -9906,7 +10040,7 @@
           default_field: false
     - name: seconds
       description: |-
-        time.seconds - Current seconds in the system
+        time.seconds - Current seconds in UTC
         uptime.seconds - Seconds of uptime
       type: keyword
       ignore_above: 1024
@@ -10125,6 +10259,15 @@
           default_field: false
     - name: service_key
       description: drivers.service_key - Driver service registry key
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: service_name
+      description: windows_firewall_rules.service_name - Service name property of the application
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11235,7 +11378,7 @@
           default_field: false
     - name: system_time
       description: |-
-        osquery_schedule.system_time - Total system time spent executing
+        osquery_schedule.system_time - Total system time in milliseconds spent executing
         processes.system_time - CPU time in milliseconds spent in kernel space
       type: keyword
       ignore_above: 1024
@@ -11484,7 +11627,7 @@
           default_field: false
     - name: timestamp
       description: |-
-        time.timestamp - Current timestamp (log format) in the system
+        time.timestamp - Current timestamp (log format) in UTC
         windows_eventlog.timestamp - Timestamp to selectively filter the events
       type: keyword
       ignore_above: 1024
@@ -11502,7 +11645,7 @@
           type: long
           default_field: false
     - name: timezone
-      description: time.timezone - Current timezone in the system
+      description: time.timezone - Timezone for reported time (hardcoded to UTC)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11706,7 +11849,7 @@
           norms: false
           default_field: false
     - name: unix_time
-      description: time.unix_time - Current UNIX time in the system, converted to UTC if --utc enabled
+      description: time.unix_time - Current UNIX time in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11945,7 +12088,7 @@
           default_field: false
     - name: user_time
       description: |-
-        osquery_schedule.user_time - Total user time spent executing
+        osquery_schedule.user_time - Total user time in milliseconds spent executing
         processes.user_time - CPU time in milliseconds spent in user space
       type: keyword
       ignore_above: 1024
@@ -12054,6 +12197,7 @@
         azure_instance_tags.value - The tag value
         cpuid.value - Bit value or string
         default_environment.value - Value of the environment variable
+        docker_container_envs.value - Environment variable value
         docker_container_labels.value - Optional label value
         docker_image_labels.value - Optional label value
         docker_network_labels.value - Optional label value
@@ -12320,7 +12464,15 @@
           type: long
           default_field: false
     - name: wall_time
-      description: osquery_schedule.wall_time - Total wall time spent executing
+      description: osquery_schedule.wall_time - Total wall time in seconds spent executing (deprecated), hidden=True
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: wall_time_ms
+      description: osquery_schedule.wall_time_ms - Total wall time in milliseconds spent executing
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12362,7 +12514,7 @@
           type: long
           default_field: false
     - name: weekday
-      description: time.weekday - Current weekday in the system
+      description: time.weekday - Current weekday in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12379,7 +12531,7 @@
           type: long
           default_field: false
     - name: win_timestamp
-      description: time.win_timestamp - Timestamp value in 100 nanosecond units.
+      description: time.win_timestamp - Timestamp value in 100 nanosecond units
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12465,7 +12617,7 @@
           norms: false
           default_field: false
     - name: year
-      description: time.year - Current year in the system
+      description: time.year - Current year in UTC
       type: keyword
       ignore_above: 1024
       multi_fields:
