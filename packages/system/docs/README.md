@@ -1607,6 +1607,7 @@ This dataset is available on:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
@@ -1628,8 +1629,11 @@ This dataset is available on:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |  |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |  |  |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |  |  |
 | process.cpu.pct | The percentage of CPU time spent by the process since the last event. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |  |  |
 | process.cpu.start_time | The time when the process was started. | date |  |  |
+| process.executable | Absolute path to the process executable. | keyword |  |  |
 | process.memory.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float |  |  |
 | process.name | Process name. Sometimes called program name or similar. | keyword |  |  |
 | process.parent.pid | Process id. | long |  |  |
@@ -1637,6 +1641,7 @@ This dataset is available on:
 | process.pid | Process id. | long |  |  |
 | process.state | The process state. For example: "running". | keyword |  |  |
 | process.working_directory | The working directory of the process. | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | system.process.cgroup.blkio.id | ID of the cgroup. | keyword |  |  |
 | system.process.cgroup.blkio.path | Path to the cgroup relative to the cgroup subsystems mountpoint. | keyword |  |  |
 | system.process.cgroup.blkio.total.bytes | Total number of bytes transferred to and from all block devices by processes in the cgroup. | long |  |  |
