@@ -26,6 +26,9 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
     if: ctx.event.code == 'flows'
+- pipeline:
+    name: '{{ IngestPipeline "ipflows" }}'
+    if: ctx.event.code == 'ip_flow_start' || ctx.event.code == 'ip_flow_end'
 - remove:
     field:
       - _temp
@@ -33,6 +36,11 @@ processors:
       - sport
       - dport
       - mac
+      - src
+      - dst
+      - translated_src_ip
+      - translated_dst_ip
+      - translated_port
     ignore_missing: true
 on_failure:
 - set:

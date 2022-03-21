@@ -3,19 +3,19 @@ services:
   meraki-webhook-http:
     image: docker.elastic.co/observability/stream:v0.6.2
     volumes:
-      - ./sample_logs:/sample_logs:ro
+      - ./sample_events:/sample_events:ro
     environment:
       - STREAM_PROTOCOL=webhook
       - STREAM_ADDR=http://elastic-agent:8686/meraki/events
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/meraki-mx-ndjson.log
+    command: log --start-signal=SIGHUP --delay=5s /sample_events/meraki-mx-ndjson.log
   meraki-webhook-https:
     image: docker.elastic.co/observability/stream:v0.6.2
     volumes:
-      - ./sample_logs:/sample_logs:ro
+      - ./sample_events:/sample_events:ro
     environment:
       - STREAM_PROTOCOL=webhook
       - STREAM_ADDR=https://elastic-agent:8686/meraki/events
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
       - STREAM_INSECURE=true
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/meraki-mx-ndjson.log
+    command: log --start-signal=SIGHUP --delay=5s /sample_events/meraki-mx-ndjson.log
