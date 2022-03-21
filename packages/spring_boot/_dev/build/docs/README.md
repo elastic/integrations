@@ -4,11 +4,11 @@ The Spring Boot Integration is used to fetch observability data from [Spring Boo
 
 ## Compatibility
 
-This module has been tested against `Spring Boot Version: 2.3.12`
+This module has been tested against Spring Boot v2.3.12.
 
 ## Requirements
 
-In order to ingest data from Spring Boot :
+In order to ingest data from Spring Boot:
 - You must know the host for Spring Boot application, add that host while configuring the integration package.
 - Add default path for jolokia.
 - Spring-boot-actuator module provides all Spring Boot’s production-ready features. So add below dependency in `pom.xml` file.
@@ -19,7 +19,7 @@ In order to ingest data from Spring Boot :
 </dependency>
 ```
 - For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
-```sh
+```
 <dependency>
 	<groupId>org.jolokia</groupId>
 	<artifactId>jolokia-core</artifactId>
