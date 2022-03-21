@@ -1,0 +1,59 @@
+---
+description: Pipeline for Cisco Meraki airmarshal_events type
+processors:
+- dissect:
+    description: Determine the airmarshal event type
+    field: event.original
+    pattern: "%{} airmarshal_events %{*type}=%{&type} %{}"
+- rename:
+    field: type
+    target_field: cisco_meraki.mr.airmarshal_events.type
+- dissect:
+    description: When type is rogue_ssid_detected
+    field: event.original
+    pattern: "%{} airmarshal_events %{} %{*ssid}='%{&ssid}' %{*bssid}='%{&bssid}' %{*src}='%{&src}' %{*dst}='%{&dst}' %{*wmac}='%{&wmac}' %{*vlanid}='%{&vlanid}' %{*ch}='%{&ch}' %{*rssi}='%{&rssi}' %{*fc_type}='%{&fc_type}' %{*fc_subtype}='%{&fc_subtype}'"
+    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'rogue_ssid_detected'
+- dissect:
+    description: When type is ssid_spoofing_detected
+    field: event.original
+    pattern: "%{} airmarshal_events %{} %{*ssid}='%{&ssid}' %{*vap}='%{&vap}' %{*bssid}='%{&bssid}' %{*src}='%{&src}' %{*dst}='%{&dst}' %{*ch}='%{&ch}' %{*rssi}='%{&rssi}' %{*fc_type}='%{&fc_type}' %{*fc_subtype}='%{&fc_subtype}'"
+    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'ssid_spoofing_detected'
+- rename:
+    field: ssid
+    target_field: cisco_meraki.mr.airmarshal_events.ssid
+- rename:
+    field: bssid
+    target_field: cisco_meraki.mr.airmarshal_events.bssid
+- rename:
+    field: vap
+    target_field: cisco_meraki.mr.airmarshal_events.vap
+    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'ssid_spoofing_detected'
+- gsub:
+    field: src
+    target_field: source.mac
+    pattern: '[-:.]'
+    replacement: '-'
+- gsub:
+    field: dst
+    target_field: destination.mac
+    pattern: '[-:.]'
+    replacement: '-'
+- gsub:
+    field: wired_mac
+    target_field: cisco_meraki.mr.airmarshal_events.wired_mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'rogue_ssid_detected'
+- rename:
+    field: vlan_id
+    target_field: network.vlan.id
+    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'rogue_ssid_detected'
+- rename:
+    field: channel
+    target_field: cisco_meraki.mr.airmarshal_events.channel
+- rename:
+    field: fc_type
+    target_field: cisco_meraki.mr.airmarshal_events.fc_type
+- rename:
+    field: fc_subtype
+    target_field: cisco_meraki.mr.airmarshal_events.fc_subtype

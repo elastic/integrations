@@ -29,6 +29,9 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "ipflows" }}'
     if: ctx.event.code == 'ip_flow_start' || ctx.event.code == 'ip_flow_end'
+- pipeline:
+    name: '{{ IngestPipeline "airmarshal" }}'
+    if: ctx.event.code == 'airmarshal_events'
 - remove:
     field:
       - _temp
@@ -41,6 +44,8 @@ processors:
       - translated_src_ip
       - translated_dst_ip
       - translated_port
+      - wired_mac
+      - rssi
     ignore_missing: true
 on_failure:
 - set:
