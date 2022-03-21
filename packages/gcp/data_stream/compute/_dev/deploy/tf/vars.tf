@@ -2,7 +2,7 @@ variable "TEST_RUN_ID" {
   default = "detached"
 }
 
-variable "project_id" {
+variable "gcp_project_id" {
   type    = string
   default = "elastic-obs-integrations-dev"
 }
