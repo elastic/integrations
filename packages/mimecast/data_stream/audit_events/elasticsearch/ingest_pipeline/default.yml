@@ -129,13 +129,13 @@ processors:
       ignore_missing: true
   - dissect:
        field:  mimecast.event_info_parts.From
-       pattern: "<%{?drop}> %{email.from}"
+       pattern: "<%{?drop}> %{email.from.address}"
        if: 'ctx?.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true
   - dissect:
        field: mimecast.event_info_parts.To
-       pattern: "<%{?drop}> %{email.to}"
+       pattern: "<%{?drop}> %{email.to.address}"
        if: 'ctx?.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true     
@@ -143,24 +143,14 @@ processors:
       field: mimecast.eventInfo
       pattern: "[%{?key} : %{mimecast.export_type},%{?key} :%{mimecast.export_name},%{?key} :%{user.email},%{?key} :%{mimecast.weekday} %{mimecast.month} %{mimecast.monthday} %{mimecast.time} %{mimecast.timezone} %{mimecast.year},%{?key} :%{client.ip},%{?key} :%{mimecast.columns_exported},%{?key} : %{file.name},%{?key}: %{file.size},%{?key} : %{file.extension}], %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
       if: 'ctx?.event?.action=="page-data-exports"'
-  - rename:
-      field: email.to
-      target_field: email.to.addr
-      ignore_missing: true
-  - rename:
-      field: email.from
-      target_field: email.from.addr
-      ignore_missing: true
-  - append:
+  - set:
       field: email.from.address
-      value: "{{{email.from.addr}}}"
-      if: "ctx?.email?.from != null"
-      ignore_failure: true
-  - append:
+      value: ["{{{email.from.address}}}"]
+      if: "ctx?.email?.from?.address != null"
+  - set:
       field: email.to.address
-      value: "{{{email.to.addr}}}"
-      if: "ctx?.email?.to != null"
-      ignore_failure: true
+      value: ["{{{email.to.address}}}"]
+      if: "ctx?.email?.to?.address != null"
   - convert:
       field: file.size
       type: long
@@ -280,9 +270,6 @@ processors:
         - mimecast.as.asn
         - mimecast.organization_name
         - mimecast.event_info_parts
-        - mimecast.rest_of_event_info
-        - email.to.addr
-        - email.from.addr
 
       ignore_missing: true
   - remove:
