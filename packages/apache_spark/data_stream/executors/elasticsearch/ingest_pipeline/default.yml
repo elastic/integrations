@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing Apache Spark metrics.
+description: Pipeline for parsing Apache Spark executors metrics.
 processors:
   - set:
       field: ecs.version
@@ -17,17 +17,6 @@ processors:
   - set:
       field: event.module
       value: apache_spark
-  - script:
-      lang: painless
-      description: This script will add the name of application under key 'application_source.name'
-      if: ctx?.apache_spark?.metrics?.mbean?.contains("name=application") == true
-      source: >-
-        def bean_name = ctx.apache_spark.metrics.mbean.toString().splitOnToken(".");
-        def app_name = "";
-        if (bean_name[0].contains("name=application") == true) {
-            app_name = bean_name[1] + "." + bean_name[2];
-        }
-        ctx.apache_spark.metrics.application_source.name = app_name;
   - script:
       lang: painless
       description: This script will add the name of application under key 'driver/executor.application.name' and executor id under 'apache_spark.metrics.executor.id'

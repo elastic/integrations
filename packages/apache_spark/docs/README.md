@@ -63,17 +63,11 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Jolokia Metrics
+### Driver
 
-This is the `metrics` dataset. It contains the following types of metrics:
+This is the `driver` dataset.
 
-1. Driver
-2. Executor
-3. Master
-4. ApplicationSource
-5. Worker
-
-An example event for `metrics` looks as following:
+An example event for `driver` looks as following:
 
 ```json
 {
@@ -87,14 +81,12 @@ An example event for `metrics` looks as following:
     },
     "apache_spark": {
         "metrics": {
-            "master": {
-                "apps": {
-                    "count": 0,
-                    "waiting": 0
+            "driver": {
+                "application": {
+                    "name": "app-20220322011157-0169"
                 },
-                "workers": {
-                    "alive": 0,
-                    "count": 0
+                "tasks": {
+                    "skipped": 0
                 }
             }
         }
@@ -158,9 +150,7 @@ An example event for `metrics` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.application_source.cores | Number of cores. | long |
-| apache_spark.metrics.application_source.runtime_ms | Time taken to run the application (ms). | long |
-| apache_spark.metrics.application_source.status | Current status of the application. | keyword |
+| apache_spark.metrics.driver.application.name |  | keyword |
 | apache_spark.metrics.driver.dag_schedular.job.active |  | long |
 | apache_spark.metrics.driver.dag_schedular.job.all |  | long |
 | apache_spark.metrics.driver.dag_schedular.stages.failed |  | long |
@@ -238,6 +228,108 @@ An example event for `metrics` looks as following:
 | apache_spark.metrics.driver.tasks.failed |  | long |
 | apache_spark.metrics.driver.tasks.killed |  | long |
 | apache_spark.metrics.driver.tasks.skipped |  | long |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+### Executors
+
+This is the `executors` dataset.
+
+An example event for `executors` looks as following:
+
+```json
+{
+    "@timestamp": "2022-03-09T11:54:51.083Z",
+    "agent": {
+        "ephemeral_id": "ee411959-b7ce-4172-a203-7701ea051771",
+        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "apache_spark": {
+        "metrics": {
+            "executor": {
+                "application": {
+                    "name": "app-20220322011157-0169"
+                },
+                "id": "0",
+                "filesystem": {
+                    "hdfs": {
+                        "write_bytes": 0
+                    }
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_spark.metrics",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "snapshot": false,
+        "version": "8.0.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "apache_spark.metrics",
+        "duration": 89018916,
+        "ingested": "2022-03-09T11:54:54Z",
+        "kind": "metric",
+        "module": "apache_spark",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.21.0.5"
+        ],
+        "mac": [
+            "02:42:ac:15:00:05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://apachesparkmaster:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "type": "jolokia"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| apache_spark.metrics.executor.application.name |  | keyword |
 | apache_spark.metrics.executor.bytes.read |  | long |
 | apache_spark.metrics.executor.bytes.written |  | long |
 | apache_spark.metrics.executor.compilation_time |  | long |
@@ -261,6 +353,7 @@ An example event for `metrics` looks as following:
 | apache_spark.metrics.executor.generated_class_size |  | long |
 | apache_spark.metrics.executor.generated_method_size |  | long |
 | apache_spark.metrics.executor.hive_client_calls |  | long |
+| apache_spark.metrics.executor.id |  | keyword |
 | apache_spark.metrics.executor.jvm.cpu_time |  | long |
 | apache_spark.metrics.executor.jvm.gc_time |  | long |
 | apache_spark.metrics.executor.jvm.heap_memory |  | long |
@@ -293,6 +386,204 @@ An example event for `metrics` looks as following:
 | apache_spark.metrics.executor.threadpool.current_pool_size |  | long |
 | apache_spark.metrics.executor.threadpool.max_pool_size |  | long |
 | apache_spark.metrics.executor.threadpool.started_tasks |  | long |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+### Applications
+
+This is the `applications` dataset.
+
+An example event for `applications` looks as following:
+
+```json
+{
+    "@timestamp": "2022-03-09T11:54:51.083Z",
+    "agent": {
+        "ephemeral_id": "ee411959-b7ce-4172-a203-7701ea051771",
+        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "apache_spark": {
+        "metrics": {
+            "application_source": {
+                "cores": 8,
+                "name": "JavaWordCount.1646133990496"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_spark.metrics",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "snapshot": false,
+        "version": "8.0.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "apache_spark.metrics",
+        "duration": 89018916,
+        "ingested": "2022-03-09T11:54:54Z",
+        "kind": "metric",
+        "module": "apache_spark",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.21.0.5"
+        ],
+        "mac": [
+            "02:42:ac:15:00:05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://apachesparkmaster:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "type": "jolokia"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| apache_spark.metrics.application_source.cores | Number of cores. | long |
+| apache_spark.metrics.application_source.name | Name of the application. | keyword |
+| apache_spark.metrics.application_source.runtime_ms | Time taken to run the application (ms). | long |
+| apache_spark.metrics.application_source.status | Current status of the application. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+
+
+### Nodes
+
+This is the `nodes` dataset.
+
+An example event for `nodes` looks as following:
+
+```json
+{
+    "@timestamp": "2022-03-21T16:08:10.415Z",
+    "agent": {
+        "ephemeral_id": "69f2897f-0e6c-4a75-af87-2f038ed77224",
+        "id": "00ce5157-ceb1-4a57-9e48-be5b4efc407f",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.1.0"
+    },
+    "apache_spark": {
+        "metrics": {
+            "master": {
+                "apps": {
+                    "count": 0,
+                    "waiting": 0
+                },
+                "workers": {
+                    "alive": 0,
+                    "count": 0
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "apache_spark.nodes",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "00ce5157-ceb1-4a57-9e48-be5b4efc407f",
+        "snapshot": false,
+        "version": "8.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "apache_spark.nodes",
+        "duration": 9054044,
+        "ingested": "2022-03-21T16:08:13Z",
+        "kind": "metric",
+        "module": "apache_spark",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.23.0.5"
+        ],
+        "mac": [
+            "02:42:ac:17:00:05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://apachesparkmaster:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "type": "jolokia"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
 | apache_spark.metrics.master.apps.count | Total number of apps. | long |
 | apache_spark.metrics.master.apps.waiting | Number of apps waiting. | long |
 | apache_spark.metrics.master.workers.alive | Number of alive workers. | long |
@@ -311,3 +602,4 @@ An example event for `metrics` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+

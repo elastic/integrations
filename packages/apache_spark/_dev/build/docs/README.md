@@ -63,16 +63,34 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Jolokia Metrics
+### Driver
 
-This is the `metrics` dataset. It contains the following types of metrics:
+This is the `driver` dataset.
 
-1. Driver
-2. Executor
-3. Master
-4. ApplicationSource
-5. Worker
+{{event "driver"}}
 
-{{event "metrics"}}
+{{fields "driver"}}
 
-{{fields "metrics"}}
+### Executors
+
+This is the `executors` dataset.
+
+{{event "executors"}}
+
+{{fields "executors"}}
+
+### Applications
+
+This is the `applications` dataset.
+
+{{event "applications"}}
+
+{{fields "applications"}}
+
+### Nodes
+
+This is the `nodes` dataset.
+
+{{event "nodes"}}
+
+{{fields "nodes"}}
