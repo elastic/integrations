@@ -1,0 +1,77 @@
+---
+description: Pipeline for Cisco Meraki security_event type
+processors:
+- dissect:
+    description: Determine the security event type
+    field: event.original
+    pattern: "%{} security_event %{type} %{}"
+- rename:
+    field: type
+    target_field: cisco_meraki.mx.security_event.type
+- dissect:
+    field: event.original
+    pattern: "%{} ids_alerted %{*sig}=%{&sig} %{*pri}=%{&pri} %{*ts}=%{&ts} %{*dhost}=%{&dhost} %{*dir}=%{&dir} %{*prot}=%{&prot} %{*src}=%{&src} %{*dst}=%{&dst} %{}"
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- rename:
+    field: priority
+    target_field: cisco_meraki.mx.security_event.priority
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- rename:
+    field: signature
+    target_field: cisco_meraki.mx.security_event.signature
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- rename:
+    field: timestamp
+    target_field: threat.indicator.last_seen
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- gsub:
+    field: dhost
+    target_field: cisco_meraki.mx.security_event.dhost
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- rename:
+    field: direction
+    target_field: network.direction
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- lowercase:
+    field: protocol
+    target_field: network.protocol
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- dissect:
+    field: src
+    pattern: "%{source.ip}:%{sport}"
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- dissect:
+    field: dst
+    pattern: "%{destination.ip}:%{dport}"
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    if: ctx?.sport != "0" && ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+    ignore_failure: true
+- convert:
+    field: dport
+    target_field: destination.port
+    type: long
+    if: ctx?.dport != "0" && ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
+    ignore_failure: true
+# Process the remaining after dst=. It can have "decision=<word> message: *" or just "message: *"
+- dissect:
+    field: event.original
+    pattern: "%{} dst=%{?dst} %{*decision}=%{&decision} %{*message}:%{&message}"
+    ignore_failure: true
+- dissect:
+    field: event.original
+    pattern: "%{} dst=%{?dst} %{*message}:%{&message}"
+    if: ctx?.decision == null
+- rename:
+    field: message
+    target_field: threat.indicator.description
+    ignore_missing: true
+- rename:
+    field: decision
+    target_field: cisco_meraki.mx.security_event.decision
+    ignore_missing: true

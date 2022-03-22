@@ -10,7 +10,7 @@ processors:
 - dissect:
     description: Extract syslog words
     field: event.original
-    pattern: "%{} %{_temp.ts_nano} %{observer.hostname} %{event.code} %{}"
+    pattern: "%{} %{_temp.ts_nano} %{observer.hostname} %{_temp.event_type} %{}"
 - grok:
     description: Reduce precision from nanos to millis and set timestamp
     field: _temp.ts_nano
@@ -25,13 +25,16 @@ processors:
     timezone: '{{{_conf.tz_offset}}}'
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
-    if: ctx.event.code == 'flows'
+    if: ctx._temp.event_type == 'flows'
 - pipeline:
     name: '{{ IngestPipeline "ipflows" }}'
-    if: ctx.event.code == 'ip_flow_start' || ctx.event.code == 'ip_flow_end'
+    if: ctx._temp.event_type == 'ip_flow_start' || ctx._temp.event_type == 'ip_flow_end'
 - pipeline:
     name: '{{ IngestPipeline "airmarshal" }}'
-    if: ctx.event.code == 'airmarshal_events'
+    if: ctx._temp.event_type == 'airmarshal_events'
+- pipeline:
+    name: '{{ IngestPipeline "security" }}'
+    if: ctx._temp.event_type == 'security_event'
 - remove:
     field:
       - _temp
@@ -46,6 +49,8 @@ processors:
       - translated_port
       - wired_mac
       - rssi
+      - protocol
+      - dhost
     ignore_missing: true
 on_failure:
 - set:
