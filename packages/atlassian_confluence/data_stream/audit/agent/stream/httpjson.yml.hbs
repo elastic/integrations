@@ -42,17 +42,9 @@ request.transforms:
 response.split:
   target: body.results
 response.pagination:
-  {{!-- - set:
-      target: url.params.endDate
-      value: "[[.last_response.url.params.endDate]]"
-      fail_on_template_error: true
   - set:
-      target: url.params.startDate
-      value: "[[.last_response.url.params.startDate]]"
-      fail_on_template_error: true --}}
-  - set:
-      target: url.params.start
-      value: '[[ add (toInt .last_response.body.start) (toInt .last_response.body.limit) ]]'
+      target: url.value
+      value: '[[sprintf "%s/wiki/rest/api/audit?endDate=%s&startDate=%s&start=%d&limit=%s" "{{api_url}}" (.last_response.url.params.Get "endDate") (.last_response.url.params.Get "startDate") (add (toInt .last_response.body.start) (toInt .last_response.body.limit)) "{{ limit }}"]]'
       fail_on_template_error: true
 cursor:
   last_timestamp:

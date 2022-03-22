@@ -42,17 +42,9 @@ request.transforms:
 response.split:
   target: body.records
 response.pagination:
-  {{!-- - set:
-      target: url.params.from
-      value: "[[.last_response.url.params.from]]"
-      fail_on_template_error: true
   - set:
-      target: url.params.to
-      value: "[[.last_response.url.params.to]]"
-      fail_on_template_error: true --}}
-  - set:
-      target: url.params.offset
-      value: '[[ add (toInt .last_response.body.offset) (toInt .last_response.body.limit) ]]'
+      target: url.value
+      value: '[[sprintf "%s/rest/api/3/auditing/record?from=%s&to=%s&offset=%d&limit=%s" "{{api_url}}" (.last_response.url.params.Get "from") (.last_response.url.params.Get "to") (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) "{{ limit }}"]]'
       fail_on_template_error: true
 cursor:
   last_timestamp:
