@@ -204,6 +204,7 @@ An example event for `firewall` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
+| destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -286,6 +287,7 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.carrier_ep | The FortiOS Carrier end-point identification | keyword |
 | fortinet.firewall.cat | DNS category ID | integer |
 | fortinet.firewall.category | Authentication category | keyword |
+| fortinet.firewall.cc | CC Email Address | keyword |
 | fortinet.firewall.cdrcontent | Cdrcontent | keyword |
 | fortinet.firewall.centralnatid | Central NAT ID | integer |
 | fortinet.firewall.cert | Certificate | keyword |
@@ -404,6 +406,7 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.fqdn | FQDN | keyword |
 | fortinet.firewall.frametype | Wireless frametype | keyword |
 | fortinet.firewall.freediskstorage | Free disk integer | integer |
+| fortinet.firewall.from | From email address | keyword |
 | fortinet.firewall.from_vcluster | Source virtual cluster number | integer |
 | fortinet.firewall.fsaverdict | FSA verdict | keyword |
 | fortinet.firewall.fwserver_name | Web proxy server name | keyword |
@@ -595,6 +598,7 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.state | Admin login state | keyword |
 | fortinet.firewall.status | Status | keyword |
 | fortinet.firewall.stitch | Automation stitch triggered | keyword |
+| fortinet.firewall.subject | Email subject | keyword |
 | fortinet.firewall.submodule | Configuration Sub-Module Name | keyword |
 | fortinet.firewall.subservice | AV subservice | keyword |
 | fortinet.firewall.subtype | Log subtype | keyword |
@@ -606,6 +610,7 @@ An example event for `firewall` looks as following:
 | fortinet.firewall.tamac | the MAC address of Transmitter, if none, then Receiver | keyword |
 | fortinet.firewall.threattype | WIDS threat type | keyword |
 | fortinet.firewall.time | Time of the event | keyword |
+| fortinet.firewall.to | Email to field | keyword |
 | fortinet.firewall.to_vcluster | destination virtual cluster number | integer |
 | fortinet.firewall.total | Total memory | integer |
 | fortinet.firewall.totalsession | Total Number of Sessions | integer |
@@ -725,6 +730,7 @@ An example event for `firewall` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |

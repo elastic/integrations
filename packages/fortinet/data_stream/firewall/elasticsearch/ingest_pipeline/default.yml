@@ -133,12 +133,12 @@ processors:
       ignore_missing: true
   - append:
       field: email.cc.address
-      value: "{{fortinet.firewall.cc}}"
-      if: "ctx.fortinet?.cc?.address != null"
-  - rename:
-      field: fortinet.firewall.subject
-      target_field: email.subject
-      ignore_missing: true
+      value: "{{{fortinet.firewall.cc}}}"
+      if: "ctx?.fortinet?.cc?.address != null"
+  - set:
+      field: email.subject
+      copy_from: fortinet.firewall.subject
+      if: "ctx?.fortinet?.firewall?.subject != null"
 
   # Handle interface-based network directionality
   - set:
@@ -420,10 +420,6 @@ processors:
             }
           }
         }
-  - remove:
-      field:
-        - fortinet.firewall.cc
-      ignore_missing: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
