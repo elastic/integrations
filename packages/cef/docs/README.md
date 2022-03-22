@@ -312,6 +312,7 @@ An example event for `log` looks as following:
 | checkpoint.email_recipients_num | Number of recipients. | long |
 | checkpoint.email_session_id | Internal email session ID. | keyword |
 | checkpoint.email_spool_id | Internal email spool ID. | keyword |
+| checkpoint.email_subject | Email subject. | keyword |
 | checkpoint.event_count | Number of events associated with the log. | long |
 | checkpoint.frequency | Scan frequency. | keyword |
 | checkpoint.icmp_code | ICMP code. | long |
