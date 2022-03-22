@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing microsoft atp logs
+description: Pipeline for parsing m365 defender logs
 processors:
   - set:
       field: ecs.version
@@ -20,31 +20,6 @@ processors:
   #########################
   ## ECS General Mapping ##
   #########################
-  - script:
-      lang: painless
-      if: ctx.json != null
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
-          }
-        map.values().removeIf(v -> v == null);
-        }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-        }
-        handleMap(ctx);
-
   - set:
       field: cloud.provider
       value: azure
@@ -123,10 +98,6 @@ processors:
       ignore_missing: true
   - set:
       field: event.severity
-      value: 0
-      if: ctx.json?.severity == 'Unspecified'
-  - set:
-      field: event.severity
       value: 1
       if: ctx.json?.severity == 'Informational'
   - set:
@@ -164,7 +135,7 @@ processors:
       field: json.alerts.description
       target_field: rule.description
       ignore_missing: true
-      if: ctx.json?.alerts != null && ctx.json?.alerts?.description != null && ctx.json?.alerts?.description.length() < 1020
+      if: ctx.json?.alerts?.description != null && ctx.json?.alerts?.description.length() < 1020
 
   ######################
   ## ECS File Mapping ##
@@ -301,6 +272,31 @@ processors:
       field: json.incidentId
       type: string
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Removes fields with null values
+      if: ctx.json != null
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+        map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
   - remove:
       field: json.alerts.mitreTechniques
       ignore_missing: true

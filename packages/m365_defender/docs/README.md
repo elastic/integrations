@@ -26,8 +26,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-09-06T12:07:55.32Z",
     "agent": {
-        "ephemeral_id": "e8573b21-dda9-4a55-b0fb-64eb07f2e585",
-        "id": "b612a712-337b-457c-86cb-8a329b367159",
+        "ephemeral_id": "73d632b1-bafb-4800-b431-b8180297db7d",
+        "id": "b4a8802d-e9ee-4bd6-9364-9d68f840d4e0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -44,7 +44,7 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b612a712-337b-457c-86cb-8a329b367159",
+        "id": "b4a8802d-e9ee-4bd6-9364-9d68f840d4e0",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -59,12 +59,15 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-09-06T12:04:00Z",
         "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2022-03-21T12:13:38Z",
+        "ingested": "2022-03-22T08:22:25Z",
         "kind": "alert",
         "provider": "OfficeATP",
         "severity": 1,
         "start": "2020-09-06T12:04:00Z",
         "timezone": "UTC"
+    },
+    "file": {
+        "hash": {}
     },
     "input": {
         "type": "httpjson"
@@ -86,7 +89,6 @@ An example event for `log` looks as following:
             "status": "InProgress"
         },
         "classification": "Unknown",
-        "comments": [],
         "determination": "NotAvailable",
         "incidentId": "924518",
         "incidentName": "Email reported by user as malware or phish",
@@ -97,6 +99,9 @@ An example event for `log` looks as following:
         "name": "OfficeATP",
         "product": "365 Defender",
         "vendor": "Microsoft"
+    },
+    "process": {
+        "parent": {}
     },
     "related": {
         "user": [
