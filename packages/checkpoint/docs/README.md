@@ -115,6 +115,7 @@ An example event for `firewall` looks as following:
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
 | checkpoint.authority_rdata | List of authoritative servers. | keyword |
 | checkpoint.authorization | Authorization HTTP header value. | keyword |
+| checkpoint.bcc | List of BCC addresses. | keyword |
 | checkpoint.blade_name | Blade name. | keyword |
 | checkpoint.broker_publisher | IP address of the broker publisher who shared the session information. | ip |
 | checkpoint.browse_time | Application session browse time. | keyword |
@@ -122,6 +123,7 @@ An example event for `firewall` looks as following:
 | checkpoint.calc_desc | Log description. | keyword |
 | checkpoint.capacity | Capacity of the ports. | integer |
 | checkpoint.capture_uuid | UUID generated for the capture. Used when enabling the capture when logging. | keyword |
+| checkpoint.cc | The Carbon Copy address of the email. | keyword |
 | checkpoint.certificate_resource | HTTPS resource Possible values: SNI or domain name (DN). | keyword |
 | checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
 | checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
@@ -151,6 +153,7 @@ An example event for `firewall` looks as following:
 | checkpoint.data_type_name | Data type in rulebase that was matched. | keyword |
 | checkpoint.db_ver | Database version | keyword |
 | checkpoint.dce-rpc_interface_uuid | Log for new RPC state - UUID values | keyword |
+| checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
 | checkpoint.destination_object | Matched object name on destination column. | keyword |
@@ -213,11 +216,14 @@ An example event for `firewall` looks as following:
 | checkpoint.email_control_analysis | Message classification, received from spam vendor engine. | keyword |
 | checkpoint.email_headers | String containing all the email headers. | keyword |
 | checkpoint.email_id | Email number in smtp connection. | keyword |
+| checkpoint.email_message_id | Email session id (uniqe ID of the mail). | keyword |
+| checkpoint.email_queue_id | Postfix email queue id. | keyword |
 | checkpoint.email_queue_name | Postfix email queue name. | keyword |
 | checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | integer |
 | checkpoint.email_session_id | Connection uuid. | keyword |
 | checkpoint.email_spam_category | Email categories. Possible values: spam/not spam/phishing. | keyword |
 | checkpoint.email_status | Describes the email's state. Possible options: delivered, deferred, skipped, bounced, hold, new, scan_started, scan_ended | keyword |
+| checkpoint.email_subject | Original email subject. | keyword |
 | checkpoint.emulated_on | Images the files were emulated on. | keyword |
 | checkpoint.encryption_failure | Message indicating why the encryption failed. | keyword |
 | checkpoint.end_time | TCP connection end time. | keyword |
@@ -312,6 +318,8 @@ An example event for `firewall` looks as following:
 | checkpoint.message_size | Mail/post size. | integer |
 | checkpoint.method | HTTP method. | keyword |
 | checkpoint.methods | IPSEc methods. | keyword |
+| checkpoint.mime_from | Sender's address. | keyword |
+| checkpoint.mime_to | List of receiver address. | keyword |
 | checkpoint.mirror_and_decrypt_type | Information about decrypt and forward. Possible values: Mirror only, Decrypt and mirror, Partial mirroring (HTTPS inspection Bypass). | keyword |
 | checkpoint.mitre_collection | The adversary is trying to collect data of interest to achieve his goal. | keyword |
 | checkpoint.mitre_command_and_control | The adversary is trying to communicate with compromised systems in order to control them. | keyword |
@@ -523,6 +531,7 @@ An example event for `firewall` looks as following:
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | destination.service.name | Name of the service data is collected from. | keyword |
+| destination.user.email | User email address. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
@@ -636,6 +645,7 @@ An example event for `firewall` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
