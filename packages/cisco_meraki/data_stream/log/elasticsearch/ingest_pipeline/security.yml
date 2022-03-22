@@ -18,6 +18,10 @@ processors:
     field: event.original
     pattern: "%{} security_filtering_file_scanned %{*url}=%{&url} %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} %{*name}='%{&name}' %{*sha256}=%{&sha256} %{*disp}=%{&disp} %{*action}=%{&action}"
     if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned'
+- dissect:
+    field: event.original
+    pattern: "%{} security_filtering_disposition_change %{*name}=%{&name} %{*sha256}=%{&sha256} %{*disp}=%{&disp} %{*action}=%{&action}"
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_disposition_change'
 
 # handle fields of ids_alerted type
 - rename:
@@ -67,7 +71,7 @@ processors:
     ignore_missing: true
     if: ctx?.cisco_meraki?.mx?.security_event?.type == 'ids_alerted'
 
-# handle fields of security_filtering_file_scanned type
+# handle fields of security_filtering_file_scanned or security_filtering_disposition_change type
 - rename:
     field: url
     target_field: threat.indicator.reference
@@ -81,38 +85,40 @@ processors:
 - rename:
     field: name
     target_field: threat.enrichments.indicator.file.name
-    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned'
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_disposition_change'
 - rename:
     field: sha256
     target_field: threat.enrichments.indicator.file.hash.sha256
-    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned'
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_disposition_change'
 - rename:
     field: disposition
     target_field: threat.software.type
-    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned'
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_disposition_change'
 - rename:
     field: action
     target_field: cisco_meraki.mx.security_event.action
-    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned'
+    if: ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.mx?.security_event?.type == 'security_filtering_disposition_change'
 
 # fields common to more than one event type
 - dissect:
     field: src
     pattern: "%{source.ip}:%{sport}"
+    if: ctx?.cisco_meraki?.mx?.security_event?.type != 'security_filtering_disposition_change'
 - dissect:
     field: dst
     pattern: "%{destination.ip}:%{dport}"
+    if: ctx?.cisco_meraki?.mx?.security_event?.type != 'security_filtering_disposition_change'
 - convert:
     field: sport
     target_field: source.port
     type: long
-    if: ctx?.sport != "0"
+    if: ctx?.sport != "0" && ctx?.cisco_meraki?.mx?.security_event?.type != 'security_filtering_disposition_change'
     ignore_failure: true
 - convert:
     field: dport
     target_field: destination.port
     type: long
-    if: ctx?.dport != "0"
+    if: ctx?.dport != "0" && ctx?.cisco_meraki?.mx?.security_event?.type != 'security_filtering_disposition_change'
     ignore_failure: true
 # IP Geolocation Lookup (source)
 - geoip:
