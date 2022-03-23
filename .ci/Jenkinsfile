@@ -146,7 +146,29 @@ def checkGitDiff() {
   }
 }
 
-def isPrAffected(integrationName) {
+/**
+* Helper function to validate if the given integration is enabled
+* If it's a branch, a daily build, a GitHub comment or the changeset
+* contains the integration then it will be true, otherwise false.
+*/
+def isPackageEnabled(integrationName) {
+  if (isBranch()) {
+    log(level: 'INFO', text: "[${integrationName}] is affected: running on ${BRANCH_NAME} branch.")
+    return true
+  }
+  if (isDailyEnabled(integrationName)) {
+    return true
+  }
+  if (isPrAffected(integrationName)) {
+    return true
+  }
+  return env.GITHUB_COMMENT?.contains('all')}
+}
+
+def isDailyEnabled(integrationName) {
+  if (isPR()) {
+    return false
+  }
   def manifest = readYaml(file: "${integrationName}/manifest.yml")
 
   // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
@@ -163,10 +185,11 @@ def isPrAffected(integrationName) {
       }
     }
   }
+}
 
-  if (env.BRANCH_NAME == "main") {
-    echo "[${integrationName}] PR is affected: running on main branch"
-    return true
+def isPrAffected(integrationName) {
+  if (!isPR()) {
+    return false
   }
 
   // Source: https://github.com/elastic/apm-pipeline-library/blob/721115cf0fdb2b5a4e1cb6a576bfbb7035d14485/vars/getGitMatchingGroup.groovy#L40-L41
