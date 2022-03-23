@@ -61,7 +61,7 @@ pipeline {
             // Include hack to skip temporary files with "@tmp" suffix.
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-              if (isPrAffected(it)) {
+              if (isPackageEnabled(it)) {
                 integrations[it] = {
                   withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
