@@ -11,6 +11,9 @@ processors:
     description: Extract syslog words
     field: event.original
     pattern: "%{} %{_temp.ts_nano} %{observer.hostname} %{_temp.event_type} %{}"
+- rename:
+    field: _temp.event_type
+    target_field: cisco_meraki.event_type
 - grok:
     description: Reduce precision from nanos to millis and set timestamp
     field: _temp.ts_nano
@@ -25,16 +28,19 @@ processors:
     timezone: '{{{_conf.tz_offset}}}'
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
-    if: ctx._temp.event_type == 'flows'
+    if: ctx.cisco_meraki.event_type == 'flows'
 - pipeline:
     name: '{{ IngestPipeline "ipflows" }}'
-    if: ctx._temp.event_type == 'ip_flow_start' || ctx._temp.event_type == 'ip_flow_end'
+    if: ctx.cisco_meraki.event_type == 'ip_flow_start' || ctx.cisco_meraki.event_type == 'ip_flow_end'
 - pipeline:
     name: '{{ IngestPipeline "airmarshal" }}'
-    if: ctx._temp.event_type == 'airmarshal_events'
+    if: ctx.cisco_meraki.event_type == 'airmarshal_events'
 - pipeline:
     name: '{{ IngestPipeline "security" }}'
-    if: ctx._temp.event_type == 'security_event'
+    if: ctx.cisco_meraki.event_type == 'security_event'
+- pipeline:
+    name: '{{ IngestPipeline "events" }}'
+    if: ctx.cisco_meraki.event_type == 'events'
 - remove:
     field:
       - _temp
@@ -51,6 +57,8 @@ processors:
       - rssi
       - protocol
       - dhost
+      - client_mac
+      - radio
     ignore_missing: true
 on_failure:
 - set:

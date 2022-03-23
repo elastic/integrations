@@ -7,27 +7,30 @@ processors:
     pattern: "%{} airmarshal_events %{*type}=%{&type} %{}"
 - rename:
     field: type
-    target_field: cisco_meraki.mr.airmarshal_events.type
+    target_field: cisco_meraki.event_subtype
+- set:
+    field: cisco_meraki.device_type
+    value: MR
 - dissect:
     description: When type is rogue_ssid_detected
     field: event.original
     pattern: "%{} airmarshal_events %{} %{*ssid}='%{&ssid}' %{*bssid}='%{&bssid}' %{*src}='%{&src}' %{*dst}='%{&dst}' %{*wmac}='%{&wmac}' %{*vlanid}='%{&vlanid}' %{*ch}='%{&ch}' %{*rssi}='%{&rssi}' %{*fc_type}='%{&fc_type}' %{*fc_subtype}='%{&fc_subtype}'"
-    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'rogue_ssid_detected'
+    if: ctx?.cisco_meraki?.event_subtype == 'rogue_ssid_detected'
 - dissect:
     description: When type is ssid_spoofing_detected
     field: event.original
     pattern: "%{} airmarshal_events %{} %{*ssid}='%{&ssid}' %{*vap}='%{&vap}' %{*bssid}='%{&bssid}' %{*src}='%{&src}' %{*dst}='%{&dst}' %{*ch}='%{&ch}' %{*rssi}='%{&rssi}' %{*fc_type}='%{&fc_type}' %{*fc_subtype}='%{&fc_subtype}'"
-    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'ssid_spoofing_detected'
+    if: ctx?.cisco_meraki?.event_subtype == 'ssid_spoofing_detected'
 - rename:
     field: ssid
-    target_field: cisco_meraki.mr.airmarshal_events.ssid
+    target_field: cisco_meraki.airmarshal.ssid
 - rename:
     field: bssid
-    target_field: cisco_meraki.mr.airmarshal_events.bssid
+    target_field: cisco_meraki.airmarshal.bssid
 - rename:
     field: vap
-    target_field: cisco_meraki.mr.airmarshal_events.vap
-    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'ssid_spoofing_detected'
+    target_field: cisco_meraki.airmarshal.vap
+    if: ctx?.cisco_meraki?.event_subtype == 'ssid_spoofing_detected'
 - gsub:
     field: src
     target_field: source.mac
@@ -40,20 +43,20 @@ processors:
     replacement: '-'
 - gsub:
     field: wired_mac
-    target_field: cisco_meraki.mr.airmarshal_events.wired_mac
+    target_field: cisco_meraki.airmarshal.wired_mac
     pattern: '[-:.]'
     replacement: '-'
-    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'rogue_ssid_detected'
+    if: ctx?.cisco_meraki?.event_subtype == 'rogue_ssid_detected'
 - rename:
     field: vlan_id
     target_field: network.vlan.id
-    if: ctx?.cisco_meraki?.mr?.airmarshal_events?.type == 'rogue_ssid_detected'
+    if: ctx?.cisco_meraki?.event_subtype == 'rogue_ssid_detected'
 - rename:
     field: channel
-    target_field: cisco_meraki.mr.airmarshal_events.channel
+    target_field: cisco_meraki.airmarshal.channel
 - rename:
     field: fc_type
-    target_field: cisco_meraki.mr.airmarshal_events.fc_type
+    target_field: cisco_meraki.airmarshal.fc_type
 - rename:
     field: fc_subtype
-    target_field: cisco_meraki.mr.airmarshal_events.fc_subtype
+    target_field: cisco_meraki.airmarshal.fc_subtype
