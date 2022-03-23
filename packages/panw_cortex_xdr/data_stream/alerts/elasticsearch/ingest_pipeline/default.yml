@@ -347,18 +347,18 @@ processors:
       field: panw_cortex.xdr.events.fw_serial_number
       target_field: observer.serial_number
       ignore_missing: true
-  - rename:
-      field: panw_cortex.xdr.events.fw_email_subject
-      target_field: email.subject
-      ignore_missing: true
+  - set:
+      field: email.subject
+      copy_from: panw_cortex.xdr.events.fw_email_subject
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_subject != null"
   - append:
       field: email.from.address
-      value: "{{panw_cortex.xdr.events.fw_email_sender}}"
-      if: "ctx.panw_cortex.xdr?.events?.fw_email_sender != null"
+      value: "{{{panw_cortex.xdr.events.fw_email_sender}}}"
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_sender != null"
   - append:
       field: email.to.address
-      value: "{{panw_cortex.xdr.events.fw_email_recipient}}"
-      if: "ctx.panw_cortex.xdr?.events?.fw_email_recipient != null"
+      value: "{{{panw_cortex.xdr.events.fw_email_recipient}}}"
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_recipient != null"
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -446,8 +446,6 @@ processors:
         - panw_cortex.xdr.events.action_local_port
         - panw_cortex.xdr.events.action_country
         - panw_cortex.xdr.bioc_indicator
-        - panw_cortex.xdr.events.fw_email_sender
-        - panw_cortex.xdr.events.fw_email_recipient
       ignore_missing: true
   - remove:
       field: event.original
