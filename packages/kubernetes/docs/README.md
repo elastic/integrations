@@ -87,7 +87,7 @@ This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 ## Compatibility
 
-The Kubernetes package is tested with Kubernetes 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, and 1.18.x
+The Kubernetes package is tested with Kubernetes 1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x and 1.23.x
 
 ## Dashboard
 
