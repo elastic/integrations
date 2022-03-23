@@ -1,0 +1,311 @@
+---
+description: Pipeline for Zscaler web logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: resp
+  - rename:
+      field: resp.event
+      target_field: json
+  - remove: 
+      field: resp
+      ignore_missing: true
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+  - remove: 
+      field: json.time
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: web
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - rename:
+      field: json.cip
+      target_field: client.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}"
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.sip
+      target_field: client.nat.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{client.nat.ip}}}"
+      if: ctx?.client?.nat?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.deviceowner
+      target_field: client.user.name
+      ignore_missing: true
+  - convert:
+      field: json.reqsize
+      target_field: http.request.bytes
+      type: long
+      ignore_failure: true
+  - remove: 
+      field: json.reqsize
+      ignore_missing: true
+  - rename:
+      field: json.reqmethod
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: json.contenttype
+      target_field: http.request.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.ereferer
+      target_field: http.request.referrer
+      ignore_missing: true
+  - convert:
+      field: json.respsize
+      target_field: http.response.bytes
+      type: long
+      ignore_failure: true
+  - remove: 
+      field: json.respsize
+      ignore_missing: true
+  - convert:
+      field: json.respcode
+      target_field: http.response.status_code
+      type: long
+      ignore_failure: true
+  - remove: 
+      field: json.respcode
+      ignore_missing: true
+  - rename:
+      field: json.proto
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true      
+  - rename:
+      field: json.rulelabel
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: json.ruletype
+      target_field: rule.ruleset
+      ignore_missing: true
+  - uri_parts:
+      field: json.eurl
+      remove_if_successful: true
+      on_failure:
+      - set: 
+          field: url.original
+          value: "{{{json.eurl}}}"
+          if: ctx?.json?.eurl != null
+          ignore_failure: true
+      - remove:
+          field: json.eurl
+          ignore_missing: true
+  - urldecode:
+      field: url.original
+      ignore_missing: true
+  - user_agent:
+      field: json.ua
+      ignore_failure: true
+  - remove: 
+      field: json.ua
+      ignore_missing: true
+  - rename:
+      field: json.login
+      target_field: user.email
+      ignore_missing: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - lowercase: 
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.appname
+      target_field: zscaler_zia.web.app.name
+      ignore_missing: true
+  - rename:
+      field: json.appclass
+      target_field: zscaler_zia.web.app.class
+      ignore_missing: true
+  - convert:
+      field: json.stime
+      target_field: zscaler_zia.web.stime
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.stime
+      ignore_missing: true
+  - convert:
+      field: json.ctime
+      target_field: zscaler_zia.web.ctime
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.ctime
+      ignore_missing: true
+  - rename:
+      field: json.urlclass
+      target_field: zscaler_zia.web.url.class
+      ignore_missing: true
+  - rename:
+      field: json.urlsupercat
+      target_field: zscaler_zia.web.url.category.super
+      ignore_missing: true
+  - rename:
+      field: json.urlcat
+      target_field: zscaler_zia.web.url.category.sub
+      ignore_missing: true
+  - rename:
+      field: json.malwarecat
+      target_field: zscaler_zia.web.malware.category
+      ignore_missing: true
+  - rename:
+      field: json.threatname
+      target_field: zscaler_zia.web.threat.name
+      ignore_missing: true
+  - convert:
+      field: json.riskscore
+      target_field: event.risk_score
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.riskscore
+      ignore_missing: true
+  - rename:
+      field: json.dlpeng
+      target_field: zscaler_zia.web.dpl.engine
+      ignore_missing: true
+  - rename:
+      field: json.dlpdict
+      target_field: zscaler_zia.web.dpl.dictionaries
+      ignore_missing: true
+  - rename:
+      field: json.location
+      target_field: zscaler_zia.web.location
+      ignore_missing: true
+  - rename:
+      field: json.dept
+      target_field: zscaler_zia.web.department
+      ignore_missing: true
+  - rename:
+      field: json.unscannabletype
+      target_field: zscaler_zia.web.unscannable.type
+      ignore_missing: true
+  - rename:
+      field: json.devicehostname
+      target_field: zscaler_zia.web.device.hostname
+      ignore_missing: true
+  - append: 
+      field: related.hosts
+      value: "{{{zscaler_zia.web.device.hostname}}}"
+      if: ctx?.zscaler_zia?.web?.device?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.bwthrottle
+      target_field: zscaler_zia.web.bandwidth_throttle
+      ignore_missing: true
+  - rename:
+      field: json.cintip
+      target_field: zscaler_zia.web.client.internet.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{zscaler_zia.web.client.internet.ip}}}"
+      if: ctx?.zscaler_zia?.web?.client?.internet?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.ehost
+      target_field: zscaler_zia.web.encoded_host
+      ignore_missing: true
+  - rename:
+      field: json.fileclass
+      target_field: zscaler_zia.web.file.class
+      ignore_missing: true
+  - rename:
+      field: json.filetype
+      target_field: zscaler_zia.web.file.type
+      ignore_missing: true
+  - rename:
+      field: json.malwareclass
+      target_field: zscaler_zia.web.malware.class
+      ignore_missing: true
+  - rename:
+      field: json.reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: json.recordid
+      target_field: zscaler_zia.web.record.id
+      ignore_missing: true
+  - convert:
+      field: json.totalsize
+      target_field: zscaler_zia.web.total.size
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.totalsize
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zia.web
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zia.web[m.getKey()] = m.getValue();
+        }
+  - remove: 
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"

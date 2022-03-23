@@ -1,0 +1,92 @@
+{
+    "attributes": {
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "query": "data_stream.dataset : \"zscaler_zpa.user_activity\"",
+                    "language": "kuery"
+                },
+                "filter": [],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index"
+            }
+        },
+        "title": "[Zscaler][ZPA] Distribution of Users per Application (Top 10)",
+        "uiStateJSON": {},
+        "version": 1,
+        "visState": {
+            "title": "[Zscaler][ZPA] Distribution of Users per Application (Top 10)",
+            "type": "table",
+            "aggs": [
+                {
+                    "id": "1",
+                    "enabled": true,
+                    "type": "count",
+                    "params": {
+                        "customLabel": "Count"
+                    },
+                    "schema": "metric"
+                },
+                {
+                    "id": "2",
+                    "enabled": true,
+                    "type": "terms",
+                    "params": {
+                        "field": "zscaler_zpa.user_activity.application",
+                        "orderBy": "1",
+                        "order": "desc",
+                        "size": 10,
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "customLabel": "Application Name"
+                    },
+                    "schema": "bucket"
+                },
+                {
+                    "id": "3",
+                    "enabled": true,
+                    "type": "terms",
+                    "params": {
+                        "field": "user.name",
+                        "orderBy": "1",
+                        "order": "desc",
+                        "size": 10,
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "customLabel": "Username"
+                    },
+                    "schema": "bucket"
+                }
+            ],
+            "params": {
+                "perPage": 10,
+                "showPartialRows": false,
+                "showMetricsAtAllLevels": false,
+                "showTotal": false,
+                "showToolbar": false,
+                "totalFunc": "sum",
+                "percentageCol": "",
+                "autoFitRowToContent": false
+            }
+        }
+    },
+    "coreMigrationVersion": "7.16.0",
+    "id": "zscaler_zpa-ccbe7ed0-4c4a-11ec-9023-a76a2cb41dcd",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "visualization",
+    "updated_at": "2021-11-26T12:58:31.486Z",
+    "version": "WzU4NjMsMV0="
+}

@@ -3,11 +3,8 @@ description: Pipeline for processing sample logs
 processors:
   #  # Generic event/ecs fields we always want to populate
   - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-  - set:
       field: ecs.version
-      value: "1.12.0"
+      value: "8.0.0"
   - rename:
       field: message
       target_field: event.original
@@ -22,7 +19,15 @@ processors:
       field: mimecast.eventTime
       timezone: UTC
       formats:
-        - yyyy-MM-dd'T'HH:mm:ssZ
+        - "yyyy-MM-dd'T'HH:mm:ssz"
+        - "yyyy-MM-dd'T'HH:mm:ssZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.Sz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss z"
 
   ###
 
@@ -55,41 +60,7 @@ processors:
   # Here we want to add as much categorization information as possible
   # We can do this by parsing mimecast.eventInfo differently based on
   # what event.action is, etc.
-  ###
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.filename}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "threat-intel-feed-download" || ctx?.event?.action == "existing-archive-task-changed" || ctx?.event?.action == "case-action" || ctx?.event?.action == "user-logged-on"  || ctx?.event?.action == "logon-requires-challenge"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{event.type}, %{mimecast.search}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "remediation-incident-adjustment"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{mimecast.type}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "review-set-action"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "archive-mailbox-export-download" || ctx?.event?.action == "archive-mailbox-restore"' #logon-authentication-failed
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{mimecast.description}, %{mimecast.product}, %{mimecast.provider}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "connectors-management"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{mimecast.criteria}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "search-action"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{?key}: <%{mimecast.name.from}> %{email.from.address}, %{?key}: <%{mimecast.name.to}> %{email.to.address}, %{?key}: %{email.subject}, %{?key}: %{email.origination_timestamp}, %{?key}: %{mimecast.viewed}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action == "message-action"'
-  - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}, %{mimecast.application_method}, %{event.reason}"
-      if: 'ctx?.event?.action=="logon-authentication-failed"'
-      ignore_missing: true
-      ignore_failure: true
+  ### 
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
@@ -98,12 +69,76 @@ processors:
       ignore_failure: true
   - dissect:
       field: mimecast.eventInfo
-      pattern: "%{?drop->} - %{mimecast.info}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action=="folder-log-entry" || ctx?.event?.action=="custom-report-definition-created"'
+      pattern: "%{mimecast.info}, %{mimecast.rest_of_event_info}"
+      if: 'ctx.mimecast?.info == null'
+      ignore_missing: true
+      ignore_failure: true
   - dissect:
-      field: mimecast.eventInfo
-      pattern: "%{?drop->} - %{mimecast.info}. %{mimecast.byuser}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action=="mimecast-support-login"'
+       field: mimecast.eventInfo
+       pattern: "%{?drop->} - %{mimecast.info}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
+       if: 'ctx?.event?.action=="folder-log-entry" || ctx?.event?.action=="custom-report-definition-created" || ctx?.event?.action=="mimecast-support-login"'
+       ignore_missing: true
+       ignore_failure: true
+  - kv:
+      field: mimecast.rest_of_event_info
+      field_split: ", "
+      value_split: ": "
+      target_field: mimecast.event_info_parts
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Date
+      target_field: mimecast.date
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Time
+      target_field: mimecast.time
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.IP
+      target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Application
+      target_field: mimecast.application
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Method
+      target_field: mimecast.method
+      ignore_missing: true
+  - rename:
+      field: mimecast.event_info_parts.Reason
+      target_field: event.reason
+      ignore_missing: true
+  - rename: 
+      field: mimecast.info
+      target_field: mimecast.filename
+      ignore_missing: true
+      if: 'ctx?.event?.action == "threat-intel-feed-download"'
+  - rename: 
+      field: mimecast.event_info_parts.Processed
+      target_field: email.origination_timestamp
+      ignore_missing: true
+  - rename: 
+      field: mimecast.event_info_parts.Subject
+      target_field: email.subject
+      ignore_missing: true
+  - rename: 
+      field: mimecast.event_info_parts.2FA
+      target_field: mimecast.2FA
+      ignore_missing: true
+  - dissect:
+       field:  mimecast.event_info_parts.From
+       pattern: "<%{?drop}> %{email.from.address}"
+       if: 'ctx?.event?.action=="message-action"'
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: mimecast.event_info_parts.To
+       pattern: "<%{?drop}> %{email.to.address}"
+       if: 'ctx?.event?.action=="message-action"'
+       ignore_missing: true
+       ignore_failure: true     
   - dissect:
       field: mimecast.eventInfo
       pattern: "[%{?key} : %{mimecast.export_type},%{?key} :%{mimecast.export_name},%{?key} :%{user.email},%{?key} :%{mimecast.weekday} %{mimecast.month} %{mimecast.monthday} %{mimecast.time} %{mimecast.timezone} %{mimecast.year},%{?key} :%{client.ip},%{?key} :%{mimecast.columns_exported},%{?key} : %{file.name},%{?key}: %{file.size},%{?key} : %{file.extension}], %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
@@ -152,6 +187,15 @@ processors:
         - yyyy-MM-dd HH:mm:ssZ
         - yyyy-MM-dd HH:mm:ss z
         - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd'T'HH:mm:ssz
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.Sz
+        - yyyy-MM-dd'T'HH:mm:ss.SZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy-MM-dd'T'HH:mm:ss z
       if: 'ctx?.event?.created != null'
   - geoip:
       field: client.ip
@@ -205,11 +249,7 @@ processors:
         - mimecast.provider
         - mimecast.filename
         - mimecast.criteria
-        - mimecast.aplication_method
-        - mimecast.name.to
-        - mimecast.name.from
         - mimecast.viewed
-        - mimecast.application_method
         - mimecast.timezone
         - mimecast.byuser
         - mimecast.export_type
@@ -221,6 +261,9 @@ processors:
         - mimecast.columns_exported
         - mimecast.as.asn
         - mimecast.organization_name
+        - mimecast.event_info_parts
+        - mimecast.rest_of_event_info
+
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.
