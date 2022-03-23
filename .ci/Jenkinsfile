@@ -41,9 +41,15 @@ pipeline {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
         stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+        setEnvVar('ONLY_DOCS', isGitRegionMatch(patterns: [ '.*\\.(asciidoc|md)' ], shouldMatchAll: true).toString())
+        // Skip all the stages except check Go sources for changeset's with asciidoc, md or .github changes only
+        setEnvVar('ONLY_DOCS', isGitRegionMatch(patterns: [ '(.*\\.(asciidoc|md)|^\\.github/.*)' ], shouldMatchAll: true).toString())
       }
     }
     stage('Check Go sources') {
+      when {
+        expression { return env.ONLY_DOCS == "false" }
+      }
       steps {
         dir("${BASE_DIR}"){
           withMageEnv(){
@@ -54,6 +60,9 @@ pipeline {
       }
     }
     stage('Check integrations') {
+      when {
+        expression { return env.ONLY_DOCS == "false" }
+      }
       steps {
         script {
           dir("${BASE_DIR}/packages") {
@@ -115,7 +124,9 @@ pipeline {
   }
   post {
     always {
-      publishCoverageReports()
+      whenTrue(env.ONLY_DOCS == "false") {
+        publishCoverageReports()
+      }
     }
     cleanup {
       notifyBuildResult(prComment: true)
