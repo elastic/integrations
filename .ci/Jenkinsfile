@@ -41,6 +41,10 @@ pipeline {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
         stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+        dir("${BASE_DIR}"){
+          // TODO: '^.ci/Jenkinsfile' too
+          setEnvVar('COMMON_CHANGES', isGitRegionMatch(patterns: [ '(^go.*|.go-version)' ], shouldMatchAll: false).toString())
+        }
       }
     }
     stage('Check Go sources') {
@@ -149,7 +153,8 @@ def checkGitDiff() {
 /**
 * Helper function to validate if the given integration is enabled
 * If it's a branch, a daily build, a GitHub comment or the changeset
-* contains the integration then it will be true, otherwise false.
+* contains the integration or some common changes then it will be true,
+* otherwise false.
 */
 def isPackageEnabled(integrationName) {
   if (isBranch()) {
@@ -162,7 +167,7 @@ def isPackageEnabled(integrationName) {
   if (isPrAffected(integrationName)) {
     return true
   }
-  return env.GITHUB_COMMENT?.contains('all')}
+  return env.GITHUB_COMMENT?.contains('all') || env.COMMON_CHANGES == 'true'
 }
 
 def isDailyEnabled(integrationName) {
