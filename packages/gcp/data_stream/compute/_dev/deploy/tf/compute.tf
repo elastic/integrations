@@ -5,7 +5,7 @@ data "google_compute_image" "default" {
 }
 
 resource "google_compute_instance" "default" {
-  name = "test"
+  name = "test-${var.TEST_RUN_ID}"
   // NOTE: e2 instance type is required to collect instance/memory/balloon/* 
   // metrics, available only on those instances.
   // https://cloud.google.com/monitoring/api/metrics_gcp
