@@ -4,7 +4,6 @@ variable "TEST_RUN_ID" {
 
 variable "gcp_project_id" {
   type    = string
-  default = "elastic-obs-integrations-dev"
 }
 
 variable "collection_name" {
@@ -25,7 +24,7 @@ provider "google" {
   project = var.gcp_project_id
 }
 
-resource "google_firestore_document" "mydoc6" {
+resource "google_firestore_document" "document" {
   collection  = "${var.collection_name}-${var.TEST_RUN_ID}"
   document_id = "elastic-document-${var.TEST_RUN_ID}"
   fields      = "{\"something\":{\"mapValue\":{\"fields\":{\"akey\":{\"stringValue\":\"avalue\"}}}}}"
