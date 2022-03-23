@@ -142,23 +142,30 @@ processors:
 #######################
 ## ECS Email Mapping ##
 #######################
+- rename:
+      field: sophos.xg.from_email_address
+      target_field: source.user.email
+      ignore_missing: true
+- rename:
+      field: sophos.xg.to_email_address
+      target_field: destination.user.email
+      ignore_missing: true
 - append:
     field: email.from.address
-    value: "{{sophos.xg.from_email_address}}"
-    if: "ctx.sophos?.xg?.from_email_address != null"
+    value: "{{{source.user.email}}}"
+    if: "ctx?.source?.user?.email != null"
 - append:
     field: email.to.address
-    value: "{{sophos.xg.to_email_address}}"
-    if: "ctx.sophos?.xg?.to_email_address != null"
-- rename:
-    field: sophos.xg.email_subject
-    target_field: email.subject
-    ignore_missing: true
-- rename:
-    field: sophos.xg.subject
-    target_field: email.subject
-    ignore_missing: true
-    if: "ctx.email?.subject == null"
+    value: "{{{destination.user.email}}}"
+    if: "ctx?.destination?.user?.email != null"
+- set:
+    field: email.subject
+    copy_from: sophos.xg.email_subject
+    if: "ctx?.sophos.xg?.email_subject != null"
+- set:
+    field: email.subject
+    copy_from: sophos.xg.subject
+    if: "ctx?.sophos.xg?.subject != null && ctx.email?.subject == null"
 
 #############################
 ## ECS Network/Geo Mapping ##
