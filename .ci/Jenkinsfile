@@ -41,9 +41,10 @@ pipeline {
         deleteDir()
         gitCheckout(basedir: "${BASE_DIR}")
         stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
-        setEnvVar('ONLY_DOCS', isGitRegionMatch(patterns: [ '.*\\.(asciidoc|md)' ], shouldMatchAll: true).toString())
-        // Skip all the stages except check Go sources for changeset's with asciidoc, md or .github changes only
-        setEnvVar('ONLY_DOCS', isGitRegionMatch(patterns: [ '(.*\\.(asciidoc|md)|^\\.github/.*)' ], shouldMatchAll: true).toString())
+        dir("${BASE_DIR}"){
+          // Skip all the stages except check Go sources for changeset's with asciidoc, md or .github changes only
+          setEnvVar('ONLY_DOCS', isGitRegionMatch(patterns: [ '(.*\\.(asciidoc|md)|^\\.github/.*)' ], shouldMatchAll: true).toString())
+        }
       }
     }
     stage('Check Go sources') {
