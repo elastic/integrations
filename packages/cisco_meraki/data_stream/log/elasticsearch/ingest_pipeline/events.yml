@@ -22,7 +22,7 @@ processors:
     description: Process Site-to-Site VPN messages
     field: event.original
     patterns:
-      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORD}%{SPACE}events%{SPACE}(?i)Site-to-Site VPN:%{GREEDYDATA:cisco_meraki.events.raw}'
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORD}%{SPACE}events%{SPACE}(?i)Site-to-Site VPN:%{GREEDYDATA:cisco_meraki.site_to_site_vpn.raw}'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
@@ -31,12 +31,11 @@ processors:
 - set:
     field: cisco_meraki.device_type
     value: MX
-    if: ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
+    if: ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN" || ctx?.cisco_meraki?.event_subtype == "vpn_connectivity_change"
 - set:
     field: cisco_meraki.device_type
     value: MR
     if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
-
 
 # Process dfs_event, wpa_auth, wpa_deauth, association or disassociation
 - grok:
@@ -47,7 +46,7 @@ processors:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
-    if: ctx.event.original.startsWith('<') && (ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth')
+    if: ctx.event.original.startsWith('<') && (ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth' || ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change')
 - kv:
     field: _temp.rest
     field_split: " "
@@ -83,3 +82,10 @@ processors:
     target_field: cisco_meraki.wpa_deauth
     strip_brackets: true
     if: ctx?.cisco_meraki?.event_subtype == 'wpa_deauth'
+- kv:
+    field: _temp.rest
+    field_split: " "
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.connectivity_change
+    strip_brackets: true
+    if: ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change'
