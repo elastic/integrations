@@ -1,23 +1,96 @@
 ---
 description: Pipeline for Cisco Meraki events type
 processors:
+####################################################
+# set event_subtype based on type/format
+####################################################
 - dissect:
-    description: Check if this is Site-to-Site VPN events
+    description: Determine event type/format
     field: event.original
-    pattern: "%{} events %{sts} %{}"
+    pattern: "%{} events %{msgtype} %{}"
 - set:
     field: cisco_meraki.event_subtype
     value: 'Site-to-Site VPN'
-    if: ctx?.sts.toLowerCase() == "site-to-site"
+    if: ctx?.msgtype.toLowerCase() == "site-to-site"
+####################################################
+# log event with type=<value> format
+# these are dfs_event, association, disassocation, 
+# vpn_connectivity_change, wpa_auth, wpa_deauth
+####################################################
 - dissect:
     description: Get the event subtype
     field: event.original
     pattern: "%{} events type=%{type} %{}"
-    if: ctx?.sts.startsWith("type=")
+    if: ctx?.msgtype.startsWith("type=")
 - rename:
     field: type
     target_field: cisco_meraki.event_subtype
     if: ctx?.type != null
+
+####################################################
+# Handle DHCP log events
+####################################################
+- dissect:
+    field: event.original
+    pattern: "%{} events dhcp %{_temp.dhcp_op} %{_temp.dhcp_op2} %{}"
+    if: ctx?.msgtype.toLowerCase() == "dhcp"
+- set:
+    field: network.protocol
+    value: dhcp
+    if: ctx?.msgtype.toLowerCase() == "dhcp"
+- dissect:
+    field: event.original
+    pattern: "%{} events dhcp lease of ip %{client.ip} from %{} mac %{server.mac} for client mac %{client.mac} %{}"
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'lease'
+- dissect:
+    field: event.original
+    pattern: "%{} events dhcp no offers for mac %{client.mac} %{}"
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
+- set:
+    field: cisco_meraki.event_subtype
+    value: dhcp_offer
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op == 'lease'
+- set:
+    field: cisco_meraki.event_subtype
+    value: dhcp_no_offer
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
+- gsub:
+    field: client.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.msgtype.toLowerCase() == "dhcp"
+- gsub:
+    field: server.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp.dhcp_op == 'lease'
+# IP Geolocation Lookup (source)
+- geoip:
+    field: client.ip
+    target_field: client.geo
+    ignore_missing: true
+    if: ctx.client?.geo == null && ctx?.client?.ip != null
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: client.ip
+    target_field: client.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx?.client?.ip != null
+- rename:
+    field: client.as.asn
+    target_field: client.as.number
+    ignore_missing: true
+- rename:
+    field: client.as.organization_name
+    target_field: client.as.organization.name
+    ignore_missing: true
+####################################################
+# Handle Site-to-Site VPN message
+####################################################
 - grok:
     description: Process Site-to-Site VPN messages
     field: event.original
@@ -28,16 +101,11 @@ processors:
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
     if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
-- set:
-    field: cisco_meraki.device_type
-    value: MX
-    if: ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN" || ctx?.cisco_meraki?.event_subtype == "vpn_connectivity_change"
-- set:
-    field: cisco_meraki.device_type
-    value: MR
-    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
 
-# Process dfs_event, wpa_auth, wpa_deauth, association or disassociation
+####################################################
+# Handle dfs_event, wpa_auth, wpa_deauth, 
+# association or disassociation
+####################################################
 - grok:
     field: event.original
     patterns: 
@@ -89,3 +157,15 @@ processors:
     target_field: cisco_meraki.site_to_site_vpn.connectivity_change
     strip_brackets: true
     if: ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change'
+
+####################################################
+# Set device_type based on log message subtype
+####################################################
+- set:
+    field: cisco_meraki.device_type
+    value: MX
+    if: ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN" || ctx?.cisco_meraki?.event_subtype == "vpn_connectivity_change"
+- set:
+    field: cisco_meraki.device_type
+    value: MR
+    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
