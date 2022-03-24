@@ -60,22 +60,52 @@ This is the `http_trace` dataset.
 
 ## Metrics
 
-### Jolokia Metrics
+### Memory Metrics
 
-This is the `jolokia` dataset.
+This is the `memory` dataset.
 
-- This dataset exposes JMX beans over HTTP when Jolokia is on the classpath.
+- This dataset gives Memory information.
 
-{{event "jolokia"}}
+{{event "memory"}}
 
-{{fields "jolokia"}}
+{{fields "memory"}}
 
-### Prometheus Metrics
+### OS Metrics
 
-This is the `prometheus` dataset.
+This is the `os` dataset.
 
-- This dataset exposes metrics in a format that can be scraped by a Prometheus server.
+- This dataset gives OS related information.
 
-{{event "prometheus"}}
+{{event "os"}}
 
-{{fields "prometheus"}}
+{{fields "os"}}
+
+### Threads Metrics
+
+This is the `threads` dataset.
+
+- This dataset gives details of threads.
+
+{{event "threads"}}
+
+{{fields "threads"}}
+
+### JVM Metrics
+
+This is the `jvm` dataset.
+
+- This dataset gives data of JVM Memory.
+
+{{event "jvm"}}
+
+{{fields "jvm"}}
+
+### Server Metrics
+
+This is the `server` dataset.
+
+- This dataset gives information of Server.
+
+{{event "server"}}
+
+{{fields "server"}}
