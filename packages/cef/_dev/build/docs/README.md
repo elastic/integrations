@@ -1,5 +1,7 @@
 # Common Event Format (CEF) Integration
 
+## Overview
+
 This is an integration for parsing Common Event Format (CEF) data. It can accept
 data over syslog or read it from a file.
 
@@ -7,20 +9,20 @@ CEF data is a format like
 
 `CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 msg=hello`
 
-When syslog is used as the transport the CEF data becomes the message that is
+When syslog is used as the transport, the CEF data becomes the message that is
 contained in the syslog envelope. This integration will parse the syslog
-timestamp if it is present. Depending on the syslog RFC used the message will
+timestamp if it is present. Depending on the syslog RFC used, the message will
 have a format like one of these:
 
 `<189> Jun 18 10:55:50 host CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 msg=hello`
 
 `<189>1 2021-06-18T10:55:50.000003Z host app - - - CEF:0|Elastic|Vaporware|1.0.0-alpha|18|Web request|low|eventId=3457 msg=hello`
 
-In both cases the integration will use the syslog timestamp as the `@timestamp`
+In both cases, the integration will use the syslog timestamp as the `@timestamp`,
 unless the CEF data contains a device receipt timestamp.
 
 The Elastic Agent's `decode_cef` processor is applied to parse the CEF encoded
-data. The decoded data is written into a `cef` object field. Lastly any Elastic
+data. The decoded data is written into a `cef` object field. Lastly, any Elastic
 Common Schema (ECS) fields that can be populated with the CEF data are
 populated.
 
@@ -28,8 +30,8 @@ populated.
 
 ### Forcepoint NGFW Security Management Center
 
-This module will process CEF data from Forcepoint NGFW Security Management
-Center (SMC).  In the SMC configure the logs to be forwarded to the address set
+This module will process CEF data from [Forcepoint NGFW Security Management
+Center (SMC)](https://help.stonesoft.com/onlinehelp/StoneGate/SMC/6.7.0/GUID-BC285209-861E-411C-8656-68AA4B1DCD4D.html).  In the SMC configure the logs to be forwarded to the address set
 in `var.syslog_host` in format CEF and service UDP on `var.syslog_port`.
 Instructions can be found in [KB
 15002](https://support.forcepoint.com/KBArticle?id=000015002) for configuring

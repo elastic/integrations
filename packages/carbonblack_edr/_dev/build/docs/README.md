@@ -1,10 +1,12 @@
 # VMware Carbon Black EDR Integration
 
-The VMware Carbon Black EDR integration collects EDR Server and raw Endpoint events exported by [Carbon Black EDR Event Forwarder.](https://github.com/carbonblack/cb-event-forwarder) The following output methods are supported: `http`, `tcp`, `udp` and `file`.
+## Overview
+
+The VMware Carbon Black EDR integration collects EDR Server and raw Endpoint events exported by [Carbon Black EDR Event Forwarder](https://github.com/carbonblack/cb-event-forwarder). The following output methods are supported: `http`, `tcp`, `udp` and `file`.
 
 ## Compatibility
 
-This integration has been tested with the 3.7.4 version of EDR Event Forwarder.
+This integration has been tested with the 3.7.4 version of [EDR Event Forwarder](https://developer.carbonblack.com/reference/enterprise-response/event-forwarder/).
 
 ## Configuration
 
