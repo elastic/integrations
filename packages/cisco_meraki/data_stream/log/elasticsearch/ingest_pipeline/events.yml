@@ -2,25 +2,41 @@
 description: Pipeline for Cisco Meraki events type
 processors:
 - dissect:
-    description: type= follows events
+    description: Check if this is Site-to-Site VPN events
     field: event.original
-    pattern: "%{} events %{*type}=%{&type} %{}"
+    pattern: "%{} events %{sts} %{}"
+- set:
+    field: cisco_meraki.event_subtype
+    value: 'Site-to-Site VPN'
+    if: ctx?.sts.toLowerCase() == "site-to-site"
+- dissect:
+    description: Get the event subtype
+    field: event.original
+    pattern: "%{} events type=%{type} %{}"
+    if: ctx?.sts.startsWith("type=")
 - rename:
     field: type
     target_field: cisco_meraki.event_subtype
     if: ctx?.type != null
+- grok:
+    description: Process Site-to-Site VPN messages
+    field: event.original
+    patterns:
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORD}%{SPACE}events%{SPACE}(?i)Site-to-Site VPN:%{GREEDYDATA:cisco_meraki.events.raw}'
+    pattern_definitions:
+      SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOGVER: '\b(?:\d{1,2})\b'
+      SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+    if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
+- set:
+    field: cisco_meraki.device_type
+    value: MX
+    if: ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
+- set:
+    field: cisco_meraki.device_type
+    value: MR
+    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
 
-# Process dfs_event
-# - dissect:
-#     field: event.original
-#     pattern: "%{} type=dfs_event %{*channel}='%{&channel}' %{*radio}='%{&radio}'"
-#     if: ctx?.cisco_meraki?.event_subtype == 'dfs_event'
-
-# Process wpa_deauth or wpa_auth
-# - dissect:
-#     field: event.original
-#     pattern: "%{} type=%{?type} %{*radio}='%{&radio}' %{*vap}='%{&vap}' %{*client_mac}='%{&client_mac}' %{*aid}='%{&aid}'"
-#     if: ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
 
 # Process dfs_event, wpa_auth, wpa_deauth, association or disassociation
 - grok:
