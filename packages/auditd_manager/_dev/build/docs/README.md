@@ -75,7 +75,25 @@ Defining any audit rules in the config causes `elastic-agent` to purge all
 existing audit rules prior to adding the rules specified in the config.
 Therefore it is unnecessary and unsupported to include a `-D` (delete all) rule.
 
+Examples:
+
 ```sh
+## If you are on a 64 bit platform, everything should be running
+## in 64 bit mode. This rule will detect any use of the 32 bit syscalls
+## because this might be a sign of someone exploiting a hole in the 32
+## bit API.
+-a always,exit -F arch=b32 -S all -F key=32bit-abi
+
+## Executions.
+-a always,exit -F arch=b64 -S execve,execveat -k exec
+
+## External access (warning: these can be expensive to audit).
+-a always,exit -F arch=b64 -S accept,bind,connect -F key=external-access
+
+## Unauthorized access attempts.
+-a always,exit -F arch=b64 -S open,creat,truncate,ftruncate,openat,open_by_handle_at -F exit=-EACCES -k access
+-a always,exit -F arch=b64 -S open,creat,truncate,ftruncate,openat,open_by_handle_at -F exit=-EPERM -k access
+
 # Things that affect identity.
 -w /etc/group -p wa -k identity
 -w /etc/passwd -p wa -k identity
