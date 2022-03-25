@@ -1,7 +1,5 @@
 # CockroachDB Integration
 
-## Overview
-
 This integration collects metrics from [CockroachDB](https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html). It includes the
 following datasets for receiving logs:
 

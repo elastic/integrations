@@ -1,7 +1,5 @@
 # Cisco Secure Endpoint Integration
 
-## Overview
-
 This integration is for [Cisco Secure Endpoint logs](https://developer.cisco.com/amp-for-endpoints/). It includes the following
 datasets for receiving logs over syslog or read from a file:
 

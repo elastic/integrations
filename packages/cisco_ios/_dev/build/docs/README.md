@@ -1,7 +1,5 @@
 # Cisco IOS Integration
 
-## Overview
-
 This integration is for [Cisco IOS network device's logs](https://developer.cisco.com/docs/). It includes the following
 datasets for receiving logs over syslog or read from a file:
 

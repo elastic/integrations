@@ -1,7 +1,5 @@
 # Check Point Integration
 
-## Overview
-
 This integration is for Check Point products. It includes the
 following datasets for receiving logs:
 

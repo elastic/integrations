@@ -1,7 +1,5 @@
 # Containerd integration
 
-## Overview
-
 This integration is used to collect metrics from [containerd runtime](https://containerd.io/).
 
 It collects cpu, memory and blkio statistics about running containers controlled by containerd.

@@ -1,7 +1,5 @@
 # Cisco Umbrella Integration
 
-## Overview
-
 This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It includes the following
 datasets for receiving logs from an AWS S3 bucket using an SQS notification queue and Cisco Managed S3 bucket without SQS:
 

@@ -1,7 +1,5 @@
 # CrowdStrike Integration
 
-## Overview
-
 This integration is for [CrowdStrike](https://developer.crowdstrike.com/) products. It includes the
 following datasets for receiving logs:
 
@@ -127,17 +125,17 @@ for more details.
 and/or `session_token`.
 2. Use `role_arn`: `role_arn` is used to specify which AWS IAM role to assume 
     for generating temporary credentials. 
-  If `role_arn` is given, the package will 
+    If `role_arn` is given, the package will 
     check if access keys are given. 
-  If not, the package will check for credential 
+    If not, the package will check for credential 
     profile name. 
-  If neither is given, default credential profile will be used. Please make sure credentials are given under either a credential profile or access keys.
+    If neither is given, default credential profile will be used. Please make sure credentials are given under either a credential profile or access keys.
 3. Use `credential_profile_name` and/or `shared_credential_file`:  
 If `access_key_id`, `secret_access_key` and `role_arn` are all not given, then
     the package will check for `credential_profile_name`. 
    If you use different credentials for different tools or applications, you can use profiles to configure multiple access keys in the same configuration file. 
-  If there is no `credential_profile_name` given, the default profile will be used. `shared_credential_file` is optional to specify the directory of your shared credentials file. 
-  If it's empty, the default directory will be used.
+    If there is no `credential_profile_name` given, the default profile will be used. `shared_credential_file` is optional to specify the directory of your shared credentials file. 
+    If it's empty, the default directory will be used.
 In Windows, shared credentials file is at `C:\Users\<yourUserName>\.aws\credentials`.
 For Linux, macOS or Unix, the file locates at `~/.aws/credentials`. 
 Please see [Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html) for more details.
