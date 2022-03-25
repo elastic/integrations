@@ -12,6 +12,10 @@ processors:
     field: cisco_meraki.event_subtype
     value: 'Site-to-Site VPN'
     if: ctx?.msgtype.toLowerCase() == "site-to-site"
+- set:
+    field: cisco_meraki.event_subtype
+    value: client_vpn_connect
+    if: ctx?.msgtype.toLowerCase() == "client_vpn_connect"
 ####################################################
 # log event with type=<value> format
 # these are dfs_event, association, disassocation, 
@@ -64,30 +68,6 @@ processors:
     pattern: '[-:.]'
     replacement: '-'
     if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp.dhcp_op == 'lease'
-# IP Geolocation Lookup (source)
-- geoip:
-    field: client.ip
-    target_field: client.geo
-    ignore_missing: true
-    if: ctx.client?.geo == null && ctx?.client?.ip != null
-# IP Autonomous System (AS) Lookup
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: client.ip
-    target_field: client.as
-    properties:
-        - asn
-        - organization_name
-    ignore_missing: true
-    if: ctx?.client?.ip != null
-- rename:
-    field: client.as.asn
-    target_field: client.as.number
-    ignore_missing: true
-- rename:
-    field: client.as.organization_name
-    target_field: client.as.organization.name
-    ignore_missing: true
 ####################################################
 # Handle Site-to-Site VPN message
 ####################################################
@@ -159,6 +139,14 @@ processors:
     if: ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change'
 
 ####################################################
+# Handle client_vpn_connect
+####################################################
+- dissect:
+    field: event.original
+    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{client.ip}"
+    if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
+
+####################################################
 # Set device_type based on log message subtype
 ####################################################
 - set:
@@ -169,3 +157,30 @@ processors:
     field: cisco_meraki.device_type
     value: MR
     if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
+
+####################################################
+# IP Geolocation Lookup (source)
+####################################################
+- geoip:
+    field: client.ip
+    target_field: client.geo
+    ignore_missing: true
+    if: ctx.client?.geo == null && ctx?.client?.ip != null
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: client.ip
+    target_field: client.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx?.client?.ip != null
+- rename:
+    field: client.as.asn
+    target_field: client.as.number
+    ignore_missing: true
+- rename:
+    field: client.as.organization_name
+    target_field: client.as.organization.name
+    ignore_missing: true
