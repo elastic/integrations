@@ -179,10 +179,13 @@ processors:
 ######################
 - script:
     lang: painless
-    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null
+    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null'
     source: |
       def domain = "";
       def nameArray = ctx.cisco.secure_endpoint.computer.hostname.toString().splitOnToken(".");
+      if (ctx.host == null) {
+        ctx.host = new HashMap();
+      }
       if (nameArray?.length > 0) {
         for (int i = 1; i < nameArray.length; i++) {
           domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
@@ -196,6 +199,9 @@ processors:
     if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
     source: >
       String[] splitmail = ctx.cisco.secure_endpoint.computer.user.splitOnToken("@");
+      if (ctx.user == null) {
+        ctx.user = new HashMap();
+      }
       if (splitmail.length != 2) {
         return;
       }
@@ -571,6 +577,7 @@ processors:
     - cisco.secure_endpoint.threat_hunting.techniques
     - cisco.secure_endpoint.threat_hunting.tactics
     - cisco.secure_endpoint.computer.hostname
+    - cisco.secure_endpoint.computer.user
     ignore_missing: true
 on_failure:
 - set:
