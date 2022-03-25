@@ -17,11 +17,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-01-13T10:13:08.000Z",
     "agent": {
-        "ephemeral_id": "8228a1f2-22e9-456a-af70-07dc048a019a",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "1f61a51e-f837-493d-8813-2948b32a0ab6",
+        "id": "c24f19f1-2453-4481-99b2-551bd6757809",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "cisco": {
         "secure_endpoint": {
@@ -69,9 +69,9 @@ An example event for `event` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "c24f19f1-2453-4481-99b2-551bd6757809",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "action": "Cloud IOC",
@@ -80,12 +80,12 @@ An example event for `event` looks as following:
             "file"
         ],
         "code": "1107296274",
-        "created": "2022-02-02T06:03:47.554Z",
+        "created": "2022-03-25T08:24:30.668Z",
         "dataset": "cisco_secure_endpoint.event",
         "id": "1515298355162029000",
-        "ingested": "2022-02-02T06:03:48Z",
+        "ingested": "2022-03-25T08:24:31Z",
         "kind": "alert",
-        "original": "{\"data\":{\"cloud_ioc\":{\"description\":\"Microsoft Word launched PowerShell. This is indicative of multiple dropper variants that make use of Visual Basic Application macros to perform nefarious activities, such as downloading and executing malicious executables.\",\"short_description\":\"W32.WinWord.Powershell\"},\"computer\":{\"active\":true,\"connector_guid\":\"test_connector_guid\",\"external_ip\":\"8.8.8.8\",\"hostname\":\"Demo_AMP\",\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\"},\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"38:1e:eb:ba:2c:15\"}]},\"connector_guid\":\"test_connector_guid\",\"date\":\"2021-01-13T10:13:08+00:00\",\"event_type\":\"Cloud IOC\",\"event_type_id\":1107296274,\"file\":{\"disposition\":\"Clean\",\"file_name\":\"PowerShell.exe\",\"file_path\":\"/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe\",\"identity\":{\"sha256\":\"6c05e11399b7e3c8ed31bae72014cf249c144a8f4a2c54a758eb2e6fad47aec7\"},\"parent\":{\"disposition\":\"Clean\",\"identity\":{\"sha256\":\"3d46e95284f93bbb76b3b7e1bf0e1b2d51e8a9411c2b6e649112f22f92de63c2\"}}},\"group_guids\":[\"test_group_guid\"],\"id\":1515298355162029000,\"severity\":\"Medium\",\"start_date\":\"2021-01-13T10:13:08+00:00\",\"start_timestamp\":1610532788,\"timestamp\":1610532788,\"timestamp_nanoseconds\":162019000},\"metadata\":{\"links\":{\"next\":\"http://f1764cb35e0d:8080/v1/events?start_date=2022-02-01T06:03:47+00:00\\u0026limit=1\\u0026offset=1\",\"self\":\"http://f1764cb35e0d:8080/v1/events?start_date=2022-02-01T06:03:47+00:00\\u0026limit=1\"},\"results\":{\"current_item_count\":1,\"index\":0,\"items_per_page\":1,\"total\":2}},\"version\":\"v1.2.0\"}",
+        "original": "{\"data\":{\"cloud_ioc\":{\"description\":\"Microsoft Word launched PowerShell. This is indicative of multiple dropper variants that make use of Visual Basic Application macros to perform nefarious activities, such as downloading and executing malicious executables.\",\"short_description\":\"W32.WinWord.Powershell\"},\"computer\":{\"active\":true,\"connector_guid\":\"test_connector_guid\",\"external_ip\":\"8.8.8.8\",\"hostname\":\"Demo_AMP\",\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\"},\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"38:1e:eb:ba:2c:15\"}]},\"connector_guid\":\"test_connector_guid\",\"date\":\"2021-01-13T10:13:08+00:00\",\"event_type\":\"Cloud IOC\",\"event_type_id\":1107296274,\"file\":{\"disposition\":\"Clean\",\"file_name\":\"PowerShell.exe\",\"file_path\":\"/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe\",\"identity\":{\"sha256\":\"6c05e11399b7e3c8ed31bae72014cf249c144a8f4a2c54a758eb2e6fad47aec7\"},\"parent\":{\"disposition\":\"Clean\",\"identity\":{\"sha256\":\"3d46e95284f93bbb76b3b7e1bf0e1b2d51e8a9411c2b6e649112f22f92de63c2\"}}},\"group_guids\":[\"test_group_guid\"],\"id\":1515298355162029000,\"severity\":\"Medium\",\"start_date\":\"2021-01-13T10:13:08+00:00\",\"start_timestamp\":1610532788,\"timestamp\":1610532788,\"timestamp_nanoseconds\":162019000},\"metadata\":{\"links\":{\"next\":\"http://670900e6b2c2:8080/v1/events?start_date=2022-03-24T08:24:30+00:00\\u0026limit=1\\u0026offset=1\",\"self\":\"http://670900e6b2c2:8080/v1/events?start_date=2022-03-24T08:24:30+00:00\\u0026limit=1\"},\"results\":{\"current_item_count\":1,\"index\":0,\"items_per_page\":1,\"total\":2}},\"version\":\"v1.2.0\"}",
         "severity": 2,
         "start": "2021-01-13T10:13:08.000Z"
     },
@@ -270,5 +270,7 @@ An example event for `event` looks as following:
 | threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 | threat.technique.reference | The reference url of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 
