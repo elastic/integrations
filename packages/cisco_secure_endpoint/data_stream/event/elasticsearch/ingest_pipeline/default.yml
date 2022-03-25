@@ -179,9 +179,10 @@ processors:
 ######################
 - script:
     lang: painless
+    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null
     source: |
       def domain = "";
-      def nameArray = ctx.host.name.toString().splitOnToken(".");
+      def nameArray = ctx.cisco.secure_endpoint.computer.hostname.toString().splitOnToken(".");
       if (nameArray?.length > 0) {
         for (int i = 1; i < nameArray.length; i++) {
           domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
