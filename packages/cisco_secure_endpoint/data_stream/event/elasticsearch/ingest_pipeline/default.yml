@@ -36,9 +36,6 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
     value: '8.0.0'
 - set:
@@ -179,7 +176,7 @@ processors:
 ######################
 - script:
     lang: painless
-    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null'
+    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null && ctx.cisco?.secure_endpoint?.computer?.hostname.contains(".")'
     source: |
       def domain = "";
       def nameArray = ctx.cisco.secure_endpoint.computer.hostname.toString().splitOnToken(".");
@@ -207,6 +204,11 @@ processors:
       ctx.user.email = ctx.user.id;
       ctx.user.domain = splitmail[1];
       ctx.user.name = splitmail[0];
+- rename:
+    field: cisco.secure_endpoint.computer.hostname
+    target_field: host.hostname
+    ignore_missing: true
+    if: ctx?.host?.hostname == null && ctx?.cisco?.secure_endpoint?.computer?.hostname != null
 - set:
     field: host.name
     copy_from: host.hostname
