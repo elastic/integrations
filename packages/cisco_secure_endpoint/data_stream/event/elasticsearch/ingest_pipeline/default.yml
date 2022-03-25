@@ -193,7 +193,6 @@ processors:
         ctx.host.hostname = nameArray[0];
         ctx.host.domain = domain; 
       }
-
 - script:
     lang: painless
     if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
@@ -208,7 +207,10 @@ processors:
       ctx.user.email = ctx.user.id;
       ctx.user.domain = splitmail[1];
       ctx.user.name = splitmail[0];
-
+- set:
+    field: host.name
+    copy_from: host.hostname
+    ignore_empty_value: true
 - rename:
     field: cisco.secure_endpoint.computer.user
     target_field: user.name
