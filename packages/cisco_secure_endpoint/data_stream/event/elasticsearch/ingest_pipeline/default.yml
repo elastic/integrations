@@ -177,18 +177,36 @@ processors:
 ######################
 ## ECS Host Mapping ##
 ######################
-- set:
-    field: host.name
-    copy_from: cisco.secure_endpoint.computer.hostname
-    ignore_empty_value: true
-- set:
-    field: host.hostname
-    copy_from: host.name
-    ignore_empty_value: true
+- script:
+    lang: painless
+    source: |
+      def domain = "";
+      def nameArray = ctx.host.name.toString().splitOnToken(".");
+      if (nameArray?.length > 0) {
+        for (int i = 1; i < nameArray.length; i++) {
+          domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
+        }
+        ctx.host.hostname = nameArray[0];
+        ctx.host.domain = domain; 
+      }
+
+- script:
+    lang: painless
+    if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
+    source: >
+      String[] splitmail = ctx.cisco.secure_endpoint.computer.user.splitOnToken("@");
+      if (splitmail.length != 2) {
+        return;
+      }
+      ctx.user.email = ctx.user.id;
+      ctx.user.domain = splitmail[1];
+      ctx.user.name = splitmail[0];
+
 - rename:
     field: cisco.secure_endpoint.computer.user
     target_field: user.name
     ignore_missing: true
+    if: ctx?.user?.name == null && ctx?.cisco?.secure_endpoint?.computer?.user != null
 
 #########################
 ## ECS Network Mapping ##
