@@ -1,0 +1,82 @@
+---
+description: Pipeline for Cisco Meraki urls type
+processors:
+- dissect:
+    description: Determine the security event type
+    field: event.original
+    pattern: "%{} urls %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} request: %{http.request.method} %{url.original}"
+- set:
+    field: cisco_meraki.device_type
+    value: MX
+- dissect:
+    field: src
+    pattern: "%{source.ip}:%{sport}"
+- dissect:
+    field: dst
+    pattern: "%{destination.ip}:%{dport}"
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    if: ctx?.sport != "0" 
+    ignore_failure: true
+- convert:
+    field: dport
+    target_field: destination.port
+    type: long
+    if: ctx?.dport != "0" 
+    ignore_failure: true
+- gsub:
+    field: mac
+    target_field: cisco_meraki.urls.mac
+    pattern: '[-:.]'
+    replacement: '-'
+# IP Geolocation Lookup (source)
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+    if: ctx.source?.geo == null && ctx?.source?.ip != null
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx?.source?.ip != null
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+# IP Geolocation Lookup (destination)
+- geoip:
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+    if: ctx.destination?.geo == null && ctx?.destination?.ip != null
+# IP Autonomous System (AS) Lookup
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+        - asn
+        - organization_name
+    ignore_missing: true
+    if: ctx?.destination?.ip != null
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+
