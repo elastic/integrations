@@ -219,7 +219,7 @@ An example event for `firewall` looks as following:
 | checkpoint.email_message_id | Email session id (uniqe ID of the mail). | keyword |
 | checkpoint.email_queue_id | Postfix email queue id. | keyword |
 | checkpoint.email_queue_name | Postfix email queue name. | keyword |
-| checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | integer |
+| checkpoint.email_recipients_num | Amount of recipients whom the mail was sent to. | long |
 | checkpoint.email_session_id | Connection uuid. | keyword |
 | checkpoint.email_spam_category | Email categories. Possible values: spam/not spam/phishing. | keyword |
 | checkpoint.email_status | Describes the email's state. Possible options: delivered, deferred, skipped, bounced, hold, new, scan_started, scan_ended | keyword |
@@ -268,8 +268,8 @@ An example event for `firewall` looks as following:
 | checkpoint.icap_server_service | Service name, as given in the ICAP URI | keyword |
 | checkpoint.icap_service_id | Service ID, can work with multiple servers, treated as services. | integer |
 | checkpoint.icmp | Number of packets, received by the client. | keyword |
-| checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | integer |
-| checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | integer |
+| checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | long |
+| checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | long |
 | checkpoint.id | Override application ID. | integer |
 | checkpoint.ike | IKEMode (PHASE1, PHASE2, etc..). | keyword |
 | checkpoint.ike_ids | All QM ids. | keyword |
