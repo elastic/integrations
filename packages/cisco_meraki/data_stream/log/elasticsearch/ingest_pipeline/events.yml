@@ -94,7 +94,7 @@ processors:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
-    if: ctx.event.original.startsWith('<') && (ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth' || ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change')
+    if: ctx.event.original.startsWith('<') && (ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth' || ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_failure' || ctx?.cisco_meraki?.event_subtype == '8021x_deauth' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_success' || ctx?.cisco_meraki?.event_subtype == 'splash_auth' || ctx?.cisco_meraki?.event_subtype == 'device_packet_flood')
 - kv:
     field: _temp.rest
     field_split: " "
@@ -137,6 +137,41 @@ processors:
     target_field: cisco_meraki.site_to_site_vpn.connectivity_change
     strip_brackets: true
     if: ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change'
+- kv:
+    field: _temp.rest
+    field_split: " "
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.8021x_eap_failure
+    strip_brackets: true
+    if: ctx?.cisco_meraki?.event_subtype == '8021x_eap_failure'
+- kv:
+    field: _temp.rest
+    field_split: " "
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.8021x_deauth
+    strip_brackets: true
+    if: ctx?.cisco_meraki?.event_subtype == '8021x_deauth'
+- kv:
+    field: _temp.rest
+    field_split: " "
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.8021x_eap_success
+    strip_brackets: true
+    if: ctx?.cisco_meraki?.event_subtype == '8021x_eap_success'
+- kv:
+    field: _temp.rest
+    field_split: " "
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.splash_auth
+    strip_brackets: true
+    if: ctx?.cisco_meraki?.event_subtype == 'splash_auth'
+- kv:
+    field: _temp.rest
+    field_split: " "
+    value_split: "="
+    target_field: cisco_meraki.site_to_site_vpn.device_packet_flood
+    strip_brackets: true
+    if: ctx?.cisco_meraki?.event_subtype == 'device_packet_flood'
 
 ####################################################
 # Handle client_vpn_connect
@@ -156,7 +191,7 @@ processors:
 - set:
     field: cisco_meraki.device_type
     value: MR
-    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth'
+    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_failure' || ctx?.cisco_meraki?.event_subtype == '8021x_deauth' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_success' || ctx?.cisco_meraki?.event_subtype == 'splash_auth' || ctx?.cisco_meraki?.event_subtype == 'device_packet_flood'
 
 ####################################################
 # IP Geolocation Lookup (source)
