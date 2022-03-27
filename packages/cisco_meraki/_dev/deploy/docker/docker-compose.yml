@@ -19,3 +19,19 @@ services:
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
       - STREAM_INSECURE=true
     command: log --start-signal=SIGHUP --delay=5s /sample_events/meraki-mx-ndjson.log
+  cisco_meraki-log-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  cisco_meraki-log-udp:
+    image: docker.elastic.co/observability/stream:v0.6.2
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:8685 -p=udp /sample_logs/cisco-meraki.log
+  cisco_meraki-log-tcp:
+    image: docker.elastic.co/observability/stream:v0.6.2
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:8685 -p=tcp /sample_logs/cisco-meraki.log
