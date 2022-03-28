@@ -38,10 +38,10 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:34:12.053Z",
+    "@timestamp": "2022-03-28T11:23:36.536Z",
     "agent": {
-        "ephemeral_id": "d40ddd78-15ae-48b5-b316-f4cc3e64ed60",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "453c6c18-e8a1-4d86-bf0e-5c3c4dec4542",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -55,16 +55,16 @@ An example event for `info` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-25T13:34:12.053Z",
+        "created": "2022-03-28T11:23:36.536Z",
         "dataset": "spring_boot.info",
-        "ingested": "2022-03-25T13:34:15Z",
+        "ingested": "2022-03-28T11:23:40Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -118,10 +118,10 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:31:49.140Z",
+    "@timestamp": "2022-03-28T11:21:11.593Z",
     "agent": {
-        "ephemeral_id": "ae9b9b79-1209-4fc4-91a3-9eac922863fb",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "b8de1af0-7162-4301-9f4a-731e1f0fd4f5",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -135,16 +135,16 @@ An example event for `audit_events` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-25T13:31:49.140Z",
+        "created": "2022-03-28T11:21:11.593Z",
         "dataset": "spring_boot.audit_events",
-        "ingested": "2022-03-25T13:31:52Z",
+        "ingested": "2022-03-28T11:21:15Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -154,10 +154,10 @@ An example event for `audit_events` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -210,10 +210,10 @@ An example event for `http_trace` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:33:25.240Z",
+    "@timestamp": "2022-03-28T11:22:46.997Z",
     "agent": {
-        "ephemeral_id": "223944e2-8af6-4581-a0e8-e0be6ea354da",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "e7fa07be-1cb5-4762-bf12-191f4fd2818d",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -227,16 +227,16 @@ An example event for `http_trace` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-25T13:33:25.240Z",
+        "created": "2022-03-28T11:22:46.997Z",
         "dataset": "spring_boot.http_trace",
-        "ingested": "2022-03-25T13:33:28Z",
+        "ingested": "2022-03-28T11:22:50Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -246,10 +246,10 @@ An example event for `http_trace` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -319,10 +319,10 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:35:44.443Z",
+    "@timestamp": "2022-03-28T11:25:16.527Z",
     "agent": {
-        "ephemeral_id": "a962be39-7775-4b97-a4ac-67d4e87c00b4",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "43c34d9f-b379-41d5-bacf-583a1303fbd0",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -336,7 +336,7 @@ An example event for `memory` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -344,8 +344,8 @@ An example event for `memory` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 545532651,
-        "ingested": "2022-03-25T13:35:47Z",
+        "duration": 484168963,
+        "ingested": "2022-03-28T11:25:19Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -355,10 +355,10 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -487,10 +487,10 @@ An example event for `os` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:36:31.541Z",
+    "@timestamp": "2022-03-28T11:26:03.012Z",
     "agent": {
-        "ephemeral_id": "159eefb4-0142-49a7-b362-02f15cf5c8ee",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "dced1d2d-0a6e-4355-92cc-4ec2243d1601",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -504,7 +504,7 @@ An example event for `os` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -512,8 +512,8 @@ An example event for `os` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.os",
-        "duration": 197562075,
-        "ingested": "2022-03-25T13:36:35Z",
+        "duration": 199165663,
+        "ingested": "2022-03-28T11:26:06Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -523,10 +523,10 @@ An example event for `os` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -557,20 +557,20 @@ An example event for `os` looks as following:
             "operating_system": {
                 "arch": "amd64",
                 "available_processors": 4,
-                "committed_virtual_memory_size": 3143516160,
+                "committed_virtual_memory_size": 5042962432,
                 "free": {
-                    "physical_memory_size": 383983616,
-                    "swap_space_size": 3386163200
+                    "physical_memory_size": 414687232,
+                    "swap_space_size": 3384836096
                 },
                 "max_file_descriptor_count": 1048576,
-                "open_file_descriptor_count": 26,
+                "open_file_descriptor_count": 27,
                 "process": {
-                    "cpu_load": 0.042444821731748725,
-                    "cpu_time": 18460000000
+                    "cpu_load": 0.04482294935006723,
+                    "cpu_time": 17570000000
                 },
                 "system": {
-                    "cpu_load": 0.2529711375212224,
-                    "load_average": 3.78466796875
+                    "cpu_load": 0.2671447781264007,
+                    "load_average": 2.48
                 },
                 "total": {
                     "physical_memory_size": 6067863552,
@@ -744,14 +744,13 @@ An example event for `threads` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:52:45.873Z",
+    "@timestamp": "2022-03-28T11:27:39.605Z",
     "agent": {
-        "ephemeral_id": "7c4c2c4d-456c-4fa2-af8a-5cd5a9c1b7a6",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "f20f638a-566a-4317-9cd9-f5cf73973b99",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.threads",
@@ -762,16 +761,16 @@ An example event for `threads` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.threads",
-        "duration": 101280226,
-        "ingested": "2022-03-22T15:52:49Z",
+        "duration": 97644083,
+        "ingested": "2022-03-28T11:27:43Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -780,22 +779,21 @@ An example event for `threads` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "jolokia": {},
@@ -811,25 +809,25 @@ An example event for `threads` looks as following:
         "threads": {
             "threading": {
                 "current_thread": {
-                    "allocated_bytes": 19017064,
-                    "cpu_time": 517416110,
+                    "allocated_bytes": 226144,
+                    "cpu_time": 95404339,
                     "cpu_time_supported": true,
-                    "user_time": 490000000
+                    "user_time": 90000000
                 },
-                "daemon_thread_count": 17,
+                "daemon_thread_count": 16,
                 "object_monitor_usage_supported": true,
-                "peak_thread_count": 21,
+                "peak_thread_count": 20,
                 "synchronizer_usage_supported": true,
                 "thread": {
                     "allocated_memory_enabled": true,
                     "allocated_memory_supported": true,
                     "contention_monitoring_enabled": false,
                     "contention_monitoring_supported": true,
-                    "count": 21,
+                    "count": 20,
                     "cpu_time_enabled": true,
                     "cpu_time_supported": true
                 },
-                "total_started_thread_count": 24
+                "total_started_thread_count": 23
             }
         }
     }
@@ -925,10 +923,10 @@ An example event for `gc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T15:07:54.518Z",
+    "@timestamp": "2022-03-28T11:22:00.598Z",
     "agent": {
-        "ephemeral_id": "8115323c-c07e-40d6-947b-109fd1ac5a29",
-        "id": "2fc709fd-6760-4b1a-9d27-72877c39d004",
+        "ephemeral_id": "e1c8c531-dabd-4a69-b99a-efdb2b1cab03",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -942,7 +940,7 @@ An example event for `gc` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "2fc709fd-6760-4b1a-9d27-72877c39d004",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -950,8 +948,8 @@ An example event for `gc` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.gc",
-        "duration": 193566394,
-        "ingested": "2022-03-25T15:07:57Z",
+        "duration": 217674627,
+        "ingested": "2022-03-28T11:22:04Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -961,10 +959,10 @@ An example event for `gc` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.31.0.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:ac:1f:00:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -991,11 +989,11 @@ An example event for `gc` looks as following:
             "garbage_collector": {
                 "collection": {
                     "count": 2,
-                    "time": 132
+                    "time": 123
                 },
                 "last_gc_info": {
-                    "duration": 74,
-                    "end_time": 4759,
+                    "duration": 71,
+                    "end_time": 4741,
                     "gc_thread_count": 4,
                     "id": 2,
                     "memory_usage_after_gc": {
@@ -1003,31 +1001,31 @@ An example event for `gc` looks as following:
                             "committed": 12845056,
                             "init": 2555904,
                             "max": 251658240,
-                            "used": 12767040
+                            "used": 12745152
                         },
                         "compressed_class_space": {
                             "committed": 4980736,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4451288
+                            "used": 4450512
                         },
                         "metaspace": {
-                            "committed": 36347904,
+                            "committed": 36265984,
                             "init": 0,
                             "max": -1,
-                            "used": 33796784
+                            "used": 33798280
                         },
                         "ps_eden_space": {
-                            "committed": 308281344,
+                            "committed": 331350016,
                             "init": 24641536,
                             "max": 479723520,
                             "used": 0
                         },
                         "ps_old_gen": {
-                            "committed": 71303168,
+                            "committed": 63438848,
                             "init": 64487424,
                             "max": 1012400128,
-                            "used": 15202272
+                            "used": 14914688
                         },
                         "ps_survivor_space": {
                             "committed": 12582912,
@@ -1041,31 +1039,31 @@ An example event for `gc` looks as following:
                             "committed": 12845056,
                             "init": 2555904,
                             "max": 251658240,
-                            "used": 12767040
+                            "used": 12745152
                         },
                         "compressed_class_space": {
                             "committed": 4980736,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4451288
+                            "used": 4450512
                         },
                         "metaspace": {
-                            "committed": 36347904,
+                            "committed": 36265984,
                             "init": 0,
                             "max": -1,
-                            "used": 33796784
+                            "used": 33798280
                         },
                         "ps_eden_space": {
-                            "committed": 308281344,
+                            "committed": 331350016,
                             "init": 24641536,
                             "max": 479723520,
                             "used": 0
                         },
                         "ps_old_gen": {
-                            "committed": 51380224,
+                            "committed": 50331648,
                             "init": 64487424,
                             "max": 1012400128,
-                            "used": 12251304
+                            "used": 13970936
                         },
                         "ps_survivor_space": {
                             "committed": 12582912,
@@ -1074,7 +1072,7 @@ An example event for `gc` looks as following:
                             "used": 9621584
                         }
                     },
-                    "start_time": 4685
+                    "start_time": 4670
                 },
                 "name": "PS MarkSweep",
                 "valid": true
@@ -1237,10 +1235,10 @@ An example event for `jvm` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:34:57.366Z",
+    "@timestamp": "2022-03-28T11:24:25.786Z",
     "agent": {
-        "ephemeral_id": "78464199-4016-450a-9eb6-9f5b28c1dc99",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "e0723ad1-423d-471d-9910-1ffeadbab5c5",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -1254,15 +1252,15 @@ An example event for `jvm` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spring_boot.jvm",
-        "duration": 97377250,
-        "ingested": "2022-03-25T13:35:00Z",
+        "duration": 102331106,
+        "ingested": "2022-03-28T11:24:29Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -1271,10 +1269,10 @@ An example event for `jvm` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1303,7 +1301,7 @@ An example event for `jvm` looks as following:
             "metrics": {
                 "jvm": {
                     "threads": {
-                        "states_threads": 7
+                        "states_threads": 6
                     }
                 }
             }
@@ -1367,10 +1365,10 @@ An example event for `server` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-25T13:37:17.400Z",
+    "@timestamp": "2022-03-28T11:26:51.895Z",
     "agent": {
-        "ephemeral_id": "801f0306-c831-4e63-b9d5-6c827e7e97e2",
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "ephemeral_id": "62781031-f23f-4439-862c-337fddf40679",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
@@ -1384,15 +1382,15 @@ An example event for `server` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
+        "id": "91638438-73e5-4a6a-9b0e-d78d9c581397",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spring_boot.server",
-        "duration": 99805898,
-        "ingested": "2022-03-25T13:37:20Z",
+        "duration": 102381358,
+        "ingested": "2022-03-28T11:26:55Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -1401,10 +1399,10 @@ An example event for `server` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1427,35 +1425,11 @@ An example event for `server` looks as following:
         "server": {
             "labels": {
                 "instance": "springboot:8090",
-                "job": "prometheus"
+                "job": "prometheus",
+                "level": "debug"
             },
             "metrics": {
-                "process": {
-                    "cpu_usage": 0.029547553093259467,
-                    "files": {
-                        "max_files": 1048576,
-                        "open_files": 25
-                    },
-                    "start_time_seconds": 1648215413.928,
-                    "uptime_seconds": 23.628
-                },
-                "system": {
-                    "cpu": {
-                        "count": 4,
-                        "usage": 0.24018475750577367
-                    },
-                    "load_average_1m": 4.07275390625
-                },
-                "tomcat_sessions": {
-                    "active": {
-                        "current_sessions": 17,
-                        "max_sessions": 17
-                    },
-                    "alive_max_seconds": 0,
-                    "created_sessions_total": 17,
-                    "expired_sessions_total": 0,
-                    "rejected_sessions_total": 0
-                }
+                "logback_events_total": 0
             }
         }
     }
