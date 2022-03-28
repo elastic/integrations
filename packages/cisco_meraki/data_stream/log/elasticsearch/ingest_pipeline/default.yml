@@ -47,6 +47,211 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "urls" }}'
     if: ctx.cisco_meraki.event_type == 'urls'
+- script:
+    lang: painless
+    description: The script sets event type, action and category based on type and sub-type fields
+    params:
+       eventmap:
+        "vpn_connectivity_change":
+          category:
+            - session
+            - network
+          type:
+            - connection
+          action: vpn-connectivity-change
+        "dhcp_offer":
+          category:
+            - network
+          type:
+            - access
+            - allowed
+          action: dhcp-offer
+        "dhcp_no_offer":
+          category:
+            - network
+          type:
+            - access
+            - denied
+          action: dhcp-no-offer
+        "Site-to-Site VPN":
+          category:
+            - network
+          type:
+            - access
+          action: site-to-site-vpn
+        "client_vpn_connect":
+          category:
+            - network
+            - session
+          type:
+            - access
+            - allowed
+            - start
+          action: site-to-site-vpn
+        "ip_session_initiated":
+          category:
+            - network
+            - session
+          type:
+            - access
+            - start
+          action: ip-session-initiated
+        "flow_allowed":
+          category:
+            - network
+          type:
+            - access
+            - allowed
+          action: layer3-firewall-allowed-flow
+        "flow_denied":
+          category:
+            - network
+          type:
+            - access
+            - denied
+          action: layer3-firewall-denied-flow
+        "http_access":
+          category:
+            - web
+          type:
+            - access
+          action: http-access
+        "http_access_error":
+          category:
+            - web
+          type:
+            - error
+          action: http-access-error
+        "ids_alerted":
+          category:
+            - threat
+          type:
+            - indicator
+          action: ids-signature-matched
+        "security_filtering_file_scanned":
+          category:
+            - threat
+            - malware
+          type:
+            - indicator
+            - info
+          action: malicious-file-actioned
+        "security_filtering_disposition_change":
+          category:
+            - threat
+            - malware
+          type:
+            - indicator
+            - info
+          action: issued-retrospective-malicious-disposition
+        "association":
+          category:
+            - network
+          type:
+            - access
+            - connection
+          action: wifi-association-request
+        "disassociation":
+          category:
+            - network
+            - session
+          type:
+            - access
+            - end
+          action: wifi-disassociation-request
+        "wpa_auth":
+          category:
+            - authentication
+            - network
+          type:
+            - start
+            - access
+          action: wifi-wpa-authentication
+        "wpa_deauth":
+          category:
+            - network
+            - authentication
+          type:
+            - end
+            - denied
+          action: wifi-wpa-failed-auth-or-deauth
+        "8021x_eap_failure":
+          category:
+            - network
+            - authentication
+          type:
+            - end
+            - denied
+          action: wifi-8021x-failed-authentication-attempt
+        "8021x_deauth":
+          category:
+            - network
+            - authentication
+          type:
+            - end
+            - denied
+          action: wifi-8021x-failed-auth-or-deauth
+        "8021x_eap_success":
+          category:
+            - network
+            - authentication
+          type:
+            - start
+          action: wifi-8021x-auth
+        "splash_auth":
+          category:
+            - network
+            - authentication
+          type:
+            - start
+          action: splash-authentication
+        "device_packet_flood":
+          category:
+            - threat
+          type:
+            - indicator
+          action: wireless-packet-flood-detected
+        "rogue_ssid_detected":
+          category:
+            - threat
+          type:
+            - indicator
+          action: rogue-ssid-detected
+        "ssid_spoofing_detected":
+          category:
+            - threat
+          type:
+            - indicator
+          action: ssid-spoofing-detected
+    source: |-
+         def eventSubtype = ctx.cisco_meraki.event_subtype;
+         if (eventSubtype == null) {
+           return;
+         }
+         def eventMap = params.get('eventmap');
+         def eventData = eventMap.get(eventSubtype);
+         if (eventData == null) {
+           ctx.event.action = 'unknown-' + eventSubtype;
+           ctx.event.category = ['network'];
+           ctx.event.type = ['info'];
+           return;
+         }
+         def eventCategory = eventData.get('category');
+         def eventType = eventData.get('type');
+         def eventAction = eventData.get('action');
+         if (eventType != null) {
+           ctx.event.type = new ArrayList(eventType);
+         }
+         if (eventCategory != null) {
+           ctx.event.category = new ArrayList(eventCategory);
+         }
+         if (eventAction != null) {
+           ctx.event.action = eventAction;
+         }
+
+##
+# Clean up
+##
 - remove:
     field:
       - _temp
@@ -68,6 +273,31 @@ processors:
       - sts
       - msgtype
     ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
 on_failure:
 - set:
     field: error.message

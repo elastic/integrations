@@ -79,4 +79,11 @@ processors:
     field: destination.as.organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
-
+- set:
+    field: cisco_meraki.event_subtype
+    value: 'http_access'
+    if: ctx?.http?.request?.method.toLowerCase() != 'unknown'
+- set:
+    field: cisco_meraki.event_subtype
+    value: 'http_access_error'
+    if: ctx?.http?.request?.method.toLowerCase() == 'unknown'

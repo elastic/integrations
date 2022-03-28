@@ -50,3 +50,15 @@ processors:
     field: cisco_meraki.device_type
     value: MX
     if: ctx._temp.token.startsWith("src=") == true
+- set:
+    field: cisco_meraki.event_subtype
+    value: "ip_session_initiated"
+    if: ctx._temp.token.startsWith("src=") == true
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_allowed"
+    if: ctx._temp.token.startsWith("src=") == false && ctx?.cisco_meraki?.flows?.op == 'allow'
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_denied"
+    if: ctx._temp.token.startsWith("src=") == false && ctx?.cisco_meraki?.flows?.op == 'deny'
