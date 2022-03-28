@@ -1,20 +1,13 @@
 version: '2'
 services:
   apache_spark:
-    hostname: apachesparkmaster
+    hostname: apache-spark-main
     build:
       context: ./Dockerfiles
-      dockerfile: Dockerfile-master
-    environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_MASTER_OPTS="-javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-master.properties"
+      dockerfile: Dockerfile-main
     ports:
+      - 7077
       - 7777
       - 8088
-      - 7077
     volumes:
-      - ./jolokia-configs/master:/spark/conf/:rw
+      - ./jolokia-configs/main:/spark/conf/:rw

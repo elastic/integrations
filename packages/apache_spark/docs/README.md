@@ -8,7 +8,7 @@ This module has been tested against `Apache Spark version 3.2.0`
 
 ## Requirements
 
-In order to ingest data from Apache Spark, you must know the full hosts for the Master and Worker nodes.
+In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
 
 In order to gather Spark statistics, we need to download and enable Jolokia JVM Agent.
 
@@ -17,7 +17,7 @@ cd /usr/share/java/
 wget -O jolokia-agent.jar http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/1.3.6/jolokia-jvm-1.3.6-agent.jar
 ```
 
-As far, as Jolokia JVM Agent is downloaded, we should configure Apache Spark, to use it as JavaAgent and expose metrics via HTTP/Json. Edit spark-env.sh. It should be in `/usr/local/spark/conf` and add following parameters (Assuming that spark install folder is /usr/local/spark, if not change the path to one on which Spark is installed):
+As far, as Jolokia JVM Agent is downloaded, we should configure Apache Spark, to use it as JavaAgent and expose metrics via HTTP/JSON. Edit spark-env.sh. It should be in `/usr/local/spark/conf` and add following parameters (Assuming that spark install folder is `/usr/local/spark`, if not change the path to one on which Spark is installed):
 ```
 export SPARK_MASTER_OPTS="$SPARK_MASTER_OPTS -javaagent:/usr/share/java/jolokia-agent.jar=config=/usr/local/spark/conf/jolokia-master.properties"
 ```
@@ -39,7 +39,7 @@ maxObjects=0
 ```
 
 Now we need to create /usr/local/spark/conf/jolokia.policy with following content:
-```
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <restrict>
   <http>
@@ -150,12 +150,12 @@ An example event for `driver` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.driver.application.name |  | keyword |
-| apache_spark.metrics.driver.dag_schedular.job.active |  | long |
-| apache_spark.metrics.driver.dag_schedular.job.all |  | long |
-| apache_spark.metrics.driver.dag_schedular.stages.failed |  | long |
-| apache_spark.metrics.driver.dag_schedular.stages.running |  | long |
-| apache_spark.metrics.driver.dag_schedular.stages.waiting |  | long |
+| apache_spark.metrics.driver.application_name |  | keyword |
+| apache_spark.metrics.driver.dag_scheduler.job.active |  | long |
+| apache_spark.metrics.driver.dag_scheduler.job.all |  | long |
+| apache_spark.metrics.driver.dag_scheduler.stages.failed |  | long |
+| apache_spark.metrics.driver.dag_scheduler.stages.running |  | long |
+| apache_spark.metrics.driver.dag_scheduler.stages.waiting |  | long |
 | apache_spark.metrics.driver.disk.space_used |  | long |
 | apache_spark.metrics.driver.executor_metrics.direct_pool_memory |  | long |
 | apache_spark.metrics.driver.executor_metrics.jvm.heap_memory |  | long |
@@ -329,63 +329,63 @@ An example event for `executors` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.executor.application.name |  | keyword |
-| apache_spark.metrics.executor.bytes.read |  | long |
-| apache_spark.metrics.executor.bytes.written |  | long |
-| apache_spark.metrics.executor.compilation_time |  | long |
-| apache_spark.metrics.executor.cpu_time |  | long |
-| apache_spark.metrics.executor.deserialize.cpu_time |  | long |
-| apache_spark.metrics.executor.deserialize.time |  | long |
-| apache_spark.metrics.executor.direct_pool_memory |  | long |
-| apache_spark.metrics.executor.disk_bytes_spilled |  | long |
-| apache_spark.metrics.executor.file_cache_hits |  | long |
-| apache_spark.metrics.executor.files_discovered |  | long |
-| apache_spark.metrics.executor.filesystem.file.large_read_ops |  | long |
-| apache_spark.metrics.executor.filesystem.file.read_bytes |  | long |
-| apache_spark.metrics.executor.filesystem.file.read_ops |  | long |
-| apache_spark.metrics.executor.filesystem.file.write_bytes |  | long |
-| apache_spark.metrics.executor.filesystem.file.write_ops |  | long |
-| apache_spark.metrics.executor.filesystem.hdfs.large_read_ops |  | long |
-| apache_spark.metrics.executor.filesystem.hdfs.read_bytes |  | long |
-| apache_spark.metrics.executor.filesystem.hdfs.read_ops |  | long |
-| apache_spark.metrics.executor.filesystem.hdfs.write_bytes |  | long |
-| apache_spark.metrics.executor.filesystem.hdfs.write_ops |  | long |
-| apache_spark.metrics.executor.generated_class_size |  | long |
-| apache_spark.metrics.executor.generated_method_size |  | long |
-| apache_spark.metrics.executor.hive_client_calls |  | long |
-| apache_spark.metrics.executor.id |  | keyword |
-| apache_spark.metrics.executor.jvm.cpu_time |  | long |
-| apache_spark.metrics.executor.jvm.gc_time |  | long |
-| apache_spark.metrics.executor.jvm.heap_memory |  | long |
-| apache_spark.metrics.executor.jvm.off_heap_memory |  | long |
-| apache_spark.metrics.executor.major_gc.count |  | long |
-| apache_spark.metrics.executor.major_gc.time |  | long |
-| apache_spark.metrics.executor.mapped_pool_memory |  | long |
-| apache_spark.metrics.executor.memory_bytes_spilled |  | long |
-| apache_spark.metrics.executor.minor_gc.count |  | long |
-| apache_spark.metrics.executor.minor_gc.time |  | long |
-| apache_spark.metrics.executor.shuffle.bytes_written |  | long |
-| apache_spark.metrics.executor.shuffle.client.used.direct_memory |  | long |
-| apache_spark.metrics.executor.shuffle.client.used.heap_memory |  | long |
-| apache_spark.metrics.executor.shuffle.fetch_wait_time |  | long |
-| apache_spark.metrics.executor.shuffle.local.blocks_fetched |  | long |
-| apache_spark.metrics.executor.shuffle.local.bytes_read |  | long |
-| apache_spark.metrics.executor.shuffle.records.read |  | long |
-| apache_spark.metrics.executor.shuffle.records.written |  | long |
-| apache_spark.metrics.executor.shuffle.remote.blocks_fetched |  | long |
-| apache_spark.metrics.executor.shuffle.remote.bytes_read |  | long |
-| apache_spark.metrics.executor.shuffle.remote.bytes_read_to_disk |  | long |
-| apache_spark.metrics.executor.shuffle.server.used.direct_memory |  | long |
-| apache_spark.metrics.executor.shuffle.server.used.heap_memory |  | long |
-| apache_spark.metrics.executor.shuffle.total.bytes_read |  | long |
-| apache_spark.metrics.executor.shuffle.write.time |  | long |
-| apache_spark.metrics.executor.source_code_size |  | long |
-| apache_spark.metrics.executor.succeeded_tasks |  | long |
-| apache_spark.metrics.executor.threadpool.active_tasks |  | long |
-| apache_spark.metrics.executor.threadpool.complete_tasks |  | long |
-| apache_spark.metrics.executor.threadpool.current_pool_size |  | long |
-| apache_spark.metrics.executor.threadpool.max_pool_size |  | long |
-| apache_spark.metrics.executor.threadpool.started_tasks |  | long |
+| apache_spark.metrics.executors.application_name |  | keyword |
+| apache_spark.metrics.executors.bytes.read |  | long |
+| apache_spark.metrics.executors.bytes.written |  | long |
+| apache_spark.metrics.executors.compilation_time |  | long |
+| apache_spark.metrics.executors.cpu_time |  | long |
+| apache_spark.metrics.executors.deserialize.cpu_time |  | long |
+| apache_spark.metrics.executors.deserialize.time |  | long |
+| apache_spark.metrics.executors.direct_pool_memory |  | long |
+| apache_spark.metrics.executors.disk_bytes_spilled |  | long |
+| apache_spark.metrics.executors.file_cache_hits |  | long |
+| apache_spark.metrics.executors.files_discovered |  | long |
+| apache_spark.metrics.executors.filesystem.file.large_read_ops |  | long |
+| apache_spark.metrics.executors.filesystem.file.read_bytes |  | long |
+| apache_spark.metrics.executors.filesystem.file.read_ops |  | long |
+| apache_spark.metrics.executors.filesystem.file.write_bytes |  | long |
+| apache_spark.metrics.executors.filesystem.file.write_ops |  | long |
+| apache_spark.metrics.executors.filesystem.hdfs.large_read_ops |  | long |
+| apache_spark.metrics.executors.filesystem.hdfs.read_bytes |  | long |
+| apache_spark.metrics.executors.filesystem.hdfs.read_ops |  | long |
+| apache_spark.metrics.executors.filesystem.hdfs.write_bytes |  | long |
+| apache_spark.metrics.executors.filesystem.hdfs.write_ops |  | long |
+| apache_spark.metrics.executors.generated_class_size |  | long |
+| apache_spark.metrics.executors.generated_method_size |  | long |
+| apache_spark.metrics.executors.hive_client_calls |  | long |
+| apache_spark.metrics.executors.id |  | keyword |
+| apache_spark.metrics.executors.jvm.cpu_time |  | long |
+| apache_spark.metrics.executors.jvm.gc_time |  | long |
+| apache_spark.metrics.executors.jvm.heap_memory |  | long |
+| apache_spark.metrics.executors.jvm.off_heap_memory |  | long |
+| apache_spark.metrics.executors.major_gc.count |  | long |
+| apache_spark.metrics.executors.major_gc.time |  | long |
+| apache_spark.metrics.executors.mapped_pool_memory |  | long |
+| apache_spark.metrics.executors.memory_bytes_spilled |  | long |
+| apache_spark.metrics.executors.minor_gc.count |  | long |
+| apache_spark.metrics.executors.minor_gc.time |  | long |
+| apache_spark.metrics.executors.shuffle.bytes_written |  | long |
+| apache_spark.metrics.executors.shuffle.client.used.direct_memory |  | long |
+| apache_spark.metrics.executors.shuffle.client.used.heap_memory |  | long |
+| apache_spark.metrics.executors.shuffle.fetch_wait_time |  | long |
+| apache_spark.metrics.executors.shuffle.local.blocks_fetched |  | long |
+| apache_spark.metrics.executors.shuffle.local.bytes_read |  | long |
+| apache_spark.metrics.executors.shuffle.records.read |  | long |
+| apache_spark.metrics.executors.shuffle.records.written |  | long |
+| apache_spark.metrics.executors.shuffle.remote.blocks_fetched |  | long |
+| apache_spark.metrics.executors.shuffle.remote.bytes_read |  | long |
+| apache_spark.metrics.executors.shuffle.remote.bytes_read_to_disk |  | long |
+| apache_spark.metrics.executors.shuffle.server.used.direct_memory |  | long |
+| apache_spark.metrics.executors.shuffle.server.used.heap_memory |  | long |
+| apache_spark.metrics.executors.shuffle.total.bytes_read |  | long |
+| apache_spark.metrics.executors.shuffle.write.time |  | long |
+| apache_spark.metrics.executors.source_code_size |  | long |
+| apache_spark.metrics.executors.succeeded_tasks |  | long |
+| apache_spark.metrics.executors.threadpool.active_tasks |  | long |
+| apache_spark.metrics.executors.threadpool.complete_tasks |  | long |
+| apache_spark.metrics.executors.threadpool.current_pool_size |  | long |
+| apache_spark.metrics.executors.threadpool.max_pool_size |  | long |
+| apache_spark.metrics.executors.threadpool.started_tasks |  | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -480,10 +480,10 @@ An example event for `applications` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.application_source.cores | Number of cores. | long |
-| apache_spark.metrics.application_source.name | Name of the application. | keyword |
-| apache_spark.metrics.application_source.runtime_ms | Time taken to run the application (ms). | long |
-| apache_spark.metrics.application_source.status | Current status of the application. | keyword |
+| apache_spark.metrics.applications.cores | Number of cores. | long |
+| apache_spark.metrics.applications.name | Name of the application. | keyword |
+| apache_spark.metrics.applications.runtime_ms | Time taken to run the application (ms). | long |
+| apache_spark.metrics.applications.status | Current status of the application. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -503,30 +503,31 @@ An example event for `nodes` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-21T16:08:10.415Z",
+    "@timestamp": "2022-03-09T11:54:51.083Z",
     "agent": {
-        "ephemeral_id": "69f2897f-0e6c-4a75-af87-2f038ed77224",
-        "id": "00ce5157-ceb1-4a57-9e48-be5b4efc407f",
+        "ephemeral_id": "ee411959-b7ce-4172-a203-7701ea051771",
+        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.0.0"
     },
     "apache_spark": {
         "metrics": {
-            "master": {
-                "apps": {
-                    "count": 0,
-                    "waiting": 0
+            "executor": {
+                "application": {
+                    "name": "app-20220322011157-0169"
                 },
-                "workers": {
-                    "alive": 0,
-                    "count": 0
+                "id": "0",
+                "filesystem": {
+                    "hdfs": {
+                        "write_bytes": 0
+                    }
                 }
             }
         }
     },
     "data_stream": {
-        "dataset": "apache_spark.nodes",
+        "dataset": "apache_spark.metrics",
         "namespace": "ep",
         "type": "metrics"
     },
@@ -534,15 +535,15 @@ An example event for `nodes` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "00ce5157-ceb1-4a57-9e48-be5b4efc407f",
+        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "apache_spark.nodes",
-        "duration": 9054044,
-        "ingested": "2022-03-21T16:08:13Z",
+        "dataset": "apache_spark.metrics",
+        "duration": 89018916,
+        "ingested": "2022-03-09T11:54:54Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -552,10 +553,10 @@ An example event for `nodes` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.23.0.5"
+            "172.21.0.5"
         ],
         "mac": [
-            "02:42:ac:17:00:05"
+            "02:42:ac:15:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -584,15 +585,15 @@ An example event for `nodes` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.master.apps.count | Total number of apps. | long |
-| apache_spark.metrics.master.apps.waiting | Number of apps waiting. | long |
-| apache_spark.metrics.master.workers.alive | Number of alive workers. | long |
-| apache_spark.metrics.master.workers.count | Total number of workers. | long |
-| apache_spark.metrics.worker.cores.free | Number of cores free. | long |
-| apache_spark.metrics.worker.cores.used | Number of cores used. | long |
-| apache_spark.metrics.worker.executors | Number of executors. | long |
-| apache_spark.metrics.worker.memory.free | Number of cores free. | long |
-| apache_spark.metrics.worker.memory.used | Amount of memory utilized in MB. | long |
+| apache_spark.metrics.nodes.main.apps.count | Total number of apps. | long |
+| apache_spark.metrics.nodes.main.apps.waiting | Number of apps waiting. | long |
+| apache_spark.metrics.nodes.main.workers.alive | Number of alive workers. | long |
+| apache_spark.metrics.nodes.main.workers.count | Total number of workers. | long |
+| apache_spark.metrics.nodes.worker.cores.free | Number of cores free. | long |
+| apache_spark.metrics.nodes.worker.cores.used | Number of cores used. | long |
+| apache_spark.metrics.nodes.worker.executors | Number of executors. | long |
+| apache_spark.metrics.nodes.worker.memory.free | Number of cores free. | long |
+| apache_spark.metrics.nodes.worker.memory.used | Amount of memory utilized in MB. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -1,16 +1,13 @@
 ARG SERVICE_VERSION=${SERVICE_VERSION:-3.2.0}
 FROM docker.io/bitnami/spark:${SERVICE_VERSION}
 
-USER root
-RUN \
-  apt-get update && apt-get install -y \
-  wget
+ENV JOLOKIA_VERSION=1.6.0 SPARK_MODE=master SPARK_RPC_AUTHENTICATION_ENABLED=no SPARK_RPC_ENCRYPTION_ENABLED=no SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no SPARK_SSL_ENABLED=no SPARK_MASTER_OPTS="-javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-master.properties"
 
-ENV JOLOKIA_VERSION=1.6.0
+USER root
 RUN mkdir /usr/share/java && \
-    wget "http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/${JOLOKIA_VERSION}/jolokia-jvm-${JOLOKIA_VERSION}-agent.jar" -O "/usr/share/java/jolokia-agent.jar" && \
+    curl -o /usr/share/java/jolokia-agent.jar https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/1.6.0/jolokia-jvm-1.6.0-agent.jar && \
     echo 'export SPARK_MASTER_OPTS="$SPARK_MASTER_OPTS -javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-master.properties"' >> "/opt/bitnami/spark/conf/spark-env.sh"
 
 RUN echo '*.sink.jmx.class=org.apache.spark.metrics.sink.JmxSink' >> "/opt/bitnami/spark/conf/metrics.properties" && \
     echo '*.source.jvm.class=org.apache.spark.metrics.source.JvmSource' >> "/opt/bitnami/spark/conf/metrics.properties"
-HEALTHCHECK --interval=1s --retries=90 CMD curl -f http://localhost:7778/jolokia/version
+HEALTHCHECK --interval=1s --retries=90 CMD curl -f -s http://localhost:7777/jolokia/version

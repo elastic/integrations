@@ -19,7 +19,7 @@ processors:
       value: apache_spark
   - script:
       lang: painless
-      description: This script will add the name of application under key 'driver/executor.application.name' and executor id under 'apache_spark.metrics.executor.id'
+      description: This script will add the name of application under key 'driver/executor.application_name' and executor id under 'apache_spark.metrics.executor.id'
       if: ctx?.apache_spark?.metrics?.mbean?.contains("name=worker.") == false &&
           ctx?.apache_spark?.metrics?.mbean?.contains("name=worker.") == false &&
           ctx?.apache_spark?.metrics?.mbean?.contains("name=application.") == false 
@@ -29,11 +29,11 @@ processors:
         def executor_id = bean_name.splitOnToken(".")[1];
         if (executor_id == "driver") {
           ctx.apache_spark.metrics.driver.application = new HashMap();
-          ctx.apache_spark.metrics.driver.application.name = app_name;
+          ctx.apache_spark.metrics.driver.application_name = app_name;
         } else {
-          ctx.apache_spark.metrics.executor.application = new HashMap();
-          ctx.apache_spark.metrics.executor.application.name = app_name;
-          ctx.apache_spark.metrics.executor.id = executor_id;
+          ctx.apache_spark.metrics.executors.application = new HashMap();
+          ctx.apache_spark.metrics.executors.application_name = app_name;
+          ctx.apache_spark.metrics.executors.id = executor_id;
         }
   - remove:
       field: apache_spark.metrics.mbean
