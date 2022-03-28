@@ -55,14 +55,13 @@ An example event for `saml` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:02:13.000Z",
+    "@timestamp": "2022-02-02T12:27:23.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "4ffa592e-b9c1-4a7e-8c91-78817747d073",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
@@ -70,24 +69,24 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "login_failure",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "authentication",
             "session"
         ],
-        "created": "2021-06-16T13:02:13.755Z",
+        "created": "2022-02-03T12:27:23.007Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2021-06-16T13:02:14.774956509Z",
+        "ingested": "2022-02-03T12:27:24Z",
         "outcome": "failure",
         "provider": "saml",
         "type": [
@@ -114,9 +113,6 @@ An example event for `saml` looks as following:
             "status_code": "SUCCESS_URI"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -135,20 +131,8 @@ An example event for `saml` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -195,6 +179,7 @@ An example event for `saml` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
@@ -282,14 +267,13 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:03:09.000Z",
+    "@timestamp": "2022-02-02T12:28:15.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "3242bd5f-5862-4205-97eb-6aaac7d3f3d5",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
@@ -297,23 +281,23 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "2sv_disable",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2021-06-16T13:03:09.529Z",
+        "created": "2022-02-03T12:28:15.402Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2021-06-16T13:03:10.552894458Z",
+        "ingested": "2022-02-03T12:28:16Z",
         "provider": "user_accounts",
         "type": [
             "change",
@@ -331,9 +315,6 @@ An example event for `user_accounts` looks as following:
         "organization": {
             "domain": "elastic.com"
         }
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -353,20 +334,8 @@ An example event for `user_accounts` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -413,6 +382,7 @@ An example event for `user_accounts` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
@@ -494,14 +464,13 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:01:21.000Z",
+    "@timestamp": "2022-02-02T12:26:31.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "0b8db1d7-2f2e-4e9d-84d8-f3b4409101ef",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
@@ -509,23 +478,23 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "account_disabled_password_leak",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "created": "2021-06-16T13:01:21.813Z",
+        "created": "2022-02-03T12:26:31.037Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2021-06-16T13:01:22.836420693Z",
+        "ingested": "2022-02-03T12:26:32Z",
         "provider": "login",
         "type": [
             "user",
@@ -547,9 +516,6 @@ An example event for `login` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -569,20 +535,8 @@ An example event for `login` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -633,6 +587,7 @@ An example event for `login` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
@@ -722,14 +677,13 @@ An example event for `admin` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T12:58:47.000Z",
+    "@timestamp": "2022-02-02T12:23:57.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "68cf8bd1-0ff1-4c77-a4e7-64ab24882a9c",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
@@ -737,24 +691,24 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam",
             "configuration"
         ],
-        "created": "2021-06-16T12:58:47.527Z",
+        "created": "2022-02-03T12:23:57.797Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2021-06-16T12:58:48.550215693Z",
+        "ingested": "2022-02-03T12:23:58Z",
         "provider": "admin",
         "type": [
             "change"
@@ -766,7 +720,19 @@ An example event for `admin` looks as following:
         },
         "admin": {
             "application": {
-                "edition": "basic"
+                "edition": "basic",
+                "name": "drive"
+            },
+            "group": {
+                "email": "group@example.com"
+            },
+            "new_value": "new",
+            "old_value": "old",
+            "org_unit": {
+                "name": "org"
+            },
+            "setting": {
+                "name": "setting"
             }
         },
         "event": {
@@ -777,8 +743,9 @@ An example event for `admin` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
+    "group": {
+        "domain": "example.com",
+        "name": "group"
     },
     "input": {
         "type": "httpjson"
@@ -798,20 +765,8 @@ An example event for `admin` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -828,7 +783,13 @@ An example event for `admin` looks as following:
     "user": {
         "domain": "bar.com",
         "id": "1",
-        "name": "foo"
+        "name": "foo",
+        "target": {
+            "group": {
+                "domain": "example.com",
+                "name": "group"
+            }
+        }
     }
 }
 ```
@@ -858,6 +819,7 @@ An example event for `admin` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
@@ -1036,14 +998,13 @@ An example event for `drive` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T12:59:39.000Z",
+    "@timestamp": "2022-02-02T12:24:50.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "3160d231-025f-4e24-9581-72458c960fca",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
@@ -1051,23 +1012,23 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "add_to_folder",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "file"
         ],
-        "created": "2021-06-16T12:59:39.884Z",
+        "created": "2022-02-03T12:24:50.101Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2021-06-16T12:59:40.904399475Z",
+        "ingested": "2022-02-03T12:24:51Z",
         "provider": "drive",
         "type": [
             "change"
@@ -1106,9 +1067,6 @@ An example event for `drive` looks as following:
             "domain": "elastic.com"
         }
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -1128,20 +1086,8 @@ An example event for `drive` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -1188,6 +1134,7 @@ An example event for `drive` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
@@ -1298,14 +1245,13 @@ An example event for `groups` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-06-15T13:00:32.000Z",
+    "@timestamp": "2022-02-02T12:25:39.000Z",
     "agent": {
-        "ephemeral_id": "4d35807f-c708-46e6-97f3-b3369fbc34e8",
-        "hostname": "docker-fleet-agent",
-        "id": "d8213996-c24f-495c-96cb-f564b71a2762",
+        "ephemeral_id": "a9599f5d-49a5-4339-9e5e-484f19370712",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.14.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
@@ -1313,23 +1259,23 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.10.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "51c0e108-cb0d-423a-9458-32a8738418ff",
-        "snapshot": true,
-        "version": "7.14.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "change_acl_permission",
-        "agent_id_status": "agent_id_mismatch",
+        "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2021-06-16T13:00:32.455Z",
+        "created": "2022-02-03T12:25:39.375Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2021-06-16T13:00:33.478404747Z",
+        "ingested": "2022-02-03T12:25:40Z",
         "provider": "groups",
         "type": [
             "group",
@@ -1363,9 +1309,6 @@ An example event for `groups` looks as following:
         "domain": "example.com",
         "name": "group"
     },
-    "host": {
-        "name": "docker-fleet-agent"
-    },
     "input": {
         "type": "httpjson"
     },
@@ -1384,20 +1327,8 @@ An example event for `groups` looks as following:
         "as": {
             "number": 7922,
             "organization": {
-                "name": "Comcast Cable Communications, LLC"
+                "name": "Comcast Cable Communications, Inc."
             }
-        },
-        "geo": {
-            "city_name": "State College",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 40.7957,
-                "lon": -77.8618
-            },
-            "region_iso_code": "US-PA",
-            "region_name": "Pennsylvania"
         },
         "ip": "98.235.162.24",
         "user": {
@@ -1450,6 +1381,7 @@ An example event for `groups` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
