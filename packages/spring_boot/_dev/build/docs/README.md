@@ -90,6 +90,16 @@ This is the `threads` dataset.
 
 {{fields "threads"}}
 
+### GC Metrics
+
+This is the `gc` dataset.
+
+- This dataset gives data of GC Memory.
+
+{{event "gc"}}
+
+{{fields "gc"}}
+
 ### JVM Metrics
 
 This is the `jvm` dataset.

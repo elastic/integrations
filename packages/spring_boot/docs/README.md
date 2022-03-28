@@ -38,14 +38,13 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:48:58.436Z",
+    "@timestamp": "2022-03-25T13:34:12.053Z",
     "agent": {
-        "ephemeral_id": "66dca6a0-56f9-4324-8103-eae15382b08a",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "d40ddd78-15ae-48b5-b316-f4cc3e64ed60",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.info",
@@ -56,16 +55,16 @@ An example event for `info` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-22T15:48:58.436Z",
+        "created": "2022-03-25T13:34:12.053Z",
         "dataset": "spring_boot.info",
-        "ingested": "2022-03-22T15:49:01Z",
+        "ingested": "2022-03-25T13:34:15Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -75,7 +74,7 @@ An example event for `info` looks as following:
             "description": "Spring Boot Actuator Project",
             "encoding": "UTF-8",
             "java": {
-                "version": "11.0.14.1"
+                "version": "1.8.0_322"
             },
             "name": "actuator-demo",
             "version": "0.0.1-Release"
@@ -119,14 +118,13 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:47:30.572Z",
+    "@timestamp": "2022-03-25T13:31:49.140Z",
     "agent": {
-        "ephemeral_id": "12d13b89-1095-41ce-baed-e36a4b14ab8b",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "ae9b9b79-1209-4fc4-91a3-9eac922863fb",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.audit_events",
@@ -137,16 +135,16 @@ An example event for `audit_events` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-22T15:47:30.572Z",
+        "created": "2022-03-25T13:31:49.140Z",
         "dataset": "spring_boot.audit_events",
-        "ingested": "2022-03-22T15:47:34Z",
+        "ingested": "2022-03-25T13:31:52Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -155,22 +153,21 @@ An example event for `audit_events` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "spring_boot": {
@@ -213,14 +210,13 @@ An example event for `http_trace` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:48:13.671Z",
+    "@timestamp": "2022-03-25T13:33:25.240Z",
     "agent": {
-        "ephemeral_id": "fe0e77be-783e-47a4-a213-034c49cf75fa",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "223944e2-8af6-4581-a0e8-e0be6ea354da",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.http_trace",
@@ -231,16 +227,16 @@ An example event for `http_trace` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-22T15:48:13.671Z",
+        "created": "2022-03-25T13:33:25.240Z",
         "dataset": "spring_boot.http_trace",
-        "ingested": "2022-03-22T15:48:17Z",
+        "ingested": "2022-03-25T13:33:28Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -249,22 +245,21 @@ An example event for `http_trace` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "http": {
@@ -280,7 +275,7 @@ An example event for `http_trace` looks as following:
             "request": {
                 "uri": "http://springboot:8090/actuator/info"
             },
-            "time_taken": 5
+            "time_taken": 3
         }
     },
     "tags": [
@@ -324,14 +319,13 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:50:32.441Z",
+    "@timestamp": "2022-03-25T13:35:44.443Z",
     "agent": {
-        "ephemeral_id": "6f6fd840-e663-4b57-954c-d4c84353a073",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "a962be39-7775-4b97-a4ac-67d4e87c00b4",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.memory",
@@ -342,16 +336,16 @@ An example event for `memory` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 504500030,
-        "ingested": "2022-03-22T15:50:35Z",
+        "duration": 545532651,
+        "ingested": "2022-03-25T13:35:47Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -360,22 +354,21 @@ An example event for `memory` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "jolokia": {},
@@ -494,14 +487,13 @@ An example event for `os` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:51:18.022Z",
+    "@timestamp": "2022-03-25T13:36:31.541Z",
     "agent": {
-        "ephemeral_id": "c4b56096-158e-4a6d-a738-16a8b121f7a4",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "159eefb4-0142-49a7-b362-02f15cf5c8ee",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.os",
@@ -512,16 +504,16 @@ An example event for `os` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.os",
-        "duration": 198590266,
-        "ingested": "2022-03-22T15:51:21Z",
+        "duration": 197562075,
+        "ingested": "2022-03-25T13:36:35Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -530,22 +522,21 @@ An example event for `os` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "jolokia": {},
@@ -566,20 +557,20 @@ An example event for `os` looks as following:
             "operating_system": {
                 "arch": "amd64",
                 "available_processors": 4,
-                "committed_virtual_memory_size": 3226968064,
+                "committed_virtual_memory_size": 3143516160,
                 "free": {
-                    "physical_memory_size": 383717376,
-                    "swap_space_size": 3606573056
+                    "physical_memory_size": 383983616,
+                    "swap_space_size": 3386163200
                 },
                 "max_file_descriptor_count": 1048576,
-                "open_file_descriptor_count": 19,
+                "open_file_descriptor_count": 26,
                 "process": {
-                    "cpu_load": 0.07164002368265246,
-                    "cpu_time": 15960000000
+                    "cpu_load": 0.042444821731748725,
+                    "cpu_time": 18460000000
                 },
                 "system": {
-                    "cpu_load": 0.2847838957963292,
-                    "load_average": 2.30029296875
+                    "cpu_load": 0.2529711375212224,
+                    "load_average": 3.78466796875
                 },
                 "total": {
                     "physical_memory_size": 6067863552,
@@ -924,6 +915,318 @@ An example event for `threads` looks as following:
 | user_agent.version | Version of the user agent. | keyword |
 
 
+### GC Metrics
+
+This is the `gc` dataset.
+
+- This dataset gives data of GC Memory.
+
+An example event for `gc` looks as following:
+
+```json
+{
+    "@timestamp": "2022-03-25T15:07:54.518Z",
+    "agent": {
+        "ephemeral_id": "8115323c-c07e-40d6-947b-109fd1ac5a29",
+        "id": "2fc709fd-6760-4b1a-9d27-72877c39d004",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "dataset": "spring_boot.gc",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "2fc709fd-6760-4b1a-9d27-72877c39d004",
+        "snapshot": false,
+        "version": "8.0.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "database",
+        "dataset": "spring_boot.gc",
+        "duration": 193566394,
+        "ingested": "2022-03-25T15:07:57Z",
+        "kind": "metric",
+        "module": "spring_boot",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.31.0.7"
+        ],
+        "mac": [
+            "02:42:ac:1f:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "jolokia": {},
+    "metricset": {
+        "name": "jmx",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://springboot:8090/actuator/jolokia",
+        "type": "jolokia"
+    },
+    "spring_boot": {
+        "gc": {
+            "garbage_collector": {
+                "collection": {
+                    "count": 2,
+                    "time": 132
+                },
+                "last_gc_info": {
+                    "duration": 74,
+                    "end_time": 4759,
+                    "gc_thread_count": 4,
+                    "id": 2,
+                    "memory_usage_after_gc": {
+                        "code_cache": {
+                            "committed": 12845056,
+                            "init": 2555904,
+                            "max": 251658240,
+                            "used": 12767040
+                        },
+                        "compressed_class_space": {
+                            "committed": 4980736,
+                            "init": 0,
+                            "max": 1073741824,
+                            "used": 4451288
+                        },
+                        "metaspace": {
+                            "committed": 36347904,
+                            "init": 0,
+                            "max": -1,
+                            "used": 33796784
+                        },
+                        "ps_eden_space": {
+                            "committed": 308281344,
+                            "init": 24641536,
+                            "max": 479723520,
+                            "used": 0
+                        },
+                        "ps_old_gen": {
+                            "committed": 71303168,
+                            "init": 64487424,
+                            "max": 1012400128,
+                            "used": 15202272
+                        },
+                        "ps_survivor_space": {
+                            "committed": 12582912,
+                            "init": 3670016,
+                            "max": 12582912,
+                            "used": 0
+                        }
+                    },
+                    "memory_usage_before_gc": {
+                        "code_cache": {
+                            "committed": 12845056,
+                            "init": 2555904,
+                            "max": 251658240,
+                            "used": 12767040
+                        },
+                        "compressed_class_space": {
+                            "committed": 4980736,
+                            "init": 0,
+                            "max": 1073741824,
+                            "used": 4451288
+                        },
+                        "metaspace": {
+                            "committed": 36347904,
+                            "init": 0,
+                            "max": -1,
+                            "used": 33796784
+                        },
+                        "ps_eden_space": {
+                            "committed": 308281344,
+                            "init": 24641536,
+                            "max": 479723520,
+                            "used": 0
+                        },
+                        "ps_old_gen": {
+                            "committed": 51380224,
+                            "init": 64487424,
+                            "max": 1012400128,
+                            "used": 12251304
+                        },
+                        "ps_survivor_space": {
+                            "committed": 12582912,
+                            "init": 3670016,
+                            "max": 12582912,
+                            "used": 9621584
+                        }
+                    },
+                    "start_time": 4685
+                },
+                "name": "PS MarkSweep",
+                "valid": true
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.status_code | HTTP response status code. | long |
+| http.version | HTTP version. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| os.name | Operating system name, without the version. | keyword |
+| os.version | Operating system version as a raw string. | keyword |
+| process.pid | Process id. | long |
+| process.thread.id | Thread ID. | long |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| spring_boot.gc.garbage_collector.collection.count |  | long |
+| spring_boot.gc.garbage_collector.collection.time |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.duration |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.end_time |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.gc_thread_count |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.id |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.committed |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.init |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.max |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.used |  | long |
+| spring_boot.gc.garbage_collector.last_gc_info.start_time |  | long |
+| spring_boot.gc.garbage_collector.name |  | keyword |
+| spring_boot.gc.garbage_collector.valid |  | boolean |
+| spring_boot.gc.memory_pool.collection_usage.committed |  | long |
+| spring_boot.gc.memory_pool.collection_usage.init |  | long |
+| spring_boot.gc.memory_pool.collection_usage.max |  | long |
+| spring_boot.gc.memory_pool.collection_usage.used |  | long |
+| spring_boot.gc.memory_pool.collection_usage_threshold.count |  | long |
+| spring_boot.gc.memory_pool.collection_usage_threshold.exceeded |  | boolean |
+| spring_boot.gc.memory_pool.collection_usage_threshold.supported |  | boolean |
+| spring_boot.gc.memory_pool.collection_usage_threshold.threshold |  | long |
+| spring_boot.gc.memory_pool.name |  | keyword |
+| spring_boot.gc.memory_pool.peak_usage.committed |  | long |
+| spring_boot.gc.memory_pool.peak_usage.init |  | long |
+| spring_boot.gc.memory_pool.peak_usage.max |  | long |
+| spring_boot.gc.memory_pool.peak_usage.used |  | long |
+| spring_boot.gc.memory_pool.type |  | keyword |
+| spring_boot.gc.memory_pool.usage.committed |  | long |
+| spring_boot.gc.memory_pool.usage.init |  | long |
+| spring_boot.gc.memory_pool.usage.max |  | long |
+| spring_boot.gc.memory_pool.usage.used |  | long |
+| spring_boot.gc.memory_pool.usage_threshold.count |  | long |
+| spring_boot.gc.memory_pool.usage_threshold.exceeded |  | boolean |
+| spring_boot.gc.memory_pool.usage_threshold.supported |  | boolean |
+| spring_boot.gc.memory_pool.usage_threshold.threshold |  | long |
+| spring_boot.gc.memory_pool.valid |  | boolean |
+| tags | List of keywords used to tag each event. | keyword |
+| tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user_agent.device.name | Name of the device. | keyword |
+| user_agent.name | Name of the user agent. | keyword |
+| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.version | Operating system version as a raw string. | keyword |
+| user_agent.version | Version of the user agent. | keyword |
+
+
 ### JVM Metrics
 
 This is the `jvm` dataset.
@@ -934,14 +1237,13 @@ An example event for `jvm` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:49:44.745Z",
+    "@timestamp": "2022-03-25T13:34:57.366Z",
     "agent": {
-        "ephemeral_id": "68b54036-2709-4bba-9616-62f6d752be7b",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "78464199-4016-450a-9eb6-9f5b28c1dc99",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.jvm",
@@ -952,15 +1254,15 @@ An example event for `jvm` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spring_boot.jvm",
-        "duration": 105233010,
-        "ingested": "2022-03-22T15:49:48Z",
+        "duration": 97377250,
+        "ingested": "2022-03-25T13:35:00Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -968,22 +1270,21 @@ An example event for `jvm` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -995,17 +1296,14 @@ An example event for `jvm` looks as following:
     "spring_boot": {
         "jvm": {
             "labels": {
-                "area": "nonheap",
-                "id": "CodeHeap 'non-profiled nmethods'",
                 "instance": "springboot:8090",
-                "job": "prometheus"
+                "job": "prometheus",
+                "state": "runnable"
             },
             "metrics": {
                 "jvm": {
-                    "memory": {
-                        "committed_bytes": 2883584,
-                        "max_bytes": 122912768,
-                        "used_bytes": 2881792
+                    "threads": {
+                        "states_threads": 7
                     }
                 }
             }
@@ -1069,14 +1367,13 @@ An example event for `server` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-22T15:52:01.897Z",
+    "@timestamp": "2022-03-25T13:37:17.400Z",
     "agent": {
-        "ephemeral_id": "e9432f17-6a1a-474a-bd82-f73592776fea",
-        "hostname": "docker-fleet-agent",
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "ephemeral_id": "801f0306-c831-4e63-b9d5-6c827e7e97e2",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "spring_boot.server",
@@ -1087,15 +1384,15 @@ An example event for `server` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "63f3c39f-5b39-4bb5-b597-5ddcda6ab33a",
+        "id": "f2af09c5-1d9f-45d7-87cc-0405ff17106f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "spring_boot.server",
-        "duration": 110424415,
-        "ingested": "2022-03-22T15:52:05Z",
+        "duration": 99805898,
+        "ingested": "2022-03-25T13:37:20Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -1103,22 +1400,21 @@ An example event for `server` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "7f9ea24f5509c98509297b0e8530fd71",
         "ip": [
-            "172.20.0.7"
+            "192.168.208.7"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:c0:a8:d0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
+            "codename": "focal",
+            "family": "debian",
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -1131,11 +1427,35 @@ An example event for `server` looks as following:
         "server": {
             "labels": {
                 "instance": "springboot:8090",
-                "job": "prometheus",
-                "level": "debug"
+                "job": "prometheus"
             },
             "metrics": {
-                "logback_events_total": 0
+                "process": {
+                    "cpu_usage": 0.029547553093259467,
+                    "files": {
+                        "max_files": 1048576,
+                        "open_files": 25
+                    },
+                    "start_time_seconds": 1648215413.928,
+                    "uptime_seconds": 23.628
+                },
+                "system": {
+                    "cpu": {
+                        "count": 4,
+                        "usage": 0.24018475750577367
+                    },
+                    "load_average_1m": 4.07275390625
+                },
+                "tomcat_sessions": {
+                    "active": {
+                        "current_sessions": 17,
+                        "max_sessions": 17
+                    },
+                    "alive_max_seconds": 0,
+                    "created_sessions_total": 17,
+                    "expired_sessions_total": 0,
+                    "rejected_sessions_total": 0
+                }
             }
         }
     }

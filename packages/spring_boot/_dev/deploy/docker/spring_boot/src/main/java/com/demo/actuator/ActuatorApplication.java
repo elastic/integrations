@@ -10,16 +10,22 @@ import org.springframework.boot.actuate.audit.InMemoryAuditEventRepository;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
 
 @SpringBootApplication
 @EnableCaching
 public class ActuatorApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ActuatorApplication.class, args);
-    }
-
+	public static void main(String[] args) throws IOException {
+		SpringApplication.run(ActuatorApplication.class, args);
+	}
 
     @Bean
     public HttpTraceRepository httpTraceRepository() {
