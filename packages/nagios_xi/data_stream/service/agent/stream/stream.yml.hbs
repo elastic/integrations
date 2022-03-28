@@ -8,12 +8,18 @@ request.proxy_url: {{proxy_url}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
-{{#if query}}
 request.transforms:
+{{#if host_address}}
+  - set:
+      target: url.params.host_address
+      value: in:{{#each host_address as |host i|}}{{host}},{{/each}}
+      default: in:{{#each host_address as |host i|}}{{host}},{{/each}}
+{{/if}}
+{{#if display_name}}
   - set:
       target: url.params.display_name
-      value: in:{{#each query as |q i|}}{{q}},{{/each}}
-      default: in:{{#each query as |q i|}}{{q}},{{/each}}
+      value: in:{{#each display_name as |service i|}}{{service}},{{/each}}
+      default: in:{{#each display_name as |service i|}}{{service}},{{/each}}
 {{/if}}
 response.split:
   target: body.servicestatus
