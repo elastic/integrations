@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.42.0
+	github.com/elastic/elastic-package v0.43.0
 	github.com/elastic/package-registry v1.7.0
 	github.com/magefile/mage v1.13.0
 	github.com/pkg/errors v0.9.1
@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.3 // indirect
+	github.com/AlecAivazis/survey/v2 v2.3.4 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
@@ -22,8 +22,8 @@ require (
 	github.com/PaesslerAG/gval v1.1.2 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f // indirect
-	github.com/ProtonMail/go-mime v0.0.0-20190923161245-9b5a4261663a // indirect
-	github.com/ProtonMail/gopenpgp/v2 v2.4.5 // indirect
+	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
+	github.com/ProtonMail/gopenpgp/v2 v2.4.6 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
