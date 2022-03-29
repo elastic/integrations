@@ -1,5 +1,6 @@
 FROM maven:3.8.4-openjdk-8
 RUN mkdir -p /build
+RUN chmod -R 777 /build 
 WORKDIR /build
 COPY ./spring_boot/ /build/spring_boot/
 WORKDIR /build/spring_boot
