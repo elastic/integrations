@@ -241,10 +241,10 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | threat.indicator.file.type | File type (file, dir, or symlink). | keyword |
 | threat.indicator.file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| threat.indicator.file.x509.not_after | Time at which the certificate is no longer considered valid. | keyword |
-| threat.indicator.file.x509.not_before | Time at which the certificate is first considered valid. | keyword |
+| threat.indicator.file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| threat.indicator.file.x509.not_before | Time at which the certificate is first considered valid. | date |
 | threat.indicator.file.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
-| threat.indicator.file.x509.serial_number | Unique serial number issued by the certificate authority. | keyword |
+| threat.indicator.file.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | threat.indicator.file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |

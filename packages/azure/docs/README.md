@@ -797,7 +797,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.authentication_processing_details | Additional authentication processing details, such as the agent name in case of PTA/PHS or Server/farm name in case of federated authentication. | flattened |
 | azure.signinlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
-| azure.signinlogs.properties.authentication_requirement_policies | Set of CA policies that apply to this sign-in, each as CA: policy name, and/or MFA: Per-user | keyword |
+| azure.signinlogs.properties.authentication_requirement_policies | Set of CA policies that apply to this sign-in, each as CA: policy name, and/or MFA: Per-user | flattened |
 | azure.signinlogs.properties.autonomous_system_number | Autonomous system number. | long |
 | azure.signinlogs.properties.client_app_used | Client app used | keyword |
 | azure.signinlogs.properties.conditional_access_status | Conditional access status | keyword |
@@ -807,6 +807,8 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.device_detail.browser | Browser | keyword |
 | azure.signinlogs.properties.device_detail.device_id | Device ID | keyword |
 | azure.signinlogs.properties.device_detail.display_name | Display name | keyword |
+| azure.signinlogs.properties.device_detail.is_compliant | If the device is compliant | boolean |
+| azure.signinlogs.properties.device_detail.is_managed | If the device is managed | boolean |
 | azure.signinlogs.properties.device_detail.operating_system | Operating system | keyword |
 | azure.signinlogs.properties.device_detail.trust_type | Trust type | keyword |
 | azure.signinlogs.properties.flagged_for_review |  | boolean |
