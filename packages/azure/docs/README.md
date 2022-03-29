@@ -81,7 +81,7 @@ An example event for `activitylogs` looks as following:
         "dataset": "azure.activitylogs"
     },
     "event": {
-        "duration": "0",
+        "duration": 0,
         "ingested": "2020-10-30T20:47:48.123859400Z",
         "kind": "event",
         "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
@@ -483,7 +483,7 @@ An example event for `auditlogs` looks as following:
         "dataset": "azure.auditlogs"
     },
     "event": {
-        "duration": "0",
+        "duration": 0,
         "ingested": "2020-10-30T20:47:48.123859400Z",
         "kind": "event",
         "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
