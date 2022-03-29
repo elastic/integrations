@@ -18,12 +18,11 @@ documentation that can be found in:
 * Custom Format with Traffic Through a Transit Gateway:
   https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html
 
-This integration support various patterns to include:
+This integration support several patterns to include:
 * The default pattern of 14 version 2 fields
-* A custom pattern including all 29 fields, version 2 though 5 in the below pattern
-  `${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}`
+* A custom pattern including all 29 fields, version 2 though 5: `${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}`
 
-
+**The Parquet format is not supported.**
 
 {{fields "vpcflow"}}
 

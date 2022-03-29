@@ -18,12 +18,11 @@ documentation that can be found in:
 * Custom Format with Traffic Through a Transit Gateway:
   https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs-records-examples.html
 
-This integration support various patterns to include:
+This integration support several patterns to include:
 * The default pattern of 14 version 2 fields
-* A custom pattern including all 29 fields, version 2 though 5 in the below pattern
-  `${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}`
+* A custom pattern including all 29 fields, version 2 though 5: `${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}`
 
-
+**The Parquet format is not supported.**
 
 **Exported fields**
 
@@ -39,12 +38,12 @@ This integration support various patterns to include:
 | aws.vpcflow.pkt_dstaddr | The packet-level (original) destination IP address for the traffic. | ip |
 | aws.vpcflow.pkt_src_service | The name of the subset of IP address ranges for the pkt-srcaddr field, if the source IP address is for an AWS service. | keyword |
 | aws.vpcflow.pkt_srcaddr | The packet-level (original) source IP address of the traffic. | ip |
-| aws.vpcflow.sublocation.id | The ID of the sublocation that contains the network interface for which traffic is recorded. If the traffic is not from a sublocation, the record displays a '-' symbol for this field. | keyword |
-| aws.vpcflow.sublocation.type | The type of sublocation that's returned in the sublocation-id field. The possible values are: wavelength | outpost | localzone. If the traffic is not from a sublocation, the record displays a '-' symbol for this field. | keyword |
+| aws.vpcflow.sublocation.id | The ID of the sublocation that contains the network interface for which traffic is recorded. If the traffic is not from a sublocation, the field is removed. | keyword |
+| aws.vpcflow.sublocation.type | The type of sublocation that's returned in the sublocation-id field. The possible values are: wavelength | outpost | localzone. If the traffic is not from a sublocation, the field is removed. | keyword |
 | aws.vpcflow.subnet_id | The ID of the subnet that contains the network interface for which the traffic is recorded. | keyword |
 | aws.vpcflow.tcp_flags | The bitmask value for the following TCP flags: 2=SYN,18=SYN-ACK,1=FIN,4=RST | keyword |
 | aws.vpcflow.tcp_flags_array | List of TCP flags: 'fin, syn, rst, psh, ack, urg' | keyword |
-| aws.vpcflow.traffic_path | The path that egress traffic takes to the destination. To determine whether the traffic is egress traffic, check the flow-direction field. The possible values are as follows. If none of the values apply, the field is set to -. | keyword |
+| aws.vpcflow.traffic_path | The path that egress traffic takes to the destination. To determine whether the traffic is egress traffic, check the `network.direction` field. The possible values can be found [here](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html#flow-logs-fields). If none of the values apply, the field is set to -. | keyword |
 | aws.vpcflow.type | The type of traffic: IPv4, IPv6, or EFA. | keyword |
 | aws.vpcflow.version | The VPC Flow Logs version. If you use the default format, the version is 2. If you specify a custom format, the version is 3. | keyword |
 | aws.vpcflow.vpc_id | The ID of the VPC that contains the network interface for which the traffic is recorded. | keyword |
