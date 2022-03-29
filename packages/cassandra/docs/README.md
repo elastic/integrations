@@ -1,6 +1,6 @@
 # Cassandra Integration
 
-This integration periodically fetches metrics from [Cassandra](https://cassandra.apache.org/) using jolokia agent. It can parse System logs.
+This integration periodically fetches metrics from [Cassandra](https://cassandra.apache.org/) using jolokia agent. It can parse system logs.
 
 ## Logs
 
@@ -122,7 +122,7 @@ An example event for `log` looks as following:
 
 ## Metrics
 
-Cassandra metrics using jolokia agent installed on cassandra.
+Cassandra metrics using jolokia agent installed on Cassandra.
 
 An example event for `metrics` looks as following:
 
