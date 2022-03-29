@@ -21,7 +21,7 @@ processors:
         - "ConfigVersionId=%{DATA:ConfigVersionId}, OperationMessageText={%{DATA:OperationMessageText}}"
   - grok:
       field: cisco_ise.log.log_details
-      if: ctx.cisco_ise.log.message.code == "61025" || ctx.cisco_ise.log.message.code == "61026"
+      if: '["61025", "61026"].contains(ctx.cisco_ise.log.message.code)'
       patterns: 
         - "ConfigVersionId=%{DATA:ConfigVersionId}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, , OperationMessageText=%{DATA:OperationMessageText}, AcsInstance=%{GREEDYDATA:AcsInstance}"
       on_failure:
@@ -34,10 +34,16 @@ processors:
       if: ctx.cisco_ise.log.message.code == "52001"
       ignore_failure: true
       patterns: 
-        - "ConfigVersionId=%{DATA:ConfigVersionId}, FailureFlag=%{DATA:FailureFlag}, RequestResponseType=%{DATA:RequestResponseType}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminName=%{DATA:AdminName}, ConfigChangeData=%{DATA:ConfigChangeData}, ObjectType=%{DATA:ObjectType}, ObjectName=%{DATA:ObjectName}, Component=%{DATA:Component}, ObjectInternalID=%{GREEDYDATA:ObjectInternalID}"
-        - "ConfigVersionId=%{DATA:ConfigVersionId}, FailureFlag=%{DATA:FailureFlag}, RequestResponseType=%{DATA:RequestResponseType}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminName=%{DATA:AdminName}, ConfigChangeData=%{DATA:ConfigChangeData}, ObjectType=%{DATA:ObjectType}, ObjectName=%{DATA:ObjectName}, OperationMessageText=%{GREEDYDATA:OperationMessageText}"
-        - "ConfigVersionId=%{DATA:ConfigVersionId}, FailureFlag=%{DATA:FailureFlag}, RequestResponseType=%{DATA:RequestResponseType}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminName=%{DATA:AdminName}, ObjectType=%{DATA:ObjectType}, ObjectName=%{DATA:ObjectName}, Component=%{DATA:Component}, ObjectInternalID=%{GREEDYDATA:ObjectInternalID}"
-        - "ConfigVersionId=%{DATA:ConfigVersionId}, FailureFlag=%{DATA:FailureFlag}, RequestResponseType=%{DATA:RequestResponseType}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminName=%{DATA:AdminName}, ConfigChangeData=%{DATA:ConfigChangeData}, ObjectType=%{DATA:ObjectType}, ObjectName=%{GREEDYDATA:ObjectName}"
+        - "ConfigVersionId=%{DATA:ConfigVersionId}, FailureFlag=%{DATA:FailureFlag}, RequestResponseType=%{DATA:RequestResponseType}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminName=%{DATA:AdminName}, %{GREEDYDATA:log_detail}"
+  - grok:
+      field: log_detail
+      if: ctx.cisco_ise.log.message.code == "52001"
+      ignore_failure: true
+      patterns: 
+        - "ConfigChangeData=%{DATA:ConfigChangeData}, ObjectType=%{DATA:ObjectType}, ObjectName=%{DATA:ObjectName}, Component=%{DATA:Component}, ObjectInternalID=%{GREEDYDATA:ObjectInternalID}"
+        - "ConfigChangeData=%{DATA:ConfigChangeData}, ObjectType=%{DATA:ObjectType}, ObjectName=%{DATA:ObjectName}, OperationMessageText=%{GREEDYDATA:OperationMessageText}"
+        - "ObjectType=%{DATA:ObjectType}, ObjectName=%{DATA:ObjectName}, Component=%{DATA:Component}, ObjectInternalID=%{GREEDYDATA:ObjectInternalID}"
+        - "ConfigChangeData=%{DATA:ConfigChangeData}, ObjectType=%{DATA:ObjectType}, ObjectName=%{GREEDYDATA:ObjectName}"
   - grok:
       field: ConfigChangeData
       if: ctx.cisco_ise.log.message.code == "52001"
@@ -49,13 +55,25 @@ processors:
       if: ctx.cisco_ise.log.message.code == "52002"
       ignore_failure: true
       patterns: 
-        - "ConfigVersionId=%{DATA:ConfigVersionId}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminSession=%{DATA:AdminSession}, AdminName=%{DATA:AdminName}, ConfigChangeData=%{GREEDYDATA:ConfigChangeData}"
-        - "ConfigVersionId=%{DATA:ConfigVersionId}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, AdminName=%{DATA:AdminName}, ConfigChangeData=%{GREEDYDATA:ConfigChangeData}"
+        - "ConfigVersionId=%{DATA:ConfigVersionId}, AdminInterface=%{DATA:AdminInterface}, AdminIPAddress=%{DATA:AdminIPAddress}, %{GREEDYDATA:log_detail}"
+  - grok:
+      field: log_detail
+      if: ctx.cisco_ise.log.message.code == "52002"
+      ignore_failure: true
+      patterns: 
+        - "AdminSession=%{DATA:AdminSession}, AdminName=%{DATA:AdminName}, ConfigChangeData=%{GREEDYDATA:ConfigChangeData}"
+        - "AdminName=%{DATA:AdminName}, ConfigChangeData=%{GREEDYDATA:ConfigChangeData}"
+        - "AdminName=%{DATA:AdminName}, %{GREEDYDATA:log_description}"
       on_failure:
         - kv:
             field: cisco_ise.log.log_details
             field_split: ", "
             value_split: =
+  - kv:
+      field: log_description
+      field_split: ", "
+      value_split: =
+      ignore_failure: true
   - grok:
       field: ConfigChangeData
       if: ctx.cisco_ise.log.message.code == "52002"
@@ -69,12 +87,7 @@ processors:
       value_split: =
       ignore_failure: true
   - kv: 
-      if: |
-        ctx.cisco_ise.log.message.code != "60067" && 
-        ctx.cisco_ise.log.message.code != "61025" && 
-        ctx.cisco_ise.log.message.code != "61026" &&
-        ctx.cisco_ise.log.message.code != "52001" &&
-        ctx.cisco_ise.log.message.code != "52002"
+      if: '!["60067", "61025", "61026", "52001", "52002"].contains(ctx.cisco_ise.log.message.code)'
       field: cisco_ise.log.log_details
       field_split: ", "
       value_split: =
@@ -322,4 +335,6 @@ processors:
         - FeedServiceQueryToTime
         - LogSeverityLevel
         - ResponseTime
+        - log_detail
+        - log_description
       ignore_missing: true
