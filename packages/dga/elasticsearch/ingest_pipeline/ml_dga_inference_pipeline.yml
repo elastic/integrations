@@ -1,0 +1,101 @@
+---
+processors:
+  - script:
+      description: Add ngram features for ML DGA model
+      lang: painless
+      source: |
+        String nGramAtPosition(String text, int fieldcount, int n){
+          if (fieldcount+n>=text.length()){
+            return null;
+          } else {
+            return text.substring(fieldcount, fieldcount+n);
+          }
+        }
+
+        String[] secondLevelDomain(Map dynamic_domains, String domain, String subdomain, String registered_domain, String top_level_domain){
+          if (registered_domain == null || registered_domain == '.') {
+            return new String[] {domain, ''};
+          }
+
+          if (dynamic_domains.containsKey(registered_domain) == true) {
+            if (subdomain != null) {
+              return new String[] {subdomain, registered_domain};
+            }
+          }
+
+          return new String[] {registered_domain.substring(0, registered_domain.length()-top_level_domain.length()-1), top_level_domain};
+          }
+
+        String domain = ctx['dns']['question']['name'];
+        String subdomain = ctx['dns']['question']['subdomain'];
+        String registered_domain = ctx['dns']['question']['registered_domain'];
+        String top_level_domain = ctx['dns']['question']['top_level_domain'];
+
+        String[] ret = secondLevelDomain(params.dynamic_domains, domain, subdomain, registered_domain, top_level_domain);
+
+        String sld = ret[0];
+        String tld = ret[1];
+
+        ctx['f'] = new HashMap();
+        ctx['f']['tld'] = tld;
+
+        for (int i=0;i<sld.length();i++){
+          String field = nGramAtPosition(sld, i, 1);
+          if (field == null) {
+            break;
+          }
+          ctx['f']['u'+ Integer.toString(i)] = field;
+        }
+
+        for (int i=0;i<sld.length();i++){
+          String field = nGramAtPosition(sld, i, 2);
+          if (field == null) {
+            break;
+          }
+          ctx['f']['b'+ Integer.toString(i)] = field;
+          }
+
+        for (int i=0;i<sld.length();i++){
+          String field = nGramAtPosition(sld, i, 3);
+          if (field == null) {
+            break;
+          }
+          ctx['f']['t'+ Integer.toString(i)] = field;
+        }
+      params:
+        dynamic_domains:
+          avsvmcloud.com: 0
+          co.cc: 0
+          cz.cc: 0
+          ddns.net: 0
+          dyndns.org: 0
+          dynserv.com: 0
+          github.io: 0
+          mooo.com: 0
+          mynumber.org: 0
+          yi.org: 0
+  - inference:
+      field_map: {}
+      inference_config:
+        classification:
+          num_top_classes: 1
+      model_id: dga_1611725_2.0
+      target_field: ml_is_dga
+  - script:
+      lang: painless
+      source: |
+        def top_classes = ctx['ml_is_dga']['top_classes'];
+        def malicious_probability = 0.0;
+        def malicious_prediction = ctx['ml_is_dga']['malicious_prediction'];
+
+        for (def class: top_classes) {
+          if (class['class_name'] == 1) {
+            malicious_probability = class['class_probability'];
+          }
+        }
+
+        ctx.remove('ml_is_dga');
+        ctx.remove('f');
+        ctx['ml_is_dga'] = new HashMap();
+        ctx['ml_is_dga']['malicious_prediction'] = malicious_prediction;
+        ctx['ml_is_dga']['malicious_probability'] = malicious_probability;
