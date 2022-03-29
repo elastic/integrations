@@ -17,3 +17,5 @@ No AWS credentials are required for this integration.
 ### Task Stats
 
 {{fields "task_stats"}}
+
+{{event "task_stats"}}
