@@ -1,0 +1,477 @@
+{
+    "attributes": {
+        "id": "problemchild-ml",
+        "title": "ProblemChild",
+        "description": "Detects potential living off the land activity by identifying malicious processes.",
+        "type": "ProblemChild",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "process.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "host.hostname"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "process.command_line"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "problemchild.prediction_probability"
+                        }
+                    }
+                ],
+                "minimum_should_match": 1
+            }
+        },
+        "jobs": [
+            {
+                "id": "problem_child_rare_process_by_host",
+                "config": {
+                    "groups": [
+                        "problem_child",
+                        "security",
+                        "endpoint",
+                        "event-log",
+                        "sysmon",
+                        "windows",
+                        "winlogbeat",
+                        "process"
+                    ],
+                    "description": "Looks for a process that has been classified as malicious on a host that does not commonly manifest malicious process activity (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "by_field_name": "process.name",
+                                "detector_description": "rare process given a host",
+                                "detector_index": 0,
+                                "function": "rare",
+                                "partition_field_name": "host.hostname"
+                            }
+                        ],
+                        "influencers": [
+                            "process.name",
+                            "host.hostname",
+                            "process.command_line"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-problem-child"
+                    }
+                }
+            },
+            {
+                "id": "problem_child_high_sum_by_host",
+                "config": {
+                    "groups": [
+                        "problem_child",
+                        "security",
+                        "endpoint",
+                        "event-log",
+                        "sysmon",
+                        "windows",
+                        "winlogbeat",
+                        "process"
+                    ],
+                    "description": "Looks for a set of one or more malicious child processes on a single host (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "by_field_name": "host.hostname",
+                                "detector_description": "high number of malicious processes by host",
+                                "detector_index": 0,
+                                "field_name": "problemchild.prediction_probability",
+                                "function": "high_sum"
+                            },
+                            {
+                                "by_field_name": "host.hostname",
+                                "detector_description": "high number of malicious processes by host",
+                                "detector_index": 0,
+                                "field_name": "blocklist_label",
+                                "function": "high_sum"
+                            }
+                        ],
+                        "influencers": [
+                            "process.name",
+                            "host.hostname",
+                            "process.command_line"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-problem-child"
+                    }
+                }
+            },
+            {
+                "id": "problem_child_rare_process_by_user",
+                "config": {
+                    "groups": [
+                        "problem_child",
+                        "security",
+                        "endpoint",
+                        "event-log",
+                        "sysmon",
+                        "windows",
+                        "winlogbeat",
+                        "process"
+                    ],
+                    "description": "Looks for a process that has been classified as malicious where the user context is unusual and does not commonly manifest malicious process activity (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "by_field_name": "process.name",
+                                "detector_description": "rare process given a user",
+                                "detector_index": 0,
+                                "function": "rare",
+                                "partition_field_name": "user.name"
+                            }
+                        ],
+                        "influencers": [
+                            "process.name",
+                            "user.name",
+                            "process.command_line"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-problem-child"
+                    }
+                }
+            },
+            {
+                "id": "problem_child_rare_process_by_parent",
+                "config": {
+                    "groups": [
+                        "problem_child",
+                        "security",
+                        "endpoint",
+                        "event-log",
+                        "sysmon",
+                        "windows",
+                        "winlogbeat",
+                        "process"
+                    ],
+                    "description": "Looks for rare malicious child processes spawned by a parent process (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "by_field_name": "process.name",
+                                "detector_description": "rare process given a parent process",
+                                "detector_index": 0,
+                                "function": "rare",
+                                "partition_field_name": "process.parent.name"
+                            }
+                        ],
+                        "influencers": [
+                            "process.name",
+                            "process.parent.name",
+                            "process.command_line"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-problem-child"
+                    }
+                }
+            },
+            {
+                "id": "problem_child_high_sum_by_user",
+                "config": {
+                    "groups": [
+                        "problem_child",
+                        "security",
+                        "endpoint",
+                        "event-log",
+                        "sysmon",
+                        "windows",
+                        "winlogbeat",
+                        "process"
+                    ],
+                    "description": "Looks for a set of one or more malicious processes, started by the same user (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "by_field_name": "user.name",
+                                "detector_description": "high sum by user",
+                                "detector_index": 0,
+                                "field_name": "problemchild.prediction_probability",
+                                "function": "high_sum"
+                            },
+                            {
+                                "by_field_name": "user.name",
+                                "detector_description": "high sum by host",
+                                "detector_index": 0,
+                                "field_name": "blocklist_label",
+                                "function": "high_sum"
+                            }
+                        ],
+                        "influencers": [
+                            "process.name",
+                            "user.name",
+                            "process.command_line"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-problem-child"
+                    }
+                }
+            },
+            {
+                "id": "problem_child_high_sum_by_parent",
+                "config": {
+                    "groups": [
+                        "problem_child",
+                        "security",
+                        "endpoint",
+                        "event-log",
+                        "sysmon",
+                        "windows",
+                        "winlogbeat",
+                        "process"
+                    ],
+                    "description": "Looks for a set of one or more malicious child processes spawned by the same parent process (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "by_field_name": "process.parent.name",
+                                "detector_description": "high sum by parent process",
+                                "detector_index": 0,
+                                "field_name": "problemchild.prediction_probability",
+                                "function": "high_sum"
+                            },
+                            {
+                                "by_field_name": "process.parent.name",
+                                "detector_description": "high sum by host",
+                                "detector_index": 0,
+                                "field_name": "blocklist_label",
+                                "function": "high_sum"
+                            }
+                        ],
+                        "influencers": [
+                            "process.name",
+                            "process.parent.name",
+                            "process.command_line"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-problem-child"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-problem_child_rare_process_by_host",
+                "job_id": "problem_child_rare_process_by_host",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "problem_child_rare_process_by_host",
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match": {
+                                        "problemchild.prediction": 1
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "blocklist_label": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-problem_child_high_sum_by_host",
+                "job_id": "problem_child_high_sum_by_host",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "problem_child_high_sum_by_host",
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match": {
+                                        "problemchild.prediction": 1
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "blocklist_label": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-problem_child_rare_process_by_user",
+                "job_id": "problem_child_rare_process_by_user",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "problem_child_rare_process_by_user",
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match": {
+                                        "problemchild.prediction": 1
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "blocklist_label": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-problem_child_rare_process_by_parent",
+                "job_id": "problem_child_rare_process_by_parent",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "problem_child_rare_process_by_parent",
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match": {
+                                        "problemchild.prediction": 1
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "blocklist_label": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-problem_child_high_sum_by_user",
+                "job_id": "problem_child_high_sum_by_user",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "problem_child_high_sum_by_user",
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match": {
+                                        "problemchild.prediction": 1
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "blocklist_label": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-problem_child_high_sum_by_parent",
+                "job_id": "problem_child_high_sum_by_parent",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "problem_child_high_sum_by_parent",
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match": {
+                                        "problemchild.prediction": 1
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "blocklist_label": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "id": "problemchild-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}
