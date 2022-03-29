@@ -133,7 +133,7 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | winlog.process.thread.id |  | long |
 | winlog.provider_guid | A globally unique identifier that identifies the provider that logged the event. | keyword |
 | winlog.provider_name | The source of the event log record (the application or service that logged the record). | keyword |
-| winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | long |
+| winlog.record_id | The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0. | keyword |
 | winlog.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
 | winlog.user.domain | The domain that the account associated with this event is a member of. | keyword |
