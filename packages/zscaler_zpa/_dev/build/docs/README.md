@@ -1,7 +1,6 @@
 # Zscaler ZPA
 
-This integration is for Zscaler Private Access logs. It can be used
-to receive logs sent by LSS Log Receiver on respective TCP ports.
+This integration is for [Zscaler](https://help.zscaler.com/) Private Access logs. It can be used to receive logs sent by LSS Log Receiver on respective TCP ports.
 
 The log message is expected to be in JSON format. The data is mapped to
 ECS fields where applicable and the remaining fields are written under
@@ -10,9 +9,11 @@ ECS fields where applicable and the remaining fields are written under
 ## Setup steps
 
 1. Enable the integration with the TCP input.
+
 2. Configure the Zscaler LSS Log Receiver to send logs to the Elastic Agent
-that is running this integration. See [_Setup Log Receiver_](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
-3. *Please make sure to use the given response formats.*
+    that is running this integration. See [Setup Log Receiver](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
+
+> Note: Please use the given response formats.
 
 ## ZPA Log Receiver Setup
 
@@ -20,8 +21,8 @@ For detailed docs on setting up the ZPA log receiver, refer to the Zscaler docum
 - [About the Log Streaming Service](https://help.zscaler.com/zpa/about-log-streaming-service)
 - [Configuring a Log Receiver](https://help.zscaler.com/zpa/configuring-log-receiver)
 
-**Domain or IP**: Use the IP address/hostname of the Elastic Agent  
-**TCP port**: Use the listening port of the Elastic Agent
+`Domain or IP`: Use the IP address/hostname of the Elastic Agent  
+`TCP port`: Use the listening port of the Elastic Agent
 
 ## Compatibility
 
@@ -33,7 +34,7 @@ This package has been tested against `Zscaler Private Access Client Connector ve
 
 Default port: _9015_
 
-Vendor documentation: https://help.zscaler.com/zpa/about-connector-status-log-fields
+[Vendor documentation](https://help.zscaler.com/zpa/about-connector-status-log-fields)
 
 Zscaler response format:  
 ```
@@ -49,7 +50,7 @@ Sample Response:
 
 Default port: _9016_
 
-Vendor documentation: https://help.zscaler.com/zpa/about-audit-log-fields
+[Vendor documentation](https://help.zscaler.com/zpa/about-audit-log-fields)
 
 Zscaler response format:  
 ```
@@ -65,7 +66,7 @@ Sample Response:
 
 Default port: _9017_
 
-Vendor documentation: https://help.zscaler.com/zpa/about-browser-access-log-fields
+[Vendor documentation](https://help.zscaler.com/zpa/about-browser-access-log-fields)
 
 Zscaler response format:  
 ```
@@ -81,7 +82,7 @@ Sample Response:
 
 Default port: _9018_
 
-Vendor documentation: https://help.zscaler.com/zpa/about-user-activity-log-fields
+[Vendor documentation](https://help.zscaler.com/zpa/about-user-activity-log-fields)
 
 Zscaler response format:  
 ```
@@ -93,13 +94,13 @@ Sample Response:
 {"LogTimestamp": "Fri May 31 17:35:42 2019","Customer": "Customer XYZ","SessionID": "LHJdkjmNDf12nclBsvwA","ConnectionID": "SqyZIMkg0JTj7EABsvwA,Q+EjXGdrvbF2lPiBbedm","InternalReason": "","ConnectionStatus": "active","IPProtocol": 6,"DoubleEncryption": 0,"Username": "ZPA LSS Client","ServicePort": 10011,"ClientPublicIP": "81.2.69.193","ClientPrivateIP": "","ClientLatitude": 45.000000,"ClientLongitude": -119.000000,"ClientCountryCode": "US","ClientZEN": "broker2b.pdx","Policy": "ANZ Lab Apps","Connector": "ZDEMO ANZ","ConnectorZEN": "broker2b.pdx","ConnectorIP": "67.43.156.12","ConnectorPort": 60266,"Host": "175.16.199.1","Application": "ANZ Lab Apps","AppGroup": "ANZ Lab Apps","Server": "0","ServerIP": "175.16.199.1","ServerPort": 10011,"PolicyProcessingTime": 28,"CAProcessingTime": 1330,"ServerSetupTime": 465,"AppLearnTime": 0,"TimestampConnectionStart": "2019-05-30T08:20:42.230Z","TimestampConnectionEnd": "","TimestampCATx": "2019-05-30T08:20:42.230Z","TimestampCARx": "2019-05-30T08:20:42.231Z","TimestampAppLearnStart": "","TimestampZENFirstRxClient": "2019-05-30T08:20:42.424Z","TimestampZENFirstTxClient": "","TimestampZENLastRxClient": "2019-05-31T17:34:27.348Z","TimestampZENLastTxClient": "","TimestampConnectorZENSetupComplete": "2019-05-30T08:20:42.422Z","TimestampZENFirstRxConnector": "","TimestampZENFirstTxConnector": "2019-05-30T08:20:42.424Z","TimestampZENLastRxConnector": "","TimestampZENLastTxConnector": "2019-05-31T17:34:27.348Z","ZENTotalBytesRxClient": 2406926,"ZENBytesRxClient": 7115,"ZENTotalBytesTxClient": 0,"ZENBytesTxClient": 0,"ZENTotalBytesRxConnector": 0,"ZENBytesRxConnector": 0,"ZENTotalBytesTxConnector": 2406926,"ZENBytesTxConnector": 7115,"Idp": "Example IDP Config","ConnectorZENSetupTime":1640674274,"ConnectionSetupTime":1640675274}
 ```
 
-**Note: In order to populate _Slowest Applications_ (visualization); _"ConnectorZENSetupTime"_ and _"ConnectionSetupTime"_ fields are added into the default response format of Zscaler User Activity Log above.**
+> Note: In order to populate _Slowest Applications_ (visualization); _"ConnectorZENSetupTime"_ and _"ConnectionSetupTime"_ fields are added into the default response format of Zscaler User Activity Log above.
 
 ### User Status Logs
 
 Default port: _9019_
 
-Vendor documentation: https://help.zscaler.com/zpa/about-user-status-log-fields
+[Vendor documentation](https://help.zscaler.com/zpa/about-user-status-log-fields)
 
 Zscaler response format:  
 ```
