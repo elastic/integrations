@@ -1,0 +1,203 @@
+# Nagios XI
+
+The Nagios XI integration is used to fetch observability data from [Nagios XI](https://www.nagios.org/documentation/) and ingest it into Elasticsearch.
+
+## Compatibility
+
+This Integration has been tested against `Nagios-XI Version: 5.8.7`
+
+## Requirements
+
+In order to ingest data from Nagios XI:
+- You must know the host for Nagios XI, add that host while configuring the integration package.
+
+## Metrics
+
+### Host Metrics
+
+This is the `host` dataset.
+
+- This dataset gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
+
+An example event for `host` looks as following:
+
+```json
+{
+    "@timestamp": "2022-03-16T07:02:42.000Z",
+    "agent": {
+        "ephemeral_id": "d0d5082a-8e84-4927-bc76-8db6f2cf2c0f",
+        "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.1.0"
+    },
+    "data_stream": {
+        "dataset": "nagios_xi.host",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
+        "snapshot": false,
+        "version": "8.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2022-03-30T16:33:03.405Z",
+        "dataset": "nagios_xi.host",
+        "ingested": "2022-03-30T16:33:04Z",
+        "kind": "metrics",
+        "module": "nagios_xi",
+        "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"address\":\"www.nagios.org\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"www.nagios.org\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"1\",\"has_been_checked\":\"1\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"hoststatus_id\":\"58\",\"icon_image\":\"passiveobject.png\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-08-04 10:07:54\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2018-07-12 14:59:46\",\"last_notification\":\"1969-12-31 18:00:00\",\"last_state_change\":\"2015-07-13 21:09:35\",\"last_time_down\":\"1969-12-31 18:00:00\",\"last_time_unreachable\":\"1969-12-31 18:00:00\",\"last_time_up\":\"2020-08-04 10:07:54\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"5\",\"modified_host_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"5\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_host\":\"1\",\"output\":\"HTTP OK: HTTP/1.1 301 Moved Permanently - 461 bytes in 0.123 second response time\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"0\",\"perfdata\":\"time=0.122797s;;;0.000000 size=461B;;;0\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-16 07:02:42\"}",
+        "type": "info"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "nagios_xi": {
+        "host": {
+            "acknowledgement_type": "0",
+            "active_checks_enabled": "0",
+            "check_command": "check_dummy!0!\"No data received yet.\"",
+            "check_options": "0",
+            "check_timeperiod_object_id": "71",
+            "check_type": "1",
+            "current_check_attempt": "1",
+            "current_notification_number": "0",
+            "current_state": "0",
+            "display_name": "www.nagios.org",
+            "event_handler_enabled": "1",
+            "execution_time": 0,
+            "failure_prediction_enabled": "0",
+            "flap_detection_enabled": "1",
+            "has_been_checked": "1",
+            "host_alias": "www.nagios.org",
+            "host_name": "www.nagios.org",
+            "host_object_id": "423",
+            "hoststatus_id": "58",
+            "icon_image": "passiveobject.png",
+            "instance_id": "1",
+            "is_flapping": "0",
+            "last_check": "2020-08-04T10:07:54.000Z",
+            "last_hard_state": "0",
+            "last_hard_state_change": "2018-07-12T14:59:46.000Z",
+            "last_notification": "1969-12-31T18:00:00.000Z",
+            "last_time_down": "1969-12-31T18:00:00.000Z",
+            "last_time_unreachable": "1969-12-31T18:00:00.000Z",
+            "last_time_up": "2020-08-04T10:07:54.000Z",
+            "latency": 0,
+            "max_check_attempts": "5",
+            "modified_host_attributes": "0",
+            "next_check": "1969-12-31T18:00:00.000Z",
+            "next_notification": "1969-12-31T18:00:00.000Z",
+            "no_more_notifications": "0",
+            "normal_check_interval": 5,
+            "notifications_enabled": "1",
+            "obsess_over_host": "1",
+            "output": "HTTP OK: HTTP/1.1 301 Moved Permanently - 461 bytes in 0.123 second response time",
+            "passive_checks_enabled": "1",
+            "percent_state_change": "0",
+            "performance_data": {
+                "size": 461,
+                "time": 0.122797
+            },
+            "problem_has_been_acknowledged": "0",
+            "process_performance_data": "1",
+            "retry_check_interval": 1,
+            "scheduled_downtime_depth": "0",
+            "should_be_scheduled": "0",
+            "state_type": "1",
+            "status_update_time": "2022-03-16T07:02:42.000Z"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "nagios_xi-host"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
+| input.type | Type of Filebeat input. | keyword |
+| nagios_xi.host.acknowledgement_type |  | keyword |
+| nagios_xi.host.action_url |  | keyword |
+| nagios_xi.host.active_checks_enabled |  | keyword |
+| nagios_xi.host.check_command |  | keyword |
+| nagios_xi.host.check_options |  | keyword |
+| nagios_xi.host.check_timeperiod_object_id |  | keyword |
+| nagios_xi.host.check_type |  | keyword |
+| nagios_xi.host.current_check_attempt |  | keyword |
+| nagios_xi.host.current_notification_number |  | keyword |
+| nagios_xi.host.current_state |  | keyword |
+| nagios_xi.host.display_name |  | keyword |
+| nagios_xi.host.event_handler |  | keyword |
+| nagios_xi.host.event_handler_enabled |  | keyword |
+| nagios_xi.host.execution_time |  | double |
+| nagios_xi.host.failure_prediction_enabled |  | keyword |
+| nagios_xi.host.flap_detection_enabled |  | keyword |
+| nagios_xi.host.has_been_checked |  | keyword |
+| nagios_xi.host.host_address |  | keyword |
+| nagios_xi.host.host_alias |  | keyword |
+| nagios_xi.host.host_name |  | keyword |
+| nagios_xi.host.host_object_id |  | keyword |
+| nagios_xi.host.hoststatus_id |  | keyword |
+| nagios_xi.host.icon_image |  | keyword |
+| nagios_xi.host.icon_image_alt |  | keyword |
+| nagios_xi.host.instance_id |  | keyword |
+| nagios_xi.host.is_flapping |  | keyword |
+| nagios_xi.host.last_check |  | date |
+| nagios_xi.host.last_hard_state |  | keyword |
+| nagios_xi.host.last_hard_state_change |  | date |
+| nagios_xi.host.last_notification |  | date |
+| nagios_xi.host.last_state_change |  | date |
+| nagios_xi.host.last_time_down |  | date |
+| nagios_xi.host.last_time_unreachable |  | date |
+| nagios_xi.host.last_time_up |  | date |
+| nagios_xi.host.latency |  | double |
+| nagios_xi.host.long_output |  | keyword |
+| nagios_xi.host.max_check_attempts |  | keyword |
+| nagios_xi.host.modified_host_attributes |  | keyword |
+| nagios_xi.host.next_check |  | date |
+| nagios_xi.host.next_notification |  | date |
+| nagios_xi.host.no_more_notifications |  | keyword |
+| nagios_xi.host.normal_check_interval |  | long |
+| nagios_xi.host.notes |  | keyword |
+| nagios_xi.host.notes_url |  | keyword |
+| nagios_xi.host.notifications_enabled |  | keyword |
+| nagios_xi.host.obsess_over_host |  | keyword |
+| nagios_xi.host.output |  | keyword |
+| nagios_xi.host.passive_checks_enabled |  | keyword |
+| nagios_xi.host.percent_state_change |  | keyword |
+| nagios_xi.host.perfdata |  | keyword |
+| nagios_xi.host.performance_data.pl |  | double |
+| nagios_xi.host.performance_data.rta |  | double |
+| nagios_xi.host.performance_data.size |  | double |
+| nagios_xi.host.performance_data.time |  | double |
+| nagios_xi.host.problem_has_been_acknowledged |  | keyword |
+| nagios_xi.host.process_performance_data |  | keyword |
+| nagios_xi.host.retry_check_interval |  | long |
+| nagios_xi.host.scheduled_downtime_depth |  | keyword |
+| nagios_xi.host.should_be_scheduled |  | keyword |
+| nagios_xi.host.state_type |  | keyword |
+| nagios_xi.host.status_update_time |  | date |
+| related.ip | All of the IPs seen on your event. | ip |
+| tags | List of keywords used to tag each event. | keyword |
+
