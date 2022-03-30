@@ -1,37 +1,51 @@
 # Hadoop
 
-The Hadoop integration collects and parses data from the Hadoop Events APIs and using the Jolokia Metricbeat Module.
+This integration is used to collect [Hadoop](https://hadoop.apache.org/) metrics as follows:
 
-## Compatibility
+   - Application Metrics
+   - Cluster Metrics
+   - DataNode Metrics
+   - NameNode Metrics
+   - NodeManager Metrics   
 
-This module has been tested against `Hadoop version 3.3.1`
+This integration uses Resource Manager API and JMX API to collect above metrics.
 
-## Requirements
+## application_metrics
 
-In order to ingest data from Hadoop, you must know the full hosts for the NameNode, DataNode, Cluster Metrics, Node Manager and the Hadoop Events API.
-
-## Metrics
-
-### Application Metrics
-
-This is the `application_metrics` dataset.
+This data stream collects Application metrics.
 
 {{event "application_metrics"}}
 
 {{fields "application_metrics"}}
 
-### Expanded Cluster Metrics
+## cluster_metrics
 
-This is the `expanded_cluster_metrics` dataset.
+This data stream collects Cluster metrics.
 
-{{event "expanded_cluster_metrics"}}
+{{event "cluster_metrics"}}
 
-{{fields "expanded_cluster_metrics"}}
+{{fields "cluster_metrics"}}
 
-### Jolokia Metrics
+## datanode
 
-This is the `jolokia_metrics` dataset.
+This data stream collects Datanode metrics.
 
-{{event "jolokia_metrics"}}
+{{event "datanode"}}
 
-{{fields "jolokia_metrics"}}
+{{fields "datanode"}}
+
+## namenode
+
+This data stream collects Namenode metrics.
+
+{{event "namenode"}}
+
+{{fields "namenode"}}
+
+## node_manager
+
+This data stream collects Node Manager metrics.
+
+{{event "node_manager"}}
+
+{{fields "node_manager"}}
