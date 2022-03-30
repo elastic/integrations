@@ -38,16 +38,6 @@ This is the `info` dataset.
 
 {{fields "info"}}
 
-### Audit Events logs
-
-This is the `audit_events` dataset.
-
-- This dataset exposes audit events information for the current application.
-
-{{event "audit_events"}}
-
-{{fields "audit_events"}}
-
 ### HTTP Trace logs
 
 This is the `http_trace` dataset.
@@ -60,46 +50,6 @@ This is the `http_trace` dataset.
 
 ## Metrics
 
-### Memory Metrics
-
-This is the `memory` dataset.
-
-- This dataset gives Memory information.
-
-{{event "memory"}}
-
-{{fields "memory"}}
-
-### OS Metrics
-
-This is the `os` dataset.
-
-- This dataset gives OS related information.
-
-{{event "os"}}
-
-{{fields "os"}}
-
-### Threads Metrics
-
-This is the `threads` dataset.
-
-- This dataset gives details of threads.
-
-{{event "threads"}}
-
-{{fields "threads"}}
-
-### GC Metrics
-
-This is the `gc` dataset.
-
-- This dataset gives data of GC Memory.
-
-{{event "gc"}}
-
-{{fields "gc"}}
-
 ### JVM Metrics
 
 This is the `jvm` dataset.
@@ -109,13 +59,3 @@ This is the `jvm` dataset.
 {{event "jvm"}}
 
 {{fields "jvm"}}
-
-### Server Metrics
-
-This is the `server` dataset.
-
-- This dataset gives information of Server.
-
-{{event "server"}}
-
-{{fields "server"}}
