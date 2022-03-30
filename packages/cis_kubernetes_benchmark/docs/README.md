@@ -4,6 +4,13 @@ This integration compares [Kubernetes](https://kubernetes.io/) configuration aga
 
 See agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/running-on-kubernetes-managed-by-fleet.html).
 
+Additionally, In order for the integration to be installed, The Cloud Security Posture Kibana plugin must be enabled.
+
+This could be done by adding the following configuration line to `kibana.yml`:
+```
+xpack.cloudSecurityPosture.enabled: true
+```
+
 ## Leader election
 
 To collect cluster level data (compared to node level information) the integration makes use of the [leader election](https://www.elastic.co/guide/en/fleet/master/kubernetes_leaderelection-provider.html) mechanism.
