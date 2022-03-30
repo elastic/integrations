@@ -1,6 +1,6 @@
 # Check Point Integration
 
-This integration is for Check Point products. It includes the
+This integration is for [Check Point](https://sc1.checkpoint.com/documents/latest/APIs/#introduction~v1.8%20) products. It includes the
 following datasets for receiving logs:
 
 - `firewall` dataset: consists of log entries from the Log Exporter in the Syslog format.
