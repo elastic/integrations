@@ -1,6 +1,6 @@
 # Cloudflare Integration
 
-The Cloudflare integration collects events from the Cloudflare API.
+The Cloudflare integration collects events from the [Cloudflare API](https://api.cloudflare.com/).
 
 ## Logs
 
