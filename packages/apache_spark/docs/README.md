@@ -71,10 +71,10 @@ An example event for `nodes` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-29T07:21:58.352Z",
+    "@timestamp": "2022-03-30T15:06:19.237Z",
     "agent": {
-        "ephemeral_id": "957736ce-6956-41e9-9eef-2a2a0a8603da",
-        "id": "7cdcba06-0048-48b9-a03e-7fffb2d8f7ce",
+        "ephemeral_id": "ae911caa-6091-47da-9f79-dea19b0ef5ba",
+        "id": "01cae619-f73d-4251-a6cf-9b97db33c9cd",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -104,15 +104,15 @@ An example event for `nodes` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7cdcba06-0048-48b9-a03e-7fffb2d8f7ce",
+        "id": "01cae619-f73d-4251-a6cf-9b97db33c9cd",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.nodes",
-        "duration": 133300684,
-        "ingested": "2022-03-29T07:22:01Z",
+        "duration": 11613000,
+        "ingested": "2022-03-30T15:06:22Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -122,10 +122,10 @@ An example event for `nodes` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.128.7"
+            "192.168.192.4"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02:42:c0:a8:c0:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
