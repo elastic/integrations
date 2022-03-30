@@ -140,6 +140,7 @@ An example event for `host` looks as following:
 | nagios_xi.host.acknowledgement_type |  | keyword |
 | nagios_xi.host.action_url |  | keyword |
 | nagios_xi.host.active_checks_enabled |  | keyword |
+| nagios_xi.host.address |  | keyword |
 | nagios_xi.host.check_command |  | keyword |
 | nagios_xi.host.check_options |  | keyword |
 | nagios_xi.host.check_timeperiod_object_id |  | keyword |
@@ -154,7 +155,6 @@ An example event for `host` looks as following:
 | nagios_xi.host.failure_prediction_enabled |  | keyword |
 | nagios_xi.host.flap_detection_enabled |  | keyword |
 | nagios_xi.host.has_been_checked |  | keyword |
-| nagios_xi.host.host_address |  | keyword |
 | nagios_xi.host.host_alias |  | keyword |
 | nagios_xi.host.host_name |  | keyword |
 | nagios_xi.host.host_object_id |  | keyword |
