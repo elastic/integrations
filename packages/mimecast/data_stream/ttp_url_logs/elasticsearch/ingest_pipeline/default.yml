@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populated
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -50,10 +50,11 @@ processors:
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
-  - rename:
-      field: mimecast.fromUserEmailAddress
-      target_field: email.from.address
-      ignore_missing: true
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.fromUserEmailAddress}}}"
+      if: "ctx?.mimecast?.fromUserEmailAddress != null"
+      ignore_failure: true
   - rename:
       field: mimecast.sendingIp
       target_field: source.ip
