@@ -1,7 +1,6 @@
 # Zscaler ZPA
 
-This integration is for Zscaler Private Access logs. It can be used
-to receive logs sent by LSS Log Receiver on respective TCP ports.
+This integration is for Zscaler Private Access logs. It can be used to receive logs sent by LSS Log Receiver on respective TCP ports.
 
 The log message is expected to be in JSON format. The data is mapped to
 ECS fields where applicable and the remaining fields are written under
@@ -10,9 +9,11 @@ ECS fields where applicable and the remaining fields are written under
 ## Setup steps
 
 1. Enable the integration with the TCP input.
+
 2. Configure the Zscaler LSS Log Receiver to send logs to the Elastic Agent
-that is running this integration. See [_Setup Log Receiver_](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
-3. *Please make sure to use the given response formats.*
+    that is running this integration. See [Setup Log Receiver](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
+
+>  Note: Please make sure to use the given response formats.
 
 ## ZPA Log Receiver Setup
 
