@@ -1,7 +1,7 @@
 # Common Event Format (CEF) Integration
 
 This is an integration for parsing Common Event Format (CEF) data. It can accept
-data over syslog or read it from a file.
+data over syslog or read it from a file. 
 
 CEF data is a format like
 
