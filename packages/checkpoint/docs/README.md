@@ -426,7 +426,7 @@ An example event for `firewall` looks as following:
 | checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
 | checkpoint.site_name | Site name. | keyword |
 | checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
-| checkpoint.source_object | Matched object name on source column. | integer |
+| checkpoint.source_object | Matched object name on source column. | keyword |
 | checkpoint.source_os | OS which generated the attack. | keyword |
 | checkpoint.special_properties | If this field is set to '1' the log will not be shown (in use for monitoring scan progress). | integer |
 | checkpoint.specific_data_type_name | Compound/Group scenario, data type that was matched. | keyword |
