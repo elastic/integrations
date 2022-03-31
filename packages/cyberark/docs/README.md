@@ -1,7 +1,8 @@
 # CyberArk integration
 
-This integration is for CyberArk device's logs. It includes the following
+This integration is for [CyberArk](https://docs.cyberark.com/Product-Doc/OnlineHelp/Portal/Content/Resources/_TopNav/cc_Portal.htm) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `corepas` dataset: supports CyberArk logs.
 
 ### Corepas
