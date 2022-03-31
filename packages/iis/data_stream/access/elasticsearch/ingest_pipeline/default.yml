@@ -3,9 +3,6 @@ description: Pipeline for parsing IIS access logs. Requires the geoip and user_a
   plugins.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '1.12.0'
   - rename:
@@ -20,14 +17,14 @@ processors:
           (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:http.request.referrer})
           (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
-          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{NOTSPACE:iis.access.site_name}) (?:-|%{WORD:http.request.method})
           (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:iis.access.cookie})
           (?:-|%{NOTSPACE:http.request.referrer}) (?:-|%{NOTSPACE:destination.domain}) (?:-|%{NUMBER:http.response.status_code:long})
           (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long})
           (?:-|%{NUMBER:http.response.body.bytes:long}) (?:-|%{NUMBER:http.request.body.bytes:long})
-          (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{NOTSPACE:iis.access.site_name}) (?:-|%{NOTSPACE:iis.access.server_name})
           (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_temp_.url_path})
           (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
@@ -35,17 +32,17 @@ processors:
           (?:-|%{NOTSPACE:iis.access.cookie}) (?:-|%{NOTSPACE:http.request.referrer}) (?:-|%{NOTSPACE:destination.domain})
           (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
           (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:http.response.body.bytes:long})
-          (?:-|%{NUMBER:http.request.body.bytes:long}) (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:http.request.body.bytes:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} \[%{IPORHOST:destination.address}\]\(http://%{IPORHOST:destination.address}\)
           (?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long})
           (?:-|%{NOTSPACE:user.name}) \[%{IPORHOST:source.address}\]\(http://%{IPORHOST:source.address}\)
           (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
-          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
         - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{IPORHOST:destination.address}) (?:-|%{WORD:http.request.method})
           (?:-|%{NOTSPACE:_temp_.url_path}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:destination.port:long}) (?:-|%{NOTSPACE:user.name})
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NUMBER:http.response.status_code:long})
           (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long})
-          (?:-|%{NUMBER:temp.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+          (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
   - uri_parts:
       field: _temp_.url_path
       ignore_failure: true
@@ -81,12 +78,12 @@ processors:
       field: iis.access.time
   - script:
       lang: painless
-      source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
+      source: ctx.event.duration = Math.round(ctx._temp_.duration * params.scale)
       params:
           scale: 1000000
       if: ctx.temp?.duration != null
   - remove:
-      field: temp.duration
+      field: _temp_.duration
       ignore_missing: true
   - urldecode:
       field: user_agent.original
