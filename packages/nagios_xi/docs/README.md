@@ -61,9 +61,11 @@ An example event for `events` looks as following:
         "event": {
             "entry_time": "2022-03-16T07:02:41.000Z",
             "instance_id": 1,
-            "logentry_data": "Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.",
-            "logentry_id": 211261,
-            "logentry_type": 262144
+            "logentry": {
+                "data": "Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.",
+                "logentry_id": 211261,
+                "logentry_type": 262144
+            }
         }
     },
     "tags": [
@@ -91,8 +93,8 @@ An example event for `events` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | nagios_xi.event.entry_time |  | keyword |
 | nagios_xi.event.instance_id |  | double |
-| nagios_xi.event.logentry_data |  | keyword |
-| nagios_xi.event.logentry_id |  | double |
-| nagios_xi.event.logentry_type |  | double |
+| nagios_xi.event.logentry.data |  | keyword |
+| nagios_xi.event.logentry.id |  | double |
+| nagios_xi.event.logentry.type |  | double |
 | tags | List of keywords used to tag each event. | keyword |
 

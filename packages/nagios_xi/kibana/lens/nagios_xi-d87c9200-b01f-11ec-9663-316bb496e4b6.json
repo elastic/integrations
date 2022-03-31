@@ -8,7 +8,9 @@
                             "columnOrder": [
                                 "45dc74fd-19d2-4e9c-9089-f88ac20f554d",
                                 "62db16c5-7025-442c-a641-d0e782703b09",
-                                "d029f2b9-4890-4a0f-973d-326b81b62a20"
+                                "d029f2b9-4890-4a0f-973d-326b81b62a20",
+                                "45dc74fd-19d2-4e9c-9089-f88ac20f554dX0",
+                                "62db16c5-7025-442c-a641-d0e782703b09X0"
                             ],
                             "columns": {
                                 "45dc74fd-19d2-4e9c-9089-f88ac20f554d": {
@@ -16,18 +18,54 @@
                                     "dataType": "number",
                                     "isBucketed": false,
                                     "label": "Used",
-                                    "operationType": "median",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "formula": "last_value(nagios_xi.service.swap_usage.used_swap)",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "45dc74fd-19d2-4e9c-9089-f88ac20f554dX0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "45dc74fd-19d2-4e9c-9089-f88ac20f554dX0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Used",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
-                                    "sourceField": "nagios_xi.metrics.service.swap_usage.used_swap"
+                                    "sourceField": "nagios_xi.service.swap_usage.used_swap"
                                 },
                                 "62db16c5-7025-442c-a641-d0e782703b09": {
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
                                     "label": "Total",
-                                    "operationType": "max",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "formula": "last_value(nagios_xi.service.swap_usage.total_swap)",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "62db16c5-7025-442c-a641-d0e782703b09X0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "62db16c5-7025-442c-a641-d0e782703b09X0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Total",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
                                     "scale": "ratio",
-                                    "sourceField": "nagios_xi.metrics.service.swap_usage.total_swap"
+                                    "sourceField": "nagios_xi.service.swap_usage.total_swap"
                                 },
                                 "d029f2b9-4890-4a0f-973d-326b81b62a20": {
                                     "dataType": "number",
@@ -47,7 +85,29 @@
                     }
                 }
             },
-            "filters": [],
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "76c7569f-b8ba-4649-9647-0eeadc3b90a9",
+                        "key": "event.dataset",
+                        "negate": false,
+                        "params": {
+                            "query": "nagios_xi.swap_usage"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "event.dataset": "nagios_xi.swap_usage"
+                        }
+                    }
+                }
+            ],
             "query": {
                 "language": "kuery",
                 "query": ""
@@ -80,6 +140,11 @@
         {
             "id": "logs-*",
             "name": "indexpattern-datasource-layer-cbb5e544-9628-4c9a-965e-c13aefcc14ab",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "76c7569f-b8ba-4649-9647-0eeadc3b90a9",
             "type": "index-pattern"
         }
     ],
