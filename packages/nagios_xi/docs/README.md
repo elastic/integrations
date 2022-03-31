@@ -4,7 +4,7 @@ The Nagios XI integration is used to fetch observability data from [Nagios XI](h
 
 ## Compatibility
 
-This Integration has been tested against `Nagios-XI Version: 5.8.7`
+This integration has been tested against `Nagios-XI Version: 5.8.7`
 
 ## Requirements
 
@@ -15,9 +15,9 @@ In order to ingest data from Nagios XI:
 
 ### Host Metrics
 
-This is the `host` dataset.
+This is the `host` data stream.
 
-- This dataset gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
+- This data stream gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
 
 An example event for `host` looks as following:
 
@@ -138,29 +138,29 @@ An example event for `host` looks as following:
 | host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
 | nagios_xi.host.acknowledgement_type |  | keyword |
-| nagios_xi.host.action_url |  | keyword |
-| nagios_xi.host.active_checks_enabled |  | keyword |
-| nagios_xi.host.address |  | keyword |
-| nagios_xi.host.check_command |  | keyword |
+| nagios_xi.host.action_url | This is used to define an optional URL that can be used to provide more actions to be performed on the host. | keyword |
+| nagios_xi.host.active_checks_enabled | This is used to determine whether or not active checks (either regularly scheduled or on-demand) of this host are enabled. Values=\> 0 = disable active host checks, 1 = enable active host checks (default). | keyword |
+| nagios_xi.host.address | This is used to define the address of the host. Normally, this is an IP address, although it could really be anything user want (so long as it can be used to check the status of the host). | keyword |
+| nagios_xi.host.check_command | This is used to specify the short name of the command that should be used to check if the host is up or down. Typically, this command would try and ping the host to see if it is "alive". | keyword |
 | nagios_xi.host.check_options |  | keyword |
 | nagios_xi.host.check_timeperiod_object_id |  | keyword |
 | nagios_xi.host.check_type |  | keyword |
 | nagios_xi.host.current_check_attempt |  | keyword |
 | nagios_xi.host.current_notification_number |  | keyword |
-| nagios_xi.host.current_state |  | keyword |
-| nagios_xi.host.display_name |  | keyword |
-| nagios_xi.host.event_handler |  | keyword |
-| nagios_xi.host.event_handler_enabled |  | keyword |
+| nagios_xi.host.current_state | This is used to check current status of host. | keyword |
+| nagios_xi.host.display_name | This is used to define an alternate name that should be displayed in the web interface for this host. | keyword |
+| nagios_xi.host.event_handler | This is used to specify the short name of the command that should be run whenever a change in the state of the host is detected (i.e. whenever it goes down or recovers). | keyword |
+| nagios_xi.host.event_handler_enabled | This is used to determine whether or not the event handler for this host is enabled. Values=\> 0 = disable host event handler, 1 = enable host event handler. | keyword |
 | nagios_xi.host.execution_time |  | double |
 | nagios_xi.host.failure_prediction_enabled |  | keyword |
-| nagios_xi.host.flap_detection_enabled |  | keyword |
+| nagios_xi.host.flap_detection_enabled | This is used to determine whether or not flap detection is enabled for this host. More information on flap detection can be found here. Values=\> 0 = disable host flap detection, 1 = enable host flap detection. | keyword |
 | nagios_xi.host.has_been_checked |  | keyword |
-| nagios_xi.host.host_alias |  | keyword |
-| nagios_xi.host.host_name |  | keyword |
+| nagios_xi.host.host_alias | This is used to define a longer name or description used to identify the host. | keyword |
+| nagios_xi.host.host_name | This is used to define a short name used to identify the host. It is used in host group and service definitions to reference this particular host. | keyword |
 | nagios_xi.host.host_object_id |  | keyword |
 | nagios_xi.host.hoststatus_id |  | keyword |
-| nagios_xi.host.icon_image |  | keyword |
-| nagios_xi.host.icon_image_alt |  | keyword |
+| nagios_xi.host.icon_image | This variable is used to define the name of a GIF, PNG, or JPG image that should be associated with this host. This image will be displayed in the various places in the CGIs. | keyword |
+| nagios_xi.host.icon_image_alt | This variable is used to define an optional string that is used in the ALT tag of the image specified by the \<icon_image\> argument. | keyword |
 | nagios_xi.host.instance_id |  | keyword |
 | nagios_xi.host.is_flapping |  | keyword |
 | nagios_xi.host.last_check |  | date |
@@ -173,27 +173,27 @@ An example event for `host` looks as following:
 | nagios_xi.host.last_time_up |  | date |
 | nagios_xi.host.latency |  | double |
 | nagios_xi.host.long_output |  | keyword |
-| nagios_xi.host.max_check_attempts |  | keyword |
+| nagios_xi.host.max_check_attempts | This is used to define the number of times that Nagios will retry the host check command if it returns any state other than an OK state. | keyword |
 | nagios_xi.host.modified_host_attributes |  | keyword |
 | nagios_xi.host.next_check |  | date |
 | nagios_xi.host.next_notification |  | date |
 | nagios_xi.host.no_more_notifications |  | keyword |
-| nagios_xi.host.normal_check_interval |  | long |
-| nagios_xi.host.notes |  | keyword |
-| nagios_xi.host.notes_url |  | keyword |
-| nagios_xi.host.notifications_enabled |  | keyword |
-| nagios_xi.host.obsess_over_host |  | keyword |
+| nagios_xi.host.normal_check_interval | This is used to define the number of "time units" between regularly scheduled checks of the host. | long |
+| nagios_xi.host.notes | This is used to define an optional string of notes pertaining to the host. | keyword |
+| nagios_xi.host.notes_url | This variable is used to define an optional URL that can be used to provide more information about the host. | keyword |
+| nagios_xi.host.notifications_enabled | This is used to determine whether or not notifications for this host are enabled. Values=\> 0 = disable host notifications, 1 = enable host notifications. | keyword |
+| nagios_xi.host.obsess_over_host | This determines whether or not checks for the host will be "obsessed" over using the ochp_command. | keyword |
 | nagios_xi.host.output |  | keyword |
-| nagios_xi.host.passive_checks_enabled |  | keyword |
+| nagios_xi.host.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
 | nagios_xi.host.percent_state_change |  | keyword |
-| nagios_xi.host.perfdata |  | keyword |
-| nagios_xi.host.performance_data.pl |  | double |
-| nagios_xi.host.performance_data.rta |  | double |
-| nagios_xi.host.performance_data.size |  | double |
-| nagios_xi.host.performance_data.time |  | double |
+| nagios_xi.host.perfdata | This is used to show exact outcome of check command. | keyword |
+| nagios_xi.host.performance_data.pl | This shows Packet Loss for current host. | double |
+| nagios_xi.host.performance_data.rta | This shows Round Trip Around for current host. | double |
+| nagios_xi.host.performance_data.size | This shows Request Size for current host. | double |
+| nagios_xi.host.performance_data.time | This shows Time taken while request for current host. | double |
 | nagios_xi.host.problem_has_been_acknowledged |  | keyword |
-| nagios_xi.host.process_performance_data |  | keyword |
-| nagios_xi.host.retry_check_interval |  | long |
+| nagios_xi.host.process_performance_data | This is used to determine whether or not the processing of performance data is enabled for this host. Values=\> 0 = disable performance data processing, 1 = enable performance data processing. | keyword |
+| nagios_xi.host.retry_check_interval | This is used to define the number of "time units" to wait before scheduling a re-check of the hosts. Hosts are rescheduled at the retry interval when they have changed to a non-UP state. | long |
 | nagios_xi.host.scheduled_downtime_depth |  | keyword |
 | nagios_xi.host.should_be_scheduled |  | keyword |
 | nagios_xi.host.state_type |  | keyword |

@@ -4,7 +4,7 @@ The Nagios XI integration is used to fetch observability data from [Nagios XI](h
 
 ## Compatibility
 
-This Integration has been tested against `Nagios-XI Version: 5.8.7`
+This integration has been tested against `Nagios-XI Version: 5.8.7`
 
 ## Requirements
 
@@ -15,9 +15,9 @@ In order to ingest data from Nagios XI:
 
 ### Host Metrics
 
-This is the `host` dataset.
+This is the `host` data stream.
 
-- This dataset gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
+- This data stream gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
 
 {{event "host"}}
 
