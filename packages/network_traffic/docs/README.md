@@ -64,6 +64,7 @@ host.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -198,6 +199,7 @@ Fields published for AMQP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -235,25 +237,28 @@ An example event for `amqp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:17:53.765Z",
+    "@timestamp": "2022-03-09T07:37:02.033Z",
     "agent": {
-        "ephemeral_id": "3fea1b50-9461-4f1e-b816-1531794e7487",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "ff9ccf25-9d67-46a5-b661-aa01e3db9b84",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "amqp": {
-        "durable": true,
-        "exchange": "titres",
-        "exchange-type": "fanout",
-        "no-wait": true,
-        "passive": false
+        "auto-delete": false,
+        "consumer-count": 0,
+        "durable": false,
+        "exclusive": false,
+        "message-count": 0,
+        "no-wait": false,
+        "passive": false,
+        "queue": "hello"
     },
     "client": {
-        "bytes": 33,
+        "bytes": 25,
         "ip": "127.0.0.1",
-        "port": 34445
+        "port": 34222
     },
     "data_stream": {
         "dataset": "network_traffic.amqp",
@@ -261,6 +266,7 @@ An example event for `amqp` looks as following:
         "type": "logs"
     },
     "destination": {
+        "bytes": 26,
         "ip": "127.0.0.1",
         "port": 5672
     },
@@ -268,20 +274,22 @@ An example event for `amqp` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
-        "action": "amqp.exchange.declare",
+        "action": "amqp.queue.declare",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "dataset": "network_traffic.amqp",
-        "ingested": "2022-02-03T10:17:54Z",
+        "duration": 1325900,
+        "end": "2022-03-09T07:37:02.035Z",
+        "ingested": "2022-03-09T07:37:03Z",
         "kind": "event",
-        "start": "2022-02-03T10:17:53.765Z",
+        "start": "2022-03-09T07:37:02.033Z",
         "type": [
             "connection",
             "protocol"
@@ -291,28 +299,27 @@ An example event for `amqp` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
-    "method": "exchange.declare",
+    "method": "queue.declare",
     "network": {
-        "bytes": 33,
-        "community_id": "1:ocT5O96pI2Ji2EIPYIEymNmQXrE=",
+        "bytes": 51,
+        "community_id": "1:i6J4zz0FGnZMYLIy8kabND2W/XE=",
         "direction": "ingress",
         "protocol": "amqp",
         "transport": "tcp",
@@ -324,13 +331,14 @@ An example event for `amqp` looks as following:
         ]
     },
     "server": {
+        "bytes": 26,
         "ip": "127.0.0.1",
         "port": 5672
     },
     "source": {
-        "bytes": 33,
+        "bytes": 25,
         "ip": "127.0.0.1",
-        "port": 34445
+        "port": 34222
     },
     "status": "OK",
     "type": "amqp"
@@ -468,6 +476,7 @@ Fields published for Apache Cassandra packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -505,36 +514,36 @@ An example event for `cassandra` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:22:59.282Z",
+    "@timestamp": "2022-03-09T07:43:05.888Z",
     "agent": {
-        "ephemeral_id": "e84ef5c7-8b3d-453d-ab11-207d447b7a3e",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "20d6eb94-1319-473d-9e2f-05621a4d2494",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "cassandra": {
         "request": {
             "headers": {
                 "flags": "Default",
-                "length": 51,
+                "length": 98,
                 "op": "QUERY",
-                "stream": 92,
+                "stream": 49,
                 "version": "4"
             },
-            "query": "CREATE INDEX ON users (lname);"
+            "query": "CREATE TABLE users (\n  user_id int PRIMARY KEY,\n  fname text,\n  lname text\n);"
         },
         "response": {
             "headers": {
                 "flags": "Default",
                 "length": 39,
                 "op": "RESULT",
-                "stream": 92,
+                "stream": 49,
                 "version": "4"
             },
             "result": {
                 "schema_change": {
-                    "change": "UPDATED",
+                    "change": "CREATED",
                     "keyspace": "mykeyspace",
                     "object": "users",
                     "target": "TABLE"
@@ -544,7 +553,7 @@ An example event for `cassandra` looks as following:
         }
     },
     "client": {
-        "bytes": 60,
+        "bytes": 107,
         "ip": "127.0.0.1",
         "port": 52749
     },
@@ -562,9 +571,9 @@ An example event for `cassandra` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -572,11 +581,11 @@ An example event for `cassandra` looks as following:
             "network"
         ],
         "dataset": "network_traffic.cassandra",
-        "duration": 160316277,
-        "end": "2022-02-03T10:22:59.442Z",
-        "ingested": "2022-02-03T10:23:00Z",
+        "duration": 131589500,
+        "end": "2022-03-09T07:43:06.019Z",
+        "ingested": "2022-03-09T07:43:09Z",
         "kind": "event",
-        "start": "2022-02-03T10:22:59.282Z",
+        "start": "2022-03-09T07:43:05.888Z",
         "type": [
             "connection",
             "protocol"
@@ -586,26 +595,25 @@ An example event for `cassandra` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "network": {
-        "bytes": 108,
+        "bytes": 155,
         "community_id": "1:bCORHZnGIk6GWYaE3Kn0DOpQCKE=",
         "direction": "ingress",
         "protocol": "cassandra",
@@ -623,7 +631,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "source": {
-        "bytes": 60,
+        "bytes": 107,
         "ip": "127.0.0.1",
         "port": 52749
     },
@@ -725,6 +733,7 @@ Fields published for DHCPv4 packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -762,13 +771,13 @@ An example event for `dhcpv4` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:23:40.304Z",
+    "@timestamp": "2022-03-09T07:43:52.712Z",
     "agent": {
-        "ephemeral_id": "caf1f2fd-3292-4c79-9343-0f71397b586b",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "b98a43ba-d050-42e6-ab2f-2eba352e9cb0",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
         "bytes": 272,
@@ -807,9 +816,9 @@ An example event for `dhcpv4` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -817,9 +826,9 @@ An example event for `dhcpv4` looks as following:
             "network"
         ],
         "dataset": "network_traffic.dhcpv4",
-        "ingested": "2022-02-03T10:23:41Z",
+        "ingested": "2022-03-09T07:43:53Z",
         "kind": "event",
-        "start": "2022-02-03T10:23:40.304Z",
+        "start": "2022-03-09T07:43:52.712Z",
         "type": [
             "connection",
             "protocol"
@@ -829,22 +838,21 @@ An example event for `dhcpv4` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -972,6 +980,7 @@ Fields published for DNS packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1009,18 +1018,18 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:28:49.401Z",
+    "@timestamp": "2022-03-09T07:48:42.751Z",
     "agent": {
-        "ephemeral_id": "056ad386-26b5-4b78-9e2c-0102dd5c21f2",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "1d099984-2551-49e1-9e6a-c1dff964be0f",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 36,
+        "bytes": 28,
         "ip": "192.168.238.68",
-        "port": 65020
+        "port": 53765
     },
     "data_stream": {
         "dataset": "network_traffic.dns",
@@ -1028,14 +1037,44 @@ An example event for `dns` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 121,
+        "bytes": 167,
         "ip": "8.8.8.8",
         "port": 53
     },
     "dns": {
         "additionals_count": 0,
-        "answers_count": 0,
-        "authorities_count": 1,
+        "answers": [
+            {
+                "class": "IN",
+                "data": "ns-1183.awsdns-19.org",
+                "name": "elastic.co",
+                "ttl": "21599",
+                "type": "NS"
+            },
+            {
+                "class": "IN",
+                "data": "ns-2007.awsdns-58.co.uk",
+                "name": "elastic.co",
+                "ttl": "21599",
+                "type": "NS"
+            },
+            {
+                "class": "IN",
+                "data": "ns-66.awsdns-08.com",
+                "name": "elastic.co",
+                "ttl": "21599",
+                "type": "NS"
+            },
+            {
+                "class": "IN",
+                "data": "ns-835.awsdns-40.net",
+                "name": "elastic.co",
+                "ttl": "21599",
+                "type": "NS"
+            }
+        ],
+        "answers_count": 4,
+        "authorities_count": 0,
         "flags": {
             "authentic_data": false,
             "authoritative": false,
@@ -1048,27 +1087,26 @@ An example event for `dns` looks as following:
             "RD",
             "RA"
         ],
-        "id": 681,
+        "id": 26187,
         "op_code": "QUERY",
         "question": {
             "class": "IN",
             "etld_plus_one": "elastic.co",
-            "name": "nothing.elastic.co",
+            "name": "elastic.co",
             "registered_domain": "elastic.co",
-            "subdomain": "nothing",
             "top_level_domain": "co",
-            "type": "A"
+            "type": "NS"
         },
-        "response_code": "NXDOMAIN",
+        "response_code": "NOERROR",
         "type": "answer"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1076,11 +1114,11 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "network_traffic.dns",
-        "duration": 58475961,
-        "end": "2022-02-03T10:28:49.459Z",
-        "ingested": "2022-02-03T10:28:50Z",
+        "duration": 68515700,
+        "end": "2022-03-09T07:48:42.819Z",
+        "ingested": "2022-03-09T07:48:43Z",
         "kind": "event",
-        "start": "2022-02-03T10:28:49.401Z",
+        "start": "2022-03-09T07:48:42.751Z",
         "type": [
             "connection",
             "protocol"
@@ -1090,52 +1128,51 @@ An example event for `dns` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "method": "QUERY",
     "network": {
-        "bytes": 157,
-        "community_id": "1:qYA6Pi3oK/YLNdQXD2WrnEBi118=",
+        "bytes": 195,
+        "community_id": "1:3P4ruI0bVlqxiTAs0WyBhnF74ek=",
         "direction": "unknown",
         "protocol": "dns",
         "transport": "udp",
         "type": "ipv4"
     },
-    "query": "class IN, type A, nothing.elastic.co",
+    "query": "class IN, type NS, elastic.co",
     "related": {
         "ip": [
             "192.168.238.68",
             "8.8.8.8"
         ]
     },
-    "resource": "nothing.elastic.co",
+    "resource": "elastic.co",
     "server": {
-        "bytes": 121,
+        "bytes": 167,
         "ip": "8.8.8.8",
         "port": 53
     },
     "source": {
-        "bytes": 36,
+        "bytes": 28,
         "ip": "192.168.238.68",
-        "port": 65020
+        "port": 53765
     },
-    "status": "Error",
+    "status": "OK",
     "type": "dns"
 }
 ```
@@ -1201,6 +1238,7 @@ Fields published for HTTP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1248,29 +1286,31 @@ Fields published for HTTP packets.
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
 An example event for `http` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:35:14.623Z",
+    "@timestamp": "2022-03-09T07:54:42.031Z",
     "agent": {
-        "ephemeral_id": "3be24dfb-d972-4f95-b7d8-df5077eb7d6d",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "822947c0-15fd-4278-ba0d-2cc64d687bb2",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 898,
-        "ip": "127.0.0.1",
-        "port": 34415
+        "bytes": 211,
+        "ip": "192.168.238.50",
+        "port": 64770
     },
     "data_stream": {
         "dataset": "network_traffic.http",
@@ -1278,18 +1318,18 @@ An example event for `http` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 29988,
+        "bytes": 9108,
         "domain": "packetbeat.com",
-        "ip": "127.0.0.1",
-        "port": 8002
+        "ip": "107.170.1.22",
+        "port": 80
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1297,11 +1337,11 @@ An example event for `http` looks as following:
             "network"
         ],
         "dataset": "network_traffic.http",
-        "duration": 5094152,
-        "end": "2022-02-03T10:35:14.628Z",
-        "ingested": "2022-02-03T10:35:15Z",
+        "duration": 141490400,
+        "end": "2022-03-09T07:54:42.172Z",
+        "ingested": "2022-03-09T07:54:43Z",
         "kind": "event",
-        "start": "2022-02-03T10:35:14.623Z",
+        "start": "2022-03-09T07:54:42.031Z",
         "type": [
             "connection",
             "protocol"
@@ -1311,86 +1351,90 @@ An example event for `http` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "http": {
         "request": {
-            "bytes": 898,
-            "headers": {
-                "content-length": 0
+            "body": {
+                "bytes": 55
             },
-            "method": "get"
+            "bytes": 211,
+            "headers": {
+                "content-length": 55,
+                "content-type": "application/x-www-form-urlencoded"
+            },
+            "method": "POST"
         },
         "response": {
             "body": {
-                "bytes": 29799
+                "bytes": 8936
             },
-            "bytes": 29988,
+            "bytes": 9108,
             "headers": {
-                "content-length": 29799,
+                "content-length": 8936,
                 "content-type": "text/html; charset=utf-8"
             },
-            "status_code": 200,
-            "status_phrase": "ok"
+            "status_code": 404,
+            "status_phrase": "not found"
         },
-        "version": "1.0"
+        "version": "1.1"
     },
-    "method": "get",
+    "method": "POST",
     "network": {
-        "bytes": 30886,
-        "community_id": "1:B8HpOYF92shZPFve4jVgE8GksBc=",
-        "direction": "ingress",
+        "bytes": 9319,
+        "community_id": "1:LREAuuDqOAxXEbzF064U0QX5FBs=",
+        "direction": "unknown",
         "protocol": "http",
         "transport": "tcp",
         "type": "ipv4"
     },
-    "query": "GET /",
+    "query": "POST /register",
     "related": {
         "hosts": [
             "packetbeat.com"
         ],
         "ip": [
-            "127.0.0.1"
+            "192.168.238.50",
+            "107.170.1.22"
         ]
     },
     "server": {
-        "bytes": 29988,
+        "bytes": 9108,
         "domain": "packetbeat.com",
-        "ip": "127.0.0.1",
-        "port": 8002
+        "ip": "107.170.1.22",
+        "port": 80
     },
     "source": {
-        "bytes": 898,
-        "ip": "127.0.0.1",
-        "port": 34415
+        "bytes": 211,
+        "ip": "192.168.238.50",
+        "port": 64770
     },
-    "status": "OK",
+    "status": "Error",
     "type": "http",
     "url": {
         "domain": "packetbeat.com",
-        "full": "http://packetbeat.com:8002/",
-        "path": "/",
-        "port": 8002,
+        "full": "http://packetbeat.com/register?address=anklamerstr.14b\u0026telephon=8932784368\u0026user=monica",
+        "path": "/register",
+        "query": "address=anklamerstr.14b\u0026telephon=8932784368\u0026user=monica",
         "scheme": "http"
     },
     "user_agent": {
-        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.65 Safari/537.36"
+        "original": "curl/7.37.1"
     }
 }
 ```
@@ -1455,6 +1499,7 @@ Fields published for ICMP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1499,13 +1544,13 @@ An example event for `icmp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:38:25.426Z",
+    "@timestamp": "2022-03-09T07:57:32.766Z",
     "agent": {
-        "ephemeral_id": "ca426f1a-1da5-4ade-ba88-5203e420f5f0",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "34e079a4-8dee-40db-a820-2296c225fbbe",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
         "bytes": 4,
@@ -1524,9 +1569,9 @@ An example event for `icmp` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1534,11 +1579,11 @@ An example event for `icmp` looks as following:
             "network"
         ],
         "dataset": "network_traffic.icmp",
-        "duration": 16850124,
-        "end": "2022-02-03T10:38:25.443Z",
-        "ingested": "2022-02-03T10:38:26Z",
+        "duration": 13336600,
+        "end": "2022-03-09T07:57:32.779Z",
+        "ingested": "2022-03-09T07:57:36Z",
         "kind": "event",
-        "start": "2022-02-03T10:38:25.426Z",
+        "start": "2022-03-09T07:57:32.766Z",
         "type": [
             "connection"
         ]
@@ -1547,33 +1592,32 @@ An example event for `icmp` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "icmp": {
         "request": {
             "code": 0,
-            "message": "EchoRequest(0)",
+            "message": "EchoRequest",
             "type": 128
         },
         "response": {
             "code": 0,
-            "message": "EchoReply(0)",
+            "message": "EchoReply",
             "type": 129
         },
         "version": 6
@@ -1665,6 +1709,7 @@ Fields published for Memcached packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1744,18 +1789,17 @@ An example event for `memcached` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:50:59.487Z",
+    "@timestamp": "2022-03-09T08:09:26.564Z",
     "agent": {
-        "ephemeral_id": "a0ad5187-6614-4509-8b8c-b91ce34bfe47",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "53c3aab1-4c1d-4f33-87a9-1d1d4ce75205",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 8,
         "ip": "192.168.188.37",
-        "port": 55319
+        "port": 65195
     },
     "data_stream": {
         "dataset": "network_traffic.memcached",
@@ -1763,7 +1807,7 @@ An example event for `memcached` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 20,
+        "bytes": 1064,
         "ip": "192.168.188.38",
         "port": 11211
     },
@@ -1771,9 +1815,9 @@ An example event for `memcached` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1781,65 +1825,61 @@ An example event for `memcached` looks as following:
             "network"
         ],
         "dataset": "network_traffic.memcached",
-        "duration": 1110187,
-        "end": "2022-02-03T10:50:59.488Z",
-        "ingested": "2022-02-03T10:51:00Z",
+        "ingested": "2022-03-09T08:09:37Z",
         "kind": "event",
-        "start": "2022-02-03T10:50:59.487Z",
+        "start": "2022-03-09T08:09:26.564Z",
         "type": [
             "connection",
             "protocol"
         ]
     },
     "event.action": "memcache.store",
-    "event.outcome": "success",
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "memcache": {
-        "protocol_type": "text",
+        "protocol_type": "binary",
         "request": {
-            "bytes": 3,
+            "bytes": 1024,
             "command": "set",
             "count_values": 1,
             "exptime": 0,
             "flags": 0,
             "keys": [
-                "key"
+                "test_key"
             ],
-            "noreply": false,
-            "type": "Store"
-        },
-        "response": {
-            "command": "STORED",
-            "type": "Success"
+            "opaque": 65536,
+            "opcode": "SetQ",
+            "opcode_value": 17,
+            "quiet": true,
+            "type": "Store",
+            "vbucket": 0
         }
     },
     "network": {
-        "bytes": 28,
-        "community_id": "1:9A/ijCzCSldlhnwuPZ8ZbFV9a0s=",
+        "bytes": 1064,
+        "community_id": "1:QMbWqXK5vGDDbp48SEFuFe8Z1lQ=",
         "direction": "unknown",
         "protocol": "memcache",
-        "transport": "tcp",
+        "transport": "udp",
         "type": "ipv4"
     },
     "related": {
@@ -1849,14 +1889,13 @@ An example event for `memcached` looks as following:
         ]
     },
     "server": {
-        "bytes": 20,
+        "bytes": 1064,
         "ip": "192.168.188.38",
         "port": 11211
     },
     "source": {
-        "bytes": 8,
         "ip": "192.168.188.37",
-        "port": 55319
+        "port": 65195
     },
     "status": "OK",
     "type": "memcache"
@@ -1923,6 +1962,7 @@ Fields published for MongoDB packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1971,18 +2011,18 @@ An example event for `mongodb` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T10:56:38.842Z",
+    "@timestamp": "2022-03-09T08:15:48.570Z",
     "agent": {
-        "ephemeral_id": "fb38b51d-a04b-41b9-aeb2-ec9cf5773530",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "fafaeb02-c623-46a0-a3e0-72e035bd12ba",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 62,
-        "ip": "172.17.42.1",
-        "port": 56341
+        "bytes": 50,
+        "ip": "127.0.0.1",
+        "port": 57203
     },
     "data_stream": {
         "dataset": "network_traffic.mongodb",
@@ -1990,17 +2030,17 @@ An example event for `mongodb` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 194,
-        "ip": "172.17.0.7",
+        "bytes": 514,
+        "ip": "127.0.0.1",
         "port": 27017
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2008,11 +2048,11 @@ An example event for `mongodb` looks as following:
             "network"
         ],
         "dataset": "network_traffic.mongodb",
-        "duration": 144797,
-        "end": "2022-02-03T10:56:38.842Z",
-        "ingested": "2022-02-03T10:56:39Z",
+        "duration": 1365900,
+        "end": "2022-03-09T08:15:48.571Z",
+        "ingested": "2022-03-09T08:15:49Z",
         "kind": "event",
-        "start": "2022-02-03T10:56:38.842Z",
+        "start": "2022-03-09T08:15:48.570Z",
         "type": [
             "connection",
             "protocol"
@@ -2022,58 +2062,56 @@ An example event for `mongodb` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
-    "method": "isMaster",
+    "method": "find",
     "mongodb": {
         "cursorId": 0,
-        "fullCollectionName": "admin.$cmd",
+        "fullCollectionName": "test.restaurants",
         "numberReturned": 1,
-        "numberToReturn": 4294967295,
+        "numberToReturn": 1,
         "numberToSkip": 0,
         "startingFrom": 0
     },
     "network": {
-        "bytes": 256,
-        "community_id": "1:M+LyW/kccP1eUdEy2yv8apn11ec=",
-        "direction": "unknown",
+        "bytes": 564,
+        "community_id": "1:mYSTZ4QZBfvJO05Em9TnPwrae6g=",
+        "direction": "ingress",
         "protocol": "mongodb",
         "transport": "tcp",
         "type": "ipv4"
     },
-    "query": "admin.$cmd.isMaster()",
+    "query": "test.restaurants.find().limit(1)",
     "related": {
         "ip": [
-            "172.17.42.1",
-            "172.17.0.7"
+            "127.0.0.1"
         ]
     },
-    "resource": "admin.$cmd",
+    "resource": "test.restaurants",
     "server": {
-        "bytes": 194,
-        "ip": "172.17.0.7",
+        "bytes": 514,
+        "ip": "127.0.0.1",
         "port": 27017
     },
     "source": {
-        "bytes": 62,
-        "ip": "172.17.42.1",
-        "port": 56341
+        "bytes": 50,
+        "ip": "127.0.0.1",
+        "port": 57203
     },
     "status": "OK",
     "type": "mongodb"
@@ -2140,6 +2178,7 @@ Fields published for MySQL packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2184,18 +2223,18 @@ An example event for `mysql` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:01:25.244Z",
+    "@timestamp": "2022-03-09T08:20:44.667Z",
     "agent": {
-        "ephemeral_id": "b93df5d3-4bf4-4623-a66d-853eede519a1",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "43167926-7ebd-4acd-8216-daf3664fe286",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 28,
-        "ip": "192.168.33.1",
-        "port": 60137
+        "bytes": 23,
+        "ip": "127.0.0.1",
+        "port": 41517
     },
     "data_stream": {
         "dataset": "network_traffic.mysql",
@@ -2203,17 +2242,17 @@ An example event for `mysql` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 102441,
-        "ip": "192.168.33.14",
+        "bytes": 3629,
+        "ip": "127.0.0.1",
         "port": 3306
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2221,11 +2260,11 @@ An example event for `mysql` looks as following:
             "network"
         ],
         "dataset": "network_traffic.mysql",
-        "duration": 3588800,
-        "end": "2022-02-03T11:01:25.248Z",
-        "ingested": "2022-02-03T11:01:26Z",
+        "duration": 5532500,
+        "end": "2022-03-09T08:20:44.673Z",
+        "ingested": "2022-03-09T08:20:45Z",
         "kind": "event",
-        "start": "2022-02-03T11:01:25.244Z",
+        "start": "2022-03-09T08:20:44.667Z",
         "type": [
             "connection",
             "protocol"
@@ -2235,56 +2274,54 @@ An example event for `mysql` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "method": "SELECT",
     "mysql": {
         "affected_rows": 0,
         "insert_id": 0,
-        "num_fields": 1,
-        "num_rows": 400
+        "num_fields": 3,
+        "num_rows": 15
     },
     "network": {
-        "bytes": 102469,
-        "community_id": "1:9KUFobbPouJ9e7hGr0khrShJ1Rs=",
-        "direction": "unknown",
+        "bytes": 3652,
+        "community_id": "1:goIcZn7CMIJ6W7Yf8JRV618zzxA=",
+        "direction": "ingress",
         "protocol": "mysql",
         "transport": "tcp",
         "type": "ipv4"
     },
-    "path": "test.test_long",
-    "query": "select * from test_long",
+    "path": "test.test",
+    "query": "select * from test",
     "related": {
         "ip": [
-            "192.168.33.1",
-            "192.168.33.14"
+            "127.0.0.1"
         ]
     },
     "server": {
-        "bytes": 102441,
-        "ip": "192.168.33.14",
+        "bytes": 3629,
+        "ip": "127.0.0.1",
         "port": 3306
     },
     "source": {
-        "bytes": 28,
-        "ip": "192.168.33.1",
-        "port": 60137
+        "bytes": 23,
+        "ip": "127.0.0.1",
+        "port": 41517
     },
     "status": "OK",
     "type": "mysql"
@@ -2353,6 +2390,7 @@ Fields published for NFS packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2405,19 +2443,19 @@ An example event for `nfs` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:04:32.060Z",
+    "@timestamp": "2022-03-09T08:24:00.569Z",
     "agent": {
-        "ephemeral_id": "62cab970-d183-4193-a863-2fae39244fe2",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "62904593-11a1-4706-8487-78b14fb72c08",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 116,
-        "domain": "ani",
-        "ip": "127.0.0.1",
-        "port": 839
+        "bytes": 208,
+        "domain": "desycloud03.desy.de",
+        "ip": "131.169.5.156",
+        "port": 907
     },
     "data_stream": {
         "dataset": "network_traffic.nfs",
@@ -2425,105 +2463,107 @@ An example event for `nfs` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 32,
-        "ip": "127.0.0.1",
+        "bytes": 176,
+        "ip": "131.169.192.35",
         "port": 2049
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
-        "action": "nfs.LOOKUP",
+        "action": "nfs.CLOSE",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "dataset": "network_traffic.nfs",
-        "duration": 410457313,
-        "end": "2022-02-03T11:04:32.470Z",
-        "ingested": "2022-02-03T11:04:33Z",
+        "duration": 6573500,
+        "end": "2022-03-09T08:24:00.575Z",
+        "ingested": "2022-03-09T08:24:01Z",
         "kind": "event",
-        "start": "2022-02-03T11:04:32.060Z",
+        "start": "2022-03-09T08:24:00.569Z",
         "type": [
             "connection",
             "protocol"
         ]
     },
-    "group.id": 0,
+    "group.id": 48,
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
-    "host.hostname": "ani",
+    "host.hostname": "desycloud03.desy.de",
     "network": {
-        "bytes": 148,
-        "community_id": "1:K6/2XnLPJVyyA+yaYhZUWMBb0mw=",
-        "direction": "ingress",
-        "protocol": "nfsv3",
+        "bytes": 384,
+        "community_id": "1:cd5eLXemAsSPMdXwCbdDUWWud4M=",
+        "direction": "unknown",
+        "protocol": "nfsv4",
         "transport": "tcp",
         "type": "ipv4"
     },
     "nfs": {
-        "opcode": "LOOKUP",
-        "status": "NFSERR_NOENT",
-        "version": 3
+        "minor_version": 1,
+        "opcode": "CLOSE",
+        "status": "NFS_OK",
+        "tag": "",
+        "version": 4
     },
     "related": {
         "ip": [
-            "127.0.0.1"
+            "131.169.5.156",
+            "131.169.192.35"
         ]
     },
     "rpc": {
         "auth_flavor": "unix",
         "cred": {
-            "gid": 0,
+            "gid": 48,
             "gids": [
-                0
+                48
             ],
-            "machinename": "ani",
-            "stamp": 4639510,
-            "uid": 0
+            "machinename": "desycloud03.desy.de",
+            "stamp": 4308441,
+            "uid": 48
         },
         "status": "success",
-        "xid": "a19a75d0"
+        "xid": "c3103fc1"
     },
     "server": {
-        "bytes": 32,
-        "ip": "127.0.0.1",
+        "bytes": 176,
+        "ip": "131.169.192.35",
         "port": 2049
     },
     "source": {
-        "bytes": 116,
-        "domain": "ani",
-        "ip": "127.0.0.1",
-        "port": 839
+        "bytes": 208,
+        "domain": "desycloud03.desy.de",
+        "ip": "131.169.5.156",
+        "port": 907
     },
     "status": "OK",
     "type": "nfs",
-    "user.id": 0
+    "user.id": 48
 }
 ```
 
@@ -2587,6 +2627,7 @@ Fields published for PostgreSQL packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2629,13 +2670,13 @@ An example event for `pgsql` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:08:49.961Z",
+    "@timestamp": "2022-03-09T08:29:39.675Z",
     "agent": {
-        "ephemeral_id": "4b3cd166-a06e-462b-99f4-1fbbb19bd255",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "1e05998c-1d97-426b-8d9e-f5f92c446612",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
         "bytes": 34,
@@ -2656,9 +2697,9 @@ An example event for `pgsql` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2666,11 +2707,11 @@ An example event for `pgsql` looks as following:
             "network"
         ],
         "dataset": "network_traffic.pgsql",
-        "duration": 4178922,
-        "end": "2022-02-03T11:08:49.966Z",
-        "ingested": "2022-02-03T11:08:51Z",
+        "duration": 2568100,
+        "end": "2022-03-09T08:29:39.678Z",
+        "ingested": "2022-03-09T08:29:40Z",
         "kind": "event",
-        "start": "2022-02-03T11:08:49.961Z",
+        "start": "2022-03-09T08:29:39.675Z",
         "type": [
             "connection",
             "protocol"
@@ -2680,22 +2721,21 @@ An example event for `pgsql` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "method": "SELECT",
@@ -2792,6 +2832,7 @@ Fields published for Redis packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2831,13 +2872,13 @@ An example event for `redis` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:09:58.274Z",
+    "@timestamp": "2022-03-09T08:30:57.254Z",
     "agent": {
-        "ephemeral_id": "9695e5d6-592c-43f6-ae77-e05b03258aac",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "b68277a8-8012-4ada-bbdd-6ce88a51c5ce",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
         "bytes": 31,
@@ -2858,9 +2899,9 @@ An example event for `redis` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "action": "redis.set",
@@ -2869,11 +2910,11 @@ An example event for `redis` looks as following:
             "network"
         ],
         "dataset": "network_traffic.redis",
-        "duration": 3574366,
-        "end": "2022-02-03T11:09:58.278Z",
-        "ingested": "2022-02-03T11:09:59Z",
+        "duration": 1421600,
+        "end": "2022-03-09T08:30:57.256Z",
+        "ingested": "2022-03-09T08:30:58Z",
         "kind": "event",
-        "start": "2022-02-03T11:09:58.274Z",
+        "start": "2022-03-09T08:30:57.254Z",
         "type": [
             "connection",
             "protocol"
@@ -2883,22 +2924,21 @@ An example event for `redis` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "method": "SET",
@@ -2995,6 +3035,7 @@ Fields published for SIP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3031,6 +3072,7 @@ Fields published for SIP packets.
 | sip.auth.scheme | Auth scheme | keyword |
 | sip.auth.uri.host | Auth URI host | keyword |
 | sip.auth.uri.original | Auth original URI | keyword |
+| sip.auth.uri.original.text | Multi-field of `sip.auth.uri.original`. | text |
 | sip.auth.uri.port | Auth URI port | long |
 | sip.auth.uri.scheme | Auth URI scheme | keyword |
 | sip.call_id | Call ID. | keyword |
@@ -3042,6 +3084,7 @@ Fields published for SIP packets.
 | sip.contact.transport | Contact transport | keyword |
 | sip.contact.uri.host | Contact URI host | keyword |
 | sip.contact.uri.original | Contact original URI | keyword |
+| sip.contact.uri.original.text | Multi-field of `sip.contact.uri.original`. | text |
 | sip.contact.uri.port | Contact URI port | long |
 | sip.contact.uri.scheme | Contat URI scheme | keyword |
 | sip.contact.uri.username | Contact URI user name | keyword |
@@ -3053,6 +3096,7 @@ Fields published for SIP packets.
 | sip.from.tag | From tag | keyword |
 | sip.from.uri.host | From URI host | keyword |
 | sip.from.uri.original | From original URI | keyword |
+| sip.from.uri.original.text | Multi-field of `sip.from.uri.original`. | text |
 | sip.from.uri.port | From URI port | long |
 | sip.from.uri.scheme | From URI scheme | keyword |
 | sip.from.uri.username | From URI user name | keyword |
@@ -3060,10 +3104,12 @@ Fields published for SIP packets.
 | sip.method | Request method. | keyword |
 | sip.private.uri.host | Private URI host. | keyword |
 | sip.private.uri.original | Private original URI. | keyword |
+| sip.private.uri.original.text | Multi-field of `sip.private.uri.original`. | text |
 | sip.private.uri.port | Private URI port. | long |
 | sip.private.uri.scheme | Private URI scheme. | keyword |
 | sip.private.uri.username | Private URI user name. | keyword |
 | sip.sdp.body.original | SDP original body | keyword |
+| sip.sdp.body.original.text | Multi-field of `sip.sdp.body.original`. | text |
 | sip.sdp.connection.address | SDP connection address | keyword |
 | sip.sdp.connection.info | SDP connection info | keyword |
 | sip.sdp.owner.ip | SDP owner IP | ip |
@@ -3078,37 +3124,42 @@ Fields published for SIP packets.
 | sip.to.tag | To tag | keyword |
 | sip.to.uri.host | To URI host | keyword |
 | sip.to.uri.original | To original URI | keyword |
+| sip.to.uri.original.text | Multi-field of `sip.to.uri.original`. | text |
 | sip.to.uri.port | To URI port | long |
 | sip.to.uri.scheme | To URI scheme | keyword |
 | sip.to.uri.username | To URI user name | keyword |
 | sip.type | Either request or response. | keyword |
 | sip.uri.host | The URI host. | keyword |
 | sip.uri.original | The original URI. | keyword |
+| sip.uri.original.text | Multi-field of `sip.uri.original`. | text |
 | sip.uri.port | The URI port. | long |
 | sip.uri.scheme | The URI scheme. | keyword |
 | sip.uri.username | The URI user name. | keyword |
 | sip.user_agent.original |  | keyword |
+| sip.user_agent.original.text | Multi-field of `sip.user_agent.original`. | text |
 | sip.version | SIP protocol version. | keyword |
 | sip.via.original | The original Via value. | keyword |
+| sip.via.original.text | Multi-field of `sip.via.original`. | text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 An example event for `sip` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:11:45.732Z",
+    "@timestamp": "2022-03-09T08:32:14.536Z",
     "agent": {
-        "ephemeral_id": "658bc9dd-443e-4d68-8e8c-9de104c699aa",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "ee3aeba6-2bd9-4a89-840a-32af72217a7a",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
         "ip": "10.0.2.20",
@@ -3127,9 +3178,9 @@ An example event for `sip` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "action": "sip-invite",
@@ -3140,12 +3191,12 @@ An example event for `sip` looks as following:
         ],
         "dataset": "network_traffic.sip",
         "duration": 0,
-        "end": "2022-02-03T11:11:45.732Z",
-        "ingested": "2022-02-03T11:11:46Z",
+        "end": "2022-03-09T08:32:14.536Z",
+        "ingested": "2022-03-09T08:32:15Z",
         "kind": "event",
         "original": "INVITE sip:test@10.0.2.15:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0\r\nFrom: \"DVI4/8000\" \u003csip:sipp@10.0.2.20:5060\u003e;tag=1\r\nTo: test \u003csip:test@10.0.2.15:5060\u003e\r\nCall-ID: 1-2187@10.0.2.20\r\nCSeq: 1 INVITE\r\nContact: sip:sipp@10.0.2.20:5060\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length:   123\r\n\r\nv=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n",
         "sequence": 1,
-        "start": "2022-02-03T11:11:45.732Z",
+        "start": "2022-03-09T08:32:14.536Z",
         "type": [
             "info"
         ]
@@ -3154,22 +3205,21 @@ An example event for `sip` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -3339,6 +3389,7 @@ Fields published for Thrift packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3380,18 +3431,18 @@ An example event for `thrift` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:13:08.782Z",
+    "@timestamp": "2022-03-09T08:33:31.022Z",
     "agent": {
-        "ephemeral_id": "7125f842-f173-471c-9928-8613dd799610",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "de52c04f-60dd-4ed1-a501-b297caa5c67c",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
-        "bytes": 17,
+        "bytes": 25,
         "ip": "127.0.0.1",
-        "port": 53325
+        "port": 50919
     },
     "data_stream": {
         "dataset": "network_traffic.thrift",
@@ -3399,7 +3450,7 @@ An example event for `thrift` looks as following:
         "type": "logs"
     },
     "destination": {
-        "bytes": 17,
+        "bytes": 25,
         "ip": "127.0.0.1",
         "port": 9090
     },
@@ -3407,9 +3458,9 @@ An example event for `thrift` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3417,11 +3468,11 @@ An example event for `thrift` looks as following:
             "network"
         ],
         "dataset": "network_traffic.thrift",
-        "duration": 2072145,
-        "end": "2022-02-03T11:13:08.784Z",
-        "ingested": "2022-02-03T11:13:09Z",
+        "duration": 1394000,
+        "end": "2022-03-09T08:33:31.023Z",
+        "ingested": "2022-03-09T08:33:32Z",
         "kind": "event",
-        "start": "2022-02-03T11:13:08.782Z",
+        "start": "2022-03-09T08:33:31.022Z",
         "type": [
             "connection",
             "protocol"
@@ -3431,54 +3482,53 @@ An example event for `thrift` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
-    "method": "ping",
+    "method": "testByte",
     "network": {
-        "bytes": 34,
-        "community_id": "1:LU1IalFNQg4jjwnsGXIVXAH93+E=",
+        "bytes": 50,
+        "community_id": "1:fs+HuhTN3hqKiWHtoK/DsQ0ni5Y=",
         "direction": "ingress",
         "protocol": "thrift",
         "transport": "tcp",
         "type": "ipv4"
     },
     "path": "",
-    "query": "ping()",
+    "query": "testByte(1: 63)",
     "related": {
         "ip": [
             "127.0.0.1"
         ]
     },
     "server": {
-        "bytes": 17,
+        "bytes": 25,
         "ip": "127.0.0.1",
         "port": 9090
     },
     "source": {
-        "bytes": 17,
+        "bytes": 25,
         "ip": "127.0.0.1",
-        "port": 53325
+        "port": 50919
     },
     "status": "OK",
     "thrift": {
-        "params": "()",
-        "return_value": ""
+        "params": "(1: 63)",
+        "return_value": "63"
     },
     "type": "thrift"
 }
@@ -3545,6 +3595,7 @@ Fields published for TLS packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3607,7 +3658,7 @@ Fields published for TLS packets.
 | tls.detailed.client_certificate.subject.province | Province or region within country. | keyword |
 | tls.detailed.client_certificate.version | X509 format version. | long |
 | tls.detailed.client_certificate.version_number | Version of x509 format. | keyword |
-| tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | keyword |
+| tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | array |
 | tls.detailed.client_certificate_requested | Whether the server has requested the client to authenticate itself using a client certificate. | boolean |
 | tls.detailed.client_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.client_hello.extensions.application_layer_protocol_negotiation | List of application-layer protocols the client is willing to use. | keyword |
@@ -3677,13 +3728,13 @@ An example event for `tls` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-03T11:13:45.753Z",
+    "@timestamp": "2022-03-09T08:34:08.391Z",
     "agent": {
-        "ephemeral_id": "02076ed0-f6b4-4cb8-90d1-a4806d0f940f",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "5f0bae3e-11e9-4578-9a69-fa5e61bd6b09",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "client": {
         "ip": "192.168.1.36",
@@ -3703,9 +3754,9 @@ An example event for `tls` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3713,11 +3764,11 @@ An example event for `tls` looks as following:
             "network"
         ],
         "dataset": "network_traffic.tls",
-        "duration": 15193135,
-        "end": "2022-02-03T11:13:45.768Z",
-        "ingested": "2022-02-03T11:13:46Z",
+        "duration": 14861200,
+        "end": "2022-03-09T08:34:08.406Z",
+        "ingested": "2022-03-09T08:34:09Z",
         "kind": "event",
-        "start": "2022-02-03T11:13:45.753Z",
+        "start": "2022-03-09T08:34:08.391Z",
         "type": [
             "connection",
             "protocol"
@@ -3727,22 +3778,21 @@ An example event for `tls` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.19.0.6"
+            "192.168.176.7"
         ],
         "mac": [
-            "02-42-AC-13-00-06"
+            "02-42-C0-A8-B0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -3874,3 +3924,7 @@ An example event for `tls` looks as following:
     "type": "tls"
 }
 ```
+
+## Licensing for Windows Systems
+
+The Network Packet Capture Integration incorporates a bundled Npcap installation on Windows hosts. The installation is provided under an [OEM license](https://npcap.com/oem/redist.html) from Insecure.Com LLC ("The Nmap Project").
