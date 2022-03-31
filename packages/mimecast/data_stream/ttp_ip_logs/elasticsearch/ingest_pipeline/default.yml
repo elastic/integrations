@@ -68,7 +68,16 @@ processors:
       value: "{{source.ip}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip != null'
-
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
