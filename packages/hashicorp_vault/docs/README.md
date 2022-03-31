@@ -210,6 +210,7 @@ An example event for `audit` looks as following:
 | hashicorp_vault.audit.request.namespace.path |  | keyword |
 | hashicorp_vault.audit.request.operation | This is the type of operation which corresponds to path capabilities and is expected to be one of: create, read, update, delete, or list. | keyword |
 | hashicorp_vault.audit.request.path | The requested Vault path for operation. | keyword |
+| hashicorp_vault.audit.request.path.text | Multi-field of `hashicorp_vault.audit.request.path`. | text |
 | hashicorp_vault.audit.request.policy_override | Policy override indicates that the requestor wishes to override soft-mandatory Sentinel policies. | boolean |
 | hashicorp_vault.audit.request.remote_address | The IP address of the client making the request. | ip |
 | hashicorp_vault.audit.request.wrap_ttl | If the token is wrapped, this displays configured wrapped TTL in seconds. | long |
@@ -250,6 +251,7 @@ An example event for `audit` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -382,6 +384,7 @@ An example event for `log` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | hashicorp_vault.log |  | flattened |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
