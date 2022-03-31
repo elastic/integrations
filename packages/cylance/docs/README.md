@@ -1,7 +1,8 @@
 # Cylance integration
 
-This integration is for Cylance device's logs. It includes the following
+This integration is for [Cylance devices'](https://docs.blackberry.com/en) logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `protect` dataset: supports CylanceProtect logs.
 
 ### Protect
