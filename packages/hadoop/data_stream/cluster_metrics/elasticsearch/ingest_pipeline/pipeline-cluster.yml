@@ -1,0 +1,61 @@
+---
+description: Pipeline for parsing hadoop cluster metrics
+processors:
+  - script:
+      source: >
+        ctx.hadoop.cluster_metrics.temp = ctx.hadoop.cluster_metrics.beans[0];
+        ctx.hadoop.cluster_metrics.remove("beans")
+  - rename:
+      field: hadoop.cluster_metrics.temp.AMLaunchDelayAvgTime
+      target_field: hadoop.cluster_metrics.application_master.launch_delay_avg_time
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.AMLaunchDelayNumOps
+      target_field: hadoop.cluster_metrics.application_master.launch_delay_num_ops
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.AMRegisterDelayAvgTime
+      target_field: hadoop.cluster_metrics.application_master.register_delay_avg_time
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.AMRegisterDelayNumOps
+      target_field: hadoop.cluster_metrics.application_master.register_delay_num_ops
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.NumActiveNMs
+      target_field: hadoop.cluster_metrics.node_managers.num_active
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.NumDecommissionedNMs
+      target_field: hadoop.cluster_metrics.node_managers.num_decommissioned
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.NumLostNMs
+      target_field: hadoop.cluster_metrics.node_managers.num_lost
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.NumRebootedNMs
+      target_field: hadoop.cluster_metrics.node_managers.num_rebooted
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.cluster_metrics.temp.NumUnhealthyNMs
+      target_field: hadoop.cluster_metrics.node_managers.num_unhealthy
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+        - hadoop.cluster_metrics.temp
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
