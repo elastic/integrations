@@ -4,7 +4,7 @@ The Nagios XI integration is used to fetch observability data from [Nagios XI](h
 
 ## Compatibility
 
-This Integration has been tested against `Nagios-XI Version: 5.8.7`
+This integration has been tested against `Nagios-XI Version: 5.8.7`
 
 ## Requirements
 

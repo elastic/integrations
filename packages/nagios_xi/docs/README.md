@@ -4,7 +4,7 @@ The Nagios XI integration is used to fetch observability data from [Nagios XI](h
 
 ## Compatibility
 
-This Integration has been tested against `Nagios-XI Version: 5.8.7`
+This integration has been tested against `Nagios-XI Version: 5.8.7`
 
 ## Requirements
 
@@ -37,7 +37,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
