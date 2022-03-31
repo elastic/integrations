@@ -50,7 +50,6 @@ This is the `memory` dataset.
 
 {{fields "memory"}}
 
-
 ### GC Metrics
 
 This is the `gc` dataset.

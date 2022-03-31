@@ -290,7 +290,6 @@ An example event for `memory` looks as following:
 | user_agent.version | Version of the user agent. | keyword |
 
 
-
 ### GC Metrics
 
 This is the `gc` dataset.
