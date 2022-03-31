@@ -1,0 +1,26 @@
+metricsets: ["json"]
+namespace: "datanode"
+hosts:
+{{#each hosts}}
+  - "{{this}}/jmx?qry=Hadoop:name=FSDatasetState,service=DataNode"
+  - "{{this}}/jmx?qry=Hadoop:name=DataNodeActivity*,service=DataNode"
+{{/each}}
+period: {{period}}
+path: "/"
+{{#if proxy_url}}
+proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+certificate_authorities: {{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
