@@ -165,6 +165,7 @@ An example event for `result` looks as following:
 | file.mtime | Last time the file content was modified. | date |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
@@ -181,6 +182,7 @@ An example event for `result` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -362,10 +364,13 @@ An example event for `result` looks as following:
 | osquery.result.name | The name of the query that generated this event. | keyword |
 | osquery.result.unix_time | Unix timestamp of the event, in seconds since the epoch. Used for computing the `@timestamp` column. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 

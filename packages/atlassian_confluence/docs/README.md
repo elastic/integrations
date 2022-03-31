@@ -58,6 +58,7 @@ The Confluence integration collects audit logs from the audit log files or the a
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -71,6 +72,7 @@ The Confluence integration collects audit logs from the audit log files or the a
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
@@ -85,15 +87,21 @@ The Confluence integration collects audit logs from the audit log files or the a
 | tags | List of keywords used to tag each event. | keyword |
 | user.changes.email | User email address. | keyword |
 | user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.full_name.text | Multi-field of `user.changes.full_name`. | match_only_text |
 | user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.full_name | User's full name, if available. | keyword |
+| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 An example event for `audit` looks as following:
