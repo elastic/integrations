@@ -601,3 +601,4 @@ An example event for `gc` looks as following:
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
