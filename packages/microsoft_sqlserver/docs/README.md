@@ -37,6 +37,7 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | destination.user.id | Unique identifier of the user. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -54,17 +55,22 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| process.title.text | Multi-field of `process.title`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -111,8 +117,10 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
