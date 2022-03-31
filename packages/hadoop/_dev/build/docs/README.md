@@ -10,14 +10,6 @@ This integration is used to collect [Hadoop](https://hadoop.apache.org/) metrics
 
 This integration uses Resource Manager API and JMX API to collect above metrics.
 
-## application_metrics
-
-This data stream collects Application metrics.
-
-{{event "application_metrics"}}
-
-{{fields "application_metrics"}}
-
 ## cluster_metrics
 
 This data stream collects Cluster metrics.
