@@ -1,6 +1,18 @@
-metricsets: ["sample_metricset"]
+metricsets: ["collector"]
 hosts:
-{{#each hosts}}
-  - {{this}}
-{{/each}}
+  - {{host}}
 period: {{period}}
+metrics_path: /metrics
+metrics_filters:
+  include: ["was_connectionpool*"]
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
