@@ -25,7 +25,7 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:41.000Z",
     "agent": {
-        "ephemeral_id": "5e984940-8509-4f6b-8d05-3861093843ad",
+        "ephemeral_id": "810a3021-702d-4bf9-a052-02721ef90a96",
         "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -46,9 +46,9 @@ An example event for `events` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-30T16:30:10.331Z",
+        "created": "2022-03-31T12:30:36.705Z",
         "dataset": "nagios_xi.events",
-        "ingested": "2022-03-30T16:30:11Z",
+        "ingested": "2022-03-31T12:30:37Z",
         "kind": "events",
         "module": "nagios_xi",
         "original": "{\"entry_time\":\"2022-03-16 07:02:41\",\"instance_id\":\"1\",\"logentry_data\":\"Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.\",\"logentry_id\":\"211261\",\"logentry_type\":\"262144\"}",
@@ -57,14 +57,14 @@ An example event for `events` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "message": "Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.",
     "nagios_xi": {
         "event": {
             "entry_time": "2022-03-16T07:02:41.000Z",
             "instance_id": 1,
             "logentry": {
-                "data": "Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.",
-                "logentry_id": 211261,
-                "logentry_type": 262144
+                "id": 211261,
+                "type": 262144
             }
         }
     },
@@ -91,9 +91,9 @@ An example event for `events` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | nagios_xi.event.entry_time | Log entry time | keyword |
 | nagios_xi.event.instance_id | Instace ID of current instance | double |
-| nagios_xi.event.logentry.data | Logentry message with notification details | keyword |
 | nagios_xi.event.logentry.id | Logentry ID | double |
 | nagios_xi.event.logentry.type | Logentry type | double |
 | tags | List of keywords used to tag each event. | keyword |
