@@ -1,12 +1,15 @@
 # Docker Integration
 
-This Integration fetches metrics from [Docker](https://www.docker.com/) containers. The default data streams are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory` and `network`. The `image` metricset is not enabled by default.
+This Integration fetches metrics from [Docker](https://www.docker.com/) containers. 
+The default data streams are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory` and `network`. 
+The `image` metricset is not enabled by default.
 
 ## Compatibility
 
 The Docker module is currently tested on Linux and Mac with the community
-edition engine, versions 1.11 and 17.09.0-ce. It is not tested on Windows,
-but it should also work there.
+edition engine, versions 1.11 and 17.09.0-ce. 
+
+It is not tested on Windows, but it should also work there.
 
 ## Running from within Docker
 
@@ -24,11 +27,11 @@ docker run -d \
 
 ## Module-specific configuration notes
 
-It is strongly recommended that you run Docker metricsets with a
-[`period`](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-metricbeat.html#metricset-period)
-that is 3 seconds or longer. The request to the
-Docker API already takes up to 2 seconds. Specifying less than 3 seconds will
-result in requests that timeout, and no data will be reported for those
+It is strongly recommended that you run Docker metricsets with a [`period`](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-metricbeat.html#metricset-period) that is 3 seconds or longer. 
+
+The request to the Docker API already takes up to 2 seconds.
+
+Specifying less than 3 seconds will result in requests that timeout, and no data will be reported for those
 requests.
 
 ## Metrics
@@ -707,8 +710,7 @@ An example event for `image` looks as following:
 
 ### Info
 
-The Docker `info` data stream collects system-wide information based on the
-https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-system-wide-information[Docker Remote API].
+The Docker `info` data stream collects system-wide information based on the [Docker Remote API](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-system-wide-information).
 
 **Exported fields**
 
