@@ -154,10 +154,6 @@ An example event for `executors` looks as following:
 | apache_spark.metrics.executors.application_name |  | keyword |
 | apache_spark.metrics.executors.bytes.read |  | long |
 | apache_spark.metrics.executors.bytes.written |  | long |
-| apache_spark.metrics.executors.compilation_time |  | long |
-| apache_spark.metrics.executors.cpu_time |  | long |
-| apache_spark.metrics.executors.deserialize.cpu_time |  | long |
-| apache_spark.metrics.executors.deserialize.time |  | long |
 | apache_spark.metrics.executors.direct_pool_memory |  | long |
 | apache_spark.metrics.executors.disk_bytes_spilled |  | long |
 | apache_spark.metrics.executors.file_cache_hits |  | long |
