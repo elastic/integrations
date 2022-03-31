@@ -385,7 +385,6 @@ An example event for `threads` looks as following:
 }
 ```
 
-
 **Exported fields**
 
 | Field | Description | Type |
