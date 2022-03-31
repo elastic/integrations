@@ -1,0 +1,25 @@
+metricsets: ["json"]
+namespace: "node_manager"
+hosts:
+{{#each hosts}}
+  - "{{this}}/jmx?qry=Hadoop:service=NodeManager,name=NodeManagerMetrics"
+{{/each}}
+period: {{period}}
+path: "/"
+{{#if proxy_url}}
+proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+certificate_authorities: {{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
