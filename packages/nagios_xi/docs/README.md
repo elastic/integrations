@@ -15,9 +15,9 @@ In order to ingest data from Nagios XI:
 
 ### Event Logs 
 
-This is the `events` dataset.
+This is the `events` data stream.
 
-- This dataset gives Nagios XI system event logs.
+- This data stream gives Nagios XI system event logs.
 
 An example event for `events` looks as following:
 
@@ -91,10 +91,10 @@ An example event for `events` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| nagios_xi.event.entry_time |  | keyword |
-| nagios_xi.event.instance_id |  | double |
-| nagios_xi.event.logentry.data |  | keyword |
-| nagios_xi.event.logentry.id |  | double |
-| nagios_xi.event.logentry.type |  | double |
+| nagios_xi.event.entry_time | Log entry time | keyword |
+| nagios_xi.event.instance_id | Instace ID of current instance | double |
+| nagios_xi.event.logentry.data | Logentry message with notification details | keyword |
+| nagios_xi.event.logentry.id | Logentry ID | double |
+| nagios_xi.event.logentry.type | Logentry type | double |
 | tags | List of keywords used to tag each event. | keyword |
 

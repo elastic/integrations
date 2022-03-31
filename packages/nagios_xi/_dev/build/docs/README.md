@@ -15,9 +15,9 @@ In order to ingest data from Nagios XI:
 
 ### Event Logs 
 
-This is the `events` dataset.
+This is the `events` data stream.
 
-- This dataset gives Nagios XI system event logs.
+- This data stream gives Nagios XI system event logs.
 
 {{event "events"}}
 
