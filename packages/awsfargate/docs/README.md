@@ -53,7 +53,7 @@ Tip: use the AWS Secrets Manager to store the Fleet Server enrollment token.
 
 Select an existing ECS cluster and create a new service with launch type "FARGATE". Use the task definition we just created.
 
-As soon as the Elastic Agent is started, open the dashboard named "\[Metricbeat AWS Fargate\]: Fargate Overview" and you will see the metrics show up in few minutes.
+As soon as the Elastic Agent is started, open the dashboard "\[AWS Fargate\] Fargate Overview" and you will see the metrics show up in few minutes.
 
 ### Using the AWS CLI
 
