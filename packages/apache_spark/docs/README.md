@@ -4,7 +4,7 @@ The Apache Spark integration collects and parses data using the Jolokia Metricbe
 
 ## Compatibility
 
-This module has been tested against `Apache Spark version 3.2.0`
+This integration has been tested against `Apache Spark version 3.2.0`
 
 ## Requirements
 
@@ -65,7 +65,7 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ### Applications
 
-This is the `applications` dataset.
+This is the `applications` data stream.
 
 An example event for `applications` looks as following:
 
@@ -80,15 +80,13 @@ An example event for `applications` looks as following:
         "version": "8.0.0"
     },
     "apache_spark": {
-        "metrics": {
-            "applications": {
-                "cores": 8,
-                "name": "JavaWordCount.1646133990496"
-            }
+        "applications": {
+            "cores": 8,
+            "name": "JavaWordCount.1646133990496"
         }
     },
     "data_stream": {
-        "dataset": "apache_spark.metrics",
+        "dataset": "apache_spark.applications",
         "namespace": "ep",
         "type": "metrics"
     },
@@ -102,7 +100,7 @@ An example event for `applications` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "apache_spark.metrics",
+        "dataset": "apache_spark.applications",
         "duration": 89018916,
         "ingested": "2022-03-09T11:54:54Z",
         "kind": "metric",
@@ -146,10 +144,10 @@ An example event for `applications` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.applications.cores | Number of cores. | long |
-| apache_spark.metrics.applications.name | Name of the application. | keyword |
-| apache_spark.metrics.applications.runtime_ms | Time taken to run the application (ms). | long |
-| apache_spark.metrics.applications.status | Current status of the application. | keyword |
+| apache_spark.applications.cores | Number of cores. | long |
+| apache_spark.applications.name | Name of the application. | keyword |
+| apache_spark.applications.runtime_ms | Time taken to run the application (ms). | long |
+| apache_spark.applications.status | Current status of the application. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

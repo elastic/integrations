@@ -5,7 +5,7 @@ processors:
       field: ecs.version
       value: '8.0.0'
   - rename:
-      field: jolokia
+      field: jolokia.metrics
       target_field: apache_spark
       ignore_missing: true
   - set:
@@ -20,16 +20,16 @@ processors:
   - script:
       lang: painless
       description: This script will add the name of application under key 'applications.name'
-      if: ctx?.apache_spark?.metrics?.mbean?.contains("name=application") == true
+      if: ctx?.apache_spark?.mbean?.contains("name=application") == true
       source: >-
-        def bean_name = ctx.apache_spark.metrics.mbean.toString().splitOnToken(".");
+        def bean_name = ctx.apache_spark.mbean.toString().splitOnToken(".");
         def app_name = "";
         if (bean_name[0].contains("name=application") == true) {
             app_name = bean_name[1] + "." + bean_name[2];
         }
-        ctx.apache_spark.metrics.applications.name = app_name;
+        ctx.apache_spark.applications.name = app_name;
   - remove:
-      field: apache_spark.metrics.mbean
+      field: apache_spark.mbean
       ignore_failure: true
 on_failure:
   - set:
