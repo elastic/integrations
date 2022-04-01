@@ -63,38 +63,6 @@ In this example, we will use the AWS CLI and a CloudFormation template to set up
 - a task definition for the Elastic Agent,
 - a service to execute the agent task on the cluster.
 
-Download the file [cloudformation.yml](https://github.com/elastic/integrations/tree/main/packages/awsfargate/_dev/build/docs/cloudformation.yml) from the integration [GitHub repository](https://github.com/elastic/integrations/tree/main/packages/awsfargate/_dev/build); this file contains the complete CloudFormation template we'll use in this getting started guide.
-
-To give you the idea, here's the [TaskDefinition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html) from the CloudFormation template. It is the CloudFormation equivalent of the task definition we manually created in the AWS web console section:
-
-```yaml
-  TaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: !Ref TaskName
-      Cpu: 256
-      Memory: 512
-      NetworkMode: awsvpc
-      ExecutionRoleArn: !Ref ExecutionRole
-      ContainerDefinitions:
-        - Name: elastic-agent-container
-          Image: docker.elastic.co/beats/elastic-agent:8.1.0
-          Secrets:
-            - Name: FLEET_ENROLLMENT_TOKEN
-              ValueFrom: !Ref FleetEnrollmentTokenSecretArn
-            - Name: FLEET_URL
-              ValueFrom: !Ref FleetUrlSecretArn
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-region: !Ref AWS::Region
-              awslogs-group: !Ref LogGroup
-              awslogs-stream-prefix: ecs
-          Environment:
-            - Name: FLEET_ENROLL
-              Value: true
-```
-
 #### Setup
 
 Prepare you terminal and AWS environment to create the ECS cluster for the testing.
@@ -137,12 +105,129 @@ One more thing. You need to pick one subnet where your ECS cluster will be creat
 
 #### Deploy the stack
 
+Copy the following CloudFormation template and save it on you computer with the name `cloudformation.yml`:
+
+```yaml
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  SubnetID:
+    Type: String
+    Description: Enter the ID of the subnet you want to create the cluster in.
+  FleetEnrollmentTokenSecretArn:
+    Type: String
+    Description: Enter the Amazon Resource Name (ARN) of the secret holding the enrollment token for the Elastic Agent.
+  FleetUrlSecretArn:
+    Type: String
+    Description: Enter the Amazon Resource Name (ARN) of the secret holding the Fleet Server URL.
+  ClusterName:
+    Type: String
+    Default: elastic-agent-fargate
+    Description: Enter the name of the Fargate cluster to create.
+  RoleName:
+    Type: String
+    Default: ecsFargateTaskExecutionRole
+    Description: Enter the Amazon Resource Name (ARN) of the task execution role that grants the Amazon ECS container agent permission to make AWS API calls on your behalf.
+  TaskName:
+    Type: String
+    Default: elastic-agent-fargate-task
+    Description: Enter the name of the task definition to create.
+  ServiceName:
+    Type: String
+    Default: elastic-agent-fargate-service
+    Description: Enter the name of the service to create.
+  LogGroupName:
+    Type: String
+    Default: elastic-agent-fargate-log-group
+    Description: Enter the name of the log group to create.
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ClusterName
+      ClusterSettings:
+        - Name: containerInsights
+          Value: disabled
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref LogGroupName
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: !Sub 'EcsTaskExecutionRole-${AWS::StackName}'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Ref FleetEnrollmentTokenSecretArn
+                  - !Ref FleetUrlSecretArn
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref TaskName
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: elastic-agent-container
+          Image: docker.elastic.co/beats/elastic-agent:8.1.0
+          Secrets:
+            - Name: FLEET_ENROLLMENT_TOKEN
+              ValueFrom: !Ref FleetEnrollmentTokenSecretArn
+            - Name: FLEET_URL
+              ValueFrom: !Ref FleetUrlSecretArn
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
+          Environment:
+            - Name: FLEET_ENROLL
+              Value: true
+              # You migh need to set FLEET_INSECURE to true
+              # if you're connecting to a development
+              # environment. Use it responsibly.
+              # - Name: FLEET_INSECURE
+              #   Value: true
+      RequiresCompatibilities:
+        - EC2
+        - FARGATE
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Ref ServiceName
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref SubnetID
+```
+
 We are now finally ready to deploy the ECS cluster with the Elastic Agent running in its own task.
 
 ```shell
 aws cloudformation create-stack \
     --stack-name elastic-agent-fargate-deployment \
-    --template-body file://./_dev/build/docs/cloudformation.yml \
+    --template-body file://./cloudformation.yml \
     --capabilities CAPABILITY_NAMED_IAM \
     --parameters \
         ParameterKey=SubnetID,ParameterValue=<subnet-id> \
