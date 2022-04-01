@@ -5,7 +5,7 @@ logs created by the ActiveMQ server - system logs and audit logs.
 
 ## Compatibility
 
-The ActiveMQ datasets were tested with ActiveMQ 5.15.9 or higher (independent from operating system).
+The ActiveMQ datasets were tested with ActiveMQ 5.15.9 or higher (independent from operating system). 
 
 ## Logs
 
