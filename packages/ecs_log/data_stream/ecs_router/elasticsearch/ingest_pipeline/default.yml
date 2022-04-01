@@ -1,0 +1,37 @@
+---
+processors:
+- pipeline:
+    name: '{{ IngestPipeline "logs-ecs-json-pipeline" }}'
+    if: |-
+      def message = ctx.message;
+      return message != null
+        && message.startsWith('{')
+        && message.endsWith('}')
+        && message.contains('"@timestamp"')
+- script:
+    source: |
+      ctx.data_stream.dataset = /[\/*?"<>|, #:-]/.matcher(ctx.data_stream.dataset).replaceAll('_')
+    if: ctx.data_stream?.dataset != null
+- script:
+    source: |
+      ctx.data_stream.namespace = /[\/*?"<>|, #:]/.matcher(ctx.data_stream.namespace).replaceAll('_')
+    if: ctx.data_stream?.namespace != null
+- set:
+    field: data_stream.type
+    value: logs
+    override: false
+- set:
+    field: data_stream.dataset
+    value: generic
+    override: false
+- set:
+    field: data_stream.namespace
+    value: default
+    override: false
+- set:
+    field: event.dataset
+    copy_from: data_stream.dataset
+    override: true
+- set:
+    field: _index
+    value: logs-{{{data_stream.dataset}}}-{{{data_stream.namespace}}}
