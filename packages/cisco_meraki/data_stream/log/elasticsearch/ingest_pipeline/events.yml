@@ -94,7 +94,7 @@ processors:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
-    if: ctx.event.original.startsWith('<') && (ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth' || ctx?.cisco_meraki?.event_subtype == 'vpn_connectivity_change' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_failure' || ctx?.cisco_meraki?.event_subtype == '8021x_deauth' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_success' || ctx?.cisco_meraki?.event_subtype == 'splash_auth' || ctx?.cisco_meraki?.event_subtype == 'device_packet_flood')
+    if: ctx.event.original.startsWith('<') && ['dfs_event', 'association', 'disassociation', 'wpa_deauth', 'wpa_auth', 'vpn_connectivity_change', '8021x_eap_failure', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
 - kv:
     field: _temp.rest
     field_split: " "
@@ -191,8 +191,7 @@ processors:
 - set:
     field: cisco_meraki.device_type
     value: MR
-    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ctx?.cisco_meraki?.event_subtype == 'association' || ctx?.cisco_meraki?.event_subtype == 'disassociation' || ctx?.cisco_meraki?.event_subtype == 'wpa_deauth' || ctx?.cisco_meraki?.event_subtype == 'wpa_auth' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_failure' || ctx?.cisco_meraki?.event_subtype == '8021x_deauth' || ctx?.cisco_meraki?.event_subtype == '8021x_eap_success' || ctx?.cisco_meraki?.event_subtype == 'splash_auth' || ctx?.cisco_meraki?.event_subtype == 'device_packet_flood'
-
+    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ['association', 'disassociation', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
 ####################################################
 # IP Geolocation Lookup (source)
 ####################################################
