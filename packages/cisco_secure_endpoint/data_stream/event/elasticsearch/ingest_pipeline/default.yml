@@ -36,9 +36,6 @@ processors:
 ## ECS Event Mapping ##
 #######################
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
     value: '8.0.0'
 - set:
@@ -177,18 +174,50 @@ processors:
 ######################
 ## ECS Host Mapping ##
 ######################
+- script:
+    lang: painless
+    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null && ctx.cisco?.secure_endpoint?.computer?.hostname.contains(".")'
+    source: |
+      def domain = "";
+      def nameArray = ctx.cisco.secure_endpoint.computer.hostname.toString().splitOnToken(".");
+      if (ctx.host == null) {
+        ctx.host = new HashMap();
+      }
+      if (nameArray?.length > 0) {
+        for (int i = 1; i < nameArray.length; i++) {
+          domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
+        }
+        ctx.host.hostname = nameArray[0];
+        ctx.host.domain = domain; 
+      }
+- script:
+    lang: painless
+    if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
+    source: >
+      String[] splitmail = ctx.cisco.secure_endpoint.computer.user.splitOnToken("@");
+      if (ctx.user == null) {
+        ctx.user = new HashMap();
+      }
+      if (splitmail.length != 2) {
+        return;
+      }
+      ctx.user.email = ctx.user.id;
+      ctx.user.domain = splitmail[1];
+      ctx.user.name = splitmail[0];
+- rename:
+    field: cisco.secure_endpoint.computer.hostname
+    target_field: host.hostname
+    ignore_missing: true
+    if: ctx?.host?.hostname == null && ctx?.cisco?.secure_endpoint?.computer?.hostname != null
 - set:
     field: host.name
-    copy_from: cisco.secure_endpoint.computer.hostname
-    ignore_empty_value: true
-- set:
-    field: host.hostname
-    copy_from: host.name
+    copy_from: host.hostname
     ignore_empty_value: true
 - rename:
     field: cisco.secure_endpoint.computer.user
     target_field: user.name
     ignore_missing: true
+    if: ctx?.user?.name == null && ctx?.cisco?.secure_endpoint?.computer?.user != null
 
 #########################
 ## ECS Network Mapping ##
@@ -552,6 +581,7 @@ processors:
     - cisco.secure_endpoint.threat_hunting.techniques
     - cisco.secure_endpoint.threat_hunting.tactics
     - cisco.secure_endpoint.computer.hostname
+    - cisco.secure_endpoint.computer.user
     ignore_missing: true
 on_failure:
 - set:
