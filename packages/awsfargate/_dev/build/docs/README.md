@@ -1,10 +1,10 @@
 # AWS Fargate Integration
 
-The AWS Fargate integration provides a method to retrieve various metadata, network metrics, and Docker stats about your containers and the tasks they are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
+The AWS Fargate integration provides a method to retrieve metadata, network metrics, and Docker stats about your containers and the tasks they are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
 
 ## How it works?
 
-The Elastic Agent is executed as container inside your an ECS cluster and collects metrics using the [Amazon ECS task metadata endpoint](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-fargate.html).
+The Elastic Agent is executed as container inside your an ECS cluster and it collects metrics using the [Amazon ECS task metadata endpoint](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-fargate.html).
 
 The ECS task metadata endpoint is an HTTP endpoint available to each container and enabled by default on [AWS Fargate platform version 1.4.0](https://aws.amazon.com/blogs/containers/aws-fargate-launches-platform-version-1-4/) an later. The Elastic Agent uses [Task metadata endpoint version 4](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-v4-fargate.html).
 
@@ -14,9 +14,9 @@ No AWS credentials are required for this integration. The ECS task metadata endp
 
 ## Getting Started
 
-This section shows you how to run an Elastic Agent in a ECS cluster and start collecting task metrics on Elastic Stack.
+This section shows you how to run the Elastic Agent in a ECS cluster, start collecting Fargate on ECS metrics, and send them to an Elastic Stack.
 
-First, we'll see a simple example, setting up a task definition using the AWS web console; this is the quickest path to have the integration up and running in your existing ECS cluster.
+First, we'll see a simple example, setting up a task definition and a service on an existing ECS cluster using the AWS web console; this is the quickest path to have the integration up and running in your existing ECS cluster.
 
 Second, we'll see a complete setup from scratch of a cluster, a service, and a task using a CloudFormation template and the AWS CLI.
 
@@ -35,7 +35,7 @@ In the step 2:
 - Add your preferred name for the "Task definition name", for example "elastic-agent-fargate-deployment".
 - For the "Task role", select "ecsFargateTaskExecutionRole".
 - For the "Operating system family", select "Linux".
-- Pick a value for "Task memory (GB)" and "Task CPU (vCPU)", low values are ok for testing purposes.
+- Pick a value for "Task memory (GB)" and "Task CPU (vCPU)"; the lowest values are fine for testing purposes.
 - Click on "Add container".
 
 As for the container, you can use the following values:
@@ -47,25 +47,25 @@ As for the container, you can use the following values:
   - FLEET_ENROLLMENT_TOKEN: `<enrollment-token>`
   - FLEET_URL: `<fleet-server-url>`
   
-Use can also use the AWS Secrets Manager to store the Fleet enrollment tokens.
+Tip: use the AWS Secrets Manager to store the Fleet Server enrollment token.
 
 #### Service
 
 Select an existing ECS cluster and create a new service with launch type "FARGATE". Use the task definition we just created.
 
-As soon as the Elastic Agent is started, you will see the metrics show up in the Elastic Stack.
+As soon as the Elastic Agent is started, open the dashboard named "\[Metricbeat AWS Fargate\]: Fargate Overview" and you will see the metrics show up in few minutes.
 
 ### Using the AWS CLI
 
-In this example with the AWS CLI, we will use a CloudFormation template to set up the following resources:
+In this example, we will use the AWS CLI and a CloudFormation template to set up the following resources:
 
 - an ECS cluster,
 - a task definition for the Elastic Agent,
-- a service to execute the task in the cluster.
+- a service to execute the agent task on the cluster.
 
-Download the file [cloudformation.yml](https://github.com/elastic/integrations/tree/main/packages/awsfargate/_dev/build/docs/cloudformation.yml) from the [GitHub repository](https://github.com/elastic/integrations/tree/main/packages/awsfargate/_dev/build); this file contains the complete CloudFormation template we'll use in this getting started guide.
+Download the file [cloudformation.yml](https://github.com/elastic/integrations/tree/main/packages/awsfargate/_dev/build/docs/cloudformation.yml) from the integration [GitHub repository](https://github.com/elastic/integrations/tree/main/packages/awsfargate/_dev/build); this file contains the complete CloudFormation template we'll use in this getting started guide.
 
-To give you the idea, here's the [TaskDefinition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html) from the CloudFormation template (it is the equivalent of the task definition we manually created in the AWS web console section):
+To give you the idea, here's the [TaskDefinition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html) from the CloudFormation template. It is the CloudFormation equivalent of the task definition we manually created in the AWS web console section:
 
 ```yaml
   TaskDefinition:
@@ -97,6 +97,8 @@ To give you the idea, here's the [TaskDefinition](https://docs.aws.amazon.com/AW
 
 #### Setup
 
+Prepare you terminal and AWS environment to create the ECS cluster for the testing.
+
 ##### Pick a region
 
 Set default AWS region for this session:
@@ -121,7 +123,7 @@ aws secretsmanager create-secret \
 
 Take note of the Amazon Resource Name (ARN) of both secrets, we'll use them in a moment.
 
-If you need to update them during your tests, here's how:
+Tip: if you need to update them during your tests, use the following `put-secret-value` to do it:
 
 ```shell
 aws secretsmanager put-secret-value \
@@ -131,7 +133,7 @@ aws secretsmanager put-secret-value \
 
 ##### Networking
 
-One more thing. You need to pick a subnet where your ECS cluster will be created in. Take note of the subnet ID for the very next step.
+One more thing. You need to pick one subnet where your ECS cluster will be created in. Take note of the subnet ID for the very next step.
 
 #### Deploy the stack
 
@@ -169,9 +171,11 @@ $ aws cloudformation list-stacks | jq '.StackSummaries[] | .StackName + " " + .S
 "elastic-agent-fargate-deployment CREATE_COMPLETE"
 ```
 
+That's it!
+
 #### Clean up
 
-Once you're done with experimenting, you can remove all the resources (ECS cluster, containers, etc) with the following command:
+Once you're done with experimenting, you can remove all the resources (ECS cluster, task, service, etc) with the following command:
 
 ```shell
 aws cloudformation delete-stack --stack-name elastic-agent-fargate-deployment
