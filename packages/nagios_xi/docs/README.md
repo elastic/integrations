@@ -25,8 +25,8 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:41.000Z",
     "agent": {
-        "ephemeral_id": "810a3021-702d-4bf9-a052-02721ef90a96",
-        "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
+        "ephemeral_id": "71ba3a4e-68fd-4101-b854-c8ff47d99fb7",
+        "id": "aba80e42-0c9f-4556-9f76-9db14503b734",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -37,18 +37,18 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
+        "id": "aba80e42-0c9f-4556-9f76-9db14503b734",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-31T12:30:36.705Z",
+        "created": "2022-04-01T09:37:09.708Z",
         "dataset": "nagios_xi.events",
-        "ingested": "2022-03-31T12:30:37Z",
+        "ingested": "2022-04-01T09:37:10Z",
         "kind": "events",
         "module": "nagios_xi",
         "original": "{\"entry_time\":\"2022-03-16 07:02:41\",\"instance_id\":\"1\",\"logentry_data\":\"Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.\",\"logentry_id\":\"211261\",\"logentry_type\":\"262144\"}",
