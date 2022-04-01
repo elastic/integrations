@@ -1,0 +1,86 @@
+format_version: 1.0.0
+name: nagios_xi
+title: "Nagios XI"
+version: 0.1.0
+license: basic
+description: Collect Logs and Metrics from Nagios XI with Elastic Agent.
+type: integration
+categories:
+  - custom
+  - monitoring
+conditions:
+  kibana.version: ^8.1.0
+icons:
+  - src: /img/nagios_xi-logo.svg
+    title: Nagios XI logo
+    size: 512x512
+    type: image/svg+xml
+policy_templates:
+  - name: nagios
+    title: Nagios XI logs and metrics
+    description: Collect Nagios XI logs and metrics
+    inputs:
+      - type: httpjson
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: Hostname for the Nagios XI API (Example http[s]://<hostname>[:<port>]).
+            required: true
+            show_user: true
+            default: "http://localhost:8080/"
+          - name: api_key
+            type: text
+            title: API Key
+            description: "API key for the Nagios XI API. (Location of API_KEY in Nagios XI: Click on your username on the top right corner of Nagios XI Panel -> My Account -> Account Information -> General Account Settings -> API Key)"
+            required: true
+            show_user: true
+            default: "64_characters_long_api_key"
+          - name: interval
+            type: text
+            title: Interval
+            description: Interval to collect data using Nagios XI API.
+            multi: false
+            required: true
+            show_user: true
+            default: 1m
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+        title: Collect Nagios XI Metrics via API
+        description: Collect Nagios XI Host metrics, Service metrics and System events.
+owner:
+  github: elastic/integrations
