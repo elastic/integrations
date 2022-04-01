@@ -37,7 +37,7 @@ An example event for `host` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d22ba4fb-aa92-45c7-a029-0da626f021b2",
