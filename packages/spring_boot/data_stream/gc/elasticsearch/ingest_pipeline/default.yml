@@ -1,0 +1,117 @@
+---
+description: Pipeline for parsing Spring Boot Resource metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: jolokia.metrics
+      target_field: spring_boot.gc
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc.PS Eden Space
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc.Code Cache
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc.Compressed Class Space
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc.PS Survivor Space
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc.PS Old Gen
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc.Metaspace
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc.PS Eden Space
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc.Code Cache
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc.Compressed Class Space
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc.PS Survivor Space
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc.PS Old Gen
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc.Metaspace
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.GcThreadCount
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.gc_thread_count
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.startTime
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.start_time
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.gc.garbage_collector.last_gc_info.endTime
+      target_field: spring_boot.gc.garbage_collector.last_gc_info.end_time
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: database
+  - set:
+      field: event.module
+      value: spring_boot
+  - set:
+      field: event.dataset
+      value: spring_boot.gc
+  - remove:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageBeforeGc
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: spring_boot.gc.garbage_collector.last_gc_info.memoryUsageAfterGc
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
