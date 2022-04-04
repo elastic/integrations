@@ -10,7 +10,7 @@ This integration is used to collect [Hadoop](https://hadoop.apache.org/) metrics
 
 This integration uses Resource Manager API and JMX API to collect above metrics.
 
-## application_metrics
+## application
 
 This data stream collects Application metrics.
 
@@ -18,16 +18,16 @@ An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-28T11:18:23.507Z",
+    "@timestamp": "2022-04-04T16:42:03.866Z",
     "agent": {
-        "ephemeral_id": "cb6626ea-ba3d-4856-bec0-107a18d7fa8c",
-        "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
+        "ephemeral_id": "7ebc1f0a-1beb-4519-81b4-60bdcf7449a3",
+        "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
     },
     "data_stream": {
-        "dataset": "hadoop.application_metrics",
+        "dataset": "hadoop.application",
         "namespace": "ep",
         "type": "logs"
     },
@@ -35,36 +35,36 @@ An example event for `application` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
+        "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-03-28T11:18:23.507Z",
-        "dataset": "hadoop.application_metrics",
-        "ingested": "2022-03-28T11:18:24Z",
+        "created": "2022-04-04T16:42:03.866Z",
+        "dataset": "hadoop.application",
+        "ingested": "2022-04-04T16:42:07Z",
         "kind": "metric",
         "module": "httpjson",
         "type": "info"
     },
     "hadoop": {
-        "application_metrics": {
+        "application": {
             "allocated": {
                 "mb": 2048,
                 "v_cores": 1
             },
-            "id": "application_1648466210775_0001",
-            "memory_seconds": 102907,
+            "id": "application_1649090491744_0001",
+            "memory_seconds": 24502,
             "progress": 0,
             "running_containers": 1,
             "time": {
-                "elapsed": 52082,
+                "elapsed": 15947,
                 "finished": "2022-01-01T00:00:00.000Z",
-                "started": "2022-01-01T00:00:00.312Z"
+                "started": "2022-01-01T00:00:00.906Z"
             },
-            "vcore_seconds": 51
+            "vcore_seconds": 11
         }
     },
     "input": {
@@ -90,16 +90,16 @@ An example event for `application` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| hadoop.application_metrics.allocated.mb | Total memory allocated to the application's running containers (Mb) | long |
-| hadoop.application_metrics.allocated.v_cores | The total number of virtual cores allocated to the application's running containers | long |
-| hadoop.application_metrics.id | Application ID | keyword |
-| hadoop.application_metrics.memory_seconds | The amount of memory the application has allocated | long |
-| hadoop.application_metrics.progress | Application progress (%) | long |
-| hadoop.application_metrics.running_containers | Number of containers currently running for the application | long |
-| hadoop.application_metrics.time.elapsed | The elapsed time since application started (ms) | long |
-| hadoop.application_metrics.time.finished | Application finished time | date |
-| hadoop.application_metrics.time.started | Application start time | date |
-| hadoop.application_metrics.vcore_seconds | The amount of CPU resources the application has allocated | long |
+| hadoop.application.allocated.mb | Total memory allocated to the application's running containers (Mb) | long |
+| hadoop.application.allocated.v_cores | The total number of virtual cores allocated to the application's running containers | long |
+| hadoop.application.id | Application ID | keyword |
+| hadoop.application.memory_seconds | The amount of memory the application has allocated | long |
+| hadoop.application.progress | Application progress (%) | long |
+| hadoop.application.running_containers | Number of containers currently running for the application | long |
+| hadoop.application.time.elapsed | The elapsed time since application started (ms) | long |
+| hadoop.application.time.finished | Application finished time | date |
+| hadoop.application.time.started | Application start time | date |
+| hadoop.application.vcore_seconds | The amount of CPU resources the application has allocated | long |
 | input.type | Type of Filebeat input. | keyword |
 | tags | User defined tags | keyword |
 
