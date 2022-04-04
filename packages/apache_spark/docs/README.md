@@ -4,7 +4,7 @@ The Apache Spark integration collects and parses data using the Jolokia Metricbe
 
 ## Compatibility
 
-This module has been tested against `Apache Spark version 3.2.0`
+This integration has been tested against `Apache Spark version 3.2.0`
 
 ## Requirements
 
@@ -65,32 +65,30 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ### Nodes
 
-This is the `nodes` dataset.
+This is the `nodes` data stream.
 
 An example event for `nodes` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-30T15:06:19.237Z",
+    "@timestamp": "2022-04-04T10:53:20.597Z",
     "agent": {
-        "ephemeral_id": "ae911caa-6091-47da-9f79-dea19b0ef5ba",
-        "id": "01cae619-f73d-4251-a6cf-9b97db33c9cd",
+        "ephemeral_id": "1a8a01d7-f619-4c9c-8528-af2b6792d9c0",
+        "id": "4e4e07c4-a787-4988-a436-5c373d54738a",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
     },
     "apache_spark": {
-        "metrics": {
-            "nodes": {
-                "main": {
-                    "apps": {
-                        "count": 0,
-                        "waiting": 0
-                    },
-                    "workers": {
-                        "alive": 0,
-                        "count": 0
-                    }
+        "nodes": {
+            "main": {
+                "applications": {
+                    "count": 0,
+                    "waiting": 0
+                },
+                "workers": {
+                    "alive": 0,
+                    "count": 0
                 }
             }
         }
@@ -101,18 +99,18 @@ An example event for `nodes` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "01cae619-f73d-4251-a6cf-9b97db33c9cd",
+        "id": "4e4e07c4-a787-4988-a436-5c373d54738a",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.nodes",
-        "duration": 11613000,
-        "ingested": "2022-03-30T15:06:22Z",
+        "duration": 6157145,
+        "ingested": "2022-04-04T10:53:24Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -122,22 +120,23 @@ An example event for `nodes` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.192.4"
+            "192.168.64.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:04"
+            "02:42:c0:a8:40:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "5.4.0-100-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
             "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
+    "jolokia": {},
     "metricset": {
         "name": "jmx",
         "period": 60000
@@ -154,15 +153,15 @@ An example event for `nodes` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.nodes.main.apps.count | Total number of apps. | long |
-| apache_spark.metrics.nodes.main.apps.waiting | Number of apps waiting. | long |
-| apache_spark.metrics.nodes.main.workers.alive | Number of alive workers. | long |
-| apache_spark.metrics.nodes.main.workers.count | Total number of workers. | long |
-| apache_spark.metrics.nodes.worker.cores.free | Number of cores free. | long |
-| apache_spark.metrics.nodes.worker.cores.used | Number of cores used. | long |
-| apache_spark.metrics.nodes.worker.executors | Number of executors. | long |
-| apache_spark.metrics.nodes.worker.memory.free | Number of cores free. | long |
-| apache_spark.metrics.nodes.worker.memory.used | Amount of memory utilized in MB. | long |
+| apache_spark.nodes.main.applications.count | Total number of apps. | long |
+| apache_spark.nodes.main.applications.waiting | Number of apps waiting. | long |
+| apache_spark.nodes.main.workers.alive | Number of alive workers. | long |
+| apache_spark.nodes.main.workers.count | Total number of workers. | long |
+| apache_spark.nodes.worker.cores.free | Number of cores free. | long |
+| apache_spark.nodes.worker.cores.used | Number of cores used. | long |
+| apache_spark.nodes.worker.executors | Number of executors. | long |
+| apache_spark.nodes.worker.memory.free | Number of cores free. | long |
+| apache_spark.nodes.worker.memory.used | Amount of memory utilized in MB. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
