@@ -278,6 +278,8 @@ def publishCoverageReports() {
       def bucketUri = getCoverageBucketURI() + "*.xml"
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
       coverageReport('build/test-coverage')
+      publishCoverage(adapters: [coberturaAdapter("build/test-coverage/*.xml")],
+                      sourceFileResolver: sourceFiles('STORE_ALL_BUILD'))
     }
   }
 }
