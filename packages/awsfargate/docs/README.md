@@ -1,12 +1,12 @@
 # AWS Fargate Integration
 
-The AWS Fargate integration provides a method to retrieve metadata, network metrics, and Docker stats about your containers and the tasks they are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
+The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks they are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
 
 ## How it works?
 
-The Elastic Agent is executed as container inside your an ECS cluster and it collects metrics using the [Amazon ECS task metadata endpoint](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-fargate.html).
+The Elastic Agent runs in a container (as a sidecar) defined in the same task definition inside your ECS cluster and collects metrics using the [Amazon ECS task metadata endpoint](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-fargate.html).
 
-The ECS task metadata endpoint is an HTTP endpoint available to each container and enabled by default on [AWS Fargate platform version 1.4.0](https://aws.amazon.com/blogs/containers/aws-fargate-launches-platform-version-1-4/) an later. The Elastic Agent uses [Task metadata endpoint version 4](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-v4-fargate.html).
+The ECS task metadata endpoint is an HTTP endpoint available to each container and enabled by default on [AWS Fargate platform version 1.4.0](https://aws.amazon.com/blogs/containers/aws-fargate-launches-platform-version-1-4/) and later. The Elastic Agent uses [Task metadata endpoint version 4](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-v4-fargate.html).
 
 ## Credentials
 
