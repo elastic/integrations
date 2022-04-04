@@ -75,11 +75,12 @@ processors:
     description: Process Site-to-Site VPN messages
     field: event.original
     patterns:
-      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORD}%{SPACE}events%{SPACE}(?i)Site-to-Site VPN:%{GREEDYDATA:cisco_meraki.site_to_site_vpn.raw}'
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?i)Site-to-Site VPN:%{GREEDYDATA:cisco_meraki.site_to_site_vpn.raw}'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
     if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN"
 
 ####################################################
@@ -89,11 +90,12 @@ processors:
 - grok:
     field: event.original
     patterns: 
-      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORD}%{SPACE}events%{SPACE}%{GREEDYDATA:_temp.rest}'
+      - '%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}%{GREEDYDATA:_temp.rest}'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
     if: ctx.event.original.startsWith('<') && ['dfs_event', 'association', 'disassociation', 'wpa_deauth', 'wpa_auth', 'vpn_connectivity_change', '8021x_eap_failure', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
 - kv:
     field: _temp.rest
