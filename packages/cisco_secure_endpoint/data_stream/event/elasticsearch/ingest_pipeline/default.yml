@@ -356,6 +356,27 @@ processors:
     field: cisco.secure_endpoint.network_info.parent.identity.md5
     target_field: process.hash.md5
     ignore_missing: true
+- script:
+    lang: painless
+    source: |
+    def commandLine = ctx?.cisco?.secure_endpoint?.command_line?.arguments;
+    if (commandLine != null) {
+        commandLine = commandLine.trim();
+        if (commandLine != "") {
+        def args = Arrays.asList(/ /.split(commandLine));
+        args.removeIf(arg -> arg == "");
+        ctx["process.command_line"] = commandLine;
+        ctx["process.args"] = args;
+        }
+    }
+- script:
+    lang: painless
+    if: ctx?.process?.args != null
+    source: |
+    ctx.process.args_count = ctx.process.args.length;
+    if (ctx.process.args.length > 0) {
+        ctx.process.executable = ctx.process.args[0];
+    }
 
 #########################
 ## ECS Related Mapping ##
