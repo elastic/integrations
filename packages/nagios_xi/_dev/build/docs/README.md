@@ -22,3 +22,15 @@ This is the `events` data stream.
 {{event "events"}}
 
 {{fields "events"}}
+
+## Metrics
+
+### Host Metrics
+
+This is the `host` data stream.
+
+- This data stream gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
+
+{{event "host"}}
+
+{{fields "host"}}
