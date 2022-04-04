@@ -1,10 +1,10 @@
-# Spring Boot Integration
+# Spring Boot integration
 
-The Spring Boot Integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
-This module has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.3.12.
 
 ## Requirements
 
@@ -21,8 +21,8 @@ In order to ingest data from Spring Boot:
 - For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
 ```
 <dependency>
-	<groupId>org.jolokia</groupId>
-	<artifactId>jolokia-core</artifactId>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
 
@@ -100,10 +100,10 @@ An example event for `info` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| spring_boot.info.description |  | text |
-| spring_boot.info.encoding |  | text |
-| spring_boot.info.java.version |  | text |
-| spring_boot.info.name |  | text |
-| spring_boot.info.version |  | text |
+| spring_boot.info.description | Description of the spring boot application | text |
+| spring_boot.info.encoding | Encoding type of spring boot application | text |
+| spring_boot.info.java.version | Java version of spring boot application | text |
+| spring_boot.info.name | Name of spring boot application | text |
+| spring_boot.info.version | Spring boot application version | text |
 | tags | List of keywords used to tag each event. | keyword |
 
