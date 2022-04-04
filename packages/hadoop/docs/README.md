@@ -10,7 +10,7 @@ This integration is used to collect [Hadoop](https://hadoop.apache.org/) metrics
 
 This integration uses Resource Manager API and JMX API to collect above metrics.
 
-## cluster_metrics
+## cluster
 
 This data stream collects Cluster metrics.
 
@@ -18,16 +18,16 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-28T11:24:18.064Z",
+    "@timestamp": "2022-04-04T17:22:22.255Z",
     "agent": {
-        "ephemeral_id": "264f535c-5021-4ca6-80ac-8c2d5be921c4",
-        "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
+        "ephemeral_id": "a8157f06-f6b6-4eae-b67f-4ad08fa7c170",
+        "id": "abf8f8c1-f293-4e16-a8f8-8cf48014d040",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.0.0"
     },
     "data_stream": {
-        "dataset": "hadoop.cluster_metrics",
+        "dataset": "hadoop.cluster",
         "namespace": "ep",
         "type": "metrics"
     },
@@ -35,56 +35,34 @@ An example event for `cluster` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
+        "id": "abf8f8c1-f293-4e16-a8f8-8cf48014d040",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "dataset": "hadoop.cluster_metrics",
-        "duration": 144752118,
-        "ingested": "2022-03-28T11:24:21Z",
+        "dataset": "hadoop.cluster",
+        "duration": 50350559,
+        "ingested": "2022-04-04T17:22:25Z",
         "kind": "metric",
         "module": "http",
         "type": "info"
     },
     "hadoop": {
-        "cluster_metrics": {
-            "apps": {
-                "completed": 0,
-                "failed": 0,
-                "killed": 0,
-                "pending": 0,
-                "running": 0,
-                "submitted": 0
+        "cluster": {
+            "application_master": {
+                "launch_delay_avg_time": 2115,
+                "launch_delay_num_ops": 1,
+                "register_delay_avg_time": 0,
+                "register_delay_num_ops": 0
             },
-            "containers": {
-                "allocated": 0,
-                "pending": 0,
-                "reserved": 0
-            },
-            "memory": {
-                "allocated": 0,
-                "available": 8192,
-                "reserved": 0,
-                "total": 8192
-            },
-            "nodes": {
-                "active": 1,
-                "decommissioned": 0,
-                "decommissioning": 0,
-                "lost": 0,
-                "rebooted": 0,
-                "shutdown": 0,
-                "total": 1,
-                "unhealthy": 0
-            },
-            "virtual_cores": {
-                "allocated": 0,
-                "available": 8,
-                "reserved": 0,
-                "total": 8
+            "node_managers": {
+                "num_active": 1,
+                "num_decommissioned": 0,
+                "num_lost": 0,
+                "num_rebooted": 0,
+                "num_unhealthy": 0
             }
         }
     },
@@ -93,16 +71,16 @@ An example event for `cluster` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.160.7"
+            "172.27.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:a0:07"
+            "02:42:ac:1b:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.53.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -114,7 +92,7 @@ An example event for `cluster` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://elastic-package-service_hadoop_1:8088/ws/v1/cluster/metrics",
+        "address": "http://elastic-package-service_hadoop_1:8088/jmx?qry=Hadoop%3Aservice%3DResourceManager%2Cname%3DClusterMetrics",
         "type": "http"
     },
     "tags": [
@@ -137,40 +115,40 @@ An example event for `cluster` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| hadoop.cluster_metrics.application_master.launch_delay_avg_time | Application Master Launch Delay Average Time (Milliseconds) | long |
-| hadoop.cluster_metrics.application_master.launch_delay_num_ops | Application Master Launch Delay Operations (Operations) | long |
-| hadoop.cluster_metrics.application_master.register_delay_avg_time | Application Master Register Delay Average Time (Milliseconds) | long |
-| hadoop.cluster_metrics.application_master.register_delay_num_ops | Application Master Register Delay Operations (Operations) | long |
-| hadoop.cluster_metrics.apps.completed | The number of applications completed | long |
-| hadoop.cluster_metrics.apps.failed | The number of applications failed | long |
-| hadoop.cluster_metrics.apps.killed | The number of applications killed | long |
-| hadoop.cluster_metrics.apps.pending | The number of applications pending | long |
-| hadoop.cluster_metrics.apps.running | The number of applications running | long |
-| hadoop.cluster_metrics.apps.submitted | The number of applications submitted | long |
-| hadoop.cluster_metrics.containers.allocated | The number of containers allocated | long |
-| hadoop.cluster_metrics.containers.pending | The number of containers pending | long |
-| hadoop.cluster_metrics.containers.reserved | The number of containers reserved | long |
-| hadoop.cluster_metrics.memory.allocated | The amount of memory allocated in MB | long |
-| hadoop.cluster_metrics.memory.available | The amount of memory available in MB | long |
-| hadoop.cluster_metrics.memory.reserved | The amount of memory reserved in MB | long |
-| hadoop.cluster_metrics.memory.total | The amount of total memory in MB | long |
-| hadoop.cluster_metrics.node_managers.num_active | Number of Node Managers Active | long |
-| hadoop.cluster_metrics.node_managers.num_decommissioned | Number of Node Managers Decommissioned | long |
-| hadoop.cluster_metrics.node_managers.num_lost | Number of Node Managers Lost | long |
-| hadoop.cluster_metrics.node_managers.num_rebooted | Number of Node Managers Rebooted | long |
-| hadoop.cluster_metrics.node_managers.num_unhealthy | Number of Node Managers Unhealthy | long |
-| hadoop.cluster_metrics.nodes.active | The number of active nodes | long |
-| hadoop.cluster_metrics.nodes.decommissioned | The number of nodes decommissioned | long |
-| hadoop.cluster_metrics.nodes.decommissioning | The number of nodes being decommissioned | long |
-| hadoop.cluster_metrics.nodes.lost | The number of lost nodes | long |
-| hadoop.cluster_metrics.nodes.rebooted | The number of nodes rebooted | long |
-| hadoop.cluster_metrics.nodes.shutdown | The number of nodes shut down | long |
-| hadoop.cluster_metrics.nodes.total | The total number of nodes | long |
-| hadoop.cluster_metrics.nodes.unhealthy | The number of unhealthy nodes | long |
-| hadoop.cluster_metrics.virtual_cores.allocated | The number of allocated virtual cores | long |
-| hadoop.cluster_metrics.virtual_cores.available | The number of available virtual cores | long |
-| hadoop.cluster_metrics.virtual_cores.reserved | The number of reserved virtual cores | long |
-| hadoop.cluster_metrics.virtual_cores.total | The total number of virtual cores | long |
+| hadoop.cluster.application_master.launch_delay_avg_time | Application Master Launch Delay Average Time (Milliseconds) | long |
+| hadoop.cluster.application_master.launch_delay_num_ops | Application Master Launch Delay Operations (Operations) | long |
+| hadoop.cluster.application_master.register_delay_avg_time | Application Master Register Delay Average Time (Milliseconds) | long |
+| hadoop.cluster.application_master.register_delay_num_ops | Application Master Register Delay Operations (Operations) | long |
+| hadoop.cluster.applications.completed | The number of applications completed | long |
+| hadoop.cluster.applications.failed | The number of applications failed | long |
+| hadoop.cluster.applications.killed | The number of applications killed | long |
+| hadoop.cluster.applications.pending | The number of applications pending | long |
+| hadoop.cluster.applications.running | The number of applications running | long |
+| hadoop.cluster.applications.submitted | The number of applications submitted | long |
+| hadoop.cluster.containers.allocated | The number of containers allocated | long |
+| hadoop.cluster.containers.pending | The number of containers pending | long |
+| hadoop.cluster.containers.reserved | The number of containers reserved | long |
+| hadoop.cluster.memory.allocated | The amount of memory allocated in MB | long |
+| hadoop.cluster.memory.available | The amount of memory available in MB | long |
+| hadoop.cluster.memory.reserved | The amount of memory reserved in MB | long |
+| hadoop.cluster.memory.total | The amount of total memory in MB | long |
+| hadoop.cluster.node_managers.num_active | Number of Node Managers Active | long |
+| hadoop.cluster.node_managers.num_decommissioned | Number of Node Managers Decommissioned | long |
+| hadoop.cluster.node_managers.num_lost | Number of Node Managers Lost | long |
+| hadoop.cluster.node_managers.num_rebooted | Number of Node Managers Rebooted | long |
+| hadoop.cluster.node_managers.num_unhealthy | Number of Node Managers Unhealthy | long |
+| hadoop.cluster.nodes.active | The number of active nodes | long |
+| hadoop.cluster.nodes.decommissioned | The number of nodes decommissioned | long |
+| hadoop.cluster.nodes.decommissioning | The number of nodes being decommissioned | long |
+| hadoop.cluster.nodes.lost | The number of lost nodes | long |
+| hadoop.cluster.nodes.rebooted | The number of nodes rebooted | long |
+| hadoop.cluster.nodes.shutdown | The number of nodes shut down | long |
+| hadoop.cluster.nodes.total | The total number of nodes | long |
+| hadoop.cluster.nodes.unhealthy | The number of unhealthy nodes | long |
+| hadoop.cluster.virtual_cores.allocated | The number of allocated virtual cores | long |
+| hadoop.cluster.virtual_cores.available | The number of available virtual cores | long |
+| hadoop.cluster.virtual_cores.reserved | The number of reserved virtual cores | long |
+| hadoop.cluster.virtual_cores.total | The total number of virtual cores | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
