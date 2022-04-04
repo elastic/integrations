@@ -18,13 +18,13 @@ An example event for `datanode` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-28T11:29:49.768Z",
+    "@timestamp": "2022-04-04T18:05:39.491Z",
     "agent": {
-        "ephemeral_id": "2aff6d6a-0de8-4735-96c1-45a6da016111",
-        "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
+        "ephemeral_id": "d35434eb-fdea-41eb-94ed-124bc7e4afe7",
+        "id": "b712f448-71fa-4826-999f-6266019438db",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "hadoop.datanode",
@@ -35,39 +35,26 @@ An example event for `datanode` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
+        "id": "b712f448-71fa-4826-999f-6266019438db",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "hadoop.datanode",
-        "duration": 711671177,
-        "ingested": "2022-03-28T11:29:52Z",
+        "duration": 148436877,
+        "ingested": "2022-04-04T18:05:42Z",
         "kind": "metric",
         "module": "http",
         "type": "info"
     },
     "hadoop": {
         "datanode": {
-            "cache": {
-                "capacity": 0,
-                "used": 0
-            },
-            "dfs_used": 4543,
-            "disk_space": {
-                "capacity": 48420556800,
-                "remaining": 11991523328
-            },
-            "estimated_capacity_lost_total": 0,
-            "last_volume_failure_date": "2022-01-01T00:00:00.000Z",
-            "num_blocks_cached": 0,
-            "num_blocks_failed": {
-                "to_cache": 0,
-                "to_uncache": 0
-            },
-            "num_failed_volumes": 0
+            "bytes": {
+                "read": 238743,
+                "written": 237315
+            }
         }
     },
     "host": {
@@ -75,16 +62,16 @@ An example event for `datanode` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.160.7"
+            "172.29.0.4"
         ],
         "mac": [
-            "02:42:c0:a8:a0:07"
+            "02:42:ac:1d:00:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.53.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -96,7 +83,7 @@ An example event for `datanode` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://elastic-package-service_hadoop_1:9864/jmx?qry=Hadoop%3Aname%3DFSDatasetState%2Cservice%3DDataNode",
+        "address": "http://elastic-package-service_hadoop_1:9864/jmx?qry=Hadoop%3Aname%3DDataNodeActivity%2A%2Cservice%3DDataNode",
         "type": "http"
     },
     "tags": [
@@ -119,6 +106,9 @@ An example event for `datanode` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| hadoop.datanode.blocks.cached | The number of blocks cached | long |
+| hadoop.datanode.blocks.failed.to_cache | The number of blocks that failed to cache | long |
+| hadoop.datanode.blocks.failed.to_uncache | The number of failed blocks to remove from cache | long |
 | hadoop.datanode.bytes.read | Data read | long |
 | hadoop.datanode.bytes.written | Data written | long |
 | hadoop.datanode.cache.capacity | Cache capacity in bytes | long |
@@ -128,10 +118,7 @@ An example event for `datanode` looks as following:
 | hadoop.datanode.disk_space.remaining | The remaining disk space left in bytes | long |
 | hadoop.datanode.estimated_capacity_lost_total | The estimated capacity lost in bytes | long |
 | hadoop.datanode.last_volume_failure_date | The date/time of the last volume failure in milliseconds since epoch | date |
-| hadoop.datanode.num_blocks_cached | The number of blocks cached | long |
-| hadoop.datanode.num_blocks_failed.to_cache | The number of blocks that failed to cache | long |
-| hadoop.datanode.num_blocks_failed.to_uncache | The number of failed blocks to remove from cache | long |
-| hadoop.datanode.num_failed_volumes | Number of failed volumes | long |
+| hadoop.datanode.volumes.failed | Number of failed volumes | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |

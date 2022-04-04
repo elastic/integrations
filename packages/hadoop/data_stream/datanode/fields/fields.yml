@@ -1,7 +1,21 @@
 - name: hadoop.datanode
   type: group
-  release: beta
   fields:
+    - name: blocks
+      type: long
+      fields:
+        - name: cached
+          description: The number of blocks cached
+          type: long
+        - name: failed
+          type: group
+          fields:
+            - name: to_cache
+              description: The number of blocks that failed to cache
+              type: long
+            - name: to_uncache
+              description: The number of failed blocks to remove from cache
+              type: long
     - name: bytes
       type: group
       fields:
@@ -38,18 +52,9 @@
     - name: last_volume_failure_date
       description: The date/time of the last volume failure in milliseconds since epoch
       type: date
-    - name: num_blocks_cached
-      description: The number of blocks cached
-      type: long
-    - name: num_blocks_failed
+    - name: volumes
       type: group
       fields:
-        - name: to_cache
-          description: The number of blocks that failed to cache
+        - name: failed
           type: long
-        - name: to_uncache
-          description: The number of failed blocks to remove from cache
-          type: long
-    - name: num_failed_volumes
-      description: Number of failed volumes
-      type: long
+          description: Number of failed volumes
