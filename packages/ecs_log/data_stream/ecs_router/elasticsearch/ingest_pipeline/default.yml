@@ -1,5 +1,14 @@
 ---
 processors:
+- remove:
+    description: |
+      This data stream is meant for routing only, we want to avoid that data is written to it.
+      We'll use the dataset that is specified in the ECS JSON log message, or use 'generic' as the default.
+    field: data_stream.dataset
+    ignore_missing: true
+- remove:
+    field: event.dataset
+    ignore_missing: true
 - pipeline:
     name: '{{ IngestPipeline "logs-ecs-json-pipeline" }}'
     if: |-
@@ -8,6 +17,12 @@ processors:
         && message.startsWith('{')
         && message.endsWith('}')
         && message.contains('"@timestamp"')
+- set:
+    description: Uses event.dataset as a default for data_stream.dataset if the latter is not set.
+    field: data_stream.dataset
+    copy_from: event.dataset
+    if: ctx.event?.dataset instanceof String && ctx.event.dataset.length() > 1
+    override: false
 - script:
     source: |
       ctx.data_stream.dataset = /[\/*?"<>|, #:-]/.matcher(ctx.data_stream.dataset).replaceAll('_')
@@ -19,7 +34,6 @@ processors:
 - set:
     field: data_stream.type
     value: logs
-    override: false
 - set:
     field: data_stream.dataset
     value: generic
@@ -31,7 +45,6 @@ processors:
 - set:
     field: event.dataset
     copy_from: data_stream.dataset
-    override: true
 - set:
     field: _index
     value: logs-{{{data_stream.dataset}}}-{{{data_stream.namespace}}}
