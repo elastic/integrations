@@ -1,5 +1,6 @@
 # 1Password Events Reporting
-With [1Password Business](https://support.1password.com/explore/business/), you can send your account activity to your security information and event management (SIEM) system using the 1Password Events API. Get reports about 1Password activity like sign-in attempts and item usage while you manage all your company’s applications and services from a central location.
+With [1Password Business](https://support.1password.com/explore/business/), you can send your account activity to your security information and event management (SIEM) system using the 1Password Events API. 
+Get reports about 1Password activity like sign-in attempts and item usage while you manage all your company’s applications and services from a central location.
 
 With 1Password Events Reporting and Elastic SIEM, you can:
 
