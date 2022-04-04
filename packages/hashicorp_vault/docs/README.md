@@ -183,8 +183,15 @@ An example event for `audit` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | hashicorp_vault.audit.auth.accessor | This is an HMAC of the client token accessor | keyword |
 | hashicorp_vault.audit.auth.client_token | This is an HMAC of the client's token ID. | keyword |
 | hashicorp_vault.audit.auth.display_name | Display name is a non-security sensitive identifier that is applicable to this auth. It is used for logging and prefixing of dynamic secrets. For example, it may be "armon" for the github credential backend. If the client token is used to generate a SQL credential, the user may be "github-armon-uuid". This is to help identify the source without using audit tables. | keyword |
@@ -382,7 +389,9 @@ An example event for `log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | hashicorp_vault.log |  | flattened |
@@ -424,286 +433,24 @@ telemetry {
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| hashicorp_vault.metrics.go_gc_duration_seconds.value |  | double |
-| hashicorp_vault.metrics.go_gc_duration_seconds_count.counter |  | double |
-| hashicorp_vault.metrics.go_gc_duration_seconds_count.rate |  | double |
-| hashicorp_vault.metrics.go_gc_duration_seconds_sum.counter |  | double |
-| hashicorp_vault.metrics.go_gc_duration_seconds_sum.rate |  | double |
-| hashicorp_vault.metrics.go_goroutines.value |  | double |
-| hashicorp_vault.metrics.go_info.value |  | double |
-| hashicorp_vault.metrics.go_memstats_alloc_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_alloc_bytes_total.counter |  | double |
-| hashicorp_vault.metrics.go_memstats_alloc_bytes_total.rate |  | double |
-| hashicorp_vault.metrics.go_memstats_buck_hash_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_frees_total.counter |  | double |
-| hashicorp_vault.metrics.go_memstats_frees_total.rate |  | double |
-| hashicorp_vault.metrics.go_memstats_gc_cpu_fraction.value |  | double |
-| hashicorp_vault.metrics.go_memstats_gc_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_heap_alloc_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_heap_idle_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_heap_inuse_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_heap_objects.value |  | double |
-| hashicorp_vault.metrics.go_memstats_heap_released_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_heap_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_last_gc_time_seconds.value |  | double |
-| hashicorp_vault.metrics.go_memstats_lookups_total.counter |  | double |
-| hashicorp_vault.metrics.go_memstats_lookups_total.rate |  | double |
-| hashicorp_vault.metrics.go_memstats_mallocs_total.counter |  | double |
-| hashicorp_vault.metrics.go_memstats_mallocs_total.rate |  | double |
-| hashicorp_vault.metrics.go_memstats_mcache_inuse_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_mcache_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_mspan_inuse_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_mspan_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_next_gc_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_other_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_stack_inuse_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_stack_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_memstats_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.go_threads.value |  | double |
-| hashicorp_vault.metrics.process_cpu_seconds_total.counter |  | double |
-| hashicorp_vault.metrics.process_cpu_seconds_total.rate |  | double |
-| hashicorp_vault.metrics.process_max_fds.value |  | double |
-| hashicorp_vault.metrics.process_open_fds.value |  | double |
-| hashicorp_vault.metrics.process_resident_memory_bytes.value |  | double |
-| hashicorp_vault.metrics.process_start_time_seconds.value |  | double |
-| hashicorp_vault.metrics.process_virtual_memory_bytes.value |  | double |
-| hashicorp_vault.metrics.process_virtual_memory_max_bytes.value |  | double |
-| hashicorp_vault.metrics.up.value |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_request_count.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_request_count.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_request_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_request_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_response_count.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_response_count.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_response_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_file__log_response_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_log_request_count.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_log_request_count.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_log_request_failure.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_log_request_failure.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_log_request_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_log_request_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_log_response_count.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_log_response_count.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_log_response_failure.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_log_response_failure.rate |  | double |
-| hashicorp_vault.metrics.vault_audit_log_response_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_audit_log_response_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_delete_count.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_delete_count.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_delete_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_delete_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_estimated_encryptions.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_estimated_encryptions.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_get.value |  | double |
-| hashicorp_vault.metrics.vault_barrier_get_count.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_get_count.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_get_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_get_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_list_count.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_list_count.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_list_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_list_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_put.value |  | double |
-| hashicorp_vault.metrics.vault_barrier_put_count.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_put_count.rate |  | double |
-| hashicorp_vault.metrics.vault_barrier_put_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_barrier_put_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_cache_hit.counter |  | double |
-| hashicorp_vault.metrics.vault_cache_hit.rate |  | double |
-| hashicorp_vault.metrics.vault_cache_miss.counter |  | double |
-| hashicorp_vault.metrics.vault_cache_miss.rate |  | double |
-| hashicorp_vault.metrics.vault_cache_write.counter |  | double |
-| hashicorp_vault.metrics.vault_cache_write.rate |  | double |
-| hashicorp_vault.metrics.vault_core_active.value |  | double |
-| hashicorp_vault.metrics.vault_core_check_token_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_check_token_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_check_token_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_check_token_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_fetch_acl_and_token_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_handle_login_request_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_handle_login_request_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_handle_login_request_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_handle_login_request_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_handle_request_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_handle_request_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_handle_request_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_handle_request_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_mount_table_num_entries.value |  | double |
-| hashicorp_vault.metrics.vault_core_mount_table_size.value |  | double |
-| hashicorp_vault.metrics.vault_core_performance_standby.value |  | double |
-| hashicorp_vault.metrics.vault_core_post_unseal_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_post_unseal_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_post_unseal_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_post_unseal_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_pre_seal_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_pre_seal_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_pre_seal_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_pre_seal_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_replication_dr_primary.value |  | double |
-| hashicorp_vault.metrics.vault_core_replication_dr_secondary.value |  | double |
-| hashicorp_vault.metrics.vault_core_replication_performance_primary.value |  | double |
-| hashicorp_vault.metrics.vault_core_replication_performance_secondary.value |  | double |
-| hashicorp_vault.metrics.vault_core_unseal_count.counter |  | double |
-| hashicorp_vault.metrics.vault_core_unseal_count.rate |  | double |
-| hashicorp_vault.metrics.vault_core_unseal_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_core_unseal_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_core_unsealed.value |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_by_token_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_fetch_lease_times_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_queue_length_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_job_manager_total_jobs_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_lease_expiration.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_lease_expiration.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_lease_expiration_time_in_queue_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_num_irrevocable_leases.value |  | double |
-| hashicorp_vault.metrics.vault_expire_num_leases.value |  | double |
-| hashicorp_vault.metrics.vault_expire_register_auth_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_register_auth_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_register_auth_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_register_auth_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_by_token_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_common_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_common_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_common_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_common_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_count.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_count.rate |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_expire_revoke_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_policy_get_policy_count.counter |  | double |
-| hashicorp_vault.metrics.vault_policy_get_policy_count.rate |  | double |
-| hashicorp_vault.metrics.vault_policy_get_policy_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_policy_get_policy_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_create_secret__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_create_secret__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_create_secret__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_create_secret__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_delete_secret__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_delete_secret__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_delete_secret__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_delete_secret__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_read_auth_token__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_read_auth_token__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_read_auth_token__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_read_auth_token__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_read_secret__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_read_secret__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_read_secret__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_read_secret__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_read_sys__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_read_sys__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_read_sys__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_read_sys__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_update_auth_token__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_update_auth_token__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_update_auth_token__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_update_auth_token__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_update_secret__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_update_secret__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_update_secret__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_update_secret__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_route_update_sys__count.counter |  | double |
-| hashicorp_vault.metrics.vault_route_update_sys__count.rate |  | double |
-| hashicorp_vault.metrics.vault_route_update_sys__sum.counter |  | double |
-| hashicorp_vault.metrics.vault_route_update_sys__sum.rate |  | double |
-| hashicorp_vault.metrics.vault_runtime_alloc_bytes.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_free_count.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_count.counter |  | double |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_count.rate |  | double |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_runtime_gc_pause_ns_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_runtime_heap_objects.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_malloc_count.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_num_goroutines.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_sys_bytes.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_total_gc_pause_ns.value |  | double |
-| hashicorp_vault.metrics.vault_runtime_total_gc_runs.value |  | double |
-| hashicorp_vault.metrics.vault_seal_decrypt.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_decrypt.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_count.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_count.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_decrypt_time_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_encrypt.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_encrypt.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_count.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_count.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_encrypt_time_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_count.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_count.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_decrypt_time_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_count.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_count.rate |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_seal_shamir_encrypt_time_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_token_createAccessor_count.counter |  | double |
-| hashicorp_vault.metrics.vault_token_createAccessor_count.rate |  | double |
-| hashicorp_vault.metrics.vault_token_createAccessor_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_token_createAccessor_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_token_create_count.counter |  | double |
-| hashicorp_vault.metrics.vault_token_create_count.rate |  | double |
-| hashicorp_vault.metrics.vault_token_create_root.counter |  | double |
-| hashicorp_vault.metrics.vault_token_create_root.rate |  | double |
-| hashicorp_vault.metrics.vault_token_create_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_token_create_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_token_creation.counter |  | double |
-| hashicorp_vault.metrics.vault_token_creation.rate |  | double |
-| hashicorp_vault.metrics.vault_token_lookup_count.counter |  | double |
-| hashicorp_vault.metrics.vault_token_lookup_count.rate |  | double |
-| hashicorp_vault.metrics.vault_token_lookup_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_token_lookup_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_token_revoke_tree_count.counter |  | double |
-| hashicorp_vault.metrics.vault_token_revoke_tree_count.rate |  | double |
-| hashicorp_vault.metrics.vault_token_revoke_tree_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_token_revoke_tree_sum.rate |  | double |
-| hashicorp_vault.metrics.vault_token_store_count.counter |  | double |
-| hashicorp_vault.metrics.vault_token_store_count.rate |  | double |
-| hashicorp_vault.metrics.vault_token_store_sum.counter |  | double |
-| hashicorp_vault.metrics.vault_token_store_sum.rate |  | double |
+| hashicorp_vault.metrics.\*.\* | Hashicorp Vault telemetry data from the Prometheus endpoint. |  |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
-| labels.auth_method |  | keyword |
-| labels.cluster |  | keyword |
-| labels.creation_ttl |  | keyword |
+| labels.auth_method | Authorization engine type. | keyword |
+| labels.cluster | The cluster name from which the metric originated; set in the configuration file, or automatically generated when a cluster is created. | keyword |
+| labels.creation_ttl | Time-to-live value assigned to a token or lease at creation. This value is rounded up to the next-highest bucket; the available buckets are 1m, 10m, 20m, 1h, 2h, 1d, 2d, 7d, and 30d. Any longer TTL is assigned the value +Inf. | keyword |
 | labels.host |  | keyword |
 | labels.instance |  | keyword |
 | labels.job |  | keyword |
 | labels.local |  | keyword |
-| labels.mount_point |  | keyword |
-| labels.namespace |  | keyword |
+| labels.mount_point | Path at which an auth method or secret engine is mounted. | keyword |
+| labels.namespace | A namespace path, or root for the root namespace | keyword |
 | labels.quantile |  | keyword |
 | labels.queue_id |  | keyword |
 | labels.term |  | keyword |
-| labels.token_type |  | keyword |
+| labels.token_type | Identifies whether the token is a batch token or a service token. | keyword |
 | labels.type |  | keyword |
 | labels.version |  | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
