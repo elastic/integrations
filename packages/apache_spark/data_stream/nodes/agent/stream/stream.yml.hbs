@@ -1,0 +1,45 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+path: {{path}}
+period: {{period}}
+jmx.mappings:
+  - mbean: 'metrics:name=master.apps,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.main.applications.count
+  - mbean: 'metrics:name=master.waitingApps,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.main.applications.waiting
+  - mbean: 'metrics:name=master.aliveWorkers,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.main.workers.alive
+  - mbean: 'metrics:name=master.workers,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.main.workers.count
+  - mbean: 'metrics:name=worker.executors,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.worker.executors
+  - mbean: 'metrics:name=worker.coresUsed,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.worker.cores.used
+  - mbean: 'metrics:name=worker.coresFree,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.worker.cores.free
+  - mbean: 'metrics:name=worker.memUsed_MB,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.worker.memory.used
+  - mbean: 'metrics:name=worker.memFree_MB,type=gauges'
+    attributes:
+    - attr: Value
+      field: nodes.worker.memory.free

@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "id": "dga-ml",
+        "title": "DGA",
+        "description": "Detect domain generation algorithm (DGA) activity in your network data.",
+        "type": "DGA",
+        "logo": {
+            "icon": "machineLearningApp"
+        },
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "exists": {
+                            "field": "ml_is_dga.malicious_probability"
+                        }
+                    }
+                ]
+            }
+        },
+        "jobs": [
+            {
+                "id": "dga_high_sum_probability",
+                "config": {
+                    "groups": [
+                        "security",
+                        "dns",
+                        "packetbeat",
+                        "windows"
+                    ],
+                    "description": "Detects potential DGA (domain generation algorithm) activity that is often used by malware command and control (C2) channels. Looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity (experimental).",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "high probability of DGA activity",
+                                "detector_index": 0,
+                                "field_name": "ml_is_dga.malicious_probability",
+                                "function": "high_sum",
+                                "over_field_name": "source.ip"
+                            }
+                        ],
+                        "influencers": [
+                            "source.ip"
+                        ]
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-dga"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-dga_high_sum_probability",
+                "job_id": "dga_high_sum_probability",
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "dga_high_sum_probability",
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "ml_is_dga.malicious_probability"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "id": "dga-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}

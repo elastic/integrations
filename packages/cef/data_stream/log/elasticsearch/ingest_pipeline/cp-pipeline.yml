@@ -285,6 +285,21 @@ processors:
   - remove:
       field: _tmp_copy
 
+  - convert:
+      field: event.risk_score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.risk_score
+  - convert:
+      field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.severity
+
   # event.duration is a string and contains seconds. Convert to long nanos.
   - script:
       params:
