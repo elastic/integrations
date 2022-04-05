@@ -34,6 +34,9 @@ processors:
 - set:
     field: organization.name
     copy_from: json.organizationName
+- set:
+    field: log.level
+    copy_from: json.alertLevel
 - append:
     field: event.category
     value: network
@@ -45,9 +48,49 @@ processors:
     description: The script sets event type, action and category based on type and sub-type fields
     params:
        eventmap:
+        "started_reporting":
+          type:
+            - start
+        "stopped_reporting":
+          type:
+            - end
+        "foreign_ap":
+          category:
+            - intrusion_detection
+            - threat
+          type:
+            - indicator
+        "bluetooth_in":
+          type:
+            - start
+        "bluetooth_out":
+          type:
+            - end
+        "port_cable_error":
+          type:
+            - connection
+        "node_hardware_failure":
+          category:
+            - host
+          type:
+            - end
         "cellular_up":
           type:
             - start
+        "cellular_down":
+          type:
+            - end
+        "umbrella_expiring":
+          category:
+            - configuration
+        "ip_conflict":
+          type:
+            - protocol
+        "rogue_ap_association":
+          category:
+            - threat
+          type:
+            - indicator
     source: |-
          def alertTypeId = ctx.json.alertTypeId;
          if (alertTypeId == null) {
@@ -93,6 +136,7 @@ processors:
       - cisco_meraki.event.organizationId
       - cisco_meraki.event.organizationName
       - cisco_meraki.event.alertType
+      - cisco_meraki.event.alertLevel
     ignore_missing: true
 - remove:
     field: event.original
