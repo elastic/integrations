@@ -4,7 +4,11 @@ The Apache Spark integration collects and parses data using the Jolokia Metricbe
 
 ## Compatibility
 
+<<<<<<< HEAD
 This module has been tested against `Apache Spark version 3.2.0`
+=======
+This integration has been tested against `Apache Spark version 3.2.0`
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
 
 ## Requirements
 
@@ -63,38 +67,47 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Driver
+### Nodes
 
-This is the `driver` dataset.
+This is the `nodes` data stream.
 
-An example event for `driver` looks as following:
+An example event for `nodes` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T11:54:51.083Z",
+    "@timestamp": "2022-04-04T10:53:20.597Z",
     "agent": {
-        "ephemeral_id": "ee411959-b7ce-4172-a203-7701ea051771",
-        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "ephemeral_id": "1a8a01d7-f619-4c9c-8528-af2b6792d9c0",
+        "id": "4e4e07c4-a787-4988-a436-5c373d54738a",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "apache_spark": {
-        "metrics": {
-            "driver": {
-                "application_name": "app-20220322011157-0169",
-                "tasks": {
-                    "skipped": 0
+        "nodes": {
+            "main": {
+                "applications": {
+                    "count": 0,
+                    "waiting": 0
+                },
+                "workers": {
+                    "alive": 0,
+                    "count": 0
                 }
             }
         }
     },
     "data_stream": {
+<<<<<<< HEAD
         "dataset": "apache_spark.metrics",
+=======
+        "dataset": "apache_spark.nodes",
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
         "namespace": "ep",
         "type": "metrics"
     },
     "ecs": {
+<<<<<<< HEAD
         "version": "8.0.0"
     },
     "elastic_agent": {
@@ -107,6 +120,20 @@ An example event for `driver` looks as following:
         "dataset": "apache_spark.metrics",
         "duration": 89018916,
         "ingested": "2022-03-09T11:54:54Z",
+=======
+        "version": "8.1.0"
+    },
+    "elastic_agent": {
+        "id": "4e4e07c4-a787-4988-a436-5c373d54738a",
+        "snapshot": false,
+        "version": "8.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "apache_spark.nodes",
+        "duration": 6157145,
+        "ingested": "2022-04-04T10:53:24Z",
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -116,28 +143,47 @@ An example event for `driver` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
+<<<<<<< HEAD
             "172.21.0.5"
         ],
         "mac": [
             "02:42:ac:15:00:05"
+=======
+            "192.168.64.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:40:07"
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
+<<<<<<< HEAD
             "kernel": "3.10.0-1160.59.1.el7.x86_64",
+=======
+            "kernel": "5.4.0-100-generic",
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
             "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
+<<<<<<< HEAD
+=======
+    "jolokia": {},
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
     "metricset": {
         "name": "jmx",
         "period": 60000
     },
     "service": {
+<<<<<<< HEAD
         "address": "http://apachesparkmaster:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+=======
+        "address": "http://apache-spark-main:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
         "type": "jolokia"
     }
 }
@@ -148,6 +194,7 @@ An example event for `driver` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+<<<<<<< HEAD
 | apache_spark.metrics.driver.application_name |  | keyword |
 | apache_spark.metrics.driver.dag_scheduler.job.active |  | long |
 | apache_spark.metrics.driver.dag_scheduler.job.all |  | long |
@@ -219,6 +266,17 @@ An example event for `driver` looks as following:
 | apache_spark.metrics.driver.tasks.failed |  | long |
 | apache_spark.metrics.driver.tasks.killed |  | long |
 | apache_spark.metrics.driver.tasks.skipped |  | long |
+=======
+| apache_spark.nodes.main.applications.count | Total number of apps. | long |
+| apache_spark.nodes.main.applications.waiting | Number of apps waiting. | long |
+| apache_spark.nodes.main.workers.alive | Number of alive workers. | long |
+| apache_spark.nodes.main.workers.count | Total number of workers. | long |
+| apache_spark.nodes.worker.cores.free | Number of cores free. | long |
+| apache_spark.nodes.worker.cores.used | Number of cores used. | long |
+| apache_spark.nodes.worker.executors | Number of executors. | long |
+| apache_spark.nodes.worker.memory.free | Number of cores free. | long |
+| apache_spark.nodes.worker.memory.used | Amount of memory utilized in MB. | long |
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

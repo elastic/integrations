@@ -4,7 +4,11 @@ The Apache Spark integration collects and parses data using the Jolokia Metricbe
 
 ## Compatibility
 
+<<<<<<< HEAD
 This module has been tested against `Apache Spark version 3.2.0`
+=======
+This integration has been tested against `Apache Spark version 3.2.0`
+>>>>>>> acfb43c556154ae398e89ab340c67999079cd425
 
 ## Requirements
 
@@ -63,10 +67,10 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Driver
+### Nodes
 
-This is the `driver` dataset.
+This is the `nodes` data stream.
 
-{{event "driver"}}
+{{event "nodes"}}
 
-{{fields "driver"}}
+{{fields "nodes"}}
