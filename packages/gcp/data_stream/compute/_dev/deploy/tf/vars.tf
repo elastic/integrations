@@ -2,6 +2,18 @@ variable "TEST_RUN_ID" {
   default = "detached"
 }
 
+variable "repo_name" {
+  default = "unknown"
+}
+
+variable "pull_request" {
+  default = "unknown"
+}
+
+variable "ci_build" {
+  default = "unknown"
+}
+
 variable "gcp_project_id" {
   type    = string
   default = "elastic-obs-integrations-dev"
