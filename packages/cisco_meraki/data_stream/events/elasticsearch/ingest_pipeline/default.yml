@@ -5,6 +5,77 @@ processors:
     field: ecs.version
     value: '8.0.0'
 - set:
+    field: observer.serial_number
+    copy_from: json.deviceSerial
+- gsub:
+    field: json.deviceMac
+    target_field: observer.mac
+    pattern: '[-:.]'
+    replacement: '-'
+- set:
+    field: observer.name
+    copy_from: json.deviceName
+- set:
+    field: observer.vendor
+    value: Cisco
+- set:
+    field: observer.product
+    copy_from: json.deviceModel
+- set:
+    field: network.name
+    copy_from: json.networkName
+- date:
+    field: json.occurredAt
+    formats:
+      - ISO8601
+- set:
+    field: organization.id
+    copy_from: json.organizationId
+- set:
+    field: organization.name
+    copy_from: json.organizationName
+- append:
+    field: event.category
+    value: network
+- append:
+    field: event.type
+    value: info
+- script:
+    lang: painless
+    description: The script sets event type, action and category based on type and sub-type fields
+    params:
+       eventmap:
+        "cellular_up":
+          type:
+            - start
+    source: |-
+         def alertTypeId = ctx.json.alertTypeId;
+         if (alertTypeId == null) {
+           return;
+         }
+         def eventMap = params.get('eventmap');
+         def eventData = eventMap.get(alertTypeId);
+         if (eventData == null) {
+           ctx.event.action = 'unknown-' + alertTypeId;
+           return;
+         }
+         def eventCategory = eventData.get('category');
+         if (eventCategory != null) {
+           for (def c : eventCategory) {
+             ctx.event.category.add(c);
+           }
+         }
+
+         def eventType = eventData.get('type');
+         if (eventType != null) {
+           for (def t : eventType) {
+             ctx.event.type.add(t);
+           }
+         }
+         ctx.event.action = ctx.json.alertType;
+         return;
+
+- set:
     field: cisco_meraki.event
     copy_from: json
 ##
@@ -13,6 +84,15 @@ processors:
 - remove:
     field: 
       - json
+      - cisco_meraki.event.deviceSerial
+      - cisco_meraki.event.deviceMac
+      - cisco_meraki.event.deviceName
+      - cisco_meraki.event.deviceModel
+      - cisco_meraki.event.occurredAt
+      - cisco_meraki.event.networkName
+      - cisco_meraki.event.organizationId
+      - cisco_meraki.event.organizationName
+      - cisco_meraki.event.alertType
     ignore_missing: true
 - remove:
     field: event.original
