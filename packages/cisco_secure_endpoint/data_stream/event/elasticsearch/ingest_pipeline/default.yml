@@ -358,26 +358,31 @@ processors:
     target_field: process.hash.md5
     ignore_missing: true
 - script:
+    description: Set process.command_line and process.args.
+    tag: set-process-command_line
     lang: painless
     source: |
-    def commandLine = ctx?.cisco?.secure_endpoint?.command_line?.arguments;
-    if (commandLine != null) {
+      def commandLine = ctx?.cisco?.secure_endpoint?.command_line?.arguments;
+      if (commandLine != null) {
         commandLine = commandLine.trim();
         if (commandLine != "") {
-        def args = Arrays.asList(/ /.split(commandLine));
-        args.removeIf(arg -> arg == "");
-        ctx["process.command_line"] = commandLine;
-        ctx["process.args"] = args;
+          ctx.process.command_line = commandLine;
+      
+          def args = Arrays.asList(/ /.split(commandLine));
+          args.removeIf(arg -> arg == "");
+          ctx.process.args = args;
         }
-    }
+      }
 - script:
+    description: Set process.args_count and process.executable based on process.args.
+    tag: set-process-args_count
     lang: painless
     if: ctx?.process?.args != null
     source: |
-    ctx.process.args_count = ctx.process.args.length;
-    if (ctx.process.args.length > 0) {
+      ctx.process.args_count = ctx.process.args.length;
+      if (ctx.process.args.length > 0) {
         ctx.process.executable = ctx.process.args[0];
-    }
+      }
 
 #########################
 ## ECS Related Mapping ##
