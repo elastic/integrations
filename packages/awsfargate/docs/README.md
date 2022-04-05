@@ -266,12 +266,9 @@ Once you're done with experimenting, you can remove all the resources (ECS clust
 aws cloudformation delete-stack --stack-name elastic-agent-fargate-deployment
 ```
 
-## References
+## Further Readings
 
-If you want to learn more about how Metricbeat works behind the scenes:
-
-- [AWS Fargate module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-metricset-awsfargate-task_stats.html)
-- [How to monitor Amazon ECS with Elastic Observability](https://www.elastic.co/blog/how-to-monitor-amazon-ecs-with-elastic-observability)
+If you want to learn more about Amazon ECS metrics, take a look at the blog post [How to monitor Amazon ECS with Elastic Observability](https://www.elastic.co/blog/how-to-monitor-amazon-ecs-with-elastic-observability).
 
 ## Metrics
 
