@@ -1,14 +1,10 @@
-# Apache Spark
+# Apache Spark Integration
 
 The Apache Spark integration collects and parses data using the Jolokia Metricbeat Module.
 
 ## Compatibility
 
-<<<<<<< HEAD
 This module has been tested against `Apache Spark version 3.2.0`
-=======
-This integration has been tested against `Apache Spark version 3.2.0`
->>>>>>> acfb43c556154ae398e89ab340c67999079cd425
 
 ## Requirements
 
@@ -74,3 +70,11 @@ This is the `nodes` data stream.
 {{event "nodes"}}
 
 {{fields "nodes"}}
+
+### Driver
+
+This is the `driver` data stream.
+
+{{event "driver"}}
+
+{{fields "driver"}}
