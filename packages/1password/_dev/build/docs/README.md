@@ -1,4 +1,6 @@
-# 1Password Events Reporting
+1Password Events Reporting
+==========================
+
 With [1Password Business](https://support.1password.com/explore/business/), you can send your account activity to your security information and event management (SIEM) system using the 1Password Events API. Get reports about 1Password activity like sign-in attempts and item usage while you manage all your company’s applications and services from a central location.
 
 With 1Password Events Reporting and Elastic SIEM, you can:
@@ -11,7 +13,9 @@ With 1Password Events Reporting and Elastic SIEM, you can:
 You can set up Events Reporting if you’re an owner or administrator.  
 Learn how to [obtain your 1Password Events API credentials](https://support.1password.com/events-reporting/#step-1-set-up-an-events-reporting-integration).
 
-## Events
+Events
+------
+
 ### Sign-in Attempts
 
 Uses the 1Password Events API to retrieve information about sign-in attempts. Events include the name and IP address of the user who attempted to sign in to the account, when the attempt was made, and – for failed attempts – the cause of the failure.
