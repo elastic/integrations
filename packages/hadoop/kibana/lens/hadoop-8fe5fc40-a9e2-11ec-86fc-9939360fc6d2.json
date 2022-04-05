@@ -1,0 +1,134 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "1181d8b9-f642-4042-bdf4-e2e8b825f195": {
+                            "columnOrder": [
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1",
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X0",
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X1",
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X2"
+                            ],
+                            "columns": {
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Capacity Used across Data Nodes",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "format": {
+                                            "id": "percent",
+                                            "params": {
+                                                "decimals": 2
+                                            }
+                                        },
+                                        "formula": "last_value(hadoop.namenode.capacity.used , kql='hadoop.namenode.capacity.used : *') / last_value(hadoop.namenode.capacity.total, kql='hadoop.namenode.capacity.total : *')",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X2"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "hadoop.namenode.capacity.used : *"
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of Capacity Used across Data Nodes",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "hadoop.namenode.capacity.used"
+                                },
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X1": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "hadoop.namenode.capacity.total : *"
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of Capacity Used across Data Nodes",
+                                    "operationType": "last_value",
+                                    "params": {
+                                        "sortField": "@timestamp"
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "hadoop.namenode.capacity.total"
+                                },
+                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X2": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Capacity Used across Data Nodes",
+                                    "operationType": "math",
+                                    "params": {
+                                        "tinymathAst": {
+                                            "args": [
+                                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X0",
+                                                "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X1"
+                                            ],
+                                            "location": {
+                                                "max": 170,
+                                                "min": 0
+                                            },
+                                            "name": "divide",
+                                            "text": "last_value(hadoop.namenode.capacity.used , kql='hadoop.namenode.capacity.used : *') / last_value(hadoop.namenode.capacity.total, kql='hadoop.namenode.capacity.total : *')",
+                                            "type": "function"
+                                        }
+                                    },
+                                    "references": [
+                                        "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X0",
+                                        "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1X1"
+                                    ],
+                                    "scale": "ratio"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [],
+            "query": {
+                "language": "kuery",
+                "query": ""
+            },
+            "visualization": {
+                "accessor": "0bf3793c-0dd4-4203-a0a8-5fc0390d50b1",
+                "layerId": "1181d8b9-f642-4042-bdf4-e2e8b825f195",
+                "layerType": "data"
+            }
+        },
+        "title": "Total capacity used across all data nodes [Metrics Hadoop]",
+        "visualizationType": "lnsMetric"
+    },
+    "coreMigrationVersion": "8.1.0",
+    "id": "hadoop-8fe5fc40-a9e2-11ec-86fc-9939360fc6d2",
+    "migrationVersion": {
+        "lens": "8.1.0"
+    },
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "indexpattern-datasource-layer-1181d8b9-f642-4042-bdf4-e2e8b825f195",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}
