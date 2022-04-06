@@ -200,6 +200,11 @@ processors:
         ctx.host.hostname = nameArray[0];
         ctx.host.domain = domain; 
       }
+- set:
+    field: host.hostname
+    copy_from: host.name
+    ignore_empty_value: true
+    if: ctx?.host?.hostname == null
 - script:
     lang: painless
     if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
