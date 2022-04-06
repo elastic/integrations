@@ -38,10 +38,10 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-02T19:57:29.743Z",
+    "@timestamp": "2022-04-06T08:01:18.023Z",
     "agent": {
-        "ephemeral_id": "1e753956-c6d1-430f-a88d-519badeaea20",
-        "id": "f7dccce9-fbfc-479a-b271-7f9bafe16936",
+        "ephemeral_id": "4680f8bd-9b2e-4f2a-9b48-2884eb32518f",
+        "id": "b07b4685-5009-47d9-8c92-f0e5ce2de3c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -55,29 +55,30 @@ An example event for `info` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f7dccce9-fbfc-479a-b271-7f9bafe16936",
+        "id": "b07b4685-5009-47d9-8c92-f0e5ce2de3c4",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-02T19:57:29.743Z",
+        "created": "2022-04-06T08:01:18.023Z",
         "dataset": "spring_boot.info",
-        "ingested": "2022-04-02T19:57:33Z",
+        "ingested": "2022-04-06T08:01:21Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
     },
     "spring_boot": {
         "info": {
-            "description": "Spring Boot Actuator Project",
-            "encoding": "UTF-8",
-            "java": {
-                "version": "1.8.0_322"
+            "application": {
+                "encoding": "UTF-8",
+                "name": "actuator-demo",
+                "version": "0.0.1-Release"
             },
-            "name": "actuator-demo",
-            "version": "0.0.1-Release"
+            "jdk": {
+                "version": "1.8.0_322"
+            }
         }
     },
     "tags": [
@@ -100,10 +101,9 @@ An example event for `info` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| spring_boot.info.description | Description of the spring boot application | text |
-| spring_boot.info.encoding | Encoding type of spring boot application | text |
-| spring_boot.info.java.version | Java version of spring boot application | text |
-| spring_boot.info.name | Name of spring boot application | text |
-| spring_boot.info.version | Spring boot application version | text |
+| spring_boot.info.application.encoding | Encoding type of spring boot application | text |
+| spring_boot.info.application.name | Name of spring boot application | text |
+| spring_boot.info.application.version | Spring boot application version | text |
+| spring_boot.info.jdk.version | Java version of spring boot application | text |
 | tags | List of keywords used to tag each event. | keyword |
 

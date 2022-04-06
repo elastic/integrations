@@ -26,18 +26,39 @@ processors:
       value: spring_boot.info
   - set:
       field: event.module
-      value: spring_boot      
+      value: spring_boot
   - rename:
       field: json.app
       target_field: spring_boot.info
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: spring_boot.info.name
+      target_field: spring_boot.info.application.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.info.version
+      target_field: spring_boot.info.application.version
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: spring_boot.info.encoding
+      target_field: spring_boot.info.application.encoding
+      ignore_missing: true
+      ignore_failure: true            
+  - rename:
+      field: spring_boot.info.java.version
+      target_field: spring_boot.info.jdk.version
+      ignore_missing: true
+      ignore_failure: true      
   - remove:
       field: 
        - json
        - input.type
+       - spring_boot.info.description
       ignore_missing: true
-      ignore_failure: true     
+      ignore_failure: true    
   - script:
       description: Drops null/empty values recursively
       lang: painless
