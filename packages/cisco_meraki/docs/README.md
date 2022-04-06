@@ -1,4 +1,4 @@
-# Cisco Meraki Syslog Integration
+# Cisco Meraki Integration
 
 Cisco Meraki offers a centralized cloud management platform for all Meraki devices such as MX Security Appliances, MR Access Points and so on. Its out-of-band cloud architecture creates secure, scalable and easy-to-deploy networks that can be managed from anywhere. This can be done from almost any device using web-based Meraki Dashboard and Meraki Mobile App. Each Meraki network generates its own events.
 
