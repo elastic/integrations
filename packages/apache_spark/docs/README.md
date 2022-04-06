@@ -1,4 +1,4 @@
-# Apache Spark
+# Apache Spark Integration
 
 The Apache Spark integration collects and parses data using the Jolokia Metricbeat Module.
 
@@ -65,51 +65,49 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ### Executors
 
-This is the `executors` dataset.
+This is the `executors` data stream.
 
 An example event for `executors` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T11:54:51.083Z",
+    "@timestamp": "2022-04-06T08:08:28.124Z",
     "agent": {
-        "ephemeral_id": "ee411959-b7ce-4172-a203-7701ea051771",
-        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "ephemeral_id": "7fce3dcb-c11a-4198-9857-ad44c74fa030",
+        "id": "af0205ec-949f-45d9-b3bf-b41d93032a55",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "apache_spark": {
-        "metrics": {
-            "executors": {
-                "application_name": "app-20220322011157-0169",
-                "id": "0",
-                "filesystem": {
-                    "hdfs": {
-                        "write_bytes": 0
-                    }
+        "executors": {
+            "application_name": "app-20220406080805-0000",
+            "id": "0",
+            "process_tree": {
+                "python": {
+                    "rss_memory": 0
                 }
             }
         }
     },
     "data_stream": {
-        "dataset": "apache_spark.metrics",
+        "dataset": "apache_spark.executors",
         "namespace": "ep",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "id": "af0205ec-949f-45d9-b3bf-b41d93032a55",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "apache_spark.metrics",
-        "duration": 89018916,
-        "ingested": "2022-03-09T11:54:54Z",
+        "dataset": "apache_spark.executors",
+        "duration": 30066789,
+        "ingested": "2022-04-06T08:08:31Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -119,16 +117,16 @@ An example event for `executors` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.21.0.5"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:ac:15:00:05"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "5.4.0-100-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -140,7 +138,7 @@ An example event for `executors` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://apachesparkmaster:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://apache-spark-main:7780/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "jolokia"
     }
 }
@@ -151,59 +149,78 @@ An example event for `executors` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.metrics.executors.application_name |  | keyword |
-| apache_spark.metrics.executors.bytes.read |  | long |
-| apache_spark.metrics.executors.bytes.written |  | long |
-| apache_spark.metrics.executors.direct_pool_memory |  | long |
-| apache_spark.metrics.executors.disk_bytes_spilled |  | long |
-| apache_spark.metrics.executors.file_cache_hits |  | long |
-| apache_spark.metrics.executors.files_discovered |  | long |
-| apache_spark.metrics.executors.filesystem.file.large_read_ops |  | long |
-| apache_spark.metrics.executors.filesystem.file.read_bytes |  | long |
-| apache_spark.metrics.executors.filesystem.file.read_ops |  | long |
-| apache_spark.metrics.executors.filesystem.file.write_bytes |  | long |
-| apache_spark.metrics.executors.filesystem.file.write_ops |  | long |
-| apache_spark.metrics.executors.filesystem.hdfs.large_read_ops |  | long |
-| apache_spark.metrics.executors.filesystem.hdfs.read_bytes |  | long |
-| apache_spark.metrics.executors.filesystem.hdfs.read_ops |  | long |
-| apache_spark.metrics.executors.filesystem.hdfs.write_bytes |  | long |
-| apache_spark.metrics.executors.filesystem.hdfs.write_ops |  | long |
-| apache_spark.metrics.executors.generated_class_size |  | long |
-| apache_spark.metrics.executors.generated_method_size |  | long |
-| apache_spark.metrics.executors.hive_client_calls |  | long |
-| apache_spark.metrics.executors.id |  | keyword |
-| apache_spark.metrics.executors.jvm.cpu_time |  | long |
-| apache_spark.metrics.executors.jvm.gc_time |  | long |
-| apache_spark.metrics.executors.jvm.heap_memory |  | long |
-| apache_spark.metrics.executors.jvm.off_heap_memory |  | long |
-| apache_spark.metrics.executors.major_gc.count |  | long |
-| apache_spark.metrics.executors.major_gc.time |  | long |
-| apache_spark.metrics.executors.mapped_pool_memory |  | long |
-| apache_spark.metrics.executors.memory_bytes_spilled |  | long |
-| apache_spark.metrics.executors.minor_gc.count |  | long |
-| apache_spark.metrics.executors.minor_gc.time |  | long |
-| apache_spark.metrics.executors.shuffle.bytes_written |  | long |
-| apache_spark.metrics.executors.shuffle.client.used.direct_memory |  | long |
-| apache_spark.metrics.executors.shuffle.client.used.heap_memory |  | long |
-| apache_spark.metrics.executors.shuffle.fetch_wait_time |  | long |
-| apache_spark.metrics.executors.shuffle.local.blocks_fetched |  | long |
-| apache_spark.metrics.executors.shuffle.local.bytes_read |  | long |
-| apache_spark.metrics.executors.shuffle.records.read |  | long |
-| apache_spark.metrics.executors.shuffle.records.written |  | long |
-| apache_spark.metrics.executors.shuffle.remote.blocks_fetched |  | long |
-| apache_spark.metrics.executors.shuffle.remote.bytes_read |  | long |
-| apache_spark.metrics.executors.shuffle.remote.bytes_read_to_disk |  | long |
-| apache_spark.metrics.executors.shuffle.server.used.direct_memory |  | long |
-| apache_spark.metrics.executors.shuffle.server.used.heap_memory |  | long |
-| apache_spark.metrics.executors.shuffle.total.bytes_read |  | long |
-| apache_spark.metrics.executors.shuffle.write.time |  | long |
-| apache_spark.metrics.executors.source_code_size |  | long |
-| apache_spark.metrics.executors.succeeded_tasks |  | long |
-| apache_spark.metrics.executors.threadpool.active_tasks |  | long |
-| apache_spark.metrics.executors.threadpool.complete_tasks |  | long |
-| apache_spark.metrics.executors.threadpool.current_pool_size |  | long |
-| apache_spark.metrics.executors.threadpool.max_pool_size |  | long |
-| apache_spark.metrics.executors.threadpool.started_tasks |  | long |
+| apache_spark.executors.application_name | Name of application. | keyword |
+| apache_spark.executors.bytes.read | Total number of bytes read. | long |
+| apache_spark.executors.bytes.written | Total number of bytes written. | long |
+| apache_spark.executors.disk_bytes_spilled | Total number of disk bytes spilled. | long |
+| apache_spark.executors.file_cache_hits | Total number of file cache hits. | long |
+| apache_spark.executors.files_discovered | Total number of files discovered. | long |
+| apache_spark.executors.filesystem.file.large_read_ops | Total number of large read operations from the files. | long |
+| apache_spark.executors.filesystem.file.read_bytes | Total number of bytes read from the files. | long |
+| apache_spark.executors.filesystem.file.read_ops | Total number of read operations from the files. | long |
+| apache_spark.executors.filesystem.file.write_bytes | Total number of bytes written from the files. | long |
+| apache_spark.executors.filesystem.file.write_ops | Total number of write operations from the files. | long |
+| apache_spark.executors.filesystem.hdfs.large_read_ops | Total number of large read operations from HDFS. | long |
+| apache_spark.executors.filesystem.hdfs.read_bytes | Total number of read bytes from HDFS. | long |
+| apache_spark.executors.filesystem.hdfs.read_ops | Total number of read operations from HDFS. | long |
+| apache_spark.executors.filesystem.hdfs.write_bytes | Total number of write bytes from HDFS. | long |
+| apache_spark.executors.filesystem.hdfs.write_ops | Total number of write operations from HDFS. | long |
+| apache_spark.executors.gc.major.count | Total major GC count. For example, the garbage collector is one of MarkSweepCompact, PS MarkSweep, ConcurrentMarkSweep, G1 Old Generation and so on. | long |
+| apache_spark.executors.gc.major.time | Elapsed total major GC time. The value is expressed in milliseconds. | long |
+| apache_spark.executors.gc.minor.count | Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on. | long |
+| apache_spark.executors.gc.minor.time | Elapsed total minor GC time. The value is expressed in milliseconds. | long |
+| apache_spark.executors.generated_class_size | Size of the class generated. | long |
+| apache_spark.executors.generated_method_size | Size of the method generated. | long |
+| apache_spark.executors.heap_memory.off.execution | Peak off heap execution memory in use, in bytes. | long |
+| apache_spark.executors.heap_memory.off.storage | Peak off heap storage memory in use, in bytes. | long |
+| apache_spark.executors.heap_memory.off.unified | Peak off heap memory (execution and storage). | long |
+| apache_spark.executors.heap_memory.on.execution | Peak on heap execution memory in use, in bytes. | long |
+| apache_spark.executors.heap_memory.on.storage | Peak on heap storage memory in use, in bytes. | long |
+| apache_spark.executors.heap_memory.on.unified | Peak on heap memory (execution and storage). | long |
+| apache_spark.executors.hive_client_calls | Total number of Hive Client calls. | long |
+| apache_spark.executors.id | ID of executor. | keyword |
+| apache_spark.executors.jvm.cpu_time | Elapsed CPU time the JVM spent. | long |
+| apache_spark.executors.jvm.gc_time | Elapsed time the JVM spent in garbage collection while executing this task. | long |
+| apache_spark.executors.memory.direct_pool | Peak memory that the JVM is using for direct buffer pool. | long |
+| apache_spark.executors.memory.jvm.heap | Peak memory usage of the heap that is used for object allocation. | long |
+| apache_spark.executors.memory.jvm.off_heap | Peak memory usage of non-heap memory that is used by the Java virtual machine. | long |
+| apache_spark.executors.memory.mapped_pool | Peak memory that the JVM is using for mapped buffer pool | long |
+| apache_spark.executors.memory_bytes_spilled | The number of in-memory bytes spilled by this task. | long |
+| apache_spark.executors.parallel_listing_job_count | Number of jobs running parallely. | long |
+| apache_spark.executors.partitions_fetched | Number of partitions fetched. | long |
+| apache_spark.executors.process_tree.jvm.rss_memory | Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out. | long |
+| apache_spark.executors.process_tree.jvm.v_memory | Virtual memory size in bytes. | long |
+| apache_spark.executors.process_tree.other.rss_memory | Resident Set Size for other kind of process. | long |
+| apache_spark.executors.process_tree.other.v_memory | Virtual memory size for other kind of process in bytes. | long |
+| apache_spark.executors.process_tree.python.rss_memory | Resident Set Size for Python. | long |
+| apache_spark.executors.process_tree.python.v_memory | Virtual memory size for Python in bytes. | long |
+| apache_spark.executors.records.read | Total number of records read. | long |
+| apache_spark.executors.records.written | Total number of records written. | long |
+| apache_spark.executors.result.serialization_time | Elapsed time spent serializing the task result. The value is expressed in milliseconds. | long |
+| apache_spark.executors.result.size | The number of bytes this task transmitted back to the driver as the TaskResult. | long |
+| apache_spark.executors.run_time | Elapsed time in the running this task | long |
+| apache_spark.executors.shuffle.bytes_written | Number of bytes written in shuffle operations. | long |
+| apache_spark.executors.shuffle.client.used.direct_memory | Amount of direct memory used by the shuffle client. | long |
+| apache_spark.executors.shuffle.client.used.heap_memory | Amount of heap memory used by the shuffle client. | long |
+| apache_spark.executors.shuffle.fetch_wait_time | Time the task spent waiting for remote shuffle blocks. | long |
+| apache_spark.executors.shuffle.local.blocks_fetched | Number of local (as opposed to read from a remote executor) blocks fetched in shuffle operations. | long |
+| apache_spark.executors.shuffle.local.bytes_read | Number of bytes read in shuffle operations from local disk (as opposed to read from a remote executor). | long |
+| apache_spark.executors.shuffle.records.read | Number of records read in shuffle operations. | long |
+| apache_spark.executors.shuffle.records.written | Number of records written in shuffle operations. | long |
+| apache_spark.executors.shuffle.remote.blocks_fetched | Number of remote blocks fetched in shuffle operations. | long |
+| apache_spark.executors.shuffle.remote.bytes_read | Number of remote bytes read in shuffle operations. | long |
+| apache_spark.executors.shuffle.remote.bytes_read_to_disk | Number of remote bytes read to disk in shuffle operations. Large blocks are fetched to disk in shuffle read operations, as opposed to being read into memory, which is the default behavior. | long |
+| apache_spark.executors.shuffle.server.used.direct_memory | Amount of direct memory used by the shuffle server. | long |
+| apache_spark.executors.shuffle.server.used.heap_memory | Amount of heap memory used by the shuffle server. | long |
+| apache_spark.executors.shuffle.total.bytes_read | Number of bytes read in shuffle operations (both local and remote) | long |
+| apache_spark.executors.shuffle.write.time | Time spent blocking on writes to disk or buffer cache. The value is expressed in nanoseconds. | long |
+| apache_spark.executors.source_code_size | The total size of the source code. | long |
+| apache_spark.executors.succeeded_tasks | The number of tasks succeeded. | long |
+| apache_spark.executors.threadpool.active_tasks | Number of tasks currently executing. | long |
+| apache_spark.executors.threadpool.complete_tasks | Number of tasks that have completed in this executor. | long |
+| apache_spark.executors.threadpool.current_pool_size | The size of the current thread pool of the executor. | long |
+| apache_spark.executors.threadpool.max_pool_size | The maximum size of the thread pool of the executor. | long |
+| apache_spark.executors.threadpool.started_tasks | The number of tasks started in the thread pool of the executor. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
