@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populated
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -25,10 +25,11 @@ processors:
       field: mimecast.senderIpAddress
       target_field: source.ip
       ignore_missing: true
-  - rename:
-      field: mimecast.senderAddress
-      target_field: email.from.address
-      ignore_missing: true
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.senderAddress}}}"
+      if: "ctx?.mimecast?.senderAddress != null"
+      ignore_failure: true
   - rename:
       field: mimecast.subject
       target_field: email.subject
@@ -45,10 +46,11 @@ processors:
       field: mimecast.id
       target_field: event.id
       ignore_missing: true
-  - rename:
-      field: mimecast.recipientAddress
-      target_field: email.to.address
-      ignore_missing: true
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipientAddress}}}"
+      if: "ctx?.mimecast?.recipientAddress != null"
+      ignore_failure: true
   - rename:
       field: mimecast.messageId
       target_field: email.message_id
@@ -66,12 +68,23 @@ processors:
       value: "{{source.ip}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip != null'
-
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
       field: 
         - mimecast.eventTime
+        - mimecast.senderAddress
+        - mimecast.recipientAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.
