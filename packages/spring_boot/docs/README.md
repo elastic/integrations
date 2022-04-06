@@ -38,10 +38,10 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T09:13:05.793Z",
+    "@timestamp": "2022-04-06T10:17:54.013Z",
     "agent": {
-        "ephemeral_id": "860853aa-3ffd-4bea-b65b-71a2955fd449",
-        "id": "93c3f930-5df7-490f-8e89-a52bfae75eed",
+        "ephemeral_id": "2231f428-494f-490d-892e-68edac29b573",
+        "id": "9258ea52-15a1-4c4b-844c-c0dc1793bf51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -55,16 +55,16 @@ An example event for `info` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "93c3f930-5df7-490f-8e89-a52bfae75eed",
+        "id": "9258ea52-15a1-4c4b-844c-c0dc1793bf51",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-06T09:13:05.793Z",
+        "created": "2022-04-06T10:17:54.013Z",
         "dataset": "spring_boot.info",
-        "ingested": "2022-04-06T09:13:09Z",
+        "ingested": "2022-04-06T10:17:57Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
