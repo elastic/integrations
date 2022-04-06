@@ -1,0 +1,40 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{hostname}}/nagiosxi/api/v1/objects/servicestatus?apikey={{api_key}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+{{#if host_address}}
+  - set:
+      target: url.params.host_address
+      value: in:{{#each host_address as |host i|}}{{host}},{{/each}}
+      default: in:{{#each host_address as |host i|}}{{host}},{{/each}}
+{{/if}}
+{{#if display_name}}
+  - set:
+      target: url.params.display_name
+      value: in:{{#each display_name as |service i|}}{{service}},{{/each}}
+      default: in:{{#each display_name as |service i|}}{{service}},{{/each}}
+{{/if}}
+response.split:
+  target: body.servicestatus
+  type: array
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
