@@ -3,7 +3,7 @@ description: Pipeline for processing http_trace logs
 processors:
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.1.0"
   - rename:
       field: message
       target_field: event.original
@@ -45,7 +45,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.timeTaken
-      target_field: spring_boot.http_trace.time_taken
+      target_field: event.duration
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -55,12 +55,12 @@ processors:
       ignore_failure: true
   - rename:
       field: json.request.uri
-      target_field: spring_boot.http_trace.request.uri
+      target_field: http.request.referrer
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.request.remoteAddress
-      target_field: spring_boot.http_trace.request.remote_address
+      target_field: host.ip
       ignore_missing: true
       ignore_failure: true
   - rename:
