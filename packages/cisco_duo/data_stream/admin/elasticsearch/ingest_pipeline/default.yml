@@ -2,9 +2,6 @@
 description: Pipeline for parsing cisco_duo administrator logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -42,7 +39,7 @@ processors:
       value: success
   - set: 
       field: event.outcome
-      value: failed
+      value: failure
       if: ctx?.json?.action instanceof String && ['ad_sync_failed','admin_2fa_error','admin_login_error','azure_sync_fail','openldap_sync_failed'].contains(ctx?.json?.action)
   - append:
       field: event.type
