@@ -91,6 +91,132 @@ processors:
             - threat
           type:
             - indicator
+        "client_connectivity":
+          category:
+            - session
+          type:
+            - connection
+        "pcc_security_compliance":
+          category:
+            - configuration
+        "pcc_security_violation":
+          category:
+            - configuration
+            - threat
+          type:
+            - change
+            - indicator
+        "pcc_outage_end":
+          category:
+            - host
+          type:
+            - connection
+        "pcc_enrollment":
+          category:
+            - session
+          type:
+            - connection
+            - start
+        "geofencing_out":
+          type:
+            - connection
+        "pcc_outage_begin":
+          category:
+            - host
+          type:
+            - connection
+            - end
+        "dhcp_no_leases":
+          type:
+            - connection
+            - denied
+            - protocol
+        "vrrp":
+          category:
+            - configuration
+          type:
+            - change
+        "pcc_expired_apns_cert":
+          category:
+            - authentication
+        "amp_malware_blocked":
+          category:
+            - threat
+            - intrusion_detection
+          type:
+            - indicator
+            - denied
+        "amp_malware_detected":
+          category:
+            - threat
+            - intrusion_detection
+          type:
+            - indicator
+            - allowed
+        "pcc_sw_found":
+          category:
+            - host
+            - configuration
+          type:
+            - change
+        "pcc_unmanaged":
+          category:
+            - configuration
+            - iam
+          type:
+            - change
+            - deletion
+        "dhcp_alerts":
+          type:
+            - protocol
+        "power_supply_up":
+          type:
+            - start
+        "power_supply_down":
+          category:
+            - host
+          type:
+            - end
+        "unreachable_radius_server":
+          category:
+            - authentication
+          type:
+            - end
+            - denied
+        "rogue_ap":
+          category:
+            - threat
+          type:
+            - indicator
+        "rogue_dhcp":
+          category:
+            - threat
+          type:
+            - indicator
+        "settings_changed":
+          category:
+            - configuration
+          type:
+            - change
+        "port_connected":
+          type:
+            - connection
+        "port_disconnected":
+          type:
+            - end
+        "port_speed_change":
+          category:
+            - configuration
+          type:
+            - change
+            - protocol
+        "udld_error":
+          type:
+            - connection
+            - end
+        "uplink_ip6_conflict":
+          type:
+            - protocol
     source: |-
          def alertTypeId = ctx.json.alertTypeId;
          if (alertTypeId == null) {
@@ -99,7 +225,13 @@ processors:
          def eventMap = params.get('eventmap');
          def eventData = eventMap.get(alertTypeId);
          if (eventData == null) {
-           ctx.event.action = 'unknown-' + alertTypeId;
+           // Unclassified events
+           // - geofencing_in, critical_temperature
+           // - gateway_to_repeater, mi_alert
+           // - motion_alert, usage_alert
+           // - new_splash_signup, rps_base_supply_up
+           // - rps_backup, vpn_connectivity_change
+           ctx.event.action = ctx.json.alertType;
            return;
          }
          def eventCategory = eventData.get('category');

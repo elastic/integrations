@@ -283,9 +283,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-11-23T18:13:18.348Z",
     "agent": {
-        "ephemeral_id": "ab911d64-36b6-4d9c-8671-b96040dfb2c0",
+        "ephemeral_id": "1c256d1d-7492-414a-aa98-8ff1d87b92f9",
         "hostname": "docker-fleet-agent",
-        "id": "c48d85d8-f68e-48cc-82d7-f0fa39b0c1c5",
+        "id": "52a33c0a-4448-4add-9acf-eecf177d768c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -314,7 +314,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c48d85d8-f68e-48cc-82d7-f0fa39b0c1c5",
+        "id": "52a33c0a-4448-4add-9acf-eecf177d768c",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -325,7 +325,7 @@ An example event for `log` looks as following:
             "threat"
         ],
         "dataset": "cisco_meraki.log",
-        "ingested": "2022-03-28T09:18:58Z",
+        "ingested": "2022-04-06T03:08:45Z",
         "original": "\u003c134\u003e1 1637691198.348361125 MX84 security_event ids_alerted signature=1:29708:4 priority=1 timestamp=1637691198.330873 dhost=D0:AB:D5:7B:43:73 direction=ingress protocol=tcp/ip src=67.43.156.12:80 dst=10.0.3.162:56391 decision=allowed message: BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
         "type": [
             "indicator"
@@ -336,7 +336,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.96.4:47237"
+            "address": "172.29.0.4:37628"
         }
     },
     "network": {
@@ -370,7 +370,7 @@ An example event for `log` looks as following:
     "threat": {
         "indicator": {
             "description": " BROWSER-IE Microsoft Internet Explorer CSS uninitialized object access attempt detected",
-            "last_seen": "1637691198.330873"
+            "last_seen": "2021-11-23T18:13:18.330Z"
         }
     }
 }
@@ -607,11 +607,11 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-28T09:16:48.186Z",
+    "@timestamp": "2018-02-11T00:00:00.123Z",
     "agent": {
-        "ephemeral_id": "3517f8ad-5a73-4384-89d0-77800a1b623a",
+        "ephemeral_id": "381821d3-87da-4908-8e6b-ec637704e0c6",
         "hostname": "docker-fleet-agent",
-        "id": "c48d85d8-f68e-48cc-82d7-f0fa39b0c1c5",
+        "id": "52a33c0a-4448-4add-9acf-eecf177d768c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -626,24 +626,14 @@ An example event for `events` looks as following:
                 "remote": "1.2.3.5"
             },
             "alertId": "0000000000000000",
-            "alertLevel": "informational",
-            "alertType": "Cellular came up",
             "alertTypeId": "cellular_up",
-            "deviceMac": "00:11:22:33:44:55",
-            "deviceModel": "MX",
-            "deviceName": "My appliance",
-            "deviceSerial": "Q234-ABCD-5678",
             "deviceTags": [
                 "tag1",
                 "tag2"
             ],
             "deviceUrl": "https://n1.meraki.com//n//manage/nodes/new_list/000000000000",
             "networkId": "N_24329156",
-            "networkName": "Main Office",
             "networkUrl": "https://n1.meraki.com//n//manage/nodes/list",
-            "occurredAt": "2018-02-11T00:00:00.123450Z",
-            "organizationId": "2930418",
-            "organizationName": "My organization",
             "organizationUrl": "https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview",
             "sentAt": "2021-10-07T08:42:00.926325Z",
             "sharedSecret": "secret",
@@ -659,18 +649,43 @@ An example event for `events` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c48d85d8-f68e-48cc-82d7-f0fa39b0c1c5",
+        "id": "52a33c0a-4448-4add-9acf-eecf177d768c",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
+        "action": "Cellular came up",
         "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
         "dataset": "cisco_meraki.events",
-        "ingested": "2022-03-28T09:16:49Z",
-        "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}"
+        "ingested": "2022-04-06T03:06:51Z",
+        "original": "{\"alertData\":{\"connection\":\"LTE\",\"local\":\"192.168.1.2\",\"model\":\"UML290VW\",\"provider\":\"Purview Wireless\",\"remote\":\"1.2.3.5\"},\"alertId\":\"0000000000000000\",\"alertLevel\":\"informational\",\"alertType\":\"Cellular came up\",\"alertTypeId\":\"cellular_up\",\"deviceMac\":\"00:11:22:33:44:55\",\"deviceModel\":\"MX\",\"deviceName\":\"My appliance\",\"deviceSerial\":\"Q234-ABCD-5678\",\"deviceTags\":[\"tag1\",\"tag2\"],\"deviceUrl\":\"https://n1.meraki.com//n//manage/nodes/new_list/000000000000\",\"networkId\":\"N_24329156\",\"networkName\":\"Main Office\",\"networkTags\":[],\"networkUrl\":\"https://n1.meraki.com//n//manage/nodes/list\",\"occurredAt\":\"2018-02-11T00:00:00.123450Z\",\"organizationId\":\"2930418\",\"organizationName\":\"My organization\",\"organizationUrl\":\"https://dashboard.meraki.com/o/VjjsAd/manage/organization/overview\",\"sentAt\":\"2021-10-07T08:42:00.926325Z\",\"sharedSecret\":\"secret\",\"version\":\"0.1\"}",
+        "type": [
+            "info",
+            "start"
+        ]
     },
     "input": {
         "type": "http_endpoint"
+    },
+    "log": {
+        "level": "informational"
+    },
+    "network": {
+        "name": "Main Office"
+    },
+    "observer": {
+        "mac": "00-11-22-33-44-55",
+        "name": "My appliance",
+        "product": "MX",
+        "serial_number": "Q234-ABCD-5678",
+        "vendor": "Cisco"
+    },
+    "organization": {
+        "id": "2930418",
+        "name": "My organization"
     },
     "tags": [
         "preserve_original_event",
