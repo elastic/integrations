@@ -1,10 +1,10 @@
-# Spring Boot Integration
+# Spring Boot integration
 
-The Spring Boot Integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
-This module has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.3.12.
 
 ## Requirements
 
@@ -21,50 +21,50 @@ In order to ingest data from Spring Boot:
 - For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
 ```
 <dependency>
-	<groupId>org.jolokia</groupId>
-	<artifactId>jolokia-core</artifactId>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
 
 ## Metrics
 
-### Threads Metrics
+### Threading Metrics
 
-This is the `threads` dataset.
+This is the `threading` dataset.
 
-- This dataset gives details of threads.
+- This dataset gives details of threading.
 
-An example event for `threads` looks as following:
+An example event for `threading` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-03T06:01:00.620Z",
+    "@timestamp": "2022-04-06T12:37:34.147Z",
     "agent": {
-        "ephemeral_id": "09a99edf-7271-4577-9e22-9b3d4a9f213c",
-        "id": "0a240703-9406-4228-9fc3-6de80f08f638",
+        "ephemeral_id": "acb090db-0138-4879-8d6c-73f973a50dc5",
+        "id": "ae0ec113-7756-4aaf-a499-4406d2cd7b7e",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
     },
     "data_stream": {
-        "dataset": "spring_boot.threads",
+        "dataset": "spring_boot.threading",
         "namespace": "ep",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "0a240703-9406-4228-9fc3-6de80f08f638",
+        "id": "ae0ec113-7756-4aaf-a499-4406d2cd7b7e",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "dataset": "spring_boot.threads",
-        "duration": 100853314,
-        "ingested": "2022-04-03T06:01:04Z",
+        "dataset": "spring_boot.threading",
+        "duration": 238889514,
+        "ingested": "2022-04-06T12:37:34Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,10 +74,10 @@ An example event for `threads` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.31.0.7"
+            "172.24.0.4"
         ],
         "mac": [
-            "02:42:ac:1f:00:07"
+            "02:42:ac:18:00:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -100,29 +100,31 @@ An example event for `threads` looks as following:
         "type": "jolokia"
     },
     "spring_boot": {
-        "threads": {
-            "threading": {
-                "current_thread": {
-                    "allocated_bytes": 780776,
-                    "cpu_time": 385629028,
-                    "cpu_time_supported": true,
-                    "user_time": 380000000
-                },
-                "daemon_thread_count": 16,
-                "object_monitor_usage_supported": true,
-                "peak_thread_count": 20,
-                "synchronizer_usage_supported": true,
-                "thread": {
-                    "allocated_memory_enabled": true,
-                    "allocated_memory_supported": true,
-                    "contention_monitoring_enabled": false,
-                    "contention_monitoring_supported": true,
-                    "count": 20,
-                    "cpu_time_enabled": true,
-                    "cpu_time_supported": true
-                },
-                "total_started_thread_count": 23
-            }
+        "threading": {
+            "allocated_memory": {
+                "enabled": true,
+                "supported": true
+            },
+            "contention_monitoring": {
+                "enabled": false,
+                "supported": true
+            },
+            "count": 20,
+            "cpu_time": {
+                "enabled": true,
+                "supported": true
+            },
+            "current_thread": {
+                "allocated_bytes": 58849216,
+                "cpu_time": 712810163,
+                "cpu_time_supported": true,
+                "user_time": 680000000
+            },
+            "daemon_thread_count": 16,
+            "object_monitor_usage_supported": true,
+            "peak_thread_count": 20,
+            "synchronizer_usage_supported": true,
+            "total_started_thread_count": 23
         }
     }
 }
@@ -175,22 +177,22 @@ An example event for `threads` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| spring_boot.threads.threading.current_thread.allocated_bytes |  | double |
-| spring_boot.threads.threading.current_thread.cpu_time |  | long |
-| spring_boot.threads.threading.current_thread.cpu_time_supported |  | boolean |
-| spring_boot.threads.threading.current_thread.user_time |  | long |
-| spring_boot.threads.threading.daemon_thread_count |  | long |
-| spring_boot.threads.threading.object_monitor_usage_supported |  | boolean |
-| spring_boot.threads.threading.peak_thread_count |  | long |
-| spring_boot.threads.threading.synchronizer_usage_supported |  | boolean |
-| spring_boot.threads.threading.thread.allocated_memory_enabled |  | boolean |
-| spring_boot.threads.threading.thread.allocated_memory_supported |  | boolean |
-| spring_boot.threads.threading.thread.contention_monitoring_enabled |  | boolean |
-| spring_boot.threads.threading.thread.contention_monitoring_supported |  | boolean |
-| spring_boot.threads.threading.thread.count |  | long |
-| spring_boot.threads.threading.thread.cpu_time_enabled |  | boolean |
-| spring_boot.threads.threading.thread.cpu_time_supported |  | boolean |
-| spring_boot.threads.threading.total_started_thread_count |  | long |
+| spring_boot.threading.allocated_memory.enabled |  | boolean |
+| spring_boot.threading.allocated_memory.supported |  | boolean |
+| spring_boot.threading.contention_monitoring.enabled |  | boolean |
+| spring_boot.threading.contention_monitoring.supported |  | boolean |
+| spring_boot.threading.count |  | long |
+| spring_boot.threading.cpu_time.enabled |  | boolean |
+| spring_boot.threading.cpu_time.supported |  | boolean |
+| spring_boot.threading.current_thread.allocated_bytes |  | double |
+| spring_boot.threading.current_thread.cpu_time |  | long |
+| spring_boot.threading.current_thread.cpu_time_supported |  | boolean |
+| spring_boot.threading.current_thread.user_time |  | long |
+| spring_boot.threading.daemon_thread_count |  | long |
+| spring_boot.threading.object_monitor_usage_supported |  | boolean |
+| spring_boot.threading.peak_thread_count |  | long |
+| spring_boot.threading.synchronizer_usage_supported |  | boolean |
+| spring_boot.threading.total_started_thread_count |  | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |

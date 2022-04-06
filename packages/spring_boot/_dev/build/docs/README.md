@@ -1,10 +1,10 @@
-# Spring Boot Integration
+# Spring Boot integration
 
-The Spring Boot Integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
-This module has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.3.12.
 
 ## Requirements
 
@@ -21,19 +21,19 @@ In order to ingest data from Spring Boot:
 - For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
 ```
 <dependency>
-	<groupId>org.jolokia</groupId>
-	<artifactId>jolokia-core</artifactId>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
 
 ## Metrics
 
-### Threads Metrics
+### Threading Metrics
 
-This is the `threads` dataset.
+This is the `threading` dataset.
 
-- This dataset gives details of threads.
+- This dataset gives details of threading.
 
-{{event "threads"}}
+{{event "threading"}}
 
-{{fields "threads"}}
+{{fields "threading"}}
