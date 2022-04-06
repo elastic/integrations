@@ -3,7 +3,7 @@ description: Pipeline for processing Audit Events logs
 processors:
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.1.0"
   - rename:
       field: message
       target_field: event.original
@@ -35,14 +35,24 @@ processors:
       value: database
   - rename:
       field: json.principal
-      target_field: spring_boot.auditevents.principal
+      target_field: spring_boot.audit_events.principal
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.type
-      target_field: spring_boot.auditevents.type
+      target_field: spring_boot.audit_events.type
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: json.data.details.remoteAddress
+      target_field: spring_boot.audit_events.data.session_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.details.remoteAddress
+      target_field: spring_boot.audit_events.data.remote_address
+      ignore_missing: true
+      ignore_failure: true      
   - remove:
       field:
        - json
