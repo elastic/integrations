@@ -10,8 +10,7 @@ The logs were tested with version 1.19.5.
 On Windows, the module was tested with Nginx installed from the Chocolatey repository.
 
 ## Logs
-
-**Timezone support**
+### Timezone support
 
 This datasource parses logs that don’t contain timezone information. For these logs, the Elastic Agent reads the local
 timezone and uses it when parsing to convert the timestamp to UTC. The timezone to be used for parsing is included
