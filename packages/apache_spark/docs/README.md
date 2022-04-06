@@ -71,23 +71,19 @@ An example event for `executors` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T08:08:28.124Z",
+    "@timestamp": "2022-04-06T12:14:34.950Z",
     "agent": {
-        "ephemeral_id": "7fce3dcb-c11a-4198-9857-ad44c74fa030",
-        "id": "af0205ec-949f-45d9-b3bf-b41d93032a55",
+        "ephemeral_id": "1543367e-5a21-4912-9262-c9ac8a6c17a9",
+        "id": "4ac8d0d4-2938-4296-afca-a4710b4429ff",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
     },
     "apache_spark": {
         "executors": {
-            "application_name": "app-20220406080805-0000",
-            "id": "0",
-            "process_tree": {
-                "python": {
-                    "rss_memory": 0
-                }
-            }
+            "application_name": "app-20220406121418-0000",
+            "files_discovered": 0,
+            "id": "0"
         }
     },
     "data_stream": {
@@ -99,15 +95,15 @@ An example event for `executors` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "af0205ec-949f-45d9-b3bf-b41d93032a55",
+        "id": "4ac8d0d4-2938-4296-afca-a4710b4429ff",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.executors",
-        "duration": 30066789,
-        "ingested": "2022-04-06T08:08:31Z",
+        "duration": 138975422,
+        "ingested": "2022-04-06T12:14:38Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -117,10 +113,10 @@ An example event for `executors` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.26.0.7"
+            "192.168.32.4"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:20:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
