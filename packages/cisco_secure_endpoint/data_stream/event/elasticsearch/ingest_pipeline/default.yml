@@ -368,9 +368,15 @@ processors:
         if (commandLine != "") {
           ctx.process.command_line = commandLine;
       
-          def args = Arrays.asList(/ /.split(commandLine));
-          args.removeIf(arg -> arg == "");
-          ctx.process.args = args;
+          def args = [];
+          for (def v : / /.split(commandLine)) {
+            if (v != "") {
+              args.add(v);
+            }
+          }
+          if (args.size() > 0) {
+            ctx.process.args = args;
+          }
         }
       }
 - script:
@@ -596,22 +602,26 @@ processors:
     ignore_missing: true
 - remove:
     field:
-    - cisco.secure_endpoint.timestamp
-    - cisco.secure_endpoint.computer.links
-    - json
-    - cisco.secure_endpoint.severity
-    - cisco.secure_endpoint.start_timestamp
-    - cisco.secure_endpoint.date
-    - cisco.secure_endpoint.timestamp_nanoseconds
-    - cisco.secure_endpoint.start_date
-    - cisco.secure_endpoint.id
-    - cisco.secure_endpoint.threat_hunting.techniques
-    - cisco.secure_endpoint.threat_hunting.tactics
-    - cisco.secure_endpoint.computer.hostname
-    - cisco.secure_endpoint.computer.user
+      - cisco.secure_endpoint.computer.hostname
+      - cisco.secure_endpoint.computer.links
+      - cisco.secure_endpoint.computer.user
+      - cisco.secure_endpoint.date
+      - cisco.secure_endpoint.id
+      - cisco.secure_endpoint.severity
+      - cisco.secure_endpoint.start_date
+      - cisco.secure_endpoint.start_timestamp
+      - cisco.secure_endpoint.threat_hunting.tactics
+      - cisco.secure_endpoint.threat_hunting.techniques
+      - cisco.secure_endpoint.timestamp
+      - cisco.secure_endpoint.timestamp_nanoseconds
+      - json
     ignore_missing: true
 on_failure:
+- remove:
+    field:
+      - json
+    ignore_missing: true
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
-
+    value: |-
+      Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" failed with message "{{{ _ingest.on_failure_message }}}"
