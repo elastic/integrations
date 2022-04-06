@@ -1,46 +1,67 @@
 {
     "expected": [
         {
+            "@timestamp": "2020-04-17T14:08:08.000Z",
+            "cisco": {
+                "ftd": {
+                    "connection_id": "110577675",
+                    "destination_interface": "Inside",
+                    "source_interface": "Outside",
+                    "source_username": "(LOCAL\\Elastic)",
+                    "termination_user": "zzzzzz"
+                }
+            },
+            "destination": {
+                "address": "10.233.123.123",
+                "ip": "10.233.123.123",
+                "port": 53
+            },
+            "ecs": {
+                "version": "8.0.0"
+            },
+            "event": {
+                "action": "flow-expiration",
+                "category": [
+                    "network"
+                ],
+                "code": "302016",
+                "duration": 0,
+                "end": "2020-04-17T14:08:08.000Z",
+                "kind": "event",
+                "original": "Apr 17 2020 14:08:08 SNL-ASA-VPN-A01 : %ASA-6-302016: Teardown UDP connection 110577675 for Outside:10.123.123.123/53723(LOCAL\\Elastic) to Inside:10.233.123.123/53 duration 0:00:00 bytes 148 (zzzzzz)",
+                "severity": 6,
+                "start": "2020-04-17T14:08:08.000Z",
+                "type": [
+                    "connection",
+                    "end"
+                ]
+            },
+            "host": {
+                "hostname": "SNL-ASA-VPN-A01"
+            },
             "log": {
                 "level": "informational"
             },
-            "destination": {
-                "port": 53,
-                "address": "10.233.123.123",
-                "ip": "10.233.123.123"
-            },
-            "source": {
-                "port": 53723,
-                "address": "10.123.123.123",
-                "ip": "10.123.123.123"
-            },
-            "tags": [
-                "preserve_original_event"
-            ],
             "network": {
                 "bytes": 148,
                 "iana_number": "17",
                 "transport": "udp"
             },
             "observer": {
+                "egress": {
+                    "interface": {
+                        "name": "Inside"
+                    }
+                },
+                "hostname": "SNL-ASA-VPN-A01",
                 "ingress": {
                     "interface": {
                         "name": "Outside"
                     }
                 },
-                "hostname": "SNL-ASA-VPN-A01",
-                "product": "asa",
-                "type": "firewall",
-                "vendor": "Cisco",
-                "egress": {
-                    "interface": {
-                        "name": "Inside"
-                    }
-                }
-            },
-            "@timestamp": "2020-04-17T14:08:08.000Z",
-            "ecs": {
-                "version": "8.0.0"
+                "product": "ftd",
+                "type": "idps",
+                "vendor": "Cisco"
             },
             "related": {
                 "hosts": [
@@ -51,75 +72,71 @@
                     "10.233.123.123"
                 ]
             },
-            "host": {
-                "hostname": "SNL-ASA-VPN-A01"
+            "source": {
+                "address": "10.123.123.123",
+                "ip": "10.123.123.123",
+                "port": 53723
             },
-            "event": {
-                "severity": 6,
-                "duration": 0,
-                "ingested": "2021-12-29T09:58:05.081546387Z",
-                "original": "Apr 17 2020 14:08:08 SNL-ASA-VPN-A01 : %ASA-6-302016: Teardown UDP connection 110577675 for Outside:10.123.123.123/53723(LOCAL\\Elastic) to Inside:10.233.123.123/53 duration 0:00:00 bytes 148 (zzzzzz)",
-                "code": "302016",
-                "kind": "event",
-                "start": "2020-04-17T14:08:08.000Z",
-                "action": "flow-expiration",
-                "end": "2020-04-17T14:08:08.000Z",
-                "category": [
-                    "network"
-                ],
-                "type": [
-                    "connection",
-                    "end"
-                ]
-            },
-            "cisco": {
-                "ftd": {
-                    "source_username": "(LOCAL\\Elastic)",
-                    "destination_interface": "Inside",
-                    "termination_user": "zzzzzz",
-                    "connection_id": "110577675",
-                    "source_interface": "Outside"
-                }
-            }
+            "tags": [
+                "preserve_original_event"
+            ]
         },
         {
-            "log": {
-                "level": "warning"
+            "@timestamp": "2020-04-17T14:00:31.000Z",
+            "cisco": {
+                "ftd": {
+                    "destination_interface": "Outside",
+                    "rule_name": "Inside_access_in",
+                    "source_interface": "Inside"
+                }
             },
             "destination": {
                 "address": "10.123.123.123",
                 "ip": "10.123.123.123"
             },
-            "source": {
-                "address": "10.123.123.123",
-                "ip": "10.123.123.123"
+            "ecs": {
+                "version": "8.0.0"
             },
-            "tags": [
-                "preserve_original_event"
-            ],
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "106023",
+                "kind": "event",
+                "original": "Apr 17 2020 14:00:31 SNL-ASA-VPN-A01 : %ASA-4-106023: Deny icmp src Inside:10.123.123.123 dst Outside:10.123.123.123 (type 11, code 0) by access-group \"Inside_access_in\" [0x0, 0x0]",
+                "outcome": "failure",
+                "severity": 4,
+                "type": [
+                    "info",
+                    "denied"
+                ]
+            },
+            "host": {
+                "hostname": "SNL-ASA-VPN-A01"
+            },
+            "log": {
+                "level": "warning"
+            },
             "network": {
                 "iana_number": "1",
                 "transport": "icmp"
             },
             "observer": {
+                "egress": {
+                    "interface": {
+                        "name": "Outside"
+                    }
+                },
+                "hostname": "SNL-ASA-VPN-A01",
                 "ingress": {
                     "interface": {
                         "name": "Inside"
                     }
                 },
-                "hostname": "SNL-ASA-VPN-A01",
-                "product": "asa",
-                "type": "firewall",
-                "vendor": "Cisco",
-                "egress": {
-                    "interface": {
-                        "name": "Outside"
-                    }
-                }
-            },
-            "@timestamp": "2020-04-17T14:00:31.000Z",
-            "ecs": {
-                "version": "8.0.0"
+                "product": "ftd",
+                "type": "idps",
+                "vendor": "Cisco"
             },
             "related": {
                 "hosts": [
@@ -129,142 +146,140 @@
                     "10.123.123.123"
                 ]
             },
-            "host": {
-                "hostname": "SNL-ASA-VPN-A01"
-            },
-            "event": {
-                "severity": 4,
-                "ingested": "2021-12-29T09:58:05.081548856Z",
-                "original": "Apr 17 2020 14:00:31 SNL-ASA-VPN-A01 : %ASA-4-106023: Deny icmp src Inside:10.123.123.123 dst Outside:10.123.123.123 (type 11, code 0) by access-group \"Inside_access_in\" [0x0, 0x0]",
-                "code": "106023",
-                "kind": "event",
-                "action": "firewall-rule",
-                "category": [
-                    "network"
-                ],
-                "type": [
-                    "info",
-                    "denied"
-                ],
-                "outcome": "failure"
-            },
-            "cisco": {
-                "ftd": {
-                    "destination_interface": "Outside",
-                    "rule_name": "Inside_access_in",
-                    "source_interface": "Inside"
-                }
-            }
-        },
-        {
-            "log": {
-                "level": "warning"
-            },
-            "destination": {
-                "port": 53,
-                "address": "10.123.123.123",
-                "ip": "10.123.123.123"
-            },
             "source": {
-                "port": 6316,
                 "address": "10.123.123.123",
                 "ip": "10.123.123.123"
             },
             "tags": [
                 "preserve_original_event"
-            ],
-            "network": {
-                "iana_number": "6",
-                "transport": "tcp"
-            },
-            "observer": {
-                "ingress": {
-                    "interface": {
-                        "name": "dmz"
-                    }
-                },
-                "product": "asa",
-                "type": "firewall",
-                "vendor": "Cisco",
-                "egress": {
-                    "interface": {
-                        "name": "outside"
-                    }
-                }
-            },
+            ]
+        },
+        {
             "@timestamp": "2013-04-15T09:36:50.000Z",
-            "ecs": {
-                "version": "8.0.0"
-            },
-            "related": {
-                "ip": [
-                    "10.123.123.123"
-                ]
-            },
-            "event": {
-                "severity": 4,
-                "ingested": "2021-12-29T09:58:05.081549868Z",
-                "original": "Apr 15 2013 09:36:50: %ASA-4-106023: Deny tcp src dmz:10.123.123.123/6316 dst outside:10.123.123.123/53 type 3, code 0, by access-group \"acl_dmz\" [0xe3afb522, 0x0]",
-                "code": "106023",
-                "kind": "event",
-                "action": "firewall-rule",
-                "category": [
-                    "network"
-                ],
-                "type": [
-                    "info",
-                    "denied"
-                ],
-                "outcome": "failure"
-            },
             "cisco": {
                 "ftd": {
                     "destination_interface": "outside",
                     "rule_name": "acl_dmz",
                     "source_interface": "dmz"
                 }
-            }
-        },
-        {
+            },
+            "destination": {
+                "address": "10.123.123.123",
+                "ip": "10.123.123.123",
+                "port": 53
+            },
+            "ecs": {
+                "version": "8.0.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "106023",
+                "kind": "event",
+                "original": "Apr 15 2013 09:36:50: %ASA-4-106023: Deny tcp src dmz:10.123.123.123/6316 dst outside:10.123.123.123/53 type 3, code 0, by access-group \"acl_dmz\" [0xe3afb522, 0x0]",
+                "outcome": "failure",
+                "severity": 4,
+                "type": [
+                    "info",
+                    "denied"
+                ]
+            },
             "log": {
                 "level": "warning"
             },
-            "destination": {
-                "port": 57621,
-                "address": "10.123.123.123",
-                "ip": "10.123.123.123"
+            "network": {
+                "iana_number": "6",
+                "transport": "tcp"
+            },
+            "observer": {
+                "egress": {
+                    "interface": {
+                        "name": "outside"
+                    }
+                },
+                "ingress": {
+                    "interface": {
+                        "name": "dmz"
+                    }
+                },
+                "product": "ftd",
+                "type": "idps",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "ip": [
+                    "10.123.123.123"
+                ]
             },
             "source": {
-                "port": 57621,
                 "address": "10.123.123.123",
-                "ip": "10.123.123.123"
+                "ip": "10.123.123.123",
+                "port": 6316
             },
             "tags": [
                 "preserve_original_event"
-            ],
+            ]
+        },
+        {
+            "@timestamp": "2020-04-17T14:16:20.000Z",
+            "cisco": {
+                "ftd": {
+                    "destination_interface": "Outside",
+                    "rule_name": "Inside_access_in",
+                    "source_interface": "Inside",
+                    "source_username": "(LOCAL\\Elastic)"
+                }
+            },
+            "destination": {
+                "address": "10.123.123.123",
+                "ip": "10.123.123.123",
+                "port": 57621
+            },
+            "ecs": {
+                "version": "8.0.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "106023",
+                "kind": "event",
+                "original": "Apr 17 2020 14:16:20 SNL-ASA-VPN-A01 : %ASA-4-106023: Deny udp src Inside:10.123.123.123/57621(LOCAL\\Elastic) dst Outside:10.123.123.123/57621 by access-group \"Inside_access_in\" [0x0, 0x0]",
+                "outcome": "failure",
+                "severity": 4,
+                "type": [
+                    "info",
+                    "denied"
+                ]
+            },
+            "host": {
+                "hostname": "SNL-ASA-VPN-A01"
+            },
+            "log": {
+                "level": "warning"
+            },
             "network": {
                 "iana_number": "17",
                 "transport": "udp"
             },
             "observer": {
+                "egress": {
+                    "interface": {
+                        "name": "Outside"
+                    }
+                },
+                "hostname": "SNL-ASA-VPN-A01",
                 "ingress": {
                     "interface": {
                         "name": "Inside"
                     }
                 },
-                "hostname": "SNL-ASA-VPN-A01",
-                "product": "asa",
-                "type": "firewall",
-                "vendor": "Cisco",
-                "egress": {
-                    "interface": {
-                        "name": "Outside"
-                    }
-                }
-            },
-            "@timestamp": "2020-04-17T14:16:20.000Z",
-            "ecs": {
-                "version": "8.0.0"
+                "product": "ftd",
+                "type": "idps",
+                "vendor": "Cisco"
             },
             "related": {
                 "hosts": [
@@ -274,41 +289,61 @@
                     "10.123.123.123"
                 ]
             },
-            "host": {
-                "hostname": "SNL-ASA-VPN-A01"
+            "source": {
+                "address": "10.123.123.123",
+                "ip": "10.123.123.123",
+                "port": 57621
             },
-            "event": {
-                "severity": 4,
-                "ingested": "2021-12-29T09:58:05.081550692Z",
-                "original": "Apr 17 2020 14:16:20 SNL-ASA-VPN-A01 : %ASA-4-106023: Deny udp src Inside:10.123.123.123/57621(LOCAL\\Elastic) dst Outside:10.123.123.123/57621 by access-group \"Inside_access_in\" [0x0, 0x0]",
-                "code": "106023",
-                "kind": "event",
-                "action": "firewall-rule",
-                "category": [
-                    "network"
-                ],
-                "type": [
-                    "info",
-                    "denied"
-                ],
-                "outcome": "failure"
-            },
-            "cisco": {
-                "ftd": {
-                    "source_username": "(LOCAL\\Elastic)",
-                    "destination_interface": "Outside",
-                    "rule_name": "Inside_access_in",
-                    "source_interface": "Inside"
-                }
-            }
+            "tags": [
+                "preserve_original_event"
+            ]
         },
         {
-            "log": {
-                "level": "critical"
+            "@timestamp": "2020-04-17T14:15:07.000Z",
+            "cisco": {
+                "ftd": {}
             },
             "destination": {
                 "address": "10.123.123.123",
                 "ip": "10.123.123.123"
+            },
+            "ecs": {
+                "version": "8.0.0"
+            },
+            "event": {
+                "action": "firewall-rule",
+                "category": [
+                    "network"
+                ],
+                "code": "106017",
+                "kind": "event",
+                "original": "Apr 17 2020 14:15:07 SNL-ASA-VPN-A01 : %ASA-2-106017: Deny IP due to Land Attack from 10.123.123.123 to 10.123.123.123",
+                "outcome": "failure",
+                "severity": 2,
+                "type": [
+                    "info",
+                    "denied"
+                ]
+            },
+            "host": {
+                "hostname": "SNL-ASA-VPN-A01"
+            },
+            "log": {
+                "level": "critical"
+            },
+            "observer": {
+                "hostname": "SNL-ASA-VPN-A01",
+                "product": "ftd",
+                "type": "idps",
+                "vendor": "Cisco"
+            },
+            "related": {
+                "hosts": [
+                    "SNL-ASA-VPN-A01"
+                ],
+                "ip": [
+                    "10.123.123.123"
+                ]
             },
             "source": {
                 "address": "10.123.123.123",
@@ -316,47 +351,7 @@
             },
             "tags": [
                 "preserve_original_event"
-            ],
-            "observer": {
-                "hostname": "SNL-ASA-VPN-A01",
-                "product": "asa",
-                "type": "firewall",
-                "vendor": "Cisco"
-            },
-            "@timestamp": "2020-04-17T14:15:07.000Z",
-            "ecs": {
-                "version": "8.0.0"
-            },
-            "related": {
-                "hosts": [
-                    "SNL-ASA-VPN-A01"
-                ],
-                "ip": [
-                    "10.123.123.123"
-                ]
-            },
-            "host": {
-                "hostname": "SNL-ASA-VPN-A01"
-            },
-            "event": {
-                "severity": 2,
-                "ingested": "2021-12-29T09:58:05.081551643Z",
-                "original": "Apr 17 2020 14:15:07 SNL-ASA-VPN-A01 : %ASA-2-106017: Deny IP due to Land Attack from 10.123.123.123 to 10.123.123.123",
-                "code": "106017",
-                "kind": "event",
-                "action": "firewall-rule",
-                "category": [
-                    "network"
-                ],
-                "type": [
-                    "info",
-                    "denied"
-                ],
-                "outcome": "failure"
-            },
-            "cisco": {
-                "ftd": {}
-            }
+            ]
         }
     ]
 }
