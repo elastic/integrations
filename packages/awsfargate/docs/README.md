@@ -1,6 +1,6 @@
 # AWS Fargate Integration
 
-The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks they are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
+The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks that are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
 
 ## How it works?
 
