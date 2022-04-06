@@ -70,3 +70,10 @@ This is the `applications` data stream.
 {{event "applications"}}
 
 {{fields "applications"}}
+### Nodes
+
+This is the `nodes` data stream.
+
+{{event "nodes"}}
+
+{{fields "nodes"}}
